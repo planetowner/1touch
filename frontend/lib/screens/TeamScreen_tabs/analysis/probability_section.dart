@@ -173,114 +173,122 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
     final showDelta = delta != null && delta != 0;
     final isUp = delta != null && delta > 0;
 
-    return InkWell(
-      key: ValueKey('team-probability-card-${card.event}'),
-      borderRadius: BorderRadius.circular(24),
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => TeamProbabilityScreen(
-            teamId: snapshot.teamId,
-            event: card.event,
-            initialSnapshot: snapshot,
-            repository: widget.repository,
-          ),
-        ),
+    return Container(
+      key: ValueKey('team-probability-surface-${card.event}'),
+      decoration: BoxDecoration(
+        color: AppColors.of(context).cardBackground,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: appCardShadows(context),
       ),
-      child: Ink(
-        key: ValueKey('team-probability-surface-${card.event}'),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.of(context).cardBackground,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          key: ValueKey('team-probability-card-${card.event}'),
           borderRadius: BorderRadius.circular(24),
-          boxShadow: appCardShadows(context),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              key: ValueKey('team-probability-title-slot-${card.event}'),
-              width: double.infinity,
-              height: 39,
-              child: Text(
-                _eventTitle(card.event),
-                maxLines: Localizations.localeOf(context).languageCode == 'ko'
-                    ? 1
-                    : 2,
-                softWrap: Localizations.localeOf(context).languageCode != 'ko',
-                overflow: TextOverflow.ellipsis,
-                style: Body1.style.copyWith(height: 1.3),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => TeamProbabilityScreen(
+                teamId: snapshot.teamId,
+                event: card.event,
+                initialSnapshot: snapshot,
+                repository: widget.repository,
               ),
             ),
-            SizedBox(
-              key: ValueKey('team-probability-footer-${card.event}'),
-              width: double.infinity,
-              height: 43,
-              child: Stack(
-                alignment: Alignment.bottomCenter,
-                children: [
-                  Align(
-                    alignment: Alignment.bottomLeft,
-                    child: OverflowBox(
-                      alignment: Alignment.bottomLeft,
-                      minWidth: 0,
-                      maxWidth: double.infinity,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '${(card.probability * 100).round()}',
-                            key: ValueKey(
-                              'team-probability-value-${card.event}',
-                            ),
-                            style: Heading1.style.copyWith(height: 0.9),
-                          ),
-                          Text(
-                            '%',
-                            key: ValueKey(
-                              'team-probability-percent-${card.event}',
-                            ),
-                            style: Heading4.style.copyWith(height: 1.2),
-                          ),
-                        ],
-                      ),
-                    ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  key: ValueKey('team-probability-title-slot-${card.event}'),
+                  width: double.infinity,
+                  height: 39,
+                  child: Text(
+                    _eventTitle(card.event),
+                    maxLines:
+                        Localizations.localeOf(context).languageCode == 'ko'
+                            ? 1
+                            : 2,
+                    softWrap:
+                        Localizations.localeOf(context).languageCode != 'ko',
+                    overflow: TextOverflow.ellipsis,
+                    style: Body1.style.copyWith(height: 1.3),
                   ),
-                  if (showDelta)
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: Row(
-                        key: ValueKey(
-                          'team-probability-delta-row-${card.event}',
+                ),
+                SizedBox(
+                  key: ValueKey('team-probability-footer-${card.event}'),
+                  width: double.infinity,
+                  height: 71,
+                  child: Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.bottomLeft,
+                        child: OverflowBox(
+                          alignment: Alignment.bottomLeft,
+                          minWidth: 0,
+                          maxWidth: double.infinity,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '${(card.probability * 100).round()}',
+                                key: ValueKey(
+                                  'team-probability-value-${card.event}',
+                                ),
+                                style: Heading1.style.copyWith(height: 0.9),
+                              ),
+                              Text(
+                                '%',
+                                key: ValueKey(
+                                  'team-probability-percent-${card.event}',
+                                ),
+                                style: Heading4.style.copyWith(height: 1.2),
+                              ),
+                            ],
+                          ),
                         ),
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Icon(
-                            isUp ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                            key: ValueKey(
-                              'team-probability-delta-icon-${card.event}',
-                            ),
-                            color: isUp
-                                ? const Color(0xFF36CC7A)
-                                : const Color(0xFFFF5C5C),
-                            size: 24,
-                          ),
-                          Text(
-                            '${_formatDelta(delta.abs())}%',
-                            key: ValueKey(
-                              'team-probability-delta-${card.event}',
-                            ),
-                            style: Heading5.style.copyWith(height: 1.1),
-                          ),
-                        ],
                       ),
-                    ),
-                ],
-              ),
+                      if (showDelta)
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: Row(
+                            key: ValueKey(
+                              'team-probability-delta-row-${card.event}',
+                            ),
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                isUp
+                                    ? Icons.arrow_drop_up
+                                    : Icons.arrow_drop_down,
+                                key: ValueKey(
+                                  'team-probability-delta-icon-${card.event}',
+                                ),
+                                color: isUp
+                                    ? const Color(0xFF36CC7A)
+                                    : const Color(0xFFFF5C5C),
+                                size: 24,
+                              ),
+                              Text(
+                                '${_formatDelta(delta.abs())}%',
+                                key: ValueKey(
+                                  'team-probability-delta-${card.event}',
+                                ),
+                                style: Heading5.style.copyWith(height: 1.1),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

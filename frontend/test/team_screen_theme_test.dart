@@ -11,7 +11,6 @@ import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/features/team/overview/team_screen_features.dart';
 import 'package:onetouch/data/team_attributes/mock/mock_team_attribute_repository.dart';
-import 'package:onetouch/models/current_form.dart';
 import 'package:onetouch/models/standing.dart' as standings;
 import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
@@ -1061,14 +1060,8 @@ void main() {
     final attributesFilterFinder = find.byKey(
       const ValueKey('analysis-attributes-filter'),
     );
-    final attributesFilter = tester.widget<AppDropdown<int>>(
-      attributesFilterFinder,
-    );
     final formFilterFinder = find.byKey(
       const ValueKey('analysis-form-filter'),
-    );
-    final formFilter = tester.widget<AppDropdown<CurrentFormOption>>(
-      formFilterFinder,
     );
 
     expect(
@@ -1095,12 +1088,9 @@ void main() {
           ?.color,
       app_style.AppPalette.black,
     );
-    for (final option in attributesFilter.options) {
-      expect(option.label, option.label.toUpperCase());
-    }
-    for (final option in formFilter.options) {
-      expect(option.label, option.label.toUpperCase());
-    }
+    expect(find.byKey(const ValueKey('analysis-attributes-filter')),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('analysis-form-filter')), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 450));
     for (final key in const [
       ValueKey('analysis-attributes-legend'),

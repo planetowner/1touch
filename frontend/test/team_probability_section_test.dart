@@ -71,7 +71,7 @@ void main() {
           ?.fontSize,
       20,
     );
-    final probabilitySurface = tester.widget<Ink>(
+    final probabilitySurface = tester.widget<Container>(
       find.byKey(
         const ValueKey('team-probability-surface-league_winner'),
       ),
@@ -118,9 +118,9 @@ void main() {
       find.byKey(const ValueKey('team-probability-delta-icon-top_6')),
       findsNothing,
     );
-    final probabilityBottom = tester.getBottomLeft(
+    final probabilityTop = tester.getTopLeft(
       find.byKey(
-        const ValueKey('team-probability-percent-league_winner'),
+        const ValueKey('team-probability-value-league_winner'),
       ),
     );
     final deltaBottom = tester.getBottomLeft(
@@ -128,7 +128,15 @@ void main() {
         const ValueKey('team-probability-delta-row-league_winner'),
       ),
     );
-    expect(probabilityBottom.dy, deltaBottom.dy);
+    expect(probabilityTop.dy - deltaBottom.dy, closeTo(4, 1));
+    expect(
+      tester.getTopLeft(
+        find.byKey(const ValueKey('team-probability-delta-row-league_winner')),
+      ).dx,
+      tester.getTopLeft(
+        find.byKey(const ValueKey('team-probability-value-league_winner')),
+      ).dx,
+    );
     expect(tester.takeException(), isNull);
   });
 
