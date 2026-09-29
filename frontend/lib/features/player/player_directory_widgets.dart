@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/app_info_button.dart';
+import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
@@ -139,7 +140,10 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
                     final player = controller.players[index];
                     return InkWell(
                       key: ValueKey('favorite-player-${player.playerId}'),
-                      onTap: () => context.push('/players/${player.playerId}'),
+                      onTap: () => openPlayerPage(
+                        context,
+                        player.playerId.toString(),
+                      ),
                       borderRadius: BorderRadius.circular(12),
                       child: SizedBox(
                         width: 79,
