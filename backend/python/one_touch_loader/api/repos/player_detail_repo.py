@@ -54,7 +54,8 @@ def get_player_detail(player_id: int, season_id: int | None = None) -> dict | No
                     return cur.fetchall()
 
                 profile = fetch("""SELECT p.player_id, p.display_name AS name, p.image_path AS image,
-                    p.height_cm, p.weight_kg, p.date_of_birth, n.name AS nationality, n.image_path AS nationality_image
+                    p.height_cm, p.weight_kg, p.date_of_birth, p.nationality_id,
+                    n.name AS nationality, n.image_path AS nationality_image
                     FROM players p LEFT JOIN countries n ON n.country_id=p.nationality_id WHERE p.player_id=%s""", (player_id,))
                 if not profile:
                     return None
