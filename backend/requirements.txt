@@ -16,6 +16,7 @@ pydantic==2.13.4
 pandas==2.2.3
 pwdlib[argon2]==0.3.1
 PyJWT[crypto]==2.13.0
+cryptography
 boto3==1.43.91
 python-multipart==0.0.32
 email-validator==2.3.0

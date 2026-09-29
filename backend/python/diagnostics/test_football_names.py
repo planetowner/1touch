@@ -17,21 +17,25 @@ with patch("mysql.connector.pooling.MySQLConnectionPool") as pool:
 class FootballNamesTests(unittest.TestCase):
     def test_country_catalog_uses_available_translations_and_preserves_ids(self):
         with sqlite3.connect(':memory:') as db:
-            db.execute('CREATE TABLE countries (country_id INTEGER, name TEXT, name_ko TEXT)')
-            db.executemany('INSERT INTO countries VALUES (?, ?, ?)', [
-                (462, 'England', '잉글랜드'), (712, 'South Korea', '대한민국'),
-                (3374, 'Gibraltar', None),
+            db.execute('CREATE TABLE countries (country_id INTEGER, name TEXT, name_ko TEXT, name_ja TEXT, name_zh TEXT)')
+            db.executemany('INSERT INTO countries VALUES (?, ?, ?, ?, ?)', [
+                (462, 'England', '잉글랜드', 'イングランド', '英格兰'),
+                (712, 'South Korea', '대한민국', '韓国', '韩国'),
+                (360931, 'Mauritius', '모리셔스', 'モーリシャス', None),
+                (862868, 'Nepal', '네팔', None, None),
             ])
             def fetch(sql):
                 return db.execute(sql).fetchall() if 'FROM countries' in sql else []
 
             with patch.object(names_repo, 'fetch_all', side_effect=fetch):
                 self.assertEqual(names_repo.localized_names('ko')['countries'],
-                                 {'462': '잉글랜드', '712': '대한민국'})
+                                 {'462': '잉글랜드', '712': '대한민국', '360931': '모리셔스', '862868': '네팔'})
                 self.assertEqual(names_repo.localized_names('en')['countries'],
-                                 {'462': 'England', '712': 'South Korea', '3374': 'Gibraltar'})
-                for locale in ('ja', 'zh'):
-                    self.assertEqual(names_repo.localized_names(locale)['countries'], {})
+                                 {'462': 'England', '712': 'South Korea', '360931': 'Mauritius', '862868': 'Nepal'})
+                self.assertEqual(names_repo.localized_names('ja')['countries'],
+                                 {'462': 'イングランド', '712': '韓国', '360931': 'モーリシャス'})
+                self.assertEqual(names_repo.localized_names('zh')['countries'],
+                                 {'462': '英格兰', '712': '韩国'})
 
     def test_verified_ids_and_unknowns(self):
         with patch.object(names_repo, "fetch_all", return_value=[(4313,)]) as fetch:
