@@ -47,6 +47,88 @@ void main() {
     expect(find.byKey(const ValueKey('injury-error')), findsNothing);
     expect(find.byKey(const ValueKey('transfer-error')), findsNothing);
   });
+
+  testWidgets('keeps OUT selected after the transfer section scrolls away',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 300);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final bestElevenRepository = _EmptyBestElevenRepository();
+    final injuryRepository = _UnavailableInjuryRepository();
+    final transferRepository = _AvailableTransferRepository();
+    addTearDown(bestElevenRepository.dispose);
+    addTearDown(injuryRepository.dispose);
+    addTearDown(transferRepository.dispose);
+
+    await tester.pumpWidget(MaterialApp(
+      theme: whitetheme,
+      home: Scaffold(
+        body: OverviewTab(
+          team: const <String, dynamic>{'id': 68, 'standing': null},
+          bestElevenRepository: bestElevenRepository,
+          injuryRepository: injuryRepository,
+          transferRepository: transferRepository,
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final scrollable =
+        tester.state<ScrollableState>(find.byType(Scrollable).first);
+    scrollable.position.jumpTo(scrollable.position.maxScrollExtent);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('transfer-out-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.text('Outgoing Player'), findsOneWidget);
+
+    scrollable.position.jumpTo(scrollable.position.minScrollExtent);
+    await tester.pumpAndSettle();
+
+    scrollable.position.jumpTo(scrollable.position.maxScrollExtent);
+    await tester.pumpAndSettle();
+    expect(find.text('Outgoing Player'), findsOneWidget);
+    expect(find.text('Incoming Player'), findsNothing);
+  });
+}
+
+class _AvailableTransferRepository implements TransferRepository {
+  late final TeamTransferWindow window = TeamTransferWindow(
+    teamId: 68,
+    windowKey: '2026 summer',
+    incoming: const [
+      TransferEntry(
+        transferId: 1,
+        playerId: 101,
+        playerName: 'Incoming Player',
+        direction: TransferDirection.incoming,
+        typeId: 219,
+      ),
+    ],
+    outgoing: const [
+      TransferEntry(
+        transferId: 2,
+        playerId: 102,
+        playerName: 'Outgoing Player',
+        direction: TransferDirection.outgoing,
+        typeId: 219,
+      ),
+    ],
+  );
+  final ValueNotifier<Map<int, TeamTransferWindow>> _cache =
+      ValueNotifier(const {});
+
+  @override
+  ValueListenable<Map<int, TeamTransferWindow>> get cachedWindows => _cache;
+
+  @override
+  TeamTransferWindow? cachedForTeam(int teamId) => window;
+
+  @override
+  Future<TeamTransferWindow> loadForTeam(int teamId) async => window;
+
+  void dispose() => _cache.dispose();
 }
 
 class _EmptyBestElevenRepository implements BestElevenRepository {
