@@ -172,7 +172,10 @@ class PlayerDetailRepositoryTests(unittest.TestCase):
             app.dependency_overrides[get_user_id]=lambda:1
             get.return_value=json.loads((Path(__file__).resolve().parents[3] / 'frontend/test/fixtures/player_detail.json').read_text())
             get.return_value['player_id']=1
-            self.assertEqual(client.get('/players/1/detail?season_id=5').json()['player_id'], 1)
+            response = client.get('/players/1/detail?season_id=5').json()
+            self.assertEqual(response['player_id'], 1)
+            self.assertEqual(response['profile']['nationality_id'], 712)
+            self.assertEqual(response['profile']['nationality'], 'South Korea')
             get.assert_called_with(1,5)
             get.side_effect=ValueError('Player has no record for this league season')
             self.assertEqual(client.get('/players/1/detail?season_id=6').status_code,404)

@@ -136,7 +136,11 @@ class PlayerOverviewTab extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    detail.profile.nationality ?? '—',
+                                    countryNameLabel(
+                                      context,
+                                      detail.profile.nationalityId,
+                                      detail.profile.nationality ?? '—',
+                                    ),
                                     key: const ValueKey(
                                         'player-overview-country'),
                                     maxLines: 1,

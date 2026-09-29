@@ -3,8 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/features/KaneRest.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
+import 'package:onetouch/l10n/football_name_labels.dart';
 
 import 'support/player_directory_fixture.dart';
 import 'support/player_detail_fixture.dart';
@@ -18,6 +20,7 @@ void main() {
     jerseyNumber: 7,
     positions: ['FW'],
     club: 'Barcelona',
+    nationalityId: 712,
     nationality: 'Korea Republic',
     playerImageAsset: 'assets/playerAvatar.png',
     sections: [],
@@ -84,6 +87,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.darktheme,
+        builder: (context, child) => FootballNamesScope(
+          names: const FootballNames(countries: {712: '대한민국'}),
+          child: child!,
+        ),
         home: Scaffold(
           body: PlayerMatchStatSheet(
             followingController: controller,
@@ -99,7 +106,7 @@ void main() {
       find.byKey(const ValueKey('player-match-stat-image-bottom-fade')),
     );
     expect(imageFade.blendMode, BlendMode.dstIn);
-    expect(find.text('Korea Republic'), findsOneWidget);
+    expect(find.text('대한민국'), findsOneWidget);
 
     final followButton = find.byKey(
       const ValueKey('player-match-stat-follow-button'),

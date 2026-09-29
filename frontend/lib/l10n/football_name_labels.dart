@@ -30,6 +30,9 @@ String playerNameLabel(BuildContext context, int? id, String original,
         {bool short = false}) =>
     FootballNamesScope.of(context).player(id, original, short: short);
 
+String countryNameLabel(BuildContext context, int? id, String original) =>
+    FootballNamesScope.of(context).country(id, original);
+
 String normalizeCompetitionDisplayLabel(String label) => label.replaceAll(
       RegExp(r'\bLA\s*LIGA\b', caseSensitive: false),
       'LA LIGA',

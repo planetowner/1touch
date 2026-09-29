@@ -8,6 +8,7 @@ class FootballNames {
     this.players = const {},
     this.playerShortNames = const {},
     this.competitions = const {},
+    this.countries = const {},
   });
 
   factory FootballNames.fromJson(Map<String, dynamic> json) {
@@ -22,6 +23,7 @@ class FootballNames {
       players: names('players'),
       playerShortNames: names('player_short_names'),
       competitions: names('competitions'),
+      countries: names('countries'),
     );
   }
 
@@ -29,7 +31,8 @@ class FootballNames {
       teamShortNames,
       players,
       playerShortNames,
-      competitions;
+      competitions,
+      countries;
 
   // 짧은 번역이 없는 팀·선수는 같은 언어의 일반 이름을 먼저 사용해요.
   String team(int? id, String original, {bool short = false}) =>
@@ -37,6 +40,7 @@ class FootballNames {
   String player(int? id, String original, {bool short = false}) =>
       (short ? playerShortNames[id] : null) ?? players[id] ?? original;
   String competition(int? id, String original) => competitions[id] ?? original;
+  String country(int? id, String original) => countries[id] ?? original;
 }
 
 class FootballNamesRepository {

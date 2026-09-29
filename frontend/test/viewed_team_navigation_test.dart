@@ -50,6 +50,7 @@ void main() {
             'players': {},
             'player_short_names': {},
             'competitions': {},
+            'countries': {},
           };
         } else if (path == '/v1/users/me') {
           body = {

@@ -11,6 +11,7 @@ typedef PlayerDetailProfile = ({
   int? heightCm,
   int? weightKg,
   DateTime? birthDate,
+  int? nationalityId,
   String? nationality,
   String? nationalityImage,
   String? position,
