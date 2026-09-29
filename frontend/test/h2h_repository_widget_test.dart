@@ -271,17 +271,17 @@ void main() {
           : Future.value([_pastFixture(homeScore: limit)]),
     );
 
-    await tester.pumpWidget(_testApp(repository: repository));
+    await tester.pumpWidget(
+        _testApp(repository: repository, locale: const Locale('en')));
     await tester.pump();
 
     expect(repository.requests, [(fixtureId: 1001, limit: 5)]);
     expect(find.byKey(const ValueKey('match-h2h-wdl-card')), findsOneWidget);
-    expect(
-      tester.getSize(
-        find.byKey(const ValueKey('match-h2h-limit-dropdown')),
-      ),
-      const Size(152, 40),
+    final dropdownSize = tester.getSize(
+      find.byKey(const ValueKey('match-h2h-limit-dropdown')),
     );
+    expect(dropdownSize.width, greaterThan(152));
+    expect(dropdownSize.height, 40);
     final selectedLabel = tester.widget<Text>(
       find
           .descendant(
@@ -292,6 +292,15 @@ void main() {
     );
     expect(selectedLabel.maxLines, 1);
     expect(selectedLabel.softWrap, isFalse);
+    final labelPainter = TextPainter(
+      text: TextSpan(
+        text: selectedLabel.data,
+        style: selectedLabel.style,
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    expect(labelPainter.width, lessThanOrEqualTo(dropdownSize.width - 56));
 
     final dropdown = tester.widget<AppDropdown<int>>(
       find.byKey(const ValueKey('match-h2h-limit-dropdown')),

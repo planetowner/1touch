@@ -241,37 +241,36 @@ class _H2HTabState extends State<H2HTab> {
   Widget _buildDropdownRow() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isKorean = Localizations.localeOf(context).languageCode == 'ko';
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
     final foreground = Theme.of(context).colorScheme.onSurface;
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final againstTeam = _againstTeamId == widget.fixture.homeTeamId
         ? fixtureHomeTeam(widget.fixture, teamRepository)
         : fixtureAwayTeam(widget.fixture, teamRepository);
-    final dropdown = Flexible(
-      child: AppDropdown<int>(
-        key: const ValueKey('match-h2h-limit-dropdown'),
-        width: 152,
-        value: _selectedMatches,
-        backgroundColor: surface,
-        foregroundColor: foreground,
-        textStyle: Body2_b.style,
-        options: _matchOptions
-            .map(
-              (count) => AppDropdownOption<int>(
-                value: count,
-                label: tr(
-                  context,
-                  'Last {count} matches',
-                  {'count': count},
-                ).toUpperCase(),
-              ),
-            )
-            .toList(),
-        onChanged: (value) {
-          if (value == _selectedMatches) return;
-          setState(() => _selectedMatches = value);
-          _loadHeadToHead();
-        },
-      ),
+    final dropdown = AppDropdown<int>(
+      key: const ValueKey('match-h2h-limit-dropdown'),
+      width: isEnglish ? null : 152,
+      value: _selectedMatches,
+      backgroundColor: surface,
+      foregroundColor: foreground,
+      textStyle: Body2_b.style,
+      options: _matchOptions
+          .map(
+            (count) => AppDropdownOption<int>(
+              value: count,
+              label: tr(
+                context,
+                'Last {count} matches',
+                {'count': count},
+              ).toUpperCase(),
+            ),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value == _selectedMatches) return;
+        setState(() => _selectedMatches = value);
+        _loadHeadToHead();
+      },
     );
     final againstLogo = Container(
       key: ValueKey('match-h2h-against-team-$_againstTeamId'),
@@ -305,14 +304,20 @@ class _H2HTabState extends State<H2HTab> {
           : [againstLabel, const SizedBox(width: 8), againstLogo],
     );
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: isKorean
-            ? [against, const SizedBox(width: 8), dropdown]
-            : [dropdown, const SizedBox(width: 8), against],
-      ),
+    if (isEnglish) {
+      return Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        spacing: 8,
+        runSpacing: 8,
+        children: [dropdown, against],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: isKorean
+          ? [against, const SizedBox(width: 8), Flexible(child: dropdown)]
+          : [Flexible(child: dropdown), const SizedBox(width: 8), against],
     );
   }
 
