@@ -5,7 +5,10 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 from ..db import get_conn
-from .player_detail_repo import APPEARED, COMPLETED, MATCH_FROM
+from .player_detail_repo import (
+    APPEARED, COMPLETED, CURRENT_LEAGUE_SEASON, DISPLAY_STATES, MATCH_FROM, get_player_rosters,
+)
+from ...core.player_detail import current_player_team
 from ...core.player_ranking import merge_current_scores, rank_current_scores, season_player_positions
 from ...core.player_rating_percentile import (
     HistoricalPercentile, RATING_COMPETITION_IDS, REFERENCE_START_SEASON_NAME,
@@ -101,6 +104,27 @@ def get_ones_to_watch():
                     WHERE f.state_id IN ({COMPLETED}) AND f.starting_at<=UTC_TIMESTAMP() AND {APPEARED}
                 ) SELECT a.*,p.display_name AS name,p.image_path AS image FROM appearances a
                   JOIN players p ON p.player_id=a.player_id WHERE a.recent<=10""")
-                return {'items': watch_players(cur.fetchall()), 'scope': 'all_competitions_recent_10_appearances'}
+                items = watch_players(cur.fetchall())
+                if items:
+                    def fetch(sql, params=()):
+                        cur.execute(sql, params)
+                        return cur.fetchall()
+
+                    player_ids = tuple(item['player_id'] for item in items)
+                    rosters = defaultdict(list)
+                    for row in get_player_rosters(fetch, player_ids):
+                        rosters[row['player_id']].append(row)
+                    # 최근 10경기에는 이전 시즌·대표팀도 섞여 있어 상세 화면의 현재 소속 기준을 공유해요.
+                    current_matches = defaultdict(list)
+                    placeholders = ','.join(['%s'] * len(player_ids))
+                    for row in fetch('SELECT fl.player_id,fl.team_id,f.starting_at ' + MATCH_FROM
+                                     + f' WHERE fl.player_id IN ({placeholders}) AND s.name=({CURRENT_LEAGUE_SEASON})'
+                                     + f' AND f.state_id IN ({DISPLAY_STATES}) AND f.starting_at<=UTC_TIMESTAMP() AND {APPEARED}',
+                                     player_ids):
+                        current_matches[row['player_id']].append(row)
+                    for item in items:
+                        team = current_player_team(rosters[item['player_id']], current_matches[item['player_id']])
+                        item['jersey_number'] = team['jersey_number'] if team else None
+                return {'items': items, 'scope': 'all_competitions_recent_10_appearances'}
         finally:
             conn.rollback()
