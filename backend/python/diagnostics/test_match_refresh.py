@@ -131,15 +131,16 @@ class MatchRefreshTests(unittest.TestCase):
             self.assertFalse(collect.call_args.kwargs['live'])
             self.assertTrue(collect.call_args.kwargs['clear_live'])
 
-    def test_probabilities_on_completion_then_fifteen_minute_external_check(self):
+    def test_probabilities_daily_external_check_and_immediate_result_change(self):
         with patch.object(jobs.probability_refresh, 'refresh', return_value={'europe': {'competitions': []}}) as calculate:
             self.run_job('probability')
-            self.run_job('probability', seconds=899)
+            self.run_job('probability', seconds=900)
+            self.run_job('probability', seconds=86399)
             calculate.assert_called_once()
-            self.rows[0]['home_score'] = 3
-            self.run_job('probability', seconds=899)
+            self.run_job('probability', seconds=86400)
             self.assertEqual(calculate.call_count, 2)
-            self.run_job('probability', seconds=1799)
+            self.rows[0]['home_score'] = 3
+            self.run_job('probability', seconds=86415)
             self.assertEqual(calculate.call_count, 3)
 
     def test_live_goal_does_not_trigger_final_result_probability_recalculation(self):

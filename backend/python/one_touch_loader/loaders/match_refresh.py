@@ -21,7 +21,8 @@ from .xg_standings_loader import build_xg_standings
 
 RETRY_SECONDS = 300
 STANDINGS_SECONDS = 30
-PROBABILITY_SECONDS = 900
+# 경기 결과 변경은 바로 반영하므로, 변화가 없을 때 외부 Elo·대진은 하루마다 확인해요.
+PROBABILITY_SECONDS = 24 * 3600
 # 최근 경기의 공개 지연은 빠르게 확인하고, 오래된 미제공 경기는 하루 뒤 확인해요.
 OPTA_RECENT_SECONDS = 48 * 3600
 OPTA_UNAVAILABLE_SECONDS = 24 * 3600
