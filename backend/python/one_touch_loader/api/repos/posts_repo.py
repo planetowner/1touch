@@ -9,6 +9,7 @@ from .users_repo import get_user, lock_user, require_profile
 from .teams_repo import list_following_team_ids
 from .media_repo import remove_attachments
 from ..services.content_visibility import blocked_sql, public_author, require_visible_author
+from .notifications_repo import notify_post
 
 
 class PostSort(str, Enum):
@@ -232,7 +233,7 @@ def list_comments(user_id: int, post_id: int, after_id: int, limit: int) -> list
 def create_comment(user_id: int, post_id: int, body: str, reply_to_id: int | None) -> int:
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
         user = lock_user(cur, user_id)
-        _lock_post(cur, user, post_id)
+        post = _lock_post(cur, user, post_id)
         if reply_to_id is not None:
             cur.execute("SELECT post_id,user_id,state FROM post_comments WHERE comment_id=%s FOR UPDATE", (reply_to_id,))
             parent = cur.fetchone()
@@ -241,7 +242,9 @@ def create_comment(user_id: int, post_id: int, body: str, reply_to_id: int | Non
             require_visible_author(user_id, parent["user_id"])
         cur.execute("INSERT INTO post_comments (post_id,user_id,reply_to_id,body,created_at) VALUES (%s,%s,%s,%s,%s)",
                     (post_id, user_id, reply_to_id, body, utc_now()))
-        return cur.lastrowid
+        comment_id = cur.lastrowid
+        notify_post(cur, post, user_id, comment_id=comment_id)
+        return comment_id
 
 
 def _lock_comment(cur, user: dict, comment_id: int) -> dict:
@@ -276,9 +279,11 @@ def set_like(user_id: int, target: str, target_id: int, liked: bool) -> None:
     }[target]
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
         user = lock_user(cur, user_id)
-        lookup(cur, user, target_id)
+        content = lookup(cur, user, target_id)
         if liked:
             cur.execute(f"INSERT INTO {table} ({key},user_id) VALUES (%s,%s) ON DUPLICATE KEY UPDATE user_id=VALUES(user_id)", (target_id, user_id))
+            if target == 'post' and cur.rowcount == 1:
+                notify_post(cur, content, user_id)
         else:
             cur.execute(f"DELETE FROM {table} WHERE {key}=%s AND user_id=%s", (target_id, user_id))
 

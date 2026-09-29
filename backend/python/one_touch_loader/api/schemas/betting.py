@@ -64,6 +64,7 @@ class BettingMarketResponse(BaseModel):
     can_bet: bool
     can_cancel: bool
     unavailable_reason: str | None
+    opens_at: str | None
     closes_at: str | None
     prediction_run_id: str | None
     prediction_as_of: str | None

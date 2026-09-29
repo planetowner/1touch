@@ -15,7 +15,7 @@ if not token:
     raise SystemExit("Server SPORTMONKS_API_TOKEN is empty. No changes made.")
 try:
     response = SportmonksClient(timeout=20)._get("livescores", params={
-        "include": "participants;state;scores;periods;events.type;statistics.type;lineups.details;lineups.player;formations;coaches;pressure",
+        "include": "participants;state;scores;periods;metadata;events.type;statistics.type;lineups.details;lineups.player;formations;coaches;pressure",
     })
 except requests.RequestException as error:
     status = error.response.status_code if error.response is not None else "connection failed"

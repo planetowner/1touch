@@ -9,9 +9,9 @@ from pathlib import Path
 from ..core.db import fetch_all, transaction
 from ..core.fixture_states import COMPLETED_STATE_IDS
 from ..core.sportmonks import SportmonksClient
+from ..core.identity import SPORTMONKS_DUPLICATE_PLAYER_IDS, canonical_sportmonks_player_id as _canonical_player_id
 from ..core.player_match_metrics import STORED_STAT_TYPE_IDS
 from .players_loader import insert_missing_player_profiles
-from .team_squad_members_loader import SPORTMONKS_DUPLICATE_PLAYER_IDS
 from . import player_rating_rankings_loader as player_rankings
 from . import squad_roles_loader as squad_roles
 
@@ -99,11 +99,6 @@ SQL_INSERT_PRESSURE = """
 INSERT INTO fixture_pressures (fixture_id, team_id, minute, pressure)
 VALUES (%s,%s,%s,%s)
 """
-
-
-def _canonical_player_id(player_id: Optional[int]) -> Optional[int]:
-    # 73643은 다른 프로필이 섞인 중복 ID라 검증된 선수 74062로 연결해요.
-    return SPORTMONKS_DUPLICATE_PLAYER_IDS.get(player_id, player_id)
 
 
 def normalize_fixture_statistics(payload: Dict, fixture_id: int) -> Dict[str, List[Tuple]]:

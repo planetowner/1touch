@@ -2135,7 +2135,7 @@ FIXTURE_DETAILS_INCLUDE = (
     "events.type;statistics.type;lineups.details;"
     "lineups.player;formations;coaches;pressure"
 )
-LIVE_FIXTURE_INCLUDE = f"participants;state;scores;periods;{FIXTURE_DETAILS_INCLUDE}"
+LIVE_FIXTURE_INCLUDE = f"participants;state;scores;periods;metadata;{FIXTURE_DETAILS_INCLUDE}"
 
 
 # 2017년 감독·포메이션과 당시 공식 명단은 옛 구단을 가리켜요.

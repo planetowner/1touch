@@ -1,0 +1,11 @@
+[Unit]
+Description=1Touch notification reminders and confirmed lineups
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=60s
+AccuracySec=1s
+Unit=onetouch-notifications@schedule.service
+
+[Install]
+WantedBy=timers.target

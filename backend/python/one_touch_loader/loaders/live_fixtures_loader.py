@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from ..core.db import fetch_all, transaction
 from ..core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ..core.sportmonks import SportmonksClient
+from ..api.repos.notifications_repo import capture_fixture
 from .fixture_details_loader import _normalize_fixture_details, verified_event_player_profiles, write_fixture_detail_rows
 from . import player_rating_rankings_loader as player_rankings
 from . import squad_roles_loader as squad_roles
@@ -50,7 +51,8 @@ def validate_fixture_participants(fixture: dict, home_team_id: int, away_team_id
 
 
 def store_live_fixture(fixture: dict, home_team_id: int, away_team_id: int,
-                       sampled_at: datetime, *, detail_keys: tuple[str, ...] | None = None) -> None:
+                       sampled_at: datetime, *, detail_keys: tuple[str, ...] | None = None,
+                       notify: bool = False) -> None:
     validate_fixture_participants(fixture, home_team_id, away_team_id)
     current = _score_pair(fixture, home_team_id, away_team_id, SPORTMONKS_CURRENT_SCORE_TYPE_ID)
     penalties = _score_pair(fixture, home_team_id, away_team_id, SPORTMONKS_PENALTY_SCORE_TYPE_ID)
@@ -65,6 +67,10 @@ def store_live_fixture(fixture: dict, home_team_id: int, away_team_id: int,
         ), squad_roles.refresh_squad_roles_after_fixture(
             connection, fixture['id'], state_id=fixture['state_id'],
         ):
+            # 경기 전·라이브 수집이 겹쳐도 오래된 응답으로 저장 상태를 되돌리지 않아요.
+            # 과거 경기 보정은 알림을 만들지 않고 기존 저장 경로만 사용해요.
+            if notify and not capture_fixture(connection, fixture, sampled_at):
+                return
             with connection.cursor() as cursor:
                 state = fixture["state"]
                 cursor.executemany(SQL_UPSERT_FIXTURE_STATE, [(state["id"], state["state"], state["name"])])
@@ -98,8 +104,8 @@ def refresh_completed_details(fixtures: list[dict], *, apply: bool) -> list[dict
 
 def refresh_live_fixtures(*, apply: bool = False) -> dict:
     client = SportmonksClient(timeout=20)
-    fixtures = client.get_livescores()
     sampled_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    fixtures = client.get_livescores()
     by_id = {f["id"]: (f, sampled_at) for f in fixtures}
     # 수집 실패로 NS에 남은 현재 시즌 경기도 시작 시각이 지나면 다시 확인해요.
     # 라이브 목록에서 사라진 경기의 종료 상태도 같은 경로로 갱신해요.
@@ -112,8 +118,9 @@ def refresh_live_fixtures(*, apply: bool = False) -> dict:
         LIVE_STATE_IDS,
     )
     missing = [fixture_id for (fixture_id,) in pending if fixture_id not in by_id]
+    missing_sampled_at = datetime.now(timezone.utc).replace(tzinfo=None)
     for fixture in read_live_fixture_batches(client, missing):
-        by_id[fixture['id']] = (fixture, datetime.now(timezone.utc).replace(tzinfo=None))
+        by_id[fixture['id']] = (fixture, missing_sampled_at)
     if not by_id:
         return {"apply": apply, "received": 0, "matched": 0, "updated": 0}
     ids = tuple(by_id)
@@ -125,7 +132,7 @@ def refresh_live_fixtures(*, apply: bool = False) -> dict:
         payload, fetched_at = by_id[fixture_id]
         payload = client.correct_fixture_details(payload)
         if apply:
-            store_live_fixture(payload, home_team_id, away_team_id, fetched_at)
+            store_live_fixture(payload, home_team_id, away_team_id, fetched_at, notify=True)
         else:
             # 조회 모드에서도 실제 응답의 상세·시계 변환을 확인하지만 저장하지 않아요.
             _normalize_fixture_details(payload, fixture_id)

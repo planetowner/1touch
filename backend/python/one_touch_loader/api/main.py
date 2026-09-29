@@ -27,6 +27,7 @@ from .routes.football_names import router as football_names_router
 from .routes.catalog import router as catalog_router
 from .routes.search import router as search_router
 from .routes.calendar import router as calendar_router
+from .routes.notifications import router as notifications_router
 
 
 def create_app() -> FastAPI:
@@ -81,6 +82,7 @@ def create_app() -> FastAPI:
     app.include_router(catalog_router, prefix="/v1", tags=["catalog"])
     app.include_router(search_router, prefix="/v1", tags=["search"])
     app.include_router(calendar_router, prefix="/v1", tags=["calendar"])
+    app.include_router(notifications_router, prefix="/v1", tags=["notifications"])
 
     return app
 
