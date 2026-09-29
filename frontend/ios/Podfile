@@ -1,5 +1,4 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '15.0'
+platform :ios, '15.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -41,11 +40,9 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
 
-    # Flutter 보조 타깃의 iOS 13 설정을 지워 Runner의 최소 버전을 따르게 해요.
-    if target.name == 'Flutter'
-      target.build_configurations.each do |configuration|
-        configuration.build_settings.delete('IPHONEOS_DEPLOYMENT_TARGET')
-      end
+    # Xcode 27은 iOS 15 미만의 Pod 보조 타깃을 빌드할 수 없어요.
+    target.build_configurations.each do |configuration|
+      configuration.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
     end
   end
 end
