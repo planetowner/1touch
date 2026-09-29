@@ -385,6 +385,7 @@ const appMessages = <String, MessageTranslations>{
   "Search players": (ko: "선수 검색", ja: "選手を検索", zh: "搜索球员"),
   "Search players...": (ko: "선수 검색…", ja: "選手を検索…", zh: "搜索球员…"),
   "Look for players": (ko: "선수를 찾아보세요", ja: "選手を探す", zh: "查找球员"),
+  "Search a team!": (ko: "팀 검색", ja: "チームを検索", zh: "搜索球队"),
   "Filter": (ko: "필터", ja: "フィルター", zh: "筛选"),
   "FILTER": (ko: "필터", ja: "フィルター", zh: "筛选"),
   "Ranking filters": (ko: "순위 필터", ja: "ランキングの絞り込み", zh: "排名筛选"),
@@ -1758,27 +1759,32 @@ const appMessages = <String, MessageTranslations>{
   "Ballon d'Or": (ko: "발롱도르", ja: "バロンドール", zh: "金球奖"),
   " Min.": (ko: "분", ja: "分", zh: "分钟"),
   "Explanation": (ko: "설명", ja: "説明", zh: "说明"),
-  "Calculated using proprietary performance metrics and predictive analytics model": (
+  "Calculated using proprietary performance metrics and predictive analytics model":
+      (
     ko: "1Touch의 자체 경기력 지표와 예측 분석 모델을 사용해 계산해요.",
     ja: "独自のパフォーマンス指標と予測分析モデルを使って算出しています。",
     zh: "使用专有表现指标和预测分析模型计算。"
   ),
-  "Percentage of ball recovery locations across the lower, middle, and upper thirds compared against the league average.": (
+  "Percentage of ball recovery locations across the lower, middle, and upper thirds compared against the league average.":
+      (
     ko: "수비·중앙·공격 지역별 공 회수 비율을 리그 평균과 비교해요.",
     ja: "守備・中盤・攻撃の各エリアでのボール奪回割合をリーグ平均と比較します。",
     zh: "比较防守、中场和进攻三区的夺回球权比例与联赛平均值。"
   ),
-  "Evaluates and ranks players using 1Touch's own data-driven performance metrics.": (
+  "Evaluates and ranks players using 1Touch's own data-driven performance metrics.":
+      (
     ko: "1Touch의 자체 데이터 기반 경기력 지표로 선수를 평가하고 순위를 매겨요.",
     ja: "1Touch独自のデータに基づくパフォーマンス指標で選手を評価・順位付けします。",
     zh: "使用1Touch自有的数据驱动表现指标评估球员并进行排名。"
   ),
-  "Highlights players with the highest performance growth over recent matches, based on 1Touch metrics.": (
+  "Highlights players with the highest performance growth over recent matches, based on 1Touch metrics.":
+      (
     ko: "1Touch 지표를 기준으로 최근 경기에서 경기력이 가장 크게 향상된 선수를 보여줘요.",
     ja: "1Touchの指標に基づき、最近の試合で最も成長した選手を紹介します。",
     zh: "根据1Touch指标，展示近期比赛中表现进步最大的球员。"
   ),
-  "Measured by comparing actual salary against 1Touch’s predicted market value based on performance and playtime.": (
+  "Measured by comparing actual salary against 1Touch’s predicted market value based on performance and playtime.":
+      (
     ko: "실제 급여를 경기력과 출전 시간을 바탕으로 1Touch가 예측한 시장 가치와 비교해요.",
     ja: "実際の給与を、パフォーマンスと出場時間から1Touchが予測した市場価値と比較します。",
     zh: "将实际薪资与1Touch根据表现和出场时间预测的市场价值进行比较。"
