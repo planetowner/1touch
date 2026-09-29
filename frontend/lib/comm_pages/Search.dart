@@ -1,11 +1,10 @@
 // ignore_for_file: file_names
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/core/app_search_field.dart';
+import 'package:onetouch/core/debounced_search_controller.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
@@ -69,57 +68,25 @@ class SearchContent extends StatefulWidget {
 
 class _SearchContentState extends State<SearchContent> {
   final TextEditingController _searchController = TextEditingController();
+  late final _search = DebouncedSearchController<search_data.SearchResults>(
+      search: widget.repository.search);
   int _selectedIndex = 0;
-  bool _isSearching = false;
-  Object? _searchError;
-  int _generation = 0;
-  Timer? _debounce;
-  search_data.SearchResults _results = const search_data.SearchResults();
 
   static const _tabs = ['ALL', 'PLAYERS', 'TEAMS', 'EVENTS'];
-  bool get _hasQuery => _searchController.text.trim().isNotEmpty;
+  bool get _hasQuery => _search.query.isNotEmpty;
   TeamPageEligibility get _teamPageEligibility =>
       TeamPageEligibility(widget.competitionContextResolver);
 
   @override
   void initState() {
     super.initState();
+    _search.addListener(_onSearchChanged);
     widget.preferences.followedTeamIds.addListener(_onFollowingChanged);
   }
 
-  void _onQueryChanged() {
-    _debounce?.cancel();
-    ++_generation;
-    setState(() {
-      _results = const search_data.SearchResults();
-      _searchError = null;
-      _isSearching = _hasQuery;
-    });
-    if (_hasQuery)
-      _debounce = Timer(const Duration(milliseconds: 250), _search);
-  }
+  void _onQueryChanged() => _search.updateQuery(_searchController.text);
 
-  Future<void> _search() async {
-    final generation = ++_generation;
-    setState(() {
-      _isSearching = true;
-      _searchError = null;
-    });
-    try {
-      final results = await widget.repository.search(_searchController.text);
-      if (!mounted || generation != _generation) return;
-      setState(() {
-        _results = results;
-        _isSearching = false;
-      });
-    } catch (error) {
-      if (!mounted || generation != _generation) return;
-      setState(() {
-        _searchError = error;
-        _isSearching = false;
-      });
-    }
-  }
+  void _onSearchChanged() => setState(() {});
 
   void _onFollowingChanged() {
     if (mounted) setState(() {});
@@ -138,7 +105,7 @@ class _SearchContentState extends State<SearchContent> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
+    _search.dispose();
     widget.preferences.followedTeamIds.removeListener(_onFollowingChanged);
     _searchController.dispose();
     super.dispose();
@@ -234,10 +201,10 @@ class _SearchContentState extends State<SearchContent> {
   }
 
   Widget _buildBody() {
-    if (_isSearching) {
+    if (_search.loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_searchError != null) {
+    if (_search.error != null) {
       return Center(
         key: const ValueKey('search-load-error'),
         child: Column(
@@ -251,7 +218,7 @@ class _SearchContentState extends State<SearchContent> {
             ),
             const SizedBox(height: 12),
             TextButton(
-              onPressed: _search,
+              onPressed: _search.search,
               child: Text(tr(context, 'Retry')),
             ),
           ],
@@ -322,9 +289,10 @@ class _SearchContentState extends State<SearchContent> {
   }
 
   Widget _buildSelectedResults() {
-    final players = _results.players;
-    final teams = _results.teams;
-    final events = _results.fixtures;
+    final results = _search.result!;
+    final players = results.players;
+    final teams = results.teams;
+    final events = results.fixtures;
 
     final children = <Widget>[];
     if (_selectedIndex == 0 || _selectedIndex == 1) {

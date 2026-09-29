@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_search_field.dart';
+import 'package:onetouch/core/debounced_search_controller.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -177,13 +178,14 @@ class FollowingPlayersEditorSheet extends StatefulWidget {
 class _FollowingPlayersEditorSheetState
     extends State<FollowingPlayersEditorSheet> {
   final _search = TextEditingController();
+  late final _candidateSearch =
+      DebouncedSearchController<List<PlayerCandidate>>(
+          search: (query) => _repository.search(query));
   late final List<FollowingPlayer> _players = [...widget.players];
   final Map<int, Future<PlayerDetail?>> _details = {};
-  List<PlayerCandidate> _results = [];
   PlayerCandidate? _selected;
-  bool _searching = false;
+  bool get _searching => _candidateSearch.query.isNotEmpty;
   bool _changed = false;
-  int _request = 0;
   PlayerDetailRepository get _repository =>
       widget.repository ?? playerDetailRepository;
 
@@ -193,7 +195,8 @@ class _FollowingPlayersEditorSheetState
     for (final player in _players) {
       _details[player.playerId] = _loadDetail(player.playerId);
     }
-    _search.addListener(_onSearch);
+    _candidateSearch.addListener(_onSearchChanged);
+    _search.addListener(_onQueryChanged);
   }
 
   Future<PlayerDetail?> _loadDetail(int id) async {
@@ -204,29 +207,14 @@ class _FollowingPlayersEditorSheetState
     }
   }
 
-  Future<void> _onSearch() async {
+  void _onQueryChanged() {
     final query = _search.text.trim();
-    final request = ++_request;
-    if (query.isEmpty) {
-      setState(() {
-        _searching = false;
-        _results = [];
-        _selected = null;
-      });
-      return;
-    }
-    setState(() => _searching = true);
-    try {
-      final candidates = await _repository.search(query);
-      if (!mounted || request != _request) return;
-      setState(() => _results = candidates
-          .where((candidate) => !_contains(candidate.id))
-          .take(20)
-          .toList());
-    } on Object {
-      if (mounted && request == _request) setState(() => _results = []);
-    }
+    if (query == _candidateSearch.query) return;
+    _selected = null;
+    _candidateSearch.updateQuery(query);
   }
+
+  void _onSearchChanged() => setState(() {});
 
   bool _contains(int id) => _players.any((player) => player.playerId == id);
 
@@ -243,9 +231,9 @@ class _FollowingPlayersEditorSheetState
 
   @override
   void dispose() {
-    _request++;
+    _candidateSearch.dispose();
     _search
-      ..removeListener(_onSearch)
+      ..removeListener(_onQueryChanged)
       ..dispose();
     super.dispose();
   }
@@ -369,21 +357,40 @@ class _FollowingPlayersEditorSheetState
         },
       );
 
-  Widget _searchResults(ScrollController controller, Color divider) =>
-      ListView.builder(
-        controller: controller,
-        itemCount: _results.length,
-        itemBuilder: (context, index) {
-          final player = _results[index];
-          final selected = _selected?.id == player.id;
-          return _SearchPlayerRow(
-            player: player,
-            divider: divider,
-            selected: selected,
-            onSelect: () => setState(() => _selected = player),
-          );
-        },
+  Widget _searchResults(ScrollController controller, Color divider) {
+    if (_candidateSearch.loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_candidateSearch.error != null) {
+      return Center(
+        child: TextButton(
+          onPressed: _candidateSearch.search,
+          child: Text(tr(context, 'Could not load players · Retry')),
+        ),
       );
+    }
+    final results = _candidateSearch.result!
+        .where((candidate) => !_contains(candidate.id))
+        .take(20)
+        .toList();
+    if (results.isEmpty) {
+      return Center(child: Text(tr(context, 'No players found')));
+    }
+    return ListView.builder(
+      controller: controller,
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final player = results[index];
+        final selected = _selected?.id == player.id;
+        return _SearchPlayerRow(
+          player: player,
+          divider: divider,
+          selected: selected,
+          onSelect: () => setState(() => _selected = player),
+        );
+      },
+    );
+  }
 }
 
 class _FollowingPlayerRow extends StatelessWidget {
