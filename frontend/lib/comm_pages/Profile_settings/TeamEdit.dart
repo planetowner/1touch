@@ -212,11 +212,14 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
           favoriteTeamId: favoriteTeamId,
         ),
       );
-    } on FavoriteTeamCooldownException catch (error) {
+    } on FavoriteTeamChangeLimitException catch (error) {
       if (!mounted) return;
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
+        SnackBar(
+            content: Text(profileChangeLimitMessage(context,
+                item: tr(context, 'Favorite team'),
+                availableAt: error.availableAt))),
       );
     } on Object {
       if (!mounted) return;

@@ -204,14 +204,14 @@ void main() {
               now: now, locale: Locale(entry.key)),
           entry.value);
       expect(
-          communityUsernameLabel(
+          communityAuthorLabel(
               username: 'Goals',
               authorDeleted: false,
               locale: Locale(entry.key)),
           '@Goals');
     }
     expect(
-        communityUsernameLabel(
+        communityAuthorLabel(
             username: null, authorDeleted: true, locale: const Locale('ko')),
         '탈퇴한 사용자');
   });

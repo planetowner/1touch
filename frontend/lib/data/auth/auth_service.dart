@@ -82,6 +82,7 @@ class AuthService {
     required String code,
     required String password,
     required String username,
+    required String displayName,
     required String firstName,
     required String lastName,
   }) async {
@@ -90,6 +91,7 @@ class AuthService {
       code: code,
       password: password,
       username: username,
+      displayName: displayName,
       firstName: firstName,
       lastName: lastName,
     );

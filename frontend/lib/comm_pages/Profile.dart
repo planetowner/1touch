@@ -23,7 +23,6 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
-import 'package:onetouch/l10n/user_name_labels.dart';
 
 class Profile extends StatefulWidget {
   const Profile({
@@ -375,11 +374,7 @@ class _ProfileState extends State<Profile> {
           ),
           const SizedBox(height: 12),
           Text(
-            userNameLabel(
-              locale: Localizations.localeOf(context),
-              firstName: profile.firstName,
-              lastName: profile.lastName,
-            ),
+            profile.profileHeading,
             style: Heading5.style,
           ),
           Opacity(

@@ -202,9 +202,10 @@ class _PostCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            communityUsernameLabel(
+                            communityAuthorLabel(
                               locale: Localizations.localeOf(context),
                               username: post.username,
+                              displayName: post.displayName,
                               authorDeleted: post.authorDeleted,
                             ),
                             style: Body1.style,

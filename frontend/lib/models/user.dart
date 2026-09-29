@@ -1,6 +1,4 @@
-// SQL table: users
-// user_id | display_name | username | email | avatar_asset | created_at
-// Note: display_name, username, email, avatar_asset not yet in live schema — added for UI dev
+// 예시 화면용 모델이에요. 실제 이메일은 회원 테이블과 별도로 저장해요.
 
 class User {
   final int userId;

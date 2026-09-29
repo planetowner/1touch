@@ -28,6 +28,7 @@ void main() {
 
     expect(profile.userId, 1);
     expect(profile.username, 'planetowner');
+    expect(profile.displayName, 'Planet Owner');
     expect((profile.firstName, profile.lastName), ('Planet', 'Owner'));
     expect(profile.favoriteTeamId, 83);
     expect(
@@ -48,6 +49,72 @@ void main() {
     );
 
     expect((await repository.load()).username, 'planetowner');
+  });
+
+  test('sends the nickname separately from the login ID', () async {
+    final repository = ApiCurrentUserRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(jsonDecode(request.body), {
+            'username': 'john_doe',
+            'display_name': 'Planet Owner',
+            'first_name': 'John',
+            'last_name': 'Doe',
+          });
+          return http.Response(jsonEncode(_profileJson()), 200);
+        }),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+    );
+    await repository.updateProfile(
+        username: 'john_doe',
+        displayName: 'Planet Owner',
+        firstName: 'John',
+        lastName: 'Doe');
+  });
+
+  test('reports when the nickname change limit expires', () async {
+    final repository = ApiCurrentUserRepository(
+      api: ApiClient(
+        client: MockClient((_) async => http.Response(
+            jsonEncode({
+              'detail': {
+                'message': 'limit',
+                'available_at': '2026-10-13T12:00:00Z'
+              }
+            }),
+            409)),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+    );
+    await expectLater(
+        repository.updateProfile(
+            username: 'john_doe',
+            displayName: 'Next',
+            firstName: 'John',
+            lastName: 'Doe'),
+        throwsA(isA<ProfileChangeLimitException>()));
+  });
+
+  test('reports a duplicate ID or nickname from profile updates', () async {
+    final repository = ApiCurrentUserRepository(
+      api: ApiClient(
+        client: MockClient((_) async => http.Response(
+            jsonEncode({'detail': 'Username or nickname is already in use'}),
+            409)),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+    );
+    await expectLater(
+        repository.updateProfile(
+            username: 'john_doe',
+            displayName: 'Maple',
+            firstName: 'John',
+            lastName: 'Doe'),
+        throwsA(isA<ProfileNameConflictException>()));
   });
 
   test('surfaces non-successful HTTP responses', () async {
@@ -83,6 +150,7 @@ Map<String, dynamic> _profileJson() {
   return {
     'user_id': 1,
     'username': 'planetowner',
+    'display_name': 'Planet Owner',
     'first_name': 'Planet',
     'last_name': 'Owner',
     'email': 'owner@example.com',

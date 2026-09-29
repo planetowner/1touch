@@ -183,6 +183,7 @@ Future<void> _show(WidgetTester tester, ProfileActivityTab tab,
       profile: CurrentUserProfile(
         userId: 1,
         username: 'owner',
+        displayName: 'Owner',
         firstName: 'John',
         lastName: 'Doe',
         email: null,

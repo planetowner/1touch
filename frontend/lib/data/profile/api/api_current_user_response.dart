@@ -7,6 +7,7 @@ class ApiCurrentUserResponse {
   const ApiCurrentUserResponse({
     required this.userId,
     required this.username,
+    required this.displayName,
     required this.firstName,
     required this.lastName,
     required this.email,
@@ -18,6 +19,7 @@ class ApiCurrentUserResponse {
 
   final int userId;
   final String? username;
+  final String? displayName;
   final String? firstName;
   final String? lastName;
   final String? email;
@@ -30,6 +32,7 @@ class ApiCurrentUserResponse {
     return ApiCurrentUserResponse(
       userId: _requiredInt(json, 'user_id'),
       username: _optionalString(json, 'username'),
+      displayName: _optionalString(json, 'display_name'),
       firstName: _optionalString(json, 'first_name'),
       lastName: _optionalString(json, 'last_name'),
       email: _optionalString(json, 'email'),

@@ -7,6 +7,7 @@ class FixtureChatMessage {
     required this.fixtureId,
     required this.userId,
     required this.username,
+    this.displayName,
     required this.text,
     required this.createdAt,
     required this.avatarUrl,
@@ -17,10 +18,13 @@ class FixtureChatMessage {
   final int fixtureId;
   final int? userId;
   final String? username;
+  final String? displayName;
   final String text;
   final DateTime createdAt;
   final String? avatarUrl;
   final bool authorDeleted;
 
-  String get displayUsername => authorDeleted ? 'Deleted user' : username!;
+  String get displayAuthor => authorDeleted
+      ? 'Deleted user'
+      : (displayName?.trim().isNotEmpty == true ? displayName! : username!);
 }
