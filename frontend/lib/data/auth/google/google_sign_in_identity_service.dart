@@ -17,7 +17,15 @@ class GoogleSignInIdentityService implements GoogleIdentityService {
 
   static final GoogleSignInIdentityService _instance =
       GoogleSignInIdentityService.testing(
-    initializeSdk: GoogleSignIn.instance.initialize,
+    // 두 플랫폼 모두 운영 서버가 허용한 같은 Web Client ID를 사용해요.
+    initializeSdk: () => GoogleSignIn.instance.initialize(
+      // iOS SDK는 런타임 서버 ID를 쓰려면 iOS 클라이언트 ID도 함께 받아야 해요.
+      clientId: !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS
+          ? '20814259598-q73q31tk4qpc0cv1j08drjiofd854hk6.apps.googleusercontent.com'
+          : null,
+      serverClientId:
+          '20814259598-dsu514vmr01t3cflhn6c8mobiu5pmpft.apps.googleusercontent.com',
+    ),
     authenticateIdToken: () async {
       final account = await GoogleSignIn.instance.authenticate();
       return account.authentication.idToken;
@@ -28,11 +36,14 @@ class GoogleSignInIdentityService implements GoogleIdentityService {
   final _AuthenticateGoogleSdk _authenticateIdToken;
   Future<void>? _initialization;
 
+  // 로그인과 캘린더 연결이 같은 Google SDK 초기화를 공유해요.
+  Future<void> initialize() => _initialization ??= _initializeSdk();
+
   @override
   Future<String> authenticate() async {
     String? idToken;
     try {
-      await (_initialization ??= _initializeSdk());
+      await initialize();
       idToken = await _authenticateIdToken();
     } on GoogleSignInException catch (error) {
       throw GoogleIdentityException(
