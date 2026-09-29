@@ -52,6 +52,10 @@ docker run --rm --init --user 1001:1001 --entrypoint python "onetouch-api:$relea
 docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compose.yaml" exec -T db sh -c \
   'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --execute="SELECT season_id,team_id,position,previous_position,won,draw,lost,goals_for,goals_against,points FROM live_standings LIMIT 0"'
 
+# 좋아요·댓글 저장과 실시간 수집에서 바로 쓰므로 알림 테이블을 먼저 준비해야 해요.
+docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compose.yaml" exec -T db sh -c \
+  'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --execute="SELECT user_id,scope,subject_id,preferences FROM user_notification_preferences LIMIT 0; SELECT notification_id,user_id,event_key,kind,scope,subject_ids,payload,fixture_id,post_id,comment_id,actor_id,created_at,expires_at,read_at,cancelled_at FROM user_notifications LIMIT 0; SELECT device_id,user_id,session_token_hash,token_hash,token,platform,locale FROM user_push_devices LIMIT 0; SELECT notification_id,device_id,status,attempts,next_attempt_at,last_error FROM notification_push_deliveries LIMIT 0; SELECT fixture_id,state_id,seen_keys,current_keys,sampled_at FROM notification_fixture_state LIMIT 0"'
+
 if [[ ! -f "$runtime_directory/.env.production" ]]; then
   # PowerShell은 줄바꿈 전까지 안내를 전달하지 않아, 암호 입력 전에 줄을 마쳐요.
   printf '\nNew API collaboration password:\n' >/dev/tty
@@ -87,7 +91,7 @@ else
 fi
 
 # 기존 compose.yaml과 .env를 유지해 같은 DB 볼륨과 암호를 계속 사용해요.
-for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-match-refresh.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh sync-current-season.sh sync-calendars.sh; do
+for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-match-refresh.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh sync-current-season.sh sync-calendars.sh sync-notifications.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
 # 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
@@ -145,6 +149,10 @@ install -m 644 "$release_directory/deploy/vultr/onetouch-news-sync.timer" /etc/s
 # Google 인증 설정과 캘린더 테이블을 준비한 뒤 타이머를 켜요. 이후 배포는 실행 파일을 갱신해요.
 install -m 644 "$release_directory/deploy/vultr/onetouch-calendar-sync.service" /etc/systemd/system/onetouch-calendar-sync.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-calendar-sync.timer" /etc/systemd/system/onetouch-calendar-sync.timer
+# 알림 테이블·FCM·앱 기기 등록을 준비한 뒤 사용자가 발송 타이머를 켜요.
+for unit in onetouch-notifications@.service onetouch-notifications-schedule.timer onetouch-notifications-push.timer; do
+  install -m 644 "$release_directory/deploy/vultr/$unit" "/etc/systemd/system/$unit"
+done
 systemctl daemon-reload
 systemctl enable --now onetouch-db-backup.timer
 systemctl enable --now onetouch-community-cleanup.timer

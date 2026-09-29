@@ -195,6 +195,11 @@ class CommunityDatabaseCase(unittest.TestCase):
                     self.apply_account_management_schema()
                     if self.post_drafts_schema:
                         self.apply_post_drafts_schema()
+        # 게시물 쓰기는 알림도 같은 트랜잭션으로 저장하므로 배포와 같은 테이블을 준비해요.
+        notification_sql = Path(__file__).resolve().parents[1] / 'one_touch_loader/sql/create_notifications.sql'
+        for statement in notification_sql.read_text(encoding='utf-8').split(';'):
+            if statement.strip():
+                self.execute(statement)
         self.execute("INSERT INTO teams (team_id,name) VALUES (6,'A'),(14,'B'),(503,'C'),(591,'D')")
         self.execute("INSERT INTO players VALUES (832,'Player A',NULL),(268,'Player B',NULL)")
         self.execute("INSERT INTO competitions VALUES (8,'league'),(82,'league'),(301,'league')")

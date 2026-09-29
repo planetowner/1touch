@@ -8,6 +8,7 @@ from ..core.db import fetch_all, transaction
 from ..core.player_membership import season_start_date as _season_start_date
 from ..core.fixture_states import COMPLETED_STATE_IDS
 from ..core.sportmonks import SportmonksClient
+from ..core.identity import SPORTMONKS_DUPLICATE_PLAYER_IDS
 
 
 BIG5_COMPETITION_IDS = (8, 82, 301, 384, 564)
@@ -23,7 +24,6 @@ SPORTMONKS_POSITION_GROUP_IDS = {24, 25, 26, 27}
 # Sportmonks 73643은 2018/2019 Bordeaux 스쿼드에서 Toma Bašić(74062)와
 # 중복되고 Josip Bašić의 생년월일이 섞여 있어요. Capology도 74062와 일치하므로
 # 잘못된 프로필을 ID만 바꿔 저장하지 않고 73643 행을 제외해요.
-SPORTMONKS_DUPLICATE_PLAYER_IDS = {73643: 74062}
 SQL_SELECT_TEAM = """
 SELECT team_id
 FROM teams

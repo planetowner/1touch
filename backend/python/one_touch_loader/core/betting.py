@@ -1,5 +1,6 @@
 """승무패 모델의 확률을 포인트 배당으로 바꾸는 공통 규칙이에요."""
 from decimal import Decimal
+from datetime import timedelta
 
 from .probability import OUTCOMES, WDLModel
 from .fixture_states import COMPLETED_STATE_IDS
@@ -12,6 +13,11 @@ REFUND_STATE_IDS = (10, 12, 14, 15, 17, 20)
 OPEN_STATE_IDS = (1, 16)
 SETTLEMENT_STATE_IDS = (*COMPLETED_STATE_IDS, *REFUND_STATE_IDS)
 SETTLEMENT_RULE = 'single_match_final_v1'
+
+
+def betting_opens_at(fixture):
+    # 화면·참여 API·알림이 같은 24시간 개방 기준을 사용해요.
+    return fixture['starting_at'] - timedelta(hours=24) if fixture['starting_at'] is not None else None
 
 
 def total_return(stake: int, probability: Decimal) -> int:

@@ -11,7 +11,7 @@ from fastapi import HTTPException
 from ..db import fetch_all_dict, fetch_one_dict, transaction
 from ..services.community_periods import utc_now
 from .users_repo import lock_user
-from ...core.betting import (OPEN_STATE_IDS, SETTLEMENT_RULE, WELCOME_POINTS, prediction_options,
+from ...core.betting import (OPEN_STATE_IDS, SETTLEMENT_RULE, WELCOME_POINTS, betting_opens_at, prediction_options,
                              settlement, total_return)
 from ...core.cup_betting import CUP_COMPETITION_IDS, fixture_context
 from ...core.fixture_states import COMPLETED_STATE_IDS
@@ -141,17 +141,24 @@ def get_market(user_id, fixture_id):
         counts[row['outcome']] = int(row['participants'])
     total = sum(counts.values())
     open_now = _before_start(fixture, now)
-    reason = ('unsupported_competition' if not _supported(fixture) else
-              'kickoff_unconfirmed' if fixture['starting_at'] is None else
-              'betting_closed' if not open_now else 'prediction_unavailable' if prediction is None else None)
+    reason = market_unavailable_reason(fixture, now, prediction)
     return {'fixture_id': fixture_id, 'settlement_rule': SETTLEMENT_RULE, 'available': prediction is not None,
             'can_bet': reason is None and (bet is None or bet['status'] in ('open', 'cancelled', 'refunded')),
             'can_cancel': open_now and bet is not None and bet['status'] == 'open',
-            'unavailable_reason': reason, 'closes_at': _stamp(fixture['starting_at']),
+            'unavailable_reason': reason, 'opens_at': _stamp(betting_opens_at(fixture)),
+            'closes_at': _stamp(fixture['starting_at']),
             **(prediction or {'prediction_run_id': None, 'prediction_as_of': None, 'options': []}),
             'wallet': get_wallet(user_id), 'bet': _bet(bet),
             'participation': {'total': total, 'counts': counts,
                               'probabilities': {k: v / total for k, v in counts.items()} if total else None}}
+
+
+def market_unavailable_reason(fixture, now, prediction):
+    return ('unsupported_competition' if not _supported(fixture) else
+            'kickoff_unconfirmed' if fixture['starting_at'] is None else
+            'betting_closed' if not _before_start(fixture, now) else
+            'betting_not_open' if now < betting_opens_at(fixture) else
+            'prediction_unavailable' if prediction is None else None)
 
 
 def _read_one(cur, sql, params=()):
@@ -181,6 +188,8 @@ def mutate_bet(user_id, fixture_id, body, *, cancel=False):
         now = utc_now()
         if not _before_start(fixture, now):
             raise HTTPException(409, {'code': 'betting_closed', 'message': 'Betting is closed'})
+        if not cancel and now < betting_opens_at(fixture):
+            raise HTTPException(409, {'code': 'betting_not_open', 'message': 'Betting opens 24 hours before kickoff'})
         if body['expected_revision'] != (bet['revision'] if bet else 0):
             raise HTTPException(409, {'code': 'bet_changed', 'message': 'Reload your current bet'})
         if bet and bet['status'] in ('won', 'lost'):
