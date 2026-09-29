@@ -87,7 +87,7 @@ else
 fi
 
 # 기존 compose.yaml과 .env를 유지해 같은 DB 볼륨과 암호를 계속 사용해요.
-for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-match-refresh.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh sync-current-season.sh; do
+for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-match-refresh.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh sync-current-season.sh sync-calendars.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
 # 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
@@ -142,6 +142,9 @@ install -m 644 "$release_directory/deploy/vultr/onetouch-betting-sync.timer" /et
 # 뉴스 테이블과 첫 수집이 준비된 뒤 예약 실행을 켜요. 이후 배포에서도 실행 파일을 갱신해요.
 install -m 644 "$release_directory/deploy/vultr/onetouch-news-sync.service" /etc/systemd/system/onetouch-news-sync.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-news-sync.timer" /etc/systemd/system/onetouch-news-sync.timer
+# Google 인증 설정과 캘린더 테이블을 준비한 뒤 타이머를 켜요. 이후 배포는 실행 파일을 갱신해요.
+install -m 644 "$release_directory/deploy/vultr/onetouch-calendar-sync.service" /etc/systemd/system/onetouch-calendar-sync.service
+install -m 644 "$release_directory/deploy/vultr/onetouch-calendar-sync.timer" /etc/systemd/system/onetouch-calendar-sync.timer
 systemctl daemon-reload
 systemctl enable --now onetouch-db-backup.timer
 systemctl enable --now onetouch-community-cleanup.timer
