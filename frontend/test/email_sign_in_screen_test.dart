@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/Onboarding.dart';
 import 'package:onetouch/SignComps/SignIn.dart';
+import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
@@ -21,6 +22,15 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Continue with email'), findsNothing);
     expect(find.byKey(const ValueKey('sign-in-username')), findsOneWidget);
+    final passwordField = find.ancestor(
+      of: find.byKey(const ValueKey('sign-in-password')),
+      matching: find.byType(AuthInput),
+    );
+    expect(
+      tester.getTopLeft(passwordField).dy -
+          tester.getBottomLeft(find.byKey(const ValueKey('sign-in-username'))).dy,
+      16,
+    );
     expect(find.text('Remember me'), findsNothing);
     expect(find.text('Forgot password?'), findsOneWidget);
     await tester

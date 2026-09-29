@@ -27,6 +27,7 @@ class _AttributesSectionState extends State<AttributesSection> {
   bool _isComparisonLoading = false;
   bool _comparisonFailed = false;
   int? _selectedComparisonSeasonId;
+  int? _selectedComparisonTeamId;
   int _requestId = 0;
   int _comparisonRequestId = 0;
 
@@ -80,6 +81,7 @@ class _AttributesSectionState extends State<AttributesSection> {
         _comparisonScores = null;
         _comparisonOptions = const [];
         _selectedComparisonSeasonId = null;
+        _selectedComparisonTeamId = null;
         _isComparisonLoading = false;
         _comparisonFailed = false;
         _isLoading = false;
@@ -87,14 +89,12 @@ class _AttributesSectionState extends State<AttributesSection> {
     }
   }
 
-  Future<void> _loadComparison(int seasonId) async {
+  Future<void> _loadComparison(int teamId, int seasonId) async {
     final requestId = ++_comparisonRequestId;
-    final teamId = _teamId;
-
-    if (teamId == null) return;
 
     setState(() {
       _selectedComparisonSeasonId = seasonId;
+      _selectedComparisonTeamId = teamId;
       _comparisonScores = null;
       _isComparisonLoading = true;
       _comparisonFailed = false;
@@ -107,7 +107,7 @@ class _AttributesSectionState extends State<AttributesSection> {
       );
       if (!mounted ||
           requestId != _comparisonRequestId ||
-          teamId != _teamId ||
+          teamId != _selectedComparisonTeamId ||
           seasonId != _selectedComparisonSeasonId) {
         return;
       }
@@ -129,7 +129,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     } on Object {
       if (!mounted ||
           requestId != _comparisonRequestId ||
-          teamId != _teamId ||
+          teamId != _selectedComparisonTeamId ||
           seasonId != _selectedComparisonSeasonId) {
         return;
       }
@@ -147,6 +147,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     _comparisonScores = null;
     _comparisonOptions = const [];
     _selectedComparisonSeasonId = null;
+    _selectedComparisonTeamId = null;
     _isLoading = true;
     _isComparisonLoading = false;
     _comparisonFailed = false;
@@ -160,6 +161,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     _comparisonScores = null;
     _comparisonOptions = const [];
     _selectedComparisonSeasonId = null;
+    _selectedComparisonTeamId = null;
     _isComparisonLoading = false;
     _comparisonFailed = false;
     _comparisonRequestId++;
@@ -283,7 +285,51 @@ class _AttributesSectionState extends State<AttributesSection> {
     );
   }
 
-  //   Comparison picker pill (season-only for now)
+  Future<void> _openComparisonFilter() async {
+    final ownTeamId = _teamId;
+    if (ownTeamId == null) return;
+    final options = <_AnalysisFilterOption<({int teamId, int seasonId})>>[
+      for (final season in _comparisonOptions)
+        if (!teamRepository.allTeams.any((team) => team.teamId == ownTeamId))
+          _AnalysisFilterOption(
+            value: (teamId: ownTeamId, seasonId: season.seasonId),
+            seasonId: season.seasonId,
+            seasonName: season.seasonName,
+            teamId: ownTeamId,
+            teamName: teamNameLabel(
+                context, ownTeamId, widget.team?['name'] as String? ?? ''),
+          ),
+      for (final season in _comparisonOptions)
+        for (final team in teamRepository.allTeams)
+          _AnalysisFilterOption(
+            value: (teamId: team.teamId, seasonId: season.seasonId),
+            seasonId: season.seasonId,
+            seasonName: season.seasonName,
+            teamId: team.teamId,
+            teamName: teamNameLabel(context, team.teamId, team.name),
+          ),
+    ];
+    final selected = await showModalBottomSheet<({int teamId, int seasonId})>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) =>
+          _AnalysisComparisonFilterSheet<({int teamId, int seasonId})>(
+        options: options,
+        initialValue: _selectedComparisonSeasonId == null
+            ? (teamId: ownTeamId, seasonId: _comparisonOptions.first.seasonId)
+            : (
+                teamId: _selectedComparisonTeamId ?? ownTeamId,
+                seasonId: _selectedComparisonSeasonId!
+              ),
+        optionKey: (value) =>
+            'analysis-attributes-option-${value.teamId}-${value.seasonId}',
+      ),
+    );
+    if (mounted && selected != null) {
+      unawaited(_loadComparison(selected.teamId, selected.seasonId));
+    }
+  }
 
   Widget _buildComparisonPill() {
     final colors = Theme.of(context).colorScheme;
@@ -300,29 +346,27 @@ class _AttributesSectionState extends State<AttributesSection> {
         ? tr(context, 'SEASON')
         : compactSeasonLabel(selectedSeason.seasonName);
 
-    return AppDropdown<int>(
+    return InkWell(
       key: const ValueKey('analysis-attributes-filter'),
-      value: _selectedComparisonSeasonId,
-      selectedLabel: tr(context, label),
-      minWidth: 86,
-      matchMenuWidth: true,
-      backgroundColor: AppColors.of(context).subtleBackground,
-      foregroundColor: colors.onSurface,
-      textStyle: Body2_b.style,
-      onChanged: (seasonId) {
-        unawaited(_loadComparison(seasonId));
-      },
-      options: _comparisonOptions
-          .map(
-            (season) => AppDropdownOption<int>(
-              value: season.seasonId,
-              label: compactSeasonLabel(season.seasonName),
-              optionKey: ValueKey(
-                'analysis-attributes-option-${season.seasonId}',
-              ),
-            ),
-          )
-          .toList(),
+      onTap: _openComparisonFilter,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 86),
+        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+        decoration: BoxDecoration(
+          color: AppColors.of(context).subtleBackground,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(tr(context, label),
+                style: Body2_b.style.copyWith(color: colors.onSurface)),
+            const SizedBox(width: 8),
+            Icon(Icons.keyboard_arrow_down, color: colors.onSurface, size: 20),
+          ],
+        ),
+      ),
     );
   }
 

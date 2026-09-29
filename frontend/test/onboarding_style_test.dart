@@ -64,6 +64,14 @@ void main() {
       expect(tester.getRect(find.byKey(ValueKey(entry.key))), entry.value,
           reason: entry.key);
     }
+    for (final pair in [
+      ('kakao-sign-in-button', 'google-sign-in-button'),
+      ('google-sign-in-button', 'apple-sign-in-button'),
+    ]) {
+      final previous = tester.getRect(find.byKey(ValueKey(pair.$1)));
+      final next = tester.getRect(find.byKey(ValueKey(pair.$2)));
+      expect(next.top - previous.bottom, 16, reason: '${pair.$1} to ${pair.$2}');
+    }
     expect(
         tester
             .getTopLeft(find.byKey(const ValueKey('forgot-password-link')))

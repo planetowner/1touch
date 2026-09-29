@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/comm_pages/NotificationInbox.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
@@ -46,13 +47,13 @@ void main() {
     expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
     expect(backIcon.color, app_style.AppPalette.black);
     expect(searchIcon.color, app_style.AppPalette.black);
-    expect(title.style, Body1.style);
-    expect(filterColor(tester, 'all'), app_style.AppPalette.black);
-    expect(filterColor(tester, 'team'), app_style.AppPalette.white);
+    expect(title.style, Body1.style.copyWith(color: app_style.AppPalette.black));
+    expect(filterColor(tester, 'all'), app_style.AppPalette.white);
+    expect(filterColor(tester, 'team'), app_style.AppPalette.lightGreyBox);
 
     await tester.tap(find.text('TEAM'));
     await tester.pumpAndSettle();
-    expect(filterColor(tester, 'team'), app_style.AppPalette.black);
+    expect(filterColor(tester, 'team'), app_style.AppPalette.white);
     expect(find.text('FC Barcelona'), findsOneWidget);
     expect(find.text('Bayern Munich'), findsOneWidget);
     expect(find.text('Reaction'), findsNothing);
@@ -70,9 +71,39 @@ void main() {
     final scaffold = tester.widget<Scaffold>(
       find.byKey(const ValueKey('notification-inbox-scaffold')),
     );
-    expect(scaffold.backgroundColor, Colors.black);
+    expect(scaffold.backgroundColor, app_style.AppPalette.black);
     expect(filterColor(tester, 'all'), app_style.AppPalette.white);
     expect(filterColor(tester, 'team'), app_style.AppPalette.lightGrey);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('notification rows open their sample detail routes',
+      (tester) async {
+    final router = GoRouter(
+      initialLocation: '/notifications',
+      routes: [
+        GoRoute(
+          path: '/notifications',
+          builder: (_, __) => const NotificationInboxPage(),
+        ),
+        GoRoute(
+          path: '/notifications/post/:postId',
+          builder: (_, state) => Scaffold(
+            body: Text('post ${state.pathParameters['postId']}'),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(
+      theme: app_style.darktheme,
+      routerConfig: router,
+    ));
+
+    await tester.tap(find.text('Reaction').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('post 1'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
