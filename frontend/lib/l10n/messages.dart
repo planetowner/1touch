@@ -259,7 +259,7 @@ const appMessages = <String, MessageTranslations>{
   "Home": (ko: "홈", ja: "ホーム", zh: "首页"),
   "Players": (ko: "선수", ja: "選手", zh: "球员"),
   "Community": (ko: "커뮤니티", ja: "コミュニティ", zh: "社区"),
-  "MY TEAM": (ko: "내 팀", ja: "マイチーム", zh: "我的球队"),
+  "MY TEAM": (ko: "현재 팀", ja: "マイチーム", zh: "我的球队"),
   "PLAYER": (ko: "선수", ja: "選手", zh: "球员"),
   "PLAYERS": (ko: "선수", ja: "選手", zh: "球员"),
   "TEAM": (ko: "팀", ja: "チーム", zh: "球队"),
@@ -905,7 +905,6 @@ const appMessages = <String, MessageTranslations>{
   "Rating": (ko: "평점", ja: "評価", zh: "评分"),
   "Form": (ko: "최근 경기력", ja: "調子", zh: "状态"),
   "PERFORMANCE": (ko: "경기력", ja: "パフォーマンス", zh: "表现"),
-  "CURRENT": (ko: "현재", ja: "現在", zh: "当前"),
   "INFLUENCE": (ko: "영향력", ja: "影響力", zh: "影响力"),
   "Cost-Effectiveness": (ko: "급여 대비 효율", ja: "給与対効果", zh: "薪资性价比"),
   "An indicator is shown when enough data is available.": (

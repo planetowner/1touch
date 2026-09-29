@@ -113,7 +113,7 @@ void main() {
       findsOneWidget,
     );
     final legend = find.byKey(const ValueKey('analysis-current-form-legend'));
-    expect(find.descendant(of: legend, matching: find.text('CURRENT')),
+    expect(find.descendant(of: legend, matching: find.text('MY TEAM')),
         findsOneWidget);
     expect(find.descendant(of: legend, matching: find.textContaining('PREV')),
         findsNothing);
@@ -329,6 +329,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('analysis-current-form-legend')),
+        matching: find.text('현재 팀'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('승점'), findsOneWidget);
     final pointsLabel = tester.widget<Text>(find.text('승점'));
     expect(pointsLabel.style, Body2_b.style);
