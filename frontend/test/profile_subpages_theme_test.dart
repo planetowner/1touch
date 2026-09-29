@@ -7,6 +7,7 @@ import 'package:onetouch/comm_pages/Profile_settings/Contact.dart';
 import 'package:onetouch/comm_pages/Profile_settings/InfoEdit.dart';
 import 'package:onetouch/comm_pages/Profile_settings/Notification.dart';
 import 'package:onetouch/features/player/player_directory_sheets.dart';
+import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/comm_pages/Profile_settings/Preference.dart';
 import 'package:onetouch/comm_pages/Profile_settings/PreferenceDetails.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
@@ -95,6 +96,25 @@ void main() {
     await tester.pump();
 
     expect(tester.widget<Text>(find.text('Notifications')).style, Body1.style);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('notifications hides following players when none are followed',
+      (tester) async {
+    final previousPlayers = playerFollowingController.players;
+    playerFollowingController.players = [];
+    addTearDown(() => playerFollowingController.players = previousPlayers);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: const NotificationListPage(),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('FOLLOWING PLAYERS'), findsNothing);
+    expect(find.text('POSTS'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -216,7 +236,7 @@ void main() {
     (name: 'dark', theme: app_style.darktheme),
   ]) {
     testWidgets(
-        'notification switches use the approved off state in ${testCase.name} mode',
+        'notification switches use native adaptive styling in ${testCase.name} mode',
         (tester) async {
       tester.view.physicalSize = const Size(320, 568);
       tester.view.devicePixelRatio = 1;
@@ -225,7 +245,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          theme: testCase.theme,
+          theme: testCase.theme.copyWith(platform: TargetPlatform.iOS),
           home: const TeamNotificationDetailPage(teamName: 'FC Barcelona'),
         ),
       );
@@ -236,8 +256,8 @@ void main() {
           .where((toggle) => !toggle.value);
       expect(offSwitches, isNotEmpty);
       for (final toggle in offSwitches) {
-        expect(toggle.inactiveThumbColor, app_style.AppPalette.white);
-        expect(toggle.inactiveTrackColor, app_style.AppPalette.lightGrey);
+        expect(toggle.inactiveThumbColor, isNull);
+        expect(toggle.inactiveTrackColor, isNull);
       }
       expect(tester.takeException(), isNull);
     });
