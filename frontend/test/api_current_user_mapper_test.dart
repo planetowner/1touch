@@ -12,6 +12,7 @@ void main() {
 
       expect(profile.userId, 1);
       expect(profile.username, 'planetowner');
+      expect(profile.displayName, 'Planet Owner');
       expect(profile.firstName, 'Planet');
       expect(profile.lastName, 'Owner');
       expect(profile.email, 'owner@example.com');
@@ -40,6 +41,16 @@ void main() {
         apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
       );
       expect(profileWithoutAvatar.avatarUri, isNull);
+    });
+
+    test('keeps an existing member without a nickname available for editing',
+        () {
+      final profile = currentUserProfileFromApiResponse(
+        _response(displayName: null),
+        apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
+      );
+      expect(profile.displayName, isNull);
+      expect(profile.profileHeading, '@planetowner');
     });
 
     test('rejects a user who has not completed onboarding', () {
@@ -91,6 +102,7 @@ void main() {
 ApiCurrentUserResponse _response({
   bool onboardingComplete = true,
   String? username = 'planetowner',
+  String? displayName = 'Planet Owner',
   String? firstName = 'Planet',
   String? lastName = 'Owner',
   String? email = 'owner@example.com',
@@ -101,6 +113,7 @@ ApiCurrentUserResponse _response({
   return ApiCurrentUserResponse(
     userId: 1,
     username: username,
+    displayName: displayName,
     firstName: firstName,
     lastName: lastName,
     email: email,

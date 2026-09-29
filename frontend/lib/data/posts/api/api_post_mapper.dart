@@ -52,6 +52,7 @@ Post postFromApiResponse(ApiPostResponse response, {required Uri apiBaseUri}) {
     createdAt: response.createdAt,
     editedAt: response.editedAt,
     username: response.username,
+    displayName: response.displayName,
     avatarUrl: _resolveOptionalUri(apiBaseUri, response.avatarUrl),
     authorDeleted: response.authorDeleted,
     likeCount: response.likeCount,

@@ -119,6 +119,7 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
     required String code,
     required String password,
     required String username,
+    required String displayName,
     required String firstName,
     required String lastName,
   }) async {
@@ -133,6 +134,7 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
         'code': code,
         'password': password,
         'username': username,
+        'display_name': displayName,
         'first_name': firstName,
         'last_name': lastName,
       }),

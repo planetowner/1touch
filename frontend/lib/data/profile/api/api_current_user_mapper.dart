@@ -19,6 +19,7 @@ CurrentUserProfile currentUserProfileFromApiResponse(
   return CurrentUserProfile(
     userId: response.userId,
     username: _requiredCompletedField(response.username, 'username'),
+    displayName: response.displayName,
     firstName: _requiredCompletedField(response.firstName, 'first_name'),
     lastName: _requiredCompletedField(response.lastName, 'last_name'),
     email: response.email,

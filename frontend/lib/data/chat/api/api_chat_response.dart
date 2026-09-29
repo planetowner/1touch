@@ -29,6 +29,7 @@ class ApiChatMessageResponse {
     required this.fixtureId,
     required this.userId,
     required this.username,
+    this.displayName,
     required this.text,
     required this.createdAt,
     required this.avatarUrl,
@@ -39,6 +40,7 @@ class ApiChatMessageResponse {
   final int fixtureId;
   final int? userId;
   final String? username;
+  final String? displayName;
   final String text;
   final String createdAt;
   final String? avatarUrl;
@@ -50,6 +52,7 @@ class ApiChatMessageResponse {
       fixtureId: _requiredInt(json, 'fixture_id'),
       userId: _nullableInt(json, 'user_id'),
       username: _nullableString(json, 'username'),
+      displayName: json['display_name'] as String?,
       text: _requiredString(json, 'text'),
       createdAt: _requiredString(json, 'created_at'),
       avatarUrl: _nullableString(json, 'avatar_url'),

@@ -111,6 +111,7 @@ void main() {
       code: '123456',
       password: 'Password123',
       username: 'member',
+      displayName: 'Member',
       firstName: 'First',
       lastName: 'Last',
     );
@@ -245,6 +246,7 @@ class _FakeAuthRepository implements AuthRepository, LogoutAuthRepository {
     required String code,
     required String password,
     required String username,
+    required String displayName,
     required String firstName,
     required String lastName,
   }) =>

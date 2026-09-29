@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/identity_name_rules.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart';
+import 'package:onetouch/data/profile/api/api_current_user_repository.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/user_name_labels.dart';
 
@@ -7,11 +9,12 @@ class ProfileFields extends StatefulWidget {
   const ProfileFields(
       {super.key,
       this.username,
+      this.displayName,
       this.firstName,
       this.lastName,
       this.showNameFields = true,
       required this.onSaved});
-  final String? username, firstName, lastName;
+  final String? username, displayName, firstName, lastName;
   final VoidCallback onSaved;
   final bool showNameFields;
 
@@ -22,6 +25,7 @@ class ProfileFields extends StatefulWidget {
 class _ProfileFieldsState extends State<ProfileFields> {
   final _form = GlobalKey<FormState>();
   late final _username = TextEditingController(text: widget.username);
+  late final _displayName = TextEditingController(text: widget.displayName);
   late final _firstName = TextEditingController(text: widget.firstName);
   late final _lastName = TextEditingController(text: widget.lastName);
   bool _saving = false;
@@ -35,10 +39,16 @@ class _ProfileFieldsState extends State<ProfileFields> {
     });
     try {
       await currentUserRepository.updateProfile(
-          username: _username.text.trim(),
+          username: _username.text,
+          displayName: _displayName.text,
           firstName: _firstName.text.trim(),
           lastName: _lastName.text.trim());
       if (mounted) widget.onSaved();
+    } on ProfileNameConflictException {
+      if (mounted) {
+        setState(() =>
+            _error = tr(context, 'Username or nickname is already in use'));
+      }
     } catch (_) {
       if (mounted)
         setState(() => _error = tr(context,
@@ -51,6 +61,7 @@ class _ProfileFieldsState extends State<ProfileFields> {
   @override
   void dispose() {
     _username.dispose();
+    _displayName.dispose();
     _firstName.dispose();
     _lastName.dispose();
     super.dispose();
@@ -67,7 +78,8 @@ class _ProfileFieldsState extends State<ProfileFields> {
               firstName: (_firstName, 'First name', 100),
               lastName: (_lastName, 'Last name', 100),
             ),
-          (_username, 'Username', 50)
+          (_username, 'Username', 30),
+          (_displayName, 'Nickname', 12)
         ])
           Padding(
               padding: const EdgeInsets.only(bottom: 24),
@@ -79,9 +91,20 @@ class _ProfileFieldsState extends State<ProfileFields> {
                 maxLength: field.$3,
                 decoration: InputDecoration(
                     labelText: tr(context, field.$2), counterText: ''),
-                validator: (value) => value == null || value.trim().isEmpty
-                    ? tr(context, 'Enter ${field.$2.toLowerCase()}')
-                    : null,
+                validator: (value) {
+                  final text = value ?? '';
+                  final message = switch (field.$2) {
+                    // 이전 규칙으로 만든 아이디는 다른 정보를 저장할 때 그대로 둘 수 있어요.
+                    'Username' => text == widget.username
+                        ? null
+                        : usernameValidationMessage(text),
+                    'Nickname' => displayNameValidationMessage(text),
+                    _ => text.trim().isEmpty
+                        ? 'Enter ${field.$2.toLowerCase()}'
+                        : null,
+                  };
+                  return message == null ? null : tr(context, message);
+                },
               )),
         if (_error != null) Text(_error!),
         FilledButton(

@@ -30,7 +30,7 @@ def history(user_id: int, fixture_id: int, before_id: int | None, after_id: int 
         condition = "AND m.message_id>%s"
         params.append(after_id)
     order = "ASC" if after_id is not None else "DESC"
-    rows = fetch_all_dict(f"""SELECT m.message_id,m.fixture_id,m.user_id,u.username,m.body AS text,m.created_at,
+    rows = fetch_all_dict(f"""SELECT m.message_id,m.fixture_id,m.user_id,u.username,u.display_name,m.body AS text,m.created_at,
         EXISTS(SELECT 1 FROM user_avatars a WHERE a.user_id=m.user_id) AS has_avatar
         FROM fixture_chat_messages m LEFT JOIN users u ON u.user_id=m.user_id
         WHERE m.fixture_id=%s AND m.state='active' AND NOT {blocked_sql('m.user_id')}
@@ -48,7 +48,7 @@ def create_message(user_id: int, fixture_id: int, text: str) -> dict:
         cur.execute("INSERT INTO fixture_chat_messages (fixture_id,user_id,body,created_at) VALUES (%s,%s,%s,%s)",
                     (fixture_id, user_id, text, now))
         result = {"message_id": cur.lastrowid, "fixture_id": fixture_id, "user_id": user_id,
-                  "username": user["username"], "text": text, "created_at": now}
+                  "username": user["username"], "display_name": user["display_name"], "text": text, "created_at": now}
         cur.execute("SELECT 1 FROM user_avatars WHERE user_id=%s", (user_id,))
         result["has_avatar"] = cur.fetchone() is not None
     # DB 저장에 실패한 메시지를 실시간으로 먼저 전달하지 않아요.
