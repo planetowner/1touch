@@ -3,20 +3,25 @@
 .packages
 .pub/
 build/
-.flutter-plugins
-.flutter-plugins-dependencies
+# 자동 생성 파일에 숫자가 붙은 복사본도 제외해요.
+.flutter-plugins*
 .melos_tool/
 
 # Android
 android/.gradle/
+android/.kotlin/
 android/app/build/
 **/local.properties
+# 압축한 로컬 백업에는 제외된 설정과 캐시도 들어 있어요.
+/android.zip
 
 # iOS
 ios/Pods/
 ios/.symlinks/
-ios/Flutter/Flutter.podspec
-ios/Flutter/Generated.xcconfig
+# 자동 생성된 iOS 설정과 복사본에는 개인 PC 경로가 들어 있어요.
+ios/Flutter/Flutter*.podspec
+ios/Flutter/Generated*.xcconfig
+ios/Flutter/flutter_export_environment*.sh
 ios/Flutter/ephemeral/
 Runner.xcodeproj/project.xcworkspace/
 **/*.xcuserstate
@@ -33,5 +38,9 @@ macos/Flutter/ephemeral/
 # IDE / OS
 .vscode/
 .idea/
+*.iml
 .DS_Store
 Thumbs.db
+
+# 오류 로그는 PC에 보관해요.
+*.log
