@@ -259,9 +259,9 @@ void main() {
       expect(textRect.width, greaterThan(headerRect.width));
     }
 
-    final club = tester.widget<Text>(find.text('클럽'));
-    final clubHeaderTop = tester.getTopLeft(find.text('클럽')).dy;
-    final clubPaintedRect = paintedRectOf('클럽');
+    final club = tester.widget<Text>(find.text('팀'));
+    final clubHeaderTop = tester.getTopLeft(find.text('팀')).dy;
+    final clubPaintedRect = paintedRectOf('팀');
     for (final label in ['승점', '경기', '승', '무', '패', '득점', '실점', '득실']) {
       expect(tester.widget<Text>(find.text(label)).style?.fontSize,
           club.style?.fontSize);
