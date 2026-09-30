@@ -26,19 +26,59 @@ class AppInfoButton extends StatelessWidget {
           barrierColor: Colors.black26,
           builder: (dialogContext) => Dialog(
             key: const ValueKey('app-info-popup'),
-            backgroundColor: AppColors.of(dialogContext).cardBackground,
+            backgroundColor:
+                Theme.of(dialogContext).brightness == Brightness.dark
+                    ? AppPalette.lightGrey
+                    : AppPalette.lightModeDarkGrey,
+            insetPadding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 340),
+              constraints: const BoxConstraints(maxWidth: 345),
               child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text(
-                  tr(dialogContext, message),
-                  style: Body2.style.copyWith(
-                    color: Theme.of(dialogContext).colorScheme.onSurface,
-                  ),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      tr(dialogContext, message),
+                      style: Body1.style.copyWith(
+                        color: Theme.of(dialogContext).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        key: const ValueKey('app-info-understand'),
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        style: FilledButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(dialogContext).colorScheme.onSurface,
+                          foregroundColor: Theme.of(dialogContext).brightness ==
+                                  Brightness.dark
+                              ? AppPalette.black
+                              : AppPalette.white,
+                          padding: const EdgeInsets.all(16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          tr(dialogContext, 'I understand'),
+                          style: Body2_b.style.copyWith(
+                            color: Theme.of(dialogContext).brightness ==
+                                    Brightness.dark
+                                ? AppPalette.black
+                                : AppPalette.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
