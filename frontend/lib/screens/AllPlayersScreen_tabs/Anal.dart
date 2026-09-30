@@ -345,7 +345,7 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                     builder: (context, constraints) {
                       final viewportSize = constraints.biggest;
                       final chartSize = Size(
-                        viewportSize.width * 2,
+                        roundWindow.contentWidth(viewportSize.width),
                         viewportSize.height,
                       );
                       final axisLabel = tr(context, 'PERFORMANCE');
@@ -388,6 +388,7 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                           ),
                           RoundChartViewport(
                             key: const ValueKey('player-performance-viewport'),
+                            roundWindow: roundWindow,
                             viewportSize: viewportSize,
                             builder: (context, _) => GestureDetector(
                               key: const ValueKey('player-performance-chart'),

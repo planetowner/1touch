@@ -429,7 +429,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                   constraints.maxHeight,
                 );
                 final chartSize = Size(
-                  viewportSize.width * 2,
+                  roundWindow.contentWidth(viewportSize.width),
                   viewportSize.height,
                 );
                 final pointsAxisLabel = tr(context, 'POINTS');
@@ -522,6 +522,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                     ),
                     RoundChartViewport(
                       key: const ValueKey('analysis-current-form-viewport'),
+                      roundWindow: roundWindow,
                       viewportSize: viewportSize,
                       builder: (context, _) => GestureDetector(
                         key: const ValueKey('analysis-current-form-chart'),

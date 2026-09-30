@@ -819,7 +819,7 @@ void main() {
     );
     expect(tester.getSize(card).height, 346);
     expect(lineChart.data.minX, 1);
-    expect(lineChart.data.maxX, 13);
+    expect(lineChart.data.maxX, 7);
     expect(lineChart.data.minY, 6);
     expect(lineChart.data.maxY, 9.5);
     expect(lineChart.data.lineBarsData.single.dotData.show, isFalse);
@@ -852,12 +852,12 @@ void main() {
       find.byKey(const ValueKey('player-performance-tooltip')),
       findsOneWidget,
     );
-    expect(find.text('Round 7'), findsOneWidget);
-    expect(find.text('Rating 6.94'), findsOneWidget);
+    expect(find.text('Round 4'), findsOneWidget);
+    expect(find.text('Rating 6.87'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('performance uses the latest 13 rounds with seven centered',
+  testWidgets('performance uses the latest 13 rounds with seven visible',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
@@ -879,10 +879,37 @@ void main() {
           of: viewport, matching: find.byType(SingleChildScrollView)),
     );
     expect(scroll.controller!.offset,
-        closeTo(tester.getSize(viewport).width / 2, 0.1));
+        closeTo(tester.getSize(viewport).width, 0.1));
     await tester.tapAt(tester.getCenter(viewport));
     await tester.pump();
-    expect(find.text('Round 14'), findsOneWidget);
+    expect(find.text('Round 17'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('performance shows all four completed rounds before round eight',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: PlayerPerformanceChart(
+          points: [
+            for (var round = 1; round <= 4; round++)
+              (fixtureId: round, round: round, rating: 6.0 + round / 10),
+          ],
+        ),
+      ),
+    ));
+
+    final chart = tester.widget<LineChart>(find.byType(LineChart));
+    expect((chart.data.minX, chart.data.maxX), (1, 7));
+    expect(chart.data.lineBarsData.single.spots.map((spot) => spot.x),
+        [1, 2, 3, 4]);
+    final viewport = find.byKey(const ValueKey('player-performance-viewport'));
+    final scroll = tester.widget<SingleChildScrollView>(
+      find.descendant(
+        of: viewport,
+        matching: find.byType(SingleChildScrollView),
+      ),
+    );
+    expect(scroll.controller!.offset, 0);
     expect(tester.takeException(), isNull);
   });
   testWidgets('failed detail has retry without mock competitions',

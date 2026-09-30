@@ -98,12 +98,14 @@ void main() {
     expect(historyCard.right - historyGrid.right, 16);
     expect(historyViewport.left - historyGrid.left, 32);
     expect(historyViewport.right, historyGrid.right);
-    expect(historyLineChart.width, historyViewport.width * 2);
+    expect(historyLineChart.width, historyViewport.width);
     final historyData = tester
         .widget<LineChart>(
           find.byKey(const ValueKey('probability-history-line-chart')),
         )
         .data;
+    expect((historyData.minX, historyData.maxX), (1, 7));
+    expect(historyData.lineBarsData.single.spots.map((spot) => spot.x), [4, 5]);
     expect((historyData.minY, historyData.maxY), (20, 40));
     final historyCardFinder =
         find.byKey(const ValueKey('probability-history-card'));
@@ -230,8 +232,8 @@ void main() {
     );
     await tester.pump();
     expect(find.byType(ListView), findsOneWidget);
-    expect(find.byKey(const ValueKey('probability-history-card')),
-        findsOneWidget);
+    expect(
+        find.byKey(const ValueKey('probability-history-card')), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.byKey(const ValueKey('probability-history-card')),
