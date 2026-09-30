@@ -46,14 +46,12 @@ def avatar(author_id: int, user_id: int = Depends(get_user_id)):
         viewer = get_user(user_id)
         require_profile(viewer)
         require_visible_author(user_id, author_id)
-        # 현재 팀이 달라도 같은 커뮤니티·경기에서 보이는 작성자의 사진은 읽을 수 있어요.
+        # 익명 경기 채팅만 함께 이용한 사람에게는 계정 사진을 공개하지 않아요.
         visible = fetch_one_dict("""SELECT 1 WHERE
             EXISTS(SELECT 1 FROM posts WHERE user_id=%s AND team_id=%s AND state='active') OR
             EXISTS(SELECT 1 FROM post_comments c JOIN posts p ON p.post_id=c.post_id
-                WHERE c.user_id=%s AND p.team_id=%s AND c.state='active' AND p.state='active') OR
-            EXISTS(SELECT 1 FROM fixture_chat_messages m JOIN fixtures f ON f.fixture_id=m.fixture_id
-                WHERE m.user_id=%s AND %s IN (f.home_team_id,f.away_team_id) AND m.state='active')""",
-                                 (author_id, viewer["favorite_team_id"]) * 3)
+                WHERE c.user_id=%s AND p.team_id=%s AND c.state='active' AND p.state='active')""",
+                                 (author_id, viewer["favorite_team_id"]) * 2)
         if not visible:
             raise HTTPException(404, "Profile photo not found")
     item = fetch_one_dict("SELECT * FROM user_avatars WHERE user_id=%s", (author_id,))

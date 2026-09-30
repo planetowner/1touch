@@ -13,7 +13,8 @@ class TransferTile extends StatelessWidget {
     final playerImage = transfer.playerImage;
     final transferValue = _transferValue(context, transfer);
     final playerName = _playerName(context, transfer);
-    final isLoan = (transfer.displayType ?? '').contains(tr(context, 'Loan'));
+    // 번역 문구로 비교하면 언어에 따라 임대 배지가 빠지므로 유형 코드로 판단해요.
+    final isLoan = transfer.typeId == 218;
     final appColors = AppColors.of(context);
 
     final content = Container(

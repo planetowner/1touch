@@ -36,20 +36,21 @@ void main() {
       'type': 'message',
       'message_id': 11,
       'fixture_id': 42,
-      'user_id': 7,
-      'username': 'supporter',
+      'nickname_en': 'Cruyff_A8Q4',
+      'nickname_ko': '크루이프_A8Q4',
+      'is_mine': true,
       'text': 'Come on City!',
       'created_at': '2026-09-18T12:34:56Z',
-      'avatar_url': '/v1/users/7/avatar',
       'author_deleted': false,
     });
 
     final message = await nextMessage;
     expect(message.messageId, 11);
-    expect(message.username, 'supporter');
+    expect(message.displayAuthor('en'), 'Cruyff_A8Q4');
+    expect(message.isMine, isTrue);
     expect(
-      message.avatarUrl,
-      'https://api.1touch.football/v1/users/7/avatar',
+      message.displayAuthor('ko'),
+      '크루이프_A8Q4',
     );
     await session.close();
     expect(connection.closedCode, 1000);
@@ -136,6 +137,35 @@ void main() {
       await (await connecting).close();
     }
   });
+
+  for (final alreadyConnected in [false, true]) {
+    test('preserves match closure before or after ready: $alreadyConnected',
+        () async {
+      final connection = _FakeConnection();
+      final socket = ApiChatSocket(
+        apiBaseUri: Uri.parse('https://api.example.test/v1/'),
+        sessionToken: () => token,
+        connector: (_) => connection,
+      );
+      final connecting = socket.connect(42);
+      final closed = isA<ChatSocketException>()
+          .having((value) => value.closeCode, 'closeCode', 4410)
+          .having((value) => value.isUnavailable, 'isUnavailable', isTrue)
+          .having((value) => value.isForbidden, 'isForbidden', isFalse);
+      await _waitFor(() => connection.sent.isNotEmpty);
+      Future<void> expectation;
+      if (alreadyConnected) {
+        connection.addJson({'type': 'ready', 'fixture_id': 42});
+        final session = await connecting;
+        expectation = expectLater(session.messages, emitsError(closed));
+      } else {
+        expectation = expectLater(connecting, throwsA(closed));
+      }
+      await connection.finish(
+          4410, 'Live chat is only available during the match.');
+      await expectation;
+    });
+  }
 
   test('rejects malformed handshake frames and handshake timeouts', () async {
     final malformed = _FakeConnection();
