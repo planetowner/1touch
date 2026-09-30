@@ -2,8 +2,6 @@ import 'package:onetouch/data/notifications/notification_preferences.dart';
 
 /// Stores the user's notification choices independently of the UI.
 ///
-/// Replace the local provider implementation with an API implementation when
-/// notification preference endpoints become available.
 abstract interface class NotificationPreferencesRepository {
   Future<NotificationPreferenceSnapshot> load();
 
@@ -17,6 +15,11 @@ abstract interface class NotificationPreferencesRepository {
   Future<void> applyTeamToAll(
     Iterable<int> teamIds,
     TeamNotificationPreferences preferences,
+  );
+
+  Future<void> applyNewBetsToAll(
+    Iterable<int> teamIds,
+    bool enabled,
   );
 
   Future<void> savePlayer(

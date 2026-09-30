@@ -4,37 +4,37 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/comm_pages/NotificationInbox.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/notifications/notification_inbox.dart';
+import 'package:onetouch/data/notifications/notification_inbox_repository.dart';
 
 void main() {
   Future<void> pumpInbox(
     WidgetTester tester, {
     required ThemeData theme,
     required Size size,
+    NotificationInboxRepository? repository,
   }) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MaterialApp(
         theme: theme,
-        home: const NotificationInboxPage(),
+        home: NotificationInboxPage(
+          repository: repository ?? _StaticNotificationInboxRepository(),
+        ),
       ),
     );
-    await tester.pump();
-  }
-
-  Color filterColor(WidgetTester tester, String name) {
-    final filter = tester.widget<AnimatedContainer>(
-      find.byKey(ValueKey('notification-filter-$name')),
-    );
-    return (filter.decoration! as BoxDecoration).color!;
+    await tester.pumpAndSettle();
   }
 
   testWidgets('notification inbox follows the compact light design',
       (tester) async {
+    final repository = _StaticNotificationInboxRepository();
     await pumpInbox(
       tester,
       theme: app_style.whitetheme,
       size: const Size(320, 568),
+      repository: repository,
     );
 
     final scaffold = tester.widget<Scaffold>(
@@ -47,16 +47,14 @@ void main() {
     expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
     expect(backIcon.color, app_style.AppPalette.black);
     expect(searchIcon.color, app_style.AppPalette.black);
-    expect(title.style, Body1.style.copyWith(color: app_style.AppPalette.black));
-    expect(filterColor(tester, 'all'), app_style.AppPalette.white);
-    expect(filterColor(tester, 'team'), app_style.AppPalette.lightGreyBox);
-
-    await tester.tap(find.text('TEAM'));
-    await tester.pumpAndSettle();
-    expect(filterColor(tester, 'team'), app_style.AppPalette.white);
-    expect(find.text('FC Barcelona'), findsOneWidget);
-    expect(find.text('Bayern Munich'), findsOneWidget);
-    expect(find.text('Reaction'), findsNothing);
+    expect(
+        title.style, Body1.style.copyWith(color: app_style.AppPalette.black));
+    expect(
+        find.byKey(const ValueKey('notification-inbox-list')), findsOneWidget);
+    expect(find.text('Reaction'), findsOneWidget);
+    expect(find.text('Comment'), findsOneWidget);
+    expect(find.text('TEAM'), findsNothing);
+    expect(repository.markedThroughId, 8);
     expect(tester.takeException(), isNull);
   });
 
@@ -72,19 +70,20 @@ void main() {
       find.byKey(const ValueKey('notification-inbox-scaffold')),
     );
     expect(scaffold.backgroundColor, app_style.AppPalette.black);
-    expect(filterColor(tester, 'all'), app_style.AppPalette.white);
-    expect(filterColor(tester, 'team'), app_style.AppPalette.lightGrey);
+    expect(find.text('Reaction'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('notification rows open their sample detail routes',
+  testWidgets('notification rows open their API destination routes',
       (tester) async {
     final router = GoRouter(
       initialLocation: '/notifications',
       routes: [
         GoRoute(
           path: '/notifications',
-          builder: (_, __) => const NotificationInboxPage(),
+          builder: (_, __) => NotificationInboxPage(
+            repository: _StaticNotificationInboxRepository(),
+          ),
         ),
         GoRoute(
           path: '/notifications/post/:postId',
@@ -99,11 +98,62 @@ void main() {
       theme: app_style.darktheme,
       routerConfig: router,
     ));
-
-    await tester.tap(find.text('Reaction').first);
     await tester.pumpAndSettle();
 
-    expect(find.text('post 1'), findsOneWidget);
+    await tester.tap(find.text('Reaction'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('post 12'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+}
+
+class _StaticNotificationInboxRepository
+    implements NotificationInboxRepository {
+  int? markedThroughId;
+
+  @override
+  Future<NotificationInboxPageData> load({
+    int? beforeId,
+    int limit = 30,
+    int? teamId,
+  }) async =>
+      NotificationInboxPageData(
+        items: [
+          CommunityNotification(
+            notificationId: 8,
+            kind: CommunityNotificationKind.postReaction,
+            postId: 12,
+            actorId: 3,
+            teamId: 83,
+            username: 'User One',
+            commentPreview: '',
+            createdAt:
+                DateTime.now().toUtc().subtract(const Duration(hours: 2)),
+            readAt: null,
+            destination: '/notifications/post/12',
+          ),
+          CommunityNotification(
+            notificationId: 7,
+            kind: CommunityNotificationKind.postComment,
+            postId: 12,
+            commentId: 40,
+            actorId: 4,
+            teamId: 83,
+            username: 'User Two',
+            commentPreview: 'Good point',
+            createdAt:
+                DateTime.now().toUtc().subtract(const Duration(hours: 3)),
+            readAt: null,
+            destination: '/notifications/post/12',
+          ),
+        ],
+        unreadCount: 2,
+        nextBeforeId: null,
+      );
+
+  @override
+  Future<void> markReadThrough(int notificationId) async {
+    markedThroughId = notificationId;
+  }
 }

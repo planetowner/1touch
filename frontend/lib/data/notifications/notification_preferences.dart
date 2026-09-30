@@ -5,32 +5,25 @@ class GlobalNotificationPreferences {
   const GlobalNotificationPreferences({
     this.postReactions = true,
     this.postComments = true,
-    this.newBets = true,
-    this.postMatchResults = true,
   });
 
   final bool postReactions;
   final bool postComments;
-  final bool newBets;
-  final bool postMatchResults;
 
   GlobalNotificationPreferences copyWith({
     bool? postReactions,
     bool? postComments,
-    bool? newBets,
-    bool? postMatchResults,
   }) =>
       GlobalNotificationPreferences(
         postReactions: postReactions ?? this.postReactions,
         postComments: postComments ?? this.postComments,
-        newBets: newBets ?? this.newBets,
-        postMatchResults: postMatchResults ?? this.postMatchResults,
       );
 }
 
 @immutable
 class TeamNotificationPreferences {
   const TeamNotificationPreferences({
+    this.newBets = true,
     this.matchReminder = false,
     this.kickoff = true,
     this.halfTime = true,
@@ -39,6 +32,7 @@ class TeamNotificationPreferences {
     this.substitution = false,
   });
 
+  final bool newBets;
   final bool matchReminder;
   final bool kickoff;
   final bool halfTime;
@@ -50,6 +44,7 @@ class TeamNotificationPreferences {
       matchReminder && kickoff && halfTime && fullTime && goal && substitution;
 
   TeamNotificationPreferences copyWith({
+    bool? newBets,
     bool? matchReminder,
     bool? kickoff,
     bool? halfTime,
@@ -58,6 +53,7 @@ class TeamNotificationPreferences {
     bool? substitution,
   }) =>
       TeamNotificationPreferences(
+        newBets: newBets ?? this.newBets,
         matchReminder: matchReminder ?? this.matchReminder,
         kickoff: kickoff ?? this.kickoff,
         halfTime: halfTime ?? this.halfTime,
@@ -68,6 +64,7 @@ class TeamNotificationPreferences {
 
   TeamNotificationPreferences setAll(bool enabled) =>
       TeamNotificationPreferences(
+        newBets: enabled,
         matchReminder: enabled,
         kickoff: enabled,
         halfTime: enabled,

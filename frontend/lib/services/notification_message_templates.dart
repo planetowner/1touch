@@ -6,8 +6,8 @@ enum NotificationDeliveryTiming { eventDriven, thirtyMinutesBeforeKickoff }
 
 /// Notification rows approved for both iOS and Android.
 ///
-/// Spreadsheet row 1 (team news) and row 17 (new post from following) are
-/// intentionally excluded.
+/// Spreadsheet rows 1 (team news), 17 (new post from following), and 19
+/// (post-match betting result) are intentionally excluded.
 enum NotificationEventType {
   teamMatchReminder(
     2,
@@ -28,8 +28,7 @@ enum NotificationEventType {
   playerInjury(14, DeviceNotificationCategory.player),
   postReaction(15, DeviceNotificationCategory.posts),
   postComment(16, DeviceNotificationCategory.posts),
-  bettingNewBet(18, DeviceNotificationCategory.betting),
-  bettingPostMatchResult(19, DeviceNotificationCategory.betting);
+  bettingNewBet(18, DeviceNotificationCategory.betting);
 
   const NotificationEventType(
     this.spreadsheetNumber,
@@ -54,8 +53,6 @@ class NotificationTemplateData {
     this.commentPreview = '',
     this.minute = '',
     this.score = '',
-    this.result = '',
-    this.betOutcome = '',
     this.minutesUntilKickoff = 30,
   });
 
@@ -69,8 +66,6 @@ class NotificationTemplateData {
   final String commentPreview;
   final String minute;
   final String score;
-  final String result;
-  final String betOutcome;
   final int minutesUntilKickoff;
 }
 
@@ -168,9 +163,6 @@ class NotificationMessageTemplates {
         NotificationEventType.bettingNewBet => ko
             ? '새로운 베팅이 등록되었습니다. 지금 확인하세요!'
             : 'A new bet is now available. Check it out!',
-        NotificationEventType.bettingPostMatchResult => ko
-            ? '베팅 결과: ${d.team} ${d.result}. ${d.betOutcome}'
-            : 'Bet result: ${d.team} ${d.result}. ${d.betOutcome}',
       };
 
   static String _preview(String value) =>
