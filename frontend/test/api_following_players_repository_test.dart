@@ -5,8 +5,33 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/players/api/api_following_players_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
+  test('restores followed players from local cache in backend order', () async {
+    final store = MemoryLocalCacheStore();
+    final repository = ApiFollowingPlayersRepository(
+      api: ApiClient(
+        client: MockClient(
+          (_) async => http.Response(jsonEncode(_followingJson()), 200),
+        ),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    await repository.load();
+    repository.clearMemory();
+    final cached = await repository.restoreCached();
+
+    expect(cached?.map((player) => player.playerId), [268, 832]);
+    expect(
+      repository.cachedPlayers.value.map((player) => player.playerId),
+      [268, 832],
+    );
+  });
+
   test('loads, maps, and caches players in backend order', () async {
     final repository = ApiFollowingPlayersRepository(
       api: ApiClient(
