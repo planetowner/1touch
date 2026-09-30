@@ -602,6 +602,10 @@ class _SettingsListState extends State<SettingsList> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        titlePadding: const EdgeInsets.all(24),
+        contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        // TextButton's tap target adds about 16 px below the visible label.
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
         title: Text(tr(dialogContext, 'Log out?')),
         content: Text(
           tr(dialogContext, 'You will need to sign in again to use 1Touch.'),
