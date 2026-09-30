@@ -7,6 +7,7 @@ import 'core/style.dart';
 import 'core/stylesheet_dark.dart';
 import 'core/theme_controller.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/services/push_device_registration_service_provider.dart';
 
 class WelcomeLoadingScreen extends StatefulWidget {
   const WelcomeLoadingScreen({super.key});
@@ -18,6 +19,20 @@ class WelcomeLoadingScreen extends StatefulWidget {
 class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  bool _isContinuing = false;
+
+  Future<void> _continue() async {
+    if (_isContinuing) return;
+    setState(() => _isContinuing = true);
+    try {
+      await pushDeviceRegistrationService.requestPermissionAndRegister();
+    } on Object catch (error) {
+      // Notification permission and delivery must not block onboarding.
+      debugPrint('Unable to enable push notifications: $error');
+    }
+    if (!mounted) return;
+    context.go('/home');
+  }
 
   @override
   void initState() {
@@ -164,10 +179,7 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Navigate to Home or Dashboard
-                      context.go('/home');
-                    },
+                    onPressed: _isContinuing ? null : _continue,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.onSurface,
                       // Grey/Brownish tone from image

@@ -55,6 +55,33 @@ const appMessages = <String, MessageTranslations>{
     zh: "登录失败，请检查邮箱或用户名及密码。"
   ),
   "Reset password": (ko: "비밀번호 재설정", ja: "パスワードの再設定", zh: "重置密码"),
+  "Enter the email linked to your account. We will send you a verification code to reset your password.":
+      (
+    ko: "이 계정과 연결된 이메일을 입력해 주세요. 비밀번호 재설정을 위한 인증번호를 보내드릴게요.",
+    ja: "アカウントに登録したメールアドレスを入力してください。パスワード再設定用の認証コードを送信します。",
+    zh: "请输入此账户关联的邮箱。我们将发送密码重置验证码。"
+  ),
+  "Enter the verification code sent to your email.": (
+    ko: "이메일로 받은 인증번호를 입력해 주세요.",
+    ja: "メールで届いた認証コードを入力してください。",
+    zh: "请输入发送到邮箱的验证码。"
+  ),
+  "Enter a new password.": (
+    ko: "새로운 비밀번호를 입력해 주세요.",
+    ja: "新しいパスワードを入力してください。",
+    zh: "请输入新密码。"
+  ),
+  "Enter it again.": (ko: "다시 입력해 주세요.", ja: "もう一度入力してください。", zh: "请再次输入。"),
+  "Passwords do not match.": (
+    ko: "비밀번호가 일치하지 않아요.",
+    ja: "パスワードが一致しません。",
+    zh: "两次输入的密码不一致。"
+  ),
+  "Invalid verification code. Try again.": (
+    ko: "인증번호가 올바르지 않아요. 다시 입력해 주세요.",
+    ja: "認証コードが正しくありません。もう一度お試しください。",
+    zh: "验证码无效，请重试。"
+  ),
   "New password": (ko: "새 비밀번호", ja: "新しいパスワード", zh: "新密码"),
   "Enter the email address you used to sign up.": (
     ko: "가입할 때 사용한 이메일을 입력해 주세요.",
@@ -1113,6 +1140,18 @@ const appMessages = <String, MessageTranslations>{
   "Best": (ko: "인기", ja: "人気", zh: "热门"),
   "No comments yet.": (ko: "아직 댓글이 없어요.", ja: "コメントはまだありません。", zh: "暂无评论。"),
   "No posts yet.": (ko: "아직 게시글이 없어요.", ja: "投稿はまだありません。", zh: "暂无帖子。"),
+  "No notifications yet.": (ko: "아직 알림이 없어요.", ja: "通知はまだありません。", zh: "暂无通知。"),
+  "Unable to load notifications.": (
+    ko: "알림을 불러올 수 없어요.",
+    ja: "通知を読み込めません。",
+    zh: "无法加载通知。"
+  ),
+  "Unable to load post.": (
+    ko: "게시글을 불러올 수 없어요.",
+    ja: "投稿を読み込めません。",
+    zh: "无法加载帖子。"
+  ),
+  "Try again": (ko: "다시 시도", ja: "再試行", zh: "重试"),
   "Unable to load comments.": (
     ko: "댓글을 불러오지 못했어요.",
     ja: "コメントを読み込めませんでした。",
@@ -1234,7 +1273,6 @@ const appMessages = <String, MessageTranslations>{
   ),
   "New bets": (ko: "새 베팅", ja: "新しい予想", zh: "新竞猜"),
   "New Bet Available": (ko: "새 베팅이 열렸어요", ja: "新しい予想が可能です", zh: "新的竞猜已开放"),
-  "Post-match results": (ko: "경기 결과", ja: "試合結果", zh: "赛后结果"),
   "Post-match Result": (ko: "경기 결과", ja: "試合結果", zh: "赛后结果"),
   "APPLY TO ALL PLAYERS": (ko: "모든 선수에 적용하기", ja: "すべての選手に適用", zh: "应用到所有球员"),
   "APPLY TO ALL TEAMS": (ko: "모든 팀에 적용하기", ja: "すべてのチームに適用", zh: "应用到所有球队"),
@@ -1799,6 +1837,11 @@ const appMessages = <String, MessageTranslations>{
     ko: "{user}님 외 {count}명이 내 게시글을 좋아해요.",
     ja: "{user}さんと他{count}人があなたの投稿にいいねしました。",
     zh: "{user}和其他{count}位用户赞了你的帖子。"
+  ),
+  "{user} liked your post.": (
+    ko: "{user}님이 내 게시글을 좋아해요.",
+    ja: "{user}さんがあなたの投稿にいいねしました。",
+    zh: "{user}赞了你的帖子。"
   ),
   "{user} commented on your post: ": (
     ko: "{user}님이 내 게시글에 댓글을 남겼어요: ",
