@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/SessionScreen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/core/notification_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -44,6 +45,7 @@ void main() {
             }));
   });
   setUp(() {
+    notificationNavigation.clear();
     fail = false;
     requests.clear();
     authSession
@@ -68,6 +70,12 @@ void main() {
       GoRoute(
           path: '/home',
           builder: (_, __) => const Scaffold(body: Text('Ready Home'))),
+      GoRoute(
+          path: '/match/:id',
+          builder: (_, state) => Scaffold(
+                body: Text(
+                    'Match ${state.pathParameters['id']} ${state.uri.queryParameters['status']}'),
+              )),
       GoRoute(
           path: '/onboarding/welcome',
           builder: (_, __) => const Scaffold(body: Text('Select Teams Next'))),
@@ -101,6 +109,32 @@ void main() {
       (tester) async {
     account['display_name'] = null;
     await pump(tester);
+    expect(find.text('Ready Home'), findsOneWidget);
+  });
+
+  testWidgets('opens a queued notification after session bootstrap',
+      (tester) async {
+    notificationNavigation.queue(
+      '/match/42?status=past',
+      sessionToken: authSession.accessToken!,
+    );
+
+    await pump(tester);
+
+    expect(find.text('Match 42 past'), findsOneWidget);
+    expect(notificationNavigation.take(sessionToken: authSession.accessToken!),
+        isNull);
+  });
+
+  testWidgets('does not open a notification from another session',
+      (tester) async {
+    notificationNavigation.queue(
+      '/match/42?status=past',
+      sessionToken: 'previous-account-token',
+    );
+
+    await pump(tester);
+
     expect(find.text('Ready Home'), findsOneWidget);
   });
   for (final locale in appSupportedLocales) {

@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/catalog/football_catalog.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/data/players/api/api_player_detail_repository.dart';
 import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/data/search/search_repository.dart';
@@ -21,6 +22,32 @@ ApiClient api(Future<http.Response> Function(http.Request) respond) =>
         requestHeaders: () => {'Authorization': 'Bearer current-session'});
 
 void main() {
+  test('a fresh catalog cache hydrates without a network request', () async {
+    final store = MemoryLocalCacheStore();
+    var requests = 0;
+    final first = FootballCatalog(
+      api: api((_) async {
+        requests++;
+        return http.Response(fixture('api_catalog'), 200);
+      }),
+      cacheStore: store,
+    );
+    await first.initialize();
+
+    final restored = FootballCatalog(
+      api: api((_) async {
+        requests++;
+        throw StateError('fresh static cache must skip the network');
+      }),
+      cacheStore: store,
+    );
+    await restored.initialize();
+
+    expect(requests, 1);
+    expect(restored.teams.value.map((team) => team.teamId), [8, 19]);
+    expect(restored.resolve(8)?.seasonId, 28083);
+  });
+
   test(
       'one catalog request supplies team, competition and current season selectors',
       () async {

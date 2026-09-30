@@ -6,14 +6,20 @@ import 'package:onetouch/data/players/api/api_following_players_mapper.dart';
 import 'package:onetouch/data/players/api/api_following_players_response.dart';
 import 'package:onetouch/data/players/following_players_repository.dart';
 import 'package:onetouch/models/following_player.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 
 /// HTTP implementation of the current user's ordered followed-player list.
 class ApiFollowingPlayersRepository implements FollowingPlayersRepository {
-  ApiFollowingPlayersRepository({required ApiClient api}) : _api = api;
+  ApiFollowingPlayersRepository({
+    required ApiClient api,
+    LocalCacheStore? cacheStore,
+  })  : _api = api,
+        _cacheStore = cacheStore;
 
   static const int maxFollowingPlayers = 1000;
 
   final ApiClient _api;
+  final LocalCacheStore? _cacheStore;
   final ValueNotifier<List<FollowingPlayer>> _cachedPlayers =
       ValueNotifier(const []);
 
@@ -22,6 +28,27 @@ class ApiFollowingPlayersRepository implements FollowingPlayersRepository {
 
   @override
   Future<List<FollowingPlayer>> load() => _fetchAndCache();
+
+  Future<List<FollowingPlayer>?> restoreCached() async {
+    final record = await _cacheStore?.read(
+      LocalCacheKeys.followingPlayers,
+      scope: LocalCacheScopes.authenticatedUser,
+    );
+    if (record == null) return null;
+    try {
+      final players = _parsePlayers(record.payload);
+      _cachedPlayers.value = players;
+      return players;
+    } on Object {
+      await _cacheStore?.delete(
+        LocalCacheKeys.followingPlayers,
+        scope: LocalCacheScopes.authenticatedUser,
+      );
+      return null;
+    }
+  }
+
+  void clearMemory() => _cachedPlayers.value = const [];
 
   @override
   Future<List<FollowingPlayer>> replaceFollowing(
@@ -59,7 +86,25 @@ class ApiFollowingPlayersRepository implements FollowingPlayersRepository {
     );
 
     final decoded = _api.decodeJson<Map<String, dynamic>>(response);
-    final apiResponse = ApiFollowingPlayersResponse.fromJson(decoded);
+    final players = _parsePlayers(decoded);
+    await _cacheStore?.write(
+      LocalCacheKeys.followingPlayers,
+      decoded,
+      scope: LocalCacheScopes.authenticatedUser,
+    );
+    _cachedPlayers.value = players;
+    return players;
+  }
+
+  List<FollowingPlayer> _parsePlayers(Object decoded) {
+    if (decoded is! Map) {
+      throw const FormatException(
+        'Expected following players to be a JSON object.',
+      );
+    }
+    final apiResponse = ApiFollowingPlayersResponse.fromJson(
+      decoded.cast<String, dynamic>(),
+    );
     final players = List<FollowingPlayer>.unmodifiable(
       apiResponse.items.map(followingPlayerFromApiResponse),
     );
@@ -70,7 +115,6 @@ class ApiFollowingPlayersRepository implements FollowingPlayersRepository {
       );
     }
 
-    _cachedPlayers.value = players;
     return players;
   }
 

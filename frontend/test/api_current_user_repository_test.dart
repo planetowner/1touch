@@ -5,8 +5,58 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/profile/api/api_current_user_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
+  test('restores the last validated account from local cache', () async {
+    final store = MemoryLocalCacheStore();
+    final repository = ApiCurrentUserRepository(
+      api: ApiClient(
+        client: MockClient((_) async => http.Response(
+              jsonEncode(_profileJson()),
+              200,
+            )),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    await repository.loadAccount();
+    final cached = await repository.loadCachedAccount();
+
+    expect(cached?.username, 'planetowner');
+    expect(cached?.favoriteTeamId, 83);
+  });
+
+  test('profile mutation replaces the cached account', () async {
+    final store = MemoryLocalCacheStore();
+    final updated = _profileJson()
+      ..['username'] = 'updated'
+      ..['first_name'] = 'New';
+    final repository = ApiCurrentUserRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.method, 'PUT');
+          return http.Response(jsonEncode(updated), 200);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    await repository.updateProfile(
+      username: 'updated',
+      displayName: 'Planet Owner',
+      firstName: 'New',
+      lastName: 'Owner',
+    );
+
+    final cached = await repository.loadCachedAccount();
+    expect((cached?.username, cached?.firstName), ('updated', 'New'));
+  });
+
   test('requests and maps the authenticated current user', () async {
     final repository = ApiCurrentUserRepository(
       api: ApiClient(

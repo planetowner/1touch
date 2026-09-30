@@ -7,13 +7,19 @@ import 'package:onetouch/data/teams/api/api_team_mapper.dart';
 import 'package:onetouch/data/teams/api/api_team_response.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 
 class ApiFollowingTeamsRepository implements FollowingTeamsRepository {
-  ApiFollowingTeamsRepository({required ApiClient api}) : _api = api;
+  ApiFollowingTeamsRepository({
+    required ApiClient api,
+    LocalCacheStore? cacheStore,
+  })  : _api = api,
+        _cacheStore = cacheStore;
 
   static const int maxFollowingTeams = 5;
 
   final ApiClient _api;
+  final LocalCacheStore? _cacheStore;
   final ValueNotifier<List<Team>> _cachedTeams = ValueNotifier(const []);
 
   @override
@@ -21,6 +27,27 @@ class ApiFollowingTeamsRepository implements FollowingTeamsRepository {
 
   @override
   Future<List<Team>> load() => _fetchAndCache();
+
+  Future<List<Team>?> restoreCached() async {
+    final record = await _cacheStore?.read(
+      LocalCacheKeys.followingTeams,
+      scope: LocalCacheScopes.authenticatedUser,
+    );
+    if (record == null) return null;
+    try {
+      final teams = _parseTeams(record.payload);
+      _cachedTeams.value = teams;
+      return teams;
+    } on Object {
+      await _cacheStore?.delete(
+        LocalCacheKeys.followingTeams,
+        scope: LocalCacheScopes.authenticatedUser,
+      );
+      return null;
+    }
+  }
+
+  void clearMemory() => _cachedTeams.value = const [];
 
   @override
   Future<List<Team>> replaceFollowing({
@@ -67,6 +94,22 @@ class ApiFollowingTeamsRepository implements FollowingTeamsRepository {
     );
 
     final decoded = _api.decodeJson<List<dynamic>>(response);
+    final teams = _parseTeams(decoded);
+    await _cacheStore?.write(
+      LocalCacheKeys.followingTeams,
+      decoded,
+      scope: LocalCacheScopes.authenticatedUser,
+    );
+    _cachedTeams.value = teams;
+    return teams;
+  }
+
+  List<Team> _parseTeams(Object decoded) {
+    if (decoded is! List) {
+      throw const FormatException(
+        'Expected following teams to be a JSON list.',
+      );
+    }
     final teams = List<Team>.unmodifiable(
       decoded.map((item) {
         if (item is! Map<String, dynamic>) {
@@ -84,7 +127,6 @@ class ApiFollowingTeamsRepository implements FollowingTeamsRepository {
       );
     }
 
-    _cachedTeams.value = teams;
     return teams;
   }
 

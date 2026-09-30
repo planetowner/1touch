@@ -100,6 +100,11 @@ class CurrentUserPreferences {
     if (_hasFavorite) viewedTeamId.value = favoriteTeamId.value;
   }
 
+  void clearSessionState() {
+    _viewedTeamOverride = null;
+    followedTeamIds.value = const [];
+  }
+
   Future<void> updateTeamSelection(Iterable<int> rankedTeamIds) async {
     final selectedIds = _validDistinctTeamIds(rankedTeamIds);
     if (selectedIds.isEmpty) return;

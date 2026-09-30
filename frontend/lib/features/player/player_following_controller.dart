@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:onetouch/data/players/following_players_repository.dart';
 import 'package:onetouch/data/players/following_players_repository_provider.dart';
+import 'package:onetouch/data/players/api/api_following_players_repository.dart';
 import 'package:onetouch/models/following_player.dart';
 
 final playerFollowingController = PlayerFollowingController();
@@ -33,6 +34,32 @@ class PlayerFollowingController extends ChangeNotifier {
       _request = null;
       notifyListeners();
     }
+  }
+
+  Future<bool> restoreCached() async {
+    final repository = _repository;
+    if (repository is! ApiFollowingPlayersRepository) return false;
+    final cached = await repository.restoreCached();
+    if (cached == null) return false;
+    applyAuthoritative(cached);
+    return true;
+  }
+
+  void applyAuthoritative(List<FollowingPlayer> value) {
+    players = List.unmodifiable(value);
+    loaded = true;
+    loading = false;
+    error = null;
+    notifyListeners();
+  }
+
+  void clear() {
+    players = const [];
+    loaded = false;
+    loading = false;
+    error = null;
+    _request = null;
+    notifyListeners();
   }
 
   Future<void> save(Iterable<int> ids) async {

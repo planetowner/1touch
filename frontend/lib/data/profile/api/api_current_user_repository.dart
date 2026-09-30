@@ -4,6 +4,7 @@ import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/profile/api/api_current_user_mapper.dart';
 import 'package:onetouch/data/profile/api/api_current_user_response.dart';
 import 'package:onetouch/data/profile/current_user_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 
 class ProfileChangeLimitException implements Exception {
@@ -15,9 +16,14 @@ class ProfileNameConflictException implements Exception {}
 
 /// HTTP implementation of the verified `GET /v1/users/me` contract.
 class ApiCurrentUserRepository implements CurrentUserRepository {
-  ApiCurrentUserRepository({required ApiClient api}) : _api = api;
+  ApiCurrentUserRepository({
+    required ApiClient api,
+    LocalCacheStore? cacheStore,
+  })  : _api = api,
+        _cacheStore = cacheStore;
 
   final ApiClient _api;
+  final LocalCacheStore? _cacheStore;
 
   @override
   Future<CurrentUserProfile> load() async {
@@ -32,7 +38,32 @@ class ApiCurrentUserRepository implements CurrentUserRepository {
     );
 
     final decoded = _api.decodeJson<Map<String, dynamic>>(response);
-    return ApiCurrentUserResponse.fromJson(decoded);
+    final account = ApiCurrentUserResponse.fromJson(decoded);
+    await _cacheStore?.write(
+      LocalCacheKeys.currentUser,
+      decoded,
+      scope: LocalCacheScopes.authenticatedUser,
+    );
+    return account;
+  }
+
+  Future<ApiCurrentUserResponse?> loadCachedAccount() async {
+    final record = await _cacheStore?.read(
+      LocalCacheKeys.currentUser,
+      scope: LocalCacheScopes.authenticatedUser,
+    );
+    if (record == null) return null;
+    try {
+      return ApiCurrentUserResponse.fromJson(
+        (record.payload as Map).cast<String, dynamic>(),
+      );
+    } on Object {
+      await _cacheStore?.delete(
+        LocalCacheKeys.currentUser,
+        scope: LocalCacheScopes.authenticatedUser,
+      );
+      return null;
+    }
   }
 
   Future<void> updateProfile(
@@ -62,6 +93,14 @@ class ApiCurrentUserRepository implements CurrentUserRepository {
         throw ProfileNameConflictException();
       }
     }
-    _api.decodeJson<Map<String, dynamic>>(response);
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    // The endpoint returns the authoritative updated account. Validate and
+    // persist it so the next session read cannot revive the pre-edit profile.
+    ApiCurrentUserResponse.fromJson(decoded);
+    await _cacheStore?.write(
+      LocalCacheKeys.currentUser,
+      decoded,
+      scope: LocalCacheScopes.authenticatedUser,
+    );
   }
 }

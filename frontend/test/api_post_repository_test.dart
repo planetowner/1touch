@@ -9,6 +9,25 @@ import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 
 void main() {
+  test('loads one post for a notification destination', () async {
+    final repository = ApiPostRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.method, 'GET');
+          expect(request.url.path, '/v1/posts/42');
+          return http.Response(jsonEncode(_postJson()), 200);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => const {},
+      ),
+    );
+
+    final post = await repository.loadPost(42);
+
+    expect(post.postId, 42);
+    expect(post.title, 'Pressing structure');
+  });
+
   test('fan-art feed and creation use the same API category', () async {
     final repository = ApiPostRepository(
       api: ApiClient(

@@ -183,6 +183,46 @@ void main() {
     expect(session.isAuthenticated, isFalse);
     expect(store.value, isNull);
   });
+
+  test('clears account-bound cache on sign-in and logout', () async {
+    var clearCalls = 0;
+    final session = AuthSession();
+    final service = AuthService(
+      googleIdentityService: _FakeGoogleIdentityService(
+        () async => 'google-id-token',
+      ),
+      repository: _FakeAuthRepository((_) async => 'backend-access-token'),
+      session: session,
+      clearLocalUserData: () async => clearCalls++,
+    );
+
+    await service.signInWithGoogle();
+    expect(clearCalls, 1);
+
+    await service.logout();
+    expect(clearCalls, 2);
+  });
+
+  test('runs push-device lifecycle callbacks without blocking auth', () async {
+    var establishedCalls = 0;
+    var beforeClearCalls = 0;
+    final session = AuthSession();
+    final service = AuthService(
+      googleIdentityService: _FakeGoogleIdentityService(
+        () async => 'google-id-token',
+      ),
+      repository: _FakeAuthRepository((_) async => 'backend-access-token'),
+      session: session,
+      onSessionEstablished: () async => establishedCalls++,
+      beforeSessionCleared: () async => beforeClearCalls++,
+    );
+
+    await service.signInWithGoogle();
+    await service.logout();
+
+    expect(establishedCalls, 1);
+    expect(beforeClearCalls, 1);
+  });
 }
 
 class _FakeGoogleIdentityService implements GoogleIdentityService {

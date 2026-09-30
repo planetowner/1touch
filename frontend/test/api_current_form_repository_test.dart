@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/current_form/api/api_current_form_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
   group('loadOptions', () {
@@ -281,6 +282,61 @@ void main() {
       }
       expect(repository.cachedComparisons.value, isEmpty);
     });
+  });
+
+  test('restores fresh options and comparison after recreation', () async {
+    final store = MemoryLocalCacheStore();
+    final writer = ApiCurrentFormRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          if (request.url.path.endsWith('/options')) {
+            return http.Response(
+              jsonEncode({
+                'items': [_optionJson()],
+                'limit': 200,
+              }),
+              200,
+            );
+          }
+          return http.Response(jsonEncode(_comparisonJson()), 200);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+    await writer.loadOptions(83);
+    await writer.loadComparison(
+      83,
+      seasonId: 25659,
+      compareTeamId: 3468,
+      compareSeasonId: 23621,
+    );
+
+    var requestCount = 0;
+    final reader = ApiCurrentFormRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requestCount++;
+          return http.Response('Unexpected request', 500);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final options = await reader.loadOptions(83);
+    final comparison = await reader.loadComparison(
+      83,
+      seasonId: 25659,
+      compareTeamId: 3468,
+      compareSeasonId: 23621,
+    );
+
+    expect(options.single.teamId, 83);
+    expect(comparison?.comparison.teamId, 3468);
+    expect(requestCount, 0);
   });
 }
 
