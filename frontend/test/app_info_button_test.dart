@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/app_info_button.dart';
+import 'package:onetouch/core/style.dart';
 
 void main() {
   testWidgets('explanation opens in a rounded box and closes outside',
@@ -30,10 +31,36 @@ void main() {
       (dialog.shape as RoundedRectangleBorder).borderRadius,
       BorderRadius.circular(16),
     );
+    expect(dialog.backgroundColor, AppPalette.lightModeDarkGrey);
+    expect(dialog.insetPadding,
+        const EdgeInsets.symmetric(horizontal: 24, vertical: 24));
+    expect(find.byKey(const ValueKey('app-info-understand')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('app-info-understand')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('app-info-popup')), findsNothing);
+
+    await tester.tap(find.byType(AppInfoButton));
+    await tester.pumpAndSettle();
 
     await tester.tapAt(const Offset(8, 8));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('app-info-popup')), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('dark popup uses the reference grey surface', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: ThemeData.dark(),
+      home: const Scaffold(
+        body: Center(child: AppInfoButton(message: 'Explanation')),
+      ),
+    ));
+    await tester.tap(find.byType(AppInfoButton));
+    await tester.pumpAndSettle();
+    final dialog = tester.widget<Dialog>(
+      find.byKey(const ValueKey('app-info-popup')),
+    );
+    expect(dialog.backgroundColor, AppPalette.lightGrey);
   });
 }
