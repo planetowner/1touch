@@ -480,6 +480,7 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
                       bottom: 0,
                       child: RoundChartViewport(
                         key: const ValueKey('probability-history-viewport'),
+                        roundWindow: roundWindow,
                         viewportSize: plotViewportSize,
                         builder: (context, contentSize) => GestureDetector(
                           key: const ValueKey('probability-history-chart'),
