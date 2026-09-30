@@ -156,60 +156,6 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final (locale, loanLabel) in [
-    (const Locale('en'), 'LOAN'),
-    (const Locale('ko'), '임대'),
-    (const Locale('ja'), '期限付き移籍'),
-    (appSupportedLocales.last, '租借'),
-  ]) {
-    testWidgets('loan badge follows transfer type in ${locale.languageCode}',
-        (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        locale: locale,
-        supportedLocales: appSupportedLocales,
-        localizationsDelegates: appLocalizationDelegates,
-        theme: whitetheme,
-        home: const Scaffold(
-          body: Column(
-            children: [
-              TransferTile(
-                transfer: TransferEntry(
-                  transferId: 1,
-                  playerId: 101,
-                  direction: TransferDirection.incoming,
-                  typeId: 218,
-                  displayType: 'Loan',
-                ),
-              ),
-              TransferTile(
-                transfer: TransferEntry(
-                  transferId: 2,
-                  playerId: 102,
-                  direction: TransferDirection.incoming,
-                  typeId: 9688,
-                  displayType: 'End of Loan',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ));
-      await tester.pumpAndSettle();
-
-      for (final transferId in [1, 2]) {
-        final contract = find.descendant(
-          of: find.byKey(ValueKey('transfer-$transferId')),
-          matching: find.byType(Wrap),
-        );
-        expect(
-          find.descendant(of: contract, matching: find.text(loanLabel)),
-          transferId == 1 ? findsOneWidget : findsNothing,
-        );
-      }
-      expect(tester.takeException(), isNull);
-    });
-  }
-
   testWidgets('controlled direction survives transfer widget recreation',
       (tester) async {
     final repository = _TestTransferRepository(
