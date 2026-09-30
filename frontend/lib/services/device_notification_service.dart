@@ -41,6 +41,7 @@ class DeviceNotificationService {
   final FlutterLocalNotificationsPlugin _plugin;
   bool _initialized = false;
   String? _initialPayload;
+  NotificationPayloadHandler? _onPayload;
 
   bool get _isSupported =>
       !kIsWeb &&
@@ -48,6 +49,7 @@ class DeviceNotificationService {
           defaultTargetPlatform == TargetPlatform.iOS);
 
   Future<void> initialize({NotificationPayloadHandler? onPayload}) async {
+    if (onPayload != null) _onPayload = onPayload;
     if (!_isSupported || _initialized) return;
     tz.initializeTimeZones();
     await _plugin.initialize(
@@ -61,7 +63,7 @@ class DeviceNotificationService {
       ),
       onDidReceiveNotificationResponse: (response) {
         final payload = response.payload;
-        if (payload != null && payload.isNotEmpty) onPayload?.call(payload);
+        if (payload != null && payload.isNotEmpty) _onPayload?.call(payload);
       },
     );
     if (defaultTargetPlatform == TargetPlatform.android) {
@@ -121,6 +123,24 @@ class DeviceNotificationService {
         body: message.body,
       ),
       payload: message.payload,
+    );
+  }
+
+  Future<void> showRemote({
+    required int id,
+    required String title,
+    required String body,
+    required DeviceNotificationCategory category,
+    required String payload,
+  }) async {
+    if (!_isSupported) return;
+    await initialize();
+    await _plugin.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: _details(category, body: body),
+      payload: payload,
     );
   }
 

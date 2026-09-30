@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -6,6 +8,9 @@ import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/services/mobile_ads_service.dart';
 import 'package:onetouch/services/device_notification_service.dart';
+import 'package:onetouch/services/firebase_push_messaging_service.dart';
+import 'package:onetouch/services/firebase_push_notification_handler.dart';
+import 'package:onetouch/services/push_device_registration_service_provider.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
@@ -16,6 +21,8 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/keyboard_dismiss.dart';
+import 'package:onetouch/core/notification_navigation.dart';
+import 'package:onetouch/core/session_sync_lifecycle.dart';
 import 'package:onetouch/SessionScreen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
@@ -23,9 +30,7 @@ import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
 import 'package:onetouch/features/app_error_view.dart';
 import 'package:onetouch/features/betting/bet_settlement_notifications.dart';
-import 'package:onetouch/data/community/mock/community_catalog.dart';
-import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+import 'package:onetouch/features/community/notification_post_page.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/comm_pages/profile_activity_screen.dart';
@@ -43,8 +48,22 @@ import 'package:onetouch/WelcomeScreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  await firebasePushMessagingService.initialize();
   await MobileAdsService.initialize();
   await runOneTouchApp();
+  await firebasePushNotificationHandler.start(
+    onDestination: _openNotificationPayload,
+  );
+  final pushDestination =
+      firebasePushNotificationHandler.takeInitialDestination();
+  if (pushDestination != null) {
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _openNotificationPayload(pushDestination),
+    );
+  }
+  await pushDeviceRegistrationService.start();
 }
 
 Future<void> runOneTouchApp({
@@ -68,7 +87,15 @@ Future<void> runOneTouchApp({
 }
 
 void _openNotificationPayload(String payload) {
-  if (!payload.startsWith('/')) return;
+  if (!isSupportedDestination(payload) || !authSession.isAuthenticated) return;
+  final currentPath = _router.routeInformationProvider.value.uri.path;
+  if (!isAppSessionReady || currentPath == '/' || currentPath == '/session') {
+    notificationNavigation.queue(
+      payload,
+      sessionToken: authSession.accessToken!,
+    );
+    return;
+  }
   _router.go(payload);
 }
 
@@ -275,16 +302,9 @@ final GoRouter _router = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final postId = int.tryParse(state.pathParameters['postId'] ?? '');
-        final posts = mockPosts.where((post) => post.postId == postId);
-        if (posts.isEmpty) {
-          return Scaffold(
-            body: Center(child: Text(tr(context, 'Post not found'))),
-          );
-        }
-        return PostDetailScreen(
-          post: posts.first,
-          postRepository: MockPostRepository(),
-        );
+        return postId == null || postId < 1
+            ? const AppErrorScreen(statusCode: 404)
+            : NotificationPostPage(postId: postId);
       },
     ),
     GoRoute(
@@ -592,22 +612,24 @@ class MyApp extends StatelessWidget {
           localeListResolutionCallback: resolveAppLocale,
           builder: (context, child) {
             Intl.defaultLocale = Localizations.localeOf(context).languageCode;
-            return AnimatedBuilder(
-              animation: _router.routeInformationProvider,
-              builder: (context, _) => AppKeyboardDismissBoundary(
-                child: BetSettlementNotificationHost(
-                  reserveBottomNavigation: _usesMainBottomNavigation(
-                    _router.routeInformationProvider.value.uri.path,
-                  ),
-                  onSeeResults: (fixtureId) => _router.push(
-                    '/match/$fixtureId?status=past',
-                  ),
-                  child: ListenableBuilder(
-                    listenable: authSession,
-                    builder: (context, _) => FootballNamesLoader(
-                      repository: _footballNames,
-                      enabled: authSession.isAuthenticated,
-                      child: child!,
+            return SessionSyncLifecycle(
+              child: AnimatedBuilder(
+                animation: _router.routeInformationProvider,
+                builder: (context, _) => AppKeyboardDismissBoundary(
+                  child: BetSettlementNotificationHost(
+                    reserveBottomNavigation: _usesMainBottomNavigation(
+                      _router.routeInformationProvider.value.uri.path,
+                    ),
+                    onSeeResults: (fixtureId) => _router.push(
+                      '/match/$fixtureId?status=past',
+                    ),
+                    child: ListenableBuilder(
+                      listenable: authSession,
+                      builder: (context, _) => FootballNamesLoader(
+                        repository: _footballNames,
+                        enabled: authSession.isAuthenticated,
+                        child: child!,
+                      ),
                     ),
                   ),
                 ),

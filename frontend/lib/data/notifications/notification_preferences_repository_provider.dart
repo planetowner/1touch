@@ -1,6 +1,6 @@
-import 'package:onetouch/data/notifications/local/local_notification_preferences_repository.dart';
+import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/data/notifications/api/api_notification_preferences_repository.dart';
 import 'package:onetouch/data/notifications/notification_preferences_repository.dart';
 
-// Swap this provider to an API implementation when the backend endpoint exists.
 final NotificationPreferencesRepository notificationPreferencesRepository =
-    LocalNotificationPreferencesRepository();
+    ApiNotificationPreferencesRepository(api: apiClient);

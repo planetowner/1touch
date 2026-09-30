@@ -57,7 +57,25 @@ class LocalNotificationPreferencesRepository
     final current = await load();
     final teams = Map<int, TeamNotificationPreferences>.of(current.teams);
     for (final teamId in teamIds) {
-      teams[teamId] = preferences;
+      teams[teamId] =
+          preferences.copyWith(newBets: current.team(teamId).newBets);
+    }
+    await _write(NotificationPreferenceSnapshot(
+      global: current.global,
+      teams: teams,
+      players: current.players,
+    ));
+  }
+
+  @override
+  Future<void> applyNewBetsToAll(
+    Iterable<int> teamIds,
+    bool enabled,
+  ) async {
+    final current = await load();
+    final teams = Map<int, TeamNotificationPreferences>.of(current.teams);
+    for (final teamId in teamIds) {
+      teams[teamId] = current.team(teamId).copyWith(newBets: enabled);
     }
     await _write(NotificationPreferenceSnapshot(
       global: current.global,
@@ -105,12 +123,11 @@ class LocalNotificationPreferencesRepository
         'global': {
           'post_reactions': snapshot.global.postReactions,
           'post_comments': snapshot.global.postComments,
-          'new_bets': snapshot.global.newBets,
-          'post_match_results': snapshot.global.postMatchResults,
         },
         'teams': {
           for (final entry in snapshot.teams.entries)
             '${entry.key}': {
+              'new_bets': entry.value.newBets,
               'match_reminder': entry.value.matchReminder,
               'kickoff': entry.value.kickoff,
               'half_time': entry.value.halfTime,
@@ -137,17 +154,19 @@ class LocalNotificationPreferencesRepository
     final global = _map(json['global']);
     final teams = _map(json['teams']);
     final players = _map(json['players']);
+    final legacyNewBets = _bool(global, 'new_bets', true);
     return NotificationPreferenceSnapshot(
       global: GlobalNotificationPreferences(
         postReactions: _bool(global, 'post_reactions', true),
         postComments: _bool(global, 'post_comments', true),
-        newBets: _bool(global, 'new_bets', true),
-        postMatchResults: _bool(global, 'post_match_results', true),
       ),
       teams: {
         for (final entry in teams.entries)
           if (int.tryParse(entry.key) case final int teamId)
-            teamId: _decodeTeam(_map(entry.value)),
+            teamId: _decodeTeam(
+              _map(entry.value),
+              legacyNewBets: legacyNewBets,
+            ),
       },
       players: {
         for (final entry in players.entries)
@@ -157,8 +176,12 @@ class LocalNotificationPreferencesRepository
     );
   }
 
-  TeamNotificationPreferences _decodeTeam(Map<String, dynamic> json) =>
+  TeamNotificationPreferences _decodeTeam(
+    Map<String, dynamic> json, {
+    required bool legacyNewBets,
+  }) =>
       TeamNotificationPreferences(
+        newBets: _bool(json, 'new_bets', legacyNewBets),
         matchReminder: _bool(json, 'match_reminder', false),
         kickoff: _bool(json, 'kickoff', true),
         halfTime: _bool(json, 'half_time', true),

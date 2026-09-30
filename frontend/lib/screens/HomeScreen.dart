@@ -5,11 +5,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
+import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
     as home_provider;
 import 'package:onetouch/data/home/news_repository.dart';
+import 'package:onetouch/data/session/session_data_synchronizer.dart';
 import 'package:onetouch/data/home/news_repository_provider.dart'
     as news_provider;
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
@@ -185,6 +187,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Future<void> _refreshHome() async {
     final teamId = currentUserPreferences.viewedTeamId.value;
     await Future.wait<void>([
+      sessionDataSynchronizer.synchronize(
+        trigger: CacheSyncTrigger.userRefresh,
+      ),
       _loadHome(),
       _loadNews(teamId),
     ]);

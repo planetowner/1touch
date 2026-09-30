@@ -48,6 +48,12 @@ class _RecordingNotificationRepository
   ) async {}
 
   @override
+  Future<void> applyNewBetsToAll(
+    Iterable<int> teamIds,
+    bool enabled,
+  ) async {}
+
+  @override
   Future<void> saveGlobal(GlobalNotificationPreferences preferences) async {}
 }
 
