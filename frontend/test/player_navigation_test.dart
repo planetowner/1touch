@@ -161,7 +161,19 @@ void main() {
       find.byKey(ValueKey('ones-to-watch-jersey-${player.id}')),
       findsOneWidget,
     );
-    expect(find.text('#${player.jerseyNumber}'), findsOneWidget);
+    expect(find.text('${player.jerseyNumber}'), findsOneWidget);
+    final portrait = tester.getRect(
+      find.byKey(ValueKey('ones-to-watch-portrait-${player.id}')),
+    );
+    final jersey = tester.getRect(
+      find.byKey(ValueKey('ones-to-watch-jersey-${player.id}')),
+    );
+    final imageSurface = tester.getRect(
+      find.byKey(const ValueKey('ones-to-watch-image-surface')),
+    );
+    expect(portrait.top, jersey.top);
+    expect(portrait.bottom, imageSurface.bottom);
+    expect(portrait.width, imageSurface.height - 10);
     expect(find.text('${player.rankingChange.abs()}'), findsNothing);
     expect(find.byIcon(Icons.arrow_drop_up), findsNothing);
     expect(find.byIcon(Icons.arrow_drop_down), findsNothing);

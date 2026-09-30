@@ -36,55 +36,66 @@ class OnesToWatchCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Stack(
-                    children: [
-                      Container(
-                        key: const ValueKey('ones-to-watch-image-surface'),
-                        width: double.infinity,
-                        color: isDark
-                            ? AppPalette.darkGrey
-                            : appColors.subtleBackground,
-                      ),
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        child: SizedBox(
-                          width: 88,
-                          child: PlayerImage(player: player),
-                        ),
-                      ),
-                      Positioned(
-                        top: 10,
-                        left: 10,
-                        child: Text(
-                          '#${player.jerseyNumber}',
-                          key: ValueKey('ones-to-watch-jersey-${player.id}'),
-                          style: Heading2.style,
-                        ),
-                      ),
-                    ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final portraitSize = constraints.maxHeight - 10;
+                      return Stack(
+                        children: [
+                          Container(
+                            key: const ValueKey('ones-to-watch-image-surface'),
+                            width: double.infinity,
+                            color: isDark
+                                ? AppPalette.darkGrey
+                                : appColors.subtleBackground,
+                          ),
+                          Positioned(
+                            top: 10,
+                            right: 0,
+                            width: portraitSize,
+                            height: portraitSize,
+                            child: SizedBox(
+                              key: ValueKey(
+                                  'ones-to-watch-portrait-${player.id}'),
+                              child: PlayerImage(player: player),
+                            ),
+                          ),
+                          Positioned(
+                            top: 10,
+                            left: 10,
+                            child: Text(
+                              '${player.jerseyNumber}',
+                              key:
+                                  ValueKey('ones-to-watch-jersey-${player.id}'),
+                              style: Heading2.style,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
                 Container(
                   key: const ValueKey('ones-to-watch-info-surface'),
                   width: double.infinity,
+                  height: 88,
                   color: isDark ? AppPalette.lightGrey : AppPalette.white,
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        playerNameLabel(
-                            context, player.externalPlayerId, player.fullName),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Body1_b.style.copyWith(color: colors.onSurface),
-                        textAlign: TextAlign.start,
+                      Expanded(
+                        child: PlayerWatchName(
+                          name: playerNameLabel(context,
+                              player.externalPlayerId, player.fullName),
+                          style:
+                              Body1_b.style.copyWith(color: colors.onSurface),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${teamNameLabel(context, player.teamId, player.teamName)} • ${player.jerseyNumber}',
+                        teamNameLabel(context, player.teamId, player.teamName),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: Eyebrow.style.copyWith(color: colors.onSurface),
                       ),
                     ],
