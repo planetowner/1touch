@@ -157,6 +157,35 @@ void main() {
     expect(router.routeInformationProvider.value.uri.path, '/players');
     expect(mainTabActions.tabIndex, 2);
     expect(find.text('players-root'), findsOneWidget);
+
+    router.go('/team');
+    await tester.pumpAndSettle();
+    final tabEvents = <String>[];
+    void recordTabAction() {
+      tabEvents.add(
+        '${mainTabActions.tabIndex}:${router.routeInformationProvider.value.uri.path}',
+      );
+    }
+
+    mainTabActions.addListener(recordTabAction);
+    addTearDown(() => mainTabActions.removeListener(recordTabAction));
+
+    await tester.tap(find.byKey(const ValueKey('main-bottom-navigation-3')));
+    await tester.pumpAndSettle();
+    expect(tabEvents.first, '3:/team');
+    expect(router.routeInformationProvider.value.uri.path, '/community');
+
+    tabEvents.clear();
+    await tester.tap(find.byKey(const ValueKey('main-bottom-navigation-2')));
+    await tester.pumpAndSettle();
+    expect(tabEvents.first, '2:/community');
+    expect(router.routeInformationProvider.value.uri.path, '/players');
+
+    tabEvents.clear();
+    await tester.tap(find.byKey(const ValueKey('main-bottom-navigation-0')));
+    await tester.pumpAndSettle();
+    expect(tabEvents.first, '0:/players');
+    expect(router.routeInformationProvider.value.uri.path, '/home');
     expect(tester.takeException(), isNull);
   });
 }
