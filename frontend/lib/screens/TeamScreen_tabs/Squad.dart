@@ -600,8 +600,9 @@ class _SquadTabState extends State<SquadTab> {
           label: tr(context, 'ASCENDING'),
           optionKey: const ValueKey('squad-sort-option-ascending'),
           selected: _isAscending,
-          selectedIconKey: ValueKey(
-            'squad-sort-selected-icon-${tr(context, 'ASCENDING')}',
+          // 화면 언어가 바뀌어도 선택 아이콘의 식별자는 같아야 해요.
+          selectedIconKey: const ValueKey(
+            'squad-sort-selected-icon-ASCENDING',
           ),
         ),
         AppDropdownOption<String>(
@@ -609,8 +610,8 @@ class _SquadTabState extends State<SquadTab> {
           label: tr(context, 'DESCENDING'),
           optionKey: const ValueKey('squad-sort-option-descending'),
           selected: !_isAscending,
-          selectedIconKey: ValueKey(
-            'squad-sort-selected-icon-${tr(context, 'DESCENDING')}',
+          selectedIconKey: const ValueKey(
+            'squad-sort-selected-icon-DESCENDING',
           ),
         ),
         for (var index = 0; index < sortOptions.length; index++)

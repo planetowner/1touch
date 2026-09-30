@@ -5,26 +5,25 @@ class FixtureChatMessage {
   const FixtureChatMessage({
     required this.messageId,
     required this.fixtureId,
-    required this.userId,
-    required this.username,
-    this.displayName,
+    required this.nicknameEn,
+    required this.nicknameKo,
+    required this.isMine,
     required this.text,
     required this.createdAt,
-    required this.avatarUrl,
     required this.authorDeleted,
   });
 
   final int messageId;
   final int fixtureId;
-  final int? userId;
-  final String? username;
-  final String? displayName;
+  final String? nicknameEn;
+  final String? nicknameKo;
+  final bool isMine;
   final String text;
   final DateTime createdAt;
-  final String? avatarUrl;
   final bool authorDeleted;
 
-  String get displayAuthor => authorDeleted
+  // 선수명만 언어에 맞추고, 같은 참여자를 가리키는 4자리 코드는 유지해요.
+  String displayAuthor(String languageCode) => authorDeleted
       ? 'Deleted user'
-      : (displayName?.trim().isNotEmpty == true ? displayName! : username!);
+      : (languageCode == 'ko' ? nicknameKo! : nicknameEn!);
 }

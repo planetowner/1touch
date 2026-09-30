@@ -58,7 +58,6 @@ class ApiChatRepository implements ChatRepository {
     final page = ApiChatHistoryResponse.fromJson(decoded).items.map((item) {
       final message = chatMessageFromApiResponse(
         item,
-        apiBaseUri: _api.baseUri,
       );
       if (message.fixtureId != fixtureId) {
         throw FormatException(

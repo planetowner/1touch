@@ -2,15 +2,65 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/chat/chat_repository.dart';
 import 'package:onetouch/data/chat/chat_socket.dart';
-import 'package:onetouch/data/profile/current_user_repository.dart';
-import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/fixture_chat_message.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/livechat.dart';
 
 void main() {
+  for (final language in ['ko', 'en', 'ja', 'zh']) {
+    testWidgets('shows anonymous names and own-message alignment in $language',
+        (tester) async {
+      await tester.pumpWidget(_app(
+        repository: _ChatRepository([
+          _message(messageId: 10, userId: 7),
+          _message(messageId: 11, userId: 8),
+          _message(messageId: 12, userId: 8),
+        ]),
+        socket: _ChatSocket(session: _ChatSession()),
+        language: language,
+      ));
+      await tester.pumpAndSettle();
+
+      final ownName = language == 'ko' ? '크루이프_A8Q4' : 'Cruyff_A8Q4';
+      final otherName = language == 'ko' ? '루니_X7K2' : 'Rooney_X7K2';
+      expect(find.text(ownName), findsOneWidget);
+      expect(find.text(otherName), findsOneWidget);
+      expect(find.text('supporter'), findsNothing);
+      final ownHeader = tester.widget<Row>(find
+          .ancestor(
+            of: find.text(ownName),
+            matching: find.byType(Row),
+          )
+          .first);
+      final otherHeader = tester.widget<Row>(find
+          .ancestor(
+            of: find.text(otherName),
+            matching: find.byType(Row),
+          )
+          .first);
+      expect(ownHeader.mainAxisAlignment, MainAxisAlignment.end);
+      expect(otherHeader.mainAxisAlignment, MainAxisAlignment.start);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('own anonymous message offers copy without reporting',
+      (tester) async {
+    await tester.pumpWidget(_app(
+      repository: _ChatRepository([_message(messageId: 10, userId: 7)]),
+      socket: _ChatSocket(session: _ChatSession()),
+    ));
+    await tester.pumpAndSettle();
+    await tester.longPress(find.text('History message 10'));
+    await tester.pumpAndSettle();
+    expect(find.text('Report'), findsNothing);
+    expect(find.text('Copy Text'), findsOneWidget);
+  });
+
   testWidgets('merges history and live messages and sends through the socket',
       (tester) async {
     final historyMessage = _message(messageId: 10, userId: 7);
@@ -25,7 +75,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('supporter'), findsOneWidget);
+    expect(find.text('Cruyff_A8Q4'), findsOneWidget);
     expect(find.text('History message 10'), findsOneWidget);
     expect(find.text('Be the first to chat!'), findsNothing);
 
@@ -111,6 +161,45 @@ void main() {
     expect(find.text('Retry'), findsOneWidget);
   });
 
+  for (final phase in ['connect', 'history', 'live']) {
+    testWidgets('match closure during $phase hides messages, input and retry',
+        (tester) async {
+      const closed =
+          ChatSocketException(message: 'Unavailable', closeCode: 4410);
+      final session = _ChatSession();
+      await tester.pumpWidget(_app(
+        repository: _ChatRepository(
+          [_message(messageId: 10, userId: 7)],
+          error: phase == 'history'
+              ? http.ClientException('API request failed with status 410.')
+              : null,
+        ),
+        socket: _ChatSocket(
+          session: session,
+          error: phase == 'connect' ? closed : null,
+        ),
+        language: 'ko',
+      ));
+      // 구독 취소의 Dart 공용 Future도 끝나도록 테스트의 가짜 시계 밖에서 한 번 진행해요.
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pumpAndSettle();
+      if (phase == 'live') {
+        expect(find.text('History message 10'), findsOneWidget);
+        session.addError(closed);
+        await tester.pumpAndSettle();
+      }
+      expect(find.text('지금은 채팅할 수 없어요'), findsOneWidget);
+      expect(find.text('경기 중에만 실시간 채팅을 이용할 수 있어요.'), findsOneWidget);
+      expect(find.text('History message 10'), findsNothing);
+      expect(find.byType(TextField), findsNothing);
+      expect(find.byType(TextButton), findsNothing);
+      expect(find.byIcon(Icons.wifi_off), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+      if (phase != 'connect') expect(session.closed, isTrue);
+    });
+  }
+
   testWidgets('reports another user message through the repository',
       (tester) async {
     tester.view.physicalSize = const Size(430, 932);
@@ -151,15 +240,18 @@ void main() {
 Widget _app({
   required ChatRepository repository,
   required ChatSocket socket,
+  String language = 'en',
 }) {
   return MaterialApp(
+    locale: Locale(language),
+    supportedLocales: appSupportedLocales,
+    localizationsDelegates: appLocalizationDelegates,
     theme: app_style.whitetheme,
     home: Scaffold(
       body: LiveChatTab(
         matchId: 42,
         repository: repository,
         socket: socket,
-        currentUserRepository: _CurrentUserRepository(),
       ),
     ),
   );
@@ -169,20 +261,21 @@ FixtureChatMessage _message({required int messageId, required int userId}) {
   return FixtureChatMessage(
     messageId: messageId,
     fixtureId: 42,
-    userId: userId,
-    username: userId == 7 ? 'supporter' : 'opponent',
+    nicknameEn: userId == 7 ? 'Cruyff_A8Q4' : 'Rooney_X7K2',
+    nicknameKo: userId == 7 ? '크루이프_A8Q4' : '루니_X7K2',
+    isMine: userId == 7,
     text: 'History message $messageId',
     createdAt: DateTime.utc(2026, 9, 18, 12, messageId),
-    avatarUrl: null,
     authorDeleted: false,
   );
 }
 
 class _ChatRepository implements ChatRepository {
-  _ChatRepository(this.history)
+  _ChatRepository(this.history, {this.error})
       : cachedHistories = ValueNotifier({42: List.unmodifiable(history)});
 
   final List<FixtureChatMessage> history;
+  final Object? error;
   final List<({int messageId, String reason})> reports = [];
 
   @override
@@ -198,8 +291,10 @@ class _ChatRepository implements ChatRepository {
     int? beforeId,
     int? afterId,
     int limit = 50,
-  }) async =>
-      List.unmodifiable(history);
+  }) async {
+    if (error != null) throw error!;
+    return List.unmodifiable(history);
+  }
 
   @override
   Future<void> reportMessage({
@@ -245,19 +340,4 @@ class _ChatSession implements ChatSocketSession {
     closed = true;
     await _messages.close();
   }
-}
-
-class _CurrentUserRepository implements CurrentUserRepository {
-  @override
-  Future<CurrentUserProfile> load() async => CurrentUserProfile(
-        userId: 7,
-        username: 'supporter',
-        displayName: 'Supporter',
-        firstName: 'Test',
-        lastName: 'User',
-        email: null,
-        avatarUri: null,
-        favoriteTeamId: 9,
-        createdAt: DateTime.utc(2026),
-      );
 }
