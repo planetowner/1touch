@@ -6,8 +6,54 @@ import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/auth/api/api_google_auth_repository.dart';
 import 'package:onetouch/data/auth/auth_request_exception.dart';
+import 'package:onetouch/data/auth/registration_field.dart';
 
 void main() {
+  for (final field in RegistrationField.values) {
+    test('checks $field availability through the registration API', () async {
+      var available = false;
+      final repository = ApiGoogleAuthRepository(
+        api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'POST');
+            expect(request.url.path, '/v1/auth/registration/availability');
+            expect(jsonDecode(request.body),
+                {'field': field.apiValue, 'value': 'entered-value'});
+            return http.Response(jsonEncode({'available': available}), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {},
+        ),
+      );
+      expect(
+          await repository.isRegistrationValueAvailable(
+              field: field, value: 'entered-value'),
+          isFalse);
+      available = true;
+      expect(
+          await repository.isRegistrationValueAvailable(
+              field: field, value: 'entered-value'),
+          isTrue);
+    });
+  }
+
+  test('availability failure never becomes an available result', () async {
+    final repository = ApiGoogleAuthRepository(
+      api: ApiClient(
+        client: MockClient((_) async => http.Response(
+            jsonEncode({'detail': 'Too many authentication requests'}), 429)),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+    );
+    await expectLater(
+      repository.isRegistrationValueAvailable(
+          field: RegistrationField.email, value: 'member@example.com'),
+      throwsA(isA<AuthRequestException>()
+          .having((error) => error.statusCode, 'statusCode', 429)),
+    );
+  });
+
   test('posts a Google ID token and returns the backend access token',
       () async {
     final repository = ApiGoogleAuthRepository(

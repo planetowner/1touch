@@ -6,12 +6,35 @@ import 'package:onetouch/data/auth/auth_repository.dart';
 import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
+import 'package:onetouch/data/auth/registration_field.dart';
 
 /// 소셜·비밀번호 인증과 이메일 인증번호 요청을 같은 API로 처리해요.
 class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
   ApiGoogleAuthRepository({required ApiClient api}) : _api = api;
 
   final ApiClient _api;
+
+  @override
+  Future<bool> isRegistrationValueAvailable({
+    required RegistrationField field,
+    required String value,
+  }) async {
+    final response = await _api.post(
+      _api.baseUri.resolve('auth/registration/availability'),
+      headers: const {'Content-Type': 'application/json'},
+      body: jsonEncode({'field': field.apiValue, 'value': value}),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw AuthRequestException(
+        statusCode: response.statusCode,
+        message: _responseDetail(response.body,
+            fallback: 'Unable to check availability. Try again.'),
+      );
+    }
+    final decoded =
+        _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
+    return decoded['available'] as bool;
+  }
 
   @override
   Future<String> signInWithSocial({

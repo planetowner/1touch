@@ -1,7 +1,13 @@
 import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
+import 'package:onetouch/data/auth/registration_field.dart';
 
 abstract interface class AuthRepository {
+  Future<bool> isRegistrationValueAvailable({
+    required RegistrationField field,
+    required String value,
+  });
+
   Future<String> signInWithSocial({
     required LoginProvider provider,
     required Map<String, String> credentials,

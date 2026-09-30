@@ -4,6 +4,7 @@ import 'package:onetouch/data/auth/auth_token_store.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
+import 'package:onetouch/data/auth/registration_field.dart';
 import 'package:onetouch/data/auth/social_identity_service.dart';
 
 // 가입·재설정은 서버와 같은 조건을 사용하고 비밀번호 원문은 바꾸지 않아요.
@@ -77,6 +78,12 @@ class AuthService {
           {required String email,
           EmailCodePurpose purpose = EmailCodePurpose.signup}) =>
       _repository.requestEmailCode(email: email, purpose: purpose);
+
+  Future<bool> isRegistrationValueAvailable({
+    required RegistrationField field,
+    required String value,
+  }) =>
+      _repository.isRegistrationValueAvailable(field: field, value: value);
 
   Future<void> resetPassword({
     required String challengeId,

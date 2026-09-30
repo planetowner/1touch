@@ -4,7 +4,7 @@ from ..deps import get_token, get_user_id
 from ..repos import auth_repo
 from ..schemas.users import (
     AccessTokenBody, AppleLoginBody, CodeBody, EmailCodeBody, EmailChangeRequestBody, EmailChangeConfirmBody, GoogleLoginBody,
-    PasswordLoginBody, RegisterEmailBody, ResetPasswordBody,
+    PasswordLoginBody, RegisterEmailBody, RegistrationAvailabilityBody, ResetPasswordBody,
 )
 from ..services import social_login
 
@@ -14,6 +14,16 @@ router = APIRouter()
 def auth_request_limit(request: Request):
     # 프록시에서 신뢰한 연결 IP를 써요. X-Forwarded-For를 직접 신뢰하지 않아요.
     auth_repo.rate_limit(f"auth-ip:{request.client.host}", 20, 60)
+
+
+def registration_availability_limit(request: Request):
+    # 입력 중 조회가 로그인·인증번호 요청 한도를 소진하지 않게 별도로 세어요.
+    auth_repo.rate_limit(f"registration-availability:{request.client.host}", 60, 60)
+
+
+@router.post("/auth/registration/availability", dependencies=[Depends(registration_availability_limit)])
+def registration_availability(body: RegistrationAvailabilityBody):
+    return {"available": auth_repo.registration_value_available(body.field, body.value)}
 
 
 @router.get("/auth/providers")

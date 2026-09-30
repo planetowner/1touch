@@ -7,9 +7,19 @@ import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
 import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
+import 'package:onetouch/data/auth/registration_field.dart';
 import 'package:onetouch/SignComps/VerifyEmail.dart';
+import 'package:onetouch/SignComps/signup_availability_field.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/user_name_labels.dart';
+
+String? _emailValidationMessage(String value) {
+  final email = value.trim();
+  if (email.isEmpty) return 'Enter email';
+  return RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)
+      ? null
+      : 'Enter a valid email';
+}
 
 class EmailSignUpScreen extends StatefulWidget {
   const EmailSignUpScreen({super.key, this.authService});
@@ -29,6 +39,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _displayName = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
+  final _availableFields = <RegistrationField>{};
 
   bool _obscure = true;
   bool _agreed = false;
@@ -53,6 +64,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   bool get _canSubmit =>
       _agreed &&
       !_submitting &&
+      _availableFields.length == RegistrationField.values.length &&
       _firstName.text.trim().isNotEmpty &&
       _lastName.text.trim().isNotEmpty &&
       _username.text.trim().isNotEmpty &&
@@ -61,8 +73,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       isValidNewPassword(_password.text);
 
   Future<void> _submit() async {
-    if (_submitting || !_formKey.currentState!.validate()) return;
-    if (!_agreed) return;
+    if (!_canSubmit || !_formKey.currentState!.validate()) return;
 
     setState(() => _submitting = true);
 
@@ -98,6 +109,17 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  void _setAvailable(RegistrationField field, bool available) {
+    if (_availableFields.contains(field) == available) return;
+    setState(() {
+      if (available) {
+        _availableFields.add(field);
+      } else {
+        _availableFields.remove(field);
+      }
+    });
   }
 
   void _showCodeRequestError(String message) {
@@ -174,53 +196,55 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         const SizedBox(height: 16),
                       ],
 
-                      Text(tr(context, 'Username'), style: Eyebrow.style),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _username,
-                        maxLength: 30,
-                        decoration:
-                            _dec(context, 'john_doe').copyWith(counterText: ''),
-                        validator: (v) {
-                          final message = usernameValidationMessage(v ?? '');
-                          return message == null ? null : tr(context, message);
-                        },
-                        style: Body1.style,
-                      ),
-                      const SizedBox(height: 16),
-
-                      Text(tr(context, 'Nickname'), style: Eyebrow.style),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        key: const ValueKey('signup-display-name-field'),
-                        controller: _displayName,
-                        maxLength: 12,
-                        decoration:
-                            _dec(context, '불광동호날두').copyWith(counterText: ''),
-                        validator: (v) {
-                          final message = displayNameValidationMessage(v ?? '');
-                          return message == null ? null : tr(context, message);
-                        },
-                        style: Body1.style,
-                      ),
-                      const SizedBox(height: 16),
-
-                      Text(tr(context, 'Email'), style: Eyebrow.style),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _email,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: _dec(context, 'johndoe@gmail.com'),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty)
-                            return tr(context, 'Enter email');
-                          final ok = RegExp(r'^[^@]+@[^@]+\.[^@]+$')
-                              .hasMatch(v.trim());
-                          return ok ? null : tr(context, 'Enter a valid email');
-                        },
-                        style: Body1.style,
-                      ),
-                      const SizedBox(height: 16),
+                      for (final field in [
+                        (
+                          field: RegistrationField.username,
+                          label: 'Username',
+                          hint: 'john_doe',
+                          controller: _username,
+                          maxLength: 30,
+                          keyboardType: null,
+                          validator: usernameValidationMessage,
+                        ),
+                        (
+                          field: RegistrationField.displayName,
+                          label: 'Nickname',
+                          hint: '불광동호날두',
+                          controller: _displayName,
+                          maxLength: 12,
+                          keyboardType: null,
+                          validator: displayNameValidationMessage,
+                        ),
+                        (
+                          field: RegistrationField.email,
+                          label: 'Email',
+                          hint: 'johndoe@gmail.com',
+                          controller: _email,
+                          maxLength: null,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: _emailValidationMessage,
+                        ),
+                      ]) ...[
+                        Text(tr(context, field.label), style: Eyebrow.style),
+                        const SizedBox(height: 8),
+                        SignupAvailabilityField(
+                          key: ValueKey(
+                              'signup-${field.field.apiValue.replaceAll('_', '-')}-field'),
+                          controller: field.controller,
+                          maxLength: field.maxLength,
+                          keyboardType: field.keyboardType,
+                          enabled: !_submitting,
+                          decoration: _dec(context, field.hint)
+                              .copyWith(counterText: ''),
+                          validator: field.validator,
+                          checkAvailability: (value) =>
+                              _authService.isRegistrationValueAvailable(
+                                  field: field.field, value: value),
+                          onAvailabilityChanged: (available) =>
+                              _setAvailable(field.field, available),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
 
                       Text(tr(context, 'Password'), style: Eyebrow.style),
                       const SizedBox(height: 8),
