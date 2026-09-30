@@ -12,7 +12,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/data/notifications/notification_preferences.dart';
 import 'package:onetouch/data/notifications/notification_preferences_repository.dart';
 import 'package:onetouch/data/notifications/notification_preferences_repository_provider.dart';
-import 'package:onetouch/services/device_notification_service.dart';
+import 'package:onetouch/services/push_device_registration_service_provider.dart';
 
 Widget _divider(BuildContext context, {double thickness = 1}) => Divider(
       color: AppColors.of(context).divider,
@@ -23,7 +23,7 @@ Widget _divider(BuildContext context, {double thickness = 1}) => Divider(
 Future<void> _requestDeviceNotificationPermission(bool needed) async {
   if (!needed) return;
   try {
-    await deviceNotificationService.requestPermission();
+    await pushDeviceRegistrationService.requestPermissionAndRegister();
   } on Object catch (error) {
     debugPrint('Unable to request notification permission: $error');
   }
@@ -42,6 +42,7 @@ class NotificationListPage extends StatefulWidget {
 class _NotificationListPageState extends State<NotificationListPage> {
   GlobalNotificationPreferences _preferences =
       const GlobalNotificationPreferences();
+  bool _newBets = true;
 
   NotificationPreferencesRepository get _repository =>
       widget.repository ?? notificationPreferencesRepository;
@@ -53,8 +54,12 @@ class _NotificationListPageState extends State<NotificationListPage> {
   }
 
   Future<void> _load() async {
-    final preferences = (await _repository.load()).global;
-    if (mounted) setState(() => _preferences = preferences);
+    final snapshot = await _repository.load();
+    if (!mounted) return;
+    setState(() {
+      _preferences = snapshot.global;
+      _newBets = snapshot.teams.values.every((team) => team.newBets);
+    });
   }
 
   void _update(GlobalNotificationPreferences preferences, bool enabled) {
@@ -68,6 +73,19 @@ class _NotificationListPageState extends State<NotificationListPage> {
   }) async {
     await _repository.saveGlobal(preferences);
     await _requestDeviceNotificationPermission(requestPermission);
+  }
+
+  void _updateNewBets(bool enabled) {
+    setState(() => _newBets = enabled);
+    unawaited(_saveNewBets(enabled));
+  }
+
+  Future<void> _saveNewBets(bool enabled) async {
+    await _repository.applyNewBetsToAll(
+      currentUserPreferences.followedTeamIds.value,
+      enabled,
+    );
+    await _requestDeviceNotificationPermission(enabled);
   }
 
   @override
@@ -197,21 +215,8 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     _switchRow(
                       context,
                       label: tr(context, 'New bets'),
-                      value: _preferences.newBets,
-                      onChanged: (value) => _update(
-                        _preferences.copyWith(newBets: value),
-                        value,
-                      ),
-                    ),
-                    _divider(context),
-                    _switchRow(
-                      context,
-                      label: tr(context, 'Post-match results'),
-                      value: _preferences.postMatchResults,
-                      onChanged: (value) => _update(
-                        _preferences.copyWith(postMatchResults: value),
-                        value,
-                      ),
+                      value: _newBets,
+                      onChanged: _updateNewBets,
                     ),
 
                     const SizedBox(height: 48),
@@ -265,6 +270,7 @@ class TeamNotificationDetailPage extends StatefulWidget {
 
 class _TeamNotificationDetailPageState
     extends State<TeamNotificationDetailPage> {
+  bool _newBets = true;
   final Map<String, bool> _opts = {
     "Match Reminder": false,
     "Kickoff, Half Time, Full Time": true,
@@ -290,6 +296,7 @@ class _TeamNotificationDetailPageState
   }
 
   void _apply(TeamNotificationPreferences preferences) {
+    _newBets = preferences.newBets;
     _opts['Match Reminder'] = preferences.matchReminder;
     _opts['Kickoff, Half Time, Full Time'] =
         preferences.kickoff && preferences.halfTime && preferences.fullTime;
@@ -299,6 +306,7 @@ class _TeamNotificationDetailPageState
 
   TeamNotificationPreferences get _currentPreferences =>
       TeamNotificationPreferences(
+        newBets: _newBets,
         matchReminder: _opts['Match Reminder']!,
         kickoff: _opts['Kickoff, Half Time, Full Time']!,
         halfTime: _opts['Kickoff, Half Time, Full Time']!,
