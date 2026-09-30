@@ -196,6 +196,9 @@ ThemeData _buildTheme(
       backgroundColor: colors.pageBackground,
       foregroundColor: foreground,
       elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
       iconTheme: IconThemeData(color: foreground),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
