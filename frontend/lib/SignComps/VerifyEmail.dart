@@ -194,6 +194,10 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
       }
     } on AuthRequestException catch (error) {
       if (!mounted) return;
+      if (!_isReset && error.statusCode == 409 && context.canPop()) {
+        context.pop('duplicate');
+        return;
+      }
       _showMessage('${tr(context, error.message)} (${error.statusCode})');
     } on Object {
       if (!mounted) return;

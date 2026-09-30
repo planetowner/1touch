@@ -389,8 +389,14 @@ class _NewPasswordScreenState extends State<_NewPasswordScreen> {
                         hidden: _hidePassword,
                         toggle: () =>
                             setState(() => _hidePassword = !_hidePassword)),
+                    const SizedBox(height: 8),
+                    Text(
+                      tr(context,
+                          'Choose a password that is 8 or more characters long.'),
+                      style: Body1.style,
+                    ),
                     const SizedBox(height: 24),
-                    Text(tr(context, 'Enter it again.'), style: Body1.style),
+                    Text(tr(context, 'Retype Password'), style: Body1.style),
                     const SizedBox(height: 12),
                     _passwordField(
                         key: const ValueKey('reset-confirm-password'),

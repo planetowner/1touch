@@ -40,8 +40,10 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _availableFields = <RegistrationField>{};
+  final _confirmPassword = TextEditingController();
 
   bool _obscure = true;
+  bool _obscureConfirm = true;
   bool _agreed = false;
   bool _submitting = false;
 
@@ -61,19 +63,29 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     );
   }
 
-  bool get _canSubmit =>
+  bool get _validInputs =>
       _agreed &&
-      !_submitting &&
-      _availableFields.length == RegistrationField.values.length &&
       _firstName.text.trim().isNotEmpty &&
       _lastName.text.trim().isNotEmpty &&
-      _username.text.trim().isNotEmpty &&
-      _displayName.text.trim().isNotEmpty &&
-      _email.text.trim().isNotEmpty &&
-      isValidNewPassword(_password.text);
+      usernameValidationMessage(_username.text) == null &&
+      displayNameValidationMessage(_displayName.text) == null &&
+      _emailValidationMessage(_email.text) == null &&
+      isValidNewPassword(_password.text) &&
+      _confirmPassword.text == _password.text;
 
   Future<void> _submit() async {
-    if (!_canSubmit || !_formKey.currentState!.validate()) return;
+    if (_submitting) return;
+    if (!_formKey.currentState!.validate()) {
+      _showCodeRequestError(
+          tr(context, 'Please check the highlighted fields.'));
+      return;
+    }
+    if (!_agreed) {
+      _showCodeRequestError(
+          tr(context, 'Please agree to the Terms and Privacy Policy.'));
+      return;
+    }
+    if (_availableFields.length != RegistrationField.values.length) return;
 
     setState(() => _submitting = true);
 
@@ -81,7 +93,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       final email = _email.text.trim();
       final challenge = await _authService.requestEmailCode(email: email);
       if (!mounted) return;
-      context.push(
+      final registrationResult = await context.push<String>(
         '/auth/verify',
         extra: EmailRegistrationDraft(
           firstName: _firstName.text.trim(),
@@ -94,6 +106,11 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
           expiresInSeconds: challenge.expiresInSeconds,
         ),
       );
+      if (!mounted) return;
+      if (registrationResult == 'duplicate') {
+        _showCodeRequestError(
+            tr(context, 'Email, username, or nickname is already registered'));
+      }
     } on AuthRequestException catch (error) {
       if (!mounted) return;
       _showCodeRequestError(
@@ -136,6 +153,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     _displayName.dispose();
     _email.dispose();
     _password.dispose();
+    _confirmPassword.dispose();
     super.dispose();
   }
 
@@ -161,41 +179,54 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         title: Text(tr(context, 'Sign up'), style: Body1.style),
       ),
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              // --- 1. I added the Form widget back here ---
+        child: Column(
+          children: [
+            Expanded(
               child: Form(
                 key: _formKey,
-                onChanged: () => setState(
-                    () {}), // This ensures the button enables/disables correctly
-                child: Padding(
+                onChanged: () => setState(() {}),
+                child: SingleChildScrollView(
+                  key: const ValueKey('signup-fields-scroll'),
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 12),
-                      for (final field in orderedUserNameParts(
-                        locale: Localizations.localeOf(context),
-                        firstName: (_firstName, 'First name', 'John'),
-                        lastName: (_lastName, 'Last name', 'Doe'),
-                      )) ...[
-                        Text(tr(context, field.$2), style: Eyebrow.style),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          key: ValueKey(
-                              'signup-${field.$2.toLowerCase().replaceAll(' ', '-')}-field'),
-                          controller: field.$1,
-                          decoration: _dec(context, field.$3),
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? tr(context, 'Enter ${field.$2.toLowerCase()}')
-                              : null,
-                          style: Body1.style,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final (index, field) in orderedUserNameParts(
+                            locale: Localizations.localeOf(context),
+                            firstName: (_firstName, 'First name', 'John'),
+                            lastName: (_lastName, 'Last name', 'Doe'),
+                          ).indexed) ...[
+                            if (index > 0) const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(tr(context, field.$2),
+                                      style: Eyebrow.style),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                    key: ValueKey(
+                                        'signup-${field.$2.toLowerCase().replaceAll(' ', '-')}-field'),
+                                    controller: field.$1,
+                                    decoration: _dec(context, field.$3),
+                                    validator: (v) => (v == null ||
+                                            v.trim().isEmpty)
+                                        ? tr(context,
+                                            'Enter ${field.$2.toLowerCase()}')
+                                        : null,
+                                    style: Body1.style,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 16),
                       for (final field in [
                         (
                           field: RegistrationField.username,
@@ -245,10 +276,10 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         ),
                         const SizedBox(height: 16),
                       ],
-
                       Text(tr(context, 'Password'), style: Eyebrow.style),
                       const SizedBox(height: 8),
                       TextFormField(
+                        key: const ValueKey('signup-password-field'),
                         controller: _password,
                         obscureText: _obscure,
                         decoration: _dec(context, '• • • • • • • •').copyWith(
@@ -268,77 +299,114 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                                 'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
                         style: Body1.style,
                       ),
-
-                      // --- 2. The Spacer now works correctly inside SliverFillRemaining ---
-                      const Spacer(),
-
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.zero,
-                        alignment: Alignment.topLeft,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Checkbox(
-                                value: _agreed,
-                                onChanged: (v) =>
-                                    setState(() => _agreed = v ?? false),
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4)),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                tr(
-                                        context,
-                                        "By clicking sign up, I hereby agree and consent to\n"
-                                        "1Touch’s Terms & Conditions; I confirm that I have\n"
-                                        "read 1Touch’s Privacy Policy.")
-                                    .replaceAll('\n', ' '),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                                style: Body2.style,
-                              ),
-                            ),
-                          ],
-                        ),
+                      const SizedBox(height: 8),
+                      Text(
+                        tr(context,
+                            'Choose a password that is 8 or more characters long.'),
+                        style: Body1.style,
                       ),
-
-                      const SizedBox(height: 16),
-
-                      SizedBox(
-                        height: 56,
-                        width: double.infinity,
-                        child: FilledButton(
-                          key: const ValueKey('email-sign-up-button'),
-                          onPressed: _canSubmit ? _submit : null,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: colors.onSurface,
-                            foregroundColor: colors.surface,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
+                      const SizedBox(height: 24),
+                      Text(tr(context, 'Retype Password'),
+                          style: Eyebrow.style),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        key: const ValueKey('signup-confirm-password-field'),
+                        controller: _confirmPassword,
+                        obscureText: _obscureConfirm,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        decoration: _dec(context, '• • • • • • • •').copyWith(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                                _obscureConfirm
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: colors.onSurface),
+                            onPressed: () => setState(
+                                () => _obscureConfirm = !_obscureConfirm),
                           ),
-                          child: _submitting
-                              ? const SizedBox(
-                                  height: 22,
-                                  width: 22,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2))
-                              : Text(tr(context, 'SIGN UP'),
-                                  style: Body2_b.style
-                                      .copyWith(color: colors.surface)),
                         ),
+                        validator: (value) => value == _password.text
+                            ? null
+                            : tr(context, 'Passwords do not match.'),
+                        style: Body1.style,
                       ),
                       const SizedBox(height: 24),
                     ],
                   ),
                 ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.zero,
+                    alignment: Alignment.topLeft,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: _agreed,
+                            onChanged: (v) =>
+                                setState(() => _agreed = v ?? false),
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4)),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            tr(
+                                    context,
+                                    "By clicking sign up, I hereby agree and consent to\n"
+                                    "1Touch’s Terms & Conditions; I confirm that I have\n"
+                                    "read 1Touch’s Privacy Policy.")
+                                .replaceAll('\n', ' '),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: Body2.style,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 56,
+                    width: double.infinity,
+                    child: FilledButton(
+                      key: const ValueKey('email-sign-up-button'),
+                      onPressed: _submitting ||
+                              (_validInputs &&
+                                  _availableFields.length !=
+                                      RegistrationField.values.length)
+                          ? null
+                          : _submit,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: colors.onSurface,
+                        foregroundColor: colors.surface,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: _submitting
+                          ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : Text(tr(context, 'SIGN UP'),
+                              style: Body2_b.style
+                                  .copyWith(color: colors.surface)),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

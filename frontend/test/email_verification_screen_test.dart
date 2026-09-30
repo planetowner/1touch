@@ -8,6 +8,7 @@ import 'package:onetouch/SignComps/VerifyEmail.dart';
 import 'package:onetouch/SignComps/SignUp.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
+import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
@@ -15,6 +16,35 @@ import 'package:onetouch/data/auth/google_identity_service.dart';
 import 'package:onetouch/data/auth/registration_field.dart';
 
 void main() {
+  testWidgets('signup terms and button stay fixed while fields scroll',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 650);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpWidget(const MaterialApp(home: EmailSignUpScreen()));
+
+    final firstName = find.byKey(const ValueKey('signup-first-name-field'));
+    final checkbox = find.byType(Checkbox);
+    final button = find.byKey(const ValueKey('email-sign-up-button'));
+    final firstNameTop = tester.getTopLeft(firstName).dy;
+    final checkboxTop = tester.getTopLeft(checkbox).dy;
+    final buttonTop = tester.getTopLeft(button).dy;
+
+    await tester.drag(find.byKey(const ValueKey('signup-fields-scroll')),
+        const Offset(0, -300));
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(firstName).dy, lessThan(firstNameTop));
+    expect(tester.getTopLeft(checkbox).dy, checkboxTop);
+    expect(tester.getTopLeft(button).dy, buttonTop);
+
+    tester.view.viewInsets = const FakeViewPadding(bottom: 280);
+    await tester.pumpAndSettle();
+    expect(tester.getBottomRight(button).dy, lessThanOrEqualTo(370));
+    expect(tester.takeException(), isNull);
+  });
+
   for (final field in RegistrationField.values) {
     testWidgets('blocks duplicate $field and rechecks its edited value',
         (tester) async {
@@ -147,7 +177,8 @@ void main() {
       await tester.pumpAndSettle();
       final first = find.byKey(const ValueKey('signup-first-name-field'));
       final last = find.byKey(const ValueKey('signup-last-name-field'));
-      expect(tester.getTopLeft(first).dy < tester.getTopLeft(last).dy,
+      expect(tester.getTopLeft(first).dy, tester.getTopLeft(last).dy);
+      expect(tester.getTopLeft(first).dx < tester.getTopLeft(last).dx,
           locale.languageCode == 'en');
       await tester.enterText(first, 'Given');
       await tester.enterText(last, 'Family');
@@ -157,6 +188,7 @@ void main() {
           find.byKey(const ValueKey('signup-display-name-field')), 'Supporter');
       await tester.enterText(fields.at(4), 'member@example.com');
       await tester.enterText(fields.at(5), 'Password123');
+      await tester.enterText(fields.at(6), 'Password123');
       await tester.ensureVisible(find.byType(Checkbox));
       await tester.tap(find.byType(Checkbox));
       await tester.pump(const Duration(milliseconds: 250));
@@ -205,6 +237,7 @@ void main() {
     await tester.enterText(fields.at(3), 'June_Kim');
     await tester.enterText(fields.at(4), 'john@example.com');
     await tester.enterText(fields.at(5), 'Password123');
+    await tester.enterText(fields.at(6), 'Password123');
     await tester.ensureVisible(find.byType(Checkbox));
     await tester.tap(find.byType(Checkbox));
     await tester.pump();
@@ -216,10 +249,14 @@ void main() {
     expect(repository.requestedEmails, isEmpty);
     expect(find.textContaining('Dots cannot be first'), findsOneWidget);
     expect(find.textContaining('Korean counts as 2'), findsOneWidget);
+    ScaffoldMessenger.of(tester.element(submit)).removeCurrentSnackBar();
+    await tester.pumpAndSettle();
 
     await tester.enterText(fields.at(2), 'john_doe');
     await tester.enterText(fields.at(3), '메이플123');
     await tester.pump(const Duration(milliseconds: 250));
+    await tester.pump();
+    tester.testTextInput.hide();
     await tester.pump();
     await tester.ensureVisible(submit);
     await tester.tap(submit);
@@ -227,6 +264,70 @@ void main() {
 
     expect(repository.requestedEmails, ['john@example.com']);
     expect(find.text('Verification destination'), findsOneWidget);
+  });
+
+  testWidgets('duplicate account returns to signup with inputs preserved',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _FakeAuthRepository()..duplicateRegistration = true;
+    final router = GoRouter(initialLocation: '/signup', routes: [
+      GoRoute(
+        path: '/signup',
+        builder: (_, __) =>
+            EmailSignUpScreen(authService: _service(repository, AuthSession())),
+      ),
+      GoRoute(
+        path: '/auth/verify',
+        builder: (_, state) => EmailVerifyScreen(
+          email: (state.extra! as EmailRegistrationDraft).email,
+          registrationDraft: state.extra! as EmailRegistrationDraft,
+          authService: _service(repository, AuthSession()),
+        ),
+      ),
+    ]);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    final fields = find.byType(TextFormField);
+    for (final (index, value) in [
+      'John',
+      'Doe',
+      'taken',
+      'Supporter',
+      'member@example.com',
+      'Password123'
+    ].indexed) {
+      await tester.enterText(fields.at(index), value);
+    }
+    await tester.enterText(fields.at(6), 'Password123');
+    await tester.ensureVisible(find.byType(Checkbox));
+    await tester.tap(find.byType(Checkbox));
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pump();
+    tester.testTextInput.hide();
+    await tester.pump();
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('email-sign-up-button')));
+    await tester.tap(find.byKey(const ValueKey('email-sign-up-button')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byKey(const ValueKey('email-verification-code')), '123456');
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('verify-email-button')));
+    await tester.pumpAndSettle();
+
+    expect(
+        find.byKey(const ValueKey('signup-first-name-field')), findsOneWidget);
+    expect(find.text('Email, username, or nickname is already registered'),
+        findsOneWidget);
+    expect(
+        tester.widget<TextFormField>(fields.at(2)).controller!.text, 'taken');
+    await tester.enterText(fields.at(2), 'different');
+    expect(tester.widget<TextFormField>(fields.at(2)).controller!.text,
+        'different');
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('submits the six-digit code and establishes the session',
@@ -308,6 +409,7 @@ Future<void> _fillSignup(WidgetTester tester) async {
     (3, 'Supporter'),
     (4, 'member@example.com'),
     (5, 'Password123'),
+    (6, 'Password123'),
   ]) {
     await tester.enterText(fields.at(index), value);
   }
@@ -386,6 +488,7 @@ class _FakeAuthRepository implements AuthRepository {
   final requestedEmails = <String>[];
   String? registrationChallengeId;
   String? registrationCode;
+  bool duplicateRegistration = false;
 
   @override
   Future<EmailCodeChallenge> requestEmailCode({
@@ -411,6 +514,11 @@ class _FakeAuthRepository implements AuthRepository {
   }) async {
     registrationChallengeId = challengeId;
     registrationCode = code;
+    if (duplicateRegistration) {
+      throw const AuthRequestException(
+          statusCode: 409,
+          message: 'Email, username, or nickname is already registered');
+    }
     return 'registered-session';
   }
 
