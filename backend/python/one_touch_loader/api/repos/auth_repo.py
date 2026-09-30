@@ -79,6 +79,18 @@ def request_email_code(email: str, purpose: str) -> dict:
         return _issue_email_code(cur, email, purpose)
 
 
+def registration_value_available(field: str, value: str) -> bool:
+    table, column = {
+        "username": ("users", "username"),
+        "display_name": ("users", "display_name"),
+        "email": ("user_email_credentials", "email"),
+    }[field]
+    # 고유 키와 같은 DB 비교를 써요. 조회가 값을 예약하지는 않으므로 가입 때도 고유 키를 검사해요.
+    return fetch_one_dict(
+        f"SELECT user_id FROM {table} WHERE {column}=%s LIMIT 1", (value,)
+    ) is None
+
+
 def _verify_code(cur, challenge: str, code: str, purpose: str) -> str | None:
     key = token_hash(challenge)
     cur.execute("SELECT * FROM email_verification_codes WHERE challenge_hash=%s FOR UPDATE", (key,))
