@@ -88,6 +88,49 @@ class MockPostRepository implements PostRepository {
   }
 
   @override
+  Future<void> deletePost({required int postId}) async {
+    if (postId < 1) {
+      throw RangeError.value(postId, 'postId', 'Must be positive');
+    }
+    final index = _posts.indexWhere((post) => post.postId == postId);
+    if (index < 0) throw StateError('Post $postId does not exist.');
+    if (_posts[index].userId != _currentUserId) {
+      throw StateError('Only the author can delete this post.');
+    }
+    _posts.removeAt(index);
+  }
+
+  @override
+  Future<void> updatePost(UpdatePostInput input) async {
+    final index = _posts.indexWhere((post) => post.postId == input.postId);
+    if (index < 0) throw StateError('Post ${input.postId} does not exist.');
+    if (_posts[index].userId != _currentUserId) {
+      throw StateError('Only the author can edit this post.');
+    }
+    _posts[index] = _posts[index].copyWith(
+      category: input.category,
+      title: input.title.trim(),
+      body: input.body,
+      editedAt: DateTime.now().toUtc().toIso8601String(),
+      attachments: [
+        for (final (position, id) in input.attachmentIds.indexed)
+          PostAttachment(
+            attachmentId: id,
+            position: position,
+            linkUrl: [
+              for (final attachment in _posts[index].attachments)
+                if (attachment.attachmentId == id) attachment.linkUrl,
+            ].firstOrNull,
+            mediaUrl: [
+              for (final attachment in _posts[index].attachments)
+                if (attachment.attachmentId == id) attachment.mediaUrl,
+            ].firstOrNull,
+          ),
+      ],
+    );
+  }
+
+  @override
   Future<List<Post>> loadPosts({
     required int teamId,
     PostCategory? category,

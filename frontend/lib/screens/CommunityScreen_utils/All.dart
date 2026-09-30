@@ -15,6 +15,7 @@ class All extends StatelessWidget {
     required this.communityRepository,
     required this.selectedSort,
     required this.onPostDetailClosed,
+    required this.onPostUpdated,
     required this.onSortChanged,
   });
 
@@ -24,6 +25,7 @@ class All extends StatelessWidget {
   final CommunityRepository communityRepository;
   final PostSort selectedSort;
   final Future<void> Function() onPostDetailClosed;
+  final Future<void> Function() onPostUpdated;
   final ValueChanged<PostSort> onSortChanged;
 
   @override
@@ -62,6 +64,7 @@ class All extends StatelessWidget {
                     post: post,
                     postRepository: postRepository,
                     communityRepository: communityRepository,
+                    onPostUpdated: onPostUpdated,
                   ),
                 ),
               );

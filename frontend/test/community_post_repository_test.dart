@@ -551,6 +551,16 @@ class _ScriptedPostRepository implements PostRepository {
   final List<int> teamIds = [];
 
   @override
+  Future<void> deletePost({required int postId}) {
+    throw UnsupportedError('This test double only scripts post loading.');
+  }
+
+  @override
+  Future<void> updatePost(UpdatePostInput input) {
+    throw UnsupportedError('This test double only scripts post loading.');
+  }
+
+  @override
   Future<int> createPost(CreatePostInput input) {
     createCalls++;
     createdInput = input;

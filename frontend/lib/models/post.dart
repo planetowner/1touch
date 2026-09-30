@@ -73,6 +73,37 @@ class Post {
     this.attachments = const [],
   });
 
+  Post copyWith({
+    PostCategory? category,
+    String? title,
+    String? body,
+    String? editedAt,
+    List<PostAttachment>? attachments,
+  }) =>
+      Post(
+        postId: postId,
+        teamId: teamId,
+        userId: userId,
+        category: category ?? this.category,
+        title: title ?? this.title,
+        body: body ?? this.body,
+        mediaUrl: attachments == null
+            ? mediaUrl
+            : [for (final attachment in attachments) attachment.mediaUrl]
+                .whereType<String>()
+                .firstOrNull,
+        createdAt: createdAt,
+        editedAt: editedAt ?? this.editedAt,
+        username: username,
+        displayName: displayName,
+        avatarUrl: avatarUrl,
+        authorDeleted: authorDeleted,
+        likeCount: likeCount,
+        commentCount: commentCount,
+        liked: liked,
+        attachments: attachments ?? this.attachments,
+      );
+
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
       postId: json['post_id'] as int,

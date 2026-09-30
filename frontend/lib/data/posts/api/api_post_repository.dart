@@ -127,6 +127,54 @@ class ApiPostRepository implements PostRepository, PostDetailRepository {
   }
 
   @override
+  Future<void> deletePost({required int postId}) async {
+    if (postId < 1) {
+      throw RangeError.value(postId, 'postId', 'Must be positive');
+    }
+    final response = await _api.delete(_api.baseUri.resolve('posts/$postId'));
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    if (decoded['ok'] != true) {
+      throw const FormatException('Expected post deletion to return ok=true.');
+    }
+  }
+
+  @override
+  Future<void> updatePost(UpdatePostInput input) async {
+    if (input.postId < 1) {
+      throw RangeError.value(input.postId, 'postId', 'Must be positive');
+    }
+    final title = input.title.trim();
+    if (title.isEmpty || title.length > 200) {
+      throw ArgumentError.value(
+          input.title, 'title', 'Must be 1–200 characters');
+    }
+    if (input.body.length > 10000) {
+      throw ArgumentError.value(
+          input.body, 'body', 'Must be at most 10000 characters');
+    }
+    if (input.attachmentIds.length > 10 ||
+        input.attachmentIds.any((id) => id < 1) ||
+        input.attachmentIds.toSet().length != input.attachmentIds.length) {
+      throw ArgumentError.value(input.attachmentIds, 'attachmentIds',
+          'Must be up to 10 unique positive IDs');
+    }
+    final response = await _api.put(
+      _api.baseUri.resolve('posts/${input.postId}'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'category': input.category.name,
+        'title': title,
+        'body': input.body,
+        'attachment_ids': input.attachmentIds,
+      }),
+    );
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    if (decoded['ok'] != true) {
+      throw const FormatException('Expected post update to return ok=true.');
+    }
+  }
+
+  @override
   Future<void> reportPost({
     required int postId,
     required String reason,

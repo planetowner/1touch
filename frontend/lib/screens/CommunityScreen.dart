@@ -380,6 +380,7 @@ class _CommunityState extends State<Community>
                         onPostDetailClosed: () => _loadPosts(
                           preserveCurrentPosts: true,
                         ),
+                        onPostUpdated: _loadPosts,
                         onSortChanged: _selectPostSort,
                       ),
                   ],

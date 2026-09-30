@@ -16,6 +16,16 @@ class StubPostCommentRepository implements PostCommentRepository {
   }
 
   @override
+  Future<void> deleteComment({required int commentId}) {
+    throw UnsupportedError('This stub only provides comment loading.');
+  }
+
+  @override
+  Future<void> updateComment({required int commentId, required String body}) {
+    throw UnsupportedError('This stub only provides comment loading.');
+  }
+
+  @override
   Future<List<PostComment>> loadForPost({
     required int postId,
     int afterId = 0,

@@ -10,6 +10,7 @@ import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
+import 'package:onetouch/features/community/community_delete_dialog.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
@@ -31,6 +32,12 @@ class PostDetailContent extends StatelessWidget {
     required this.onRetryComments,
     required this.onReply,
     required this.onReport,
+    this.currentUserId,
+    this.showMedia = true,
+    this.onEditPost,
+    this.onDeletePost,
+    this.onEditComment,
+    this.onDeleteComment,
     this.shareInvoker,
   });
 
@@ -46,6 +53,12 @@ class PostDetailContent extends StatelessWidget {
   final VoidCallback onRetryComments;
   final ValueChanged<PostComment>? onReply;
   final Future<void> Function(String reason)? onReport;
+  final int? currentUserId;
+  final bool showMedia;
+  final VoidCallback? onEditPost;
+  final VoidCallback? onDeletePost;
+  final ValueChanged<PostComment>? onEditComment;
+  final ValueChanged<PostComment>? onDeleteComment;
   final Future<ShareResult> Function(ShareParams params)? shareInvoker;
 
   Future<void> _sharePost(BuildContext context) async {
@@ -81,7 +94,7 @@ class PostDetailContent extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final hasMedia = post.mediaUrl != null;
+    final hasMedia = showMedia && post.mediaUrl != null;
 
     return SliverList(
       delegate: SliverChildListDelegate(
@@ -139,26 +152,40 @@ class PostDetailContent extends StatelessWidget {
                           isDark ? Colors.white24 : AppPalette.lightGrey,
                     ),
                     const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          communityAuthorLabel(
-                            locale: Localizations.localeOf(context),
-                            username: post.username,
-                            displayName: post.displayName,
-                            authorDeleted: post.authorDeleted,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            communityAuthorLabel(
+                              locale: Localizations.localeOf(context),
+                              username: post.username,
+                              displayName: post.displayName,
+                              authorDeleted: post.authorDeleted,
+                            ),
+                            style: Body1.style,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          style: Body1.style,
-                        ),
-                        Text(
-                          _timeAgo(context, post.createdAt),
-                          style: Body2.style.copyWith(
-                            color: appColors.mutedForeground,
+                          Text(
+                            communityPostTimeLabel(
+                              createdAt: post.createdAt,
+                              editedAt: post.editedAt,
+                              locale: Localizations.localeOf(context),
+                            ),
+                            style: Body2.style.copyWith(
+                              color: appColors.mutedForeground,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    if (currentUserId != null && post.userId == currentUserId)
+                      CommunityAuthorMenu(
+                        key: const ValueKey('community-post-delete-menu'),
+                        onEdit: onEditPost,
+                        onDelete: onDeletePost,
+                      ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -230,6 +257,9 @@ class PostDetailContent extends StatelessWidget {
             error: commentsError,
             onRetry: onRetryComments,
             onReply: onReply,
+            currentUserId: currentUserId,
+            onEditComment: onEditComment,
+            onDeleteComment: onDeleteComment,
           ),
           const SizedBox(height: 64),
         ],
@@ -244,12 +274,16 @@ class PostDetailReplyBar extends StatefulWidget {
   const PostDetailReplyBar({
     super.key,
     required this.replyTarget,
+    this.editingTarget,
     required this.onCancelReply,
+    this.onCancelEdit,
     required this.onSubmit,
   });
 
   final PostComment? replyTarget;
+  final PostComment? editingTarget;
   final VoidCallback onCancelReply;
+  final VoidCallback? onCancelEdit;
   final Future<void> Function(String body) onSubmit;
 
   @override
@@ -266,6 +300,14 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
   @override
   void didUpdateWidget(PostDetailReplyBar oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.editingTarget?.commentId != oldWidget.editingTarget?.commentId) {
+      _controller.text = widget.editingTarget?.body ?? '';
+      if (widget.editingTarget != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _focusNode.requestFocus();
+        });
+      }
+    }
     if (widget.replyTarget?.commentId != oldWidget.replyTarget?.commentId &&
         widget.replyTarget != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -284,6 +326,7 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
   Future<void> _submit() async {
     if (!_canSubmit) return;
     final body = _controller.text.trim();
+    final editing = widget.editingTarget != null;
     setState(() => _isSubmitting = true);
 
     try {
@@ -294,8 +337,11 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(tr(context, 'Unable to post comment. Please try again.')),
+          content: Text(tr(
+              context,
+              editing
+                  ? 'Unable to update comment. Please try again.'
+                  : 'Unable to post comment. Please try again.')),
         ),
       );
     } finally {
@@ -315,15 +361,18 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (widget.replyTarget != null) ...[
+          if (widget.replyTarget != null || widget.editingTarget != null) ...[
             Row(
               key: const ValueKey('community-reply-target'),
               children: [
                 Expanded(
                   child: Text(
-                    tr(context, 'Replying to {name}', {
-                      'name': _commentAuthorLabel(context, widget.replyTarget!)
-                    }),
+                    widget.editingTarget != null
+                        ? tr(context, 'Edit comment')
+                        : tr(context, 'Replying to {name}', {
+                            'name': _commentAuthorLabel(
+                                context, widget.replyTarget!)
+                          }),
                     style: Body2.style.copyWith(
                       color: appColors.mutedForeground,
                     ),
@@ -334,7 +383,11 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
                 GestureDetector(
                   key: const ValueKey('community-reply-cancel'),
                   behavior: HitTestBehavior.opaque,
-                  onTap: _isSubmitting ? null : widget.onCancelReply,
+                  onTap: _isSubmitting
+                      ? null
+                      : widget.editingTarget != null
+                          ? widget.onCancelEdit
+                          : widget.onCancelReply,
                   child: Padding(
                     padding: const EdgeInsets.all(4),
                     child: Icon(
@@ -373,9 +426,11 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
                     onChanged: (_) => setState(() {}),
                     onSubmitted: (_) => _submit(),
                     decoration: InputDecoration(
-                      hintText: widget.replyTarget == null
-                          ? tr(context, 'Write a comment...')
-                          : tr(context, 'Write a reply...'),
+                      hintText: widget.editingTarget != null
+                          ? tr(context, 'Edit comment')
+                          : widget.replyTarget == null
+                              ? tr(context, 'Write a comment...')
+                              : tr(context, 'Write a reply...'),
                       hintStyle: TextStyle(color: appColors.mutedForeground),
                       border: InputBorder.none,
                       filled: false,
@@ -496,6 +551,9 @@ class _PostComments extends StatelessWidget {
     required this.error,
     required this.onRetry,
     required this.onReply,
+    required this.currentUserId,
+    required this.onEditComment,
+    required this.onDeleteComment,
   });
 
   final List<PostComment> comments;
@@ -503,6 +561,9 @@ class _PostComments extends StatelessWidget {
   final Object? error;
   final VoidCallback onRetry;
   final ValueChanged<PostComment>? onReply;
+  final int? currentUserId;
+  final ValueChanged<PostComment>? onEditComment;
+  final ValueChanged<PostComment>? onDeleteComment;
 
   @override
   Widget build(BuildContext context) {
@@ -561,6 +622,9 @@ class _PostComments extends StatelessWidget {
                 comment: comment,
                 isDark: isDark,
                 onReply: onReply,
+                currentUserId: currentUserId,
+                onEditComment: onEditComment,
+                onDeleteComment: onDeleteComment,
               ),
             )
             .toList(growable: false),
@@ -574,11 +638,17 @@ class _PostCommentRow extends StatelessWidget {
     required this.comment,
     required this.isDark,
     required this.onReply,
+    required this.currentUserId,
+    required this.onEditComment,
+    required this.onDeleteComment,
   });
 
   final PostComment comment;
   final bool isDark;
   final ValueChanged<PostComment>? onReply;
+  final int? currentUserId;
+  final ValueChanged<PostComment>? onEditComment;
+  final ValueChanged<PostComment>? onDeleteComment;
 
   @override
   Widget build(BuildContext context) {
@@ -614,6 +684,18 @@ class _PostCommentRow extends StatelessWidget {
                 Text(_commentAuthorLabel(context, comment),
                     style: Body2_b.style),
                 Text(_commentBodyLabel(context, comment), style: Body2.style),
+                if (comment.state == PostCommentState.active &&
+                    comment.editedAt != null)
+                  Text(
+                    communityPostTimeLabel(
+                      createdAt: comment.createdAt,
+                      editedAt: comment.editedAt,
+                      locale: Localizations.localeOf(context),
+                    ),
+                    style: Body2.style.copyWith(
+                      color: AppColors.of(context).mutedForeground,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -622,10 +704,23 @@ class _PostCommentRow extends StatelessWidget {
               key: ValueKey('community-comment-reply-${comment.commentId}'),
               behavior: HitTestBehavior.opaque,
               onTap: onReply == null ? null : () => onReply!(comment),
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Icon(Icons.reply, size: 18, color: colors.onSurface),
+              child: SizedBox.square(
+                dimension: 40,
+                child: Center(
+                  child: Icon(Icons.reply, size: 18, color: colors.onSurface),
+                ),
               ),
+            ),
+          if (comment.state == PostCommentState.active &&
+              currentUserId != null &&
+              comment.userId == currentUserId)
+            CommunityAuthorMenu(
+              key: ValueKey('community-comment-delete-${comment.commentId}'),
+              onEdit:
+                  onEditComment == null ? null : () => onEditComment!(comment),
+              onDelete: onDeleteComment == null
+                  ? null
+                  : () => onDeleteComment!(comment),
             ),
         ],
       ),
@@ -655,7 +750,3 @@ String _commentBodyLabel(BuildContext context, PostComment comment) {
     PostCommentState.blocked => tr(context, 'Comment from a blocked user.'),
   };
 }
-
-String _timeAgo(BuildContext context, String createdAt) =>
-    relativeTimeLabel(DateTime.tryParse(createdAt),
-        locale: Localizations.localeOf(context));

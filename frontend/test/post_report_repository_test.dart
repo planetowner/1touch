@@ -170,6 +170,16 @@ class _ReportPostRepository implements PostRepository {
   String? reportedReason;
 
   @override
+  Future<void> deletePost({required int postId}) {
+    throw UnsupportedError('This test double only scripts reports.');
+  }
+
+  @override
+  Future<void> updatePost(UpdatePostInput input) {
+    throw UnsupportedError('This test double only scripts reports.');
+  }
+
+  @override
   Future<int> createPost(CreatePostInput input) {
     throw UnsupportedError('This test double only scripts reports.');
   }
