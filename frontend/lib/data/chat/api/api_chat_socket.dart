@@ -66,7 +66,6 @@ class ApiChatSocket implements ChatSocket {
       connection: _connector(socketUri),
       fixtureId: fixtureId,
       sessionToken: sessionToken,
-      apiBaseUri: _apiBaseUri,
       handshakeTimeout: _handshakeTimeout,
     );
     await session.open();
@@ -84,14 +83,12 @@ class _ApiChatSocketSession implements ChatSocketSession {
     required ChatSocketConnection connection,
     required this.fixtureId,
     required this.sessionToken,
-    required this.apiBaseUri,
     required this.handshakeTimeout,
   }) : _connection = connection;
 
   final ChatSocketConnection _connection;
   final int fixtureId;
   final String sessionToken;
-  final Uri apiBaseUri;
   final Duration handshakeTimeout;
   final StreamController<FixtureChatMessage> _messages =
       StreamController.broadcast();
@@ -146,7 +143,6 @@ class _ApiChatSocketSession implements ChatSocketSession {
       }
       final message = chatMessageFromApiResponse(
         ApiChatMessageResponse.fromJson(decoded),
-        apiBaseUri: apiBaseUri,
       );
       if (message.fixtureId != fixtureId) {
         throw FormatException(

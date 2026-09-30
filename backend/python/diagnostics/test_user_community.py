@@ -270,6 +270,10 @@ class CommunityDatabaseCase(unittest.TestCase):
             conn.commit()
             return rows
 
+    def apply_chat_alias_schema(self):
+        sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_fixture_chat_aliases.sql"
+        self.execute(sql.read_text(encoding="utf-8"))
+
     def apply_management_schema(self):
         sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_community_management.sql"
         for statement in sql.read_text(encoding="utf-8").split(";"):
@@ -680,12 +684,14 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual(self.request("DELETE", f"/v1/attachments/{ids[1]}").status_code, 403)
 
     def test_chat_history_both_teams_and_other_fixture_denied(self):
+        self.apply_chat_alias_schema()
         chat_repo.create_message(self.a, 10, "hello")
         self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages", self.token_b).status_code, 200)
         self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages", self.token_c).status_code, 403)
         self.assertEqual(self.request("GET", "/v1/fixtures/20/chat/messages").status_code, 403)
 
-    def test_websocket_messages_persist_and_use_session_username(self):
+    def test_websocket_messages_persist_and_use_anonymous_names(self):
+        self.apply_chat_alias_schema()
         with self.client.websocket_connect("/v1/fixtures/10/chat") as a:
             a.send_json({"token": self.token_a})
             self.assertEqual(a.receive_json()["type"], "ready")
@@ -694,12 +700,18 @@ class MySQLCommunityTests(CommunityDatabaseCase):
                 b.receive_json()
                 a.send_json({"text": "hello"})
                 one, two = a.receive_json(), b.receive_json()
-                self.assertEqual(one, two)
-                self.assertEqual(one["username"], "alpha")
+                self.assertTrue(one["is_mine"])
+                self.assertFalse(two["is_mine"])
+                self.assertEqual({**one, "is_mine": False}, two)
+                self.assertRegex(one["nickname_en"], r"^[A-Za-z]+_[A-Z0-9]{4}$")
+                self.assertNotIn("username", one)
+                self.assertNotIn("user_id", one)
+                self.assertNotIn("avatar_url", one)
                 self.assertTrue(one["created_at"].endswith("Z"))
         self.assertEqual(len(chat_repo.history(self.a, 10, None, None, 50)), 1)
 
     def test_websocket_revokes_access_after_favorite_change(self):
+        self.apply_chat_alias_schema()
         from starlette.websockets import WebSocketDisconnect
         with self.client.websocket_connect("/v1/fixtures/10/chat") as socket:
             socket.send_json({"token": self.token_a})
@@ -712,6 +724,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual(self.execute("SELECT * FROM fixture_chat_messages"), [])
 
     def test_websocket_revoked_recipient_does_not_receive_next_message(self):
+        self.apply_chat_alias_schema()
         from starlette.websockets import WebSocketDisconnect
         with self.client.websocket_connect("/v1/fixtures/10/chat") as a:
             a.send_json({"token": self.token_a})
@@ -727,6 +740,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
                 self.assertEqual(error.exception.code, 4401)
 
     def test_websocket_binary_frame_is_rejected_as_invalid_text(self):
+        self.apply_chat_alias_schema()
         from starlette.websockets import WebSocketDisconnect
         with self.client.websocket_connect("/v1/fixtures/10/chat") as socket:
             socket.send_json({"token": self.token_a})
@@ -798,6 +812,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual(self.request("PUT", f"/v1/users/me/blocks/{self.a}").status_code, 400)
 
     def test_live_chat_block_hides_sender_without_disconnecting_recipient(self):
+        self.apply_chat_alias_schema()
         self.request("PUT", f"/v1/users/me/blocks/{self.a}", self.token_b)
         with self.client.websocket_connect("/v1/fixtures/10/chat") as a, self.client.websocket_connect("/v1/fixtures/10/chat") as b:
             a.send_json({"token": self.token_a}); a.receive_json()
@@ -815,6 +830,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual([x["text"] for x in chat_repo.history(self.b, 10, None, None, 10)], ["still connected"])
 
     def test_account_deletion_unlinks_authors_and_removes_private_relations(self):
+        self.apply_chat_alias_schema()
         viewer, token = self.user("remaining-reader", 6)
         published, draft = [self.request("POST", "/v1/attachments/link", json={"url": f"https://example.com/{i}"}).json()["attachment_id"] for i in range(2)]
         post = self.post(attachment_ids=[published])
@@ -834,12 +850,17 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual((item["user_id"], item["username"], item["author_deleted"], item["like_count"]), (None, None, True, 0))
         comments = posts_repo.list_comments(viewer, post, 0, 10)
         self.assertEqual((comments[0]["body"], comments[0]["user_id"], comments[1]["reply_to_id"]), ("preserved", None, comment))
-        self.assertIsNone(chat_repo.history(viewer, 10, None, None, 10)[0]["user_id"])
+        deleted_chat = chat_repo.history(viewer, 10, None, None, 10)[0]
+        self.assertTrue(deleted_chat["author_deleted"])
+        self.assertIsNone(deleted_chat["nickname_en"])
+        self.assertNotIn("user_id", deleted_chat)
+        self.assertEqual(self.execute("SELECT * FROM fixture_chat_aliases WHERE user_id=%s", (self.a,)), [])
         self.assertEqual(self.execute("SELECT attachment_id FROM post_attachments"), [{"attachment_id": published}])
         self.assertEqual(self.execute("SELECT object_key FROM media_deletions"), [{"object_key": "avatars/old"}])
         self.assertNotEqual(auth_repo.session_user(auth_repo.login_social("google", "old-subject")["access_token"])["user_id"], self.a)
 
     def test_profile_photo_reuses_verified_upload_and_requires_visible_author(self):
+        self.apply_chat_alias_schema()
         image = io.BytesIO(); Image.new("RGB", (2, 2)).save(image, format="PNG")
         files = {"file": ("photo.html", image.getvalue(), "text/html")}
         with patch.object(media_storage, "object_operation") as storage:
@@ -851,6 +872,10 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             self.assertEqual(self.request("GET", f"/v1/users/{self.a}/avatar", self.token_b).status_code, 404)
             storage.assert_not_called()
             chat_repo.create_message(self.a, 10, "visible author")
+            self.assertEqual(self.request("GET", f"/v1/users/{self.a}/avatar", self.token_b).status_code, 404)
+            storage.assert_not_called()
+            self.execute("UPDATE users SET favorite_team_id=6 WHERE user_id=%s", (self.b,))
+            self.post()
             storage.return_value = {"Body": StreamingBody(io.BytesIO(b"abc"), 3), "ContentLength": 3}
             self.assertEqual(self.request("GET", f"/v1/users/{self.a}/avatar", self.token_b).content, b"abc")
             self.request("PUT", f"/v1/users/me/blocks/{self.a}", self.token_b)
@@ -969,6 +994,7 @@ class KakaoWebhookTests(CommunityDatabaseCase):
                                 headers={'Content-Type': 'application/secevent+jwt'})
 
     def test_unlink_anonymizes_content_and_repeat_does_not_delete_new_account(self):
+        self.apply_chat_alias_schema()
         post = self.post()
         comment = posts_repo.create_comment(self.a, post, 'keep reply', None)
         chat_repo.create_message(self.a, 10, 'keep chat')
@@ -1054,6 +1080,7 @@ class AppleWebhookTests(CommunityDatabaseCase):
         return self.client.post("/v1/auth/apple/events", json={"payload": provider_tests.ProviderTests().apple_event_token(**kwargs)})
 
     def test_external_revocation_shares_anonymization_and_provider_scoped_receipts(self):
+        self.apply_chat_alias_schema()
         post = self.post()
         posts_repo.create_comment(self.a, post, "keep reply", None)
         chat_repo.create_message(self.a, 10, "keep chat")

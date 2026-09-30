@@ -11,7 +11,6 @@ import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_provider;
 import 'package:onetouch/data/match_analysis/match_analysis_repository.dart';
-import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
@@ -31,7 +30,6 @@ class MatchScreen extends StatefulWidget {
   final StandingRepository? standingRepository;
   final ChatRepository? chatRepository;
   final ChatSocket? chatSocket;
-  final CurrentUserRepository? currentUserRepository;
 
   const MatchScreen({
     super.key,
@@ -44,7 +42,6 @@ class MatchScreen extends StatefulWidget {
     this.standingRepository,
     this.chatRepository,
     this.chatSocket,
-    this.currentUserRepository,
   });
 
   @override
@@ -346,7 +343,6 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
           matchId: fixture!.fixtureId,
           repository: widget.chatRepository,
           socket: widget.chatSocket,
-          currentUserRepository: widget.currentUserRepository,
         );
       default:
         return const SizedBox.shrink();
