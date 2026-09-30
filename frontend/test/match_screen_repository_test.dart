@@ -7,8 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/team_comparison_colors.dart';
+import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_clock.dart';
@@ -779,6 +781,35 @@ void main() {
       ),
       findsOneWidget,
     );
+    for (final (key, team, value) in [
+      (
+        'match-analysis-home-xg-box',
+        fixtureHomeTeam(_fixture, teamRepository),
+        '1.23',
+      ),
+      (
+        'match-analysis-away-xg-box',
+        fixtureAwayTeam(_fixture, teamRepository),
+        '0.57',
+      ),
+    ]) {
+      final box = find.byKey(ValueKey(key));
+      final decoration =
+          tester.widget<Container>(box).decoration! as ShapeDecoration;
+      final primary = TeamComparisonColorResolver.paletteFor(
+        teamName: team.name,
+        primaryFallback: Color(team.primaryColor),
+      ).primary;
+      final text = tester.widget<Text>(find.descendant(
+        of: box,
+        matching: find.text(value),
+      ));
+      final foreground = text.style!.color!;
+      expect(decoration.color, primary);
+      expect(foreground, anyOf(Colors.black, Colors.white));
+      expect(ColorUtils.getContrastRatio(primary, foreground),
+          greaterThanOrEqualTo(4.5));
+    }
     expect(tester.takeException(), isNull);
   });
 

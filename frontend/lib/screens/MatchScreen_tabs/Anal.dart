@@ -238,6 +238,16 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildXGSection(FixtureExpectedGoals expectedGoals) {
+    final home = fixtureHomeTeam(widget.fixture, teamRepository);
+    final away = fixtureAwayTeam(widget.fixture, teamRepository);
+    final homeColor = TeamComparisonColorResolver.paletteFor(
+      teamName: home.name,
+      primaryFallback: Color(home.primaryColor),
+    ).primary;
+    final awayColor = TeamComparisonColorResolver.paletteFor(
+      teamName: away.name,
+      primaryFallback: Color(away.primaryColor),
+    ).primary;
     return SizedBox(
       key: const ValueKey('match-analysis-xg'),
       width: double.infinity,
@@ -247,10 +257,11 @@ class _AnalysisTabState extends State<AnalysisTab> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
+              key: const ValueKey('match-analysis-home-xg-box'),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               clipBehavior: Clip.antiAlias,
               decoration: ShapeDecoration(
-                color: const Color(0xFFFF5C5C),
+                color: homeColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -262,17 +273,20 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 children: [
                   Text(
                     expectedGoals.homeXg.toStringAsFixed(2),
-                    style: Body2_b.style.copyWith(color: AppPalette.white),
+                    style: Body2_b.style.copyWith(
+                      color: ColorUtils.monochromeTextColor(homeColor),
+                    ),
                   ),
                 ],
               ),
             ),
             Text('XG', textAlign: TextAlign.center, style: Body2_b.style),
             Container(
+              key: const ValueKey('match-analysis-away-xg-box'),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               clipBehavior: Clip.antiAlias,
               decoration: ShapeDecoration(
-                color: Colors.white,
+                color: awayColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -283,7 +297,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(expectedGoals.awayXg.toStringAsFixed(2),
-                      style: Body2_b.style.copyWith(color: Colors.black)),
+                      style: Body2_b.style.copyWith(
+                        color: ColorUtils.monochromeTextColor(awayColor),
+                      )),
                 ],
               ),
             ),
