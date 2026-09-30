@@ -59,6 +59,7 @@ class _CommunityState extends State<Community>
   late final List<bool> _isLoadingPostsByTab;
   late final List<Object?> _postLoadErrorsByTab;
   int _postRequestId = 0;
+  int _tabViewEpoch = 0;
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
@@ -100,12 +101,13 @@ class _CommunityState extends State<Community>
   }
 
   void _handleMainTabAction() {
-    if (mainTabActions.tabIndex != 3) return;
     if (_selectedTabIndex != 0) {
       _selectedTabIndex = 0;
-      _tabController.animateTo(0, duration: Duration.zero);
+      _tabController.index = 0;
+      setState(() => _tabViewEpoch++);
       _loadPosts();
     }
+    if (mainTabActions.tabIndex != 3) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showRootAppBar();
     });
@@ -360,6 +362,7 @@ class _CommunityState extends State<Community>
                   ),
                 ],
                 body: TabBarView(
+                  key: ValueKey('community-tab-view-$_tabViewEpoch'),
                   controller: _tabController,
                   children: [
                     for (var index = 0;

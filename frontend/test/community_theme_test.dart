@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/favorite_team.dart';
+import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/community/mock/community_catalog.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
@@ -435,6 +436,39 @@ void main() {
     expect(analysisFilterSize.height, AppDropdownTokens.height);
     expect(analysisFilterSize.width, greaterThan(generalFilterSize.width));
     expect(find.byIcon(Icons.star_border), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('community feed returns to All before leaving the main tab',
+      (tester) async {
+    _useCompactPhone(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Community(
+          teamId: 9,
+          postRepository: MockPostRepository(),
+          communityRepository: const StubCommunityRepository(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final controller = tester.widget<TabBar>(find.byType(TabBar)).controller!;
+    PageView feedPageView() => tester.widget<PageView>(
+          find.descendant(
+            of: find.byType(TabBarView),
+            matching: find.byType(PageView),
+          ),
+        );
+    controller.animateTo(2);
+    await tester.pumpAndSettle();
+    expect(feedPageView().controller!.page, 2);
+
+    mainTabActions.select(2);
+    await tester.pump();
+    expect(controller.index, 0);
+    expect(feedPageView().controller!.page, 0);
     expect(tester.takeException(), isNull);
   });
 }

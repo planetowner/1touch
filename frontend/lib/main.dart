@@ -420,6 +420,12 @@ class MainScreen extends StatelessWidget {
       bottomNavigationBar: OneTouchBottomNavigationBar(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) {
+          if (navigationShell.currentIndex != index &&
+              navigationShell.currentIndex != 0) {
+            // Reset the persistent branch before another branch is shown.
+            mainTabActions.select(index);
+          }
+
           void notifyRootScreen() {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               mainTabActions.select(index);

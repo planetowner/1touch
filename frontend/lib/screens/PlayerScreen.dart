@@ -37,7 +37,7 @@ class _PlayersState extends State<Players> {
   }
 
   void _handleMainTabAction() {
-    if (mainTabActions.tabIndex != 2 || !_scrollController.hasClients) return;
+    if (!_scrollController.hasClients) return;
     _scrollController.jumpTo(_scrollController.position.minScrollExtent);
   }
 
