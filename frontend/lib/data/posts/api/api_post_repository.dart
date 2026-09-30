@@ -10,10 +10,29 @@ import 'package:onetouch/models/post.dart';
 ///
 /// Feed loading, text-post creation, and post reporting are connected. Media
 /// uploads remain outside this repository and require attachment IDs first.
-class ApiPostRepository implements PostRepository {
+class ApiPostRepository implements PostRepository, PostDetailRepository {
   ApiPostRepository({required ApiClient api}) : _api = api;
 
   final ApiClient _api;
+
+  @override
+  Future<Post> loadPost(int postId) async {
+    if (postId < 1) {
+      throw RangeError.value(postId, 'postId', 'Must be positive');
+    }
+    final response = await _api.get(_api.baseUri.resolve('posts/$postId'));
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    final post = postFromApiResponse(
+      ApiPostResponse.fromJson(decoded),
+      apiBaseUri: _api.baseUri,
+    );
+    if (post.postId != postId) {
+      throw FormatException(
+        'Expected post_id $postId but received ${post.postId}.',
+      );
+    }
+    return post;
+  }
 
   @override
   Future<List<Post>> loadPosts({

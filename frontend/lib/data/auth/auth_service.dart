@@ -21,17 +21,26 @@ class AuthService {
     required AuthSession session,
     SocialIdentityService? socialIdentityService,
     AuthTokenStore? tokenStore,
+    Future<void> Function()? clearLocalUserData,
+    Future<void> Function()? onSessionEstablished,
+    Future<void> Function()? beforeSessionCleared,
   })  : _googleIdentityService = googleIdentityService,
         _repository = repository,
         _session = session,
         _socialIdentityService = socialIdentityService,
-        _tokenStore = tokenStore;
+        _tokenStore = tokenStore,
+        _clearLocalUserData = clearLocalUserData,
+        _onSessionEstablished = onSessionEstablished,
+        _beforeSessionCleared = beforeSessionCleared;
 
   final GoogleIdentityService _googleIdentityService;
   final AuthRepository _repository;
   final AuthSession _session;
   final SocialIdentityService? _socialIdentityService;
   final AuthTokenStore? _tokenStore;
+  final Future<void> Function()? _clearLocalUserData;
+  final Future<void> Function()? _onSessionEstablished;
+  final Future<void> Function()? _beforeSessionCleared;
 
   Future<void> signInWithProvider(LoginProvider provider) async {
     if (provider == LoginProvider.google) return signInWithGoogle();
@@ -122,6 +131,11 @@ class AuthService {
 
   Future<void> logout() async {
     try {
+      await _beforeSessionCleared?.call();
+    } on Object {
+      // Push cleanup must not prevent account logout.
+    }
+    try {
       final repository = _repository;
       if (_session.isAuthenticated && repository is LogoutAuthRepository) {
         await (repository as LogoutAuthRepository).logout();
@@ -130,16 +144,24 @@ class AuthService {
       // A local logout must still work while the server is unreachable.
     } finally {
       await _tokenStore?.delete();
+      await _clearLocalUserData?.call();
       _session.clear();
     }
   }
 
   Future<void> _establish(String accessToken) async {
+    // A fresh sign-in must never inherit another account's local snapshots.
+    await _clearLocalUserData?.call();
     _session.establish(accessToken);
     await _tokenStore?.write(
       _session.accessToken!,
       profileComplete: false,
       onboardingComplete: false,
     );
+    try {
+      await _onSessionEstablished?.call();
+    } on Object {
+      // Optional device registration must not turn login into a failure.
+    }
   }
 }

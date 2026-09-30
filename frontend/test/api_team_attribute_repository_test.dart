@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/team_attributes/api/api_team_attribute_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
   group('loadOptionsForTeam', () {
@@ -149,6 +150,59 @@ void main() {
     expect(result.single.seasonId, 27965);
     expect(result.single.radarValues, [79.76, 73.57, 86.39, 72.96, 82.8]);
     expect(() => result.clear(), throwsUnsupportedError);
+  });
+
+  test('restores fresh attribute options and scores after recreation',
+      () async {
+    final store = MemoryLocalCacheStore();
+    final writer = ApiTeamAttributeRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          if (request.url.path.endsWith('/options')) {
+            return http.Response(
+              jsonEncode({
+                'team_id': 83,
+                'items': [
+                  {
+                    'competition_id': 564,
+                    'season_id': 27965,
+                    'season_name': '2026/2027',
+                    'is_current': true,
+                  },
+                ],
+              }),
+              200,
+            );
+          }
+          return http.Response(jsonEncode(_attributeJson()), 200);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+    await writer.loadOptionsForTeam(83);
+    await writer.loadForTeam(83, seasonId: 27965);
+
+    var requestCount = 0;
+    final reader = ApiTeamAttributeRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requestCount++;
+          return http.Response('Unexpected request', 500);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final options = await reader.loadOptionsForTeam(83);
+    final scores = await reader.loadForTeam(83, seasonId: 27965);
+
+    expect(options.single.isCurrent, isTrue);
+    expect(scores.single.teamId, 83);
+    expect(requestCount, 0);
   });
 
   test('supports a trailing base-URI slash', () async {

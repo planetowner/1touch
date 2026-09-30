@@ -56,3 +56,8 @@ abstract interface class PostRepository {
     required bool liked,
   });
 }
+
+/// Loads one post for notification and deep-link destinations.
+abstract interface class PostDetailRepository {
+  Future<Post> loadPost(int postId);
+}

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/team_probability/api/api_team_probability_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 
 void main() {
@@ -136,6 +137,39 @@ void main() {
       throwsA(isA<TeamFeatureUnavailableException>()),
     );
     expect(repository.cachedSnapshots.value, isEmpty);
+  });
+
+  test('restores a fresh probability snapshot after recreation', () async {
+    final store = MemoryLocalCacheStore();
+    final writer = ApiTeamProbabilityRepository(
+      api: ApiClient(
+        client: MockClient(
+          (_) async => http.Response(jsonEncode(_probabilityJson()), 200),
+        ),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+    await writer.loadForTeam(83);
+
+    var requested = false;
+    final reader = ApiTeamProbabilityRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requested = true;
+          return http.Response('Unexpected request', 500);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final restored = await reader.loadForTeam(83);
+
+    expect(restored.cards, hasLength(2));
+    expect(requested, isFalse);
   });
 
   test('surfaces authentication and server failures', () async {
