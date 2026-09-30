@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 // import 'package:go_router/go_router.dart';
 
 class ContactPage extends StatefulWidget {
@@ -60,13 +61,30 @@ class _ContactPageState extends State<ContactPage> {
                       const SizedBox(height: 16),
                       _buildLabel(tr(context, "EMAIL")),
                       const SizedBox(height: 16),
-                      _buildValueRow("contact@1touch.com", onTap: () {}),
+                      _buildValueRow(
+                        "contact@1touch.com",
+                        onTap: () => launchUrl(
+                          Uri(
+                            scheme: 'mailto',
+                            path: 'contact@1touch.com',
+                          ),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       _buildDivider(),
                       const SizedBox(height: 24),
                       _buildLabel("INSTAGRAM"),
                       const SizedBox(height: 16),
-                      _buildValueRow("1touch_app", onTap: () {}),
+                      _buildValueRow(
+                        "1touch_app",
+                        onTap: () => launchUrl(
+                          Uri.parse(
+                            'https://www.instagram.com/1touch_app/?utm_source=ig_web_button_share_sheet',
+                          ),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       _buildDivider(),
                     ],
