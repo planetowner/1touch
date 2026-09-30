@@ -47,14 +47,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('tournament-bracket')), findsOneWidget);
-    final zoom = tester.widget<InteractiveViewer>(
-      find.byKey(const ValueKey('tournament-bracket-zoom')),
+    expect(
+      find.byKey(const ValueKey('tournament-bracket-pages')),
+      findsOneWidget,
     );
-    expect(zoom.minScale, 0.5);
-    expect(zoom.maxScale, 1.5);
-    expect(zoom.constrained, isFalse);
-    expect(zoom.alignment, Alignment.topLeft);
-    expect(zoom.boundaryMargin, const EdgeInsets.all(48));
+    expect(find.byType(InteractiveViewer), findsNothing);
     expect(find.byKey(const ValueKey('bracket-match-card-fixture:1')),
         findsOneWidget);
     expect(find.byKey(const ValueKey('bracket-match-card-fixture:3')),
@@ -76,11 +73,11 @@ void main() {
 
     expect(
       tester.getSize(find.byKey(const ValueKey('bracket-stage-Semi-finals'))),
-      const Size(185, 232),
+      const Size(185, 208),
     );
     expect(
       tester.getSize(find.byKey(const ValueKey('bracket-stage-Final'))),
-      const Size(165, 232),
+      const Size(165, 208),
     );
 
     final ties = tester.widgetList<GestureDetector>(
@@ -98,7 +95,9 @@ void main() {
     );
 
     final gesture = await tester.startGesture(
-      tester.getCenter(find.byKey(const ValueKey('tournament-bracket-zoom'))),
+      tester.getCenter(
+        find.byKey(const ValueKey('tournament-bracket-pages')),
+      ),
     );
     await tester.pump();
     expect(interactionStates, [true]);
@@ -108,7 +107,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('light-mode bracket shadows fit inside the zoom viewport',
+  testWidgets('both rounds and their shadows fit inside a narrow viewport',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -127,17 +126,139 @@ void main() {
     await tester.pumpAndSettle();
 
     final viewport = tester.getRect(
-      find.byKey(const ValueKey('tournament-bracket-zoom')),
+      find.byKey(const ValueKey('tournament-bracket-pages')),
     );
     final cardFinder =
         find.byKey(const ValueKey('bracket-match-card-fixture:1'));
     final card = tester.getRect(cardFinder);
     expect(card.left - viewport.left, greaterThanOrEqualTo(16));
     expect(card.top - viewport.top, greaterThanOrEqualTo(16));
+    final rightCard = tester.getRect(
+      find.byKey(const ValueKey('bracket-match-card-fixture:5')),
+    );
+    expect(viewport.right - rightCard.right, greaterThanOrEqualTo(16));
+    expect(rightCard.width, 162.5);
+    expect(
+      rightCard.left - card.right,
+      20,
+      reason: 'The connector lane must remain exactly 20px wide.',
+    );
     expect(
       (tester.widget<Container>(cardFinder).decoration as BoxDecoration)
           .boxShadow,
       app_style.lightModeCardShadows,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('swipes forward by one round while keeping two rounds visible',
+      (tester) async {
+    BracketStage stage(String name, int tieCount) => (
+          name: name,
+          ties: List<BracketTie>.generate(
+            tieCount,
+            (index) => (
+              id: '$name:$index',
+              slots: <BracketSlot>[
+                (teamId: null, label: 'TBD'),
+                (teamId: null, label: 'TBD'),
+              ],
+              aggregateScore: null,
+              winnerTeamId: null,
+              matches: <BracketMatch>[],
+            ),
+          ),
+        );
+    final bracket = TournamentBracket(
+      status: 'in_progress',
+      stages: [
+        stage('Round of 16', 8),
+        stage('Quarter-finals', 4),
+        stage('Semi-finals', 2),
+        stage('Final', 1),
+      ],
+    );
+
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ApiKnockoutBracket(
+            competitionId: 24,
+            seasonId: 100,
+            repository: _StaticBracketRepository(bracket),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('bracket-round-window-0')),
+      findsOneWidget,
+    );
+    final initialViewportHeight = tester
+        .getSize(find.byKey(const ValueKey('tournament-bracket-pages')))
+        .height;
+    await tester.drag(
+      find.byKey(const ValueKey('tournament-bracket-pages')),
+      const Offset(-350, 0),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('bracket-round-window-1')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('bracket-stage-Quarter-finals')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('bracket-stage-Semi-finals')),
+      findsOneWidget,
+    );
+    final firstQuarter = tester.getTopLeft(
+      find.byKey(const ValueKey('bracket-match-card-Quarter-finals:0')),
+    );
+    final secondQuarter = tester.getTopLeft(
+      find.byKey(const ValueKey('bracket-match-card-Quarter-finals:1')),
+    );
+    final firstSemi = tester.getTopLeft(
+      find.byKey(const ValueKey('bracket-match-card-Semi-finals:0')),
+    );
+    final secondSemi = tester.getTopLeft(
+      find.byKey(const ValueKey('bracket-match-card-Semi-finals:1')),
+    );
+    expect(secondQuarter.dy - firstQuarter.dy, 116);
+    expect(secondSemi.dy - firstSemi.dy, 232);
+    expect(
+      tester
+          .getSize(
+            find.byKey(const ValueKey('tournament-bracket-pages')),
+          )
+          .height,
+      lessThanOrEqualTo(initialViewportHeight),
+    );
+
+    await tester.drag(
+      find.byKey(const ValueKey('tournament-bracket-pages')),
+      const Offset(-350, 0),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('bracket-round-window-2')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .getSize(
+            find.byKey(const ValueKey('tournament-bracket-pages')),
+          )
+          .height,
+      240,
     );
     expect(tester.takeException(), isNull);
   });
@@ -181,4 +302,21 @@ void main() {
     expect(find.text('match:1:past'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+}
+
+class _StaticBracketRepository extends TournamentBracketRepository {
+  _StaticBracketRepository(this.bracket)
+      : super(
+          api: ApiClient(
+            client: MockClient((_) async => throw UnsupportedError('unused')),
+            baseUri: Uri.parse('https://api.test/v1'),
+            requestHeaders: () => const {},
+          ),
+        );
+
+  final TournamentBracket bracket;
+
+  @override
+  Future<TournamentBracket> load(int competitionId, int seasonId) async =>
+      bracket;
 }
