@@ -13,8 +13,6 @@ class TransferTile extends StatelessWidget {
     final playerImage = transfer.playerImage;
     final transferValue = _transferValue(context, transfer);
     final playerName = _playerName(context, transfer);
-    // 번역 문구로 비교하면 언어에 따라 임대 배지가 빠지므로 유형 코드로 판단해요.
-    final isLoan = transfer.typeId == 218;
     final appColors = AppColors.of(context);
 
     final content = Container(
@@ -121,30 +119,7 @@ class TransferTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
 
-                // Contract range + LOAN chip if applicable
-                Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [
-                    _contractDate(context, transfer),
-                    if (isLoan) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD82457).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          tr(context, 'LOAN'),
-                          style: Eyebrow.style
-                              .copyWith(color: const Color(0xFFD82457)),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                _contractDate(context, transfer),
               ],
             ),
           ),
