@@ -313,6 +313,16 @@ class _ScriptedPostCommentRepository implements PostCommentRepository {
   int _requestIndex = 0;
 
   @override
+  Future<void> deleteComment({required int commentId}) {
+    throw UnsupportedError('This test double only scripts comments.');
+  }
+
+  @override
+  Future<void> updateComment({required int commentId, required String body}) {
+    throw UnsupportedError('This test double only scripts comments.');
+  }
+
+  @override
   Future<int> createComment({
     required int postId,
     required String body,

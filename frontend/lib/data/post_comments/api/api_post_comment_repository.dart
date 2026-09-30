@@ -62,6 +62,44 @@ class ApiPostCommentRepository implements PostCommentRepository {
   }
 
   @override
+  Future<void> deleteComment({required int commentId}) async {
+    if (commentId < 1) {
+      throw RangeError.value(commentId, 'commentId', 'Must be positive');
+    }
+    final response =
+        await _api.delete(_api.baseUri.resolve('comments/$commentId'));
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    if (decoded['ok'] != true) {
+      throw const FormatException(
+        'Expected comment deletion to return ok=true.',
+      );
+    }
+  }
+
+  @override
+  Future<void> updateComment(
+      {required int commentId, required String body}) async {
+    if (commentId < 1) {
+      throw RangeError.value(commentId, 'commentId', 'Must be positive');
+    }
+    final normalizedBody = body.trim();
+    if (normalizedBody.isEmpty ||
+        normalizedBody.length > maxPostCommentBodyLength) {
+      throw ArgumentError.value(
+          body, 'body', 'Must be 1–$maxPostCommentBodyLength characters');
+    }
+    final response = await _api.put(
+      _api.baseUri.resolve('comments/$commentId'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'body': normalizedBody}),
+    );
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    if (decoded['ok'] != true) {
+      throw const FormatException('Expected comment update to return ok=true.');
+    }
+  }
+
+  @override
   Future<List<PostComment>> loadForPost({
     required int postId,
     int afterId = 0,

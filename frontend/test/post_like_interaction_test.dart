@@ -175,6 +175,16 @@ class _LikePostRepository implements PostRepository {
   int _requestIndex = 0;
 
   @override
+  Future<void> deletePost({required int postId}) {
+    throw UnsupportedError('This test double only scripts likes.');
+  }
+
+  @override
+  Future<void> updatePost(UpdatePostInput input) {
+    throw UnsupportedError('This test double only scripts likes.');
+  }
+
+  @override
   Future<int> createPost(CreatePostInput input) {
     throw UnsupportedError('This test double only scripts likes.');
   }

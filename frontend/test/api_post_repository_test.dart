@@ -9,6 +9,53 @@ import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 
 void main() {
+  test('updates a post without dropping its category or attachments', () async {
+    final repository = ApiPostRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.method, 'PUT');
+          expect(request.url.path, '/v1/posts/42');
+          expect(request.headers['Authorization'], 'Bearer session-token');
+          expect(jsonDecode(request.body), {
+            'category': 'analysis',
+            'title': 'Updated title',
+            'body': 'Updated body',
+            'attachment_ids': [7, 8],
+          });
+          return http.Response('{"ok":true}', 200);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => const {'Authorization': 'Bearer session-token'},
+      ),
+    );
+
+    await repository.updatePost(UpdatePostInput(
+      postId: 42,
+      category: PostCategory.analysis,
+      title: ' Updated title ',
+      body: 'Updated body',
+      attachmentIds: [7, 8],
+    ));
+  });
+
+  test('deletes a post through the authenticated endpoint', () async {
+    final repository = ApiPostRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.method, 'DELETE');
+          expect(request.url.path, '/v1/posts/42');
+          expect(request.headers['Authorization'], 'Bearer session-token');
+          return http.Response('{"ok":true}', 200);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => const {'Authorization': 'Bearer session-token'},
+      ),
+    );
+
+    await repository.deletePost(postId: 42);
+    await expectLater(repository.deletePost(postId: 0), throwsRangeError);
+  });
+
   test('loads one post for a notification destination', () async {
     final repository = ApiPostRepository(
       api: ApiClient(

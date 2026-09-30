@@ -33,6 +33,22 @@ class CreatePostInput {
   }) : attachmentIds = List.unmodifiable(attachmentIds);
 }
 
+class UpdatePostInput {
+  const UpdatePostInput({
+    required this.postId,
+    required this.category,
+    required this.title,
+    required this.body,
+    required this.attachmentIds,
+  });
+
+  final int postId;
+  final PostCategory category;
+  final String title;
+  final String body;
+  final List<int> attachmentIds;
+}
+
 abstract interface class PostRepository {
   Future<List<Post>> loadPosts({
     required int teamId,
@@ -45,6 +61,10 @@ abstract interface class PostRepository {
   });
 
   Future<int> createPost(CreatePostInput input);
+
+  Future<void> deletePost({required int postId});
+
+  Future<void> updatePost(UpdatePostInput input);
 
   Future<void> reportPost({
     required int postId,

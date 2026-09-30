@@ -18,6 +18,7 @@ typedef PostMediaPicker = Future<List<XFile>> Function();
 
 class AddPost extends StatefulWidget {
   final int? teamId;
+  final Post? editingPost;
   final PostRepository? postRepository;
   final PostAttachmentRepository? attachmentRepository;
   final PostMediaPicker? pickMedia;
@@ -25,6 +26,7 @@ class AddPost extends StatefulWidget {
   const AddPost({
     super.key,
     this.teamId,
+    this.editingPost,
     this.postRepository,
     this.attachmentRepository,
     this.pickMedia,
@@ -45,6 +47,7 @@ class _AddPostState extends State<AddPost> {
   final TextEditingController _bodyController = TextEditingController();
 
   final List<XFile> _mediaFiles = [];
+  final List<PostAttachment> _existingAttachments = [];
   final ImagePicker _picker = ImagePicker();
 
   PostRepository get _postRepository =>
@@ -56,6 +59,13 @@ class _AddPostState extends State<AddPost> {
   @override
   void initState() {
     super.initState();
+    final editingPost = widget.editingPost;
+    if (editingPost != null) {
+      _selectedCategory = editingPost.category;
+      _titleController.text = editingPost.title;
+      _bodyController.text = editingPost.body;
+      _existingAttachments.addAll(editingPost.attachments);
+    }
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -74,7 +84,8 @@ class _AddPostState extends State<AddPost> {
 
   Future<void> _pickMedia() async {
     const maximumAttachments = 10;
-    if (_mediaFiles.length >= maximumAttachments) {
+    if (_existingAttachments.length + _mediaFiles.length >=
+        maximumAttachments) {
       _showMessage(tr(context, 'You can attach up to 10 files.'));
       return;
     }
@@ -83,7 +94,8 @@ class _AddPostState extends State<AddPost> {
         await (widget.pickMedia?.call() ?? _picker.pickMultipleMedia());
     if (!mounted || picked.isEmpty) return;
 
-    final remaining = maximumAttachments - _mediaFiles.length;
+    final remaining =
+        maximumAttachments - _existingAttachments.length - _mediaFiles.length;
     setState(() => _mediaFiles.addAll(picked.take(remaining)));
     if (picked.length > remaining) {
       _showMessage(tr(context, 'You can attach up to 10 files.'));
@@ -104,27 +116,76 @@ class _AddPostState extends State<AddPost> {
     }
 
     setState(() => _isSubmitting = true);
+    if (widget.editingPost != null) {
+      // Detach previews of attachments that the update may delete before the
+      // server changes their ownership or removes them.
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) return;
+    }
 
     try {
-      await PostAttachmentPublisher(
-        postRepository: _postRepository,
-        attachmentRepository: _attachmentRepository,
-      ).publish(
-        post: CreatePostInput(
-          teamId: widget.teamId ?? FavoriteTeam.id.value,
-          category: _selectedCategory,
-          title: title,
-          body: body,
-        ),
-        mediaFiles: List.unmodifiable(_mediaFiles),
-      );
+      final editingPost = widget.editingPost;
+      if (editingPost == null) {
+        await PostAttachmentPublisher(
+          postRepository: _postRepository,
+          attachmentRepository: _attachmentRepository,
+        ).publish(
+          post: CreatePostInput(
+            teamId: widget.teamId ?? FavoriteTeam.id.value,
+            category: _selectedCategory,
+            title: title,
+            body: body,
+          ),
+          mediaFiles: List.unmodifiable(_mediaFiles),
+        );
+      } else {
+        final uploadedIds = <int>[];
+        try {
+          for (final file in _mediaFiles) {
+            final uploaded = await _attachmentRepository.upload(
+              bytes: await file.readAsBytes(),
+              filename:
+                  file.name.trim().isEmpty ? 'post-attachment' : file.name,
+            );
+            uploadedIds.add(uploaded.attachmentId);
+          }
+          final update = UpdatePostInput(
+            postId: editingPost.postId,
+            category: _selectedCategory,
+            title: title,
+            body: body,
+            attachmentIds: [
+              for (final attachment in _existingAttachments)
+                attachment.attachmentId,
+              ...uploadedIds,
+            ],
+          );
+          await _postRepository.updatePost(update);
+          if (!mounted) return;
+          Navigator.pop(context, update);
+          return;
+        } catch (_) {
+          for (final id in uploadedIds.reversed) {
+            try {
+              await _attachmentRepository.delete(id);
+            } catch (_) {
+              // Unpublished uploads also expire on the server.
+            }
+          }
+          rethrow;
+        }
+      }
       if (!mounted) return;
 
       Navigator.pop(context, true);
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
-      _showMessage(tr(context, 'Unable to publish post. Please try again.'));
+      _showMessage(tr(
+          context,
+          widget.editingPost == null
+              ? 'Unable to publish post. Please try again.'
+              : 'Unable to update post. Please try again.'));
     }
   }
 
@@ -181,12 +242,18 @@ class _AddPostState extends State<AddPost> {
               titleController: _titleController,
               bodyController: _bodyController,
               mediaFiles: _mediaFiles,
+              existingAttachments: _isSubmitting && widget.editingPost != null
+                  ? const []
+                  : _existingAttachments,
               onCategoryChanged: (category) {
                 setState(() => _selectedCategory = category);
               },
               onPickMedia: _pickMedia,
               onRemoveMedia: (index) {
                 setState(() => _mediaFiles.removeAt(index));
+              },
+              onRemoveExistingAttachment: (index) {
+                setState(() => _existingAttachments.removeAt(index));
               },
             ),
           ),

@@ -9,6 +9,48 @@ import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/models/post_comment.dart';
 
 void main() {
+  test('updates a comment through the authenticated endpoint', () async {
+    final repository = ApiPostCommentRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.method, 'PUT');
+          expect(request.url.path, '/v1/comments/17');
+          expect(request.headers['Authorization'], 'Bearer session-token');
+          expect(jsonDecode(request.body), {'body': 'Updated comment'});
+          return http.Response('{"ok":true}', 200);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => const {'Authorization': 'Bearer session-token'},
+      ),
+    );
+
+    await repository.updateComment(
+      commentId: 17,
+      body: ' Updated comment ',
+    );
+  });
+
+  test('deletes a comment through the authenticated endpoint', () async {
+    final repository = ApiPostCommentRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.method, 'DELETE');
+          expect(request.url.path, '/v1/comments/17');
+          expect(request.headers['Authorization'], 'Bearer session-token');
+          return http.Response('{"ok":true}', 200);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => const {'Authorization': 'Bearer session-token'},
+      ),
+    );
+
+    await repository.deleteComment(commentId: 17);
+    await expectLater(
+      repository.deleteComment(commentId: 0),
+      throwsRangeError,
+    );
+  });
+
   test('loads comments in backend cursor order with Bearer headers', () async {
     final repository = ApiPostCommentRepository(
       api: ApiClient(

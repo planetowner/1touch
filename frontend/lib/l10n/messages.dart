@@ -1214,6 +1214,44 @@ const appMessages = <String, MessageTranslations>{
     ja: "いいねを更新できませんでした。もう一度お試しください。",
     zh: "无法更新点赞，请重试。"
   ),
+  "More options": (ko: "더 보기", ja: "その他", zh: "更多选项"),
+  "Edit": (ko: "수정", ja: "編集", zh: "编辑"),
+  "Edit post": (ko: "게시물 수정", ja: "投稿を編集", zh: "编辑帖子"),
+  "Edit comment": (ko: "댓글 수정", ja: "コメントを編集", zh: "编辑评论"),
+  "Updated {time}": (ko: "{time}에 수정됨", ja: "{time}に更新", zh: "{time}更新"),
+  "Unable to load updated post. Please try again.": (
+    ko: "수정된 게시물을 불러오지 못했어요. 다시 시도해 주세요.",
+    ja: "編集した投稿を読み込めませんでした。もう一度お試しください。",
+    zh: "无法加载更新后的帖子，请重试。"
+  ),
+  "Unable to update post. Please try again.": (
+    ko: "게시물을 수정하지 못했어요. 다시 시도해 주세요.",
+    ja: "投稿を編集できませんでした。もう一度お試しください。",
+    zh: "无法更新帖子，请重试。"
+  ),
+  "Unable to update comment. Please try again.": (
+    ko: "댓글을 수정하지 못했어요. 다시 시도해 주세요.",
+    ja: "コメントを編集できませんでした。もう一度お試しください。",
+    zh: "无法更新评论，请重试。"
+  ),
+  "Delete": (ko: "삭제", ja: "削除", zh: "删除"),
+  "Delete post?": (ko: "게시물을 삭제할까요?", ja: "投稿を削除しますか？", zh: "删除帖子吗？"),
+  "Delete comment?": (ko: "댓글을 삭제할까요?", ja: "コメントを削除しますか？", zh: "删除评论吗？"),
+  "This cannot be undone.": (
+    ko: "삭제하면 되돌릴 수 없어요.",
+    ja: "削除すると元に戻せません。",
+    zh: "删除后无法撤销。"
+  ),
+  "Unable to delete post. Please try again.": (
+    ko: "게시물을 삭제하지 못했어요. 다시 시도해 주세요.",
+    ja: "投稿を削除できませんでした。もう一度お試しください。",
+    zh: "无法删除帖子，请重试。"
+  ),
+  "Unable to delete comment. Please try again.": (
+    ko: "댓글을 삭제하지 못했어요. 다시 시도해 주세요.",
+    ja: "コメントを削除できませんでした。もう一度お試しください。",
+    zh: "无法删除评论，请重试。"
+  ),
   "Deleted user": (ko: "탈퇴한 사용자", ja: "退会したユーザー", zh: "已注销用户"),
   "Blocked user": (ko: "차단한 사용자", ja: "ブロックしたユーザー", zh: "已屏蔽用户"),
   "Deleted comment": (ko: "삭제된 댓글", ja: "削除されたコメント", zh: "已删除评论"),

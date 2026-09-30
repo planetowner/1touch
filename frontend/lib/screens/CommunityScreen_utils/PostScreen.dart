@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/community/community_repository_provider.dart'
     as community_providers;
@@ -12,6 +13,10 @@ import 'package:onetouch/data/post_comments/post_comment_repository_provider.dar
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
+import 'package:onetouch/data/profile/current_user_repository_provider.dart'
+    as profile_providers;
+import 'package:onetouch/features/community/community_delete_dialog.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
 import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/models/post.dart';
@@ -23,6 +28,8 @@ class PostDetailScreen extends StatefulWidget {
   final PostRepository? postRepository;
   final CommunityRepository? communityRepository;
   final PostCommentRepository? postCommentRepository;
+  final int? currentUserId;
+  final Future<void> Function()? onPostUpdated;
 
   const PostDetailScreen({
     super.key,
@@ -30,6 +37,8 @@ class PostDetailScreen extends StatefulWidget {
     this.postRepository,
     this.communityRepository,
     this.postCommentRepository,
+    this.currentUserId,
+    this.onPostUpdated,
   });
 
   @override
@@ -46,10 +55,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool _isUpdatingLike = false;
   bool _isCreatingComment = false;
   PostComment? _replyTarget;
+  PostComment? _editingComment;
   List<PostComment> _comments = const [];
   bool _commentsLoading = true;
   Object? _commentsError;
   int _commentsRequestGeneration = 0;
+  late Post _post;
+  int? _currentUserId;
+  bool _isDeletingPost = false;
+  bool _isEditingPost = false;
+  final Set<int> _deletingCommentIds = {};
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
@@ -63,7 +78,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _post = widget.post;
     _syncEngagementFromPost();
+    _currentUserId = widget.currentUserId;
+    if (_currentUserId == null && authSession.isAuthenticated) {
+      unawaited(_loadCurrentUserId());
+    }
     unawaited(_loadComments(showLoading: false));
     _scrollController = ScrollController()
       ..addListener(() {
@@ -76,11 +96,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   void didUpdateWidget(PostDetailScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.post != oldWidget.post) _post = widget.post;
     if (widget.post.postId != oldWidget.post.postId) {
       _syncEngagementFromPost();
       _isUpdatingLike = false;
       _isCreatingComment = false;
       _replyTarget = null;
+      _editingComment = null;
       _comments = const [];
       _commentsLoading = true;
       _commentsError = null;
@@ -95,6 +117,167 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _liked = widget.post.liked;
     _likeCount = widget.post.likeCount;
     _commentCount = widget.post.commentCount;
+  }
+
+  Future<void> _loadCurrentUserId() async {
+    try {
+      final profile = await profile_providers.currentUserRepository.load();
+      if (mounted) setState(() => _currentUserId = profile.userId);
+    } catch (_) {
+      // Keep author-only actions hidden until the current account is known.
+    }
+  }
+
+  Future<void> _deletePost() async {
+    if (_isDeletingPost ||
+        _currentUserId == null ||
+        widget.post.userId != _currentUserId) {
+      return;
+    }
+    if (!await confirmCommunityDelete(context, isPost: true) || !mounted) {
+      return;
+    }
+    setState(() => _isDeletingPost = true);
+    try {
+      await _postRepository.deletePost(postId: widget.post.postId);
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(tr(context, 'Unable to delete post. Please try again.')),
+      ));
+    } finally {
+      if (mounted) setState(() => _isDeletingPost = false);
+    }
+  }
+
+  Future<void> _editPost() async {
+    if (_isEditingPost ||
+        _currentUserId == null ||
+        _post.userId != _currentUserId) {
+      return;
+    }
+    setState(() => _isEditingPost = true);
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+    final update = await Navigator.of(context).push<UpdatePostInput>(
+      MaterialPageRoute(
+        builder: (_) => AddPost(
+          editingPost: _post,
+          postRepository: _postRepository,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    if (update == null) {
+      setState(() => _isEditingPost = false);
+      return;
+    }
+    final previousAttachments = {
+      for (final attachment in _post.attachments)
+        attachment.attachmentId: attachment,
+    };
+    setState(() {
+      _post = _post.copyWith(
+        category: update.category,
+        title: update.title,
+        body: update.body,
+        editedAt: DateTime.now().toUtc().toIso8601String(),
+        attachments: [
+          for (final (position, id) in update.attachmentIds.indexed)
+            PostAttachment(
+              attachmentId: id,
+              position: position,
+              linkUrl: previousAttachments[id]?.linkUrl,
+              mediaUrl: previousAttachments[id]?.mediaUrl,
+              contentType: previousAttachments[id]?.contentType,
+              byteSize: previousAttachments[id]?.byteSize,
+            ),
+        ],
+      );
+      _isEditingPost = false;
+    });
+    if (widget.onPostUpdated != null) {
+      unawaited(widget.onPostUpdated!());
+    }
+    try {
+      final repository = _postRepository;
+      final Post updatedPost;
+      if (repository is PostDetailRepository) {
+        updatedPost =
+            await (repository as PostDetailRepository).loadPost(_post.postId);
+      } else {
+        updatedPost = (await repository.loadPosts(teamId: _post.teamId))
+            .firstWhere((post) => post.postId == _post.postId);
+      }
+      if (mounted) setState(() => _post = updatedPost);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content:
+            Text(tr(context, 'Unable to load updated post. Please try again.')),
+      ));
+    }
+  }
+
+  Future<void> _deleteComment(PostComment comment) async {
+    if (_currentUserId == null ||
+        comment.userId != _currentUserId ||
+        comment.state != PostCommentState.active ||
+        _deletingCommentIds.contains(comment.commentId)) {
+      return;
+    }
+    if (!await confirmCommunityDelete(context, isPost: false) || !mounted) {
+      return;
+    }
+    setState(() => _deletingCommentIds.add(comment.commentId));
+    try {
+      await _postCommentRepository.deleteComment(commentId: comment.commentId);
+      if (!mounted) return;
+      setState(() {
+        if (_commentCount > 0) _commentCount--;
+        if (_replyTarget?.commentId == comment.commentId) _replyTarget = null;
+        if (_editingComment?.commentId == comment.commentId) {
+          _editingComment = null;
+        }
+      });
+      await _loadComments(showLoading: false);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content:
+            Text(tr(context, 'Unable to delete comment. Please try again.')),
+      ));
+    } finally {
+      if (mounted) {
+        setState(() => _deletingCommentIds.remove(comment.commentId));
+      }
+    }
+  }
+
+  void _editComment(PostComment comment) {
+    if (_currentUserId == null ||
+        comment.userId != _currentUserId ||
+        comment.state != PostCommentState.active) {
+      return;
+    }
+    setState(() {
+      _replyTarget = null;
+      _editingComment = comment;
+    });
+  }
+
+  Future<void> _submitEditedComment(String body) async {
+    final comment = _editingComment;
+    if (comment == null) return;
+    await _postCommentRepository.updateComment(
+      commentId: comment.commentId,
+      body: body,
+    );
+    if (!mounted) return;
+    setState(() => _editingComment = null);
+    await _loadComments(showLoading: false);
   }
 
   Future<void> _loadComments({bool showLoading = true}) async {
@@ -201,7 +384,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget build(BuildContext context) {
     // 2. Calculate opacity (0.0 at top, 1.0 when scrolled down 150px)
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
-    final post = widget.post;
+    final post = _post;
 
     final pageBackground = mainPageBackground(context);
     final colors = Theme.of(context).colorScheme;
@@ -248,10 +431,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   comments: _comments,
                   commentsLoading: _commentsLoading,
                   commentsError: _commentsError,
+                  currentUserId: _currentUserId,
+                  showMedia: !_isEditingPost,
+                  onEditPost:
+                      _isDeletingPost || _isEditingPost ? null : _editPost,
+                  onDeletePost: _isDeletingPost ? null : _deletePost,
+                  onEditComment: _editComment,
+                  onDeleteComment: (comment) {
+                    if (!_deletingCommentIds.contains(comment.commentId)) {
+                      _deleteComment(comment);
+                    }
+                  },
                   onRetryComments: _loadComments,
                   onReply: !canParticipate || _isCreatingComment
                       ? null
-                      : (comment) => setState(() => _replyTarget = comment),
+                      : (comment) => setState(() {
+                            _editingComment = null;
+                            _replyTarget = comment;
+                          }),
                   onReport: !canParticipate
                       ? null
                       : (reason) => _postRepository.reportPost(
@@ -266,8 +463,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         bottomNavigationBar: canParticipate
             ? PostDetailReplyBar(
                 replyTarget: _replyTarget,
+                editingTarget: _editingComment,
                 onCancelReply: () => setState(() => _replyTarget = null),
-                onSubmit: _submitComment,
+                onCancelEdit: () => setState(() => _editingComment = null),
+                onSubmit: _editingComment == null
+                    ? _submitComment
+                    : _submitEditedComment,
               )
             : const CommunityReadOnlyNotice(),
       ),

@@ -4,6 +4,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/api_image_headers.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -16,18 +17,22 @@ class PostComposerFields extends StatelessWidget {
     required this.titleController,
     required this.bodyController,
     required this.mediaFiles,
+    this.existingAttachments = const [],
     required this.onCategoryChanged,
     required this.onPickMedia,
     required this.onRemoveMedia,
+    this.onRemoveExistingAttachment,
   });
 
   final PostCategory selectedCategory;
   final TextEditingController titleController;
   final TextEditingController bodyController;
   final List<XFile> mediaFiles;
+  final List<PostAttachment> existingAttachments;
   final ValueChanged<PostCategory> onCategoryChanged;
   final VoidCallback onPickMedia;
   final ValueChanged<int> onRemoveMedia;
+  final ValueChanged<int>? onRemoveExistingAttachment;
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +98,7 @@ class PostComposerFields extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         TextField(
+          key: const ValueKey('community-post-title-input'),
           controller: titleController,
           style: Heading4.style.copyWith(color: colors.onSurface),
           cursorColor: colors.onSurface,
@@ -110,6 +116,7 @@ class PostComposerFields extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         TextField(
+          key: const ValueKey('community-post-body-input'),
           controller: bodyController,
           style: Body2.style.copyWith(color: colors.onSurface),
           cursorColor: colors.onSurface,
@@ -127,30 +134,69 @@ class PostComposerFields extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        if (mediaFiles.isNotEmpty) ...[
+        if (existingAttachments.isNotEmpty || mediaFiles.isNotEmpty) ...[
           SizedBox(
             height: 100,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: mediaFiles.length,
+              itemCount: existingAttachments.length + mediaFiles.length,
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
+                final existing = index < existingAttachments.length;
+                final attachment = existing ? existingAttachments[index] : null;
+                final file = existing
+                    ? null
+                    : mediaFiles[index - existingAttachments.length];
+                final mediaUrl = attachment?.mediaUrl;
+                final isImage = mediaUrl != null &&
+                    (attachment?.contentType?.startsWith('image/') ?? false);
                 return Stack(
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        File(mediaFiles[index].path),
-                        width: 100,
-                        height: 100,
-                        fit: BoxFit.cover,
-                      ),
+                      child: existing
+                          ? isImage
+                              ? Image.network(mediaUrl,
+                                  headers: apiImageHeaders(mediaUrl),
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const SizedBox(
+                                        width: 100,
+                                        height: 100,
+                                        child:
+                                            Icon(Icons.broken_image_outlined),
+                                      ))
+                              : SizedBox(
+                                  width: 100,
+                                  height: 100,
+                                  child: Center(
+                                      child: Icon(
+                                    attachment?.linkUrl != null
+                                        ? Icons.link
+                                        : Icons.videocam_outlined,
+                                  )),
+                                )
+                          : Image.file(File(file!.path),
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const SizedBox(
+                                    width: 100,
+                                    height: 100,
+                                    child: Icon(Icons.image_outlined),
+                                  )),
                     ),
                     Positioned(
                       top: 4,
                       right: 4,
                       child: GestureDetector(
-                        onTap: () => onRemoveMedia(index),
+                        key: ValueKey(existing
+                            ? 'community-existing-attachment-remove-$index'
+                            : 'community-new-attachment-remove-${index - existingAttachments.length}'),
+                        onTap: () => existing
+                            ? onRemoveExistingAttachment?.call(index)
+                            : onRemoveMedia(index - existingAttachments.length),
                         child: Container(
                           decoration: const BoxDecoration(
                             color: Colors.black54,

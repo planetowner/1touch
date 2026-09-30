@@ -198,25 +198,31 @@ class _PostCard extends StatelessWidget {
                             isLight ? AppPalette.lightGrey : Colors.white24,
                       ),
                       const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            communityAuthorLabel(
-                              locale: Localizations.localeOf(context),
-                              username: post.username,
-                              displayName: post.displayName,
-                              authorDeleted: post.authorDeleted,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              communityAuthorLabel(
+                                locale: Localizations.localeOf(context),
+                                username: post.username,
+                                displayName: post.displayName,
+                                authorDeleted: post.authorDeleted,
+                              ),
+                              style: Body1.style,
                             ),
-                            style: Body1.style,
-                          ),
-                          Text(
-                            _timeAgo(context, post.createdAt),
-                            style: Body2.style.copyWith(
-                              color: appColors.mutedForeground,
+                            Text(
+                              communityPostTimeLabel(
+                                createdAt: post.createdAt,
+                                editedAt: post.editedAt,
+                                locale: Localizations.localeOf(context),
+                              ),
+                              style: Body2.style.copyWith(
+                                color: appColors.mutedForeground,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -301,7 +307,3 @@ class _PostCard extends StatelessWidget {
     );
   }
 }
-
-String _timeAgo(BuildContext context, String createdAt) =>
-    relativeTimeLabel(DateTime.tryParse(createdAt),
-        locale: Localizations.localeOf(context));

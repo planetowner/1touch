@@ -14,4 +14,8 @@ abstract interface class PostCommentRepository {
     required String body,
     int? replyToId,
   });
+
+  Future<void> deleteComment({required int commentId});
+
+  Future<void> updateComment({required int commentId, required String body});
 }

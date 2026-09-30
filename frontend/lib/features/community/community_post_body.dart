@@ -18,6 +18,7 @@ class CommunityPostBody extends StatelessWidget {
     required this.loadError,
     required this.onRetry,
     required this.onPostDetailClosed,
+    required this.onPostUpdated,
     required this.onSortChanged,
   });
 
@@ -30,6 +31,7 @@ class CommunityPostBody extends StatelessWidget {
   final Object? loadError;
   final VoidCallback onRetry;
   final Future<void> Function() onPostDetailClosed;
+  final Future<void> Function() onPostUpdated;
   final ValueChanged<PostSort> onSortChanged;
 
   @override
@@ -71,6 +73,7 @@ class CommunityPostBody extends StatelessWidget {
       communityRepository: communityRepository,
       selectedSort: selectedSort,
       onPostDetailClosed: onPostDetailClosed,
+      onPostUpdated: onPostUpdated,
       onSortChanged: onSortChanged,
     );
   }

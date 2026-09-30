@@ -21,6 +21,24 @@ String relativeTimeLabel(
   return _minuteOrHourLabel(difference, locale);
 }
 
+String communityPostTimeLabel({
+  required String createdAt,
+  String? editedAt,
+  required Locale locale,
+  DateTime? now,
+}) {
+  final edited = DateTime.tryParse(editedAt ?? '');
+  if (edited != null) {
+    final relative = relativeTimeLabel(edited, locale: locale, now: now);
+    final time = locale.languageCode == 'en'
+        ? '${relative[0].toLowerCase()}${relative.substring(1)}'
+        : relative;
+    return translateMessage(locale, 'Updated {time}', {'time': time});
+  }
+  return relativeTimeLabel(DateTime.tryParse(createdAt),
+      locale: locale, now: now);
+}
+
 String _minuteOrHourLabel(Duration difference, Locale locale) {
   if (difference.inMinutes < 1) return translateMessage(locale, 'Just now');
   final (key, count) = difference.inHours >= 1
