@@ -104,6 +104,11 @@ def collect_understat(season_name: str | None = None, competition_ids: list[int]
                            "players": sorted((roster_ids | shot_ids) - player_ids.keys())}
                 if any(missing.values()):
                     path = write_understat_report("unmapped", {**season, "match_id": external_id, "missing": missing})
+                    if fixture_ids is not None:
+                        # 자동 수집은 이 경기만 대기로 남겨요. 다른 경기 저장과 5분 재시도를 이어 가요.
+                        print(f"[understat pending] {season['name']} competition_id={season['competition_id']} "
+                              f"match_id={external_id} missing={missing} report={path}", flush=True)
+                        continue
                     raise ValueError(f"Understat IDs need mapping: {missing}. Report: {path}")
                 fixture_id = mapped_fixtures[external_id]
                 rows = normalize_understat_match(match, details, fixture_id, team_ids, player_ids)
@@ -140,7 +145,8 @@ def refresh_understat(season_name: str | None = None, competition_ids: list[int]
         try:
             selection = {} if fixture_ids is None else {'fixture_ids': set(fixture_ids)}
             mappings = collect_understat_ids(check=check, client=client, scope=scope, known=known, **selection)
-            if mappings['pending']:
+            # 자동 수집은 경기별로 미연결 ID를 확인해요. 전체 시즌 적재는 완전한 연결을 요구해요.
+            if mappings['pending'] and fixture_ids is None:
                 raise ValueError(f"Understat IDs still have {mappings['pending']} unresolved mappings; xG refresh stopped")
             # --check도 같은 실행에서 확인한 ID를 사용하지만 DB에는 저장하지 않아요.
             totals = collect_understat(check=check, client=client, scope=scope, known=known, **selection)

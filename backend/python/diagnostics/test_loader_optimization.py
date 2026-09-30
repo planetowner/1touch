@@ -14,6 +14,7 @@ from one_touch_loader.core import squad_roles as roles
 from one_touch_loader.loaders import squad_roles_loader as squads
 from one_touch_loader.loaders import understat_ids_loader as ids
 from one_touch_loader.loaders import understat_loader as xg
+from one_touch_loader.loaders import understat_common
 from diagnostics import refresh_squad_roles as command
 
 
@@ -218,6 +219,38 @@ class UnderstatReuseTests(unittest.TestCase):
         collect.assert_not_called()
         self.xg_write.assert_not_called()
         self.session.close.assert_called_once()
+
+    def test_scoped_refresh_stores_other_matches_and_keeps_unmapped_match_pending(self):
+        unknown = {**next(iter(self.details['rosters']['h'].values())),
+                   'player_id': 'unresolved', 'player': 'Unresolved Player'}
+        self.details['rosters']['h']['unresolved-roster'] = unknown
+        self.source['dates'].append({**deepcopy(SAMPLE['match']), 'id': 'healthy'})
+        self.maps['fixture'].update({str(SAMPLE['match']['id']): 1, 'healthy': 2})
+
+        def response(url, **kwargs):
+            if url.endswith('/healthy'):
+                return Mock(json=Mock(return_value=SAMPLE['details']))
+            return self.response(url, **kwargs)
+
+        self.session.get.side_effect = response
+        healthy_rows = {**self.expected,
+                        'expected_goals': (2, *self.expected['expected_goals'][1:]),
+                        'player_expected_goals': [(2, *r[1:]) for r in self.expected['player_expected_goals']],
+                        'shots': [(r[0], 2, *r[2:]) for r in self.expected['shots']]}
+        with patch.object(understat_common, 'load_mapping_fixtures', return_value=[]):
+            for check in (True, False):
+                with self.subTest(check=check):
+                    self.xg_write.reset_mock()
+                    result = xg.refresh_understat(check=check, fixture_ids={1, 2})
+                    self.assertEqual(result['mappings']['pending'], 1)
+                    self.assertEqual(result['processed_fixture_ids'], [2])
+                    self.assertEqual(result['pending_fixture_ids'], [1])
+                    self.assertEqual(result['fixtures'], 1)
+                    if check:
+                        self.xg_write.assert_not_called()
+                        self.id_write.assert_not_called()
+                    else:
+                        self.xg_write.assert_called_once_with([healthy_rows])
 
     def test_mapping_commit_failure_stops_before_xg(self):
         self.id_write.return_value.__exit__.side_effect = RuntimeError('commit failed')

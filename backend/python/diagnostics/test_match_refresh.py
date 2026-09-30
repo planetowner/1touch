@@ -57,6 +57,19 @@ class MatchRefreshTests(unittest.TestCase):
             self.run_job(seconds=301)
         collect.assert_called_once()
 
+    def test_partial_collection_retries_only_pending_match_after_mapping_is_resolved(self):
+        self.rows.append(fixture(fixture_id=2))
+        with patch.object(jobs, '_provider_refresh', side_effect=[({2}, set()), ({1}, set())]) as collect:
+            first = self.run_job()
+            self.assertEqual((first['completed'], first['pending']), (1, 1))
+            self.run_job(seconds=299)
+            collect.assert_called_once()
+            retry = self.run_job(seconds=300)
+            self.assertEqual([f['fixture_id'] for f in collect.call_args.args[1]], [1])
+            self.assertEqual((retry['completed'], retry['pending']), (1, 0))
+            self.run_job(seconds=600)
+            self.assertEqual(collect.call_count, 2)
+
     def test_many_existing_matches_write_one_checkpoint_and_idle_scan_writes_none(self):
         self.rows = [fixture(fixture_id=i, has_xg=True) for i in range(101)]
         with patch.object(jobs, 'save_state', wraps=jobs.save_state) as save, \
