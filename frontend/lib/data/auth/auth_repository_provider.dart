@@ -10,6 +10,8 @@ import 'package:onetouch/core/device_region.dart';
 import 'package:onetouch/data/auth/api/api_login_options_repository.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/data/auth/native_social_identity_service.dart';
+import 'package:onetouch/data/session/clear_session_data.dart';
+import 'package:onetouch/services/push_device_registration_service_provider.dart';
 
 final GoogleIdentityService _googleIdentityService =
     GoogleSignInIdentityService();
@@ -23,6 +25,9 @@ final AuthService authService = AuthService(
   session: authSession,
   socialIdentityService: NativeSocialIdentityService(),
   tokenStore: const SecureAuthTokenStore(),
+  clearLocalUserData: clearSessionData,
+  onSessionEstablished: pushDeviceRegistrationService.synchronize,
+  beforeSessionCleared: pushDeviceRegistrationService.unregister,
 );
 
 Future<LoginOptions> loadLoginOptions() async {

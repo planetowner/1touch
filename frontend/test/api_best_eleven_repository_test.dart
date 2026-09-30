@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/best_eleven/api/api_best_eleven_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
   test('requests, maps, and caches the default Best Eleven', () async {
@@ -100,6 +101,39 @@ void main() {
     expect(await repository.loadForTeam(83), isNull);
     expect(repository.cachedLineups.value, isEmpty);
     expect(requestCount, 2);
+  });
+
+  test('restores a fresh lineup after repository recreation', () async {
+    final store = MemoryLocalCacheStore();
+    final writer = ApiBestElevenRepository(
+      api: ApiClient(
+        client: MockClient(
+          (_) async => http.Response(jsonEncode(_bestElevenJson()), 200),
+        ),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+    await writer.loadForTeam(83);
+
+    var requested = false;
+    final reader = ApiBestElevenRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requested = true;
+          return http.Response('Unexpected request', 500);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final restored = await reader.loadForTeam(83);
+
+    expect(restored?.formation, '4-3-3');
+    expect(requested, isFalse);
   });
 
   test('surfaces authentication and other HTTP failures', () async {

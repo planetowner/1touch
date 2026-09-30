@@ -1,13 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/core/cache/cache_policy.dart';
+import 'package:onetouch/core/notification_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
+import 'package:onetouch/data/session/session_data_synchronizer.dart';
 import 'package:onetouch/data/profile/api/api_current_user_response.dart';
-import 'package:onetouch/data/profile/current_user_repository_provider.dart';
-import 'package:onetouch/data/teams/following_teams_repository_provider.dart';
 import 'package:onetouch/data/teams/team_page_eligibility.dart';
-import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/profile_fields.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -41,38 +43,66 @@ class _SessionScreenState extends State<SessionScreen> {
         if (mounted) context.go('/onboarding');
         return;
       }
-      await footballCatalog.initialize();
-      final account = await currentUserRepository.loadAccount();
+      final cached = await sessionDataSynchronizer.hydrate();
       if (!mounted) return;
-      // 새 로그인에서는 이전 계정의 탐색 팀을 이어받지 않아요.
-      if (_readyToken != authSession.accessToken) {
-        currentUserPreferences.resetViewedTeam();
-      }
-      if ([account.username, account.firstName, account.lastName]
-          .any((s) => s == null || s.isEmpty)) {
-        setState(() => _incompleteProfile = account);
+      if (cached?.canOpenHome == true) {
+        _openHome();
+        unawaited(_refreshCachedSession());
         return;
       }
-      if (!account.onboardingComplete) {
-        if (!footballCatalog.competitions.value.any((c) =>
-            TeamPageEligibility.domesticBigFiveCompetitionIds
-                .contains(c.competitionId) &&
-            footballCatalog.currentTeams(c.competitionId).isNotEmpty)) {
-          throw StateError('No current team memberships available.');
-        }
-        context.go('/onboarding/welcome');
-        return;
-      }
-      final teams = await followingTeamsRepository.load();
-      currentUserPreferences.applyServerSelection(UserTeamPreferences(
-          favoriteTeamId: account.favoriteTeamId!,
-          followedTeamIds: teams.map((t) => t.teamId).toList()));
-      await playerFollowingController.load();
-      _readyToken = authSession.accessToken;
-      if (mounted) context.go('/home');
+      final fresh = await sessionDataSynchronizer.synchronize(
+        trigger: CacheSyncTrigger.bootstrap,
+      );
+      if (!mounted) return;
+      _handle(fresh);
     } catch (error) {
       if (mounted) setState(() => _error = error);
     }
+  }
+
+  Future<void> _refreshCachedSession() async {
+    try {
+      await sessionDataSynchronizer.synchronize(
+        trigger: CacheSyncTrigger.bootstrap,
+      );
+    } on Object {
+      // Cached session data remains usable while the device is offline.
+    }
+  }
+
+  void _handle(SessionDataSnapshot snapshot) {
+    final account = snapshot.account;
+    if ([account.username, account.firstName, account.lastName]
+        .any((s) => s == null || s.isEmpty)) {
+      setState(() => _incompleteProfile = account);
+      return;
+    }
+    if (!account.onboardingComplete) {
+      if (!footballCatalog.competitions.value.any((c) =>
+          TeamPageEligibility.domesticBigFiveCompetitionIds
+              .contains(c.competitionId) &&
+          footballCatalog.currentTeams(c.competitionId).isNotEmpty)) {
+        throw StateError('No current team memberships available.');
+      }
+      context.go('/onboarding/welcome');
+      return;
+    }
+    if (!snapshot.canOpenHome) {
+      throw StateError('Complete session data is unavailable.');
+    }
+    _openHome();
+  }
+
+  void _openHome() {
+    // 새 로그인에서는 이전 계정의 탐색 팀을 이어받지 않아요.
+    if (_readyToken != authSession.accessToken) {
+      currentUserPreferences.resetViewedTeam();
+    }
+    _readyToken = authSession.accessToken;
+    final destination = notificationNavigation.take(
+      sessionToken: authSession.accessToken!,
+    );
+    if (mounted) context.go(destination ?? '/home');
   }
 
   @override

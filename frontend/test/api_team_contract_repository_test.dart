@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/contracts/api/api_team_contract_repository.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
   test('requests, maps, and caches the current team contract roster', () async {
@@ -40,6 +41,40 @@ void main() {
       () => repository.cachedRosters.value.clear(),
       throwsUnsupportedError,
     );
+  });
+
+  test('restores a fresh roster after the repository is recreated', () async {
+    final store = MemoryLocalCacheStore();
+    final writer = ApiTeamContractRepository(
+      api: ApiClient(
+        client: MockClient(
+          (_) async => http.Response(jsonEncode(_rosterJson()), 200),
+        ),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+    await writer.loadForTeam(83);
+
+    var requested = false;
+    final reader = ApiTeamContractRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requested = true;
+          return http.Response('Unexpected request', 500);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final restored = await reader.loadForTeam(83);
+
+    expect(restored.players.single.leadershipRole, isNotNull);
+    expect(reader.cachedForTeam(83), same(restored));
+    expect(requested, isFalse);
   });
 
   test('requests and caches an explicit historical season separately',
