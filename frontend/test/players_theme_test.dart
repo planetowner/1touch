@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/models/following_player.dart';
@@ -405,6 +406,23 @@ void main() {
     );
     expect(search.clipBehavior, Clip.antiAlias);
     expect(find.text('Ranked player 6'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('players scroll returns to the top before leaving the main tab',
+      (tester) async {
+    await pump(tester, size: const Size(320, 568));
+    final scrollView = tester.widget<CustomScrollView>(
+      find.byType(CustomScrollView).first,
+    );
+    final controller = scrollView.controller!;
+    await tester.drag(
+        find.byType(CustomScrollView).first, const Offset(0, -500));
+    await tester.pumpAndSettle();
+    expect(controller.offset, greaterThan(0));
+
+    mainTabActions.select(3);
+    expect(controller.offset, controller.position.minScrollExtent);
     expect(tester.takeException(), isNull);
   });
 }

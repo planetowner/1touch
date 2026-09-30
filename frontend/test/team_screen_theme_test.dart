@@ -172,6 +172,23 @@ void main() {
       tester.getTopLeft(find.byKey(const ValueKey('team-app-bar-logo'))).dy,
       greaterThanOrEqualTo(0),
     );
+
+    final tabController =
+        tester.widget<TabBar>(find.byType(TabBar)).controller!;
+    PageView teamPageView() => tester.widget<PageView>(
+          find.descendant(
+            of: find.byType(TabBarView),
+            matching: find.byType(PageView),
+          ),
+        );
+    tabController.animateTo(2);
+    await tester.pumpAndSettle();
+    expect(teamPageView().controller!.page, 2);
+
+    mainTabActions.select(2);
+    await tester.pump();
+    expect(tabController.index, 0);
+    expect(teamPageView().controller!.page, 0);
     expect(tester.takeException(), isNull);
   });
 

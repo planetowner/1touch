@@ -66,6 +66,7 @@ class _TeamScreenState extends State<TeamScreen>
   bool _isBracketInteracting = false;
   bool _isRevealingTeamAppBar = false;
   int _selectedTabIndex = 0;
+  int _tabViewEpoch = 0;
   final List<int> _tabRefreshEpochs = List<int>.filled(5, 0);
 
   TeamOverviewRepository get _teamOverviewRepository =>
@@ -90,10 +91,11 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   void _handleMainTabAction() {
-    if (mainTabActions.tabIndex != 1) return;
     if (_tabController.index != 0) {
-      _tabController.animateTo(0, duration: Duration.zero);
+      _tabController.index = 0;
+      setState(() => _tabViewEpoch++);
     }
+    if (mainTabActions.tabIndex != 1) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showRootAppBar();
     });
@@ -482,6 +484,7 @@ class _TeamScreenState extends State<TeamScreen>
                 ),
               ],
               body: TabBarView(
+                key: ValueKey('team-tab-view-$_tabViewEpoch'),
                 controller: _tabController,
                 physics: _isBracketInteracting
                     ? const NeverScrollableScrollPhysics()

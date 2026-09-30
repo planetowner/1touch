@@ -77,6 +77,22 @@ const appMessages = <String, MessageTranslations>{
     ja: "パスワードが一致しません。",
     zh: "两次输入的密码不一致。"
   ),
+  "Please check the highlighted fields.": (
+    ko: "표시된 입력 내용을 확인해 주세요.",
+    ja: "表示された入力項目を確認してください。",
+    zh: "请检查标记的输入项。"
+  ),
+  "Please agree to the Terms and Privacy Policy.": (
+    ko: "이용약관과 개인정보 처리방침에 동의해 주세요.",
+    ja: "利用規約とプライバシーポリシーに同意してください。",
+    zh: "请同意条款和隐私政策。"
+  ),
+  "Retype Password": (ko: "비밀번호 다시 입력", ja: "パスワードを再入力", zh: "再次输入密码"),
+  "Choose a password that is 8 or more characters long.": (
+    ko: "비밀번호는 8자 이상으로 설정해 주세요.",
+    ja: "パスワードは8文字以上で設定してください。",
+    zh: "密码长度至少为8个字符。"
+  ),
   "Invalid verification code. Try again.": (
     ko: "인증번호가 올바르지 않아요. 다시 입력해 주세요.",
     ja: "認証コードが正しくありません。もう一度お試しください。",
@@ -1242,6 +1258,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Community Ground Rules": (ko: "커뮤니티 이용 규칙", ja: "コミュニティルール", zh: "社区规则"),
   "I UNDERSTAND!": (ko: "이해했습니다!", ja: "理解しました！", zh: "我明白了！"),
+  "I understand": (ko: "이해했어요", ja: "理解しました", zh: "我明白了"),
   "Unable to load community rules.": (
     ko: "커뮤니티 이용 규칙을 불러오지 못했어요.",
     ja: "コミュニティルールを読み込めませんでした。",
