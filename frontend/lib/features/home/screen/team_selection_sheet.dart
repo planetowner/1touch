@@ -23,10 +23,13 @@ class TeamSelectionSheet extends StatefulWidget {
     required int favoriteTeamId,
     required List<Team> followingTeams,
     required FutureOr<void> Function(int teamId) onSwitch,
+    StandingRepository? standingsRepository,
   }) {
     final appColors = AppColors.of(context);
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: appColors.cardBackground,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -36,6 +39,7 @@ class TeamSelectionSheet extends StatefulWidget {
         favoriteTeamId: favoriteTeamId,
         followingTeams: followingTeams,
         onSwitch: onSwitch,
+        standingsRepository: standingsRepository,
       ),
     );
   }
@@ -121,8 +125,10 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
             ],
           ),
           const SizedBox(height: 16),
-          Expanded(
+          Flexible(
+            fit: FlexFit.loose,
             child: ListView.builder(
+              shrinkWrap: true,
               itemCount: _followingTeams.length,
               itemBuilder: (context, index) {
                 final team = _followingTeams[index];

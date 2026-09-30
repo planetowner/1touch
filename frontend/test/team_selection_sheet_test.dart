@@ -9,8 +9,10 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/data/standings/api/api_standing_repository.dart';
+import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_page_eligibility_provider.dart';
 import 'package:onetouch/features/HomeScreenFeatures.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -18,6 +20,107 @@ import 'support/app_catalog.dart';
 
 void main() {
   setUpAppCatalog();
+
+  for (final teamCount in [3, 5]) {
+    testWidgets('following picker fits all $teamCount teams without scrolling',
+        (tester) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final teams = teamRepository.allTeams
+          .where((team) => teamPageEligibility.supports(team.teamId))
+          .take(teamCount)
+          .toList();
+      expect(teams, hasLength(teamCount));
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => TeamSelectionSheet.show(
+                context,
+                initialTeamId: teams.first.teamId,
+                favoriteTeamId: teams.first.teamId,
+                followingTeams: teams,
+                standingsRepository: MockStandingRepository(),
+                onSwitch: (_) {},
+              ),
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      ));
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      final sheet = find.byType(TeamSelectionSheet);
+      final sheetRect = tester.getRect(sheet);
+      for (final team in teams) {
+        final row = find.byKey(ValueKey('team-selection-${team.teamId}'));
+        expect(row, findsOneWidget);
+        final rowRect = tester.getRect(row);
+        expect(rowRect.top, greaterThanOrEqualTo(sheetRect.top));
+        expect(rowRect.bottom, lessThanOrEqualTo(sheetRect.bottom));
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('following picker scrolls the list on a short screen',
+      (tester) async {
+    tester.view.physicalSize = const Size(320, 460);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final teams = teamRepository.allTeams
+        .where((team) => teamPageEligibility.supports(team.teamId))
+        .take(5)
+        .toList();
+
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: Builder(
+        builder: (context) => Scaffold(
+          body: TextButton(
+            onPressed: () => TeamSelectionSheet.show(
+              context,
+              initialTeamId: teams.first.teamId,
+              favoriteTeamId: teams.first.teamId,
+              followingTeams: teams,
+              standingsRepository: MockStandingRepository(),
+              onSwitch: (_) {},
+            ),
+            child: const Text('Open'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    final list = find.descendant(
+      of: find.byType(TeamSelectionSheet),
+      matching: find.byType(ListView),
+    );
+    expect(
+        tester
+            .state<ScrollableState>(find.descendant(
+              of: list,
+              matching: find.byType(Scrollable),
+            ))
+            .position
+            .maxScrollExtent,
+        greaterThan(0));
+    await tester.scrollUntilVisible(
+      find.byKey(ValueKey('team-selection-${teams.last.teamId}')),
+      100,
+      scrollable: find.descendant(of: list, matching: find.byType(Scrollable)),
+    );
+    expect(find.text('SWITCH'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
       'following picker shows league ranks and keeps the favorite star separate from selection',
@@ -117,7 +220,8 @@ void main() {
     expect(find.text('라리가 2위'), findsOneWidget);
     expect(find.text('프리미어리그 1위'), findsOneWidget);
     expect(standings.findForTeam(82, 503, seasonId: 28321)?.position, 2);
-    await tester.ensureVisible(find.byKey(const ValueKey('team-selection-503')));
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('team-selection-503')));
     await tester.pumpAndSettle();
     expect(find.text('분데스리가 2위'), findsOneWidget);
     expect(requests, hasLength(3));
