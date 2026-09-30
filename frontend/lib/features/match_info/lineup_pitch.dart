@@ -164,16 +164,24 @@ class _PlayerRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: players
-          .map((p) => _PlayerDot(
-                player: p,
-                playerCircleColor: playerCircleColor,
-                onTap: onTap == null ? null : () => onTap!(p),
-              ))
-          .toList(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final playerWidth = players.isEmpty
+            ? 64.0
+            : (constraints.maxWidth / players.length).clamp(0.0, 64.0);
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: players
+              .map((p) => _PlayerDot(
+                    player: p,
+                    width: playerWidth,
+                    playerCircleColor: playerCircleColor,
+                    onTap: onTap == null ? null : () => onTap!(p),
+                  ))
+              .toList(),
+        );
+      },
     );
   }
 }
@@ -182,11 +190,13 @@ class _PlayerRow extends StatelessWidget {
 
 class _PlayerDot extends StatelessWidget {
   final LineupPlayer player;
+  final double width;
   final Color playerCircleColor;
   final VoidCallback? onTap;
 
   const _PlayerDot({
     required this.player,
+    required this.width,
     required this.playerCircleColor,
     required this.onTap,
   });
@@ -270,7 +280,7 @@ class _PlayerDot extends StatelessWidget {
           ),
           const SizedBox(height: 9),
           SizedBox(
-            width: 64,
+            width: width,
             child: Text(
               playerNameLabel(context, player.playerId, player.name,
                   short: true),
