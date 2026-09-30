@@ -1281,6 +1281,16 @@ const appMessages = <String, MessageTranslations>{
     ja: "チャットが切断されました。もう一度お試しください。",
     zh: "聊天已断开，请重试。"
   ),
+  "Chat unavailable": (
+    ko: "지금은 채팅할 수 없어요",
+    ja: "現在チャットは利用できません",
+    zh: "当前无法聊天"
+  ),
+  "Live chat is only available during the match.": (
+    ko: "경기 중에만 실시간 채팅을 이용할 수 있어요.",
+    ja: "ライブチャットは試合中のみ利用できます。",
+    zh: "仅可在比赛进行时使用实时聊天。"
+  ),
   "Chat is only available to supporters of the participating teams.": (
     ko: "경기에 참여한 팀의 팬만 채팅할 수 있어요.",
     ja: "対戦チームのサポーターのみチャットに参加できます。",

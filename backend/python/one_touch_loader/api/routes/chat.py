@@ -12,6 +12,11 @@ from ..services.content_visibility import is_blocked
 from ..services.chat_aliases import public_chat_message
 
 router = APIRouter()
+CHAT_STATE_CHECK_SECONDS = 15
+
+
+def _close_code(exc: HTTPException) -> int:
+    return {401: 4401, 410: 4410}.get(exc.status_code, 4403)
 
 
 class ChatAuth(BaseModel):
@@ -74,7 +79,7 @@ class ChatHub:
                     await asyncio.wait_for(peer.socket.send_json({"type": "message", **public_message}), 5)
                 except HTTPException as exc:
                     self.remove(fixture_id, peer)
-                    await peer.socket.close(code=4401 if exc.status_code == 401 else 4403)
+                    await peer.socket.close(code=_close_code(exc))
                 except (WebSocketDisconnect, OSError, asyncio.TimeoutError):
                     self.remove(fixture_id, peer)
 
@@ -105,10 +110,21 @@ async def chat(socket: WebSocket, fixture_id: int):
         hub.rooms.setdefault(fixture_id, set()).add(peer)
         await socket.send_json({"type": "ready", "fixture_id": fixture_id})
         while True:
-            body = ChatText.model_validate(await _receive_text_json(socket))
+            try:
+                payload = await asyncio.wait_for(_receive_text_json(socket), CHAT_STATE_CHECK_SECONDS)
+            except asyncio.TimeoutError:
+                # 메시지를 보내지 않고 읽기만 하는 연결도 경기 종료 후에는 닫아요.
+                await run_in_threadpool(_authorized, peer.token, fixture_id)
+                continue
+            body = ChatText.model_validate(payload)
             await hub.publish(fixture_id, peer, body.text)
     except HTTPException as exc:
-        await socket.close(code=4401 if exc.status_code == 401 else 4403, reason=str(exc.detail)[:100])
+        # 전달 중인 소켓을 동시에 닫거나, 전달 과정에서 이미 닫은 소켓을 다시 닫지 않아요.
+        async with hub.delivery_lock:
+            if peer is None or peer in hub.rooms.get(fixture_id, ()):
+                if peer is not None:
+                    hub.remove(fixture_id, peer)
+                await socket.close(code=_close_code(exc), reason=str(exc.detail)[:100])
     except (ValidationError, json.JSONDecodeError, asyncio.TimeoutError):
         await socket.close(code=4400, reason="Invalid chat message or authentication timeout")
     except WebSocketDisconnect:

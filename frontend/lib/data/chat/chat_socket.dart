@@ -27,6 +27,7 @@ class ChatSocketException implements Exception {
 
   bool get isUnauthorized => closeCode == 4401;
   bool get isForbidden => closeCode == 4403;
+  bool get isUnavailable => closeCode == 4410;
 
   @override
   String toString() => message;

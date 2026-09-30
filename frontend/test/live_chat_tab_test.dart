@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/chat/chat_repository.dart';
 import 'package:onetouch/data/chat/chat_socket.dart';
@@ -160,6 +161,45 @@ void main() {
     expect(find.text('Retry'), findsOneWidget);
   });
 
+  for (final phase in ['connect', 'history', 'live']) {
+    testWidgets('match closure during $phase hides messages, input and retry',
+        (tester) async {
+      const closed =
+          ChatSocketException(message: 'Unavailable', closeCode: 4410);
+      final session = _ChatSession();
+      await tester.pumpWidget(_app(
+        repository: _ChatRepository(
+          [_message(messageId: 10, userId: 7)],
+          error: phase == 'history'
+              ? http.ClientException('API request failed with status 410.')
+              : null,
+        ),
+        socket: _ChatSocket(
+          session: session,
+          error: phase == 'connect' ? closed : null,
+        ),
+        language: 'ko',
+      ));
+      // 구독 취소의 Dart 공용 Future도 끝나도록 테스트의 가짜 시계 밖에서 한 번 진행해요.
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pumpAndSettle();
+      if (phase == 'live') {
+        expect(find.text('History message 10'), findsOneWidget);
+        session.addError(closed);
+        await tester.pumpAndSettle();
+      }
+      expect(find.text('지금은 채팅할 수 없어요'), findsOneWidget);
+      expect(find.text('경기 중에만 실시간 채팅을 이용할 수 있어요.'), findsOneWidget);
+      expect(find.text('History message 10'), findsNothing);
+      expect(find.byType(TextField), findsNothing);
+      expect(find.byType(TextButton), findsNothing);
+      expect(find.byIcon(Icons.wifi_off), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+      if (phase != 'connect') expect(session.closed, isTrue);
+    });
+  }
+
   testWidgets('reports another user message through the repository',
       (tester) async {
     tester.view.physicalSize = const Size(430, 932);
@@ -231,10 +271,11 @@ FixtureChatMessage _message({required int messageId, required int userId}) {
 }
 
 class _ChatRepository implements ChatRepository {
-  _ChatRepository(this.history)
+  _ChatRepository(this.history, {this.error})
       : cachedHistories = ValueNotifier({42: List.unmodifiable(history)});
 
   final List<FixtureChatMessage> history;
+  final Object? error;
   final List<({int messageId, String reason})> reports = [];
 
   @override
@@ -250,8 +291,10 @@ class _ChatRepository implements ChatRepository {
     int? beforeId,
     int? afterId,
     int limit = 50,
-  }) async =>
-      List.unmodifiable(history);
+  }) async {
+    if (error != null) throw error!;
+    return List.unmodifiable(history);
+  }
 
   @override
   Future<void> reportMessage({
