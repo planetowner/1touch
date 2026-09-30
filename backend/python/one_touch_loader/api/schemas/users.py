@@ -1,6 +1,6 @@
 from typing import Annotated, Literal
 import re
-from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints
+from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints, TypeAdapter, model_validator
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 
@@ -54,6 +54,18 @@ class UserProfileUpdateBody(UserProfileBody):
 class EmailCodeBody(BaseModel):
     email: EmailStr
     purpose: Literal["signup", "password_reset", "username_recovery"] = "signup"
+
+
+class RegistrationAvailabilityBody(BaseModel):
+    field: Literal["username", "display_name", "email"]
+    value: str
+
+    @model_validator(mode="after")
+    def validate_value(self):
+        # 중복 조회에도 실제 가입과 같은 형식·이메일 정규화 규칙을 적용해요.
+        types = {"username": Username, "display_name": DisplayName, "email": EmailStr}
+        self.value = str(TypeAdapter(types[self.field]).validate_python(self.value))
+        return self
 
 
 class CodeBody(BaseModel):

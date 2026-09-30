@@ -141,6 +141,22 @@ const appMessages = <String, MessageTranslations>{
   "LOGIN": (ko: "로그인", ja: "ログイン", zh: "登录"),
   "Username": (ko: "아이디", ja: "ユーザー名", zh: "用户名"),
   "Nickname": (ko: "닉네임", ja: "ニックネーム", zh: "昵称"),
+  "Checking availability...": (
+    ko: "사용할 수 있는지 확인하고 있어요.",
+    ja: "使用できるか確認しています。",
+    zh: "正在检查是否可用。"
+  ),
+  "Available.": (ko: "사용할 수 있어요.", ja: "使用できます。", zh: "可以使用。"),
+  "Already in use.": (
+    ko: "이미 사용 중이에요. 다른 값을 입력해 주세요.",
+    ja: "既に使用されています。別の値を入力してください。",
+    zh: "已被使用，请输入其他内容。"
+  ),
+  "Unable to check availability. Try again.": (
+    ko: "중복 여부를 확인하지 못했어요. 다시 시도해 주세요.",
+    ja: "使用できるか確認できませんでした。もう一度お試しください。",
+    zh: "无法检查是否可用，请重试。"
+  ),
   "Favorite team": (ko: "최애팀", ja: "お気に入りのチーム", zh: "最喜欢的球队"),
   "Enter nickname": (ko: "닉네임을 입력해 주세요", ja: "ニックネームを入力してください", zh: "请输入昵称"),
   "Use 1–30 English letters, numbers, underscores, or dots. Dots cannot be first, last, or consecutive.":

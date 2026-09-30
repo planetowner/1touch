@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/Onboarding.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
+import 'package:onetouch/data/auth/registration_field.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
@@ -167,6 +168,13 @@ class _FakeGoogleIdentityService implements GoogleIdentityService {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  Future<bool> isRegistrationValueAvailable({
+    required RegistrationField field,
+    required String value,
+  }) =>
+      throw UnimplementedError();
+
   @override
   Future<void> resetPassword(
           {required String challengeId,
