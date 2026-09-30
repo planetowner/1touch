@@ -9,6 +9,7 @@ import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
+import 'package:onetouch/features/player/player_watch_name.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/player/player_directory_sheets.dart';
 import 'package:onetouch/models/following_player.dart';
@@ -563,9 +564,14 @@ class _RankingRow extends StatelessWidget {
 }
 
 class PlayersToWatch extends StatefulWidget {
-  const PlayersToWatch({super.key, required this.repository});
+  const PlayersToWatch({
+    super.key,
+    required this.repository,
+    this.detailRepository,
+  });
 
   final PlayerDirectoryRepository repository;
+  final PlayerDetailRepository? detailRepository;
 
   @override
   State<PlayersToWatch> createState() => PlayersToWatchState();
@@ -574,11 +580,27 @@ class PlayersToWatch extends StatefulWidget {
 class PlayersToWatchState extends State<PlayersToWatch> {
   late Future<List<PlayerWatch>> _request =
       Future.sync(widget.repository.watch);
+  final Map<int, Future<({int? id, String name})?>> _teams = {};
+
+  Future<({int? id, String name})?> _teamFor(int playerId) =>
+      _teams.putIfAbsent(playerId, () async {
+        try {
+          final detail =
+              await (widget.detailRepository ?? playerDetailRepository)
+                  .load(playerId);
+          final name = detail.profile.teamName?.trim();
+          if (name == null || name.isEmpty) return null;
+          return (id: detail.profile.teamId, name: name);
+        } on Object {
+          return null;
+        }
+      });
 
   Future<void> refresh() async {
     final request = Future.sync(widget.repository.watch);
     setState(() {
       _request = request;
+      _teams.clear();
     });
     try {
       await request;
@@ -636,7 +658,10 @@ class PlayersToWatchState extends State<PlayersToWatch> {
                 clipBehavior: Clip.none,
                 itemCount: players.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 16),
-                itemBuilder: (_, index) => _WatchCard(player: players[index]),
+                itemBuilder: (_, index) => _WatchCard(
+                  player: players[index],
+                  team: _teamFor(players[index].id),
+                ),
               ),
             );
           },
@@ -647,9 +672,10 @@ class PlayersToWatchState extends State<PlayersToWatch> {
 }
 
 class _WatchCard extends StatelessWidget {
-  const _WatchCard({required this.player});
+  const _WatchCard({required this.player, required this.team});
 
   final PlayerWatch player;
+  final Future<({int? id, String name})?> team;
 
   @override
   Widget build(BuildContext context) {
@@ -667,6 +693,7 @@ class _WatchCard extends StatelessWidget {
         child: Container(
           key: const ValueKey('ones-to-watch-card'),
           width: 150,
+          height: 200,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             boxShadow: appWatchCardShadows(context),
@@ -677,55 +704,82 @@ class _WatchCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: ColoredBox(
-                          key: const ValueKey('ones-to-watch-image-surface'),
-                          color: isDark
-                              ? AppPalette.darkGrey
-                              : appColors.subtleBackground,
-                        ),
-                      ),
-                      Positioned(
-                        right: -4,
-                        bottom: 0,
-                        child: PlayerRemoteImage(player.image, size: 116),
-                      ),
-                      Positioned(
-                        top: 10,
-                        left: 10,
-                        child: player.jerseyNumber == null
-                            ? const SizedBox.shrink()
-                            : Text(
-                                '#${player.jerseyNumber}',
-                                key: ValueKey(
-                                    'ones-to-watch-jersey-${player.id}'),
-                                style: Heading2.style,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final portraitSize = constraints.maxHeight - 10;
+                      return Stack(
+                        children: [
+                          Positioned.fill(
+                            child: ColoredBox(
+                              key:
+                                  const ValueKey('ones-to-watch-image-surface'),
+                              color: isDark
+                                  ? AppPalette.darkGrey
+                                  : appColors.subtleBackground,
+                            ),
+                          ),
+                          Positioned(
+                            top: 10,
+                            right: 0,
+                            width: portraitSize,
+                            height: portraitSize,
+                            child: SizedBox(
+                              key: ValueKey(
+                                  'ones-to-watch-portrait-${player.id}'),
+                              child: PlayerRemoteImage(
+                                player.image,
+                                size: portraitSize,
                               ),
-                      ),
-                    ],
+                            ),
+                          ),
+                          Positioned(
+                            top: 10,
+                            left: 10,
+                            child: player.jerseyNumber == null
+                                ? const SizedBox.shrink()
+                                : Text(
+                                    '${player.jerseyNumber}',
+                                    key: ValueKey(
+                                        'ones-to-watch-jersey-${player.id}'),
+                                    style: Heading2.style,
+                                  ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
                 Container(
                   key: const ValueKey('ones-to-watch-info-surface'),
                   width: double.infinity,
+                  height: 88,
                   color: isDark ? AppPalette.lightGrey : AppPalette.white,
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        playerNameLabel(context, player.id, player.name),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Body1_b.style.copyWith(color: colors.onSurface),
+                      Expanded(
+                        child: PlayerWatchName(
+                          name:
+                              playerNameLabel(context, player.id, player.name),
+                          style:
+                              Body1_b.style.copyWith(color: colors.onSurface),
+                        ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        tr(context, 'Rating {rating}',
-                            {'rating': player.recent.toStringAsFixed(2)}),
-                        style: Eyebrow.style.copyWith(color: colors.onSurface),
+                      FutureBuilder<({int? id, String name})?>(
+                        future: team,
+                        builder: (context, snapshot) => Text(
+                          switch (snapshot.data) {
+                            (id: final id, name: final name) =>
+                              teamNameLabel(context, id, name),
+                            null => '',
+                          },
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Eyebrow.style.copyWith(color: colors.onSurface),
+                        ),
                       ),
                     ],
                   ),

@@ -176,7 +176,8 @@ class _PlayersState extends State<Players> {
                       PlayersToWatch(
                           key: _watchKey,
                           repository:
-                              widget.repository ?? playerDirectoryRepository),
+                              widget.repository ?? playerDirectoryRepository,
+                          detailRepository: widget.detailRepository),
                       const SizedBox(height: 144),
                     ],
                   ),

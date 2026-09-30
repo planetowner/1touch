@@ -7,6 +7,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/features/player_image.dart';
+import 'package:onetouch/features/player/player_watch_name.dart';
 import 'package:onetouch/models/player.dart';
 
 part 'edit_following_players_sheet.dart';

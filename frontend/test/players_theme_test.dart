@@ -89,10 +89,12 @@ void main() {
             find.byKey(const ValueKey('players-brand-gradient')), findsNothing);
         await tester.drag(find.byType(CustomScrollView), const Offset(0, -650));
         await tester.pumpAndSettle();
-        expect(find.text('Improving player'), findsOneWidget);
+        expect(find.text('Improving\nplayer'), findsOneWidget);
+        expect(find.text('Atlético de Madrid'), findsOneWidget);
+        expect(find.textContaining('Rating '), findsNothing);
         expect(find.byKey(const ValueKey('ones-to-watch-jersey-1')),
             findsOneWidget);
-        expect(find.text('#17'), findsOneWidget);
+        expect(find.text('17'), findsOneWidget);
         expect(find.text('2.20'), findsNothing);
         expect(find.text('+2.20'), findsNothing);
         expect(find.byIcon(Icons.arrow_drop_up), findsNothing);
@@ -101,6 +103,44 @@ void main() {
       });
     }
   }
+  testWidgets(
+      'ones to watch cards keep equal heights for one- and two-line names',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(430, 932));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: PlayersToWatch(
+          repository: _TwoWatchDirectoryRepository(),
+          detailRepository: FakePlayerDetailRepository(),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Improving\nplayer'), findsOneWidget);
+    expect(find.text('Neymar'), findsOneWidget);
+    expect(find.text('Atlético de Madrid'), findsNWidgets(2));
+    final cards = find.byKey(const ValueKey('ones-to-watch-card'));
+    expect(cards, findsNWidgets(2));
+    for (var index = 0; index < 2; index++) {
+      expect(tester.getSize(cards.at(index)), const Size(150, 200));
+      final portrait = tester.getRect(
+        find.byKey(ValueKey('ones-to-watch-portrait-${index + 1}')),
+      );
+      final jersey = tester.getRect(
+        find.byKey(ValueKey('ones-to-watch-jersey-${index + 1}')),
+      );
+      final imageSurface = tester.getRect(
+        find.byKey(const ValueKey('ones-to-watch-image-surface')).at(index),
+      );
+      expect(portrait.top, jersey.top);
+      expect(portrait.bottom, imageSurface.bottom);
+      expect(portrait.width, imageSurface.height - 10);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('directory keeps the pre-merge card treatment with API data',
       (tester) async {
     await pump(tester);
@@ -315,18 +355,18 @@ void main() {
       (tester) async {
     final detailRepository = FakePlayerDetailRepository();
     await pump(tester, detailRepository: detailRepository);
-    expect(detailRepository.calls.length, 1);
+    expect(detailRepository.calls.length, 2);
 
     await tester.tap(find.byTooltip('Edit favorites'));
     await tester.pumpAndSettle();
-    expect(detailRepository.calls.length, 2);
+    expect(detailRepository.calls.length, 3);
     await tester.enterText(find.byType(TextField), 'Player');
     await tester.pumpAndSettle();
 
     expect(find.text('Player 1'), findsNothing);
     expect(find.text('Player 2'), findsOneWidget);
     expect(find.text('Player 3'), findsOneWidget);
-    expect(detailRepository.calls.length, 2);
+    expect(detailRepository.calls.length, 3);
 
     await tester.tap(find.text('Player 2'));
     await tester.pump();
@@ -399,6 +439,30 @@ class _ControlledRefreshDirectoryRepository
     if (watchCalls == 1) return super.watch();
     return watchRefreshCompleter.future;
   }
+}
+
+class _TwoWatchDirectoryRepository extends FakePlayerDirectoryRepository {
+  @override
+  Future<List<PlayerWatch>> watch() async => [
+        (
+          id: 1,
+          name: 'Improving player',
+          image: null,
+          jerseyNumber: 17,
+          recent: 8.4,
+          previous: 6.2,
+          change: 2.2,
+        ),
+        (
+          id: 2,
+          name: 'Neymar',
+          image: null,
+          jerseyNumber: 10,
+          recent: 8.1,
+          previous: 7.2,
+          change: 0.9,
+        ),
+      ];
 }
 
 class _ControlledRefreshFollowingRepository
