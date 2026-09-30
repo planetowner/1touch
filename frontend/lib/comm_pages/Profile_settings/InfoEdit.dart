@@ -44,8 +44,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController usernameController;
   late final TextEditingController displayNameController;
   late final TextEditingController emailController;
-  late final TextEditingController passwordController;
-  bool isPasswordVisible = false;
   bool _isAvatarSaving = false;
   bool _isProfileSaving = false;
   String? _profileSaveError;
@@ -73,7 +71,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     emailController = TextEditingController(
       text: profile?.email ?? '',
     );
-    passwordController = TextEditingController(text: '••••••••');
   }
 
   @override
@@ -289,7 +286,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     usernameController.dispose();
     displayNameController.dispose();
     emailController.dispose();
-    passwordController.dispose();
     super.dispose();
   }
 
@@ -306,12 +302,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           icon: Icon(Icons.arrow_back_ios_new, color: colors.onSurface),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search, color: colors.onSurface),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -422,20 +412,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 keyboardType: TextInputType.emailAddress,
                 readOnly: true,
               ),
-              const SizedBox(height: 8),
-              _buildTextField(
-                label: tr(context, "Password"),
-                controller: passwordController,
-                fieldKey: const ValueKey('profile-password-field'),
-                isPassword: true,
-                isObscure: !isPasswordVisible,
-                onSuffixTap: () {
-                  setState(() {
-                    isPasswordVisible = !isPasswordVisible;
-                  });
-                },
-              ),
-
               const SizedBox(height: 48),
 
               // Social Accounts Section
@@ -520,10 +496,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required String label,
     required TextEditingController controller,
     Key? fieldKey,
-    bool isPassword = false,
-    bool isObscure = false,
     bool readOnly = false,
-    VoidCallback? onSuffixTap,
     TextInputType? keyboardType,
     int? maxLength,
   }) {
@@ -547,7 +520,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             child: TextField(
               key: fieldKey,
               controller: controller,
-              obscureText: isPassword && isObscure,
               readOnly: readOnly,
               enableInteractiveSelection: !readOnly,
               showCursor: !readOnly,
@@ -573,23 +545,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (isPassword)
-                GestureDetector(
-                  onTap: onSuffixTap,
-                  behavior: HitTestBehavior.opaque,
-                  child: SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: Icon(
-                      isObscure
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      color: colors.onSurface,
-                      size: 24,
-                    ),
-                  ),
-                )
-              else if (readOnly)
+              if (readOnly)
                 SizedBox(
                   width: 32,
                   height: 32,

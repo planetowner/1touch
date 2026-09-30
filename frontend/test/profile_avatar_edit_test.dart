@@ -38,12 +38,12 @@ void main() {
       find.byKey(const ValueKey('profile-real-name-field')),
       find.byKey(const ValueKey('profile-username-field')),
       find.byKey(const ValueKey('profile-email-field')),
-      find.byKey(const ValueKey('profile-password-field')),
     ];
 
     expect(cameraCenter, avatarCenter);
     expect(usernameField.textAlign, TextAlign.right);
     expect(usernameField.decoration?.filled, isFalse);
+    expect(find.byKey(const ValueKey('profile-password-field')), findsNothing);
     expect(
       fieldFinders.map(tester.getTopRight).map((point) => point.dx).toSet(),
       hasLength(1),
