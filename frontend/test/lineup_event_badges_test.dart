@@ -4,6 +4,51 @@ import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 
 void main() {
+  for (final count in [5, 6]) {
+    testWidgets('fits $count lineup players in a 319px row', (tester) async {
+      tester.view.physicalSize = const Size(327, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: LineupPitch(
+              awayRows: const [],
+              homeRows: [
+                [
+                  for (var index = 0; index < count; index++)
+                    LineupPlayer(
+                      teamId: 83,
+                      playerId: index + 1,
+                      number: index + 1,
+                      name: 'Player ${index + 1}',
+                    ),
+                ],
+              ],
+              homeColor: const Color(0xFFD92455),
+              awayColor: const Color(0xFF18539F),
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final card =
+          tester.getRect(find.byKey(const ValueKey('match-lineup-card')));
+      for (var index = 0; index < count; index++) {
+        final player = tester.getRect(find.byKey(
+          ValueKey('match-lineup-player-83-${index + 1}'),
+        ));
+        expect(player.width, lessThanOrEqualTo(319 / count + 0.001));
+        expect(player.left, greaterThanOrEqualTo(card.left + 4 - 0.001));
+        expect(player.right, lessThanOrEqualTo(card.right - 4 + 0.001));
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   Widget subject(
     List<LineupEvent> events, {
     Color homeColor = const Color(0xFFD92455),
