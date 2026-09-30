@@ -217,7 +217,7 @@ class CommunityDatabaseCase(unittest.TestCase):
         self.execute("CREATE TABLE competitions (competition_id BIGINT UNSIGNED PRIMARY KEY,competition_type VARCHAR(20))")
         self.execute("CREATE TABLE seasons (season_id BIGINT UNSIGNED PRIMARY KEY,competition_id BIGINT UNSIGNED,is_current INT)")
         self.execute("CREATE TABLE team_seasons (team_id BIGINT UNSIGNED,season_id BIGINT UNSIGNED)")
-        self.execute("CREATE TABLE fixtures (fixture_id BIGINT UNSIGNED PRIMARY KEY,home_team_id BIGINT UNSIGNED,away_team_id BIGINT UNSIGNED)")
+        self.execute("CREATE TABLE fixtures (fixture_id BIGINT UNSIGNED PRIMARY KEY,home_team_id BIGINT UNSIGNED,away_team_id BIGINT UNSIGNED,state_id INT UNSIGNED NOT NULL)")
         # 교체 전 빈 테이블만 모사해요. 운영 테이블을 복사하거나 변경하지 않아요.
         for table in ("post_reports", "posts", "user_following_teams", "user_profiles", "users"):
             self.execute(f"CREATE TABLE {table} (old_id INT)")
@@ -246,7 +246,7 @@ class CommunityDatabaseCase(unittest.TestCase):
         self.execute("INSERT INTO competitions VALUES (8,'league'),(82,'league'),(301,'league')")
         self.execute("INSERT INTO seasons VALUES (100,8,1),(200,82,1),(300,301,1)")
         self.execute("INSERT INTO team_seasons VALUES (6,100),(14,100),(503,200),(591,300)")
-        self.execute("INSERT INTO fixtures VALUES (10,6,503),(20,14,591)")
+        self.execute("INSERT INTO fixtures VALUES (10,6,503,2),(20,14,591,2)")
         self.a, self.token_a = self.user("alpha", 6)
         self.b, self.token_b = self.user("beta", 503)
         self.c, self.token_c = self.user("gamma", 14)

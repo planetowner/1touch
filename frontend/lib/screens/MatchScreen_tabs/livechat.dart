@@ -41,6 +41,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
   String? _initError;
   int _requestId = 0;
   bool _isClosing = false;
+  bool _chatUnavailable = false;
 
   ChatRepository get _repository =>
       widget.repository ?? chat_repository_provider.chatRepository;
@@ -77,6 +78,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
   Future<void> _initChat() async {
     final requestId = ++_requestId;
     _isClosing = false;
+    _chatUnavailable = false;
     try {
       final session = await _socket.connect(widget.matchId);
       if (!mounted || requestId != _requestId) {
@@ -104,6 +106,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
       if (!mounted || requestId != _requestId) return;
       setState(() {
         _isInitialized = false;
+        _chatUnavailable = _isChatUnavailable(error);
         _initError = _friendlyError(error);
       });
     }
@@ -139,7 +142,10 @@ class _LiveChatTabState extends State<LiveChatTab> {
   void _handleSocketError(Object error) {
     if (!mounted || _isClosing) return;
     _requestId++;
-    setState(() => _initError = _friendlyError(error));
+    setState(() {
+      _chatUnavailable = _isChatUnavailable(error);
+      _initError = _friendlyError(error);
+    });
   }
 
   void _handleSocketDone() {
@@ -149,7 +155,14 @@ class _LiveChatTabState extends State<LiveChatTab> {
         () => _initError = tr(context, 'Chat disconnected. Please try again.'));
   }
 
+  bool _isChatUnavailable(Object error) => error is ChatSocketException
+      ? error.isUnavailable
+      : error.toString().contains('status 410');
+
   String _friendlyError(Object error) {
+    if (_isChatUnavailable(error)) {
+      return tr(context, 'Live chat is only available during the match.');
+    }
     if (error is ChatSocketException) {
       if (error.isUnauthorized) {
         return tr(context, 'Your session expired. Please sign in again.');
@@ -280,29 +293,40 @@ class _LiveChatTabState extends State<LiveChatTab> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.wifi_off, color: appColors.mutedForeground, size: 40),
+              Icon(
+                  _chatUnavailable ? Icons.chat_bubble_outline : Icons.wifi_off,
+                  color: appColors.mutedForeground,
+                  size: 40),
               const SizedBox(height: 16),
-              Text(tr(context, 'Couldn\'t connect to chat'),
-                  style: Body1.style, textAlign: TextAlign.center),
+              Text(
+                  tr(
+                      context,
+                      _chatUnavailable
+                          ? 'Chat unavailable'
+                          : 'Couldn\'t connect to chat'),
+                  style: Body1.style,
+                  textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Opacity(
                 opacity: 0.5,
                 child: Text(_initError!,
                     style: Eyebrow.style, textAlign: TextAlign.center),
               ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: _retryInit,
-                style: TextButton.styleFrom(
-                  backgroundColor:
-                      isDark ? AppPalette.lightGrey : AppPalette.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
+              if (!_chatUnavailable) ...[
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: _retryInit,
+                  style: TextButton.styleFrom(
+                    backgroundColor:
+                        isDark ? AppPalette.lightGrey : AppPalette.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: Text(tr(context, 'Retry'), style: Body2_b.style),
                 ),
-                child: Text(tr(context, 'Retry'), style: Body2_b.style),
-              ),
+              ],
             ],
           ),
         ),

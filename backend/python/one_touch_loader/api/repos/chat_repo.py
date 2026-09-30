@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from mysql.connector import IntegrityError
+from ...core.fixture_states import LIVE_STATE_IDS
 from ..db import fetch_all_dict, fetch_one_dict, transaction
 from ..services.chat_aliases import new_nickname, public_chat_message
 from ..services.community_access import require_favorite_team_access
@@ -8,16 +9,25 @@ from .users_repo import get_user, lock_user, require_profile
 from ..services.content_visibility import blocked_sql
 
 
-def fixture_teams(fixture_id: int) -> tuple[int, int]:
-    row = fetch_one_dict("SELECT home_team_id,away_team_id FROM fixtures WHERE fixture_id=%s", (fixture_id,))
+def live_fixture_teams(fixture_id: int, cur=None) -> tuple[int, int]:
+    sql = "SELECT home_team_id,away_team_id,state_id FROM fixtures WHERE fixture_id=%s"
+    if cur is None:
+        row = fetch_one_dict(sql, (fixture_id,))
+    else:
+        # 전송 검사와 저장 사이에 경기 종료가 끼어들지 않게 같은 트랜잭션에서 잠가요.
+        cur.execute(sql + " FOR SHARE", (fixture_id,))
+        row = cur.fetchone()
     if row is None:
         raise HTTPException(404, "Fixture not found")
+    # 화면의 라이브 분류를 함께 써서 하프타임·연장전에도 같은 규칙을 적용해요.
+    if row["state_id"] not in LIVE_STATE_IDS:
+        raise HTTPException(410, "Live chat is only available during the match.")
     return row["home_team_id"], row["away_team_id"]
 
 
-def check_chat_user(user: dict, fixture_id: int) -> None:
+def check_chat_user(user: dict, fixture_id: int, cur=None) -> None:
     require_profile(user)
-    require_favorite_team_access(user["favorite_team_id"], fixture_teams(fixture_id))
+    require_favorite_team_access(user["favorite_team_id"], live_fixture_teams(fixture_id, cur))
 
 
 def history(user_id: int, fixture_id: int, before_id: int | None, after_id: int | None, limit: int):
@@ -65,7 +75,7 @@ def get_or_create_alias(cur, user_id: int, fixture_id: int) -> dict:
 def create_message(user_id: int, fixture_id: int, text: str) -> dict:
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
         user = lock_user(cur, user_id)
-        check_chat_user(user, fixture_id)
+        check_chat_user(user, fixture_id, cur)
         nickname = get_or_create_alias(cur, user_id, fixture_id)
         now = utc_now()
         cur.execute("INSERT INTO fixture_chat_messages (fixture_id,user_id,body,created_at) VALUES (%s,%s,%s,%s)",

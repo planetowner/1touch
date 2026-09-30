@@ -138,6 +138,35 @@ void main() {
     }
   });
 
+  for (final alreadyConnected in [false, true]) {
+    test('preserves match closure before or after ready: $alreadyConnected',
+        () async {
+      final connection = _FakeConnection();
+      final socket = ApiChatSocket(
+        apiBaseUri: Uri.parse('https://api.example.test/v1/'),
+        sessionToken: () => token,
+        connector: (_) => connection,
+      );
+      final connecting = socket.connect(42);
+      final closed = isA<ChatSocketException>()
+          .having((value) => value.closeCode, 'closeCode', 4410)
+          .having((value) => value.isUnavailable, 'isUnavailable', isTrue)
+          .having((value) => value.isForbidden, 'isForbidden', isFalse);
+      await _waitFor(() => connection.sent.isNotEmpty);
+      Future<void> expectation;
+      if (alreadyConnected) {
+        connection.addJson({'type': 'ready', 'fixture_id': 42});
+        final session = await connecting;
+        expectation = expectLater(session.messages, emitsError(closed));
+      } else {
+        expectation = expectLater(connecting, throwsA(closed));
+      }
+      await connection.finish(
+          4410, 'Live chat is only available during the match.');
+      await expectation;
+    });
+  }
+
   test('rejects malformed handshake frames and handshake timeouts', () async {
     final malformed = _FakeConnection();
     final malformedSocket = ApiChatSocket(
