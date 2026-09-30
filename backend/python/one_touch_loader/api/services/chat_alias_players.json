@@ -1,0 +1,872 @@
+[
+  {
+    "english_name": "Johan Cruyff",
+    "korean_name": "요한 크루이프",
+    "short_en": "Cruyff",
+    "short_ko": "크루이프"
+  },
+  {
+    "english_name": "Eusébio",
+    "korean_name": "에우제비우",
+    "short_en": "Eusebio",
+    "short_ko": "에우제비우"
+  },
+  {
+    "english_name": "Roberto Baggio",
+    "korean_name": "로베르토 바조",
+    "short_en": "Baggio",
+    "short_ko": "바조"
+  },
+  {
+    "english_name": "Rivaldo",
+    "korean_name": "히바우두",
+    "short_en": "Rivaldo",
+    "short_ko": "히바우두"
+  },
+  {
+    "english_name": "Claude Makélélé",
+    "korean_name": "클로드 마켈렐레",
+    "short_en": "Makelele",
+    "short_ko": "마켈렐레"
+  },
+  {
+    "english_name": "Fabio Cannavaro",
+    "korean_name": "파비오 칸나바로",
+    "short_en": "Cannavaro",
+    "short_ko": "칸나바로"
+  },
+  {
+    "english_name": "Raúl González",
+    "korean_name": "라울",
+    "short_en": "Raul",
+    "short_ko": "라울"
+  },
+  {
+    "english_name": "Steven Gerrard",
+    "korean_name": "스티븐 제라드",
+    "short_en": "Gerrard",
+    "short_ko": "제라드"
+  },
+  {
+    "english_name": "Frank Lampard",
+    "korean_name": "프랭크 램파드",
+    "short_en": "Lampard",
+    "short_ko": "램파드"
+  },
+  {
+    "english_name": "Alessandro Del Piero",
+    "korean_name": "알레산드로 델피에로",
+    "short_en": "DelPiero",
+    "short_ko": "델피에로"
+  },
+  {
+    "english_name": "Brian Laudrup",
+    "korean_name": "브리안 라우드루프",
+    "short_en": "Laudrup",
+    "short_ko": "라우드루프"
+  },
+  {
+    "english_name": "Carlos Valderrama",
+    "korean_name": "카를로스 발데라마",
+    "short_en": "Valderrama",
+    "short_ko": "발데라마"
+  },
+  {
+    "english_name": "Ian Wright",
+    "korean_name": "이언 라이트",
+    "short_en": "Wright",
+    "short_ko": "라이트"
+  },
+  {
+    "english_name": "Didier Drogba",
+    "korean_name": "디디에 드로그바",
+    "short_en": "Drogba",
+    "short_ko": "드로그바"
+  },
+  {
+    "english_name": "Dennis Bergkamp",
+    "korean_name": "데니스 베르캄프",
+    "short_en": "Bergkamp",
+    "short_ko": "베르캄프"
+  },
+  {
+    "english_name": "Davor Šuker",
+    "korean_name": "다보르 슈케르",
+    "short_en": "Suker",
+    "short_ko": "슈케르"
+  },
+  {
+    "english_name": "Sócrates",
+    "korean_name": "소크라테스",
+    "short_en": "Socrates",
+    "short_ko": "소크라테스"
+  },
+  {
+    "english_name": "David Seaman",
+    "korean_name": "데이비드 시먼",
+    "short_en": "Seaman",
+    "short_ko": "시먼"
+  },
+  {
+    "english_name": "Emmanuel Petit",
+    "korean_name": "에마뉘엘 프티",
+    "short_en": "Petit",
+    "short_ko": "프티"
+  },
+  {
+    "english_name": "Gary Lineker",
+    "korean_name": "게리 리네커",
+    "short_en": "Lineker",
+    "short_ko": "리네커"
+  },
+  {
+    "english_name": "Roberto Carlos",
+    "korean_name": "호베르투 카를루스",
+    "short_en": "RobertoCarlos",
+    "short_ko": "카를루스"
+  },
+  {
+    "english_name": "Gianluca Zambrotta",
+    "korean_name": "잔루카 잠브로타",
+    "short_en": "Zambrotta",
+    "short_ko": "잠브로타"
+  },
+  {
+    "english_name": "Gianfranco Zola",
+    "korean_name": "잔프랑코 졸라",
+    "short_en": "Zola",
+    "short_ko": "졸라"
+  },
+  {
+    "english_name": "Hernán Crespo",
+    "korean_name": "에르난 크레스포",
+    "short_en": "Crespo",
+    "short_ko": "크레스포"
+  },
+  {
+    "english_name": "Alexi Lalas",
+    "korean_name": "알렉시 랄라스",
+    "short_en": "Lalas",
+    "short_ko": "랄라스"
+  },
+  {
+    "english_name": "Jens Lehmann",
+    "korean_name": "옌스 레만",
+    "short_en": "Lehmann",
+    "short_ko": "레만"
+  },
+  {
+    "english_name": "Oliver Bierhoff",
+    "korean_name": "올리버 비어호프",
+    "short_en": "Bierhoff",
+    "short_ko": "비어호프"
+  },
+  {
+    "english_name": "Robbie Fowler",
+    "korean_name": "로비 파울러",
+    "short_en": "Fowler",
+    "short_ko": "파울러"
+  },
+  {
+    "english_name": "Ole Gunnar Solskjær",
+    "korean_name": "올레 군나르 솔샤르",
+    "short_en": "Solskjaer",
+    "short_ko": "솔샤르"
+  },
+  {
+    "english_name": "Teddy Sheringham",
+    "korean_name": "테디 셰링엄",
+    "short_en": "Sheringham",
+    "short_ko": "셰링엄"
+  },
+  {
+    "english_name": "Zinedine Zidane",
+    "korean_name": "지네딘 지단",
+    "short_en": "Zidane",
+    "short_ko": "지단"
+  },
+  {
+    "english_name": "Garrincha",
+    "korean_name": "가린샤",
+    "short_en": "Garrincha",
+    "short_ko": "가린샤"
+  },
+  {
+    "english_name": "Ian Rush",
+    "korean_name": "이언 러시",
+    "short_en": "Rush",
+    "short_ko": "러시"
+  },
+  {
+    "english_name": "Paulo Futre",
+    "korean_name": "파울루 푸트리",
+    "short_en": "Futre",
+    "short_ko": "푸트리"
+  },
+  {
+    "english_name": "Ronaldinho",
+    "korean_name": "호나우지뉴",
+    "short_en": "Ronaldinho",
+    "short_ko": "호나우지뉴"
+  },
+  {
+    "english_name": "Andrea Pirlo",
+    "korean_name": "안드레아 피를로",
+    "short_en": "Pirlo",
+    "short_ko": "피를로"
+  },
+  {
+    "english_name": "Kaká",
+    "korean_name": "카카",
+    "short_en": "Kaka",
+    "short_ko": "카카"
+  },
+  {
+    "english_name": "Hugo Sánchez",
+    "korean_name": "우고 산체스",
+    "short_en": "Sanchez",
+    "short_ko": "산체스"
+  },
+  {
+    "english_name": "Patrick Vieira",
+    "korean_name": "파트리크 비에이라",
+    "short_en": "Vieira",
+    "short_ko": "비에이라"
+  },
+  {
+    "english_name": "Michael Owen",
+    "korean_name": "마이클 오언",
+    "short_en": "Owen",
+    "short_ko": "오언"
+  },
+  {
+    "english_name": "Carlos Alberto Torres",
+    "korean_name": "카를루스 아우베르투",
+    "short_en": "CarlosAlberto",
+    "short_ko": "아우베르투"
+  },
+  {
+    "english_name": "Clarence Seedorf",
+    "korean_name": "클라렌스 세도르프",
+    "short_en": "Seedorf",
+    "short_ko": "세도르프"
+  },
+  {
+    "english_name": "Rio Ferdinand",
+    "korean_name": "리오 퍼디난드",
+    "short_en": "Ferdinand",
+    "short_ko": "퍼디난드"
+  },
+  {
+    "english_name": "Ronald Koeman",
+    "korean_name": "로날트 쿠만",
+    "short_en": "Koeman",
+    "short_ko": "쿠만"
+  },
+  {
+    "english_name": "Peter Schmeichel",
+    "korean_name": "페터 슈마이켈",
+    "short_en": "Schmeichel",
+    "short_ko": "슈마이켈"
+  },
+  {
+    "english_name": "Laurent Blanc",
+    "korean_name": "로랑 블랑",
+    "short_en": "Blanc",
+    "short_ko": "블랑"
+  },
+  {
+    "english_name": "Gennaro Gattuso",
+    "korean_name": "젠나로 가투소",
+    "short_en": "Gattuso",
+    "short_ko": "가투소"
+  },
+  {
+    "english_name": "David Trezeguet",
+    "korean_name": "다비드 트레제게",
+    "short_en": "Trezeguet",
+    "short_ko": "트레제게"
+  },
+  {
+    "english_name": "Juan Sebastián Verón",
+    "korean_name": "후안 세바스티안 베론",
+    "short_en": "Veron",
+    "short_ko": "베론"
+  },
+  {
+    "english_name": "Michael Essien",
+    "korean_name": "마이클 에시앙",
+    "short_en": "Essien",
+    "short_ko": "에시앙"
+  },
+  {
+    "english_name": "Michael Laudrup",
+    "korean_name": "미카엘 라우드루프",
+    "short_en": "Laudrup",
+    "short_ko": "라우드루프"
+  },
+  {
+    "english_name": "Pep Guardiola",
+    "korean_name": "펩 과르디올라",
+    "short_en": "Guardiola",
+    "short_ko": "과르디올라"
+  },
+  {
+    "english_name": "Sol Campbell",
+    "korean_name": "솔 캠벨",
+    "short_en": "Campbell",
+    "short_ko": "캠벨"
+  },
+  {
+    "english_name": "Gary Neville",
+    "korean_name": "게리 네빌",
+    "short_en": "Neville",
+    "short_ko": "네빌"
+  },
+  {
+    "english_name": "Jay-Jay Okocha",
+    "korean_name": "제이제이 오코차",
+    "short_en": "Okocha",
+    "short_ko": "오코차"
+  },
+  {
+    "english_name": "Jamie Carragher",
+    "korean_name": "제이미 캐러거",
+    "short_en": "Carragher",
+    "short_ko": "캐러거"
+  },
+  {
+    "english_name": "Frank de Boer",
+    "korean_name": "프랑크 더부르",
+    "short_en": "DeBoer",
+    "short_ko": "더부르"
+  },
+  {
+    "english_name": "John Barnes",
+    "korean_name": "존 반스",
+    "short_en": "Barnes",
+    "short_ko": "반스"
+  },
+  {
+    "english_name": "Hidetoshi Nakata",
+    "korean_name": "나카타 히데토시",
+    "short_en": "Nakata",
+    "short_ko": "나카타"
+  },
+  {
+    "english_name": "Ferenc Puskás",
+    "korean_name": "페렌츠 푸스카스",
+    "short_en": "Puskas",
+    "short_ko": "푸스카스"
+  },
+  {
+    "english_name": "Lev Yashin",
+    "korean_name": "레프 야신",
+    "short_en": "Yashin",
+    "short_ko": "야신"
+  },
+  {
+    "english_name": "Xavi Hernández",
+    "korean_name": "차비",
+    "short_en": "Xavi",
+    "short_ko": "차비"
+  },
+  {
+    "english_name": "Frank Rijkaard",
+    "korean_name": "프랑크 레이카르트",
+    "short_en": "Rijkaard",
+    "short_ko": "레이카르트"
+  },
+  {
+    "english_name": "Thierry Henry",
+    "korean_name": "티에리 앙리",
+    "short_en": "Henry",
+    "short_ko": "앙리"
+  },
+  {
+    "english_name": "Eric Cantona",
+    "korean_name": "에릭 칸토나",
+    "short_en": "Cantona",
+    "short_ko": "칸토나"
+  },
+  {
+    "english_name": "Pavel Nedvěd",
+    "korean_name": "파벨 네드베드",
+    "short_en": "Nedved",
+    "short_ko": "네드베드"
+  },
+  {
+    "english_name": "Kenny Dalglish",
+    "korean_name": "케니 달글리시",
+    "short_en": "Dalglish",
+    "short_ko": "달글리시"
+  },
+  {
+    "english_name": "Carles Puyol",
+    "korean_name": "카를레스 푸욜",
+    "short_en": "Puyol",
+    "short_ko": "푸욜"
+  },
+  {
+    "english_name": "Philipp Lahm",
+    "korean_name": "필립 람",
+    "short_en": "Lahm",
+    "short_ko": "람"
+  },
+  {
+    "english_name": "David Beckham",
+    "korean_name": "데이비드 베컴",
+    "short_en": "Beckham",
+    "short_ko": "베컴"
+  },
+  {
+    "english_name": "Fernando Torres",
+    "korean_name": "페르난도 토레스",
+    "short_en": "Torres",
+    "short_ko": "토레스"
+  },
+  {
+    "english_name": "Filippo Inzaghi",
+    "korean_name": "필리포 인자기",
+    "short_en": "Inzaghi",
+    "short_ko": "인자기"
+  },
+  {
+    "english_name": "Javier Zanetti",
+    "korean_name": "하비에르 사네티",
+    "short_en": "Zanetti",
+    "short_ko": "사네티"
+  },
+  {
+    "english_name": "Emilio Butragueño",
+    "korean_name": "에밀리오 부트라게뇨",
+    "short_en": "Butragueno",
+    "short_ko": "부트라게뇨"
+  },
+  {
+    "english_name": "Fernando Hierro",
+    "korean_name": "페르난도 이에로",
+    "short_en": "Hierro",
+    "short_ko": "이에로"
+  },
+  {
+    "english_name": "Christian Vieri",
+    "korean_name": "크리스티안 비에리",
+    "short_en": "Vieri",
+    "short_ko": "비에리"
+  },
+  {
+    "english_name": "Deco",
+    "korean_name": "데쿠",
+    "short_en": "Deco",
+    "short_ko": "데쿠"
+  },
+  {
+    "english_name": "Nemanja Vidić",
+    "korean_name": "네마냐 비디치",
+    "short_en": "Vidic",
+    "short_ko": "비디치"
+  },
+  {
+    "english_name": "Robert Pirès",
+    "korean_name": "로베르 피레스",
+    "short_en": "Pires",
+    "short_ko": "피레스"
+  },
+  {
+    "english_name": "Stefan Effenberg",
+    "korean_name": "슈테판 에펜베르크",
+    "short_en": "Effenberg",
+    "short_ko": "에펜베르크"
+  },
+  {
+    "english_name": "Ashley Cole",
+    "korean_name": "애슐리 콜",
+    "short_en": "Cole",
+    "short_ko": "콜"
+  },
+  {
+    "english_name": "Luis Hernández",
+    "korean_name": "루이스 에르난데스",
+    "short_en": "Hernandez",
+    "short_ko": "에르난데스"
+  },
+  {
+    "english_name": "Pauleta",
+    "korean_name": "파울레타",
+    "short_en": "Pauleta",
+    "short_ko": "파울레타"
+  },
+  {
+    "english_name": "Vítor Baía",
+    "korean_name": "비토르 바이아",
+    "short_en": "Baia",
+    "short_ko": "바이아"
+  },
+  {
+    "english_name": "Paolo Maldini",
+    "korean_name": "파올로 말디니",
+    "short_en": "Maldini",
+    "short_ko": "말디니"
+  },
+  {
+    "english_name": "Samuel Eto'o",
+    "korean_name": "사뮈엘 에토",
+    "short_en": "Etoo",
+    "short_ko": "에토"
+  },
+  {
+    "english_name": "Bastian Schweinsteiger",
+    "korean_name": "바스티안 슈바인슈타이거",
+    "short_en": "Schweinsteiger",
+    "short_ko": "슈바인슈타이거"
+  },
+  {
+    "english_name": "Cha Bum-kun",
+    "korean_name": "차범근",
+    "short_en": "ChaBumKun",
+    "short_ko": "차범근"
+  },
+  {
+    "english_name": "Petr Čech",
+    "korean_name": "페트르 체흐",
+    "short_en": "Cech",
+    "short_ko": "체흐"
+  },
+  {
+    "english_name": "Park Ji-sung",
+    "korean_name": "박지성",
+    "short_en": "ParkJiSung",
+    "short_ko": "박지성"
+  },
+  {
+    "english_name": "Hristo Stoichkov",
+    "korean_name": "흐리스토 스토이치코프",
+    "short_en": "Stoichkov",
+    "short_ko": "스토이치코프"
+  },
+  {
+    "english_name": "Rui Costa",
+    "korean_name": "후이 코스타",
+    "short_en": "Costa",
+    "short_ko": "코스타"
+  },
+  {
+    "english_name": "Henrik Larsson",
+    "korean_name": "헨릭 라르손",
+    "short_en": "Larsson",
+    "short_ko": "라르손"
+  },
+  {
+    "english_name": "Marcel Desailly",
+    "korean_name": "마르셀 드사이",
+    "short_en": "Desailly",
+    "short_ko": "드사이"
+  },
+  {
+    "english_name": "Marc Overmars",
+    "korean_name": "마르크 오버르마르스",
+    "short_en": "Overmars",
+    "short_ko": "오버르마르스"
+  },
+  {
+    "english_name": "Jari Litmanen",
+    "korean_name": "야리 리트마넨",
+    "short_en": "Litmanen",
+    "short_ko": "리트마넨"
+  },
+  {
+    "english_name": "Juan Román Riquelme",
+    "korean_name": "후안 로만 리켈메",
+    "short_en": "Riquelme",
+    "short_ko": "리켈메"
+  },
+  {
+    "english_name": "Andreas Brehme",
+    "korean_name": "안드레아스 브레메",
+    "short_en": "Brehme",
+    "short_ko": "브레메"
+  },
+  {
+    "english_name": "Freddie Ljungberg",
+    "korean_name": "프레디 융베리",
+    "short_en": "Ljungberg",
+    "short_ko": "융베리"
+  },
+  {
+    "english_name": "Ronaldo Nazário",
+    "korean_name": "호나우두",
+    "short_en": "Ronaldo",
+    "short_ko": "호나우두"
+  },
+  {
+    "english_name": "Alessandro Nesta",
+    "korean_name": "알레산드로 네스타",
+    "short_en": "Nesta",
+    "short_ko": "네스타"
+  },
+  {
+    "english_name": "Cafu",
+    "korean_name": "카푸",
+    "short_en": "Cafu",
+    "short_ko": "카푸"
+  },
+  {
+    "english_name": "Iker Casillas",
+    "korean_name": "이케르 카시야스",
+    "short_en": "Casillas",
+    "short_ko": "카시야스"
+  },
+  {
+    "english_name": "Wayne Rooney",
+    "korean_name": "웨인 루니",
+    "short_en": "Rooney",
+    "short_ko": "루니"
+  },
+  {
+    "english_name": "Robin van Persie",
+    "korean_name": "로빈 반페르시",
+    "short_en": "VanPersie",
+    "short_ko": "반페르시"
+  },
+  {
+    "english_name": "Paul Scholes",
+    "korean_name": "폴 스콜스",
+    "short_en": "Scholes",
+    "short_ko": "스콜스"
+  },
+  {
+    "english_name": "Michael Ballack",
+    "korean_name": "미하엘 발락",
+    "short_en": "Ballack",
+    "short_ko": "발락"
+  },
+  {
+    "english_name": "Gheorghe Hagi",
+    "korean_name": "게오르게 하지",
+    "short_en": "Hagi",
+    "short_ko": "하지"
+  },
+  {
+    "english_name": "Roy Keane",
+    "korean_name": "로이 킨",
+    "short_en": "Keane",
+    "short_ko": "킨"
+  },
+  {
+    "english_name": "Edwin van der Sar",
+    "korean_name": "에드윈 반데르사르",
+    "short_en": "VanDerSar",
+    "short_ko": "반데르사르"
+  },
+  {
+    "english_name": "Patrick Kluivert",
+    "korean_name": "파트릭 클라위버르트",
+    "short_en": "Kluivert",
+    "short_ko": "클라위버르트"
+  },
+  {
+    "english_name": "Ruud Gullit",
+    "korean_name": "루드 굴리트",
+    "short_en": "Gullit",
+    "short_ko": "굴리트"
+  },
+  {
+    "english_name": "Marco van Basten",
+    "korean_name": "마르코 반바스텐",
+    "short_en": "VanBasten",
+    "short_ko": "반바스텐"
+  },
+  {
+    "english_name": "George Best",
+    "korean_name": "조지 베스트",
+    "short_en": "Best",
+    "short_ko": "베스트"
+  },
+  {
+    "english_name": "Andriy Shevchenko",
+    "korean_name": "안드리 셰우첸코",
+    "short_en": "Shevchenko",
+    "short_ko": "셰우첸코"
+  },
+  {
+    "english_name": "Luís Figo",
+    "korean_name": "루이스 피구",
+    "short_en": "Figo",
+    "short_ko": "피구"
+  },
+  {
+    "english_name": "Alan Shearer",
+    "korean_name": "앨런 시어러",
+    "short_en": "Shearer",
+    "short_ko": "시어러"
+  },
+  {
+    "english_name": "Bobby Moore",
+    "korean_name": "보비 무어",
+    "short_en": "Moore",
+    "short_ko": "무어"
+  },
+  {
+    "english_name": "Miroslav Klose",
+    "korean_name": "미로슬라프 클로제",
+    "short_en": "Klose",
+    "short_ko": "클로제"
+  },
+  {
+    "english_name": "Ruud van Nistelrooy",
+    "korean_name": "뤼트 반니스텔로이",
+    "short_en": "VanNistelrooy",
+    "short_ko": "반니스텔로이"
+  },
+  {
+    "english_name": "Ryan Giggs",
+    "korean_name": "라이언 긱스",
+    "short_en": "Giggs",
+    "short_ko": "긱스"
+  },
+  {
+    "english_name": "Pelé",
+    "korean_name": "펠레",
+    "short_en": "Pele",
+    "short_ko": "펠레"
+  },
+  {
+    "english_name": "Xabi Alonso",
+    "korean_name": "샤비 알론소",
+    "short_en": "Alonso",
+    "short_ko": "알론소"
+  },
+  {
+    "english_name": "Gerd Müller",
+    "korean_name": "게르트 뮐러",
+    "short_en": "Muller",
+    "short_ko": "뮐러"
+  },
+  {
+    "english_name": "Jairzinho",
+    "korean_name": "자이르지뉴",
+    "short_en": "Jairzinho",
+    "short_ko": "자이르지뉴"
+  },
+  {
+    "english_name": "Yaya Touré",
+    "korean_name": "야야 투레",
+    "short_en": "Toure",
+    "short_ko": "투레"
+  },
+  {
+    "english_name": "Franco Baresi",
+    "korean_name": "프랑코 바레시",
+    "short_en": "Baresi",
+    "short_ko": "바레시"
+  },
+  {
+    "english_name": "Lothar Matthäus",
+    "korean_name": "로타어 마테우스",
+    "short_en": "Matthaus",
+    "short_ko": "마테우스"
+  },
+  {
+    "english_name": "Franck Ribéry",
+    "korean_name": "프랑크 리베리",
+    "short_en": "Ribery",
+    "short_ko": "리베리"
+  },
+  {
+    "english_name": "Zico",
+    "korean_name": "지쿠",
+    "short_en": "Zico",
+    "short_ko": "지쿠"
+  },
+  {
+    "english_name": "Bobby Charlton",
+    "korean_name": "보비 찰턴",
+    "short_en": "Charlton",
+    "short_ko": "찰턴"
+  },
+  {
+    "english_name": "Gareth Bale",
+    "korean_name": "가레스 베일",
+    "short_en": "Bale",
+    "short_ko": "베일"
+  },
+  {
+    "english_name": "Lilian Thuram",
+    "korean_name": "릴리앙 튀람",
+    "short_en": "Thuram",
+    "short_ko": "튀람"
+  },
+  {
+    "english_name": "Gianluigi Buffon",
+    "korean_name": "잔루이지 부폰",
+    "short_en": "Buffon",
+    "short_ko": "부폰"
+  },
+  {
+    "english_name": "Franz Beckenbauer",
+    "korean_name": "프란츠 베켄바워",
+    "short_en": "Beckenbauer",
+    "short_ko": "베켄바워"
+  },
+  {
+    "english_name": "Dunga",
+    "korean_name": "둥가",
+    "short_en": "Dunga",
+    "short_ko": "둥가"
+  },
+  {
+    "english_name": "Diego Maradona",
+    "korean_name": "디에고 마라도나",
+    "short_en": "Maradona",
+    "short_ko": "마라도나"
+  },
+  {
+    "english_name": "Andrés Iniesta",
+    "korean_name": "안드레스 이니에스타",
+    "short_en": "Iniesta",
+    "short_ko": "이니에스타"
+  },
+  {
+    "english_name": "Oliver Kahn",
+    "korean_name": "올리버 칸",
+    "short_en": "Kahn",
+    "short_ko": "칸"
+  },
+  {
+    "english_name": "Francesco Totti",
+    "korean_name": "프란체스코 토티",
+    "short_en": "Totti",
+    "short_ko": "토티"
+  },
+  {
+    "english_name": "Zlatan Ibrahimović",
+    "korean_name": "즐라탄 이브라히모비치",
+    "short_en": "Ibrahimovic",
+    "short_ko": "이브라히모비치"
+  },
+  {
+    "english_name": "Marcelo",
+    "korean_name": "마르셀루",
+    "short_en": "Marcelo",
+    "short_ko": "마르셀루"
+  },
+  {
+    "english_name": "Toni Kroos",
+    "korean_name": "토니 크로스",
+    "short_en": "Kroos",
+    "short_ko": "크로스"
+  },
+  {
+    "english_name": "Giorgio Chiellini",
+    "korean_name": "조르조 키엘리니",
+    "short_en": "Chiellini",
+    "short_ko": "키엘리니"
+  },
+  {
+    "english_name": "Gabriel Batistuta",
+    "korean_name": "가브리엘 바티스투타",
+    "short_en": "Batistuta",
+    "short_ko": "바티스투타"
+  }
+]

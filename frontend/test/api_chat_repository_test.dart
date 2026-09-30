@@ -8,7 +8,7 @@ import 'package:onetouch/data/chat/api/api_chat_repository.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';
 
 void main() {
-  test('loads authenticated history and maps nullable author metadata',
+  test('loads authenticated history and maps anonymous author metadata',
       () async {
     final repository = ApiChatRepository(
       api: ApiClient(
@@ -27,14 +27,15 @@ void main() {
                   _messageJson(messageId: 10),
                   _messageJson(
                     messageId: 20,
-                    userId: null,
-                    username: null,
-                    avatarUrl: null,
+                    nicknameEn: null,
+                    nicknameKo: null,
+                    isMine: false,
                     authorDeleted: true,
                   ),
                 ],
               }),
               200,
+              headers: {'content-type': 'application/json; charset=utf-8'},
             );
           }),
           baseUri: Uri.parse('https://api.example.test/v1'),
@@ -50,10 +51,12 @@ void main() {
     expect(messages.map((message) => message.messageId), [10, 20]);
     expect(messages.first.createdAt.isUtc, isTrue);
     expect(
-      messages.first.avatarUrl,
-      'https://api.example.test/v1/users/7/avatar',
+      messages.first.displayAuthor('en'),
+      'Cruyff_A8Q4',
     );
-    expect(messages.last.displayAuthor, 'Deleted user');
+    expect(messages.first.displayAuthor('ko'), '크루이프_A8Q4');
+    expect(messages.first.isMine, isTrue);
+    expect(messages.last.displayAuthor('en'), 'Deleted user');
     expect(repository.cachedHistoryForFixture(42), orderedEquals(messages));
     expect(() => messages.clear(), throwsUnsupportedError);
   });
@@ -68,7 +71,8 @@ void main() {
             final items = requestCount == 1
                 ? [_messageJson(messageId: 20), _messageJson(messageId: 30)]
                 : [_messageJson(messageId: 10), _messageJson(messageId: 20)];
-            return http.Response(jsonEncode({'items': items}), 200);
+            return http.Response(jsonEncode({'items': items}), 200,
+                headers: {'content-type': 'application/json; charset=utf-8'});
           }),
           baseUri: Uri.parse('https://api.example.test/v1/'),
           requestHeaders: () => const {}),
@@ -129,12 +133,14 @@ void main() {
           ],
         }),
         200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
       ),
       http.Response(
         jsonEncode({
           'items': [_messageJson(messageId: 3, fixtureId: 99)],
         }),
         200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
       ),
     ];
     var requestCount = 0;
@@ -227,18 +233,18 @@ void main() {
 Map<String, Object?> _messageJson({
   required int messageId,
   int fixtureId = 42,
-  int? userId = 7,
-  String? username = 'supporter',
-  String? avatarUrl = '/v1/users/7/avatar',
+  String? nicknameEn = 'Cruyff_A8Q4',
+  String? nicknameKo = '크루이프_A8Q4',
+  bool isMine = true,
   bool authorDeleted = false,
 }) =>
     {
       'message_id': messageId,
       'fixture_id': fixtureId,
-      'user_id': userId,
-      'username': username,
+      'nickname_en': nicknameEn,
+      'nickname_ko': nicknameKo,
+      'is_mine': isMine,
       'text': 'Come on City!',
       'created_at': '2026-09-18T12:34:56Z',
-      'avatar_url': avatarUrl,
       'author_deleted': authorDeleted,
     };

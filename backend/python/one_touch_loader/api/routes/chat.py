@@ -9,6 +9,7 @@ from ..deps import get_user_id
 from ..repos import auth_repo, chat_repo, posts_repo
 from .posts import ReportBody
 from ..services.content_visibility import is_blocked
+from ..services.chat_aliases import public_chat_message
 
 router = APIRouter()
 
@@ -69,7 +70,8 @@ class ChatHub:
                     recipient = await run_in_threadpool(_authorized, peer.token, fixture_id)
                     if await run_in_threadpool(is_blocked, recipient["user_id"], message["user_id"]):
                         continue
-                    await asyncio.wait_for(peer.socket.send_json({"type": "message", **message}), 5)
+                    public_message = public_chat_message(message, recipient["user_id"])
+                    await asyncio.wait_for(peer.socket.send_json({"type": "message", **public_message}), 5)
                 except HTTPException as exc:
                     self.remove(fixture_id, peer)
                     await peer.socket.close(code=4401 if exc.status_code == 401 else 4403)

@@ -10,10 +10,6 @@ import 'package:onetouch/data/chat/chat_repository_provider.dart'
 import 'package:onetouch/data/chat/chat_socket.dart';
 import 'package:onetouch/data/chat/chat_socket_provider.dart'
     as chat_socket_provider;
-import 'package:onetouch/data/profile/current_user_repository.dart';
-import 'package:onetouch/data/profile/current_user_repository_provider.dart'
-    as current_user_provider;
-import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/fixture_chat_message.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -22,14 +18,12 @@ class LiveChatTab extends StatefulWidget {
   final int matchId;
   final ChatRepository? repository;
   final ChatSocket? socket;
-  final CurrentUserRepository? currentUserRepository;
 
   const LiveChatTab({
     super.key,
     required this.matchId,
     this.repository,
     this.socket,
-    this.currentUserRepository,
   });
 
   @override
@@ -43,7 +37,6 @@ class _LiveChatTabState extends State<LiveChatTab> {
   final List<FixtureChatMessage> _messages = [];
   ChatSocketSession? _socketSession;
   StreamSubscription<FixtureChatMessage>? _messagesSub;
-  int? _currentUserId;
   bool _isInitialized = false;
   String? _initError;
   int _requestId = 0;
@@ -53,10 +46,6 @@ class _LiveChatTabState extends State<LiveChatTab> {
       widget.repository ?? chat_repository_provider.chatRepository;
 
   ChatSocket get _socket => widget.socket ?? chat_socket_provider.chatSocket;
-
-  CurrentUserRepository get _currentUserRepository =>
-      widget.currentUserRepository ??
-      current_user_provider.currentUserRepository;
 
   @override
   void initState() {
@@ -69,8 +58,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.matchId != widget.matchId ||
         oldWidget.repository != widget.repository ||
-        oldWidget.socket != widget.socket ||
-        oldWidget.currentUserRepository != widget.currentUserRepository) {
+        oldWidget.socket != widget.socket) {
       unawaited(_restartChat());
     }
   }
@@ -80,7 +68,6 @@ class _LiveChatTabState extends State<LiveChatTab> {
     if (!mounted) return;
     setState(() {
       _messages.clear();
-      _currentUserId = null;
       _isInitialized = false;
       _initError = null;
     });
@@ -103,16 +90,10 @@ class _LiveChatTabState extends State<LiveChatTab> {
         onDone: _handleSocketDone,
       );
 
-      final results = await Future.wait<Object>([
-        _repository.loadHistory(fixtureId: widget.matchId),
-        _currentUserRepository.load(),
-      ]);
+      final history = await _repository.loadHistory(fixtureId: widget.matchId);
       if (!mounted || requestId != _requestId) return;
-      final history = results[0] as List<FixtureChatMessage>;
-      final currentUser = results[1] as CurrentUserProfile;
       setState(() {
         _mergeMessages(history);
-        _currentUserId = currentUser.userId;
         _isInitialized = true;
         _initError = null;
       });
@@ -219,7 +200,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
 
   void _showContextMenu(
       BuildContext context, Offset position, FixtureChatMessage msg) {
-    final isMe = msg.userId == _currentUserId;
+    final isMe = msg.isMine;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     showMenu(
@@ -352,10 +333,9 @@ class _LiveChatTabState extends State<LiveChatTab> {
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
                       final msg = _messages[index];
-                      final isMe = msg.userId == _currentUserId;
                       final prevMsg = index > 0 ? _messages[index - 1] : null;
-                      final showHeader =
-                          prevMsg == null || prevMsg.userId != msg.userId;
+                      final showHeader = prevMsg == null ||
+                          prevMsg.nicknameEn != msg.nicknameEn;
 
                       return GestureDetector(
                         onLongPressStart: (details) => _showContextMenu(
@@ -365,9 +345,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
                         ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: isMe
-                              ? _buildMyMessage(msg, showHeader)
-                              : _buildOtherMessage(msg, showHeader),
+                          child: _buildMessage(msg, showHeader),
                         ),
                       );
                     },
@@ -437,60 +415,28 @@ class _LiveChatTabState extends State<LiveChatTab> {
     );
   }
 
-  Widget _buildOtherMessage(FixtureChatMessage msg, bool showHeader) {
+  Widget _buildMessage(FixtureChatMessage msg, bool showHeader) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (showHeader) ...[
-          Row(
-            children: [
-              Text(
-                  msg.authorDeleted
-                      ? tr(context, 'Deleted user')
-                      : msg.displayAuthor,
-                  style: Body2_b.style),
-              const SizedBox(width: 8),
-              Opacity(
-                opacity: 0.5,
-                child: Text(_timeString(msg), style: Eyebrow.style),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-        ],
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: isDark ? AppPalette.lightGrey : AppPalette.white,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(msg.text, style: Body1.style),
-        ),
-      ],
+    final author = Text(
+      msg.authorDeleted
+          ? tr(context, 'Deleted user')
+          : msg.displayAuthor(Localizations.localeOf(context).languageCode),
+      style: Body2_b.style,
     );
-  }
-
-  Widget _buildMyMessage(FixtureChatMessage msg, bool showHeader) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final time = Opacity(
+      opacity: 0.5,
+      child: Text(_timeString(msg), style: Eyebrow.style),
+    );
+    const gap = SizedBox(width: 8);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment:
+          msg.isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         if (showHeader) ...[
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Opacity(
-                opacity: 0.5,
-                child: Text(_timeString(msg), style: Eyebrow.style),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                  msg.authorDeleted
-                      ? tr(context, 'Deleted user')
-                      : msg.displayAuthor,
-                  style: Body2_b.style),
-            ],
+            mainAxisAlignment:
+                msg.isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: msg.isMine ? [time, gap, author] : [author, gap, time],
           ),
           const SizedBox(height: 6),
         ],
