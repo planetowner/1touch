@@ -389,7 +389,7 @@ void main() {
         horizontalScroll.controller!.jumpTo(0);
         await tester.pump();
         final chartRect = tester.getRect(chart);
-        final selectedPointX = chartRect.left + chartRect.width / 12;
+        final selectedPointX = chartRect.left + chartRect.width / 6;
         await tester.tapAt(Offset(selectedPointX, chartRect.center.dy));
         await tester.pump();
 
@@ -403,7 +403,7 @@ void main() {
         }
         final lineChart = tester.widget<LineChart>(find.byType(LineChart));
         expect(lineChart.data.minX, 1);
-        expect(lineChart.data.maxX, 13);
+        expect(lineChart.data.maxX, 7);
         expect(lineChart.data.minY, 0);
         expect(lineChart.data.maxY, 9);
         final comparisonTooltipRect = tester.getRect(

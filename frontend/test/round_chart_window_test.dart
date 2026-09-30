@@ -3,20 +3,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/round_chart_window.dart';
 
 void main() {
-  test('keeps the latest 13 positions and centers the middle seven', () {
-    final early = RoundChartWindow.endingAt(7);
-    expect((early.firstRound, early.lastRound), (1, 13));
+  test('shows every completed early round and then the latest seven', () {
+    final early = RoundChartWindow.endingAt(4);
+    expect((early.firstRound, early.lastRound), (1, 7));
     expect((early.firstVisibleRound, early.centerRound, early.lastVisibleRound),
-        (4, 7, 10));
+        (1, 4, 7));
+    expect([1, 2, 3, 4].every(early.contains), isTrue);
+    expect(early.initialScrollOffset(140), 0);
+
+    final eighth = RoundChartWindow.endingAt(8);
+    expect((eighth.firstRound, eighth.lastRound), (1, 8));
+    expect(
+        (eighth.firstVisibleRound, eighth.centerRound, eighth.lastVisibleRound),
+        (2, 5, 8));
 
     final later = RoundChartWindow.endingAt(20);
     expect((later.firstRound, later.lastRound), (8, 20));
     expect((later.firstVisibleRound, later.centerRound, later.lastVisibleRound),
-        (11, 14, 17));
+        (14, 17, 20));
     expect(later.roundAt(140, 280), 14);
   });
 
-  testWidgets('starts with seven centered rounds and scrolls across all 13',
+  testWidgets('starts on the latest seven and scrolls across the previous six',
       (tester) async {
     final window = RoundChartWindow.endingAt(20);
     double? tappedRound;
@@ -27,6 +35,7 @@ void main() {
             width: 140,
             height: 100,
             child: RoundChartViewport(
+              roundWindow: window,
               viewportSize: const Size(140, 100),
               builder: (_, size) => GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -43,13 +52,42 @@ void main() {
     final scroll = tester.widget<SingleChildScrollView>(
       find.byType(SingleChildScrollView),
     );
-    expect(scroll.controller!.offset, 70);
-    await tester.tapAt(tester.getCenter(find.byType(RoundChartViewport)));
-    expect(tappedRound, closeTo(14, 0.01));
-
-    scroll.controller!.jumpTo(140);
-    await tester.pump();
+    expect(scroll.controller!.offset, 140);
     await tester.tapAt(tester.getCenter(find.byType(RoundChartViewport)));
     expect(tappedRound, closeTo(17, 0.01));
+
+    scroll.controller!.jumpTo(0);
+    await tester.pump();
+    await tester.tapAt(tester.getCenter(find.byType(RoundChartViewport)));
+    expect(tappedRound, closeTo(11, 0.01));
+  });
+
+  testWidgets('round eight initially shows rounds two through eight',
+      (tester) async {
+    final window = RoundChartWindow.endingAt(8);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SizedBox(
+          width: 140,
+          height: 100,
+          child: RoundChartViewport(
+            roundWindow: window,
+            viewportSize: const Size(140, 100),
+            builder: (_, size) => SizedBox.fromSize(size: size),
+          ),
+        ),
+      ),
+    ));
+
+    final scroll = tester.widget<SingleChildScrollView>(
+      find.byType(SingleChildScrollView),
+    );
+    expect(scroll.controller!.offset, closeTo(140 / 6, 0.01));
+    expect(window.roundAt(scroll.controller!.offset, window.contentWidth(140)),
+        closeTo(2, 0.01));
+    expect(
+      window.roundAt(scroll.controller!.offset + 140, window.contentWidth(140)),
+      closeTo(8, 0.01),
+    );
   });
 }
