@@ -171,8 +171,8 @@ class _EventRowContent extends StatelessWidget {
               overflow: TextOverflow.ellipsis),
         );
 
-        // Wrap은 모든 줄에 같은 정렬을 적용하므로, 마지막 줄에 시간 하나만
-        // 남았을 때 그 시간만 중앙에 둘 수 있도록 줄을 먼저 계산해요.
+        // 홈 첫 줄은 왼쪽, 원정 첫 줄은 오른쪽에서 시작하고 줄바꿈된
+        // 시간만 같은 선수의 첫 줄 시간 묶음을 기준으로 중앙에 놓아요.
         final minuteLines = <List<String>>[];
         var currentLine = <String>[];
         var currentLineWidth = 0.0;
@@ -200,20 +200,11 @@ class _EventRowContent extends StatelessWidget {
         final minuteLineWidths = minuteLines.map(lineWidth).toList();
         final minuteLineLefts = <double>[];
         for (var index = 0; index < minuteLines.length; index++) {
-          final line = minuteLines[index];
           final width = minuteLineWidths[index];
           final maxLeft = (minuteAreaWidth - width).clamp(0.0, minuteAreaWidth);
-          double left;
-          if (line.length == 1) {
-            // 한 시각만 다음 줄에 남으면 전체 영역이 아니라 바로 위 시각
-            // 묶음의 가운데 아래에 배치해 시각 관계를 바로 읽을 수 있게 해요.
-            left = index == 0
-                ? maxLeft / 2
-                : minuteLineLefts[index - 1] +
-                    (minuteLineWidths[index - 1] - width) / 2;
-          } else {
-            left = alignRight ? maxLeft : 0;
-          }
+          final left = index == 0
+              ? (alignRight ? maxLeft : 0.0)
+              : minuteLineLefts.first + (minuteLineWidths.first - width) / 2;
           minuteLineLefts.add(left.clamp(0.0, maxLeft).toDouble());
         }
 
@@ -232,11 +223,7 @@ class _EventRowContent extends StatelessWidget {
                         minuteLineWidths[index],
                   ),
                   child: Wrap(
-                    alignment: minuteLines[index].length == 1
-                        ? WrapAlignment.center
-                        : alignRight
-                            ? WrapAlignment.end
-                            : WrapAlignment.start,
+                    alignment: WrapAlignment.start,
                     spacing: spaceWidth,
                     children: [
                       for (final minute in minuteLines[index])

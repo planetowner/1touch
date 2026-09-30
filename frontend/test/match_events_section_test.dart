@@ -124,35 +124,37 @@ void main() {
               matching: find.byType(Wrap),
             );
             final lineWrap = tester.widget<Wrap>(lineWrapFinder);
-            if (sameLine.length == 1) {
-              expect(lineWrap.alignment, WrapAlignment.center);
-              final lineTops = times.map((rect) => rect.top).toSet().toList()
-                ..sort();
-              final lineIndex = lineTops.indexOf(time.top);
-              if (lineIndex == 0) {
-                expect(
-                    time.center.dx, closeTo(minuteAreaRect.center.dx, 0.001));
-              } else {
-                final previousLine =
-                    times.where((rect) => rect.top == lineTops[lineIndex - 1]);
-                final previousLeft = previousLine
-                    .map((rect) => rect.left)
-                    .reduce((a, b) => a < b ? a : b);
-                final previousRight = previousLine
-                    .map((rect) => rect.right)
-                    .reduce((a, b) => a > b ? a : b);
-                expect(
-                  time.center.dx,
-                  closeTo((previousLeft + previousRight) / 2, 0.001),
-                );
-              }
-            } else {
-              expect(lineWrap.alignment,
-                  home ? WrapAlignment.start : WrapAlignment.end);
+            expect(lineWrap.alignment, WrapAlignment.start);
+            final lineTops = times.map((rect) => rect.top).toSet().toList()
+              ..sort();
+            final lineIndex = lineTops.indexOf(time.top);
+            if (lineIndex == 0) {
               expect(
-                  home ? sameLine.first.left : sameLine.last.right,
-                  closeTo(home ? minuteAreaRect.left : minuteAreaRect.right,
-                      0.001));
+                home ? sameLine.first.left : sameLine.last.right,
+                closeTo(
+                    home ? minuteAreaRect.left : minuteAreaRect.right, 0.001),
+              );
+            } else {
+              final firstLine =
+                  times.where((rect) => rect.top == lineTops.first);
+              final firstLeft = firstLine
+                  .map((rect) => rect.left)
+                  .reduce((a, b) => a < b ? a : b);
+              final firstRight = firstLine
+                  .map((rect) => rect.right)
+                  .reduce((a, b) => a > b ? a : b);
+              final currentLeft = sameLine
+                  .map((rect) => rect.left)
+                  .reduce((a, b) => a < b ? a : b);
+              final currentRight = sameLine
+                  .map((rect) => rect.right)
+                  .reduce((a, b) => a > b ? a : b);
+              final firstWidth = firstRight - firstLeft;
+              final currentWidth = currentRight - currentLeft;
+              final centeredLeft = (firstLeft + (firstWidth - currentWidth) / 2)
+                  .clamp(
+                      minuteAreaRect.left, minuteAreaRect.right - currentWidth);
+              expect(currentLeft, closeTo(centeredLeft, 0.001));
             }
           }
         }
@@ -192,6 +194,12 @@ void main() {
                   'team': 'home',
                   'type': 'goal',
                 },
+                {
+                  'player': 'Vinicius',
+                  'minute': "55'",
+                  'team': 'home',
+                  'type': 'goal',
+                },
               ],
             ),
           ),
@@ -219,6 +227,19 @@ void main() {
       minute42.center.dx,
       closeTo((minute20.left + minute27.right) / 2, 0.001),
     );
+    final viniciusRow = find.byKey(
+      const ValueKey('match-event-home-goal-Vinicius'),
+    );
+    final viniciusTime = tester.getRect(
+      find.descendant(of: viniciusRow, matching: find.text("55'")),
+    );
+    final viniciusArea = tester.getRect(
+      find.descendant(
+        of: viniciusRow,
+        matching: find.byKey(const ValueKey('match-event-minute-area')),
+      ),
+    );
+    expect(viniciusTime.left, closeTo(viniciusArea.left, 0.001));
     expect(tester.takeException(), isNull);
   });
 
@@ -312,10 +333,21 @@ void main() {
         final minuteFinder =
             find.descendant(of: row, matching: find.text(event.$3));
 
-        expect(tester.widget<Wrap>(wrapFinder).alignment, WrapAlignment.center);
+        expect(tester.widget<Wrap>(wrapFinder).alignment, WrapAlignment.start);
         expect(
-          tester.getRect(minuteFinder).center.dx,
-          closeTo(tester.getRect(wrapFinder).center.dx, 0.001),
+          tester.getRect(minuteFinder).left,
+          closeTo(tester.getRect(wrapFinder).left, 0.001),
+        );
+        final minuteArea = tester.getRect(find.descendant(
+          of: row,
+          matching: find.byKey(const ValueKey('match-event-minute-area')),
+        ));
+        expect(
+          event.$1 == 'home'
+              ? tester.getRect(minuteFinder).left
+              : tester.getRect(minuteFinder).right,
+          closeTo(
+              event.$1 == 'home' ? minuteArea.left : minuteArea.right, 0.001),
         );
       }
       expect(tester.takeException(), isNull);
