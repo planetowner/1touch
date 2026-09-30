@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,8 +12,110 @@ import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
+import 'package:onetouch/data/auth/registration_field.dart';
 
 void main() {
+  for (final field in RegistrationField.values) {
+    testWidgets('blocks duplicate $field and rechecks its edited value',
+        (tester) async {
+      final replacement = switch (field) {
+        RegistrationField.username => 'new_member',
+        RegistrationField.displayName => 'NewMember',
+        RegistrationField.email => 'new@example.com',
+      };
+      final repository = _FakeAuthRepository(
+          availability: (checkedField, value) async =>
+              checkedField != field || value == replacement);
+      await _pumpSignup(tester, repository);
+      await _fillSignup(tester);
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pump();
+
+      expect(
+          repository.availabilityRequests,
+          containsAll([
+            (RegistrationField.username, 'member'),
+            (RegistrationField.displayName, 'Supporter'),
+            (RegistrationField.email, 'member@example.com'),
+          ]));
+      expect(find.text('Already in use.'), findsOneWidget);
+      final submit = find.byKey(const ValueKey('email-sign-up-button'));
+      expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+      expect(repository.requestedEmails, isEmpty);
+
+      await tester.enterText(
+          find.byKey(
+              ValueKey('signup-${field.apiValue.replaceAll('_', '-')}-field')),
+          replacement);
+      await tester.pump();
+      expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pump();
+      expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+      await tester.ensureVisible(submit);
+      await tester.tap(submit);
+      await tester.pumpAndSettle();
+      expect(repository.requestedEmails, [
+        field == RegistrationField.email ? replacement : 'member@example.com',
+      ]);
+      expect(find.text('Verification destination'), findsOneWidget);
+    });
+  }
+
+  testWidgets('waits for all three availability results before signup',
+      (tester) async {
+    final results = {
+      for (final field in RegistrationField.values) field: Completer<bool>(),
+    };
+    final repository =
+        _FakeAuthRepository(availability: (field, _) => results[field]!.future);
+    await _pumpSignup(tester, repository);
+    await _fillSignup(tester);
+    await tester.pump(const Duration(milliseconds: 250));
+    final submit = find.byKey(const ValueKey('email-sign-up-button'));
+    expect(find.text('Checking availability...'), findsNWidgets(3));
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    results[RegistrationField.username]!.complete(true);
+    results[RegistrationField.displayName]!.complete(true);
+    await tester.pump();
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    expect(repository.requestedEmails, isEmpty);
+    results[RegistrationField.email]!.complete(true);
+    await tester.pump();
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    await tester.enterText(
+        find.byKey(const ValueKey('signup-username-field')), 'changed');
+    await tester.pump();
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('keeps signup blocked after lookup failure until retry succeeds',
+      (tester) async {
+    var emailChecks = 0;
+    final repository = _FakeAuthRepository(availability: (field, _) async {
+      if (field == RegistrationField.email && emailChecks++ == 0) {
+        throw StateError('Connection failed');
+      }
+      return true;
+    });
+    await _pumpSignup(tester, repository);
+    await _fillSignup(tester);
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pump();
+    final submit = find.byKey(const ValueKey('email-sign-up-button'));
+    expect(
+        find.text('Unable to check availability. Try again.'), findsOneWidget);
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    expect(repository.requestedEmails, isEmpty);
+    final retry = find.byTooltip('Try again');
+    await tester.ensureVisible(retry);
+    await tester.tap(retry);
+    await tester.pump();
+    expect(emailChecks, 2);
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+  });
+
   for (final locale in appSupportedLocales) {
     testWidgets('signup preserves name meanings with $locale input order',
         (tester) async {
@@ -55,7 +159,10 @@ void main() {
       await tester.enterText(fields.at(5), 'Password123');
       await tester.ensureVisible(find.byType(Checkbox));
       await tester.tap(find.byType(Checkbox));
+      await tester.pump(const Duration(milliseconds: 250));
       await tester.pump();
+      expect(
+          find.text(translateMessage(locale, 'Available.')), findsNWidgets(3));
       final submit = find.byKey(const ValueKey('email-sign-up-button'));
       await tester.ensureVisible(submit);
       await tester.tap(submit);
@@ -112,6 +219,8 @@ void main() {
 
     await tester.enterText(fields.at(2), 'john_doe');
     await tester.enterText(fields.at(3), '메이플123');
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pump();
     await tester.ensureVisible(submit);
     await tester.tap(submit);
     await tester.pumpAndSettle();
@@ -167,6 +276,46 @@ void main() {
   });
 }
 
+Future<void> _pumpSignup(
+    WidgetTester tester, _FakeAuthRepository repository) async {
+  tester.view.physicalSize = const Size(393, 852);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  final router = GoRouter(initialLocation: '/signup', routes: [
+    GoRoute(
+      path: '/signup',
+      builder: (_, __) => EmailSignUpScreen(
+        authService: _service(repository, AuthSession()),
+      ),
+    ),
+    GoRoute(
+      path: '/auth/verify',
+      builder: (_, __) =>
+          const Scaffold(body: Text('Verification destination')),
+    ),
+  ]);
+  addTearDown(router.dispose);
+  await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+}
+
+Future<void> _fillSignup(WidgetTester tester) async {
+  final fields = find.byType(TextFormField);
+  for (final (index, value) in [
+    (0, 'John'),
+    (1, 'Doe'),
+    (2, 'member'),
+    (3, 'Supporter'),
+    (4, 'member@example.com'),
+    (5, 'Password123'),
+  ]) {
+    await tester.enterText(fields.at(index), value);
+  }
+  await tester.ensureVisible(find.byType(Checkbox));
+  await tester.tap(find.byType(Checkbox));
+  await tester.pump();
+}
+
 AuthService _service(AuthRepository repository, AuthSession session) =>
     AuthService(
       googleIdentityService: _UnusedGoogleIdentityService(),
@@ -207,6 +356,20 @@ class _UnusedGoogleIdentityService implements GoogleIdentityService {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  _FakeAuthRepository({this.availability});
+
+  final Future<bool> Function(RegistrationField, String)? availability;
+  final availabilityRequests = <(RegistrationField, String)>[];
+
+  @override
+  Future<bool> isRegistrationValueAvailable({
+    required RegistrationField field,
+    required String value,
+  }) async {
+    availabilityRequests.add((field, value));
+    return availability == null ? true : await availability!(field, value);
+  }
+
   @override
   Future<void> resetPassword(
           {required String challengeId,
