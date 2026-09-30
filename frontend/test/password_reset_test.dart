@@ -22,6 +22,8 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(const MaterialApp(home: EmailSignUpScreen()));
+    expect(find.text('Choose a password that is 8 or more characters long.'),
+        findsOneWidget);
     final fields = find.byType(TextFormField);
     for (final (index, value) in [
       'First',
@@ -37,10 +39,54 @@ void main() {
     await tester.tap(find.byType(Checkbox));
     await tester.pump();
     final submit = find.byKey(const ValueKey('email-sign-up-button'));
-    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    await tester.tap(submit);
+    await tester.pump();
+    expect(find.text('Please check the highlighted fields.'), findsOneWidget);
+    expect(
+        find.text(
+            'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
+        findsOneWidget);
     await tester.enterText(fields.at(5), 'Password123');
     await tester.pump();
     expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    await tester.enterText(
+        find.byKey(const ValueKey('signup-confirm-password-field')),
+        'Different123');
+    await tester.pump();
+    await tester.tap(submit);
+    await tester.pump();
+    expect(find.text('Passwords do not match.'), findsOneWidget);
+    await tester.enterText(
+        find.byKey(const ValueKey('signup-confirm-password-field')),
+        'Password123');
+    await tester.pump();
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('signup button explains missing terms consent', (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MaterialApp(home: EmailSignUpScreen()));
+    final fields = find.byType(TextFormField);
+    for (final (index, value) in [
+      'First',
+      'Last',
+      'member',
+      'Member',
+      'member@example.com',
+      'Password123',
+      'Password123'
+    ].indexed) {
+      await tester.enterText(fields.at(index), value);
+    }
+    await tester.tap(find.byKey(const ValueKey('email-sign-up-button')));
+    await tester.pump();
+    expect(find.text('Please agree to the Terms and Privacy Policy.'),
+        findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -160,6 +206,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('continue-reset-password')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('reset-new-password')), findsOneWidget);
+    expect(find.text('Choose a password that is 8 or more characters long.'),
+        findsOneWidget);
     await tester.enterText(
         find.byKey(const ValueKey('reset-new-password')), 'weak');
     await tester.tap(find.byKey(const ValueKey('verify-email-button')));
