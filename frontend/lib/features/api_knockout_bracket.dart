@@ -88,14 +88,7 @@ class _ApiKnockoutBracketState extends State<ApiKnockoutBracket> {
   }
 }
 
-class _TournamentBracketView extends StatelessWidget {
-  static const double _shadowInset = 16;
-  static const double _cardWidth = 165;
-  static const double _cardHeight = 92;
-  static const double _connectorWidth = 20;
-  static const double _roundWidth = _cardWidth + _connectorWidth;
-  static const double _baseStep = 116;
-
+class _TournamentBracketView extends StatefulWidget {
   const _TournamentBracketView({
     required this.stages,
     required this.currentTeamId,
@@ -107,51 +100,123 @@ class _TournamentBracketView extends StatelessWidget {
   final ValueChanged<bool>? onInteractionChanged;
 
   @override
+  State<_TournamentBracketView> createState() => _TournamentBracketViewState();
+}
+
+class _TournamentBracketViewState extends State<_TournamentBracketView> {
+  static const double _shadowInset = 16;
+  static const double _maximumCardWidth = 165;
+  static const double _cardHeight = 92;
+  static const double _connectorWidth = 20;
+  static const double _baseStep = 116;
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bracketUnits = <int>[
-      for (var index = 0; index < stages.length; index++)
-        stages[index].ties.length * math.pow(2, index).toInt(),
-    ];
-    final bracketHeight =
-        _baseStep * math.max(1, bracketUnits.reduce(math.max)).toDouble();
-    final bracketWidth = _roundWidth * (stages.length - 1) + _cardWidth;
     final maximumViewportHeight =
         (MediaQuery.sizeOf(context).height * 0.62).clamp(320.0, 620.0);
-    final viewportHeight =
-        math.min(bracketHeight + _shadowInset * 2, maximumViewportHeight);
+    final viewportHeight = math.min(
+      _contentHeightForWindow(_currentPage) + _shadowInset * 2,
+      maximumViewportHeight,
+    );
 
     return Padding(
       key: const ValueKey('tournament-bracket'),
       padding: const EdgeInsets.symmetric(horizontal: 24 - _shadowInset),
-      child: SizedBox(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
         height: viewportHeight,
         width: double.infinity,
         child: _BracketGestureGuard(
-          onInteractionChanged: onInteractionChanged,
-          child: InteractiveViewer(
-            key: const ValueKey('tournament-bracket-zoom'),
-            constrained: false,
-            minScale: 0.5,
-            maxScale: 1.5,
-            alignment: Alignment.topLeft,
-            boundaryMargin: const EdgeInsets.all(48),
-            child: Padding(
-              padding: const EdgeInsets.all(_shadowInset),
-              child: SizedBox(
-                width: bracketWidth,
-                height: bracketHeight,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (var stageIndex = 0;
-                        stageIndex < stages.length;
-                        stageIndex++)
-                      _buildStage(context, stageIndex, bracketHeight),
-                  ],
-                ),
-              ),
-            ),
+          onInteractionChanged: widget.onInteractionChanged,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final pairWidth = constraints.maxWidth - _shadowInset * 2;
+              final cardWidth = widget.stages.length == 1
+                  ? math.min(_maximumCardWidth, pairWidth)
+                  : math.min(
+                      _maximumCardWidth,
+                      (pairWidth - _connectorWidth) / 2,
+                    );
+
+              return PageView.builder(
+                key: const ValueKey('tournament-bracket-pages'),
+                controller: _pageController,
+                itemCount: math.max(1, widget.stages.length - 1),
+                onPageChanged: (page) {
+                  if (_currentPage == page) return;
+                  setState(() => _currentPage = page);
+                },
+                itemBuilder: (context, pageIndex) =>
+                    _buildRoundWindow(context, pageIndex, cardWidth),
+              );
+            },
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoundWindow(
+    BuildContext context,
+    int stageIndex,
+    double cardWidth,
+  ) {
+    final hasNextStage = stageIndex < widget.stages.length - 1;
+    final visibleIndexes = <int>[
+      stageIndex,
+      if (hasNextStage) stageIndex + 1,
+    ];
+    final populatedIndexes = visibleIndexes
+        .where((index) => widget.stages[index].ties.isNotEmpty)
+        .toList(growable: false);
+    final verticalOffset = populatedIndexes.isEmpty
+        ? 0.0
+        : populatedIndexes
+            .map((index) => _cardTop(index - stageIndex, 0))
+            .reduce(math.min);
+    final contentHeight = _contentHeightForWindow(stageIndex);
+    final roundWidth = cardWidth + _connectorWidth;
+
+    return SingleChildScrollView(
+      key: ValueKey('bracket-round-window-$stageIndex'),
+      padding: const EdgeInsets.all(_shadowInset),
+      child: SizedBox(
+        width: hasNextStage ? cardWidth * 2 + _connectorWidth : cardWidth,
+        height: contentHeight,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStage(
+              context,
+              stageIndex,
+              contentHeight,
+              cardWidth,
+              roundWidth,
+              verticalOffset,
+              layoutStageIndex: 0,
+              hasNextStage: hasNextStage,
+            ),
+            if (hasNextStage)
+              _buildStage(
+                context,
+                stageIndex + 1,
+                contentHeight,
+                cardWidth,
+                roundWidth,
+                verticalOffset,
+                layoutStageIndex: 1,
+                hasNextStage: false,
+              ),
+          ],
         ),
       ),
     );
@@ -160,15 +225,19 @@ class _TournamentBracketView extends StatelessWidget {
   Widget _buildStage(
     BuildContext context,
     int stageIndex,
-    double bracketHeight,
-  ) {
-    final stage = stages[stageIndex];
-    final hasNextStage = stageIndex < stages.length - 1;
+    double contentHeight,
+    double cardWidth,
+    double roundWidth,
+    double verticalOffset, {
+    required int layoutStageIndex,
+    required bool hasNextStage,
+  }) {
+    final stage = widget.stages[stageIndex];
 
     return SizedBox(
       key: ValueKey('bracket-stage-${stage.name}'),
-      width: hasNextStage ? _roundWidth : _cardWidth,
-      height: bracketHeight,
+      width: hasNextStage ? roundWidth : cardWidth,
+      height: contentHeight,
       child: Stack(
         children: [
           if (hasNextStage)
@@ -180,21 +249,23 @@ class _TournamentBracketView extends StatelessWidget {
                       ? AppPalette.lightModeDarkGrey
                       : AppColors.of(context).mutedForeground,
                   sourceCount: stage.ties.length,
-                  destinationCount: stages[stageIndex + 1].ties.length,
-                  stageIndex: stageIndex,
-                  cardWidth: _cardWidth,
-                  roundWidth: _roundWidth,
+                  destinationCount: widget.stages[stageIndex + 1].ties.length,
+                  stageIndex: layoutStageIndex,
+                  cardWidth: cardWidth,
+                  roundWidth: roundWidth,
                   baseStep: _baseStep,
+                  verticalOffset: verticalOffset,
                 ),
               ),
             ),
           for (var tieIndex = 0; tieIndex < stage.ties.length; tieIndex++)
             Positioned(
               left: 0,
-              top: _cardTop(stageIndex, tieIndex),
+              top: _cardTop(layoutStageIndex, tieIndex) - verticalOffset,
               child: _TournamentMatchCard(
                 tie: stage.ties[tieIndex],
-                currentTeamId: currentTeamId,
+                currentTeamId: widget.currentTeamId,
+                width: cardWidth,
               ),
             ),
         ],
@@ -206,6 +277,26 @@ class _TournamentBracketView extends StatelessWidget {
     final multiplier = math.pow(2, stageIndex).toDouble();
     final center = _baseStep * (multiplier * tieIndex + multiplier / 2);
     return center - _cardHeight / 2;
+  }
+
+  double _contentHeightForWindow(int stageIndex) {
+    final visibleIndexes = <int>[
+      stageIndex,
+      if (stageIndex < widget.stages.length - 1) stageIndex + 1,
+    ];
+    final populatedIndexes = visibleIndexes
+        .where((index) => widget.stages[index].ties.isNotEmpty)
+        .toList(growable: false);
+    if (populatedIndexes.isEmpty) return _cardHeight;
+
+    final verticalOffset = populatedIndexes
+        .map((index) => _cardTop(index - stageIndex, 0))
+        .reduce(math.min);
+    final contentBottom = populatedIndexes.map((index) {
+      final ties = widget.stages[index].ties;
+      return _cardTop(index - stageIndex, ties.length - 1) + _cardHeight;
+    }).reduce(math.max);
+    return math.max(_cardHeight, contentBottom - verticalOffset);
   }
 }
 
@@ -249,15 +340,15 @@ class _BracketGestureGuardState extends State<_BracketGestureGuard> {
 }
 
 class _TournamentMatchCard extends StatelessWidget {
-  static const double _width = 165;
-
   const _TournamentMatchCard({
     required this.tie,
     required this.currentTeamId,
+    required this.width,
   });
 
   final BracketTie tie;
   final int? currentTeamId;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -277,8 +368,11 @@ class _TournamentMatchCard extends StatelessWidget {
             : () => context.push(_matchRoute(detailMatch)),
         child: Container(
           key: ValueKey('bracket-match-card-${tie.id}'),
-          width: _width,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          width: width,
+          padding: EdgeInsets.symmetric(
+            horizontal: width < 155 ? 18 : 24,
+            vertical: 16,
+          ),
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: Theme.of(context).brightness == Brightness.dark
@@ -437,6 +531,7 @@ class _TournamentConnectorPainter extends CustomPainter {
     required this.cardWidth,
     required this.roundWidth,
     required this.baseStep,
+    required this.verticalOffset,
   });
 
   final Color color;
@@ -446,6 +541,7 @@ class _TournamentConnectorPainter extends CustomPainter {
   final double cardWidth;
   final double roundWidth;
   final double baseStep;
+  final double verticalOffset;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -457,8 +553,10 @@ class _TournamentConnectorPainter extends CustomPainter {
     final pairCount = math.min(destinationCount, sourceCount ~/ 2);
 
     for (var pairIndex = 0; pairIndex < pairCount; pairIndex++) {
-      final firstCenter = _centerFor(stageIndex, pairIndex * 2);
-      final secondCenter = _centerFor(stageIndex, pairIndex * 2 + 1);
+      final firstCenter =
+          _centerFor(stageIndex, pairIndex * 2) - verticalOffset;
+      final secondCenter =
+          _centerFor(stageIndex, pairIndex * 2 + 1) - verticalOffset;
       final destinationCenter = (firstCenter + secondCenter) / 2;
 
       canvas
@@ -498,6 +596,7 @@ class _TournamentConnectorPainter extends CustomPainter {
         oldDelegate.stageIndex != stageIndex ||
         oldDelegate.cardWidth != cardWidth ||
         oldDelegate.roundWidth != roundWidth ||
-        oldDelegate.baseStep != baseStep;
+        oldDelegate.baseStep != baseStep ||
+        oldDelegate.verticalOffset != verticalOffset;
   }
 }
