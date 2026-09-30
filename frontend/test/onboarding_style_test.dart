@@ -18,6 +18,28 @@ void main() {
     await fonts.load();
   });
 
+  testWidgets('LINE sign-in button uses the supplied SVG icon',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: OnboardingScreen(
+        loadOptions: () async => const LoginOptions(
+          recommended: [LoginProvider.line, LoginProvider.email],
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final icon = tester.widget<SvgPicture>(find.descendant(
+      of: find.byKey(const ValueKey('line-sign-in-button')),
+      matching: find.byType(SvgPicture),
+    ));
+    expect(icon.width, 24);
+    expect(icon.height, 24);
+    expect((icon.bytesLoader as SvgAssetLoader).assetName,
+        'assets/auth/line.svg');
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('matches final Figma geometry and assets at 393 x 852',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);

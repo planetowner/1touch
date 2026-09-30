@@ -91,6 +91,7 @@ class _PasswordSignInFormState extends State<PasswordSignInForm> {
           label: tr(context, 'Email or username'),
           controller: _identifier,
           fieldKey: const ValueKey('sign-in-username'),
+          contentPadding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
           enabled: _enabled,
           textInputAction: TextInputAction.next,
           autofillHints: const [AutofillHints.username, AutofillHints.email]),
@@ -99,6 +100,7 @@ class _PasswordSignInFormState extends State<PasswordSignInForm> {
           label: tr(context, 'Password'),
           controller: _password,
           fieldKey: const ValueKey('sign-in-password'),
+          contentPadding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
           enabled: _enabled,
           obscureText: true,
           textInputAction: TextInputAction.done,
@@ -114,10 +116,7 @@ class _PasswordSignInFormState extends State<PasswordSignInForm> {
                 child: InkWell(
                   key: const ValueKey('forgot-password-link'),
                   onTap: _enabled
-                      ? () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                              builder: (_) =>
-                                  ForgotPasswordScreen(authService: _service)))
+                      ? () => showForgotPasswordFlow(context, _service)
                       : null,
                   child: Text(tr(context, 'Forgot password?'),
                       style: AuthStyles.label.copyWith(

@@ -109,15 +109,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         Image.asset('assets/auth/google.png', width: 24, height: 24),
       LoginProvider.apple =>
         SvgPicture.asset('assets/auth/apple.svg', width: 23, height: 28),
-      LoginProvider.line => const SizedBox(
-          width: 24,
-          height: 24,
-          child: Center(
-              child: Text('LINE',
-                  style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white)))),
+      LoginProvider.line =>
+        SvgPicture.asset('assets/auth/line.svg', width: 24, height: 24),
       LoginProvider.email => const SizedBox.shrink(),
     };
     return SizedBox(

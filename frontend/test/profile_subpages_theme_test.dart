@@ -14,6 +14,8 @@ import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
+import 'package:onetouch/data/notifications/notification_preferences.dart';
+import 'package:onetouch/data/notifications/notification_preferences_repository.dart';
 import 'package:onetouch/models/team.dart';
 
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
@@ -33,7 +35,9 @@ void main() {
     (
       name: 'notifications',
       title: 'Notifications',
-      page: const NotificationListPage(),
+      page: NotificationListPage(
+        repository: _StaticNotificationPreferencesRepository(),
+      ),
     ),
     (
       name: 'team notifications',
@@ -90,7 +94,9 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: const NotificationListPage(),
+        home: NotificationListPage(
+          repository: _StaticNotificationPreferencesRepository(),
+        ),
       ),
     );
     await tester.pump();
@@ -108,7 +114,9 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: const NotificationListPage(),
+        home: NotificationListPage(
+          repository: _StaticNotificationPreferencesRepository(),
+        ),
       ),
     );
     await tester.pump();
@@ -350,4 +358,44 @@ class _StaticFollowingTeamsRepository implements FollowingTeamsRepository {
     required int favoriteTeamId,
   }) async =>
       _cache.value;
+}
+
+class _StaticNotificationPreferencesRepository
+    implements NotificationPreferencesRepository {
+  @override
+  Future<NotificationPreferenceSnapshot> load() async =>
+      const NotificationPreferenceSnapshot();
+
+  @override
+  Future<void> saveGlobal(GlobalNotificationPreferences preferences) async {}
+
+  @override
+  Future<void> saveTeam(
+    int teamId,
+    TeamNotificationPreferences preferences,
+  ) async {}
+
+  @override
+  Future<void> applyTeamToAll(
+    Iterable<int> teamIds,
+    TeamNotificationPreferences preferences,
+  ) async {}
+
+  @override
+  Future<void> applyNewBetsToAll(
+    Iterable<int> teamIds,
+    bool enabled,
+  ) async {}
+
+  @override
+  Future<void> savePlayer(
+    int playerId,
+    PlayerNotificationPreferences preferences,
+  ) async {}
+
+  @override
+  Future<void> applyPlayerToAll(
+    Iterable<int> playerIds,
+    PlayerNotificationPreferences preferences,
+  ) async {}
 }

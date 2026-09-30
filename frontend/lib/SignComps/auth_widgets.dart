@@ -25,6 +25,7 @@ class AuthInput extends StatelessWidget {
       this.keyboardType,
       this.textInputAction,
       this.autofillHints,
+      this.contentPadding = const EdgeInsets.fromLTRB(16, 8, 8, 8),
       this.onSubmitted});
 
   final String label;
@@ -35,6 +36,7 @@ class AuthInput extends StatelessWidget {
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final Iterable<String>? autofillHints;
+  final EdgeInsetsGeometry contentPadding;
   final ValueChanged<String>? onSubmitted;
 
   @override
@@ -73,7 +75,7 @@ class AuthInput extends StatelessWidget {
             fillColor: Theme.of(context).brightness == Brightness.dark
                 ? AppPalette.white.withValues(alpha: .2)
                 : AppColors.of(context).subtleBackground,
-            contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+            contentPadding: contentPadding,
             border: border,
             enabledBorder: border,
             focusedBorder: border,

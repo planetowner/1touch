@@ -27,6 +27,7 @@ void main() {
       'First',
       'Last',
       'member',
+      'Member',
       'member@example.com',
       'password123'
     ].indexed) {
@@ -37,7 +38,7 @@ void main() {
     await tester.pump();
     final submit = find.byKey(const ValueKey('email-sign-up-button'));
     expect(tester.widget<FilledButton>(submit).onPressed, isNull);
-    await tester.enterText(fields.at(4), 'Password123');
+    await tester.enterText(fields.at(5), 'Password123');
     await tester.pump();
     expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
     expect(tester.takeException(), isNull);
@@ -137,11 +138,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('forgot-password-link')));
     await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('sign-in-username')), findsOneWidget);
     await tester.enterText(
         find.byKey(const ValueKey('reset-email')), ' member@example.com ');
     await tester.tap(find.byKey(const ValueKey('request-reset-code')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('reset-new-password')), findsOneWidget);
+    expect(
+        find.byKey(const ValueKey('email-verification-code')), findsOneWidget);
+    expect(find.byKey(const ValueKey('reset-new-password')), findsNothing);
     expect(session.isAuthenticated, isFalse);
     await tester.tap(find.byKey(const ValueKey('resend-email-code')));
     expect(codeCount, 1);
@@ -153,30 +157,40 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(
         find.byKey(const ValueKey('email-verification-code')), '000000');
+    await tester.tap(find.byKey(const ValueKey('continue-reset-password')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('reset-new-password')), findsOneWidget);
     await tester.enterText(
         find.byKey(const ValueKey('reset-new-password')), 'weak');
+    await tester.tap(find.byKey(const ValueKey('verify-email-button')));
     await tester.pump();
-    expect(
-        tester
-            .widget<FilledButton>(
-                find.byKey(const ValueKey('verify-email-button')))
-            .onPressed,
-        isNull);
+    expect(requests.length, 2);
     await tester.enterText(
         find.byKey(const ValueKey('reset-new-password')), 'NewPassword123');
+    await tester.enterText(find.byKey(const ValueKey('reset-confirm-password')),
+        'OtherPassword123');
+    await tester.tap(find.byKey(const ValueKey('verify-email-button')));
+    await tester.pump();
+    expect(requests.length, 2);
+    await tester.enterText(
+        find.byKey(const ValueKey('reset-confirm-password')), 'NewPassword123');
     await tester.pump();
     await tester
         .ensureVisible(find.byKey(const ValueKey('verify-email-button')));
     await tester.tap(find.byKey(const ValueKey('verify-email-button')));
     await tester.pumpAndSettle();
-    expect(find.text('Invalid, expired, or exhausted verification code (400)'),
-        findsOneWidget);
+    expect(find.text('Invalid verification code. Try again.'), findsOneWidget);
+    expect(
+        find.byKey(const ValueKey('email-verification-code')), findsOneWidget);
     expect(session.isAuthenticated, isFalse);
-    await tester.pump(const Duration(seconds: 5));
-    await tester.pumpAndSettle();
     await tester.enterText(
         find.byKey(const ValueKey('email-verification-code')), '123456');
-    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('continue-reset-password')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byKey(const ValueKey('reset-new-password')), 'NewPassword123');
+    await tester.enterText(
+        find.byKey(const ValueKey('reset-confirm-password')), 'NewPassword123');
     await tester.tap(find.byKey(const ValueKey('verify-email-button')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('sign-in-username')), findsOneWidget);
