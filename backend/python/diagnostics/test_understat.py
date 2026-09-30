@@ -121,10 +121,15 @@ class MappingTests(unittest.TestCase):
         self.assertEqual(pending[1]["candidate_player_ids"], [2, 5])
 
     def test_verified_id_still_requires_observed_team_membership(self):
-        self.source["players"] = [{"id": "9805", "player_name": "Álex Balde", "team_title": "Source Team"}]
-        row = {"team_id": 10, "player_id": 37316480, "display_name": "Alejandro Balde", "full_name": None}
-        self.assertEqual(ids.plan_player_ids(self.source, [row], {"100": 10}, {})[0], {"9805": 37316480})
-        self.assertEqual(ids.plan_player_ids(self.source, [{**row, "team_id": 20}], {"100": 10}, {})[0], {})
+        for external, internal, name, full_name in (
+            ("9805", 37316480, "Álex Balde", "Alejandro Balde"),
+            ("14452", 38209538, "Aaron Mayol", "Aaron Ndive Mayol de la Cueva"),
+        ):
+            with self.subTest(external_player_id=external):
+                self.source["players"] = [{"id": external, "player_name": name, "team_title": "Source Team"}]
+                row = {"team_id": 10, "player_id": internal, "display_name": full_name, "full_name": None}
+                self.assertEqual(ids.plan_player_ids(self.source, [row], {"100": 10}, {})[0], {external: internal})
+                self.assertEqual(ids.plan_player_ids(self.source, [{**row, "team_id": 20}], {"100": 10}, {})[0], {})
 
     def test_transfer_player_uses_both_observed_teams(self):
         self.source["teams"]["200"] = {"title": "Second Team"}

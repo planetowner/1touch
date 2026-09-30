@@ -23,6 +23,11 @@ VERIFIED_UNDERSTAT_PLAYER_ID_OVERRIDES = {
     "9805": 37316480,  # Álex Balde → Alejandro Balde Martínez
     "6942": 219920,  # Arthur → Arthur Henrique Ramos de Oliveira Melo
 
+    # 30821·30838과 DB 19732692·19732674에서 발렌시아 선발 90분 출전을 대조했어요.
+    # 구단도 9월 15일 데뷔를 확인했어요. 약칭을 다른 선수에게 일반화하지 않아요.
+    # https://www.valenciacf.com/aaron-mayol-debuta-oficialmente-con-el-valencia-cf
+    "14452": 38209538,  # Aaron Mayol → Aaron Ndive Mayol de la Cueva
+
     # 2026-09-09: 26/27의 표기 차이 110명을 같은 경기·팀의 DB 명단 290행과 대조했어요.
     # 약칭·철자·이름 순서를 일반화하지 않아요. 근거와 경기 ID는 UNDERSTAT_PLAYER_ID_REVIEW.md에 있어요.
     "8094": 21072805,  # Mathis Cherki → Rayan Cherki
