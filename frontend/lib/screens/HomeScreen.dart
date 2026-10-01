@@ -53,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   double _scrollOffset = 0.0;
 
   HomeData? _homeData;
+  DateTime? _displayedMonth;
   bool _isLoading = true;
   DateTime _calendarMonth =
       DateTime(DateTime.now().year, DateTime.now().month, 1);
@@ -65,7 +66,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   int _homeRequestId = 0;
   int _newsRequestId = 0;
   bool _teamPreferenceRefreshScheduled = false;
+  bool _forceTeamPreferenceRefresh = false;
   Fixture? _liveMatch;
+  bool _restoredHomeNeedsLiveCheck = false;
   Timer? _liveMatchTimer;
   int _liveMatchRequestId = 0;
 
@@ -93,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         .addListener(_onTeamPreferencesChanged);
     currentUserPreferences.followedTeamIds
         .addListener(_onTeamPreferencesChanged);
-    currentUserPreferences.viewedTeamId.addListener(_onTeamPreferencesChanged);
+    currentUserPreferences.viewedTeamId.addListener(_onViewedTeamChanged);
   }
 
   @override
@@ -115,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     } else if (languageChanged || returnedToTab) {
       _loadNews(currentUserPreferences.viewedTeamId.value);
       if (returnedToTab) {
+        unawaited(_loadHome());
         unawaited(_refreshLiveMatch());
       }
     }
@@ -135,6 +139,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       if (_wasTickerEnabled == true) {
         _updateLiveMatchPolling(true);
+        unawaited(_loadHome());
         unawaited(_refreshLiveMatch());
       }
     } else {
@@ -172,12 +177,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _onTeamPreferencesChanged() {
+    _forceTeamPreferenceRefresh = true;
+    _scheduleTeamPreferenceRefresh();
+  }
+
+  void _onViewedTeamChanged() => _scheduleTeamPreferenceRefresh();
+
+  void _scheduleTeamPreferenceRefresh() {
     if (!mounted || _teamPreferenceRefreshScheduled) return;
     _teamPreferenceRefreshScheduled = true;
     scheduleMicrotask(() {
       _teamPreferenceRefreshScheduled = false;
       if (!mounted) return;
-      _loadHome(refreshContent: true);
+      final forceRefresh = _forceTeamPreferenceRefresh;
+      _forceTeamPreferenceRefresh = false;
+      _loadHome(refreshContent: true, forceRefresh: forceRefresh);
     });
   }
 
@@ -192,22 +206,72 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       sessionDataSynchronizer.synchronize(
         trigger: CacheSyncTrigger.userRefresh,
       ),
-      _loadHome(),
+      _loadHome(forceRefresh: true),
       _loadNews(teamId),
     ]);
   }
 
-  Future<void> _loadHome({bool refreshContent = false}) async {
+  Future<void> _loadHome({
+    bool refreshContent = false,
+    bool forceRefresh = false,
+  }) async {
     final requestId = ++_homeRequestId;
     final teamId = currentUserPreferences.viewedTeamId.value;
-    if (_homeData?.favoriteTeam.teamId != teamId) {
+    final month = _calendarMonth;
+    HomeSnapshot? cached = switch (_repository) {
+      HomeSnapshotRepository repository =>
+        repository.snapshotFor(teamId: teamId, month: month),
+      _ => null,
+    };
+    var restoredFromDisk = false;
+    if (cached == null) {
+      final repository = _repository;
+      if (repository is HomeSnapshotRepository) {
+        cached = await repository.restoreFor(teamId: teamId, month: month);
+        if (!mounted || requestId != _homeRequestId) return;
+        restoredFromDisk = cached != null;
+      }
+    }
+    final now = DateTime.now();
+    final nextKickoff = cached?.data.nextMatch?.kickoff;
+    final teamChanged = _homeData?.favoriteTeam.teamId != teamId;
+    final monthChanged = _displayedMonth?.year != month.year ||
+        _displayedMonth?.month != month.month;
+    final needsRefresh = forceRefresh ||
+        cached == null ||
+        AppCachePolicy.shouldRefresh(
+          tier: CacheTier.standard,
+          trigger: CacheSyncTrigger.screenEnter,
+          savedAt: cached.savedAt,
+        ) ||
+        cached.data.liveMatch != null ||
+        (nextKickoff != null && !now.isBefore(nextKickoff));
+    if (teamChanged || monthChanged) {
       // 다른 팀을 조회하는 동안 이전 팀의 카드와 늦게 도착한 뉴스를 보여주지 않아요.
-      ++_newsRequestId;
-      ++_liveMatchRequestId;
+      if (teamChanged) {
+        ++_newsRequestId;
+        ++_liveMatchRequestId;
+      }
       setState(() {
-        _homeData = null;
-        _liveMatch = null;
-        _isLoading = true;
+        // Keep the calendar controls usable while an uncached month loads.
+        if (teamChanged || cached != null) {
+          _homeData = cached?.data;
+          _displayedMonth = cached == null ? null : month;
+        }
+        if (teamChanged) {
+          _liveMatch = restoredFromDisk ? null : cached?.data.liveMatch;
+        }
+        if (teamChanged || cached != null) {
+          _restoredHomeNeedsLiveCheck = restoredFromDisk;
+        }
+        _isLoading = _homeData == null;
+      });
+    } else if (cached != null && !identical(_homeData, cached.data)) {
+      setState(() {
+        _homeData = cached!.data;
+        _displayedMonth = month;
+        _restoredHomeNeedsLiveCheck = restoredFromDisk;
+        _isLoading = false;
       });
     }
 
@@ -215,13 +279,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       unawaited(_loadNews(teamId));
     }
 
+    if (!needsRefresh) {
+      unawaited(_refreshLiveMatch());
+      return;
+    }
+    if (restoredFromDisk) unawaited(_refreshLiveMatch());
+
     try {
       final data = await _repository.load(
         teamId: teamId,
-        start: _calendarMonth,
+        start: month,
         end: DateTime(
-          _calendarMonth.year,
-          _calendarMonth.month + 1,
+          month.year,
+          month.month + 1,
           0,
         ),
       );
@@ -229,6 +299,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       setState(() {
         _homeData = data;
+        _displayedMonth = month;
+        _restoredHomeNeedsLiveCheck = false;
         if (data.liveMatch != null || _fixtureRepository == null) {
           _liveMatch = data.liveMatch;
         }
@@ -238,8 +310,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     } on Object {
       if (!mounted || requestId != _homeRequestId) return;
       setState(() {
-        _homeData = null;
-        _liveMatch = null;
+        if (monthChanged && cached == null) _homeData = null;
+        if (_homeData == null) _liveMatch = null;
         _isLoading = false;
       });
     }
@@ -305,8 +377,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         .removeListener(_onTeamPreferencesChanged);
     currentUserPreferences.followedTeamIds
         .removeListener(_onTeamPreferencesChanged);
-    currentUserPreferences.viewedTeamId
-        .removeListener(_onTeamPreferencesChanged);
+    currentUserPreferences.viewedTeamId.removeListener(_onViewedTeamChanged);
     _scrollController.dispose();
     super.dispose();
   }
@@ -358,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               position: homeData.leaguePosition!,
               rankDelta: homeData.leagueRankDelta,
             ),
-      liveMatch: homeData.liveMatch,
+      liveMatch: _restoredHomeNeedsLiveCheck ? _liveMatch : homeData.liveMatch,
       nextMatch: homeData.nextMatch,
       lastMatch: homeData.lastMatch,
     );

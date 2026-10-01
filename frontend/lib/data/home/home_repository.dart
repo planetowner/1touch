@@ -11,3 +11,23 @@ abstract interface class HomeRepository {
     DateTime? end,
   });
 }
+
+/// An already loaded Home response, including when it is due for refresh.
+class HomeSnapshot {
+  const HomeSnapshot(this.data, this.savedAt);
+
+  final HomeData data;
+  final DateTime savedAt;
+}
+
+/// Optional synchronous read for screens that can display cached Home data.
+abstract interface class HomeSnapshotRepository implements HomeRepository {
+  HomeSnapshot? snapshotFor({required int teamId, required DateTime month});
+
+  Future<HomeSnapshot?> restoreFor({
+    required int teamId,
+    required DateTime month,
+  });
+
+  void clearSnapshots();
+}

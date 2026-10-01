@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/home/api/api_home_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
   test('maps the viewed team position and signed movement from Home', () async {
@@ -146,6 +148,124 @@ void main() {
     await repository.load(end: DateTime(2026, 9, 30));
 
     expect(requestCount, 2);
+  });
+
+  test('keeps successful Home snapshots by team and month', () async {
+    final repository = ApiHomeRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          final teamId = int.parse(request.url.queryParameters['team_id']!);
+          final payload = _homeJson(calendar: const []);
+          payload['favorite_team'] = _teamJson(teamId, 'Team $teamId', 'T');
+          return http.Response(jsonEncode(payload), 200);
+        }),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      viewerCountry: 'US',
+    );
+
+    final september = DateTime(2026, 9);
+    expect(repository.snapshotFor(teamId: 8, month: september), isNull);
+    await repository.load(
+      teamId: 8,
+      start: september,
+      end: DateTime(2026, 9, 30),
+    );
+    expect(
+        repository
+            .snapshotFor(teamId: 8, month: september)
+            ?.data
+            .favoriteTeam
+            .teamId,
+        8);
+    expect(repository.snapshotFor(teamId: 19, month: september), isNull);
+    expect(
+        repository.snapshotFor(teamId: 8, month: DateTime(2026, 10)), isNull);
+
+    repository.clearSnapshots();
+    expect(repository.snapshotFor(teamId: 8, month: september), isNull);
+  });
+
+  test(
+      'restores Home from authenticated local storage after repository restart',
+      () async {
+    final store = MemoryLocalCacheStore();
+    var requests = 0;
+    ApiHomeRepository repository() => ApiHomeRepository(
+          api: ApiClient(
+            client: MockClient((_) async {
+              requests++;
+              return http.Response(
+                  jsonEncode(_homeJson(calendar: const [])), 200);
+            }),
+            baseUri: Uri.parse('https://api.example.test/v1/'),
+            requestHeaders: () => const {},
+          ),
+          viewerCountry: 'US',
+          cacheStore: store,
+        );
+    final month = DateTime(2026, 9);
+    await repository().load(
+      teamId: 8,
+      start: month,
+      end: DateTime(2026, 9, 30),
+    );
+    final restored = await repository().restoreFor(teamId: 8, month: month);
+
+    expect(restored?.data.favoriteTeam.teamId, 8);
+    expect(restored?.savedAt.isAfter(DateTime(2026)), isTrue);
+    expect(requests, 1);
+    expect(await repository().restoreFor(teamId: 8, month: DateTime(2026, 10)),
+        isNull);
+
+    await store.clearScope(LocalCacheScopes.authenticatedUser);
+    expect(await repository().restoreFor(teamId: 8, month: month), isNull);
+  });
+
+  test('drops a malformed stored Home response', () async {
+    final store = MemoryLocalCacheStore();
+    final month = DateTime(2026, 9);
+    final key = LocalCacheKeys.home(8, month, 'US');
+    await store.write(key, {'favorite_team': null},
+        scope: LocalCacheScopes.authenticatedUser);
+    final repository = ApiHomeRepository(
+      api: ApiClient(
+        client: MockClient((_) async => http.Response('{}', 200)),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      viewerCountry: 'US',
+      cacheStore: store,
+    );
+
+    expect(await repository.restoreFor(teamId: 8, month: month), isNull);
+    expect(await store.read(key, scope: LocalCacheScopes.authenticatedUser),
+        isNull);
+  });
+
+  test('does not restore an old session response after snapshots are cleared',
+      () async {
+    final response = Completer<http.Response>();
+    final repository = ApiHomeRepository(
+      api: ApiClient(
+        client: MockClient((_) => response.future),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      viewerCountry: 'US',
+    );
+    final month = DateTime(2026, 9);
+    final request = repository.load(
+      teamId: 8,
+      start: month,
+      end: DateTime(2026, 9, 30),
+    );
+    repository.clearSnapshots();
+    response.complete(
+        http.Response(jsonEncode(_homeJson(calendar: const [])), 200));
+    await request;
+    expect(repository.snapshotFor(teamId: 8, month: month), isNull);
   });
 
   test('surfaces HTTP failures and malformed response roots', () async {

@@ -214,6 +214,129 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('restores a fresh viewed-team snapshot without another Home load',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final repository = _CachedHomeRepository();
+    final originalFavorite = currentUserPreferences.favoriteTeamId.value;
+    final originalFollowing = currentUserPreferences.followedTeamIds.value;
+    addTearDown(() => currentUserPreferences.applyServerSelection(
+          UserTeamPreferences(
+            favoriteTeamId: originalFavorite,
+            followedTeamIds: originalFollowing,
+          ),
+        ));
+    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+      favoriteTeamId: 83,
+      followedTeamIds: [83, 9],
+    ));
+
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: HomeScreen(
+        repository: repository,
+        newsRepository: _RecordingNewsRepository(),
+      ),
+    ));
+    repository.calls.last.completer.complete(_homeData());
+    await tester.pump();
+
+    currentUserPreferences.viewTeam(9);
+    await tester.pump();
+    repository.calls.last.completer.complete(
+      _homeData(favoriteTeam: const Team(teamId: 9, name: 'Beta FC')),
+    );
+    await tester.pump();
+    expect(find.text('Beta FC'), findsOneWidget);
+
+    currentUserPreferences.viewTeam(83);
+    await tester.pump();
+    expect(repository.calls, hasLength(2));
+    expect(find.text('Alpha FC'), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('shows a stale Home snapshot while refreshing and after failure',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final originalFavorite = currentUserPreferences.favoriteTeamId.value;
+    final originalFollowing = currentUserPreferences.followedTeamIds.value;
+    addTearDown(() => currentUserPreferences.applyServerSelection(
+          UserTeamPreferences(
+            favoriteTeamId: originalFavorite,
+            followedTeamIds: originalFollowing,
+          ),
+        ));
+    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+      favoriteTeamId: 83,
+      followedTeamIds: [83, 9],
+    ));
+    final repository = _CachedHomeRepository()
+      ..saveSnapshot(
+        83,
+        DateTime.now(),
+        _homeData(),
+        savedAt: DateTime.now().subtract(const Duration(hours: 2)),
+      );
+
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: HomeScreen(
+        repository: repository,
+        newsRepository: _RecordingNewsRepository(),
+      ),
+    ));
+    expect(find.text('Alpha FC'), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsNothing);
+    expect(repository.calls, hasLength(1));
+
+    repository.calls.single.completer.completeError(StateError('offline'));
+    await tester.pump();
+    expect(find.text('Alpha FC'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('restores saved Home before a slow network refresh',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final originalFavorite = currentUserPreferences.favoriteTeamId.value;
+    final originalFollowing = currentUserPreferences.followedTeamIds.value;
+    addTearDown(() => currentUserPreferences.applyServerSelection(
+          UserTeamPreferences(
+            favoriteTeamId: originalFavorite,
+            followedTeamIds: originalFollowing,
+          ),
+        ));
+    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+      favoriteTeamId: 83,
+      followedTeamIds: [83, 9],
+    ));
+    final repository = _CachedHomeRepository()
+      ..saveDiskSnapshot(
+        83,
+        DateTime.now(),
+        _homeData(),
+        savedAt: DateTime.now().subtract(const Duration(hours: 2)),
+      );
+
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: HomeScreen(
+        repository: repository,
+        newsRepository: _RecordingNewsRepository(),
+      ),
+    ));
+    await tester.pump();
+    expect(find.text('Alpha FC'), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsNothing);
+    expect(repository.calls, hasLength(1));
+
+    repository.calls.single.completer.complete(_homeData());
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('pull refresh reloads Home data and news', (tester) async {
     await _setScreenSize(tester, const Size(393, 852));
     final repository = _ControlledHomeRepository();
@@ -806,6 +929,47 @@ class _ControlledHomeRepository implements HomeRepository {
     final call = _HomeLoadCall(teamId: teamId, start: start, end: end);
     calls.add(call);
     return call.completer.future;
+  }
+}
+
+class _CachedHomeRepository extends _ControlledHomeRepository
+    implements HomeSnapshotRepository {
+  final _snapshots = <(int, int, int), HomeSnapshot>{};
+  final _diskSnapshots = <(int, int, int), HomeSnapshot>{};
+
+  void saveSnapshot(int teamId, DateTime month, HomeData data,
+      {required DateTime savedAt}) {
+    _snapshots[(teamId, month.year, month.month)] = HomeSnapshot(data, savedAt);
+  }
+
+  void saveDiskSnapshot(int teamId, DateTime month, HomeData data,
+      {required DateTime savedAt}) {
+    _diskSnapshots[(teamId, month.year, month.month)] =
+        HomeSnapshot(data, savedAt);
+  }
+
+  @override
+  HomeSnapshot? snapshotFor({required int teamId, required DateTime month}) =>
+      _snapshots[(teamId, month.year, month.month)];
+
+  @override
+  Future<HomeSnapshot?> restoreFor({
+    required int teamId,
+    required DateTime month,
+  }) async =>
+      _diskSnapshots[(teamId, month.year, month.month)];
+
+  @override
+  void clearSnapshots() => _snapshots.clear();
+
+  @override
+  Future<HomeData> load({int? teamId, DateTime? start, DateTime? end}) async {
+    final data = await super.load(teamId: teamId, start: start, end: end);
+    if (teamId != null && start != null) {
+      _snapshots[(teamId, start.year, start.month)] =
+          HomeSnapshot(data, DateTime.now());
+    }
+    return data;
   }
 }
 
