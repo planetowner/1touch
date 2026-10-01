@@ -159,46 +159,27 @@ class _StandingState extends State<Standing> {
     );
   }
 
-  List<Map<String, dynamic>> _rowsForLeague(int currentTeamId) {
-    final allRows = _standings.map((s) {
-      final repositoryTeam = teamRepository.findById(s.teamId);
-      final responseName = s.teamName?.trim();
-      final displayName = teamNameLabel(
-        context,
-        s.teamId,
-        (responseName?.isNotEmpty ?? false ? responseName! : null) ??
-            repositoryTeam?.name ??
-            'Unknown Team',
-      );
-      return {
-        'rank': s.position,
-        'team': displayName,
-        'pts': s.points.toString(),
-        'mp': s.matchesPlayed.toString(),
-        'w': s.won.toString(),
-        'd': s.draw.toString(),
-        'l': s.lost.toString(),
-        'hl': s.teamId == currentTeamId,
-      };
-    }).toList();
-
-    final currentIndex = allRows.indexWhere((r) => r['hl'] == true);
+  List<standing_model.Standing> _rowsForLeague(int currentTeamId) {
+    final currentIndex =
+        _standings.indexWhere((standing) => standing.teamId == currentTeamId);
     const windowSize = 5;
-    if (currentIndex == -1) return allRows.take(windowSize).toList();
+    if (currentIndex == -1) {
+      return _standings.take(windowSize).toList(growable: false);
+    }
 
     // Keep the top five fixed while the selected team is ranked 1st–5th.
     // Below that, center the team between two rows on either side whenever
     // possible, shifting the final window upward near the bottom of the table.
     final maxStart =
-        allRows.length > windowSize ? allRows.length - windowSize : 0;
+        _standings.length > windowSize ? _standings.length - windowSize : 0;
     var start = currentIndex < windowSize ? 0 : currentIndex - 2;
     start = start.clamp(0, maxStart);
-    final end = (start + windowSize).clamp(0, allRows.length);
-    return allRows.sublist(start, end);
+    final end = (start + windowSize).clamp(0, _standings.length);
+    return _standings.sublist(start, end);
   }
 
   Widget _buildStandingCard(int leagueId,
-      {required List<Map<String, dynamic>> rows,
+      {required List<standing_model.Standing> rows,
       required bool isFirst,
       required bool isLast}) {
     final league = competitionRepository.findById(leagueId);
@@ -399,7 +380,7 @@ class _StandingState extends State<Standing> {
     );
   }
 
-  Widget _rowsTable(List<Map<String, dynamic>> data) {
+  Widget _rowsTable(List<standing_model.Standing> data) {
     final colors = Theme.of(context).colorScheme;
     final muted = AppColors.of(context).mutedForeground;
     return Table(
@@ -407,10 +388,19 @@ class _StandingState extends State<Standing> {
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: data.indexed.map((entry) {
         final index = entry.$1;
-        final r = entry.$2;
-        final bool hl = r["hl"] == true;
+        final standing = entry.$2;
+        final hl = standing.teamId == _teamId;
         final Color c = hl ? colors.onSurface : muted;
         final FontWeight w = hl ? FontWeight.w700 : FontWeight.w400;
+        final repositoryTeam = teamRepository.findById(standing.teamId);
+        final responseName = standing.teamName?.trim();
+        final displayName = teamNameLabel(
+          context,
+          standing.teamId,
+          (responseName?.isNotEmpty ?? false ? responseName! : null) ??
+              repositoryTeam?.name ??
+              'Unknown Team',
+        );
         final rowPadding = EdgeInsets.only(
           bottom: index == data.length - 1 ? 0 : 16,
         );
@@ -419,14 +409,14 @@ class _StandingState extends State<Standing> {
           children: [
             Padding(
               padding: rowPadding,
-              child: Text("${r["rank"]}",
+              child: Text('${standing.position}',
                   style: TextStyle(color: c, fontWeight: w)),
             ),
             Padding(
               padding: rowPadding,
               child: Text(
-                r["team"],
-                key: ValueKey('overview-standing-team-${r["rank"]}'),
+                displayName,
+                key: ValueKey('overview-standing-team-${standing.position}'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: c, fontWeight: w),
@@ -436,46 +426,47 @@ class _StandingState extends State<Standing> {
             Padding(
               padding: rowPadding,
               child: Align(
-                  key: ValueKey('overview-standing-points-${r["rank"]}'),
+                  key:
+                      ValueKey('overview-standing-points-${standing.position}'),
                   alignment: Alignment.center,
-                  child:
-                      Text(r["pts"], style: Heading5.style.copyWith(color: c))),
+                  child: Text('${standing.points}',
+                      style: Heading5.style.copyWith(color: c))),
             ),
             const SizedBox.shrink(),
             Padding(
               padding: rowPadding,
               child: Align(
-                  key: ValueKey('overview-standing-mp-${r["rank"]}'),
+                  key: ValueKey('overview-standing-mp-${standing.position}'),
                   alignment: Alignment.center,
-                  child:
-                      Text(r["mp"], style: Heading5.style.copyWith(color: c))),
+                  child: Text('${standing.matchesPlayed}',
+                      style: Heading5.style.copyWith(color: c))),
             ),
             const SizedBox.shrink(),
             Padding(
               padding: rowPadding,
               child: Align(
-                  key: ValueKey('overview-standing-win-${r["rank"]}'),
+                  key: ValueKey('overview-standing-win-${standing.position}'),
                   alignment: Alignment.center,
-                  child:
-                      Text(r["w"], style: Heading5.style.copyWith(color: c))),
+                  child: Text('${standing.won}',
+                      style: Heading5.style.copyWith(color: c))),
             ),
             const SizedBox.shrink(),
             Padding(
               padding: rowPadding,
               child: Align(
-                  key: ValueKey('overview-standing-draw-${r["rank"]}'),
+                  key: ValueKey('overview-standing-draw-${standing.position}'),
                   alignment: Alignment.center,
-                  child:
-                      Text(r["d"], style: Heading5.style.copyWith(color: c))),
+                  child: Text('${standing.draw}',
+                      style: Heading5.style.copyWith(color: c))),
             ),
             const SizedBox.shrink(),
             Padding(
               padding: rowPadding,
               child: Align(
-                  key: ValueKey('overview-standing-loss-${r["rank"]}'),
+                  key: ValueKey('overview-standing-loss-${standing.position}'),
                   alignment: Alignment.center,
-                  child:
-                      Text(r["l"], style: Heading5.style.copyWith(color: c))),
+                  child: Text('${standing.lost}',
+                      style: Heading5.style.copyWith(color: c))),
             ),
           ],
         );
