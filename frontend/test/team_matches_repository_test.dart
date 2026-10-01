@@ -61,15 +61,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(
-      find.byKey(const ValueKey('matches-upcoming-header')),
+      find.byKey(const ValueKey('matches-past-header')),
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('matches-inline-live-header')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('matches-inline-past-header')),
+      find.byKey(const ValueKey('matches-live-header')),
       findsOneWidget,
     );
     expect(find.text(':'), findsNothing);
@@ -105,9 +101,62 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('sorts unsorted API pages by kickoff then fixture ID',
+      (tester) async {
+    final repository = _ControlledFixtureRepository(
+      (_, status, __) async => switch (status) {
+        FixtureStatus.past => [
+            _fixture(12, FixtureStatus.past, kickoff: DateTime(2026, 1, 2)),
+            _fixture(11, FixtureStatus.past, kickoff: DateTime(2026, 1, 2)),
+            _fixture(10, FixtureStatus.past, kickoff: DateTime(2026, 1, 1)),
+          ],
+        FixtureStatus.live => [
+            _fixture(13, FixtureStatus.live, kickoff: DateTime(2026, 1, 3)),
+          ],
+        FixtureStatus.upcoming => [
+            _fixture(22, FixtureStatus.upcoming, kickoff: DateTime(2026, 1, 5)),
+            _fixture(21, FixtureStatus.upcoming, kickoff: DateTime(2026, 1, 4)),
+            _fixture(20, FixtureStatus.upcoming, kickoff: DateTime(2026, 1, 4)),
+          ],
+        _ => const <Fixture>[],
+      },
+    );
+
+    await tester.pumpWidget(_app(repository, teamId: 9));
+    await tester.pumpAndSettle();
+    final controller = tester
+        .widget<CustomScrollView>(find.byKey(const ValueKey('matches-scroll')))
+        .controller!;
+
+    controller.jumpTo(controller.position.minScrollExtent);
+    await tester.pumpAndSettle();
+    for (final (earlier, later) in [(10, 11), (11, 12)]) {
+      expect(
+          tester
+              .getTopLeft(find.byKey(ValueKey('team-fixture-card-$earlier')))
+              .dy,
+          lessThan(tester
+              .getTopLeft(find.byKey(ValueKey('team-fixture-card-$later')))
+              .dy));
+    }
+
+    controller.jumpTo(controller.position.maxScrollExtent);
+    await tester.pumpAndSettle();
+    for (final (earlier, later) in [(20, 21), (21, 22)]) {
+      expect(
+          tester
+              .getTopLeft(find.byKey(ValueKey('team-fixture-card-$earlier')))
+              .dy,
+          lessThan(tester
+              .getTopLeft(find.byKey(ValueKey('team-fixture-card-$later')))
+              .dy));
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   for (final hasLive in [false, true]) {
     testWidgets(
-        'opens at the nearest two upcoming matches, with live=$hasLive and past matches below',
+        'opens near the current match and scrolls from oldest to newest, live=$hasLive',
         (tester) async {
       tester.view.physicalSize = const Size(393, 852);
       tester.view.devicePixelRatio = 1;
@@ -130,120 +179,131 @@ void main() {
 
       final scroll = find.byKey(const ValueKey('matches-scroll'));
       final controller = tester.widget<CustomScrollView>(scroll).controller!;
-      final secondUpcoming =
-          find.byKey(const ValueKey('team-fixture-card-203'));
-      final nextUpcoming = find.byKey(const ValueKey('team-fixture-card-202'));
-      final next =
-          find.byKey(ValueKey('team-fixture-card-${hasLive ? 201 : 200}'));
-      expect(tester.getTopLeft(secondUpcoming).dy,
-          closeTo(tester.getTopLeft(scroll).dy, 0.1));
-      expect(tester.getBottomLeft(secondUpcoming).dy,
-          lessThanOrEqualTo(tester.getTopLeft(nextUpcoming).dy));
-      expect(tester.getBottomLeft(nextUpcoming).dy,
-          lessThan(tester.getTopLeft(next).dy));
-      expect(
-        tester.getTopLeft(_cardSurface(202)).dy -
-            tester.getBottomLeft(_cardSurface(203)).dy,
-        closeTo(16, 0.1),
-      );
-      expect(next.hitTestable(), findsOneWidget);
-      final nextSection = hasLive ? 'live' : 'past';
-      final divider = find.byKey(ValueKey('matches-$nextSection-divider'));
-      final title = find.descendant(
-        of: find.byKey(ValueKey('matches-inline-$nextSection-header')),
-        matching: find.byType(Text),
-      );
-      // Figma처럼 마지막 카드 → divider는 24px을 유지해요.
-      expect(
-          tester.getTopLeft(divider).dy -
-              tester.getBottomLeft(_cardSurface(202)).dy,
-          closeTo(24, 0.1));
-      expect(tester.getTopLeft(title).dy - tester.getBottomLeft(divider).dy,
-          closeTo(16, 0.1));
-      expect(
-          tester.getTopLeft(_cardSurface(hasLive ? 201 : 200)).dy -
-              tester.getBottomLeft(title).dy,
-          closeTo(16, 0.1));
-      expect(tester.getSize(divider), const Size(345, 1));
-      expect(
-          find.byKey(const ValueKey('matches-upcoming-divider')), findsNothing);
-      expect(
-          find.descendant(
-            of: find.byKey(const ValueKey('matches-header-stack')),
-            matching: find.byKey(ValueKey('matches-$nextSection-divider')),
-          ),
-          findsNothing);
+      final entryId = hasLive ? 201 : 202;
+      if (hasLive) {
+        expect(
+            tester
+                .getTopLeft(find.byKey(ValueKey('team-fixture-card-$entryId')))
+                .dy,
+            closeTo(tester.getTopLeft(scroll).dy, 0.1));
+        expect(controller.offset, 0);
+      } else {
+        final boundary = find.byKey(const ValueKey('matches-upcoming-divider'));
+        expect(tester.getCenter(boundary).dy,
+            closeTo(tester.getCenter(scroll).dy, 1));
+        for (final id in [199, 200, 202, 203]) {
+          expect(find.byKey(ValueKey('team-fixture-card-$id')).hitTestable(),
+              findsOneWidget);
+        }
+        expect(controller.offset, 0);
+      }
       expect(
           tester
-              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-200')))
-              .dy,
-          lessThan(tester
-              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-199')))
-              .dy));
-
-      final fade = find.byKey(const ValueKey('matches-top-fade'));
-      expect(tester.widget<ShaderMask>(fade).blendMode, BlendMode.dstIn);
-      expect(tester.getRect(fade), tester.getRect(scroll));
-      expect(tester.getTopLeft(fade).dy,
-          closeTo(tester.getTopLeft(scroll).dy, 0.1));
+              .widget<ShaderMask>(
+                  find.byKey(const ValueKey('matches-top-fade')))
+              .blendMode,
+          BlendMode.dstIn);
       expect(controller.position.minScrollExtent, lessThan(0));
-      expect(controller.offset, 0);
+
+      controller.jumpTo(-300);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('team-fixture-card-200')).hitTestable(),
+          findsOneWidget);
 
       controller.jumpTo(controller.position.minScrollExtent);
       await tester.pumpAndSettle();
-      expect(
-        tester.widget<ShaderMask>(fade).blendMode,
-        BlendMode.dst,
-      );
-      controller.jumpTo(0);
-      await tester.pumpAndSettle();
-      expect(
-        tester.widget<ShaderMask>(fade).blendMode,
-        BlendMode.dstIn,
-      );
-
-      // 카드를 중간까지 스크롤해도 페이드 앞에 밝은 띠가 생기지 않아야 해요.
-      controller.jumpTo(40);
-      await tester.pumpAndSettle();
-      expect(tester.getTopLeft(fade).dy,
-          closeTo(tester.getTopLeft(scroll).dy, 0.1));
-      controller.jumpTo(0);
-      await tester.pumpAndSettle();
-
-      await tester.drag(scroll, const Offset(0, 200));
-      await tester.pumpAndSettle();
-      expect(controller.offset, lessThan(0));
-      expect(find.byKey(const ValueKey('team-fixture-card-204')).hitTestable(),
+      expect(find.byKey(const ValueKey('team-fixture-card-1')).hitTestable(),
           findsOneWidget);
       expect(
           tester
-              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-204')))
-              .dy,
-          lessThan(tester.getTopLeft(secondUpcoming).dy));
+              .widget<ShaderMask>(
+                  find.byKey(const ValueKey('matches-top-fade')))
+              .blendMode,
+          BlendMode.dst);
 
-      controller.jumpTo(0);
+      controller.jumpTo(controller.position.maxScrollExtent);
       await tester.pumpAndSettle();
-      expect(tester.getTopLeft(secondUpcoming).dy,
-          closeTo(tester.getTopLeft(scroll).dy, 0.1));
-
-      await tester.drag(scroll, const Offset(0, -400));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('team-fixture-card-198')).hitTestable(),
+      expect(find.byKey(const ValueKey('team-fixture-card-401')).hitTestable(),
           findsOneWidget);
-      expect(
-          tester
-              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-199')))
-              .dy,
-          lessThan(tester
-              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-198')))
-              .dy));
       expect(tester.takeException(), isNull);
     });
   }
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('centers two past and two upcoming matches at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repository = MockFixtureRepository(fixtures: [
+        for (var index = 1; index <= 10; index++)
+          _fixture(index, FixtureStatus.past,
+              kickoff: DateTime(2026, 1, index)),
+        for (var index = 11; index <= 20; index++)
+          _fixture(index, FixtureStatus.upcoming,
+              kickoff: DateTime(2026, 1, index)),
+      ]);
+
+      await tester.pumpWidget(_app(repository, teamId: 9));
+      await tester.pumpAndSettle();
+
+      final scroll = find.byKey(const ValueKey('matches-scroll'));
+      final boundary = find.byKey(const ValueKey('matches-upcoming-divider'));
+      expect(tester.getCenter(boundary).dy,
+          closeTo(tester.getCenter(scroll).dy, 1));
+      for (final id in [9, 10, 11, 12]) {
+        expect(find.byKey(ValueKey('team-fixture-card-$id')).hitTestable(),
+            findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('no-live boundary is centered on the first loaded frame',
+      (tester) async {
+    final pending = {
+      for (final status in [
+        FixtureStatus.past,
+        FixtureStatus.live,
+        FixtureStatus.upcoming,
+      ])
+        status: Completer<List<Fixture>>(),
+    };
+    final repository = _ControlledFixtureRepository(
+      (_, status, __) => pending[status]!.future,
+    );
+
+    await tester.pumpWidget(_app(repository, teamId: 9));
+    pending[FixtureStatus.past]!.complete([
+      for (var index = 1; index <= 10; index++)
+        _fixture(index, FixtureStatus.past, kickoff: DateTime(2026, 1, index)),
+    ]);
+    pending[FixtureStatus.live]!.complete(const []);
+    pending[FixtureStatus.upcoming]!.complete([
+      for (var index = 11; index <= 20; index++)
+        _fixture(index, FixtureStatus.upcoming,
+            kickoff: DateTime(2026, 1, index)),
+    ]);
+    await tester.pump();
+
+    final scroll = find.byKey(const ValueKey('matches-scroll'));
+    final boundary = find.byKey(const ValueKey('matches-upcoming-divider'));
+    expect(scroll, findsOneWidget);
+    expect(
+        tester.getCenter(boundary).dy, closeTo(tester.getCenter(scroll).dy, 1));
+    expect(tester.widget<CustomScrollView>(scroll).controller!.offset, 0);
+    for (final id in [9, 10, 11, 12]) {
+      expect(find.byKey(ValueKey('team-fixture-card-$id')).hitTestable(),
+          findsOneWidget);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   for (final upcomingCount in [0, 1]) {
     testWidgets(
-        'opens with $upcomingCount upcoming matches without fading a sole match',
+        'opens with $upcomingCount upcoming matches near the latest available match',
         (tester) async {
       final repository = MockFixtureRepository(fixtures: [
         _fixture(1, FixtureStatus.past),
@@ -261,16 +321,41 @@ void main() {
       final first = find
           .byKey(ValueKey('team-fixture-card-${upcomingCount == 1 ? 2 : 1}'));
       expect(first.hitTestable(), findsOneWidget);
-      expect(
-          tester.getTopLeft(first).dy,
-          closeTo(
-              tester
-                  .getTopLeft(find.byKey(const ValueKey('matches-scroll')))
-                  .dy,
-              0.1));
+      if (upcomingCount == 0) {
+        expect(
+            tester.getTopLeft(first).dy,
+            closeTo(
+                tester
+                    .getTopLeft(find.byKey(const ValueKey('matches-scroll')))
+                    .dy,
+                0.1));
+      }
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('past-only schedule opens at the newest past match',
+      (tester) async {
+    final repository = MockFixtureRepository(fixtures: [
+      for (var index = 1; index <= 8; index++)
+        _fixture(index, FixtureStatus.past, kickoff: DateTime(2026, 1, index)),
+    ]);
+    await tester.pumpWidget(_app(repository, teamId: 9));
+    await tester.pumpAndSettle();
+
+    final scroll = find.byKey(const ValueKey('matches-scroll'));
+    final controller = tester.widget<CustomScrollView>(scroll).controller!;
+    expect(
+        tester.getTopLeft(find.byKey(const ValueKey('team-fixture-card-8'))).dy,
+        closeTo(tester.getTopLeft(scroll).dy, 0.1));
+    expect(controller.position.minScrollExtent, lessThan(0));
+
+    controller.jumpTo(controller.position.minScrollExtent);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('team-fixture-card-1')).hitTestable(),
+        findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   for (final locale in [const Locale('ko'), const Locale('en')]) {
     for (final width in [320.0, 393.0]) {
@@ -449,7 +534,7 @@ void main() {
     await tester.pump();
 
     expect(
-      find.byKey(const ValueKey('matches-upcoming-header')),
+      find.byKey(const ValueKey('matches-past-header')),
       findsOneWidget,
     );
     expect(
@@ -457,46 +542,46 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('matches-past-header')),
+      find.byKey(const ValueKey('matches-upcoming-header')),
       findsOneWidget,
     );
-    final liveTransition = find.byKey(
-      const ValueKey('matches-live-header-transition'),
+    final upcomingTransition = find.byKey(
+      const ValueKey('matches-upcoming-header-transition'),
     );
-    Finder liveFade() => find
+    Finder upcomingFade() => find
         .ancestor(
-          of: find.byKey(const ValueKey('matches-live-header')),
+          of: find.byKey(const ValueKey('matches-upcoming-header')),
           matching: find.byType(FadeTransition),
         )
         .first;
-    expect(liveTransition, findsOneWidget);
+    expect(upcomingTransition, findsOneWidget);
     expect(
-      tester.widget<FadeTransition>(liveFade()).opacity.value,
+      tester.widget<FadeTransition>(upcomingFade()).opacity.value,
       lessThan(1),
     );
     expect(
-      tester.widget<FadeTransition>(liveFade()).opacity.value,
+      tester.widget<FadeTransition>(upcomingFade()).opacity.value,
       greaterThanOrEqualTo(.72),
     );
 
     await tester.pump(const Duration(milliseconds: 220));
-    expect(tester.widget<FadeTransition>(liveFade()).opacity.value, 1);
+    expect(tester.widget<FadeTransition>(upcomingFade()).opacity.value, 1);
 
     controller.jumpTo(0);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(
-      find.byKey(const ValueKey('matches-live-header')),
+      find.byKey(const ValueKey('matches-upcoming-header')),
       findsOneWidget,
     );
     expect(
-      tester.widget<FadeTransition>(liveFade()).opacity.value,
+      tester.widget<FadeTransition>(upcomingFade()).opacity.value,
       inExclusiveRange(.72, 1),
     );
     await tester.pump(const Duration(milliseconds: 140));
     await tester.pumpAndSettle();
     expect(
-      find.byKey(const ValueKey('matches-live-header')),
+      find.byKey(const ValueKey('matches-upcoming-header')),
       findsNothing,
     );
 
@@ -515,7 +600,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('reports a downward pull after reaching the first upcoming match',
+  testWidgets('reports a downward pull after reaching the oldest match',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1;
@@ -546,7 +631,7 @@ void main() {
     final scrollFinder = find.byKey(const ValueKey('matches-scroll'));
     final controller =
         tester.widget<CustomScrollView>(scrollFinder).controller!;
-    expect(controller.position.minScrollExtent, lessThan(0));
+    expect(controller.position.minScrollExtent, 0);
 
     controller.jumpTo(controller.position.minScrollExtent);
     await tester.pump();
@@ -557,13 +642,6 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 }
-
-Finder _cardSurface(int fixtureId) => find
-    .descendant(
-      of: find.byKey(ValueKey('team-fixture-card-$fixtureId')),
-      matching: find.byType(DecoratedBox),
-    )
-    .first;
 
 Widget _app(MockFixtureRepository repository,
     {required int teamId,
