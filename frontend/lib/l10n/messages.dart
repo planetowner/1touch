@@ -1251,6 +1251,7 @@ const appMessages = <String, MessageTranslations>{
   "Succ. Rate (Take-Ons)": (ko: "드리블 성공률", ja: "ドリブル成功率", zh: "过人成功率"),
   "success rate": (ko: "성공률", ja: "成功率", zh: "成功率"),
   "per 90": (ko: "90분당", ja: "90分あたり", zh: "每90分钟"),
+  "Season total": (ko: "시즌 합계", ja: "シーズン合計", zh: "赛季总计"),
   "Match analysis could not be loaded.": (
     ko: "경기 분석을 불러오지 못했어요.",
     ja: "試合分析を読み込めませんでした。",
@@ -2059,11 +2060,6 @@ const appMessages = <String, MessageTranslations>{
     ko: "{total}경기 중 {observed}경기에서 제공",
     ja: "{total}試合中{observed}試合で提供",
     zh: "{total}场比赛中有{observed}场数据"
-  ),
-  "Based on {observed}/{total} matches": (
-    ko: "{total}경기 중 {observed}경기 기준",
-    ja: "{total}試合中{observed}試合に基づく",
-    zh: "基于{total}场中的{observed}场"
   ),
   "{count} Followers": (
     ko: "팔로워 {count}명",

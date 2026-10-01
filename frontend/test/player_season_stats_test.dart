@@ -12,7 +12,7 @@ import 'package:onetouch/screens/player_comparison_screen.dart';
 import 'support/app_catalog.dart';
 import 'support/player_detail_fixture.dart';
 
-class _SampledStatsRepository extends FakePlayerDetailRepository {
+class _SeasonStatsRepository extends FakePlayerDetailRepository {
   PlayerDetail detail(int playerId, {int? seasonId}) {
     final json = playerDetailJson(playerId: playerId, seasonId: seasonId);
     final analysis = json['analysis'] as Map<String, dynamic>;
@@ -37,9 +37,9 @@ class _SampledStatsRepository extends FakePlayerDetailRepository {
         'code': 'key_passes',
         'label': 'Key passes',
         'kind': 'count',
-        'value': first ? null : 17,
-        'per90': first ? 15 * 90 / 354 : 17 * 90 / 529,
-        'observed_matches': first ? 5 : 7,
+        'value': first ? 15 : 17,
+        'per90': first ? 15 * 90 / 501 : 17 * 90 / 529,
+        'observed_matches': 7,
         'total_matches': 7,
       },
       {
@@ -57,16 +57,36 @@ class _SampledStatsRepository extends FakePlayerDetailRepository {
         'code': 'interceptions',
         'label': 'Interceptions',
         'kind': 'count',
-        'value': first ? null : 2,
+        'value': first ? null : 0,
         'per90': first ? null : 0,
         'observed_matches': first ? 0 : 7,
+        'total_matches': 7,
+      },
+      {
+        ...seed,
+        'code': 'goals',
+        'label': 'Goals',
+        'kind': 'count',
+        'value': first ? 1 : 3,
+        'per90': first ? 90 / 501 : 3 * 90 / 529,
+        'observed_matches': 7,
+        'total_matches': 7,
+      },
+      {
+        ...seed,
+        'code': 'assists',
+        'label': 'Assists',
+        'kind': 'count',
+        'value': first ? 1 : 2,
+        'per90': first ? 90 / 501 : 2 * 90 / 529,
+        'observed_matches': 7,
         'total_matches': 7,
       },
     ];
     analysis['categories'] = [
       {'code': 'build_up', 'label': 'Build Up', 'metrics': rows}
     ];
-    analysis['top_stats'] = rows.take(3).toList();
+    analysis['top_stats'] = [rows[4], rows[5], rows[1]];
     return playerDetailFromJson(json);
   }
 
@@ -81,24 +101,28 @@ void main() {
   test('season presentation uses successful counts, rates, zero and absence',
       () {
     final rows =
-        _SampledStatsRepository().detail(1).analysis!.categories[0].metrics;
+        _SeasonStatsRepository().detail(1).analysis!.categories[0].metrics;
     final passes = playerSeasonStat(rows[0]);
     expect(passes.label, 'Accurate passes');
     expect(passes.text, '70.24');
     expect(passes.unit, 'per 90');
-    expect(playerSeasonStat(rows[1]).text, '3.81');
+    expect(playerSeasonStat(rows[1]).text, '2.69');
     expect(playerSeasonStat(rows[2]).text, '75%');
     expect(playerSeasonStat(rows[3]).text, '—');
+    for (final row in rows.skip(4)) {
+      expect(playerSeasonStat(row).text, '1');
+      expect(playerSeasonStat(row).unit, 'Season total');
+    }
     expect(playerSeasonStat(null).value, isNull);
     final zero =
-        _SampledStatsRepository().detail(3).analysis!.categories[0].metrics[3];
+        _SeasonStatsRepository().detail(3).analysis!.categories[0].metrics[3];
     expect(playerSeasonStat(zero).text, '0');
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     for (final locale in [const Locale('en'), const Locale('ko')]) {
       testWidgets(
-          'comparison shows sampled per90 and percentages at $size $locale',
+          'comparison shows season totals, per90 and no coverage at $size $locale',
           (tester) async {
         await tester.binding.setSurfaceSize(size);
         addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -108,7 +132,7 @@ void main() {
           localizationsDelegates: appLocalizationDelegates,
           theme: locale.languageCode == 'en' ? darktheme : whitetheme,
           home: PlayerComparisonScreen(
-              initialPlayerId: '1', repository: _SampledStatsRepository()),
+              initialPlayerId: '1', repository: _SeasonStatsRepository()),
         ));
         await tester.pumpAndSettle();
         await tester.tap(
@@ -126,7 +150,7 @@ void main() {
         for (final text in [
           '70.24',
           '37.43',
-          '3.81',
+          '2.69',
           '2.89',
           '75%',
           '50%',
@@ -135,17 +159,20 @@ void main() {
         ]) {
           expect(value(text), findsOneWidget);
         }
+        expect(value('1'), findsNWidgets(2));
+        expect(value('3'), findsOneWidget);
+        expect(value('2'), findsOneWidget);
         expect(value('391'), findsNothing);
         expect(value('Passes completed / attempted'), findsNothing);
         expect(value(locale.languageCode == 'ko' ? '패스 성공' : 'Accurate Passes'),
             findsOneWidget);
         expect(value(translateMessage(locale, 'per 90')), findsNWidgets(3));
         expect(
-            value(translateMessage(
-                locale,
-                'Based on {observed}/{total} matches',
-                {'observed': 5, 'total': 7})),
-            findsOneWidget);
+            value(translateMessage(locale, 'Season total')), findsNWidgets(2));
+        expect(
+            find.textContaining(
+                RegExp(r'Based on \d+/\d+ matches|경기 중 \d+경기 기준')),
+            findsNothing);
 
         final firstPass =
             find.byKey(const ValueKey('comparison-stat-first-key_passes'));
@@ -153,7 +180,15 @@ void main() {
             find.byKey(const ValueKey('comparison-stat-second-key_passes'));
         expect(
             tester.getSize(firstPass).width / tester.getSize(secondPass).width,
-            closeTo((15 / 354) / (17 / 529), 0.001));
+            closeTo((15 / 501) / (17 / 529), 0.001));
+        final firstGoals =
+            find.byKey(const ValueKey('comparison-stat-first-goals'));
+        final secondGoals =
+            find.byKey(const ValueKey('comparison-stat-second-goals'));
+        expect(
+            tester.getSize(firstGoals).width /
+                tester.getSize(secondGoals).width,
+            closeTo(1 / 3, 0.001));
         final firstMissing =
             find.byKey(const ValueKey('comparison-stat-first-interceptions'));
         final secondMissing =
@@ -173,11 +208,11 @@ void main() {
       });
 
       testWidgets(
-          'analysis shares per90 labels and sample coverage at $size $locale',
+          'analysis shares season totals, per90 and no coverage at $size $locale',
           (tester) async {
         await tester.binding.setSurfaceSize(size);
         addTearDown(() => tester.binding.setSurfaceSize(null));
-        final detail = _SampledStatsRepository().detail(1);
+        final detail = _SeasonStatsRepository().detail(1);
         await tester.pumpWidget(MaterialApp(
           locale: locale,
           supportedLocales: appSupportedLocales,
@@ -191,20 +226,24 @@ void main() {
         ));
         await tester.pumpAndSettle();
         final card = find.byKey(const ValueKey('player-top-stats-card'));
-        for (final text in ['70.24', '3.81', '75%']) {
-          expect(find.descendant(of: card, matching: find.text(text)),
-              findsOneWidget);
-        }
-        expect(
-            find.text(
-                locale.languageCode == 'ko' ? '패스 성공' : 'Accurate Passes'),
+        expect(find.descendant(of: card, matching: find.text('1')),
+            findsNWidgets(2));
+        expect(find.descendant(of: card, matching: find.text('2.69')),
             findsOneWidget);
         expect(
-            find.text(translateMessage(
-                locale,
-                'Based on {observed}/{total} matches',
-                {'observed': 5, 'total': 7})),
+            find.descendant(
+                of: card,
+                matching: find.text(translateMessage(locale, 'per 90'))),
             findsOneWidget);
+        expect(
+            find.descendant(
+                of: card,
+                matching: find.text(translateMessage(locale, 'Season total'))),
+            findsNWidgets(2));
+        expect(
+            find.textContaining(
+                RegExp(r'Based on \d+/\d+ matches|경기 중 \d+경기 기준')),
+            findsNothing);
         expect(tester.takeException(), isNull);
       });
     }
