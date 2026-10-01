@@ -14,6 +14,49 @@ import 'support/stub_community_repository.dart';
 
 void main() {
   setUpAppCatalog(favoriteTeamId: 83);
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('comment composer stays above the keyboard at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repository = _ScriptedPostCommentRepository([
+        () => Future.value(const <PostComment>[]),
+      ]);
+      Widget app(double keyboardInset) => MaterialApp(
+            home: MediaQuery(
+              data: MediaQueryData(
+                size: size,
+                viewInsets: EdgeInsets.only(bottom: keyboardInset),
+              ),
+              child: PostDetailScreen(
+                post: mockPosts.first,
+                postRepository: MockPostRepository(),
+                communityRepository: const StubCommunityRepository(),
+                postCommentRepository: repository,
+              ),
+            ),
+          );
+
+      await tester.pumpWidget(app(0));
+      await tester.pumpAndSettle();
+      final input = find.byKey(const ValueKey('community-comment-input'));
+      final send = find.byKey(const ValueKey('community-comment-send'));
+      await tester.enterText(input, 'Comment preview');
+      await tester.pumpWidget(app(280));
+      await tester.pumpAndSettle();
+
+      final keyboardTop = size.height - 280;
+      expect(tester.getRect(input).bottom, lessThanOrEqualTo(keyboardTop));
+      expect(tester.getRect(send).bottom, lessThanOrEqualTo(keyboardTop));
+      expect(
+          tester.widget<TextField>(input).controller?.text, 'Comment preview');
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('loads and renders real comments and reply indentation',
       (tester) async {
     _setScreenSize(tester);

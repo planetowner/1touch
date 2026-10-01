@@ -489,14 +489,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           ],
         ),
         bottomNavigationBar: canParticipate
-            ? PostDetailReplyBar(
-                replyTarget: _replyTarget,
-                editingTarget: _editingComment,
-                onCancelReply: () => setState(() => _replyTarget = null),
-                onCancelEdit: () => setState(() => _editingComment = null),
-                onSubmit: _editingComment == null
-                    ? _submitComment
-                    : _submitEditedComment,
+            ? AnimatedPadding(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.viewInsetsOf(context).bottom,
+                ),
+                child: PostDetailReplyBar(
+                  replyTarget: _replyTarget,
+                  editingTarget: _editingComment,
+                  onCancelReply: () => setState(() => _replyTarget = null),
+                  onCancelEdit: () => setState(() => _editingComment = null),
+                  onSubmit: _editingComment == null
+                      ? _submitComment
+                      : _submitEditedComment,
+                ),
               )
             : const CommunityReadOnlyNotice(),
       ),
