@@ -5,8 +5,86 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/community/api/api_community_repository.dart';
+import 'package:onetouch/models/community_ban.dart';
 
 void main() {
+  test('loads each suspension reason for the signed-in user with UTC end time',
+      () async {
+    for (final reason in CommunityBanReason.values) {
+      final repository = ApiCommunityRepository(
+          api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.method, 'GET');
+          expect(request.url.path, '/v1/community/suspension');
+          expect(request.url.queryParameters, isEmpty);
+          expect(request.headers['Authorization'], 'Bearer session-token');
+          return http.Response(
+              jsonEncode({
+                'suspension': {
+                  'reason': reason.code,
+                  'ends_at': '2026-10-01T09:00:00+09:00',
+                }
+              }),
+              200);
+        }),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => {'Authorization': 'Bearer session-token'},
+      ));
+      final ban = await repository.loadBanStatus();
+      expect(ban!.reason, reason);
+      expect(ban.endsAt, DateTime.utc(2026, 10, 1));
+    }
+  });
+
+  test('distinguishes no suspension from a legacy suspension without a reason',
+      () async {
+    final responses = [
+      {'suspension': null},
+      {
+        'suspension': {'reason': null, 'ends_at': '2026-10-01T00:00:00Z'}
+      },
+    ];
+    final repository = ApiCommunityRepository(
+        api: ApiClient(
+      client: MockClient(
+          (_) async => http.Response(jsonEncode(responses.removeAt(0)), 200)),
+      baseUri: Uri.parse('https://api.example.test/v1/'),
+      requestHeaders: () => {},
+    ));
+    expect(await repository.loadBanStatus(), isNull);
+    final legacy = await repository.loadBanStatus();
+    expect(legacy!.reason, isNull);
+    expect(legacy.endsAt, DateTime.utc(2026, 10, 1));
+  });
+
+  test(
+      'rejects failed or malformed suspension responses instead of granting access',
+      () async {
+    final responses = [
+      http.Response('{}', 403),
+      http.Response('{}', 200),
+      for (final suspension in [
+        [],
+        {'ends_at': '2026-10-01T00:00:00Z'},
+        {'reason': 'unknown', 'ends_at': '2026-10-01T00:00:00Z'},
+        {'reason': 'spam', 'ends_at': '2026-10-01T00:00:00'},
+        {'reason': 'spam', 'ends_at': 'invalid'},
+        {'reason': 'spam', 'ends_at': null},
+      ])
+        http.Response(jsonEncode({'suspension': suspension}), 200),
+    ];
+    final repository = ApiCommunityRepository(
+        api: ApiClient(
+      client: MockClient((_) async => responses.removeAt(0)),
+      baseUri: Uri.parse('https://api.example.test/v1/'),
+      requestHeaders: () => {},
+    ));
+    while (responses.isNotEmpty) {
+      await expectLater(repository.loadBanStatus(),
+          throwsA(anyOf(isA<http.ClientException>(), isA<FormatException>())));
+    }
+  });
+
   test('loads a Bearer-authenticated follower count for the requested team',
       () async {
     final repository = ApiCommunityRepository(

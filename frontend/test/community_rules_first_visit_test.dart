@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
-import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/community/community_rules_visit_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
@@ -34,6 +33,29 @@ void main() {
         isFalse);
     userId = null;
     expect(await visits.shouldShow(), isFalse);
+  });
+
+  test(
+      'return rules are recorded per account and suspension, independently of first visit',
+      () async {
+    int userId = 1;
+    final visits =
+        LocalCommunityRulesVisitRepository(loadUserId: () async => userId);
+    final firstBan = DateTime.utc(2026, 10, 1);
+    final nextBan = firstBan.add(const Duration(days: 1));
+    await visits.acknowledge();
+    expect(await visits.shouldShow(suspensionEndsAt: firstBan), isTrue);
+    await visits.acknowledge(suspensionEndsAt: firstBan);
+    expect(
+        await visits.shouldShow(suspensionEndsAt: firstBan.toLocal()), isFalse);
+    expect(await visits.shouldShow(suspensionEndsAt: nextBan), isTrue);
+    userId = 2;
+    expect(await visits.shouldShow(suspensionEndsAt: firstBan), isTrue);
+    userId = 1;
+    expect(
+        await LocalCommunityRulesVisitRepository(loadUserId: () async => userId)
+            .shouldShow(suspensionEndsAt: firstBan),
+        isFalse);
   });
 
   testWidgets(
@@ -137,7 +159,7 @@ void main() {
   });
 }
 
-class _FailingRulesRepository implements CommunityRepository {
+class _FailingRulesRepository extends StubCommunityRepository {
   @override
   Future<int> loadFollowerCount({required int teamId}) async => 0;
 

@@ -19,6 +19,7 @@ import 'package:onetouch/data/posts/post_repository_provider.dart'
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/community_ban.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/features/community/community_header_slivers.dart';
@@ -72,7 +73,7 @@ class _CommunityState extends State<Community>
   bool _isActiveTab = true;
   bool _checkedRulesThisVisit = false;
   int _rulesVisitGeneration = 0;
-  DateTime? _completedBanEndsAt;
+  CommunityBanStatus? _banStatus;
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
@@ -118,31 +119,25 @@ class _CommunityState extends State<Community>
     _checkedRulesThisVisit = true;
     final generation = _rulesVisitGeneration;
     try {
-      final ban = widget.banStatus;
-      if (ban != null && _completedBanEndsAt != ban.endsAt) {
-        final banAcknowledged = await showCommunityBanDialog(
-          context,
-          ban: ban,
-        );
-        if (banAcknowledged != true ||
+      final ban =
+          widget.banStatus ?? await _communityRepository.loadBanStatus();
+      if (!mounted || !_isActiveTab || generation != _rulesVisitGeneration) {
+        return;
+      }
+      setState(() => _banStatus = ban);
+      if (ban != null && ban.endsAt.isAfter(DateTime.now())) {
+        final expired = await showCommunityBanDialog(context, ban: ban);
+        if (expired != true ||
             !mounted ||
             !_isActiveTab ||
             generation != _rulesVisitGeneration) {
           return;
         }
-        final rulesAcknowledged = await showGroundRulesModal(
-          context,
-          teamId: widget.teamId,
-          repository: _communityRepository,
-          readingDuration: const Duration(seconds: 10),
-        );
-        if (rulesAcknowledged == true) {
-          _completedBanEndsAt = ban.endsAt;
-          await _rulesVisitRepository.acknowledge();
-        }
-        return;
+        // 팝업을 보는 동안 제한이 끝나면 작성 버튼도 다시 보여줘요.
+        setState(() {});
       }
-      if (!await _rulesVisitRepository.shouldShow() ||
+      if (!await _rulesVisitRepository.shouldShow(
+              suspensionEndsAt: ban?.endsAt) ||
           !mounted ||
           !_isActiveTab ||
           generation != _rulesVisitGeneration) {
@@ -152,10 +147,21 @@ class _CommunityState extends State<Community>
         context,
         teamId: widget.teamId,
         repository: _communityRepository,
+        readingDuration:
+            ban == null ? Duration.zero : const Duration(seconds: 10),
       );
-      if (acknowledged == true) await _rulesVisitRepository.acknowledge();
+      if (acknowledged == true) {
+        await _rulesVisitRepository.acknowledge(suspensionEndsAt: ban?.endsAt);
+        if (ban != null &&
+            mounted &&
+            _isActiveTab &&
+            generation == _rulesVisitGeneration) {
+          await Future.wait([_loadFollowerCount(), _loadPosts()]);
+        }
+      }
     } on Object {
-      // Local storage errors must not prevent the community from opening.
+      // 조회가 실패하면 새로고침이나 다음 방문에서 다시 확인해요. 권한은 서버가 검사해요.
+      _checkedRulesThisVisit = false;
     }
   }
 
@@ -200,11 +206,15 @@ class _CommunityState extends State<Community>
     _scrollController.jumpTo(_scrollController.position.minScrollExtent);
   }
 
-  Future<void> _refreshCommunity() => Future.wait<void>([
-        _loadLiveStatus(),
-        _loadFollowerCount(),
-        _loadPosts(preserveCurrentPosts: true),
-      ]);
+  Future<void> _refreshCommunity() async {
+    _checkedRulesThisVisit = false;
+    await Future.wait<void>([
+      _loadLiveStatus(),
+      _loadFollowerCount(),
+      _loadPosts(preserveCurrentPosts: true),
+      _showFirstVisitRules(),
+    ]);
+  }
 
   @override
   void didUpdateWidget(Community oldWidget) {
@@ -397,7 +407,8 @@ class _CommunityState extends State<Community>
         backgroundColor: pageBackground,
         bottomNavigationBar:
             canParticipate ? null : const CommunityReadOnlyNotice(),
-        floatingActionButton: canParticipate
+        floatingActionButton: canParticipate &&
+                !(_banStatus?.endsAt.isAfter(DateTime.now()) ?? false)
             ? FloatingActionButton(
                 backgroundColor: Colors.white,
                 elevation: 0,
@@ -461,7 +472,7 @@ class _CommunityState extends State<Community>
                         selectedSort: _selectedPostSort,
                         isLoading: _isLoadingPostsByTab[index],
                         loadError: _postLoadErrorsByTab[index],
-                        onRetry: _loadPosts,
+                        onRetry: _refreshCommunity,
                         onPostDetailClosed: () => _loadPosts(
                           preserveCurrentPosts: true,
                         ),

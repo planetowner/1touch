@@ -1471,21 +1471,88 @@ const appMessages = <String, MessageTranslations>{
     zh: "欢迎一起加油、讨论、开玩笑。请彼此体谅，一起营造友好的社区氛围。",
   ),
   "I UNDERSTAND!": (ko: "이해했습니다!", ja: "理解しました！", zh: "我明白了！"),
-  "Sorry, {username}. Your community access is suspended for": (
-    ko: "죄송합니다, {username}님은 커뮤니티를",
-    ja: "申し訳ありません、{username}さんはコミュニティを以下の期間利用できません",
-    zh: "抱歉，{username}，你在以下时间内无法使用社区",
+  "TEMPORARILY SUSPENDED": (
+    ko: "지금은 커뮤니티를 이용할 수 없어요",
+    ja: "現在、コミュニティを利用できません",
+    zh: "目前无法使用社区",
   ),
-  "due to [ban reason].": (
-    ko: "동안 [밴 사유]로 인해 이용하실 수 없습니다.",
-    ja: "理由は［確認中］です。",
-    zh: "原因是［待确认］。",
+  "Your access to the community has been restricted for {reason}.": (
+    ko: "{reason} 커뮤니티 이용이 제한됐어요.",
+    ja: "{reason}ため、コミュニティの利用が制限されています。",
+    zh: "因{reason}，你的社区使用权限已被限制。",
   ),
-  "Please try again after the suspension ends.": (
-    ko: "이용금지 시간이 지난 후 다시 시도 부탁드립니다.",
-    ja: "利用停止期間の終了後にもう一度お試しください。",
-    zh: "请在限制结束后重试。",
+  "Your access to the community has been restricted.": (
+    ko: "커뮤니티 이용이 제한됐어요.",
+    ja: "コミュニティの利用が制限されています。",
+    zh: "你的社区使用权限已被限制。",
   ),
+  // 사유를 완성된 문장으로 바꾸면 위 문장 틀과 자연스럽게 이어지지 않아요.
+  "harassing or insulting other users": (
+    ko: "다른 이용자를 괴롭히거나 비방해",
+    ja: "他のユーザーに嫌がらせをしたり、誹謗中傷した",
+    zh: "骚扰或辱骂其他用户",
+  ),
+  "using hate speech": (
+    ko: "혐오 표현을 사용해",
+    ja: "ヘイトスピーチを使用した",
+    zh: "使用仇恨言论",
+  ),
+  "using violent or threatening language": (
+    ko: "폭력적인 표현을 사용하거나 위협해",
+    ja: "暴力的な表現を使用したり、脅迫した",
+    zh: "使用暴力或威胁性言论",
+  ),
+  "repeatedly posting spam": (
+    ko: "스팸이나 도배를 반복해",
+    ja: "スパムや連投を繰り返した",
+    zh: "反复发布垃圾信息或刷屏",
+  ),
+  "disrupting community activity": (
+    ko: "커뮤니티 활동을 방해해",
+    ja: "コミュニティ活動を妨害した",
+    zh: "干扰社区正常活动",
+  ),
+  "sharing someone else’s personal information": (
+    ko: "다른 사람의 개인정보를 공개해",
+    ja: "他人の個人情報を公開した",
+    zh: "公开他人的个人信息",
+  ),
+  "posting inappropriate content": (
+    ko: "부적절한 콘텐츠를 게시해",
+    ja: "不適切なコンテンツを投稿した",
+    zh: "发布不当内容",
+  ),
+  "posting content that may be harmful to minors": (
+    ko: "미성년자에게 유해한 콘텐츠를 게시해",
+    ja: "未成年者に有害なコンテンツを投稿した",
+    zh: "发布可能对未成年人有害的内容",
+  ),
+  "impersonating another person or organization or misleading others": (
+    ko: "다른 사람이나 단체를 사칭하거나 속여",
+    ja: "他人や団体になりすましたり、他者を欺いた",
+    zh: "冒充他人或组织，或欺骗其他用户",
+  ),
+  "posting or trading illegal content": (
+    ko: "불법 콘텐츠를 게시하거나 거래해",
+    ja: "違法なコンテンツを投稿または取引した",
+    zh: "发布或交易非法内容",
+  ),
+  "misusing the service": (
+    ko: "서비스를 악용해",
+    ja: "サービスを不正利用した",
+    zh: "滥用服务",
+  ),
+  "violating the Community Guidelines": (
+    ko: "커뮤니티 이용규칙을 위반해",
+    ja: "コミュニティガイドラインに違反した",
+    zh: "违反社区准则",
+  ),
+  "You’ll be able to use the community again when the time above runs out.": (
+    ko: "남은 시간이 지나면 다시 이용할 수 있어요.",
+    ja: "残り時間がなくなると、また利用できます。",
+    zh: "剩余时间结束后，就可以再次使用社区。",
+  ),
+  "Close": (ko: "닫기", ja: "閉じる", zh: "关闭"),
   "Please read the rules for 10 seconds before continuing.": (
     ko: "이용 금지 조치 이후 복귀한 유저들은 10초 동안 이용수칙을 정독해주세요.",
     ja: "利用停止後に戻った方は、10秒間ルールをお読みください。",
