@@ -526,6 +526,89 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('orients both lineups toward midfield at $size',
+        (tester) async {
+      await _setScreenSize(tester, size);
+      // 공급자 좌표는 홈이 오른쪽부터, 원정이 왼쪽부터 시작해요.
+      // https://docs.sportmonks.com/v3/tutorials-and-guides/tutorials/lineups-and-formations
+      const positions = [
+        (name: 'Keeper', row: 1, homeSlot: 1, awaySlot: 1),
+        (name: 'Right Back', row: 2, homeSlot: 1, awaySlot: 4),
+        (name: 'Right Centre Back', row: 2, homeSlot: 2, awaySlot: 3),
+        (name: 'Left Centre Back', row: 2, homeSlot: 3, awaySlot: 2),
+        (name: 'Left Back', row: 2, homeSlot: 4, awaySlot: 1),
+        (name: 'Right Midfielder', row: 3, homeSlot: 1, awaySlot: 3),
+        (name: 'Centre Midfielder', row: 3, homeSlot: 2, awaySlot: 2),
+        (name: 'Left Midfielder', row: 3, homeSlot: 3, awaySlot: 1),
+        (name: 'Right Winger', row: 4, homeSlot: 1, awaySlot: 3),
+        (name: 'Striker', row: 4, homeSlot: 2, awaySlot: 2),
+        (name: 'Left Winger', row: 4, homeSlot: 3, awaySlot: 1),
+      ];
+      final detail = _detail(
+        lineups: [
+          for (final teamId in [_fixture.homeTeamId, _fixture.awayTeamId])
+            for (final (index, position) in positions.indexed)
+              _lineupEntry(
+                teamId: teamId,
+                playerId: index + 1,
+                playerName: position.name,
+                formationField: '${position.row}:'
+                    '${teamId == _fixture.homeTeamId ? position.homeSlot : position.awaySlot}',
+                jerseyNumber: index + 1,
+              ),
+        ],
+      );
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: Scaffold(
+          body: MatchInfoTab(fixture: detail.fixture, detail: detail),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final pitch = tester.getRect(
+        find.byKey(const ValueKey('match-lineup-card')),
+      );
+      final rows = <List<Rect>>[];
+      for (final teamId in [_fixture.homeTeamId, _fixture.awayTeamId]) {
+        final players = [
+          for (var id = 1; id <= positions.length; id++)
+            tester.getRect(find.byKey(
+              ValueKey('match-lineup-player-$teamId-$id'),
+            )),
+        ];
+        rows.add(players);
+        for (final player in players) {
+          expect(player.left, greaterThanOrEqualTo(pitch.left));
+          expect(player.right, lessThanOrEqualTo(pitch.right));
+          expect(player.top, greaterThanOrEqualTo(pitch.top));
+          expect(player.bottom, lessThanOrEqualTo(pitch.bottom));
+        }
+        // 골키퍼가 아래인 홈은 왼쪽 선수가 화면 왼쪽, 위인 원정은 반대예요.
+        final isHome = teamId == _fixture.homeTeamId;
+        for (final (right, left) in [(1, 4), (5, 7), (8, 10)]) {
+          expect(
+            players[left].center.dx,
+            isHome
+                ? lessThan(players[right].center.dx)
+                : greaterThan(players[right].center.dx),
+          );
+        }
+        for (final (back, front) in [(0, 1), (1, 5), (5, 8)]) {
+          expect(
+            players[back].center.dy,
+            isHome
+                ? greaterThan(players[front].center.dy)
+                : lessThan(players[front].center.dy),
+          );
+        }
+      }
+      expect(rows.last[9].bottom, lessThan(rows.first[9].top));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('opens player match statistics from a past-match lineup',
       (tester) async {
     await _setScreenSize(tester, const Size(430, 932));
