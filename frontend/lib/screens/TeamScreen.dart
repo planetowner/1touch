@@ -263,14 +263,14 @@ class _TeamScreenState extends State<TeamScreen>
         ? null
         : competitionNameLabel(
             context, competitionContext?.competitionId, originalLeagueName);
-    final rank = currentTeam.standing?['position'];
+    final rank = currentTeam.standing?.position;
     final positionLabel = leagueName == null
         ? ''
-        : rank is int
-            ? '$leagueName ${ordinal(rank, locale: Localizations.localeOf(context))}'
-            : leagueName;
+        : rank == null
+            ? leagueName
+            : '$leagueName ${ordinal(rank, locale: Localizations.localeOf(context))}';
     final displayedTeamId = currentTeam.id;
-    final rankChange = currentTeam.standing?['rank_delta'];
+    final rankChange = currentTeam.standing?.rankDelta;
     final appBarForeground = colors.onSurface;
     final topInset = MediaQuery.paddingOf(context).top;
     const baseToolbarVerticalPadding =

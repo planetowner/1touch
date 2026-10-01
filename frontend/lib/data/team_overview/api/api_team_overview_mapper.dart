@@ -1,6 +1,7 @@
 import 'package:onetouch/data/fixtures/api/api_fixture_mapper.dart';
 import 'package:onetouch/data/team_overview/api/api_team_overview_response.dart';
 import 'package:onetouch/models/team_overview.dart';
+import 'package:onetouch/models/team_standing_summary.dart';
 
 TeamOverview teamOverviewFromApiResponse(ApiTeamOverviewResponse response) {
   final teamId = response.team.teamId;
@@ -34,7 +35,12 @@ TeamOverview teamOverviewFromApiResponse(ApiTeamOverviewResponse response) {
     name: response.team.name,
     shortName: response.team.shortCode ?? '',
     imagePath: response.team.imagePath ?? '',
-    standing: standing?.toDomainMap(),
+    standing: standing == null
+        ? null
+        : TeamStandingSummary(
+            position: standing.position,
+            rankDelta: standing.rankDelta,
+          ),
     nextMatch: nextMatch == null ? null : fixtureFromApiResponse(nextMatch),
     lastMatch: lastMatch == null ? null : fixtureFromApiResponse(lastMatch),
   );

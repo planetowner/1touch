@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team_overview.dart';
+import 'package:onetouch/models/team_standing_summary.dart';
 
 class TestTeamOverviewRepository implements TeamOverviewRepository {
   TestTeamOverviewRepository({
@@ -49,20 +50,10 @@ TeamOverview testTeamOverview({
     name: name,
     shortName: 'MCI',
     imagePath: 'https://cdn.example/$teamId.png',
-    standing: {
-      'position': 1,
-      'rank_delta': rankDelta,
-      'team_id': teamId,
-      'matches_played': 3,
-      'won': 3,
-      'draw': 0,
-      'lost': 0,
-      'goals_for': 8,
-      'goals_against': 2,
-      'goal_diff': 6,
-      'points': 9,
-      'last5_form': ['W', 'W', 'W'],
-    },
+    standing: TeamStandingSummary(
+      position: 1,
+      rankDelta: rankDelta,
+    ),
     nextMatch: Fixture(
       fixtureId: 1001,
       seasonId: 25583,

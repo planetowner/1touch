@@ -11,8 +11,8 @@ void main() {
     expect(overview.id, 83);
     expect(overview.name, 'FC Barcelona');
     expect(overview.shortName, 'BAR');
-    expect(overview.standing?['position'], 1);
-    expect(overview.standing?['rank_delta'], -1);
+    expect(overview.standing?.position, 1);
+    expect(overview.standing?.rankDelta, -1);
     expect(overview.nextMatch?.fixtureId, 1001);
     expect(overview.nextMatch?.kickoff, DateTime.utc(2026, 9, 20, 15));
     expect(overview.lastMatch, isNull);
