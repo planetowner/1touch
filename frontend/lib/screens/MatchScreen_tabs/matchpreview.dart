@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
@@ -316,7 +317,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           Padding(
             key: ValueKey('match-preview-h2h-loading'),
             padding: EdgeInsets.symmetric(vertical: 40),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: FootballLoadingIndicator()),
           ),
         ],
       );
@@ -426,7 +427,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           Text(tr(context, 'STANDING'), style: Body2_b.style),
           const SizedBox(height: 16),
           if (_standingsLoading)
-            const Center(child: CircularProgressIndicator())
+            const Center(child: FootballLoadingIndicator())
           else if (_standingsFailed)
             TextButton(
               onPressed: _loadCurrentStandings,

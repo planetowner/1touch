@@ -9,6 +9,7 @@ import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/features/KaneRest.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/features/home/screen/home_screen_features.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -222,7 +223,7 @@ void main() {
     session.establish('session');
     await tester.pump();
     expect(calls, 1);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsOneWidget);
     expect(pageKey.currentState, same(originalState));
     pending.complete(http.Response('{}', 503));
     await tester.pumpAndSettle();

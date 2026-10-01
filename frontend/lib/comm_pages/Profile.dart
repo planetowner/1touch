@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import "package:flutter/material.dart";
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/style.dart';
@@ -149,7 +150,7 @@ class _ProfileState extends State<Profile> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: profileBackground,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Center(child: FootballLoadingIndicator()),
       );
     }
 

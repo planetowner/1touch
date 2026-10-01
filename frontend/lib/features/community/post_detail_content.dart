@@ -1,5 +1,6 @@
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/api_image_headers.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -634,7 +635,7 @@ class _PostComments extends StatelessWidget {
       return const Center(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 24),
-          child: CircularProgressIndicator(
+          child: FootballLoadingIndicator(
             key: ValueKey('community-comments-loading'),
           ),
         ),

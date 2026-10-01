@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/season_label.dart';
@@ -449,9 +450,7 @@ class _SquadTabState extends State<SquadTab> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Center(
-        child: CircularProgressIndicator(
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
+        child: const FootballLoadingIndicator(),
       );
     }
     if (_loadError != null && _players.isEmpty) {

@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -272,7 +273,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(48),
-          child: CircularProgressIndicator(
+          child: FootballLoadingIndicator(
             key: ValueKey('match-loading-indicator'),
           ),
         ),

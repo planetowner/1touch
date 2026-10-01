@@ -3,6 +3,7 @@ import 'package:clock/clock.dart' as time;
 import 'package:onetouch/l10n/app_localizations.dart';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/l10n/injury_labels.dart';
 import 'package:onetouch/l10n/injury_type_names.dart';

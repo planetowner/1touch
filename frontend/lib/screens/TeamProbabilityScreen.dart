@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/round_chart_window.dart';
@@ -151,7 +152,7 @@ class _TeamProbabilityScreenState extends State<TeamProbabilityScreen> {
   Widget _buildBody(BuildContext context) {
     final snapshot = _snapshot;
     if (snapshot == null && _error == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: FootballLoadingIndicator());
     }
     if (snapshot == null) {
       return Center(

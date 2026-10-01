@@ -44,7 +44,7 @@ class MyNews extends StatelessWidget {
     if (isLoading) {
       return const Padding(
         padding: EdgeInsets.all(24),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: FootballLoadingIndicator()),
       );
     }
     return Padding(

@@ -156,8 +156,8 @@ class _InjuryStatusState extends State<InjuryStatus>
           ? const Center(
               child: SizedBox.square(
                 key: ValueKey('injury-loading'),
-                dimension: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                dimension: 56,
+                child: FootballLoadingIndicator(),
               ),
             )
           : _loadFailed

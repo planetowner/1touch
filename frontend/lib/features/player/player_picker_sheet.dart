@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
@@ -71,7 +72,7 @@ class PlayerPickerSheetState extends State<PlayerPickerSheet> {
                               if (snapshot.connectionState !=
                                   ConnectionState.done) {
                                 return const Center(
-                                    child: CircularProgressIndicator());
+                                    child: FootballLoadingIndicator());
                               }
                               if (snapshot.hasError) {
                                 return Center(

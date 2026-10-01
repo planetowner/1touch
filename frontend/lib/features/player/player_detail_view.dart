@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
@@ -69,7 +70,7 @@ class _PlayerDetailViewState extends State<PlayerDetailView> {
           return const Center(
               child: Padding(
                   padding: EdgeInsets.all(24),
-                  child: CircularProgressIndicator()));
+                  child: FootballLoadingIndicator()));
         }
         if (snapshot.hasError) {
           return Center(

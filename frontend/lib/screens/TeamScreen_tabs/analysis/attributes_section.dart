@@ -190,7 +190,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     if (_isLoading) {
       return const Padding(
         padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: FootballLoadingIndicator()),
       );
     }
 

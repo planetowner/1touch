@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/features/app_error_view.dart';
 import 'package:onetouch/l10n/football_name_labels.dart';
@@ -65,7 +66,7 @@ class _FootballNamesLoaderState extends State<FootballNamesLoader> {
                             statusCode: 500,
                             onAction: () => setState(_load),
                           )
-                        : const Center(child: CircularProgressIndicator()),
+                        : const Center(child: FootballLoadingIndicator()),
                   ),
               ],
             ),

@@ -11,6 +11,8 @@ import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/home/news_repository.dart';
 import 'package:onetouch/features/home/screen/home_screen_features.dart';
+import 'package:onetouch/features/home/screen/live_match_ball_button.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/models/home_content_item.dart';
 import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -66,22 +68,20 @@ void main() {
 
     final button = find.byKey(const ValueKey('home-live-match-button'));
     expect(button, findsOneWidget);
-    final firstOffset = tester
+    final firstRotation = tester
         .widget<Transform>(
           find.byKey(const ValueKey('home-live-match-ball-motion')),
         )
         .transform
-        .getTranslation()
-        .x;
+        .storage[0];
     await tester.pump(const Duration(milliseconds: 400));
-    final nextOffset = tester
+    final nextRotation = tester
         .widget<Transform>(
           find.byKey(const ValueKey('home-live-match-ball-motion')),
         )
         .transform
-        .getTranslation()
-        .x;
-    expect(nextOffset, isNot(firstOffset));
+        .storage[0];
+    expect(nextRotation, isNot(firstRotation));
 
     await tester.tap(button);
     await tester.pump();
@@ -89,6 +89,62 @@ void main() {
     expect(find.text('match 741 live'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('live ball makes three turns, pauses, then repeats',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(body: LiveMatchBallButton(onPressed: () {})),
+    ));
+    await tester.pump();
+
+    double horizontalRotation() => tester
+        .widget<Transform>(
+          find.byKey(const ValueKey('home-live-match-ball-motion')),
+        )
+        .transform
+        .storage[0];
+
+    expect(horizontalRotation(), closeTo(1, 0.01));
+    await tester.pump(const Duration(milliseconds: 1042));
+    expect(horizontalRotation(), closeTo(-1, 0.1));
+    await tester.pump(const Duration(milliseconds: 1041));
+    expect(horizontalRotation(), closeTo(1, 0.01));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(horizontalRotation(), closeTo(1, 0.01));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(horizontalRotation(), isNot(closeTo(1, 0.01)));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('live ball stays still when animations are disabled',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: MediaQuery(
+        data: const MediaQueryData(disableAnimations: true),
+        child: Scaffold(body: LiveMatchBallButton(onPressed: () {})),
+      ),
+    ));
+    await tester.pump(const Duration(seconds: 4));
+    final transform = tester.widget<Transform>(
+      find.byKey(const ValueKey('home-live-match-ball-motion')),
+    );
+    expect(transform.transform.storage[0], closeTo(1, 0.01));
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('live ball fits ${size.width.toInt()}px screen',
+        (tester) async {
+      await _setScreenSize(tester, size);
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(body: LiveMatchBallButton(onPressed: () {})),
+      ));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+          find.byKey(const ValueKey('home-live-match-button')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
   testWidgets('loads Home and followed teams through the repository',
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));
@@ -105,7 +161,7 @@ void main() {
       ),
     );
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsOneWidget);
     expect(repository.calls, hasLength(1));
     final now = DateTime.now();
     expect(repository.calls.single.start, DateTime(now.year, now.month, 1));

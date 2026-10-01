@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/app_info_button.dart';
@@ -150,7 +151,7 @@ class _H2HTabState extends State<H2HTab> {
             const Padding(
               key: ValueKey('match-h2h-loading'),
               padding: EdgeInsets.symmetric(vertical: 80),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: FootballLoadingIndicator()),
             )
           else if (_hasLoadError)
             Padding(

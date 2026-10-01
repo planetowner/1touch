@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/comm_pages/Profile.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/comm_pages/profile_activity_screen.dart';
 import 'package:onetouch/comm_pages/Profile_settings/InfoEdit.dart';
 import 'package:onetouch/core/locale_controller.dart';
@@ -70,7 +71,7 @@ void main() {
       ),
     );
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsOneWidget);
     expect(repository.calls, hasLength(1));
 
     repository.calls.single.complete(_profile());

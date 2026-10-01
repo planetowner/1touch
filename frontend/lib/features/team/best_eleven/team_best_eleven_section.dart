@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
@@ -168,8 +169,8 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
         child: Center(
           child: SizedBox.square(
             key: ValueKey('best-eleven-loading'),
-            dimension: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            dimension: 56,
+            child: FootballLoadingIndicator(),
           ),
         ),
       );
@@ -241,8 +242,8 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
               child: Center(
                 child: SizedBox.square(
                   key: ValueKey('analysis-best-eleven-loading'),
-                  dimension: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  dimension: 56,
+                  child: FootballLoadingIndicator(),
                 ),
               ),
             )
