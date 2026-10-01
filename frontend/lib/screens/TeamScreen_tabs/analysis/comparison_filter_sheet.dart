@@ -35,7 +35,7 @@ class _AnalysisComparisonFilterSheet<T> extends StatefulWidget {
 class _AnalysisComparisonFilterSheetState<T>
     extends State<_AnalysisComparisonFilterSheet<T>> {
   final _search = TextEditingController();
-  int? _seasonId;
+  String? _seasonName;
   int? _teamId;
   bool _seasonExpanded = false;
 
@@ -45,10 +45,10 @@ class _AnalysisComparisonFilterSheetState<T>
     final initial = widget.options
         .where((option) => option.value == widget.initialValue)
         .firstOrNull;
-    _seasonId = initial?.seasonId ?? widget.options.firstOrNull?.seasonId;
+    _seasonName = initial?.seasonName ?? widget.options.firstOrNull?.seasonName;
     _teamId = initial?.teamId ??
         widget.options
-            .where((option) => option.seasonId == _seasonId)
+            .where((option) => option.seasonName == _seasonName)
             .firstOrNull
             ?.teamId;
     _search.addListener(_refresh);
@@ -72,20 +72,20 @@ class _AnalysisComparisonFilterSheetState<T>
     final fieldColor =
         isDark ? AppPalette.lightGrey : appColors.subtleBackground;
     final divider = isDark ? AppPalette.lightGrey : appColors.divider;
-    final seasons = <int, String>{
+    final seasons = <String, String>{
       for (final option in widget.options)
-        option.seasonId: compactSeasonLabel(option.seasonName),
+        option.seasonName: compactSeasonLabel(option.seasonName),
     };
     final search = _search.text.trim().toLowerCase();
     final teams = widget.options
-        .where((option) => option.seasonId == _seasonId)
+        .where((option) => option.seasonName == _seasonName)
         .where((option) =>
             search.isEmpty || option.teamName.toLowerCase().contains(search))
         .toList()
       ..sort((a, b) => a.teamName.compareTo(b.teamName));
     final selected = widget.options
         .where((option) =>
-            option.seasonId == _seasonId && option.teamId == _teamId)
+            option.seasonName == _seasonName && option.teamId == _teamId)
         .firstOrNull;
 
     return AnimatedPadding(
@@ -143,7 +143,7 @@ class _AnalysisComparisonFilterSheetState<T>
                           child: Row(
                             children: [
                               Expanded(
-                                  child: Text(seasons[_seasonId] ?? '',
+                                  child: Text(seasons[_seasonName] ?? '',
                                       style: Body2_b.style)),
                               Icon(
                                   _seasonExpanded
@@ -163,19 +163,19 @@ class _AnalysisComparisonFilterSheetState<T>
                           contentPadding:
                               const EdgeInsets.symmetric(horizontal: 16),
                           title: Text(season.value, style: Body2.style),
-                          trailing: _seasonId == season.key
+                          trailing: _seasonName == season.key
                               ? Icon(Icons.check,
                                   color: scheme.onSurface, size: 20)
                               : null,
                           onTap: () => setState(() {
-                            _seasonId = season.key;
+                            _seasonName = season.key;
                             _seasonExpanded = false;
                             if (!widget.options.any((option) =>
-                                option.seasonId == _seasonId &&
+                                option.seasonName == _seasonName &&
                                 option.teamId == _teamId)) {
                               _teamId = widget.options
-                                  .where(
-                                      (option) => option.seasonId == _seasonId)
+                                  .where((option) =>
+                                      option.seasonName == _seasonName)
                                   .firstOrNull
                                   ?.teamId;
                             }

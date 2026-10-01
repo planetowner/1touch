@@ -20,6 +20,8 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
   final ApiClient _api;
   final LocalCacheStore? _cacheStore;
   final Map<CurrentFormOptionsQuery, DateTime> _optionsSavedAt = {};
+  final Map<int, List<CurrentFormOption>> _allOptions = {};
+  final Map<int, DateTime> _allOptionsSavedAt = {};
   final Map<CurrentFormComparisonQuery, DateTime> _comparisonsSavedAt = {};
   final ValueNotifier<Map<CurrentFormOptionsQuery, List<CurrentFormOption>>>
       _cachedOptions = ValueNotifier(const {});
@@ -88,6 +90,50 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
       return restored;
     }
     return _fetchOptions(query);
+  }
+
+  @override
+  Future<List<CurrentFormOption>> loadAllOptions(int teamId) async {
+    final cached = _allOptions[teamId];
+    if (cached != null &&
+        !AppCachePolicy.shouldRefresh(
+          tier: CacheTier.standard,
+          trigger: CacheSyncTrigger.screenEnter,
+          savedAt: _allOptionsSavedAt[teamId],
+        )) {
+      return cached;
+    }
+
+    const pageSize = 200;
+    final firstQuery = CurrentFormOptionsQuery(teamId: teamId, limit: pageSize);
+    final freshFirstPage = _cachedOptions.value[firstQuery];
+    final firstPage = freshFirstPage != null &&
+            !AppCachePolicy.shouldRefresh(
+              tier: CacheTier.standard,
+              trigger: CacheSyncTrigger.screenEnter,
+              savedAt: _optionsSavedAt[firstQuery],
+            )
+        ? freshFirstPage
+        : await _fetchOptions(firstQuery);
+    final all = <CurrentFormOption>[...firstPage];
+    while (all.isNotEmpty && all.length % pageSize == 0) {
+      final uri = _api.baseUri
+          .resolve('teams/$teamId/current-form/options')
+          .replace(queryParameters: {
+        'limit': '$pageSize',
+        'offset': '${all.length}',
+      });
+      final decoded =
+          _api.decodeJson<Map<String, dynamic>>(await _api.get(uri));
+      final page = _mapOptions(
+        decoded,
+        CurrentFormOptionsQuery(teamId: teamId, limit: pageSize),
+      );
+      all.addAll(page);
+      if (page.length < pageSize) break;
+    }
+    _allOptionsSavedAt[teamId] = DateTime.now().toUtc();
+    return _allOptions[teamId] = List.unmodifiable(all);
   }
 
   void _refreshOptionsIfStale(CurrentFormOptionsQuery query) {

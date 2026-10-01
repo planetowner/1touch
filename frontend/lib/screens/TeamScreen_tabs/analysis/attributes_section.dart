@@ -114,8 +114,7 @@ class _AttributesSectionState extends State<AttributesSection> {
 
       TeamAttributeScores? comparison;
       for (final scores in loaded) {
-        if (scores.seasonId == seasonId &&
-            scores.competitionId == _myScores?.competitionId) {
+        if (scores.seasonId == seasonId) {
           comparison = scores;
           break;
         }
@@ -289,26 +288,43 @@ class _AttributesSectionState extends State<AttributesSection> {
   Future<void> _openComparisonFilter() async {
     final ownTeamId = _teamId;
     if (ownTeamId == null) return;
+    final eligibleTeamIds = <int, Set<int>>{};
+    for (final membership in footballCatalog.memberships) {
+      if (TeamPageEligibility.domesticBigFiveCompetitionIds
+          .contains(membership.competitionId)) {
+        eligibleTeamIds
+            .putIfAbsent(membership.seasonId, () => <int>{})
+            .add(membership.teamId);
+      }
+    }
+    final seasons = footballCatalog.seasons.value.where(
+      (season) =>
+          TeamPageEligibility.domesticBigFiveCompetitionIds
+              .contains(season.competitionId) &&
+          _comparisonOptions.any((option) => option.seasonName == season.name),
+    );
     final options = <_AnalysisFilterOption<({int teamId, int seasonId})>>[
-      for (final season in _comparisonOptions)
+      for (final season in seasons)
         if (!teamRepository.allTeams.any((team) => team.teamId == ownTeamId))
-          _AnalysisFilterOption(
-            value: (teamId: ownTeamId, seasonId: season.seasonId),
-            seasonId: season.seasonId,
-            seasonName: season.seasonName,
-            teamId: ownTeamId,
-            teamName:
-                teamNameLabel(context, ownTeamId, widget.team?.name ?? ''),
-          ),
-      for (final season in _comparisonOptions)
+          if (eligibleTeamIds[season.seasonId]?.contains(ownTeamId) ?? false)
+            _AnalysisFilterOption(
+              value: (teamId: ownTeamId, seasonId: season.seasonId),
+              seasonId: season.seasonId,
+              seasonName: season.name,
+              teamId: ownTeamId,
+              teamName:
+                  teamNameLabel(context, ownTeamId, widget.team?.name ?? ''),
+            ),
+      for (final season in seasons)
         for (final team in teamRepository.allTeams)
-          _AnalysisFilterOption(
-            value: (teamId: team.teamId, seasonId: season.seasonId),
-            seasonId: season.seasonId,
-            seasonName: season.seasonName,
-            teamId: team.teamId,
-            teamName: teamNameLabel(context, team.teamId, team.name),
-          ),
+          if (eligibleTeamIds[season.seasonId]?.contains(team.teamId) ?? false)
+            _AnalysisFilterOption(
+              value: (teamId: team.teamId, seasonId: season.seasonId),
+              seasonId: season.seasonId,
+              seasonName: season.name,
+              teamId: team.teamId,
+              teamName: teamNameLabel(context, team.teamId, team.name),
+            ),
     ];
     final selected = await showModalBottomSheet<({int teamId, int seasonId})>(
       context: context,

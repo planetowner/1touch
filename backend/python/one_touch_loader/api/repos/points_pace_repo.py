@@ -146,6 +146,7 @@ def list_current_form_options(
     *,
     search: Optional[str],
     limit: int,
+    offset: int = 0,
 ) -> List[Dict[str, Any]]:
     """계산할 리그 경기 결과가 있는 Big 5 팀 시즌을 조회해요."""
     normalized_search = (search or "").strip()
@@ -185,8 +186,8 @@ def list_current_form_options(
         GROUP BY
           t.team_id, t.name, t.short_code, t.image_path,
           s.competition_id, s.season_id, s.name
-        ORDER BY s.name DESC, t.name ASC
-        LIMIT %s
+        ORDER BY s.name DESC, t.name ASC, t.team_id, s.season_id
+        LIMIT %s OFFSET %s
         """,
         (
             normalized_search,
@@ -194,6 +195,7 @@ def list_current_form_options(
             normalized_search,
             *team_ids,
             limit,
+            offset,
         ),
     )
 

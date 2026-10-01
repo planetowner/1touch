@@ -262,13 +262,14 @@ def team_current_form_options(
     team_id: int,
     search: str | None = Query(default=None, max_length=100),
     limit: int = Query(default=200, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
     user_id: int = Depends(get_user_id),
 ):
     if not get_team(team_id):
         raise HTTPException(status_code=404, detail="Team not found")
 
     return {
-        "items": list_current_form_options(search=search, limit=limit),
+        "items": list_current_form_options(search=search, limit=limit, offset=offset),
         "limit": limit,
     }
 
