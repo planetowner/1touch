@@ -7,14 +7,12 @@ import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
-import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_watch_name.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/player/player_directory_sheets.dart';
 import 'package:onetouch/models/following_player.dart';
-import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class PlayerFavorites extends StatefulWidget {
@@ -34,8 +32,6 @@ class PlayerFavorites extends StatefulWidget {
 }
 
 class _PlayerFavoritesState extends State<PlayerFavorites> {
-  final Map<int, Future<PlayerDetail?>> _details = {};
-
   @override
   void initState() {
     super.initState();
@@ -64,27 +60,10 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
     }
   }
 
-  Future<PlayerDetail?> _detailFor(int playerId) =>
-      _details.putIfAbsent(playerId, () async {
-        try {
-          return await (widget.searchRepository ?? playerDetailRepository)
-              .load(playerId);
-        } on Object {
-          return null;
-        }
-      });
-
-  @override
-  void didUpdateWidget(covariant PlayerFavorites oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.searchRepository != widget.searchRepository) {
-      _details.clear();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListenableBuilder(
       listenable: widget.controller,
       builder: (_, __) {
@@ -194,41 +173,30 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
                                 ),
                               ),
                             ),
-                            Positioned(
-                              left: 0,
-                              top: 0,
-                              child: FutureBuilder<PlayerDetail?>(
-                                future: _detailFor(player.playerId),
-                                builder: (context, snapshot) {
-                                  final number =
-                                      snapshot.data?.profile.jerseyNumber;
-                                  if (number == null) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  final isDark = Theme.of(context).brightness ==
-                                      Brightness.dark;
-                                  return Container(
-                                    key: ValueKey(
-                                      'favorite-player-number-${player.playerId}',
-                                    ),
-                                    width: 32,
-                                    height: 32,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? AppPalette.lightGrey
-                                          : AppPalette.white,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Text(
-                                      '$number',
-                                      maxLines: 1,
-                                      style: Body2_b.style,
-                                    ),
-                                  );
-                                },
+                            if (player.jerseyNumber case final number?)
+                              Positioned(
+                                left: 0,
+                                top: 0,
+                                child: Container(
+                                  key: ValueKey(
+                                    'favorite-player-number-${player.playerId}',
+                                  ),
+                                  width: 32,
+                                  height: 32,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? AppPalette.lightGrey
+                                        : AppPalette.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '$number',
+                                    maxLines: 1,
+                                    style: Body2_b.style,
+                                  ),
+                                ),
                               ),
-                            ),
                           ],
                         ),
                       ),
@@ -568,11 +536,9 @@ class PlayersToWatch extends StatefulWidget {
   const PlayersToWatch({
     super.key,
     required this.repository,
-    this.detailRepository,
   });
 
   final PlayerDirectoryRepository repository;
-  final PlayerDetailRepository? detailRepository;
 
   @override
   State<PlayersToWatch> createState() => PlayersToWatchState();
@@ -581,32 +547,16 @@ class PlayersToWatch extends StatefulWidget {
 class PlayersToWatchState extends State<PlayersToWatch> {
   late Future<List<PlayerWatch>> _request =
       Future.sync(widget.repository.watch);
-  final Map<int, Future<({int? id, String name})?>> _teams = {};
-
-  Future<({int? id, String name})?> _teamFor(int playerId) =>
-      _teams.putIfAbsent(playerId, () async {
-        try {
-          final detail =
-              await (widget.detailRepository ?? playerDetailRepository)
-                  .load(playerId);
-          final name = detail.profile.teamName?.trim();
-          if (name == null || name.isEmpty) return null;
-          return (id: detail.profile.teamId, name: name);
-        } on Object {
-          return null;
-        }
-      });
 
   Future<void> refresh() async {
     final request = Future.sync(widget.repository.watch);
     setState(() {
       _request = request;
-      _teams.clear();
     });
     try {
       await request;
     } on Object {
-      // FutureBuilder renders the retry state for this request.
+      // 요청이 실패하면 FutureBuilder에서 다시 시도 버튼을 보여줘요.
     }
   }
 
@@ -661,7 +611,6 @@ class PlayersToWatchState extends State<PlayersToWatch> {
                 separatorBuilder: (_, __) => const SizedBox(width: 16),
                 itemBuilder: (_, index) => _WatchCard(
                   player: players[index],
-                  team: _teamFor(players[index].id),
                 ),
               ),
             );
@@ -673,10 +622,9 @@ class PlayersToWatchState extends State<PlayersToWatch> {
 }
 
 class _WatchCard extends StatelessWidget {
-  const _WatchCard({required this.player, required this.team});
+  const _WatchCard({required this.player});
 
   final PlayerWatch player;
-  final Future<({int? id, String name})?> team;
 
   @override
   Widget build(BuildContext context) {
@@ -768,19 +716,15 @@ class _WatchCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      FutureBuilder<({int? id, String name})?>(
-                        future: team,
-                        builder: (context, snapshot) => Text(
-                          switch (snapshot.data) {
-                            (id: final id, name: final name) =>
-                              teamNameLabel(context, id, name),
-                            null => '',
-                          },
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style:
-                              Eyebrow.style.copyWith(color: colors.onSurface),
-                        ),
+                      Text(
+                        switch (player.teamName?.trim()) {
+                          null || '' => '',
+                          final name =>
+                            teamNameLabel(context, player.teamId, name),
+                        },
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Eyebrow.style.copyWith(color: colors.onSurface),
                       ),
                     ],
                   ),

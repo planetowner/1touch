@@ -31,17 +31,26 @@ class ApiFollowingPlayerResponse {
     required this.playerId,
     required this.name,
     required this.imagePath,
+    this.jerseyNumber,
   });
 
   final int playerId;
   final String name;
   final String? imagePath;
+  final int? jerseyNumber;
 
   factory ApiFollowingPlayerResponse.fromJson(Map<String, dynamic> json) {
+    // 기존 로컬 캐시에는 등번호가 없으므로 목록을 갱신할 때까지 비워 둬요.
+    final jerseyNumber = json['jersey_number'];
+    if (jerseyNumber != null && jerseyNumber is! int) {
+      throw const FormatException(
+          'Expected nullable integer field "jersey_number".');
+    }
     return ApiFollowingPlayerResponse(
       playerId: _requiredInt(json, 'player_id'),
       name: _requiredString(json, 'name'),
       imagePath: _requiredNullableString(json, 'image_path'),
+      jerseyNumber: jerseyNumber as int?,
     );
   }
 }

@@ -1,19 +1,17 @@
 import 'package:flutter/foundation.dart';
 
-/// Minimal player identity returned by the current user's following endpoint.
-///
-/// This intentionally remains separate from the existing `Player` model,
-/// whose current frontend catalogue contains mock-only profile, ranking, and
-/// statistics fields.
+/// 즐겨찾기 목록의 선수 정보와 현재 소속팀의 등번호예요.
 @immutable
 class FollowingPlayer {
   const FollowingPlayer({
     required this.playerId,
     required this.name,
     required this.imagePath,
+    this.jerseyNumber,
   });
 
   final int playerId;
   final String name;
   final String? imagePath;
+  final int? jerseyNumber;
 }

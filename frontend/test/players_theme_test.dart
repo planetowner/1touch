@@ -105,6 +105,20 @@ void main() {
     }
   }
   testWidgets(
+      'player lists render and scroll without requesting player details',
+      (tester) async {
+    final details = FakePlayerDetailRepository()..fail = true;
+    await pump(tester, detailRepository: details);
+    expect(
+        find.byKey(const ValueKey('favorite-player-number-1')), findsOneWidget);
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -650));
+    await tester.pumpAndSettle();
+    expect(find.text('Atlético de Madrid'), findsOneWidget);
+    expect(details.calls, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
       'ones to watch cards keep equal heights for one- and two-line names',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(430, 932));
@@ -113,7 +127,6 @@ void main() {
       home: Scaffold(
         body: PlayersToWatch(
           repository: _TwoWatchDirectoryRepository(),
-          detailRepository: FakePlayerDetailRepository(),
         ),
       ),
     ));
@@ -263,7 +276,9 @@ void main() {
       (tester) async {
     final directory = _ControlledRefreshDirectoryRepository();
     final following = _ControlledRefreshFollowingRepository();
-    await pump(tester, repository: directory, following: following);
+    final details = FakePlayerDetailRepository()..fail = true;
+    await pump(tester,
+        repository: directory, following: following, detailRepository: details);
 
     final indicator =
         tester.widget<RefreshIndicator>(find.byType(RefreshIndicator));
@@ -276,7 +291,13 @@ void main() {
     expect(following.loadCalls, 2);
     expect(completed, isFalse);
 
-    following.refreshCompleter.complete(const []);
+    following.refreshCompleter.complete(const [
+      FollowingPlayer(
+          playerId: 1,
+          name: 'Favorite player',
+          imagePath: null,
+          jerseyNumber: 12),
+    ]);
     await tester.pump();
     expect(completed, isFalse);
 
@@ -291,11 +312,70 @@ void main() {
     await tester.pump();
     expect(completed, isFalse);
 
-    directory.watchRefreshCompleter.complete(const []);
+    directory.watchRefreshCompleter.complete(const [
+      (
+        id: 1,
+        name: 'Improving player',
+        image: null,
+        jerseyNumber: 31,
+        teamId: null,
+        teamName: 'Updated club',
+        recent: 8.4,
+        previous: 6.2,
+        change: 2.2
+      ),
+    ]);
     await refresh;
     await tester.pumpAndSettle();
 
     expect(completed, isTrue);
+    expect(
+        find.descendant(
+            of: find.byKey(const ValueKey('favorite-player-number-1')),
+            matching: find.text('12')),
+        findsOneWidget);
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -650));
+    await tester.pumpAndSettle();
+    expect(find.text('Updated club'), findsOneWidget);
+    expect(find.text('31'), findsOneWidget);
+    expect(details.calls, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('favorites retry reloads jersey numbers after a failed refresh',
+      (tester) async {
+    final following = FakeFollowingPlayersRepository();
+    final details = FakePlayerDetailRepository()..fail = true;
+    await pump(tester, following: following, detailRepository: details);
+    following.fail = true;
+    await tester
+        .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+        .onRefresh();
+    await tester.pumpAndSettle();
+    expect(find.text('Could not load favorites · Retry'), findsOneWidget);
+    expect(
+        find.byKey(const ValueKey('favorite-player-number-1')), findsNothing);
+
+    following.fail = false;
+    following.players.value = const [
+      FollowingPlayer(
+          playerId: 1,
+          name: 'Favorite player',
+          imagePath: null,
+          jerseyNumber: 12),
+      FollowingPlayer(playerId: 2, name: 'No number', imagePath: null),
+    ];
+    await tester.tap(find.text('Could not load favorites · Retry'));
+    await tester.pumpAndSettle();
+    expect(
+        find.descendant(
+            of: find.byKey(const ValueKey('favorite-player-number-1')),
+            matching: find.text('12')),
+        findsOneWidget);
+    expect(find.text('No number'), findsOneWidget);
+    expect(
+        find.byKey(const ValueKey('favorite-player-number-2')), findsNothing);
+    expect(details.calls, isEmpty);
     expect(tester.takeException(), isNull);
   });
   testWidgets(
@@ -356,18 +436,18 @@ void main() {
       (tester) async {
     final detailRepository = FakePlayerDetailRepository();
     await pump(tester, detailRepository: detailRepository);
-    expect(detailRepository.calls.length, 2);
+    expect(detailRepository.calls, isEmpty);
 
     await tester.tap(find.byTooltip('Edit favorites'));
     await tester.pumpAndSettle();
-    expect(detailRepository.calls.length, 3);
+    expect(detailRepository.calls.length, 1);
     await tester.enterText(find.byType(TextField), 'Player');
     await tester.pumpAndSettle();
 
     expect(find.text('Player 1'), findsNothing);
     expect(find.text('Player 2'), findsOneWidget);
     expect(find.text('Player 3'), findsOneWidget);
-    expect(detailRepository.calls.length, 3);
+    expect(detailRepository.calls.length, 1);
 
     await tester.tap(find.text('Player 2'));
     await tester.pump();
@@ -467,6 +547,8 @@ class _TwoWatchDirectoryRepository extends FakePlayerDirectoryRepository {
           name: 'Improving player',
           image: null,
           jerseyNumber: 17,
+          teamId: 7980,
+          teamName: 'Atlético de Madrid',
           recent: 8.4,
           previous: 6.2,
           change: 2.2,
@@ -476,6 +558,8 @@ class _TwoWatchDirectoryRepository extends FakePlayerDirectoryRepository {
           name: 'Neymar',
           image: null,
           jerseyNumber: 10,
+          teamId: 7980,
+          teamName: 'Atlético de Madrid',
           recent: 8.1,
           previous: 7.2,
           change: 0.9,

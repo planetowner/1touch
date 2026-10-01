@@ -174,10 +174,10 @@ class _PlayersState extends State<Players> {
                               playerFollowingController),
                       const SizedBox(height: 48),
                       PlayersToWatch(
-                          key: _watchKey,
-                          repository:
-                              widget.repository ?? playerDirectoryRepository,
-                          detailRepository: widget.detailRepository),
+                        key: _watchKey,
+                        repository:
+                            widget.repository ?? playerDirectoryRepository,
+                      ),
                       const SizedBox(height: 144),
                     ],
                   ),

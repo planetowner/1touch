@@ -56,11 +56,13 @@ void main() {
     expect(result.items.single.id, 123456);
     expect(result.items.single.score, 74.5);
   });
-  test('ones to watch preserves a jersey number when the API supplies it',
+  test('ones to watch includes current team and jersey in one request',
       () async {
+    var requests = 0;
     final repository = ApiPlayerDirectoryRepository(
       api: ApiClient(
         client: MockClient((request) async {
+          requests++;
           expect(request.url.path, '/v1/players/ones-to-watch');
           return http.Response(
               jsonEncode({
@@ -70,13 +72,16 @@ void main() {
                     'name': 'Watch player',
                     'image': null,
                     'jersey_number': 17,
+                    'team_id': 7980,
+                    'team_name': 'Atlético de Madrid',
                     'recent_average': 8.4,
                     'previous_average': 6.2,
                     'change': 2.2,
                   }
                 ]
               }),
-              200);
+              200,
+              headers: {'content-type': 'application/json; charset=utf-8'});
         }),
         baseUri: Uri.parse('https://example.test/v1/'),
         requestHeaders: () => const {},
@@ -86,6 +91,9 @@ void main() {
     final result = await repository.watch();
 
     expect(result.single.jerseyNumber, 17);
+    expect(result.single.teamId, 7980);
+    expect(result.single.teamName, 'Atlético de Madrid');
+    expect(requests, 1);
   });
   test('favorite toggle first loads order and leaves list unchanged on failure',
       () async {
