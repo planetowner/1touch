@@ -172,10 +172,8 @@ class _StatRow extends StatelessWidget {
     final firstValue = first?.metric.value ?? 0;
     final secondValue = second?.metric.value ?? 0;
     final total = firstValue.abs() + secondValue.abs();
-    final firstFraction =
-        total == 0 ? .5 : (firstValue.abs() / total).clamp(.05, .95);
-    final secondFraction =
-        total == 0 ? .5 : (secondValue.abs() / total).clamp(.05, .95);
+    final firstLabel = _display(first?.metric.value);
+    final secondLabel = _display(second?.metric.value);
     final label = first?.metric.label ?? second?.metric.label ?? code;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -195,40 +193,66 @@ class _StatRow extends StatelessWidget {
             child: SizedBox(
               height: 34,
               child: LayoutBuilder(
-                builder: (_, constraints) => Stack(
-                  children: [
-                    Positioned(
-                      left: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: constraints.maxWidth * firstFraction,
-                      child: Container(
-                        color: firstColor,
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: 10),
-                        child: _StatValue(
-                          value: _display(first?.metric.value),
-                          color: _readableText(firstColor),
+                builder: (context, constraints) {
+                  double minimumWidth(String text) {
+                    final painter = TextPainter(
+                      text: TextSpan(text: text, style: Heading4.style),
+                      textDirection: Directionality.of(context),
+                      textScaler: MediaQuery.textScalerOf(context),
+                      maxLines: 1,
+                    )..layout();
+                    final width = painter.width.ceilToDouble() + 24 + 1;
+                    painter.dispose();
+                    return width;
+                  }
+
+                  final firstMinimum = minimumWidth(firstLabel);
+                  final secondMinimum = minimumWidth(secondLabel);
+                  final contentWidth = math.max(
+                    constraints.maxWidth,
+                    firstMinimum + secondMinimum,
+                  );
+                  final firstWidth = (total == 0
+                          ? contentWidth / 2
+                          : contentWidth * firstValue.abs() / total)
+                      .clamp(firstMinimum, contentWidth - secondMinimum)
+                      .toDouble();
+                  final segments = Row(
+                    children: [
+                      SizedBox(
+                        key: ValueKey('comparison-stat-first-$code'),
+                        width: firstWidth,
+                        child: Container(
+                          color: firstColor,
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: _StatValue(
+                            value: firstLabel,
+                            color: _readableText(firstColor),
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: constraints.maxWidth * secondFraction,
-                      child: Container(
-                        color: secondColor,
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 10),
-                        child: _StatValue(
-                          value: _display(second?.metric.value),
-                          color: _readableText(secondColor),
+                      SizedBox(
+                        key: ValueKey('comparison-stat-second-$code'),
+                        width: contentWidth - firstWidth,
+                        child: Container(
+                          color: secondColor,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: _StatValue(
+                            value: secondLabel,
+                            color: _readableText(secondColor),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                  if (contentWidth <= constraints.maxWidth) return segments;
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(width: contentWidth, child: segments),
+                  );
+                },
               ),
             ),
           ),
@@ -252,10 +276,8 @@ class _StatValue extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
         value,
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-        ),
+        maxLines: 1,
+        softWrap: false,
+        style: Heading4.style.copyWith(color: color),
       );
 }

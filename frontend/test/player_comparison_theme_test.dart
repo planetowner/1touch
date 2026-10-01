@@ -2,6 +2,8 @@ import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/screens/PlayerComparisonScreen.dart';
 import 'support/player_detail_fixture.dart';
@@ -19,6 +21,25 @@ class _ImagePlayerDetailRepository extends FakePlayerDetailRepository {
       position: playerId == 2 ? 'GK' : 'FW',
       playerImage: image,
     );
+  }
+}
+
+class _SkewedStatsRepository extends FakePlayerDetailRepository {
+  _SkewedStatsRepository(this.firstValue, this.secondValue);
+
+  final double firstValue;
+  final double secondValue;
+
+  @override
+  Future<PlayerDetail> load(int playerId, {int? seasonId}) async {
+    final json = playerDetailJson(playerId: playerId, seasonId: seasonId);
+    final analysis = json['analysis'] as Map<String, dynamic>;
+    final categories = analysis['categories'] as List<dynamic>;
+    final finish = categories.first as Map<String, dynamic>;
+    final goals =
+        (finish['metrics'] as List<dynamic>).first as Map<String, dynamic>;
+    goals['value'] = playerId == 1 ? firstValue : secondValue;
+    return playerDetailFromJson(json);
   }
 }
 
@@ -109,10 +130,71 @@ void main() {
             find.byKey(const ValueKey('comparison-stat-card-Finish')));
         final decoration = statCard.decoration as BoxDecoration;
         expect(decoration.color, dark ? AppPalette.darkGrey : AppPalette.white);
+        final statValue = tester
+            .widgetList<Text>(
+              find.descendant(
+                of: find.byKey(const ValueKey('comparison-stat-card-Finish')),
+                matching: find.byType(Text),
+              ),
+            )
+            .firstWhere((text) => text.data == '—');
+        expect(statValue.style?.fontSize, Heading4.style.fontSize);
+        expect(statValue.style?.fontWeight, Heading4.style.fontWeight);
         await tester.drag(find.byType(CustomScrollView), const Offset(0, -450));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
       });
     }
+  }
+
+  for (final values in [(100.0, 1.0), (16.0, 0.0)]) {
+    testWidgets('comparison keeps $values readable with 12px edge padding',
+        (tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 568));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        home: PlayerComparisonScreen(
+          initialPlayerId: '1',
+          repository: _SkewedStatsRepository(values.$1, values.$2),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('PLAYER 2'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Player 3'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('26/27'));
+      await tester.pumpAndSettle();
+
+      final card = find.byKey(const ValueKey('comparison-stat-card-Finish'));
+      final firstText = find.descendant(
+        of: card,
+        matching: find.text(values.$1.toInt().toString()),
+      );
+      final secondText = find.descendant(
+        of: card,
+        matching: find.text(values.$2.toInt().toString()),
+      );
+      final firstSegment =
+          find.byKey(const ValueKey('comparison-stat-first-goals'));
+      final secondSegment =
+          find.byKey(const ValueKey('comparison-stat-second-goals'));
+      expect(firstText, findsOneWidget);
+      expect(secondText, findsOneWidget);
+      expect(tester.widget<Text>(firstText).style?.fontSize,
+          Heading4.style.fontSize);
+      expect(tester.widget<Text>(secondText).style?.fontSize,
+          Heading4.style.fontSize);
+      expect(
+        tester.getTopLeft(firstText).dx - tester.getTopLeft(firstSegment).dx,
+        closeTo(12, 0.1),
+      );
+      expect(
+        tester.getTopRight(secondSegment).dx -
+            tester.getTopRight(secondText).dx,
+        closeTo(12, 0.1),
+      );
+      expect(tester.takeException(), isNull);
+    });
   }
 }
