@@ -38,6 +38,22 @@ class CalendarConnection {
   final bool subscribed;
   final String? lastError;
 
+  factory CalendarConnection.fromJson(Map<String, dynamic> json) {
+    final connected = json['connected'];
+    final subscribed = json['subscribed'];
+    final lastError = json['last_error'];
+    if (connected is! bool ||
+        subscribed is! bool ||
+        lastError != null && lastError is! String) {
+      throw const FormatException('Invalid calendar connection response.');
+    }
+    return CalendarConnection(
+      connected: connected,
+      subscribed: subscribed,
+      lastError: lastError as String?,
+    );
+  }
+
   bool get needsAuthorization =>
       !connected ||
       const {
@@ -59,33 +75,42 @@ class CalendarSyncService {
   final Future<bool> Function(Uri) openSubscription;
 
   Future<CalendarConnection> connection(int teamId) async {
-    final data = _decode(
-        await api.get(api.baseUri.resolve('users/me/calendar/teams/$teamId')));
-    return CalendarConnection(
-        connected: data['connected'] as bool,
-        subscribed: data['subscribed'] as bool,
-        lastError: data['last_error'] as String?);
+    final response = await api.get(
+      api.baseUri.resolve('users/me/calendar/teams/$teamId'),
+    );
+    _ensureSuccess(response);
+    return CalendarConnection.fromJson(
+      api.decodeJson<Map<String, dynamic>>(response),
+    );
   }
 
   Future<void> syncGoogle(int teamId) async {
     final state = await connection(teamId);
     if (state.needsAuthorization) {
       final code = await authorizeGoogle();
-      _decode(await api.post(api.baseUri.resolve('users/me/calendar/google'),
+      _ensureSuccess(
+        await api.post(
+          api.baseUri.resolve('users/me/calendar/google'),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'server_auth_code': code})));
+          body: jsonEncode({'server_auth_code': code}),
+        ),
+      );
     }
-    _decode(
-        await api.put(api.baseUri.resolve('users/me/calendar/teams/$teamId')));
+    _ensureSuccess(
+      await api.put(api.baseUri.resolve('users/me/calendar/teams/$teamId')),
+    );
   }
 
   Future<void> stopGoogle(int teamId) async {
-    _decode(await api
-        .delete(api.baseUri.resolve('users/me/calendar/teams/$teamId')));
+    _ensureSuccess(
+      await api.delete(api.baseUri.resolve('users/me/calendar/teams/$teamId')),
+    );
   }
 
   Future<void> disconnectGoogle() async {
-    _decode(await api.delete(api.baseUri.resolve('users/me/calendar/google')));
+    _ensureSuccess(
+      await api.delete(api.baseUri.resolve('users/me/calendar/google')),
+    );
   }
 
   Future<void> subscribeApple(int teamId) async {
@@ -101,7 +126,7 @@ class CalendarSyncService {
     }
   }
 
-  Map<String, dynamic> _decode(http.Response response) {
+  void _ensureSuccess(http.Response response) {
     if (response.statusCode != 200) {
       String? code;
       try {
@@ -112,6 +137,5 @@ class CalendarSyncService {
       }
       throw CalendarSyncException(code ?? 'calendar_request_failed');
     }
-    return api.decodeJson<Map<String, dynamic>>(response);
   }
 }

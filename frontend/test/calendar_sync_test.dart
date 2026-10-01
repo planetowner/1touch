@@ -82,6 +82,18 @@ void main() {
     expect(consentCount, 1);
   });
 
+  test('rejects malformed calendar connection responses', () async {
+    final sync = service(
+      (_) async => jsonResponse({
+        'connected': 'yes',
+        'subscribed': true,
+        'last_error': null,
+      }),
+    );
+
+    await expectLater(sync.connection(8), throwsFormatException);
+  });
+
   test(
       'server setup failure never opens Google consent or writes a subscription',
       () async {

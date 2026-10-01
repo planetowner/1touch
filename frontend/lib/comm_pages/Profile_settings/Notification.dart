@@ -270,13 +270,8 @@ class TeamNotificationDetailPage extends StatefulWidget {
 
 class _TeamNotificationDetailPageState
     extends State<TeamNotificationDetailPage> {
-  bool _newBets = true;
-  final Map<String, bool> _opts = {
-    "Match Reminder": false,
-    "Kickoff, Half Time, Full Time": true,
-    "Goal": true,
-    "Substitution": false,
-  };
+  TeamNotificationPreferences _preferences =
+      const TeamNotificationPreferences();
 
   NotificationPreferencesRepository get _repository =>
       widget.repository ?? notificationPreferencesRepository;
@@ -296,51 +291,67 @@ class _TeamNotificationDetailPageState
   }
 
   void _apply(TeamNotificationPreferences preferences) {
-    _newBets = preferences.newBets;
-    _opts['Match Reminder'] = preferences.matchReminder;
-    _opts['Kickoff, Half Time, Full Time'] =
-        preferences.kickoff && preferences.halfTime && preferences.fullTime;
-    _opts['Goal'] = preferences.goal;
-    _opts['Substitution'] = preferences.substitution;
+    _preferences = preferences;
   }
 
-  TeamNotificationPreferences get _currentPreferences =>
-      TeamNotificationPreferences(
-        newBets: _newBets,
-        matchReminder: _opts['Match Reminder']!,
-        kickoff: _opts['Kickoff, Half Time, Full Time']!,
-        halfTime: _opts['Kickoff, Half Time, Full Time']!,
-        fullTime: _opts['Kickoff, Half Time, Full Time']!,
-        goal: _opts['Goal']!,
-        substitution: _opts['Substitution']!,
-      );
+  bool get _allOn => _preferences.copyWith(newBets: true).allEnabled;
 
-  bool get _allOn => _opts.values.every((v) => v);
   void _toggleAll(bool v) {
-    setState(() {
-      for (final k in _opts.keys) {
-        _opts[k] = v;
-      }
-    });
+    final newBets = _preferences.newBets;
+    setState(
+      () => _preferences = _preferences.setAll(v).copyWith(newBets: newBets),
+    );
   }
 
   Future<void> _save({required bool applyToAll}) async {
-    final preferences = _currentPreferences;
     if (applyToAll) {
       await _repository.applyTeamToAll(
         currentUserPreferences.followedTeamIds.value,
-        preferences,
+        _preferences,
       );
     } else if (widget.teamId case final int teamId) {
-      await _repository.saveTeam(teamId, preferences);
+      await _repository.saveTeam(teamId, _preferences);
     }
     await _requestDeviceNotificationPermission(
-      _opts.values.any((enabled) => enabled),
+      [
+        _preferences.matchReminder,
+        _preferences.kickoff,
+        _preferences.halfTime,
+        _preferences.fullTime,
+        _preferences.goal,
+        _preferences.substitution,
+      ].any((enabled) => enabled),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final options = [
+      (
+        'Match Reminder',
+        _preferences.matchReminder,
+        (bool value) => _preferences.copyWith(matchReminder: value),
+      ),
+      (
+        'Kickoff, Half Time, Full Time',
+        _preferences.kickoff && _preferences.halfTime && _preferences.fullTime,
+        (bool value) => _preferences.copyWith(
+              kickoff: value,
+              halfTime: value,
+              fullTime: value,
+            ),
+      ),
+      (
+        'Goal',
+        _preferences.goal,
+        (bool value) => _preferences.copyWith(goal: value),
+      ),
+      (
+        'Substitution',
+        _preferences.substitution,
+        (bool value) => _preferences.copyWith(substitution: value),
+      ),
+    ];
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: AppColors.of(context).pageBackground,
@@ -396,19 +407,20 @@ class _TeamNotificationDetailPageState
                         ),
                         _divider(context, thickness: 2),
                         const SizedBox(height: 32),
-                        ..._opts.entries.toList().asMap().entries.map((entry) {
-                          final i = entry.key;
-                          final e = entry.value;
+                        ...options.asMap().entries.map((entry) {
+                          final (label, value, update) = entry.value;
                           return Column(
                             children: [
                               _switchRow(
                                 context,
-                                label: e.key,
-                                value: e.value,
-                                onChanged: (v) =>
-                                    setState(() => _opts[e.key] = v),
+                                label: label,
+                                value: value,
+                                onChanged: (value) => setState(
+                                  () => _preferences = update(value),
+                                ),
                               ),
-                              if (i != _opts.length - 1) _divider(context),
+                              if (entry.key < options.length - 1)
+                                _divider(context),
                             ],
                           );
                         }),
@@ -510,14 +522,8 @@ class PlayerNotificationDetailPage extends StatefulWidget {
 
 class _PlayerNotificationDetailPageState
     extends State<PlayerNotificationDetailPage> {
-  final Map<String, bool> _opts = {
-    "Starting / Substitute": true,
-    "Goal": true,
-    "Assist": true,
-    "Yellow Card": false,
-    "Red Card": false,
-    "Injury": false,
-  };
+  PlayerNotificationPreferences _preferences =
+      const PlayerNotificationPreferences();
 
   NotificationPreferencesRepository get _repository =>
       widget.repository ?? notificationPreferencesRepository;
@@ -537,52 +543,74 @@ class _PlayerNotificationDetailPageState
   }
 
   void _apply(PlayerNotificationPreferences preferences) {
-    _opts['Starting / Substitute'] =
-        preferences.startingXi && preferences.substitute;
-    _opts['Goal'] = preferences.goal;
-    _opts['Assist'] = preferences.assist;
-    _opts['Yellow Card'] = preferences.yellowCard;
-    _opts['Red Card'] = preferences.redCard;
-    _opts['Injury'] = preferences.injury;
+    _preferences = preferences;
   }
 
-  PlayerNotificationPreferences get _currentPreferences =>
-      PlayerNotificationPreferences(
-        startingXi: _opts['Starting / Substitute']!,
-        substitute: _opts['Starting / Substitute']!,
-        goal: _opts['Goal']!,
-        assist: _opts['Assist']!,
-        yellowCard: _opts['Yellow Card']!,
-        redCard: _opts['Red Card']!,
-        injury: _opts['Injury']!,
-      );
+  bool get _allOn => _preferences.allEnabled;
 
-  bool get _allOn => _opts.values.every((v) => v);
   void _toggleAll(bool v) {
-    setState(() {
-      for (final k in _opts.keys) {
-        _opts[k] = v;
-      }
-    });
+    setState(() => _preferences = _preferences.setAll(v));
   }
 
   Future<void> _save({required bool applyToAll}) async {
-    final preferences = _currentPreferences;
     if (applyToAll) {
       await _repository.applyPlayerToAll(
         playerFollowingController.players.map((player) => player.playerId),
-        preferences,
+        _preferences,
       );
     } else if (widget.playerId case final int playerId) {
-      await _repository.savePlayer(playerId, preferences);
+      await _repository.savePlayer(playerId, _preferences);
     }
     await _requestDeviceNotificationPermission(
-      _opts.values.any((enabled) => enabled),
+      [
+        _preferences.startingXi,
+        _preferences.substitute,
+        _preferences.goal,
+        _preferences.assist,
+        _preferences.yellowCard,
+        _preferences.redCard,
+        _preferences.injury,
+      ].any((enabled) => enabled),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final options = [
+      (
+        'Starting / Substitute',
+        _preferences.startingXi && _preferences.substitute,
+        (bool value) => _preferences.copyWith(
+              startingXi: value,
+              substitute: value,
+            ),
+      ),
+      (
+        'Goal',
+        _preferences.goal,
+        (bool value) => _preferences.copyWith(goal: value),
+      ),
+      (
+        'Assist',
+        _preferences.assist,
+        (bool value) => _preferences.copyWith(assist: value),
+      ),
+      (
+        'Yellow Card',
+        _preferences.yellowCard,
+        (bool value) => _preferences.copyWith(yellowCard: value),
+      ),
+      (
+        'Red Card',
+        _preferences.redCard,
+        (bool value) => _preferences.copyWith(redCard: value),
+      ),
+      (
+        'Injury',
+        _preferences.injury,
+        (bool value) => _preferences.copyWith(injury: value),
+      ),
+    ];
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: AppColors.of(context).pageBackground,
@@ -638,19 +666,20 @@ class _PlayerNotificationDetailPageState
                         ),
                         _divider(context, thickness: 2),
                         const SizedBox(height: 24),
-                        ..._opts.entries.toList().asMap().entries.map((entry) {
-                          final i = entry.key;
-                          final e = entry.value;
+                        ...options.asMap().entries.map((entry) {
+                          final (label, value, update) = entry.value;
                           return Column(
                             children: [
                               _switchRow(
                                 context,
-                                label: e.key,
-                                value: e.value,
-                                onChanged: (v) =>
-                                    setState(() => _opts[e.key] = v),
+                                label: label,
+                                value: value,
+                                onChanged: (value) => setState(
+                                  () => _preferences = update(value),
+                                ),
                               ),
-                              if (i != _opts.length - 1) _divider(context),
+                              if (entry.key < options.length - 1)
+                                _divider(context),
                             ],
                           );
                         }),
