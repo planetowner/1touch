@@ -261,12 +261,14 @@ class MatchInfoTab extends StatelessWidget {
     final rowNumbers = grouped.keys.toList()..sort();
     final orderedRows = reverse ? rowNumbers.reversed : rowNumbers;
 
+    // 공급자 좌표는 홈이 오른쪽부터, 원정이 왼쪽부터예요.
+    // 홈 골키퍼는 아래, 원정 골키퍼는 위에 두므로 두 팀 모두 열을 역순으로 그려요.
     return [
       for (final rowNumber in orderedRows)
         [
           for (final item in (grouped[rowNumber]!
             ..sort(
-              (a, b) => a.slot.compareTo(b.slot),
+              (a, b) => b.slot.compareTo(a.slot),
             )))
             LineupPlayer(
               teamId: item.entry.teamId,
