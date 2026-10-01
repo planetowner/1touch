@@ -45,8 +45,17 @@ void main() {
         expect(text.style?.fontSize, 18);
         expect(labelRect.left, greaterThanOrEqualTo(segmentRect.left + 3));
         expect(labelRect.right, lessThanOrEqualTo(segmentRect.right - 3));
+        if (label == '80.0%') {
+          expect(labelRect.left, closeTo(segmentRect.left + 3, 0.1));
+        } else if (label == '15.0%') {
+          expect(labelRect.center.dx, closeTo(segmentRect.center.dx, 0.1));
+        } else {
+          expect(labelRect.right, closeTo(segmentRect.right - 3, 0.1));
+        }
       }
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
+      expect(tester.getRect(find.byIcon(Icons.check_circle)).right,
+          lessThanOrEqualTo(tester.getRect(find.text('5.0%')).left));
       expect(tester.takeException(), isNull);
       expect(
         find.byType(SingleChildScrollView),
