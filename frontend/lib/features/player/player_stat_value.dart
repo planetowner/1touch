@@ -23,7 +23,11 @@ String playerMetricValue(FixturePlayerStatMetric metric,
 ({String label, double? value, String text, String unit}) playerSeasonStat(
     PlayerSeasonMetric? stat) {
   final percent = stat?.metric.kind == 'percentage';
-  final value = percent ? stat?.metric.value : stat?.per90;
+  final seasonTotal = switch (stat?.metric.code) {
+    'goals' || 'assists' => true,
+    _ => false,
+  };
+  final value = percent || seasonTotal ? stat?.metric.value : stat?.per90;
   final label = switch (stat?.metric.code) {
     'passes' => 'Accurate passes',
     'duels' => 'Duels won',
@@ -33,6 +37,6 @@ String playerMetricValue(FixturePlayerStatMetric metric,
     label: label,
     value: value,
     text: '${playerNumber(value)}${percent && value != null ? '%' : ''}',
-    unit: percent ? '%' : 'per 90',
+    unit: percent ? '%' : (seasonTotal ? 'Season total' : 'per 90'),
   );
 }

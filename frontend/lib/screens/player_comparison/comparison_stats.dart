@@ -258,35 +258,6 @@ class _StatRow extends StatelessWidget {
               ),
             ),
           ),
-          if ([
-            first,
-            second
-          ].any((row) => row != null && row.observedMatches < row.totalMatches))
-            Padding(
-              padding: const EdgeInsets.only(top: 5),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (final (index, row) in [first, second].indexed) ...[
-                    if (index > 0) const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        row == null
-                            ? '—'
-                            : tr(context,
-                                'Based on {observed}/{total} matches', {
-                                'observed': row.observedMatches,
-                                'total': row.totalMatches,
-                              }),
-                        textAlign:
-                            index == 0 ? TextAlign.left : TextAlign.right,
-                        style: Eyebrow.style,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
         ],
       ),
     );

@@ -10,6 +10,8 @@ from .player_match_metrics import (
 
 MINIMUM_REFERENCE_MINUTES = 450
 LOWER_IS_BETTER = frozenset({"goals_conceded", "possession_lost", "dribbled_past", "fouls_committed"})
+# 경기 이벤트·선수 상세·팀 통계를 대조해 0회 생략을 확인한 발생 횟수예요.
+SPARSE_COUNT_TYPES = frozenset({42, 52, 78, 79, 96, 100, 117})
 
 
 def current_player_team(roster: list[dict], current_matches: list[dict]) -> dict | None:
@@ -65,15 +67,21 @@ def stat_index(rows: list[dict]) -> dict:
 
 def season_categories(position: int | None, matches: list[dict], stats: dict) -> list[dict]:
     totals, coverage = {}, {}
+    match_stats = [stats[(r["fixture_id"], r["team_id"], r["player_id"])] for r in matches]
     codes = [m for _, _, metrics in CATEGORIES.get(position, ()) for m in metrics]
     for code in codes:
         for type_id in METRICS[code][2]:
-            values = [stats[(r["fixture_id"], r["team_id"], r["player_id"])].get(type_id) for r in matches]
+            # Sportmonks V3는 발생하지 않은 횟수를 생략해요. 볼 터치까지 수집된
+            # 상세 기록의 확인된 횟수만 0으로 읽어요. 다른 지표의 미제공까지 0으로 만들지 않아요.
+            # https://docs.sportmonks.com/v3/welcome/differences-between-api-2-and-api-3/api-changes#statistics
+            values = [row.get(type_id, 0 if type_id in SPARSE_COUNT_TYPES and row.get(120) is not None else None)
+                      for row in match_stats]
             coverage[type_id] = sum(v is not None for v in values)
-            # 일부 경기의 합계를 시즌 전체 기록으로 표시하거나 누락을 0으로 채우지 않아요.
             totals[type_id] = sum(values) if values and all(v is not None for v in values) else None
     xg_values = [r["xg"] for r in matches]
     xg = sum(xg_values) if xg_values and all(v is not None for v in xg_values) else None
+    minutes = (sum(r["minutes_played"] for r in matches)
+               if matches and all(r["minutes_played"] is not None for r in matches) else 0)
     categories = build_categories(position, totals, xg)
     for category in categories:
         for metric in category["metrics"]:
@@ -83,20 +91,15 @@ def season_categories(position: int | None, matches: list[dict], stats: dict) ->
             metric["lower_is_better"] = metric["code"] in LOWER_IS_BETTER
             metric["per90"] = None
             if metric["kind"] != "percentage":
-                # 기록과 출전 시간이 함께 있는 경기만 써요. 실제 0회 기록도 포함해요.
-                # 성공/시도 쌍은 성공 횟수만 비교하므로 시도 기록의 누락과는 별개예요.
-                samples = []
-                for row in matches:
-                    match_metric = build_metric(
-                        metric["code"], stats[(row["fixture_id"], row["team_id"], row["player_id"])], row["xg"])
-                    value = match_metric["numerator" if metric["kind"] == "pair" else "value"]
-                    if value is not None and row["minutes_played"] is not None:
-                        samples.append((value, row["minutes_played"]))
-                metric["observed_matches"] = len(samples)
-                minutes = sum(minutes for _, minutes in samples)
-                if minutes > 0:
-                    metric["per90"] = float(sum(value for value, _ in samples)) * 90 / minutes
-            metric["rank_value"] = float(metric["numerator"] / metric["denominator"] * 100) if metric["value"] is not None and metric["kind"] == "percentage" else metric["per90"]
+                # 0회 경기의 출전 시간도 분모에 포함해요. 일부 경기만으로 시즌 값을 만들지 않아요.
+                value = metric["numerator" if metric["kind"] == "pair" else "value"]
+                if value is not None and minutes > 0:
+                    metric["per90"] = float(value) * 90 / minutes
+            # 골·도움은 화면과 순위 모두 시즌 합계로 비교해요.
+            if metric["code"] in {"goals", "assists"}:
+                metric["rank_value"] = metric["value"]
+            else:
+                metric["rank_value"] = float(metric["numerator"] / metric["denominator"] * 100) if metric["value"] is not None and metric["kind"] == "percentage" else metric["per90"]
     return categories
 
 

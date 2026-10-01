@@ -127,7 +127,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _topStat(PlayerSeasonMetric? stat) {
     final presentation = playerSeasonStat(stat);
-    final appColors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -179,18 +178,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
             ),
           ),
         ),
-        if (stat != null && stat.observedMatches < stat.totalMatches)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              tr(context, 'Based on {observed}/{total} matches', {
-                'observed': stat.observedMatches,
-                'total': stat.totalMatches,
-              }),
-              textAlign: TextAlign.center,
-              style: Eyebrow.style.copyWith(color: appColors.mutedForeground),
-            ),
-          ),
       ],
     );
   }
