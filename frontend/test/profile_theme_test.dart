@@ -53,6 +53,15 @@ void main() {
         findsNWidgets(3),
       );
       expect(
+        tester
+            .widgetList<Text>(find.descendant(
+              of: find.byKey(const ValueKey('profile-stat-card')),
+              matching: find.text('0'),
+            ))
+            .every((text) => text.style?.fontSize == 24),
+        isTrue,
+      );
+      expect(
         find.descendant(
           of: find.byKey(const ValueKey('profile-stat-card')),
           matching: find.text('—'),
