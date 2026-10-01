@@ -349,30 +349,32 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
           builder: (context, constraints) {
             final cellW = constraints.maxWidth / 7.0;
             return Container(
+              key: const ValueKey('calendar-top-divider'),
               margin: EdgeInsets.only(left: startDay * cellW + 12.0),
               height: 1,
               color: AppColors.of(context).divider,
             );
           },
         ),
-        const SizedBox(height: 8),
-
         for (int week = 0; week < weekCount; week++)
           Column(
             children: [
-              Row(
-                children: [
-                  for (int day = 0; day < 7; day++)
-                    Expanded(
-                      child: _buildCalendarCell(
-                        week,
-                        day,
-                        startDay,
-                        daysInMonth,
-                        events,
+              Padding(
+                padding: const EdgeInsets.only(top: 6, bottom: 8),
+                child: Row(
+                  children: [
+                    for (int day = 0; day < 7; day++)
+                      Expanded(
+                        child: _buildCalendarCell(
+                          week,
+                          day,
+                          startDay,
+                          daysInMonth,
+                          events,
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
 
               // Row divider: full width except
@@ -387,13 +389,13 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                         ? (6 - lastDayIndex) * cellW
                         : 12.0;
                     return Container(
+                      key: ValueKey('calendar-week-divider-$week'),
                       margin: EdgeInsets.only(left: left, right: right),
                       height: 1,
                       color: AppColors.of(context).divider,
                     );
                   },
                 ),
-              if (week < weekCount - 1) const SizedBox(height: 8),
             ],
           ),
       ],
@@ -412,7 +414,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
     // Don't show days outside the current month
     if (dayNumber < 1 || dayNumber > daysInMonth) {
       return SizedBox(
-        height: 75,
+        height: 70,
         child: const SizedBox(),
       );
     }
@@ -442,16 +444,20 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
               )
           : null,
       child: SizedBox(
-        height: 75,
+        height: 70,
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 40),
             child: Container(
+              key: ValueKey('calendar-day-$dayNumber'),
               width: 40,
               height: 70,
               decoration: BoxDecoration(
-                color:
-                    isHighlighted ? colorScheme.onSurface : Colors.transparent,
+                color: isHighlighted
+                    ? Theme.of(context).brightness == Brightness.dark
+                        ? AppPalette.black
+                        : AppPalette.lightModeDarkGrey
+                    : Colors.transparent,
                 borderRadius: isHighlighted ? BorderRadius.circular(4) : null,
               ),
               child: Column(
@@ -465,7 +471,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                       softWrap: false,
                       style: Heading4.style.copyWith(
                         color: isHighlighted
-                            ? colorScheme.onPrimary
+                            ? colorScheme.onSurface
                             : isWeekend
                                 ? appColors.mutedForeground
                                 : colorScheme.onSurface,
@@ -478,6 +484,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                       width: double.infinity,
                       height: 28,
                       child: Stack(
+                        clipBehavior: Clip.none,
                         alignment: Alignment.center,
                         children: [
                           Image.network(
@@ -492,7 +499,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                           ),
                           if (displayedEvent.dotColor != null)
                             Positioned(
-                              top: 0,
+                              top: -8,
                               right: 3,
                               child: Container(
                                 key: ValueKey(
