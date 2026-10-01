@@ -206,6 +206,82 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('edited post media shows loading, error, and retry',
+      (tester) async {
+    _usePhone(tester);
+    const post = Post(
+      postId: 95,
+      teamId: 83,
+      userId: 1001,
+      category: PostCategory.general,
+      title: 'Original title',
+      body: 'Original body',
+      createdAt: '2026-09-29T10:00:00Z',
+      attachments: [PostAttachment(attachmentId: 7, position: 0)],
+    );
+    final repository = _RefreshingPostRepository(posts: [post]);
+    await tester.pumpWidget(MaterialApp(
+      home: PostDetailScreen(
+        post: post,
+        currentUserId: 1001,
+        postRepository: repository,
+        communityRepository: const StubCommunityRepository(),
+        postCommentRepository: const StubPostCommentRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('community-post-delete-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('community-post-title-input')),
+      'Updated title',
+    );
+    await tester.tap(find.byKey(const ValueKey('community-post-submit')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump();
+
+    expect(repository.loadRequests, hasLength(1));
+    expect(find.byKey(const ValueKey('community-detail-media-loading')),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('community-detail-media-open')),
+        findsNothing);
+
+    repository.loadRequests.first.completeError(StateError('Network error'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('community-detail-media-error')),
+        findsOneWidget);
+
+    await tester
+        .tap(find.byKey(const ValueKey('community-detail-media-retry')));
+    await tester.pump();
+    expect(repository.loadRequests, hasLength(2));
+    expect(find.byKey(const ValueKey('community-detail-media-loading')),
+        findsOneWidget);
+
+    repository.loadRequests.last.complete([
+      post.copyWith(
+        title: 'Updated title',
+        attachments: const [
+          PostAttachment(
+            attachmentId: 7,
+            position: 0,
+            mediaUrl: 'https://example.test/updated-image.jpg',
+          ),
+        ],
+      ),
+    ]);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('community-detail-media-open')),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('community-detail-media-loading')),
+        findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('author can edit their comment', (tester) async {
     _usePhone(tester);
     final comments = _DeletingCommentsRepository();
@@ -438,5 +514,26 @@ class _WaitingPostRepository extends MockPostRepository {
     updateStarted = true;
     await release.future;
     await super.updatePost(input);
+  }
+}
+
+class _RefreshingPostRepository extends MockPostRepository {
+  _RefreshingPostRepository({required super.posts});
+
+  final loadRequests = <Completer<List<Post>>>[];
+
+  @override
+  Future<List<Post>> loadPosts({
+    required int teamId,
+    PostCategory? category,
+    PostSort sort = PostSort.newest,
+    PostPeriod period = PostPeriod.allTime,
+    String? timezone,
+    int limit = 50,
+    int offset = 0,
+  }) {
+    final request = Completer<List<Post>>();
+    loadRequests.add(request);
+    return request.future;
   }
 }

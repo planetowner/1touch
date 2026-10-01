@@ -34,6 +34,9 @@ class PostDetailContent extends StatelessWidget {
     required this.onReport,
     this.currentUserId,
     this.showMedia = true,
+    this.mediaLoading = false,
+    this.mediaLoadFailed = false,
+    this.onRetryMedia,
     this.onEditPost,
     this.onDeletePost,
     this.onEditComment,
@@ -55,6 +58,9 @@ class PostDetailContent extends StatelessWidget {
   final Future<void> Function(String reason)? onReport;
   final int? currentUserId;
   final bool showMedia;
+  final bool mediaLoading;
+  final bool mediaLoadFailed;
+  final VoidCallback? onRetryMedia;
   final VoidCallback? onEditPost;
   final VoidCallback? onDeletePost;
   final ValueChanged<PostComment>? onEditComment;
@@ -95,6 +101,9 @@ class PostDetailContent extends StatelessWidget {
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasMedia = showMedia && post.mediaUrl != null;
+    final showMediaStatus = showMedia &&
+        post.attachments.isNotEmpty &&
+        (mediaLoading || mediaLoadFailed);
 
     return SliverList(
       delegate: SliverChildListDelegate(
@@ -193,8 +202,14 @@ class PostDetailContent extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(post.body, style: Body2.style),
                 const SizedBox(height: 16),
-                if (hasMedia) _PostMediaPreview(mediaUrl: post.mediaUrl!),
-                if (hasMedia) const SizedBox(height: 16),
+                if (showMediaStatus)
+                  _PostMediaStatus(
+                    isLoading: mediaLoading,
+                    onRetry: onRetryMedia,
+                  )
+                else if (hasMedia)
+                  _PostMediaPreview(mediaUrl: post.mediaUrl!),
+                if (showMediaStatus || hasMedia) const SizedBox(height: 16),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -500,6 +515,52 @@ class _PostAction extends StatelessWidget {
                 Text(tr(context, label), key: labelKey, style: Body2.style),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PostMediaStatus extends StatelessWidget {
+  const _PostMediaStatus({required this.isLoading, required this.onRetry});
+
+  final bool isLoading;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: ColoredBox(
+          color: colors.surfaceContainerHighest,
+          child: Center(
+            child: isLoading
+                ? CircularProgressIndicator(
+                    key: const ValueKey('community-detail-media-loading'),
+                    semanticsLabel: tr(context, 'Loading…'),
+                  )
+                : Column(
+                    key: const ValueKey('community-detail-media-error'),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        tr(context,
+                            'Unable to load updated post. Please try again.'),
+                        textAlign: TextAlign.center,
+                        style: Body2.style,
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        key: const ValueKey('community-detail-media-retry'),
+                        onPressed: onRetry,
+                        child: Text(tr(context, 'Retry')),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
