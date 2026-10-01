@@ -50,6 +50,22 @@ void currentFormRepositoryContract({
     expect(repository.cachedOptions.value, hasLength(2));
   });
 
+  test('filters seasons before limiting and keeps season caches separate',
+      () async {
+    final current = await repository.loadOptions(1, seasonName: '2025/26');
+    final previous =
+        await repository.loadOptions(1, seasonName: '2024/25', limit: 1);
+    expect(current.map((option) => option.teamId), [1, 2]);
+    expect(previous.single.seasonId, 90);
+    expect(repository.cachedOptionsFor(1, seasonName: '2024/25', limit: 1),
+        same(previous));
+    expect(repository.cachedOptions.value, hasLength(2));
+    expect(await repository.loadAllOptions(1, seasonName: '2024/25'),
+        hasLength(1));
+    expect(
+        await repository.loadOptions(1, seasonName: 'no-such-season'), isEmpty);
+  });
+
   test('accepts the backend maximum and rejects out-of-range limits', () async {
     expect(await repository.loadOptions(1, limit: 1000), hasLength(3));
     expect(() => repository.loadOptions(1, limit: 0), throwsRangeError);

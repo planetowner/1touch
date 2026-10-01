@@ -67,9 +67,11 @@ abstract final class LocalCacheKeys {
   static String currentFormOptions(
     int teamId,
     String search,
-    int limit,
-  ) =>
-      'current-form-options:$teamId:${Uri.encodeComponent(search)}:$limit';
+    int limit, {
+    String? seasonName,
+  }) =>
+      'current-form-options:$teamId:${Uri.encodeComponent(search)}:$limit'
+      '${seasonName == null ? '' : ':season:${Uri.encodeComponent(seasonName)}'}';
 
   static String currentFormComparison(
     int teamId,

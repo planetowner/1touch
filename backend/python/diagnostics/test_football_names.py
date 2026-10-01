@@ -83,7 +83,7 @@ class FootballNamesTests(unittest.TestCase):
         self.assertIn("JOIN fixtures f", sql)
         self.assertIn("s.competition_id IN", sql)
         self.assertIn("OR t.team_id IN (%s)", sql)
-        self.assertEqual(params, ("리버풀", "리버풀", "리버풀", 8, 5))
+        self.assertEqual(params, ("리버풀", "리버풀", "리버풀", 8, 5, 0))
 
     def test_catalog_reads_changed_db_values_without_file_or_restart(self):
         with patch.object(names_repo, "fetch_all", side_effect=[[(8, "리버풀")], [(997, "해리 케인")],

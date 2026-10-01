@@ -45,11 +45,13 @@ class MockCurrentFormRepository implements CurrentFormRepository {
   List<CurrentFormOption>? cachedOptionsFor(
     int teamId, {
     String search = '',
+    String? seasonName,
     int limit = 200,
   }) {
     return _cachedOptions.value[CurrentFormOptionsQuery(
       teamId: teamId,
       search: search,
+      seasonName: seasonName,
       limit: limit,
     )];
   }
@@ -73,6 +75,7 @@ class MockCurrentFormRepository implements CurrentFormRepository {
   Future<List<CurrentFormOption>> loadOptions(
     int teamId, {
     String search = '',
+    String? seasonName,
     int limit = 200,
   }) async {
     if (limit < 1 || limit > 1000) {
@@ -82,6 +85,7 @@ class MockCurrentFormRepository implements CurrentFormRepository {
     final query = CurrentFormOptionsQuery(
       teamId: teamId,
       search: search,
+      seasonName: seasonName,
       limit: limit,
     );
     final cached = _cachedOptions.value[query];
@@ -100,6 +104,7 @@ class MockCurrentFormRepository implements CurrentFormRepository {
       }
 
       if (query.search.isNotEmpty && !_matches(team, query.search)) continue;
+      if (query.seasonName != null && season.name != query.seasonName) continue;
 
       options.add(
         CurrentFormOption(
@@ -138,8 +143,11 @@ class MockCurrentFormRepository implements CurrentFormRepository {
   }
 
   @override
-  Future<List<CurrentFormOption>> loadAllOptions(int teamId) =>
-      loadOptions(teamId, limit: 1000);
+  Future<List<CurrentFormOption>> loadAllOptions(
+    int teamId, {
+    String? seasonName,
+  }) =>
+      loadOptions(teamId, seasonName: seasonName, limit: 1000);
 
   @override
   Future<CurrentFormComparison?> loadComparison(

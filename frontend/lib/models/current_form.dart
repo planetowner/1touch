@@ -5,11 +5,13 @@ class CurrentFormOptionsQuery {
   CurrentFormOptionsQuery({
     required this.teamId,
     String search = '',
+    this.seasonName,
     this.limit = 200,
   }) : search = search.trim().toLowerCase();
 
   final int teamId;
   final String search;
+  final String? seasonName;
   final int limit;
 
   @override
@@ -17,11 +19,12 @@ class CurrentFormOptionsQuery {
     return other is CurrentFormOptionsQuery &&
         other.teamId == teamId &&
         other.search == search &&
+        other.seasonName == seasonName &&
         other.limit == limit;
   }
 
   @override
-  int get hashCode => Object.hash(teamId, search, limit);
+  int get hashCode => Object.hash(teamId, search, seasonName, limit);
 }
 
 @immutable

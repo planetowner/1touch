@@ -21,11 +21,18 @@ class _AnalysisComparisonFilterSheet<T> extends StatefulWidget {
     required this.options,
     required this.initialValue,
     required this.optionKey,
+    this.seasonNames,
+    this.initialSeasonName,
+    this.loadSeasonOptions,
   });
 
   final List<_AnalysisFilterOption<T>> options;
   final T? initialValue;
   final String Function(T value) optionKey;
+  final List<String>? seasonNames;
+  final String? initialSeasonName;
+  final Future<List<_AnalysisFilterOption<T>>> Function(String seasonName)?
+      loadSeasonOptions;
 
   @override
   State<_AnalysisComparisonFilterSheet<T>> createState() =>
@@ -38,23 +45,78 @@ class _AnalysisComparisonFilterSheetState<T>
   String? _seasonName;
   int? _teamId;
   bool _seasonExpanded = false;
+  late List<_AnalysisFilterOption<T>> _options;
+  bool _isLoading = false;
+  bool _loadFailed = false;
+  int _loadRequestId = 0;
 
   @override
   void initState() {
     super.initState();
+    _options = widget.options;
     final initial = widget.options
         .where((option) => option.value == widget.initialValue)
         .firstOrNull;
-    _seasonName = initial?.seasonName ?? widget.options.firstOrNull?.seasonName;
+    _seasonName = widget.initialSeasonName ??
+        initial?.seasonName ??
+        widget.seasonNames?.firstOrNull ??
+        widget.options.firstOrNull?.seasonName;
     _teamId = initial?.teamId ??
         widget.options
             .where((option) => option.seasonName == _seasonName)
             .firstOrNull
             ?.teamId;
     _search.addListener(_refresh);
+    if (widget.loadSeasonOptions != null && _seasonName != null) {
+      unawaited(_loadSeason(_seasonName!));
+    }
   }
 
   void _refresh() => setState(() {});
+
+  void _selectSeason(String seasonName) {
+    setState(() => _seasonExpanded = false);
+    if (_seasonName == seasonName) return;
+    setState(() {
+      _seasonName = seasonName;
+      if (widget.loadSeasonOptions == null) _selectAvailableTeam();
+    });
+    if (widget.loadSeasonOptions != null) {
+      unawaited(_loadSeason(seasonName));
+    }
+  }
+
+  void _selectAvailableTeam() {
+    final teams = _options.where((option) => option.seasonName == _seasonName);
+    if (!teams.any((option) => option.teamId == _teamId)) {
+      _teamId = teams.firstOrNull?.teamId;
+    }
+  }
+
+  Future<void> _loadSeason(String seasonName) async {
+    final requestId = ++_loadRequestId;
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+      _options = [];
+    });
+    try {
+      final options = await widget.loadSeasonOptions!(seasonName);
+      // 시즌을 다시 선택하거나 창을 닫으면 이전 응답을 화면에 반영하지 않아요.
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _options = options;
+        _isLoading = false;
+        _selectAvailableTeam();
+      });
+    } on Object {
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _isLoading = false;
+        _loadFailed = true;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -73,17 +135,18 @@ class _AnalysisComparisonFilterSheetState<T>
         isDark ? AppPalette.lightGrey : appColors.subtleBackground;
     final divider = isDark ? AppPalette.lightGrey : appColors.divider;
     final seasons = <String, String>{
-      for (final option in widget.options)
-        option.seasonName: compactSeasonLabel(option.seasonName),
+      for (final name in widget.seasonNames ??
+          widget.options.map((option) => option.seasonName))
+        name: compactSeasonLabel(name),
     };
     final search = _search.text.trim().toLowerCase();
-    final teams = widget.options
+    final teams = _options
         .where((option) => option.seasonName == _seasonName)
         .where((option) =>
             search.isEmpty || option.teamName.toLowerCase().contains(search))
         .toList()
       ..sort((a, b) => a.teamName.compareTo(b.teamName));
-    final selected = widget.options
+    final selected = _options
         .where((option) =>
             option.seasonName == _seasonName && option.teamId == _teamId)
         .firstOrNull;
@@ -167,19 +230,7 @@ class _AnalysisComparisonFilterSheetState<T>
                               ? Icon(Icons.check,
                                   color: scheme.onSurface, size: 20)
                               : null,
-                          onTap: () => setState(() {
-                            _seasonName = season.key;
-                            _seasonExpanded = false;
-                            if (!widget.options.any((option) =>
-                                option.seasonName == _seasonName &&
-                                option.teamId == _teamId)) {
-                              _teamId = widget.options
-                                  .where((option) =>
-                                      option.seasonName == _seasonName)
-                                  .firstOrNull
-                                  ?.teamId;
-                            }
-                          }),
+                          onTap: () => _selectSeason(season.key),
                         ),
                     const SizedBox(height: 24),
                     Text(tr(context, 'TEAM'), style: Body2_b.style),
@@ -206,6 +257,28 @@ class _AnalysisComparisonFilterSheetState<T>
                       ),
                     ),
                     const SizedBox(height: 16),
+                    if (_isLoading)
+                      const Center(
+                        child: SizedBox.square(
+                          key: ValueKey('analysis-filter-loading'),
+                          dimension: 40,
+                          child: FootballLoadingIndicator(),
+                        ),
+                      )
+                    else if (_loadFailed)
+                      Row(
+                        key: const ValueKey('analysis-filter-error'),
+                        children: [
+                          Expanded(
+                              child: Text(tr(context, 'Unable to load team'))),
+                          TextButton(
+                            onPressed: () => _loadSeason(_seasonName!),
+                            child: Text(tr(context, 'RETRY')),
+                          ),
+                        ],
+                      )
+                    else if (teams.isEmpty)
+                      Text(tr(context, 'No teams found')),
                     for (final option in teams)
                       Column(
                         children: [

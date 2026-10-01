@@ -20,7 +20,6 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   CurrentFormComparison? _comparison;
   bool _isLoading = false;
   bool _loadFailed = false;
-  bool _isFilterLoading = false;
   int _loadRequestId = 0;
   int? _baselineSeasonId;
   int? _selectedFormRound;
@@ -29,6 +28,16 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       widget.repository ?? currentFormRepository;
 
   int? get _teamId => widget.team?.id;
+
+  String? get _currentSeasonName {
+    final teamId = _teamId;
+    final seasonId =
+        teamId == null ? null : footballCatalog.resolve(teamId)?.seasonId;
+    return footballCatalog.seasons.value
+        .where((season) => season.seasonId == seasonId)
+        .firstOrNull
+        ?.name;
+  }
 
   @override
   void initState() {
@@ -48,9 +57,9 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   void _startDefaultLoad() {
     final teamId = _teamId;
     final requestId = ++_loadRequestId;
-    _isFilterLoading = false;
-    final cachedOptions =
-        teamId == null ? null : _repository.cachedOptionsFor(teamId);
+    final cachedOptions = teamId == null
+        ? null
+        : _repository.cachedOptionsFor(teamId, seasonName: _currentSeasonName);
     final baselineOption = teamId == null || cachedOptions == null
         ? null
         : _baselineOption(cachedOptions, teamId);
@@ -91,7 +100,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
 
   Future<void> _loadOptions(int teamId, int requestId) async {
     try {
-      final options = await _repository.loadOptions(teamId);
+      final options =
+          await _repository.loadOptions(teamId, seasonName: _currentSeasonName);
       if (!mounted || requestId != _loadRequestId) return;
 
       final baselineOption = _baselineOption(options, teamId);
@@ -278,45 +288,62 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
 
   Future<void> _openComparisonFilter() async {
     final teamId = _teamId;
-    if (teamId == null || _isFilterLoading) return;
-    setState(() => _isFilterLoading = true);
-    final List<CurrentFormOption> allOptions;
-    try {
-      allOptions = await _repository.loadAllOptions(teamId);
-    } on Object {
-      if (!mounted) return;
-      setState(() => _isFilterLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr(context, 'Unable to load current form'))),
-      );
-      return;
-    }
-    if (!mounted || teamId != _teamId) return;
-    setState(() => _isFilterLoading = false);
-    final options = allOptions
-        .where((option) =>
-            option.teamId != _teamId || option.seasonId != _baselineSeasonId)
-        .map((option) => _AnalysisFilterOption<CurrentFormOption>(
-              value: option,
-              seasonId: option.seasonId,
-              seasonName: option.seasonName,
-              teamId: option.teamId,
-              teamName:
-                  teamNameLabel(context, option.teamId, option.teamName ?? ''),
-            ))
-        .toList();
+    if (teamId == null) return;
+    final repository = _repository;
+    final baselineSeasonId = _baselineSeasonId;
+    final initialSeasonName = _selectedOption?.seasonName ??
+        _comparison?.current.seasonName ??
+        _options.first.seasonName;
+    // 팀 목록과 시즌 목록을 분리해야 아직 조회하지 않은 시즌도 선택할 수 있어요.
+    final seasons = {
+      for (final season in footballCatalog.seasons.value)
+        if (TeamPageEligibility.domesticBigFiveCompetitionIds
+            .contains(season.competitionId))
+          season.name,
+      for (final option in _options) option.seasonName,
+      initialSeasonName,
+    }.toList()
+      ..sort((a, b) => b.compareTo(a));
+    List<_AnalysisFilterOption<CurrentFormOption>> filterOptions(
+      List<CurrentFormOption> options,
+    ) =>
+        options
+            .where((option) =>
+                option.teamId != teamId || option.seasonId != baselineSeasonId)
+            .map((option) => _AnalysisFilterOption<CurrentFormOption>(
+                  value: option,
+                  seasonId: option.seasonId,
+                  seasonName: option.seasonName,
+                  teamId: option.teamId,
+                  teamName: teamNameLabel(
+                      context, option.teamId, option.teamName ?? ''),
+                ))
+            .toList();
     final selected = await showModalBottomSheet<CurrentFormOption>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _AnalysisComparisonFilterSheet<CurrentFormOption>(
-        options: options,
+        options: filterOptions([if (_selectedOption != null) _selectedOption!]),
         initialValue: _selectedOption,
+        seasonNames: seasons,
+        initialSeasonName: initialSeasonName,
+        loadSeasonOptions: (seasonName) async {
+          final options =
+              await repository.loadAllOptions(teamId, seasonName: seasonName);
+          if (!mounted) return [];
+          return filterOptions(options);
+        },
         optionKey: (option) =>
             'analysis-form-option-${option.teamId}-${option.seasonId}',
       ),
     );
-    if (mounted && selected != null) _changeComparison(selected);
+    if (mounted &&
+        teamId == _teamId &&
+        repository == _repository &&
+        selected != null) {
+      _changeComparison(selected);
+    }
   }
 
   Widget _buildComparisonPicker() {
@@ -328,7 +355,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
 
     return InkWell(
       key: const ValueKey('analysis-form-filter'),
-      onTap: _isLoading || _isFilterLoading ? null : _openComparisonFilter,
+      onTap: _isLoading ? null : _openComparisonFilter,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         width: 165,
@@ -344,15 +371,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                     style: Body2_b.style.copyWith(color: colors.onSurface),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis)),
-            if (_isFilterLoading)
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            else
-              Icon(Icons.keyboard_arrow_down,
-                  color: colors.onSurface, size: 20),
+            Icon(Icons.keyboard_arrow_down, color: colors.onSurface, size: 20),
           ],
         ),
       ),
