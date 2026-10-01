@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'support/fake_betting_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +17,14 @@ import 'package:onetouch/screens/MatchScreen_tabs/H2H.dart';
 
 void main() {
   setUpAppCatalog();
+  setUpAll(() async {
+    await (FontLoader('Archivo')
+          ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
+        .load();
+    await (FontLoader('Pretendard')
+          ..addFont(rootBundle.load('assets/fonts/Pretendard-Regular.otf')))
+        .load();
+  });
   testWidgets('uses the participating favorite team as the H2H perspective',
       (tester) async {
     await _setSize(tester, const Size(430, 932));
@@ -238,28 +247,59 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('puts the opponent before the match limit in Korean',
-      (tester) async {
-    await _setSize(tester, const Size(430, 932));
-    final repository = _RecordingFixtureRepository(
-      loader: (_, __) async => [_pastFixture()],
-    );
+  for (final locale in appSupportedLocales) {
+    for (final size in [const Size(320, 568), const Size(430, 932)]) {
+      testWidgets('spaces H2H controls evenly in $locale at $size',
+          (tester) async {
+        await _setSize(tester, size);
+        final repository = _RecordingFixtureRepository(
+          loader: (_, __) async => [_pastFixture()],
+        );
 
-    await tester.pumpWidget(
-      _testApp(repository: repository, locale: const Locale('ko')),
-    );
-    await tester.pump();
+        await tester.pumpWidget(
+          _testApp(
+            repository: repository,
+            locale: locale,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          ),
+        );
+        await tester.pump();
 
-    final logo = find.byKey(const ValueKey('match-h2h-against-team-19'));
-    final label = find.byKey(const ValueKey('match-h2h-against-label'));
-    final dropdown = find.byKey(const ValueKey('match-h2h-limit-dropdown'));
+        final logo = find.byKey(const ValueKey('match-h2h-against-team-19'));
+        final label = find.byKey(const ValueKey('match-h2h-against-label'));
+        final dropdown = find.byKey(const ValueKey('match-h2h-limit-dropdown'));
+        final isEnglish = locale.languageCode == 'en';
+        final first = tester.getRect(isEnglish ? dropdown : logo);
+        final middle = tester.getRect(label);
+        final last = tester.getRect(isEnglish ? logo : dropdown);
 
-    expect(find.text('상대로'), findsOneWidget);
-    expect(find.text('최근 5경기'), findsOneWidget);
-    expect(tester.getCenter(logo).dx, lessThan(tester.getCenter(label).dx));
-    expect(tester.getCenter(label).dx, lessThan(tester.getCenter(dropdown).dx));
-    expect(tester.takeException(), isNull);
-  });
+        expect(first.left, closeTo(24, 0.1));
+        expect(last.right, closeTo(size.width - 24, 0.1));
+        expect(middle.left - first.right, closeTo(last.left - middle.right, 1));
+        expect(first.right, lessThanOrEqualTo(middle.left));
+        expect(middle.right, lessThanOrEqualTo(last.left));
+        if (isEnglish) {
+          final selectedLabel = tester.widget<Text>(
+            find.descendant(
+              of: dropdown,
+              matching: find.text('LAST 5 MATCHES'),
+            ),
+          );
+          final labelWidth = (TextPainter(
+            text: TextSpan(
+              text: selectedLabel.data,
+              style: selectedLabel.style,
+            ),
+            textDirection: TextDirection.ltr,
+            maxLines: 1,
+          )..layout())
+              .width;
+          expect(labelWidth, lessThanOrEqualTo(first.width - 56));
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
 
   testWidgets('loads the selected H2H limit on a compact screen',
       (tester) async {
@@ -428,6 +468,7 @@ Future<void> _setSize(WidgetTester tester, Size size) async {
 Widget _testApp({
   required _RecordingFixtureRepository repository,
   Locale? locale,
+  EdgeInsetsGeometry contentPadding = EdgeInsets.zero,
 }) {
   final betting = fakeBettingController(_selectedFixture.fixtureId);
   addTearDown(betting.dispose);
@@ -436,10 +477,13 @@ Widget _testApp({
     supportedLocales: appSupportedLocales,
     localizationsDelegates: appLocalizationDelegates,
     home: Scaffold(
-      body: H2HTab(
-        bettingController: betting,
-        fixture: _selectedFixture,
-        fixtureRepository: repository,
+      body: Padding(
+        padding: contentPadding,
+        child: H2HTab(
+          bettingController: betting,
+          fixture: _selectedFixture,
+          fixtureRepository: repository,
+        ),
       ),
     ),
   );
