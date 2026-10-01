@@ -370,8 +370,6 @@ class _StandingTabState extends State<StandingTab> {
     }
 
     return CustomScrollView(
-      physics:
-          _isBracketInteracting ? const NeverScrollableScrollPhysics() : null,
       slivers: [
         SliverList(
           delegate: SliverChildListDelegate(

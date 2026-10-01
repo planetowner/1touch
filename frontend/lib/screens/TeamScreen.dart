@@ -293,9 +293,7 @@ class _TeamScreenState extends State<TeamScreen>
               key: _nestedScrollKey,
               controller: _scrollController,
               floatHeaderSlivers: false,
-              physics: _isBracketInteracting
-                  ? const NeverScrollableScrollPhysics()
-                  : const AlwaysScrollableScrollPhysics(),
+              physics: const AlwaysScrollableScrollPhysics(),
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 SliverAppBar(
                   automaticallyImplyLeading: false,

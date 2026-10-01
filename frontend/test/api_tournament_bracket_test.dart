@@ -179,15 +179,20 @@ void main() {
       ],
     );
 
-    await tester.binding.setSurfaceSize(const Size(393, 852));
+    await tester.binding.setSurfaceSize(const Size(320, 568));
     addTearDown(() => tester.binding.setSurfaceSize(null));
+    final scrollController = ScrollController();
+    addTearDown(scrollController.dispose);
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: ApiKnockoutBracket(
-            competitionId: 24,
-            seasonId: 100,
-            repository: _StaticBracketRepository(bracket),
+          body: SingleChildScrollView(
+            controller: scrollController,
+            child: ApiKnockoutBracket(
+              competitionId: 24,
+              seasonId: 100,
+              repository: _StaticBracketRepository(bracket),
+            ),
           ),
         ),
       ),
@@ -201,6 +206,20 @@ void main() {
     final initialViewportHeight = tester
         .getSize(find.byKey(const ValueKey('tournament-bracket-pages')))
         .height;
+    expect(initialViewportHeight, 936);
+    final lastMatch = tester.getRect(
+      find.byKey(const ValueKey('bracket-match-card-Round of 16:7')),
+    );
+    final viewport = tester.getRect(
+      find.byKey(const ValueKey('tournament-bracket-pages')),
+    );
+    expect(viewport.bottom - lastMatch.bottom, greaterThanOrEqualTo(16));
+    await tester.drag(
+      find.byKey(const ValueKey('tournament-bracket-pages')),
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+    expect(scrollController.offset, greaterThan(0));
     await tester.drag(
       find.byKey(const ValueKey('tournament-bracket-pages')),
       const Offset(-350, 0),
