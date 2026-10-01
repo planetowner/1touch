@@ -1471,6 +1471,26 @@ const appMessages = <String, MessageTranslations>{
     zh: "欢迎一起加油、讨论、开玩笑。请彼此体谅，一起营造友好的社区氛围。",
   ),
   "I UNDERSTAND!": (ko: "이해했습니다!", ja: "理解しました！", zh: "我明白了！"),
+  "Sorry, {username}. Your community access is suspended for": (
+    ko: "죄송합니다, {username}님은 커뮤니티를",
+    ja: "申し訳ありません、{username}さんはコミュニティを以下の期間利用できません",
+    zh: "抱歉，{username}，你在以下时间内无法使用社区",
+  ),
+  "due to [ban reason].": (
+    ko: "동안 [밴 사유]로 인해 이용하실 수 없습니다.",
+    ja: "理由は［確認中］です。",
+    zh: "原因是［待确认］。",
+  ),
+  "Please try again after the suspension ends.": (
+    ko: "이용금지 시간이 지난 후 다시 시도 부탁드립니다.",
+    ja: "利用停止期間の終了後にもう一度お試しください。",
+    zh: "请在限制结束后重试。",
+  ),
+  "Please read the rules for 10 seconds before continuing.": (
+    ko: "이용 금지 조치 이후 복귀한 유저들은 10초 동안 이용수칙을 정독해주세요.",
+    ja: "利用停止後に戻った方は、10秒間ルールをお読みください。",
+    zh: "限制结束后，请阅读社区规则10秒再继续。",
+  ),
   "I understand": (ko: "이해했어요", ja: "理解しました", zh: "我明白了"),
   "Unable to load community rules.": (
     ko: "커뮤니티 이용 규칙을 불러오지 못했어요.",

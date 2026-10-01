@@ -23,6 +23,7 @@ import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/features/community/community_header_slivers.dart';
 import 'package:onetouch/features/community/community_access.dart';
+import 'package:onetouch/features/community/community_ban_dialog.dart';
 import 'package:onetouch/features/community/community_post_body.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
@@ -33,6 +34,7 @@ class Community extends StatefulWidget {
   final CommunityRepository? communityRepository;
   final FixtureRepository? fixtureRepository;
   final CommunityRulesVisitRepository? rulesVisitRepository;
+  final CommunityBanStatus? banStatus;
 
   const Community({
     super.key,
@@ -41,6 +43,7 @@ class Community extends StatefulWidget {
     this.communityRepository,
     this.fixtureRepository,
     this.rulesVisitRepository,
+    this.banStatus,
   });
 
   @override
@@ -69,6 +72,7 @@ class _CommunityState extends State<Community>
   bool _isActiveTab = true;
   bool _checkedRulesThisVisit = false;
   int _rulesVisitGeneration = 0;
+  DateTime? _completedBanEndsAt;
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
@@ -114,6 +118,30 @@ class _CommunityState extends State<Community>
     _checkedRulesThisVisit = true;
     final generation = _rulesVisitGeneration;
     try {
+      final ban = widget.banStatus;
+      if (ban != null && _completedBanEndsAt != ban.endsAt) {
+        final banAcknowledged = await showCommunityBanDialog(
+          context,
+          ban: ban,
+        );
+        if (banAcknowledged != true ||
+            !mounted ||
+            !_isActiveTab ||
+            generation != _rulesVisitGeneration) {
+          return;
+        }
+        final rulesAcknowledged = await showGroundRulesModal(
+          context,
+          teamId: widget.teamId,
+          repository: _communityRepository,
+          readingDuration: const Duration(seconds: 10),
+        );
+        if (rulesAcknowledged == true) {
+          _completedBanEndsAt = ban.endsAt;
+          await _rulesVisitRepository.acknowledge();
+        }
+        return;
+      }
       if (!await _rulesVisitRepository.shouldShow() ||
           !mounted ||
           !_isActiveTab ||
@@ -181,6 +209,12 @@ class _CommunityState extends State<Community>
   @override
   void didUpdateWidget(Community oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.banStatus != oldWidget.banStatus) {
+      _checkedRulesThisVisit = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showFirstVisitRules();
+      });
+    }
     // 탭 상태가 유지되므로 홈에서 조회 팀이 바뀌면 헤더와 콘텐츠를 함께 다시 불러와요.
     if (widget.teamId != oldWidget.teamId) {
       setState(() {
