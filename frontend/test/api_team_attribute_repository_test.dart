@@ -148,7 +148,7 @@ void main() {
     expect(result, hasLength(1));
     expect(result.single.teamId, 83);
     expect(result.single.seasonId, 27965);
-    expect(result.single.radarValues, [79.76, 73.57, 86.39, 72.96, 82.8]);
+    expect(result.single.radarValues, [82.8, 73.57, 86.39, 79.76, 72.96]);
     expect(() => result.clear(), throwsUnsupportedError);
   });
 

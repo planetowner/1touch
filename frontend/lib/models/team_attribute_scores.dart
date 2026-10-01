@@ -1,9 +1,9 @@
 const teamAttributeLabels = <String>[
-  'Shooting & Finishing',
+  'Possession & Build-Up',
   'Attacking Threat',
   'Chance Creation',
+  'Shooting & Finishing',
   'Defending',
-  'Possession & Build-Up',
 ];
 
 class TeamAttributeScores {
@@ -30,10 +30,10 @@ class TeamAttributeScores {
   });
 
   List<double> get radarValues => [
-        shootingFinishing,
+        possessionBuildUp,
         attackingThreat,
         chanceCreation,
+        shootingFinishing,
         defending,
-        possessionBuildUp,
       ];
 }

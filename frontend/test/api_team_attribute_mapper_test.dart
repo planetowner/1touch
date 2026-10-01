@@ -31,6 +31,6 @@ void main() {
     expect(scores.chanceCreation, 86.39);
     expect(scores.defending, 72.96);
     expect(scores.possessionBuildUp, 82.8);
-    expect(scores.radarValues, [79.76, 73.57, 86.39, 72.96, 82.8]);
+    expect(scores.radarValues, [82.8, 73.57, 86.39, 79.76, 72.96]);
   });
 }
