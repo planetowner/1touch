@@ -43,6 +43,8 @@ class FakePlayerDirectoryRepository implements PlayerDirectoryRepository {
         name: 'Improving player',
         image: null,
         jerseyNumber: 17,
+        teamId: 7980,
+        teamName: 'Atlético de Madrid',
         recent: 8.4,
         previous: 6.2,
         change: 2.2
@@ -53,7 +55,8 @@ class FakePlayerDirectoryRepository implements PlayerDirectoryRepository {
 
 class FakeFollowingPlayersRepository implements FollowingPlayersRepository {
   final players = ValueNotifier<List<FollowingPlayer>>([
-    const FollowingPlayer(playerId: 1, name: 'Favorite player', imagePath: null)
+    const FollowingPlayer(
+        playerId: 1, name: 'Favorite player', imagePath: null, jerseyNumber: 7)
   ]);
   List<int>? saved;
   bool fail = false;

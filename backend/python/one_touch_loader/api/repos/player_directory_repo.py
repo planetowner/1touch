@@ -6,9 +6,8 @@ from decimal import Decimal
 
 from ..db import get_conn
 from .player_detail_repo import (
-    APPEARED, COMPLETED, CURRENT_LEAGUE_SEASON, DISPLAY_STATES, MATCH_FROM, get_player_rosters,
+    APPEARED, COMPLETED, get_current_player_teams,
 )
-from ...core.player_detail import current_player_team
 from ...core.player_ranking import merge_current_scores, rank_current_scores, season_player_positions
 from ...core.player_rating_percentile import (
     HistoricalPercentile, RATING_COMPETITION_IDS, REFERENCE_START_SEASON_NAME,
@@ -87,6 +86,27 @@ def get_current_ranking(competition_id=None, position=None, *, limit=20, offset=
             conn.rollback()
 
 
+def get_following_players(user_id):
+    with closing(get_conn()) as conn:
+        conn.start_transaction(readonly=True, consistent_snapshot=True)
+        try:
+            with conn.cursor(dictionary=True) as cur:
+                def fetch(sql, params=()):
+                    cur.execute(sql, params)
+                    return cur.fetchall()
+
+                items = fetch("""SELECT p.player_id,p.display_name AS name,p.image_path
+                    FROM user_following_players f JOIN players p ON p.player_id=f.player_id
+                    WHERE f.user_id=%s ORDER BY f.position""", (user_id,))
+                teams = get_current_player_teams(fetch, tuple(item['player_id'] for item in items))
+                for item in items:
+                    team = teams[item['player_id']]
+                    item['jersey_number'] = team['jersey_number'] if team else None
+                return {'items': items}
+        finally:
+            conn.rollback()
+
+
 def get_ones_to_watch():
     with closing(get_conn()) as conn:
         conn.start_transaction(readonly=True)
@@ -110,21 +130,12 @@ def get_ones_to_watch():
                         cur.execute(sql, params)
                         return cur.fetchall()
 
-                    player_ids = tuple(item['player_id'] for item in items)
-                    rosters = defaultdict(list)
-                    for row in get_player_rosters(fetch, player_ids):
-                        rosters[row['player_id']].append(row)
-                    # 최근 10경기에는 이전 시즌·대표팀도 섞여 있어 상세 화면의 현재 소속 기준을 공유해요.
-                    current_matches = defaultdict(list)
-                    placeholders = ','.join(['%s'] * len(player_ids))
-                    for row in fetch('SELECT fl.player_id,fl.team_id,f.starting_at ' + MATCH_FROM
-                                     + f' WHERE fl.player_id IN ({placeholders}) AND s.name=({CURRENT_LEAGUE_SEASON})'
-                                     + f' AND f.state_id IN ({DISPLAY_STATES}) AND f.starting_at<=UTC_TIMESTAMP() AND {APPEARED}',
-                                     player_ids):
-                        current_matches[row['player_id']].append(row)
+                    teams = get_current_player_teams(fetch, tuple(item['player_id'] for item in items))
                     for item in items:
-                        team = current_player_team(rosters[item['player_id']], current_matches[item['player_id']])
+                        team = teams[item['player_id']]
                         item['jersey_number'] = team['jersey_number'] if team else None
+                        item['team_id'] = team['team_id'] if team else None
+                        item['team_name'] = team['team_name'] if team else None
                 return {'items': items, 'scope': 'all_competitions_recent_10_appearances'}
         finally:
             conn.rollback()

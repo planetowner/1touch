@@ -570,7 +570,10 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual([x["team_id"] for x in self.request("GET", "/v1/users/me/following/teams").json()], [503, 6])
         self.request("PUT", "/v1/users/me/following/players", json={"player_ids": [268, 832]})
-        self.assertEqual([x["player_id"] for x in self.request("GET", "/v1/users/me/following/players").json()["items"]], [268, 832])
+        # 이 테스트는 저장 순서를 확인해요. 소속팀 조회는 선수 목록 테스트에서 검증해요.
+        with patch("one_touch_loader.api.repos.player_directory_repo.get_current_player_teams",
+                   return_value={268: None, 832: None}):
+            self.assertEqual([x["player_id"] for x in self.request("GET", "/v1/users/me/following/players").json()["items"]], [268, 832])
 
     def test_followed_teams_can_read_but_only_home_team_can_write_like_and_report(self):
         post_id = self.post()
