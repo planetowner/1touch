@@ -17,6 +17,8 @@ typedef PlayerWatch = ({
   String name,
   String? image,
   int? jerseyNumber,
+  int? teamId,
+  String? teamName,
   double recent,
   double previous,
   double change
@@ -97,6 +99,8 @@ class ApiPlayerDirectoryRepository implements PlayerDirectoryRepository {
               name: r['name'] as String,
               image: r['image'] as String?,
               jerseyNumber: r['jersey_number'] as int?,
+              teamId: r['team_id'] as int?,
+              teamName: r['team_name'] as String?,
               recent: (r['recent_average'] as num).toDouble(),
               previous: (r['previous_average'] as num).toDouble(),
               change: (r['change'] as num).toDouble()

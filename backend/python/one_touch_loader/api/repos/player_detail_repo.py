@@ -43,6 +43,23 @@ def get_player_rosters(fetch, player_ids):
         ORDER BY s.is_current DESC,s.name DESC,sm.team_id""", tuple(player_ids))
 
 
+def get_current_player_teams(fetch, player_ids):
+    if not player_ids:
+        return {}
+    rosters = defaultdict(list)
+    for row in get_player_rosters(fetch, player_ids):
+        rosters[row['player_id']].append(row)
+    # 목록에서도 상세 화면과 같은 소속 기준을 쓰되, 선수별 통계 조회는 생략해요.
+    current_matches = defaultdict(list)
+    placeholders = ','.join(['%s'] * len(player_ids))
+    for row in fetch('SELECT fl.player_id,fl.team_id,f.starting_at ' + MATCH_FROM
+                     + f' WHERE fl.player_id IN ({placeholders}) AND s.name=({CURRENT_LEAGUE_SEASON})'
+                     + f' AND f.state_id IN ({DISPLAY_STATES}) AND f.starting_at<=UTC_TIMESTAMP() AND {APPEARED}',
+                     tuple(player_ids)):
+        current_matches[row['player_id']].append(row)
+    return {pid: current_player_team(rosters[pid], current_matches[pid]) for pid in player_ids}
+
+
 def get_player_detail(player_id: int, season_id: int | None = None) -> dict | None:
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     with closing(get_conn()) as conn:
