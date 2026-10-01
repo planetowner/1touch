@@ -16,7 +16,7 @@ void main() {
 
   test('share URL uses the public post path', () {
     expect(communityPostShareUri(12).toString(),
-        'https://1touch.app/community/12');
+        'https://1touch.football/community/12');
     expect(() => communityPostShareUri(0), throwsArgumentError);
   });
 
@@ -24,11 +24,11 @@ void main() {
     expect(
       communityPostShareText(post),
       communityShareLinksEnabled
-          ? 'Match reaction\n\nhttps://1touch.app/community/12'
+          ? 'Match reaction\n\nhttps://1touch.football/community/12'
           : 'Match reaction\n\nFull post text',
     );
     expect(communityPostShareText(post, includeLink: true),
-        'Match reaction\n\nhttps://1touch.app/community/12');
+        'Match reaction\n\nhttps://1touch.football/community/12');
     expect(communityPostShareText(post, includeLink: false),
         'Match reaction\n\nFull post text');
   });
@@ -40,7 +40,7 @@ void main() {
       '/community/-1',
       '/community/12/extra',
       '/community/12?foo=bar',
-      'https://1touch.app/community/12',
+      'https://1touch.football/community/12',
     ]) {
       expect(isCommunityPostDestination(path), isFalse);
       navigation.queue(path);
