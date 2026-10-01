@@ -43,14 +43,14 @@ void main() {
         final labelRect = tester.getRect(labelFinder);
         final segmentRect = tester.getRect(container);
         expect(text.style?.fontSize, 18);
-        expect(labelRect.left, greaterThanOrEqualTo(segmentRect.left + 3));
-        expect(labelRect.right, lessThanOrEqualTo(segmentRect.right - 3));
+        expect(labelRect.left, greaterThanOrEqualTo(segmentRect.left + 8));
+        expect(labelRect.right, lessThanOrEqualTo(segmentRect.right - 8));
         if (label == '80.0%') {
-          expect(labelRect.left, closeTo(segmentRect.left + 3, 0.1));
+          expect(labelRect.left, closeTo(segmentRect.left + 8, 0.1));
         } else if (label == '15.0%') {
           expect(labelRect.center.dx, closeTo(segmentRect.center.dx, 0.1));
         } else {
-          expect(labelRect.right, closeTo(segmentRect.right - 3, 0.1));
+          expect(labelRect.right, closeTo(segmentRect.right - 8, 0.1));
         }
       }
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
