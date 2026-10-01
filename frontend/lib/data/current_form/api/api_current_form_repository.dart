@@ -20,8 +20,8 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
   final ApiClient _api;
   final LocalCacheStore? _cacheStore;
   final Map<CurrentFormOptionsQuery, DateTime> _optionsSavedAt = {};
-  final Map<int, List<CurrentFormOption>> _allOptions = {};
-  final Map<int, DateTime> _allOptionsSavedAt = {};
+  final Map<CurrentFormOptionsQuery, List<CurrentFormOption>> _allOptions = {};
+  final Map<CurrentFormOptionsQuery, DateTime> _allOptionsSavedAt = {};
   final Map<CurrentFormComparisonQuery, DateTime> _comparisonsSavedAt = {};
   final ValueNotifier<Map<CurrentFormOptionsQuery, List<CurrentFormOption>>>
       _cachedOptions = ValueNotifier(const {});
@@ -40,11 +40,13 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
   List<CurrentFormOption>? cachedOptionsFor(
     int teamId, {
     String search = '',
+    String? seasonName,
     int limit = 200,
   }) {
     return _cachedOptions.value[CurrentFormOptionsQuery(
       teamId: teamId,
       search: search,
+      seasonName: seasonName,
       limit: limit,
     )];
   }
@@ -68,6 +70,7 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
   Future<List<CurrentFormOption>> loadOptions(
     int teamId, {
     String search = '',
+    String? seasonName,
     int limit = 200,
   }) async {
     if (limit < 1 || limit > 1000) {
@@ -77,6 +80,7 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
     final query = CurrentFormOptionsQuery(
       teamId: teamId,
       search: search,
+      seasonName: seasonName,
       limit: limit,
     );
     final cached = _cachedOptions.value[query];
@@ -93,47 +97,46 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
   }
 
   @override
-  Future<List<CurrentFormOption>> loadAllOptions(int teamId) async {
-    final cached = _allOptions[teamId];
+  Future<List<CurrentFormOption>> loadAllOptions(
+    int teamId, {
+    String? seasonName,
+  }) async {
+    const pageSize = 200;
+    final query = CurrentFormOptionsQuery(
+      teamId: teamId,
+      seasonName: seasonName,
+      limit: pageSize,
+    );
+    final cached = _allOptions[query];
     if (cached != null &&
         !AppCachePolicy.shouldRefresh(
           tier: CacheTier.standard,
           trigger: CacheSyncTrigger.screenEnter,
-          savedAt: _allOptionsSavedAt[teamId],
+          savedAt: _allOptionsSavedAt[query],
         )) {
       return cached;
     }
 
-    const pageSize = 200;
-    final firstQuery = CurrentFormOptionsQuery(teamId: teamId, limit: pageSize);
-    final freshFirstPage = _cachedOptions.value[firstQuery];
+    final freshFirstPage =
+        _cachedOptions.value[query] ?? await _restoreOptions(query);
     final firstPage = freshFirstPage != null &&
             !AppCachePolicy.shouldRefresh(
               tier: CacheTier.standard,
               trigger: CacheSyncTrigger.screenEnter,
-              savedAt: _optionsSavedAt[firstQuery],
+              savedAt: _optionsSavedAt[query],
             )
         ? freshFirstPage
-        : await _fetchOptions(firstQuery);
+        : await _fetchOptions(query);
     final all = <CurrentFormOption>[...firstPage];
     while (all.isNotEmpty && all.length % pageSize == 0) {
-      final uri = _api.baseUri
-          .resolve('teams/$teamId/current-form/options')
-          .replace(queryParameters: {
-        'limit': '$pageSize',
-        'offset': '${all.length}',
-      });
-      final decoded =
-          _api.decodeJson<Map<String, dynamic>>(await _api.get(uri));
-      final page = _mapOptions(
-        decoded,
-        CurrentFormOptionsQuery(teamId: teamId, limit: pageSize),
-      );
+      final decoded = await _requestOptions(query, offset: all.length);
+      final page = _mapOptions(decoded, query);
       all.addAll(page);
       if (page.length < pageSize) break;
     }
-    _allOptionsSavedAt[teamId] = DateTime.now().toUtc();
-    return _allOptions[teamId] = List.unmodifiable(all);
+    // 첫 페이지를 재사용해도 원래 저장 시각을 유지해야 오래된 결과가 갱신돼요.
+    _allOptionsSavedAt[query] = _optionsSavedAt[query]!;
+    return _allOptions[query] = List.unmodifiable(all);
   }
 
   void _refreshOptionsIfStale(CurrentFormOptionsQuery query) {
@@ -157,6 +160,7 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
       query.teamId,
       query.search,
       query.limit,
+      seasonName: query.seasonName,
     );
     final record = await store.read(key);
     if (record == null) return null;
@@ -174,24 +178,34 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
   Future<List<CurrentFormOption>> _fetchOptions(
     CurrentFormOptionsQuery query,
   ) async {
-    final teamId = query.teamId;
-    final limit = query.limit;
-
-    final uri =
-        _api.baseUri.resolve('teams/$teamId/current-form/options').replace(
-      queryParameters: {
-        if (query.search.isNotEmpty) 'search': query.search,
-        'limit': '$limit',
-      },
-    );
-    final decoded = _api.decodeJson<Map<String, dynamic>>(await _api.get(uri));
+    final decoded = await _requestOptions(query);
     final options = _mapOptions(decoded, query);
     _publishOptions(query, options, DateTime.now().toUtc());
     await _cacheStore?.write(
-      LocalCacheKeys.currentFormOptions(teamId, query.search, limit),
+      LocalCacheKeys.currentFormOptions(
+        query.teamId,
+        query.search,
+        query.limit,
+        seasonName: query.seasonName,
+      ),
       decoded,
     );
     return options;
+  }
+
+  Future<Map<String, dynamic>> _requestOptions(
+    CurrentFormOptionsQuery query, {
+    int offset = 0,
+  }) async {
+    final uri = _api.baseUri
+        .resolve('teams/${query.teamId}/current-form/options')
+        .replace(queryParameters: {
+      if (query.search.isNotEmpty) 'search': query.search,
+      if (query.seasonName != null) 'season_name': query.seasonName!,
+      'limit': '${query.limit}',
+      if (offset > 0) 'offset': '$offset',
+    });
+    return _api.decodeJson<Map<String, dynamic>>(await _api.get(uri));
   }
 
   List<CurrentFormOption> _mapOptions(

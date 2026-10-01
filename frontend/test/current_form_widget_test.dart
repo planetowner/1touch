@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
 import 'package:onetouch/data/current_form/mock/mock_current_form_repository.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -228,7 +229,8 @@ void main() {
     final firstResult = Completer<CurrentFormComparison?>();
     final secondResult = Completer<CurrentFormComparison?>();
     final repository = _TestCurrentFormRepository(
-      optionsLoader: (query) async => _optionsForTeam(query.teamId),
+      optionsLoader: (query) async => _optionsForTeam(query.teamId,
+          currentSeasonName: query.seasonName ?? '2025/26'),
       comparisonLoader: (query) =>
           query.teamId == 1 ? firstResult.future : secondResult.future,
     );
@@ -535,6 +537,169 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('opens immediately and ignores stale season responses at $size',
+        (tester) async {
+      useScreen(tester, size);
+      final pending = Completer<List<CurrentFormOption>>();
+      final queries = <CurrentFormOptionsQuery>[];
+      final repository = _TestCurrentFormRepository(
+        optionsLoader: (query) async {
+          queries.add(query);
+          if (query.seasonName == '2025/26') return pending.future;
+          return _optionsForTeam(1);
+        },
+        comparisonLoader: (query) async =>
+            _comparisonFor(query, comparisonShortCode: 'PREV'),
+      );
+      addTearDown(repository.dispose);
+      await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byKey(const ValueKey('analysis-comparison-filter-sheet')),
+          findsOneWidget);
+      expect(find.byKey(const ValueKey('analysis-filter-loading')),
+          findsOneWidget);
+      expect(
+          tester
+              .widget<ElevatedButton>(
+                  find.byKey(const ValueKey('analysis-filter-update')))
+              .onPressed,
+          isNull);
+      await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
+      await tester.pump();
+      final previous =
+          find.byKey(const ValueKey('analysis-filter-season-2024/25'));
+      await tester.ensureVisible(previous);
+      await tester.tap(previous);
+      await tester.pumpAndSettle();
+      expect(queries.map((query) => query.seasonName),
+          [null, '2025/26', '2024/25']);
+      pending.complete(_optionsForTeam(1));
+      await tester.pumpAndSettle();
+      final historical =
+          find.byKey(const ValueKey('analysis-form-option-1-100'));
+      await tester.ensureVisible(historical);
+      expect(historical, findsOneWidget);
+      expect(find.byKey(const ValueKey('analysis-form-option-2-200')),
+          findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets(
+      'loads only the current season initially and keeps catalog seasons selectable',
+      (tester) async {
+    useScreen(tester, const Size(430, 932));
+    final source = MockCurrentFormRepository();
+    final queries = <CurrentFormOptionsQuery>[];
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (query) {
+        queries.add(query);
+        return source.loadOptions(query.teamId,
+            seasonName: query.seasonName, limit: query.limit);
+      },
+      comparisonLoader: (query) => source.loadComparison(query.teamId,
+          seasonId: query.seasonId,
+          compareTeamId: query.compareTeamId,
+          compareSeasonId: query.compareSeasonId),
+    );
+    addTearDown(repository.dispose);
+    final currentSeason = footballCatalog.seasons.value.singleWhere(
+        (season) => season.seasonId == footballCatalog.resolve(83)!.seasonId);
+    await tester.pumpWidget(buildSubject(teamId: 83, repository: repository));
+    await tester.pumpAndSettle();
+    expect(queries.single.seasonName, currentSeason.name);
+    await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
+    await tester.pumpAndSettle();
+    final previous =
+        find.byKey(const ValueKey('analysis-filter-season-2024/2025'));
+    await tester.ensureVisible(previous);
+    await tester.tap(previous);
+    await tester.pumpAndSettle();
+    expect(queries.last.seasonName, '2024/2025');
+    expect(queries.every((query) => query.seasonName != null), isTrue);
+    final search = find.byKey(const ValueKey('analysis-filter-team-search'));
+    await tester.scrollUntilVisible(search, -200,
+        scrollable: find
+            .descendant(
+                of: find
+                    .byKey(const ValueKey('analysis-comparison-filter-sheet')),
+                matching: find.byType(Scrollable))
+            .first);
+    await tester.enterText(search, 'Barcelona');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('analysis-form-option-83-23621')),
+        findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('retries a failed season and disables empty results',
+      (tester) async {
+    var attempts = 0;
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (query) async {
+        if (query.seasonName == null) return _optionsForTeam(1);
+        if (++attempts == 1) throw StateError('Unavailable');
+        return [];
+      },
+      comparisonLoader: (query) async =>
+          _comparisonFor(query, comparisonShortCode: 'PREV'),
+    );
+    addTearDown(repository.dispose);
+    await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('analysis-filter-error')), findsOneWidget);
+    expect(
+        tester
+            .widget<ElevatedButton>(
+                find.byKey(const ValueKey('analysis-filter-update')))
+            .onPressed,
+        isNull);
+    await tester.tap(find.text('RETRY'));
+    await tester.pumpAndSettle();
+    expect(attempts, 2);
+    expect(find.text('No teams found'), findsOneWidget);
+    expect(
+        tester
+            .widget<ElevatedButton>(
+                find.byKey(const ValueKey('analysis-filter-update')))
+            .onPressed,
+        isNull);
+  });
+
+  testWidgets('ignores a pending option response after the sheet closes',
+      (tester) async {
+    final pending = Completer<List<CurrentFormOption>>();
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (query) async =>
+          query.seasonName == null ? _optionsForTeam(1) : pending.future,
+      comparisonLoader: (query) async =>
+          _comparisonFor(query, comparisonShortCode: 'PREV'),
+    );
+    addTearDown(repository.dispose);
+    await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.byKey(const ValueKey('analysis-filter-close')));
+    await tester.pumpAndSettle();
+    pending.complete(_optionsForTeam(1));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('analysis-comparison-filter-sheet')),
+        findsNothing);
+    expect(find.byKey(const ValueKey('analysis-current-form-chart-card')),
+        findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('season expansion pushes the team list and selection closes it',
       (tester) async {
     useScreen(tester, const Size(393, 852));
@@ -592,13 +757,14 @@ Future<void> _chooseCurrentForm(
   await tester.pumpAndSettle();
 }
 
-List<CurrentFormOption> _optionsForTeam(int teamId) {
+List<CurrentFormOption> _optionsForTeam(int teamId,
+    {String currentSeasonName = '2025/26'}) {
   return [
-    _option(teamId: teamId, seasonId: 200, seasonName: '2025/26'),
+    _option(teamId: teamId, seasonId: 200, seasonName: currentSeasonName),
     _option(
       teamId: 2,
       seasonId: 200,
-      seasonName: '2025/26',
+      seasonName: currentSeasonName,
       teamName: 'Beta FC',
       shortCode: 'BET',
     ),
@@ -700,11 +866,13 @@ class _TestCurrentFormRepository implements CurrentFormRepository {
   List<CurrentFormOption>? cachedOptionsFor(
     int teamId, {
     String search = '',
+    String? seasonName,
     int limit = 200,
   }) {
     return _cachedOptions.value[CurrentFormOptionsQuery(
       teamId: teamId,
       search: search,
+      seasonName: seasonName,
       limit: limit,
     )];
   }
@@ -728,18 +896,21 @@ class _TestCurrentFormRepository implements CurrentFormRepository {
   Future<List<CurrentFormOption>> loadOptions(
     int teamId, {
     String search = '',
+    String? seasonName,
     int limit = 200,
   }) async {
     final query = CurrentFormOptionsQuery(
       teamId: teamId,
       search: search,
+      seasonName: seasonName,
       limit: limit,
     );
     final cached = _cachedOptions.value[query];
     if (cached != null) return cached;
 
     final options = List<CurrentFormOption>.unmodifiable(
-      await optionsLoader(query),
+      (await optionsLoader(query)).where(
+          (option) => seasonName == null || option.seasonName == seasonName),
     );
     _cachedOptions.value = Map.unmodifiable({
       ..._cachedOptions.value,
@@ -749,8 +920,9 @@ class _TestCurrentFormRepository implements CurrentFormRepository {
   }
 
   @override
-  Future<List<CurrentFormOption>> loadAllOptions(int teamId) =>
-      loadOptions(teamId, limit: 1000);
+  Future<List<CurrentFormOption>> loadAllOptions(int teamId,
+          {String? seasonName}) =>
+      loadOptions(teamId, seasonName: seasonName, limit: 1000);
 
   @override
   Future<CurrentFormComparison?> loadComparison(

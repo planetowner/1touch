@@ -261,6 +261,7 @@ def team_best_eleven(
 def team_current_form_options(
     team_id: int,
     search: str | None = Query(default=None, max_length=100),
+    season_name: str | None = Query(default=None, min_length=1, max_length=100),
     limit: int = Query(default=200, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
     user_id: int = Depends(get_user_id),
@@ -269,7 +270,9 @@ def team_current_form_options(
         raise HTTPException(status_code=404, detail="Team not found")
 
     return {
-        "items": list_current_form_options(search=search, limit=limit, offset=offset),
+        "items": list_current_form_options(
+            search=search, limit=limit, offset=offset, season_name=season_name
+        ),
         "limit": limit,
     }
 

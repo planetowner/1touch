@@ -8,6 +8,133 @@ import 'package:onetouch/data/current_form/api/api_current_form_repository.dart'
 import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
+  group('season options', () {
+    for (final count in [0, 200, 201, 400, 401]) {
+      test('paginates $count rows within the selected season', () async {
+        final requests = <Uri>[];
+        final repository = ApiCurrentFormRepository(
+          api: ApiClient(
+            client: MockClient((request) async {
+              requests.add(request.url);
+              final params = request.url.queryParameters;
+              expect(params['season_name'], '2024/2025');
+              expect(params['limit'], '200');
+              final offset = int.parse(params['offset'] ?? '0');
+              return http.Response(
+                  jsonEncode({
+                    'items': [
+                      for (var i = offset; i < offset + 200 && i < count; i++)
+                        {
+                          ..._optionJson(),
+                          'team_id': i + 1,
+                          'season_name': '2024/2025'
+                        },
+                    ],
+                    'limit': 200,
+                  }),
+                  200);
+            }),
+            baseUri: Uri.parse('https://api.test/v1/'),
+            requestHeaders: () => const {},
+          ),
+        );
+        final rows =
+            await repository.loadAllOptions(83, seasonName: '2024/2025');
+        expect(
+            rows.map((row) => row.teamId), List.generate(count, (i) => i + 1));
+        expect(requests.length, count ~/ 200 + 1);
+        expect(
+            requests
+                .map((uri) => int.parse(uri.queryParameters['offset'] ?? '0')),
+            List.generate(count ~/ 200 + 1, (i) => i * 200));
+        expect(await repository.loadAllOptions(83, seasonName: '2024/2025'),
+            same(rows));
+        expect(requests.length, count ~/ 200 + 1);
+      });
+    }
+
+    test('separates seasons in memory and disk and reuses the initial page',
+        () async {
+      final store = MemoryLocalCacheStore();
+      final requests = <Uri>[];
+      ApiCurrentFormRepository createRepository() => ApiCurrentFormRepository(
+            cacheStore: store,
+            api: ApiClient(
+              client: MockClient((request) async {
+                requests.add(request.url);
+                final params = request.url.queryParameters;
+                return http.Response(
+                    jsonEncode({
+                      'items': [
+                        {
+                          ..._optionJson(),
+                          'season_name': params['season_name'] ?? '2025/2026'
+                        }
+                      ],
+                      'limit': int.parse(params['limit']!),
+                    }),
+                    200);
+              }),
+              baseUri: Uri.parse('https://api.test/v1/'),
+              requestHeaders: () => const {},
+            ),
+          );
+      final writer = createRepository();
+      await writer.loadOptions(83);
+      await writer.loadOptions(83, seasonName: '2025/2026');
+      final previous = await writer.loadOptions(83, seasonName: '2024/2025');
+      expect(
+          writer.cachedOptionsFor(83, seasonName: '2024/2025'), same(previous));
+      expect(writer.cachedOptions.value, hasLength(3));
+      await writer.loadAllOptions(83, seasonName: '2024/2025');
+      expect(requests, hasLength(3));
+      final reader = createRepository();
+      for (final season in [null, '2025/2026', '2024/2025']) {
+        final rows = await reader.loadAllOptions(83, seasonName: season);
+        expect(rows.single.seasonName, season ?? '2025/2026');
+      }
+      expect(requests, hasLength(3));
+      await reader.loadOptions(83,
+          search: ' Barca ', limit: 17, seasonName: '2024/2025');
+      expect(requests.last.queryParameters, {
+        'search': 'barca',
+        'limit': '17',
+        'season_name': '2024/2025',
+      });
+    });
+
+    test('does not cache a partial result after a later page fails', () async {
+      var laterRequests = 0;
+      final repository = ApiCurrentFormRepository(
+        api: ApiClient(
+          client: MockClient((request) async {
+            final offset =
+                int.parse(request.url.queryParameters['offset'] ?? '0');
+            if (offset > 0 && ++laterRequests == 1) {
+              return http.Response('Unavailable', 503);
+            }
+            return http.Response(
+                jsonEncode({
+                  'items': [
+                    for (var i = offset; i < (offset == 0 ? 200 : 201); i++)
+                      _optionJson()
+                  ],
+                  'limit': 200,
+                }),
+                200);
+          }),
+          baseUri: Uri.parse('https://api.test/v1/'),
+          requestHeaders: () => const {},
+        ),
+      );
+      await expectLater(repository.loadAllOptions(83, seasonName: '2025/2026'),
+          throwsA(isA<http.ClientException>()));
+      expect(await repository.loadAllOptions(83, seasonName: '2025/2026'),
+          hasLength(201));
+      expect(laterRequests, 2);
+    });
+  });
+
   group('loadOptions', () {
     test('loads every options page and preserves later seasons', () async {
       final offsets = <String?>[];

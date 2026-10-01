@@ -147,11 +147,14 @@ def list_current_form_options(
     search: Optional[str],
     limit: int,
     offset: int = 0,
+    season_name: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """계산할 리그 경기 결과가 있는 Big 5 팀 시즌을 조회해요."""
     normalized_search = (search or "").strip()
     team_ids = korean_name_ids("teams", normalized_search)
     korean_condition = (" OR t.team_id IN (" + ",".join(["%s"] * len(team_ids)) + ")") if team_ids else ""
+    # 같은 시즌도 리그마다 ID가 달라 이름으로 거른 뒤 집계하고 페이지를 나눠요.
+    season_condition = "AND s.name = %s" if season_name is not None else ""
     rows = fetch_all_dict(
         f"""
         SELECT
@@ -173,6 +176,7 @@ def list_current_form_options(
          AND (f.home_team_id = ts.team_id OR f.away_team_id = ts.team_id)
         JOIN rounds r ON r.round_id = f.round_id
         WHERE s.competition_id IN ({BIG5_COMPETITION_IDS_SQL})
+          {season_condition}
           AND {ELIGIBLE_RESULT_SQL}
           AND f.home_score IS NOT NULL
           AND f.away_score IS NOT NULL
@@ -190,6 +194,7 @@ def list_current_form_options(
         LIMIT %s OFFSET %s
         """,
         (
+            *((season_name,) if season_name is not None else ()),
             normalized_search,
             normalized_search,
             normalized_search,
