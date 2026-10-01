@@ -9,10 +9,10 @@ TeamAttributeScores teamAttributeScoresFromApiResponse(
     competitionId: response.competitionId,
     seasonId: response.seasonId,
     seasonLabel: response.seasonName,
-    attack: response.finishing,
-    progression: response.attackingThreat,
-    dominance: response.chanceCreation,
-    defense: response.defending,
-    possession: response.possessionBuildUp,
+    shootingFinishing: response.finishing,
+    attackingThreat: response.attackingThreat,
+    chanceCreation: response.chanceCreation,
+    defending: response.defending,
+    possessionBuildUp: response.possessionBuildUp,
   );
 }
