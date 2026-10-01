@@ -20,6 +20,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   CurrentFormComparison? _comparison;
   bool _isLoading = false;
   bool _loadFailed = false;
+  bool _isFilterLoading = false;
   int _loadRequestId = 0;
   int? _baselineSeasonId;
   int? _selectedFormRound;
@@ -47,6 +48,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   void _startDefaultLoad() {
     final teamId = _teamId;
     final requestId = ++_loadRequestId;
+    _isFilterLoading = false;
     final cachedOptions =
         teamId == null ? null : _repository.cachedOptionsFor(teamId);
     final baselineOption = teamId == null || cachedOptions == null
@@ -275,7 +277,23 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   }
 
   Future<void> _openComparisonFilter() async {
-    final options = _options
+    final teamId = _teamId;
+    if (teamId == null || _isFilterLoading) return;
+    setState(() => _isFilterLoading = true);
+    final List<CurrentFormOption> allOptions;
+    try {
+      allOptions = await _repository.loadAllOptions(teamId);
+    } on Object {
+      if (!mounted) return;
+      setState(() => _isFilterLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr(context, 'Unable to load current form'))),
+      );
+      return;
+    }
+    if (!mounted || teamId != _teamId) return;
+    setState(() => _isFilterLoading = false);
+    final options = allOptions
         .where((option) =>
             option.teamId != _teamId || option.seasonId != _baselineSeasonId)
         .map((option) => _AnalysisFilterOption<CurrentFormOption>(
@@ -310,7 +328,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
 
     return InkWell(
       key: const ValueKey('analysis-form-filter'),
-      onTap: _isLoading ? null : _openComparisonFilter,
+      onTap: _isLoading || _isFilterLoading ? null : _openComparisonFilter,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         width: 165,
@@ -326,7 +344,15 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                     style: Body2_b.style.copyWith(color: colors.onSurface),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis)),
-            Icon(Icons.keyboard_arrow_down, color: colors.onSurface, size: 20),
+            if (_isFilterLoading)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              Icon(Icons.keyboard_arrow_down,
+                  color: colors.onSurface, size: 20),
           ],
         ),
       ),

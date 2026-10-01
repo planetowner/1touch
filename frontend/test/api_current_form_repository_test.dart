@@ -9,6 +9,39 @@ import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
   group('loadOptions', () {
+    test('loads every options page and preserves later seasons', () async {
+      final offsets = <String?>[];
+      final repository = ApiCurrentFormRepository(
+        api: ApiClient(
+          client: MockClient((request) async {
+            offsets.add(request.url.queryParameters['offset']);
+            final offset =
+                int.tryParse(request.url.queryParameters['offset'] ?? '') ?? 0;
+            return http.Response(
+              jsonEncode({
+                'items': [
+                  for (var index = offset;
+                      index < (offset == 0 ? 200 : 201);
+                      index++)
+                    _optionJson(),
+                ],
+                'limit': 200,
+              }),
+              200,
+            );
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {},
+        ),
+      );
+
+      final options = await repository.loadAllOptions(83);
+      expect(options, hasLength(201));
+      expect(offsets, [null, '200']);
+      expect(await repository.loadAllOptions(83), same(options));
+      expect(offsets, [null, '200']);
+    });
+
     test('requests, maps, and caches the global option list', () async {
       var requestCount = 0;
       final repository = ApiCurrentFormRepository(

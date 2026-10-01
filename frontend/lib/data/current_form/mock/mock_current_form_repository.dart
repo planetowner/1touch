@@ -138,6 +138,10 @@ class MockCurrentFormRepository implements CurrentFormRepository {
   }
 
   @override
+  Future<List<CurrentFormOption>> loadAllOptions(int teamId) =>
+      loadOptions(teamId, limit: 1000);
+
+  @override
   Future<CurrentFormComparison?> loadComparison(
     int teamId, {
     int? seasonId,

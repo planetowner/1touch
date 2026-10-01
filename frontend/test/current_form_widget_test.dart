@@ -155,6 +155,41 @@ void main() {
     expect(find.text('25/26 BETA'), findsOneWidget);
   });
 
+  testWidgets('groups Big Five teams by season name across league season IDs',
+      (tester) async {
+    final queries = <CurrentFormComparisonQuery>[];
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (_) async => [
+        _option(teamId: 1, seasonId: 200, seasonName: '2025/26'),
+        _option(
+          teamId: 2,
+          seasonId: 201,
+          seasonName: '2025/26',
+          teamName: 'Beta FC',
+        ),
+      ],
+      comparisonLoader: (query) async {
+        queries.add(query);
+        return _comparisonFor(query, comparisonShortCode: 'BETA');
+      },
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
+    await tester.pumpAndSettle();
+    expect(find.text('Beta FC'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('analysis-form-option-2-201')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analysis-filter-update')));
+    await tester.pumpAndSettle();
+
+    expect(queries.last.seasonId, 200);
+    expect(queries.last.compareTeamId, 2);
+    expect(queries.last.compareSeasonId, 201);
+  });
+
   testWidgets('shows an option error and retries the repository request',
       (tester) async {
     var optionAttempts = 0;
@@ -480,8 +515,8 @@ void main() {
     final firstOption = visibleOptions.first;
     await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
     await tester.pumpAndSettle();
-    await tester.tap(
-        find.byKey(ValueKey('analysis-filter-season-${firstOption.seasonId}')));
+    await tester.tap(find
+        .byKey(ValueKey('analysis-filter-season-${firstOption.seasonName}')));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(ValueKey(
         'analysis-form-option-${firstOption.teamId}-${firstOption.seasonId}')));
@@ -520,10 +555,11 @@ void main() {
     await tester.pump();
     expect(tester.getTopLeft(teamHeader).dy, greaterThan(closedTop));
 
-    await tester.tap(find.byKey(const ValueKey('analysis-filter-season-100')));
+    await tester
+        .tap(find.byKey(const ValueKey('analysis-filter-season-2024/25')));
     await tester.pump();
-    expect(
-        find.byKey(const ValueKey('analysis-filter-season-100')), findsNothing);
+    expect(find.byKey(const ValueKey('analysis-filter-season-2024/25')),
+        findsNothing);
     expect(tester.getTopLeft(teamHeader).dy, closedTop);
   });
 }
@@ -537,7 +573,8 @@ Future<void> _chooseCurrentForm(
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(ValueKey('analysis-filter-season-$seasonId')));
+  final seasonName = seasonId == 200 ? '2025/26' : '2024/25';
+  await tester.tap(find.byKey(ValueKey('analysis-filter-season-$seasonName')));
   await tester.pumpAndSettle();
   final option = find.byKey(ValueKey('analysis-form-option-$teamId-$seasonId'));
   await tester.ensureVisible(option);
@@ -710,6 +747,10 @@ class _TestCurrentFormRepository implements CurrentFormRepository {
     });
     return options;
   }
+
+  @override
+  Future<List<CurrentFormOption>> loadAllOptions(int teamId) =>
+      loadOptions(teamId, limit: 1000);
 
   @override
   Future<CurrentFormComparison?> loadComparison(

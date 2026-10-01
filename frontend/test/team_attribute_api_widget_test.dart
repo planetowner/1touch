@@ -412,9 +412,10 @@ void main() {
       return http.Response(
         jsonEncode(_attributeJson(
           teamId: 19,
-          seasonId: 23621,
+          seasonId: 23614,
           seasonName: '2024/2025',
           isCurrent: false,
+          competitionId: 8,
         )),
         200,
       );
@@ -425,13 +426,20 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
     await tester.pump();
     await tester
-        .tap(find.byKey(const ValueKey('analysis-filter-season-23621')));
+        .tap(find.byKey(const ValueKey('analysis-filter-season-2024/2025')));
     await tester.pump();
+    await tester.enterText(
+        find.byKey(const ValueKey('analysis-filter-team-search')), 'Leeds');
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey('analysis-attributes-option-71-23614')),
+      findsNothing,
+    );
     await tester.enterText(
         find.byKey(const ValueKey('analysis-filter-team-search')), 'Arsenal');
     await tester.pump();
     await tester
-        .tap(find.byKey(const ValueKey('analysis-attributes-option-19-23621')));
+        .tap(find.byKey(const ValueKey('analysis-attributes-option-19-23614')));
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('analysis-filter-update')));
     await tester.pumpAndSettle();
@@ -668,12 +676,13 @@ Future<void> _pumpAttributes(
 Map<String, dynamic> _attributeJson({
   int teamId = 83,
   int seasonId = 27965,
+  int competitionId = 564,
   String seasonName = '2026/2027',
   bool isCurrent = true,
   double finishing = 79.76,
 }) {
   return {
-    'competition_id': 564,
+    'competition_id': competitionId,
     'season_id': seasonId,
     'season_name': seasonName,
     'is_current': isCurrent,
@@ -695,7 +704,12 @@ Future<void> _chooseAttributes(WidgetTester tester, int seasonId) async {
   await tester.pump(const Duration(milliseconds: 350));
   await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
   await tester.pump();
-  await tester.tap(find.byKey(ValueKey('analysis-filter-season-$seasonId')));
+  final seasonName = switch (seasonId) {
+    23621 => '2024/2025',
+    25659 => '2025/2026',
+    _ => throw ArgumentError.value(seasonId, 'seasonId'),
+  };
+  await tester.tap(find.byKey(ValueKey('analysis-filter-season-$seasonName')));
   await tester.pump();
   await tester.enterText(
     find.byKey(const ValueKey('analysis-filter-team-search')),

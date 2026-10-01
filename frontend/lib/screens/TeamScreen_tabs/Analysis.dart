@@ -14,6 +14,7 @@ import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
 import 'package:onetouch/data/current_form/current_form_repository_provider.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
@@ -21,6 +22,7 @@ import 'package:onetouch/data/team_attributes/team_attribute_repository_provider
 import 'package:onetouch/data/team_probability/team_probability_repository.dart';
 import 'package:onetouch/data/team_probability/team_probability_repository_provider.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
+import 'package:onetouch/data/teams/team_page_eligibility.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
 import 'package:onetouch/models/current_form.dart';

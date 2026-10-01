@@ -144,8 +144,13 @@ class PointsPaceRepositoryTests(unittest.TestCase):
         self.assertNotIn("points_pace", query)
         self.assertEqual(
             fetch_all_dict.call_args.args[1],
-            ("Test", "Test", "Test", 5),
+            ("Test", "Test", "Test", 5, 0),
         )
+
+        with patch("one_touch_loader.api.repos.points_pace_repo.korean_name_ids", return_value=()):
+            points_pace_repo.list_current_form_options(search="", limit=200, offset=200)
+        self.assertIn("LIMIT %s OFFSET %s", fetch_all_dict.call_args.args[0])
+        self.assertEqual(fetch_all_dict.call_args.args[1], ("", "", "", 200, 200))
 
 
 if __name__ == "__main__":

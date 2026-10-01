@@ -31,6 +31,9 @@ abstract interface class CurrentFormRepository {
     int limit = 200,
   });
 
+  /// Loads every available Big Five team-season option for the comparison picker.
+  Future<List<CurrentFormOption>> loadAllOptions(int teamId);
+
   Future<CurrentFormComparison?> loadComparison(
     int teamId, {
     int? seasonId,
