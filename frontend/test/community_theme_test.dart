@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
@@ -15,6 +16,7 @@ import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
+import 'package:onetouch/features/community/community_header_slivers.dart';
 import 'support/stub_community_repository.dart';
 import 'support/stub_post_comment_repository.dart';
 
@@ -75,10 +77,16 @@ void main() {
           matching: find.byType(Icon),
         ),
       );
-      final profile = tester.widget<Icon>(
+      final notifications = tester.widget<Icon>(
         find.descendant(
-          of: find.byKey(const ValueKey('community-profile-button')),
+          of: find.byKey(const ValueKey('community-notifications-button')),
           matching: find.byType(Icon),
+        ),
+      );
+      final activity = tester.widget<SvgPicture>(
+        find.descendant(
+          of: find.byKey(const ValueKey('community-activity-button')),
+          matching: find.byType(SvgPicture),
         ),
       );
       final tabBar = tester.widget<TabBar>(find.byType(TabBar));
@@ -93,7 +101,18 @@ void main() {
           ));
       expect(logo.colorFilter, isNotNull);
       expect(search.color, foreground);
-      expect(profile.color, foreground);
+      expect(notifications.color, foreground);
+      expect(
+          activity.colorFilter, ColorFilter.mode(foreground, BlendMode.srcIn));
+      expect(
+        (tester
+                .widget<Container>(
+                  find.byKey(const ValueKey('community-notification-badge')),
+                )
+                .decoration as BoxDecoration)
+            .color,
+        const Color(0xFFD82457),
+      );
       expect(
         _effectiveTextColor(
           tester,
@@ -136,19 +155,26 @@ void main() {
           tester.getCenter(find.byKey(const ValueKey('community-app-logo')));
       final searchCenter = tester
           .getCenter(find.byKey(const ValueKey('community-search-button')));
-      final profileCenter = tester
-          .getCenter(find.byKey(const ValueKey('community-profile-button')));
+      final notificationsCenter = tester.getCenter(
+        find.byKey(const ValueKey('community-notifications-button')),
+      );
+      final activityCenter = tester.getCenter(
+        find.byKey(const ValueKey('community-activity-button')),
+      );
       expect(searchCenter.dy, appLogoCenter.dy);
-      expect(profileCenter.dy, appLogoCenter.dy);
+      expect(notificationsCenter.dy, appLogoCenter.dy);
+      expect(activityCenter.dy, appLogoCenter.dy);
+      expect(notificationsCenter.dx - searchCenter.dx, 48);
+      expect(activityCenter.dx - notificationsCenter.dx, 48);
       expect(
-        tester.getSize(find.byKey(const ValueKey('community-profile-button'))),
+        tester.getSize(find.byKey(const ValueKey('community-activity-button'))),
         const Size.square(32),
       );
       expect(
         tester.getSize(find.byType(MaterialApp)).width -
             tester
                 .getTopRight(
-                  find.byKey(const ValueKey('community-profile-button')),
+                  find.byKey(const ValueKey('community-activity-button')),
                 )
                 .dx,
         24,
@@ -190,6 +216,61 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('Community app bar opens notifications and my activity',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => Scaffold(
+            body: CustomScrollView(
+              slivers: [
+                CommunitySliverAppBar(
+                  pageBackground: Colors.black,
+                  opacityFactor: 1,
+                  onSearch: () => context.push('/search'),
+                  onNotifications: () => context.push('/notifications'),
+                  onActivity: () => context.push('/profile/activity?tab=posts'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/search',
+          builder: (_, __) => const Scaffold(body: Text('Search page')),
+        ),
+        GoRoute(
+          path: '/notifications',
+          builder: (_, __) => const Scaffold(body: Text('Notifications page')),
+        ),
+        GoRoute(
+          path: '/profile/activity',
+          builder: (_, state) => Scaffold(
+            body: Text('Activity ${state.uri.queryParameters['tab']}'),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+    await tester
+        .tap(find.byKey(const ValueKey('community-notifications-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('Notifications page'), findsOneWidget);
+
+    router.go('/');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('community-activity-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('Activity posts'), findsOneWidget);
+  });
 
   testWidgets('Community live badge follows repository fixture status',
       (tester) async {

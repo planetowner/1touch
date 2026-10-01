@@ -90,6 +90,7 @@ flutter:
     - assets/auth/
     - assets/highlight1.png
     - assets/app_logo.svg
+    - assets/community_activity.svg
     - assets/sports_and_outdoors.svg
     - assets/messi.png
     - assets/google.svg
