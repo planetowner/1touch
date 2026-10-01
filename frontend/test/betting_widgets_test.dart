@@ -14,6 +14,47 @@ import 'package:onetouch/models/betting.dart';
 import 'support/fake_betting_repository.dart';
 
 void main() {
+  for (final barWidth in [280.0, 390.0, 110.0]) {
+    testWidgets('probability labels retain Heading5 at width $barWidth',
+        (tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: barWidth,
+              child: const BettingProbabilityBar(
+                values: [0.8, 0.15, 0.05],
+                selected: BetOutcome.awayWin,
+              ),
+            ),
+          ),
+        ),
+      ));
+
+      for (final label in ['80.0%', '15.0%', '5.0%']) {
+        final labelFinder = find.text(label);
+        final text = tester.widget<Text>(labelFinder);
+        final container = find
+            .ancestor(
+              of: labelFinder,
+              matching: find.byType(Container),
+            )
+            .first;
+        final labelRect = tester.getRect(labelFinder);
+        final segmentRect = tester.getRect(container);
+        expect(text.style?.fontSize, 18);
+        expect(labelRect.left, greaterThanOrEqualTo(segmentRect.left + 3));
+        expect(labelRect.right, lessThanOrEqualTo(segmentRect.right - 3));
+      }
+      expect(find.byIcon(Icons.check_circle), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      expect(
+        find.byType(SingleChildScrollView),
+        barWidth == 390 ? findsNothing : findsOneWidget,
+      );
+    });
+  }
+
   testWidgets('uses the server stake unit for minimum and amount buttons',
       (tester) async {
     final repository = FakeBettingRepository()
@@ -185,6 +226,21 @@ void main() {
       expect(find.text('1Touch'), findsOneWidget);
       expect(find.text('EXPERT'), findsNothing);
       expect(find.text('No bets yet.'), findsOneWidget);
+      final noBetsBar = find.byKey(const ValueKey('match-h2h-no-bets-bar'));
+      final noBetsContainer = tester.widget<Container>(noBetsBar);
+      final noBetsText = tester.widget<Text>(
+        find.descendant(of: noBetsBar, matching: find.byType(Text)),
+      );
+      expect(tester.getSize(noBetsBar).height, 40);
+      expect(noBetsContainer.padding, const EdgeInsets.all(8));
+      expect(noBetsContainer.alignment, Alignment.center);
+      expect((noBetsContainer.decoration as BoxDecoration).color,
+          AppPalette.lightGrey);
+      expect((noBetsContainer.decoration as BoxDecoration).borderRadius,
+          const BorderRadius.all(Radius.circular(6)));
+      expect(noBetsText.style?.fontSize, 18);
+      expect(noBetsText.style?.fontWeight, FontWeight.w700);
+      expect(noBetsText.style?.color, AppPalette.white);
       await tester.ensureVisible(find.text('PLACE A BET'));
       await tester.tap(find.text('PLACE A BET'));
       await tester.pumpAndSettle();
@@ -265,6 +321,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('You’ve got 1000 pts!'), findsOneWidget);
       expect(find.text('No bets yet.'), findsOneWidget);
+      expect(noBetsBar, findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       controller.dispose();

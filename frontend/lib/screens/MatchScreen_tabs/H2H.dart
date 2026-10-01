@@ -304,7 +304,17 @@ class _H2HTabState extends State<H2HTab> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: isEnglish
               ? [Flexible(child: dropdown), againstLabel, againstLogo]
-              : [againstLogo, againstLabel, Flexible(child: dropdown)],
+              : [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      againstLogo,
+                      const SizedBox(width: 12),
+                      againstLabel,
+                    ],
+                  ),
+                  Flexible(child: dropdown),
+                ],
         );
       },
     );
