@@ -22,6 +22,7 @@ import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/keyboard_dismiss.dart';
 import 'package:onetouch/core/notification_navigation.dart';
+import 'package:onetouch/core/community_link_navigation.dart';
 import 'package:onetouch/core/session_sync_lifecycle.dart';
 import 'package:onetouch/SessionScreen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
@@ -131,12 +132,22 @@ final GoRouter _router = GoRouter(
       return null;
     }
     if (!authSession.isAuthenticated) {
+      if (isCommunityPostDestination(path)) {
+        communityLinkNavigation.queue(path);
+      }
       return '/onboarding';
     }
     if (path.startsWith('/onboarding/') && footballCatalog.isLoaded) {
       return null;
     }
-    return isAppSessionReady ? null : '/session';
+    if (isAppSessionReady) return null;
+    if (isCommunityPostDestination(path)) {
+      communityLinkNavigation.queue(
+        path,
+        sessionToken: authSession.accessToken,
+      );
+    }
+    return '/session';
   },
   errorBuilder: (context, state) => const AppErrorScreen(statusCode: 404),
   routes: [
@@ -255,6 +266,19 @@ final GoRouter _router = GoRouter(
               valueListenable: currentUserPreferences.viewedTeamId,
               builder: (context, teamId, _) => Community(teamId: teamId),
             ),
+            routes: [
+              GoRoute(
+                path: ':postId',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (context, state) {
+                  final postId =
+                      int.tryParse(state.pathParameters['postId'] ?? '');
+                  return postId == null || postId < 1
+                      ? const AppErrorScreen(statusCode: 404)
+                      : NotificationPostPage(postId: postId);
+                },
+              ),
+            ],
           ),
         ]),
       ],

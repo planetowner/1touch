@@ -9,6 +9,7 @@ import 'package:http/testing.dart';
 import 'package:onetouch/SessionScreen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/notification_navigation.dart';
+import 'package:onetouch/core/community_link_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -49,6 +50,7 @@ void main() {
   });
   setUp(() {
     notificationNavigation.clear();
+    communityLinkNavigation.clear();
     fail = false;
     requests.clear();
     authSession
@@ -84,6 +86,11 @@ void main() {
           builder: (_, state) => Scaffold(
                 body: Text(
                     'Match ${state.pathParameters['id']} ${state.uri.queryParameters['status']}'),
+              )),
+      GoRoute(
+          path: '/community/:postId',
+          builder: (_, state) => Scaffold(
+                body: Text('Post ${state.pathParameters['postId']}'),
               )),
       GoRoute(
           path: '/onboarding/welcome',
@@ -165,6 +172,23 @@ void main() {
       '/match/42?status=past',
       sessionToken: 'previous-account-token',
     );
+
+    await pump(tester);
+
+    expect(find.text('Ready Home'), findsOneWidget);
+  });
+  testWidgets('opens a shared post after session bootstrap', (tester) async {
+    communityLinkNavigation.queue('/community/12');
+
+    await pump(tester);
+
+    expect(find.text('Post 12'), findsOneWidget);
+    expect(communityLinkNavigation.take(sessionToken: authSession.accessToken!),
+        isNull);
+  });
+
+  testWidgets('does not open another account shared post', (tester) async {
+    communityLinkNavigation.queue('/community/12', sessionToken: 'other');
 
     await pump(tester);
 

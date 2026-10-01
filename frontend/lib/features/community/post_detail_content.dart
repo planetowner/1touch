@@ -12,6 +12,7 @@ import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/features/community/community_delete_dialog.dart';
+import 'package:onetouch/features/community/community_post_share_link.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
@@ -283,8 +284,6 @@ class PostDetailContent extends StatelessWidget {
     );
   }
 }
-
-String communityPostShareText(Post post) => '${post.title}\n\n${post.body}';
 
 class PostDetailReplyBar extends StatefulWidget {
   const PostDetailReplyBar({
