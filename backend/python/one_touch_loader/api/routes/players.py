@@ -14,7 +14,7 @@ from ..repos.player_indicators_repo import get_current_player_indicators
 from ..schemas.player_indicators import PlayerIndicatorsResponse
 from ..services.media_storage import player_image_content
 from ...core.player_images import IMAGE_ROUTE
-from ..repos.player_detail_repo import get_player_detail, list_player_comparison_candidates
+from ..repos.player_detail_repo import get_player_detail, get_player_comparison_candidates
 from ..repos.player_directory_repo import get_current_ranking, get_ones_to_watch
 from typing import Literal
 from ..schemas.players import (
@@ -41,8 +41,12 @@ def ones_to_watch(user_id: int = Depends(get_user_id)):
 
 
 @router.get("/players/comparison-candidates", response_model=PlayerCandidatesResponse)
-def comparison_candidates(q: str = Query(default="", max_length=100), user_id: int = Depends(get_user_id)):
-    return {"players": list_player_comparison_candidates(q)}
+def comparison_candidates(q: str = Query(default="", max_length=100),
+                          position: Literal['GK', 'DF', 'MF', 'FW'] | None = None,
+                          excluded_id: int | None = Query(default=None, gt=0),
+                          limit: int = Query(default=100, ge=1, le=100),
+                          offset: int = Query(default=0, ge=0), user_id: int = Depends(get_user_id)):
+    return get_player_comparison_candidates(q, position=position, excluded_id=excluded_id, limit=limit, offset=offset)
 
 
 @router.get("/players/{player_id}/detail", response_model=PlayerDetailResponse)

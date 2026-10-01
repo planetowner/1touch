@@ -88,4 +88,35 @@ class ApiPlayerDetailRepository implements CachedPlayerDetailRepository {
         .map(playerCandidateFromJson)
         .toList();
   }
+
+  @override
+  Future<PlayerComparisonPage> comparisonCandidates(String query,
+      {String? position,
+      int? excludedId,
+      int limit = 20,
+      int offset = 0}) async {
+    final json = await _get('players/comparison-candidates', {
+      'q': query,
+      if (position != null) 'position': position,
+      if (excludedId != null) 'excluded_id': '$excludedId',
+      'limit': '$limit',
+      'offset': '$offset',
+    });
+    return PlayerComparisonPage(
+      players: (json['players'] as List)
+          .cast<Map<String, dynamic>>()
+          .map((row) => PlayerComparisonCandidate(
+                player: playerCandidateFromJson(row),
+                position: row['position_group'] as String?,
+                teamId: row['team_id'] as int?,
+                teamName: row['team_name'] as String?,
+                jerseyNumber: row['jersey_number'] as int?,
+              ))
+          .toList(),
+      seasonName: json['season_name'] as String?,
+      total: json['total'] as int,
+      limit: json['limit'] as int,
+      offset: json['offset'] as int,
+    );
+  }
 }

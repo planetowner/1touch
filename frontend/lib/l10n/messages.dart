@@ -1337,6 +1337,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "无法更新点赞，请重试。"
   ),
   "More options": (ko: "더 보기", ja: "その他", zh: "更多选项"),
+  "Load more": (ko: "더 보기", ja: "もっと見る", zh: "加载更多"),
   "Edit": (ko: "수정", ja: "編集", zh: "编辑"),
   "Edit post": (ko: "게시물 수정", ja: "投稿を編集", zh: "编辑帖子"),
   "Edit comment": (ko: "댓글 수정", ja: "コメントを編集", zh: "编辑评论"),

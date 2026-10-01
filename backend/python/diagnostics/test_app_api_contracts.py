@@ -34,6 +34,8 @@ class AppApiContractsTests(unittest.TestCase):
             (search, 'search', '/v1/search?q=Example', 'api_search'),
             (players, 'get_current_ranking', '/v1/players/ranking-current', 'api_player_directory'),
             (players, 'get_player_detail', '/v1/players/9967153/detail', 'player_detail'),
+            (players, 'get_player_comparison_candidates', '/v1/players/comparison-candidates?limit=20&offset=20',
+             'api_player_comparison_candidates'),
         ]
         for module, name, url, fixture in cases:
             with self.subTest(url=url), patch.object(module, name, return_value=sample(fixture)):
