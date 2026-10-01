@@ -7,6 +7,9 @@ import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/community/community_repository_provider.dart'
     as community_providers;
+import 'package:onetouch/data/community/community_rules_visit_repository.dart';
+import 'package:onetouch/data/community/community_rules_visit_repository_provider.dart'
+    as rules_visit_providers;
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_providers;
@@ -22,12 +25,14 @@ import 'package:onetouch/features/community/community_header_slivers.dart';
 import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/features/community/community_post_body.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 
 class Community extends StatefulWidget {
   final int teamId;
   final PostRepository? postRepository;
   final CommunityRepository? communityRepository;
   final FixtureRepository? fixtureRepository;
+  final CommunityRulesVisitRepository? rulesVisitRepository;
 
   const Community({
     super.key,
@@ -35,6 +40,7 @@ class Community extends StatefulWidget {
     this.postRepository,
     this.communityRepository,
     this.fixtureRepository,
+    this.rulesVisitRepository,
   });
 
   @override
@@ -60,12 +66,19 @@ class _CommunityState extends State<Community>
   late final List<Object?> _postLoadErrorsByTab;
   int _postRequestId = 0;
   int _tabViewEpoch = 0;
+  bool _isActiveTab = true;
+  bool _checkedRulesThisVisit = false;
+  int _rulesVisitGeneration = 0;
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
 
   CommunityRepository get _communityRepository =>
       widget.communityRepository ?? community_providers.communityRepository;
+
+  CommunityRulesVisitRepository get _rulesVisitRepository =>
+      widget.rulesVisitRepository ??
+      rules_visit_providers.communityRulesVisitRepository;
 
   @override
   void initState() {
@@ -91,6 +104,31 @@ class _CommunityState extends State<Community>
       ..addListener(_handlePostTabChange);
     mainTabActions.addListener(_handleMainTabAction);
     _loadPosts();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _showFirstVisitRules();
+    });
+  }
+
+  Future<void> _showFirstVisitRules() async {
+    if (!_isActiveTab || _checkedRulesThisVisit) return;
+    _checkedRulesThisVisit = true;
+    final generation = _rulesVisitGeneration;
+    try {
+      if (!await _rulesVisitRepository.shouldShow() ||
+          !mounted ||
+          !_isActiveTab ||
+          generation != _rulesVisitGeneration) {
+        return;
+      }
+      final acknowledged = await showGroundRulesModal(
+        context,
+        teamId: widget.teamId,
+        repository: _communityRepository,
+      );
+      if (acknowledged == true) await _rulesVisitRepository.acknowledge();
+    } on Object {
+      // Local storage errors must not prevent the community from opening.
+    }
   }
 
   void _handlePostTabChange() {
@@ -101,6 +139,17 @@ class _CommunityState extends State<Community>
   }
 
   void _handleMainTabAction() {
+    final active = mainTabActions.tabIndex == 3;
+    if (active != _isActiveTab) {
+      _isActiveTab = active;
+      _rulesVisitGeneration++;
+      _checkedRulesThisVisit = false;
+      if (active) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _showFirstVisitRules();
+        });
+      }
+    }
     if (_selectedTabIndex != 0) {
       _selectedTabIndex = 0;
       _tabController.index = 0;
