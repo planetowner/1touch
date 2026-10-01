@@ -178,6 +178,22 @@ class FollowingPlayersEditorSheet extends StatefulWidget {
 
 class _FollowingPlayersEditorSheetState
     extends State<FollowingPlayersEditorSheet> {
+  static const _searchFadeHeight = 40.0;
+  static const _searchFadeGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color(0x00000000),
+      Color(0x00000000),
+      Color(0x40000000),
+      Color(0x80000000),
+      Color(0xCC000000),
+      Color(0xFF000000),
+      Color(0xFF000000),
+    ],
+    stops: [0, 0.20, 0.45, 0.70, 0.82, 0.92, 1],
+  );
+
   final _search = TextEditingController();
   late final _candidateSearch =
       DebouncedSearchController<List<PlayerCandidate>>(
@@ -186,6 +202,8 @@ class _FollowingPlayersEditorSheetState
   final Map<int, Future<PlayerDetail?>> _details = {};
   PlayerCandidate? _selected;
   bool get _searching => _candidateSearch.query.isNotEmpty;
+  bool _fadeSearchTop = false;
+  bool _fadeSearchBottom = false;
   bool _changed = false;
   PlayerDetailRepository get _repository =>
       widget.repository ?? playerDetailRepository;
@@ -212,10 +230,27 @@ class _FollowingPlayersEditorSheetState
     final query = _search.text.trim();
     if (query == _candidateSearch.query) return;
     _selected = null;
+    _fadeSearchTop = false;
+    _fadeSearchBottom = false;
     _candidateSearch.updateQuery(query);
   }
 
   void _onSearchChanged() => setState(() {});
+
+  void _updateSearchFade(ScrollMetrics metrics) {
+    final top = metrics.extentBefore > 0.5;
+    final bottom = metrics.extentAfter > 0.5;
+    if (top == _fadeSearchTop && bottom == _fadeSearchBottom) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || (top == _fadeSearchTop && bottom == _fadeSearchBottom)) {
+        return;
+      }
+      setState(() {
+        _fadeSearchTop = top;
+        _fadeSearchBottom = bottom;
+      });
+    });
+  }
 
   bool _contains(int id) => _players.any((player) => player.playerId == id);
 
@@ -377,19 +412,57 @@ class _FollowingPlayersEditorSheetState
     if (results.isEmpty) {
       return Center(child: Text(tr(context, 'No players found')));
     }
-    return ListView.builder(
-      controller: controller,
-      itemCount: results.length,
-      itemBuilder: (context, index) {
-        final player = results[index];
-        final selected = _selected?.id == player.id;
-        return _SearchPlayerRow(
-          player: player,
-          divider: divider,
-          selected: selected,
-          onSelect: () => setState(() => _selected = player),
-        );
+    return NotificationListener<ScrollMetricsNotification>(
+      onNotification: (notification) {
+        _updateSearchFade(notification.metrics);
+        return false;
       },
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          _updateSearchFade(notification.metrics);
+          return false;
+        },
+        child: ShaderMask(
+          key: const ValueKey('following-search-top-fade'),
+          blendMode: _fadeSearchTop ? BlendMode.dstIn : BlendMode.dst,
+          shaderCallback: (bounds) => _searchFadeGradient.createShader(
+            Rect.fromLTWH(0, 0, bounds.width,
+                bounds.height.clamp(0.0, _searchFadeHeight)),
+          ),
+          child: ShaderMask(
+            key: const ValueKey('following-search-bottom-fade'),
+            blendMode: _fadeSearchBottom ? BlendMode.dstIn : BlendMode.dst,
+            shaderCallback: (bounds) {
+              final height = bounds.height.clamp(0.0, _searchFadeHeight);
+              return LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: _searchFadeGradient.colors,
+                stops: _searchFadeGradient.stops,
+              ).createShader(Rect.fromLTWH(
+                0,
+                bounds.height - height,
+                bounds.width,
+                height,
+              ));
+            },
+            child: ListView.builder(
+              controller: controller,
+              itemCount: results.length,
+              itemBuilder: (context, index) {
+                final player = results[index];
+                final selected = _selected?.id == player.id;
+                return _SearchPlayerRow(
+                  player: player,
+                  divider: divider,
+                  selected: selected,
+                  onSelect: () => setState(() => _selected = player),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

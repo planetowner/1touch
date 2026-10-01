@@ -13,10 +13,12 @@ import 'package:onetouch/comm_pages/Profile_settings/PreferenceDetails.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/notifications/notification_preferences.dart';
 import 'package:onetouch/data/notifications/notification_preferences_repository.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/models/player_detail.dart';
 
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
   final element = tester.element(finder);
@@ -341,6 +343,61 @@ void main() {
       });
     }
   }
+
+  for (final size in [const Size(320, 568), const Size(393, 852)]) {
+    testWidgets('following player search fades while scrolling at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: Scaffold(
+          body: FollowingPlayersEditorSheet(
+            players: const [],
+            repository: _ManyPlayerCandidatesRepository(),
+          ),
+        ),
+      ));
+      await tester.enterText(find.byType(TextField), 'E');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+
+      final top = find.byKey(const ValueKey('following-search-top-fade'));
+      final bottom = find.byKey(const ValueKey('following-search-bottom-fade'));
+      expect(tester.widget<ShaderMask>(top).blendMode, BlendMode.dst);
+      expect(tester.widget<ShaderMask>(bottom).blendMode, BlendMode.dstIn);
+
+      await tester.drag(
+        find.descendant(of: bottom, matching: find.byType(ListView)),
+        const Offset(0, -120),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<ShaderMask>(top).blendMode, BlendMode.dstIn);
+      expect(tester.widget<ShaderMask>(bottom).blendMode, BlendMode.dstIn);
+      await tester.drag(
+        find.descendant(of: bottom, matching: find.byType(ListView)),
+        const Offset(0, -2400),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<ShaderMask>(bottom).blendMode, BlendMode.dst);
+      expect(tester.takeException(), isNull);
+    });
+  }
+}
+
+class _ManyPlayerCandidatesRepository implements PlayerDetailRepository {
+  @override
+  Future<PlayerDetail> load(int playerId, {int? seasonId}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<PlayerCandidate>> search(String query) async => [
+        for (var index = 1; index <= 20; index++)
+          (id: index, name: 'Player $index', image: null),
+      ];
 }
 
 class _StaticFollowingTeamsRepository implements FollowingTeamsRepository {
