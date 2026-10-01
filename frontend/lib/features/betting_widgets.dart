@@ -776,6 +776,7 @@ class BettingProbabilityBar extends StatelessWidget {
         height: 40,
         child: LayoutBuilder(
           builder: (context, constraints) {
+            const horizontalPadding = 8.0;
             final active = [
               for (var i = 0; i < 3; i++)
                 if (values[i] > 0) i
@@ -793,7 +794,8 @@ class BettingProbabilityBar extends StatelessWidget {
                 maxLines: 1,
               )..layout();
               minimums[index] = painter.width.ceilToDouble() +
-                  9 +
+                  horizontalPadding * 2 +
+                  3 +
                   (selected?.index == index ? 14 : 0);
               painter.dispose();
             }
@@ -827,7 +829,9 @@ class BettingProbabilityBar extends StatelessWidget {
                     width: widths[index],
                     child: Container(
                       color: segmentColors[index],
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
                       alignment: index == 0
                           ? Alignment.centerLeft
                           : index == 2
