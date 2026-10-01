@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
@@ -62,7 +61,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       );
 
   List<Widget> _content(PlayerDetail detail, PlayerAnalysis analysis) => [
-        _topStats(detail, analysis),
+        _topStats(analysis),
         const SizedBox(height: 32),
         _influenceBlock(analysis),
         const SizedBox(height: 48),
@@ -74,25 +73,14 @@ class _AnalysisTabState extends State<AnalysisTab> {
         ),
       ];
 
-  Widget _topStats(PlayerDetail detail, PlayerAnalysis analysis) {
-    final season = detail.selectedSeason;
+  Widget _topStats(PlayerAnalysis analysis) {
     final isKorean = Localizations.localeOf(context).languageCode == 'ko';
     return PlayerSection(
       title: tr(context, 'TOP STATS'),
-      titleAccessory: AppInfoButton(
-        key: const ValueKey('top-stats-help-icon'),
-        message: tr(
-            context,
-            '{season} {competition} · {position} · reference players with at least {minutes} minutes.',
-            {
-              'season': season == null
-                  ? tr(context, 'Current season')
-                  : compactSeasonLabel(season.name),
-              'competition': competitionNameLabel(context,
-                  season?.competitionId, season?.competitionName ?? ''),
-              'position': analysis.position ?? '—',
-              'minutes': analysis.minimumMinutes
-            }),
+      titleAccessory: const AppInfoButton(
+        key: ValueKey('top-stats-help-icon'),
+        message:
+            'Top 3 stats where the player ranks best in the league. The displayed stats will only reflect good performance.',
       ),
       child: PlayerSurface(
         key: const ValueKey('player-top-stats-card'),

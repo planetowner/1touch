@@ -1088,10 +1088,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "17/18シーズン以降の集計",
     zh: "自17/18赛季起统计"
   ),
-  "Competition statistics for the selected season.": (
-    ko: "선택한 시즌의 대회 기록이에요.",
-    ja: "選択したシーズンの大会成績です。",
-    zh: "所选赛季的赛事数据。"
+  "A quick overview of the player's average performance in each competition. Data has been collected since the 2017/18 season.":
+      (
+    ko: "대회별 선수의 평균 경기력을 간단히 보여줘요. 데이터는 2017/18 시즌부터 집계했어요.",
+    ja: "大会ごとの選手の平均的なパフォーマンスを簡単に示します。データは2017/18シーズンから集計しています。",
+    zh: "简要展示球员在各项赛事中的平均表现。数据从2017/18赛季开始收集。"
   ),
   "No competitions this season": (
     ko: "이 시즌의 대회 기록이 없어요",
@@ -1988,11 +1989,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "同じシーズンポジション（{position}）の選手を選んでください。",
     zh: "请选择本赛季位置相同（{position}）的球员。"
   ),
-  "{season} {competition} · {position} · reference players with at least {minutes} minutes.":
+  "Top 3 stats where the player ranks best in the league. The displayed stats will only reflect good performance.":
       (
-    ko: "{season} {competition} · {position} · {minutes}분 이상 출전한 선수 기준",
-    ja: "{season} {competition} · {position} · {minutes}分以上出場した選手が対象",
-    zh: "{season} {competition} · {position} · 参考出场至少{minutes}分钟的球员"
+    ko: "선수가 리그에서 가장 높은 순위를 기록한 상위 3개 통계예요. 좋은 성과를 보인 통계만 표시돼요.",
+    ja: "リーグ内で選手の順位が最も高い上位3つのスタッツです。好成績のスタッツのみ表示します。",
+    zh: "展示该球员在联赛中排名最高的3项数据，仅显示表现出色的统计项。"
   ),
   "Current season: {season}.": (
     ko: "현재 시즌: {season}.",
@@ -2171,6 +2172,12 @@ const appMessages = <String, MessageTranslations>{
     ko: "수비·중앙·공격 지역별 공 회수 비율을 리그 평균과 비교해요.",
     ja: "守備・中盤・攻撃の各エリアでのボール奪回割合をリーグ平均と比較します。",
     zh: "比较防守、中场和进攻三区的夺回球权比例与联赛平均值。"
+  ),
+  "Shotmap showing where each shot on target was taken, with lines pointing to where it was aimed.":
+      (
+    ko: "유효 슈팅을 시도한 위치와 공이 향한 위치를 선으로 보여주는 슛맵이에요.",
+    ja: "枠内シュートを放った位置と、狙った方向を線で示すシュートマップです。",
+    zh: "射门图显示每次射正的起脚位置，并用线条指向瞄准的位置。"
   ),
   "Evaluates and ranks players using 1Touch's own data-driven performance metrics.":
       (
