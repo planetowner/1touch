@@ -6,7 +6,7 @@
 	<string>development</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:1touch.app</string>
+			<string>applinks:1touch.football</string>
 	</array>
 </dict>
 </plist>

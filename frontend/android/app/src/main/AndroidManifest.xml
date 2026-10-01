@@ -44,7 +44,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="1touch.app" android:pathPrefix="/community/" />
+                <data android:scheme="https" android:host="1touch.football" android:pathPrefix="/community/" />
             </intent-filter>
         </activity>
         <activity android:name="com.kakao.sdk.flutter.auth.AuthCodeHandlerActivity" android:exported="true">
