@@ -10,8 +10,19 @@ class PlayerCandidate(BaseModel):
     image: str | None
 
 
+class PlayerComparisonCandidate(PlayerCandidate):
+    position_group: str | None
+    team_id: int | None
+    team_name: str | None
+    jersey_number: int | None
+
+
 class PlayerCandidatesResponse(BaseModel):
-    players: list[PlayerCandidate]
+    players: list[PlayerComparisonCandidate]
+    season_name: str | None
+    total: int
+    limit: int
+    offset: int
 
 
 class PlayerProfile(PlayerCandidate):

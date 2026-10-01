@@ -59,7 +59,7 @@ void main() {
     );
     await tester.pumpWidget(_playerView(repository));
     await tester.pump();
-    repository.fail();
+    repository.failRefresh();
     await tester.pump();
     expect(find.text('Player 1'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -116,7 +116,8 @@ Widget _playerView(_CachedDetailRepository repository) => MaterialApp(
       ),
     );
 
-class _CachedDetailRepository implements CachedPlayerDetailRepository {
+class _CachedDetailRepository extends FakePlayerDetailRepository
+    implements CachedPlayerDetailRepository {
   _CachedDetailRepository({this.memory, this.disk});
 
   final PlayerDetailSnapshot? memory;
@@ -139,13 +140,13 @@ class _CachedDetailRepository implements CachedPlayerDetailRepository {
   }
 
   void complete(PlayerDetail detail) => _refresh.complete(detail);
-  void fail() => _refresh.completeError(StateError('offline'));
+  void failRefresh() => _refresh.completeError(StateError('offline'));
 
   @override
   Future<List<PlayerCandidate>> search(String query) async => const [];
 }
 
-class _ControlledDetailRepository implements PlayerDetailRepository {
+class _ControlledDetailRepository extends FakePlayerDetailRepository {
   final _requests = <int?, Completer<PlayerDetail>>{};
 
   @override

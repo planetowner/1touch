@@ -13,7 +13,7 @@ import 'package:onetouch/comm_pages/Profile_settings/PreferenceDetails.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/data/players/player_detail_repository.dart';
+import 'support/player_detail_fixture.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/notifications/notification_preferences.dart';
 import 'package:onetouch/data/notifications/notification_preferences_repository.dart';
@@ -388,7 +388,7 @@ void main() {
   }
 }
 
-class _ManyPlayerCandidatesRepository implements PlayerDetailRepository {
+class _ManyPlayerCandidatesRepository extends FakePlayerDetailRepository {
   @override
   Future<PlayerDetail> load(int playerId, {int? seasonId}) =>
       throw UnimplementedError();

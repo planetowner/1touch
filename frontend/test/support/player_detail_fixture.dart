@@ -50,6 +50,13 @@ class FakePlayerDetailRepository implements PlayerDetailRepository {
   final bool duplicateFirstClub;
   final calls = <({int playerId, int? seasonId})>[];
   final searchQueries = <String>[];
+  final comparisonQueries = <({
+    String query,
+    String? position,
+    int? excludedId,
+    int limit,
+    int offset
+  })>[];
   bool fail = false;
   @override
   Future<PlayerDetail> load(int playerId, {int? seasonId}) async {
@@ -71,5 +78,44 @@ class FakePlayerDetailRepository implements PlayerDetailRepository {
         if (normalized.isEmpty || 'player $id'.contains(normalized))
           (id: id, name: 'Player $id', image: null),
     ];
+  }
+
+  @override
+  Future<PlayerComparisonPage> comparisonCandidates(String query,
+      {String? position,
+      int? excludedId,
+      int limit = 20,
+      int offset = 0}) async {
+    comparisonQueries.add((
+      query: query,
+      position: position,
+      excludedId: excludedId,
+      limit: limit,
+      offset: offset
+    ));
+    final candidates = await search(query);
+    final players = candidates
+        .map((player) {
+          final detail = detailFixture(
+              playerId: player.id, position: player.id == 2 ? 'GK' : 'FW');
+          return PlayerComparisonCandidate(
+            player: player,
+            position: detail.analysis?.position,
+            teamId: detail.profile.teamId,
+            teamName: detail.profile.teamName,
+            jerseyNumber: detail.profile.jerseyNumber,
+          );
+        })
+        .where((candidate) =>
+            candidate.player.id != excludedId &&
+            (position == null || candidate.position == position))
+        .toList();
+    return PlayerComparisonPage(
+      players: players.skip(offset).take(limit).toList(),
+      seasonName: '2026/2027',
+      total: players.length,
+      limit: limit,
+      offset: offset,
+    );
   }
 }
