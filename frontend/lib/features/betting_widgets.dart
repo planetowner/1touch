@@ -618,13 +618,31 @@ class BettingParticipationCard extends StatelessWidget {
                                 ? market.bet?.outcome
                                 : null,
                       )
+                    else if (market != null)
+                      Container(
+                        key: const ValueKey('match-h2h-no-bets-bar'),
+                        width: double.infinity,
+                        height: 40,
+                        padding: const EdgeInsets.all(8),
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          color: AppPalette.lightGrey,
+                          borderRadius: BorderRadius.all(Radius.circular(6)),
+                        ),
+                        child: Text(
+                          tr(context, 'No bets yet.'),
+                          textAlign: TextAlign.center,
+                          style: Heading5.style.copyWith(
+                            color: AppPalette.white,
+                            height: 1.10,
+                          ),
+                        ),
+                      )
                     else
                       Text(
                         controller.loading
                             ? tr(context, 'Loading…')
-                            : market == null
-                                ? tr(context, 'Unable to load bets.')
-                                : tr(context, 'No bets yet.'),
+                            : tr(context, 'Unable to load bets.'),
                       ),
                     if (market != null) ...[
                       const SizedBox(height: 8),
@@ -755,37 +773,91 @@ class BettingProbabilityBar extends StatelessWidget {
       borderRadius: BorderRadius.circular(6),
       child: SizedBox(
         height: 40,
-        child: Row(
-          children: List.generate(3, (index) {
-            if (values[index] <= 0) return const SizedBox.shrink();
-            return Expanded(
-              flex: (values[index] * 1000000).round().clamp(1, 1000000),
-              child: Container(
-                color: segmentColors[index],
-                padding: const EdgeInsets.symmetric(horizontal: 3),
-                alignment: Alignment.center,
-                child: FittedBox(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${(values[index] * 100).toStringAsFixed(1)}%',
-                        style: Heading5.style.copyWith(
-                          color: _foregroundFor(segmentColors[index]),
-                        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final active = [
+              for (var i = 0; i < 3; i++)
+                if (values[i] > 0) i
+            ];
+            final labels = [
+              for (var i = 0; i < 3; i++)
+                '${(values[i] * 100).toStringAsFixed(1)}%'
+            ];
+            final minimums = <int, double>{};
+            for (final index in active) {
+              final painter = TextPainter(
+                text: TextSpan(text: labels[index], style: Heading5.style),
+                textDirection: Directionality.of(context),
+                textScaler: MediaQuery.textScalerOf(context),
+                maxLines: 1,
+              )..layout();
+              minimums[index] = painter.width.ceilToDouble() +
+                  9 +
+                  (selected?.index == index ? 14 : 0);
+              painter.dispose();
+            }
+            final minimumWidth =
+                minimums.values.fold<double>(0, (a, b) => a + b);
+            final contentWidth = math.max(constraints.maxWidth, minimumWidth);
+            final widths = <int, double>{};
+            final flexible = active.toSet();
+            var remainingWidth = contentWidth;
+            var remainingWeight =
+                active.fold<double>(0, (sum, i) => sum + values[i]);
+            while (flexible.isNotEmpty) {
+              final constrained = flexible.where((index) =>
+                  remainingWidth * values[index] / remainingWeight <
+                  minimums[index]!);
+              if (constrained.isEmpty) break;
+              for (final index in constrained.toList()) {
+                widths[index] = minimums[index]!;
+                remainingWidth -= widths[index]!;
+                remainingWeight -= values[index];
+                flexible.remove(index);
+              }
+            }
+            for (final index in flexible) {
+              widths[index] = remainingWidth * values[index] / remainingWeight;
+            }
+            final segments = Row(
+              children: [
+                for (final index in active)
+                  SizedBox(
+                    width: widths[index],
+                    child: Container(
+                      color: segmentColors[index],
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            labels[index],
+                            maxLines: 1,
+                            softWrap: false,
+                            style: Heading5.style.copyWith(
+                              color: _foregroundFor(segmentColors[index]),
+                            ),
+                          ),
+                          if (selected?.index == index)
+                            Icon(
+                              Icons.check_circle,
+                              size: 14,
+                              color: _foregroundFor(segmentColors[index]),
+                            ),
+                        ],
                       ),
-                      if (selected?.index == index)
-                        Icon(
-                          Icons.check_circle,
-                          size: 14,
-                          color: _foregroundFor(segmentColors[index]),
-                        ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+              ],
             );
-          }),
+            if (minimumWidth <= constraints.maxWidth) return segments;
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(width: contentWidth, child: segments),
+            );
+          },
         ),
       ),
     );

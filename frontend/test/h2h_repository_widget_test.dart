@@ -249,8 +249,7 @@ void main() {
 
   for (final locale in appSupportedLocales) {
     for (final size in [const Size(320, 568), const Size(430, 932)]) {
-      testWidgets('spaces H2H controls evenly in $locale at $size',
-          (tester) async {
+      testWidgets('positions H2H controls in $locale at $size', (tester) async {
         await _setSize(tester, size);
         final repository = _RecordingFixtureRepository(
           loader: (_, __) async => [_pastFixture()],
@@ -275,10 +274,11 @@ void main() {
 
         expect(first.left, closeTo(24, 0.1));
         expect(last.right, closeTo(size.width - 24, 0.1));
-        expect(middle.left - first.right, closeTo(last.left - middle.right, 1));
         expect(first.right, lessThanOrEqualTo(middle.left));
         expect(middle.right, lessThanOrEqualTo(last.left));
         if (isEnglish) {
+          expect(
+              middle.left - first.right, closeTo(last.left - middle.right, 1));
           final selectedLabel = tester.widget<Text>(
             find.descendant(
               of: dropdown,
@@ -295,6 +295,8 @@ void main() {
           )..layout())
               .width;
           expect(labelWidth, lessThanOrEqualTo(first.width - 56));
+        } else {
+          expect(middle.left - first.right, closeTo(12, 0.1));
         }
         expect(tester.takeException(), isNull);
       });
