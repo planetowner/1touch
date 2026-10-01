@@ -57,12 +57,13 @@ class _MatchesTabState extends State<MatchesTab> {
       ScrollController(keepScrollOffset: false);
   final GlobalKey _entrySliverKey = GlobalKey();
   final GlobalKey _upcomingSectionKey = GlobalKey();
+  final GlobalKey _noLiveBoundarySliverKey = GlobalKey();
   final GlobalKey _liveSectionKey = GlobalKey();
   final GlobalKey _pastSectionKey = GlobalKey();
   final Map<_MatchSection, double> _sectionOffsets = {};
 
   int _visibleHeaderCount = 1;
-  bool _isAtLastUpcomingMatch = false;
+  bool _hasEarlierMatches = false;
   double _trailingScrollExtent = 24;
   bool _isLoading = true;
   Object? _loadError;
@@ -138,10 +139,14 @@ class _MatchesTabState extends State<MatchesTab> {
       }
 
       setState(() {
-        // 화면은 미래에서 과거로 이어져요. 가까운 일정부터 오는 예정 경기만 뒤집어요.
-        pastMatches = results[0];
-        liveMatches = results[1];
-        upcomingMatches = results[2].reversed.toList(growable: false);
+        pastMatches = _sortFixturesByKickoff(results[0], nullsFirst: true);
+        liveMatches = _sortFixturesByKickoff(results[1]);
+        upcomingMatches = _sortFixturesByKickoff(results[2]);
+        final centerNoLiveBoundary = liveMatches.isEmpty &&
+            pastMatches.isNotEmpty &&
+            upcomingMatches.isNotEmpty;
+        _visibleHeaderCount = centerNoLiveBoundary ? 1 : _entrySectionIndex + 1;
+        _hasEarlierMatches = centerNoLiveBoundary;
         _isLoading = false;
         _loadError = null;
       });
@@ -173,7 +178,7 @@ class _MatchesTabState extends State<MatchesTab> {
     _loadError = null;
     _sectionOffsets.clear();
     _visibleHeaderCount = 1;
-    _isAtLastUpcomingMatch = false;
+    _hasEarlierMatches = false;
     _trailingScrollExtent = 24;
   }
 
@@ -219,16 +224,17 @@ class _MatchesTabState extends State<MatchesTab> {
     }
 
     final headerCountDelta = nextHeaderCount - _visibleHeaderCount;
-    final isAtLastUpcomingMatch = upcomingMatches.length > 1 &&
-        _scrollController.offset <=
-            _scrollController.position.minScrollExtent + 0.5;
-    final lastUpcomingChanged = isAtLastUpcomingMatch != _isAtLastUpcomingMatch;
+    final hasEarlierMatches = _scrollController.offset >
+        _scrollController.position.minScrollExtent + 0.5;
+    final earlierMatchesChanged = hasEarlierMatches != _hasEarlierMatches;
     final trailingExtentChanged =
         nextTrailingScrollExtent != _trailingScrollExtent;
-    if (headerCountDelta != 0 || lastUpcomingChanged || trailingExtentChanged) {
+    if (headerCountDelta != 0 ||
+        earlierMatchesChanged ||
+        trailingExtentChanged) {
       setState(() {
         _visibleHeaderCount = nextHeaderCount;
-        _isAtLastUpcomingMatch = isAtLastUpcomingMatch;
+        _hasEarlierMatches = hasEarlierMatches;
         _trailingScrollExtent = nextTrailingScrollExtent;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -239,12 +245,12 @@ class _MatchesTabState extends State<MatchesTab> {
   }
 
   List<_MatchSectionData> get _sections => [
-        if (upcomingMatches.isNotEmpty)
+        if (pastMatches.isNotEmpty)
           _MatchSectionData(
-            type: _MatchSection.upcoming,
-            title: tr(context, 'UPCOMING'),
-            matches: upcomingMatches,
-            key: _upcomingSectionKey,
+            type: _MatchSection.past,
+            title: tr(context, 'PAST'),
+            matches: pastMatches,
+            key: _pastSectionKey,
           ),
         if (liveMatches.isNotEmpty)
           _MatchSectionData(
@@ -253,14 +259,23 @@ class _MatchesTabState extends State<MatchesTab> {
             matches: liveMatches,
             key: _liveSectionKey,
           ),
-        if (pastMatches.isNotEmpty)
+        if (upcomingMatches.isNotEmpty)
           _MatchSectionData(
-            type: _MatchSection.past,
-            title: tr(context, 'PAST'),
-            matches: pastMatches,
-            key: _pastSectionKey,
+            type: _MatchSection.upcoming,
+            title: tr(context, 'UPCOMING'),
+            matches: upcomingMatches,
+            key: _upcomingSectionKey,
           ),
       ];
+
+  _MatchSection get _entrySection => liveMatches.isNotEmpty
+      ? _MatchSection.live
+      : upcomingMatches.isNotEmpty
+          ? _MatchSection.upcoming
+          : _MatchSection.past;
+
+  int get _entrySectionIndex =>
+      _sections.indexWhere((section) => section.type == _entrySection);
 
   @override
   Widget build(BuildContext context) {
@@ -304,11 +319,14 @@ class _MatchesTabState extends State<MatchesTab> {
       );
     }
     final visibleHeaderCount = _visibleHeaderCount.clamp(0, sections.length);
-    final laterUpcomingCount =
-        (upcomingMatches.length - 2).clamp(0, upcomingMatches.length);
-    final showTopFade =
-        (upcomingMatches.length > 1 && !_isAtLastUpcomingMatch) ||
-            visibleHeaderCount > 1;
+    final showTopFade = _hasEarlierMatches;
+    final entrySection = _entrySection;
+    final entrySectionIndex = _entrySectionIndex;
+    final entryPastLeadingCount =
+        entrySection == _MatchSection.past ? pastMatches.length - 1 : 0;
+    final centerNoLiveBoundary = liveMatches.isEmpty &&
+        pastMatches.isNotEmpty &&
+        upcomingMatches.isNotEmpty;
 
     return Column(
       key: const ValueKey('matches-tab-layout'),
@@ -354,24 +372,26 @@ class _MatchesTabState extends State<MatchesTab> {
               child: CustomScrollView(
                 key: const ValueKey('matches-scroll'),
                 controller: _scrollController,
-                // 가까운 예정 경기 두 개에서 시작하고, 더 먼 일정은 위로 이어 붙여요.
-                center: _entrySliverKey,
+                // 라이브가 없으면 지난 경기와 예정 경기의 경계에서 바로 시작해요.
+                center: centerNoLiveBoundary
+                    ? _noLiveBoundarySliverKey
+                    : _entrySliverKey,
+                anchor: centerNoLiveBoundary ? 0.5 : 0.0,
                 slivers: [
-                  if (laterUpcomingCount > 0)
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (_, index) => buildMatchCard(
-                          upcomingMatches[laterUpcomingCount - index - 1],
-                        ),
-                        childCount: laterUpcomingCount,
-                      ),
-                    ),
                   for (var index = 0; index < sections.length; index++) ...[
                     // 카드 하단 8px에 16px을 더해 마지막 카드와 divider를 24px 띄워요.
                     if (index > 0)
                       SliverToBoxAdapter(
+                        child: const SizedBox(height: 16),
+                      ),
+                    if (index > 0)
+                      SliverToBoxAdapter(
+                        key: centerNoLiveBoundary &&
+                                sections[index].type == _MatchSection.upcoming
+                            ? _noLiveBoundarySliverKey
+                            : null,
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Container(
                             key: ValueKey(
                                 'matches-${sections[index].type.name}-divider'),
@@ -385,44 +405,59 @@ class _MatchesTabState extends State<MatchesTab> {
                           ),
                         ),
                       ),
-                    if (index > 0)
-                      SliverToBoxAdapter(
-                        child: SizedBox(
-                          key: sections[index].key,
-                          height: _MatchSectionHeader.sectionHeight +
-                              _MatchSectionHeader.cardSpacing,
-                          child: index < visibleHeaderCount
-                              ? const SizedBox.expand()
-                              : Align(
-                                  alignment: Alignment.topCenter,
-                                  child: SizedBox(
-                                    height: _MatchSectionHeader.sectionHeight,
-                                    child: _MatchSectionHeader(
-                                      key: ValueKey(
-                                        'matches-inline-${sections[index].type.name}-header',
-                                      ),
-                                      title: sections[index].title,
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        key: sections[index].key,
+                        height: index == 0
+                            ? 0
+                            : _MatchSectionHeader.sectionHeight +
+                                _MatchSectionHeader.cardSpacing,
+                        child: index == 0 || index < visibleHeaderCount
+                            ? const SizedBox.expand()
+                            : Align(
+                                alignment: Alignment.topCenter,
+                                child: SizedBox(
+                                  height: _MatchSectionHeader.sectionHeight,
+                                  child: _MatchSectionHeader(
+                                    key: ValueKey(
+                                      'matches-inline-${sections[index].type.name}-header',
                                     ),
+                                    title: sections[index].title,
                                   ),
                                 ),
+                              ),
+                      ),
+                    ),
+                    if (index == entrySectionIndex && entryPastLeadingCount > 0)
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (_, matchIndex) => buildMatchCard(
+                            sections[index].matches[
+                                entryPastLeadingCount - 1 - matchIndex],
+                          ),
+                          childCount: entryPastLeadingCount,
                         ),
-                      )
-                    else
-                      SliverToBoxAdapter(
-                        key: _entrySliverKey,
-                        child: SizedBox(key: sections[index].key, height: 0),
                       ),
                     SliverList(
+                      key: sections[index].type == entrySection
+                          ? _entrySliverKey
+                          : null,
                       delegate: SliverChildBuilderDelegate(
-                        (_, matchIndex) => buildMatchCard(
-                          sections[index].matches[matchIndex +
-                              (sections[index].type == _MatchSection.upcoming
-                                  ? laterUpcomingCount
-                                  : 0)],
-                        ),
+                        (_, matchIndex) {
+                          final matches = sections[index].matches;
+                          // Slivers above `center` grow upward. Feed them
+                          // newest-first so the painted list reads oldest-first.
+                          final fixtureIndex = index < entrySectionIndex
+                              ? matches.length - 1 - matchIndex
+                              : matchIndex +
+                                  (index == entrySectionIndex
+                                      ? entryPastLeadingCount
+                                      : 0);
+                          return buildMatchCard(matches[fixtureIndex]);
+                        },
                         childCount: sections[index].matches.length -
-                            (sections[index].type == _MatchSection.upcoming
-                                ? laterUpcomingCount
+                            (index == entrySectionIndex
+                                ? entryPastLeadingCount
                                 : 0),
                       ),
                     ),
@@ -611,6 +646,29 @@ class _MatchesTabState extends State<MatchesTab> {
     );
     return isDark && isDimmed ? Opacity(opacity: 0.5, child: box) : box;
   }
+}
+
+List<Fixture> _sortFixturesByKickoff(
+  List<Fixture> fixtures, {
+  bool nullsFirst = false,
+}) {
+  final sorted = List<Fixture>.of(fixtures)
+    ..sort((left, right) {
+      final leftKickoff = left.kickoff;
+      final rightKickoff = right.kickoff;
+      if (leftKickoff == null && rightKickoff != null) {
+        return nullsFirst ? -1 : 1;
+      }
+      if (leftKickoff != null && rightKickoff == null) {
+        return nullsFirst ? 1 : -1;
+      }
+      final byKickoff =
+          leftKickoff == null ? 0 : leftKickoff.compareTo(rightKickoff!);
+      return byKickoff != 0
+          ? byKickoff
+          : left.fixtureId.compareTo(right.fixtureId);
+    });
+  return List.unmodifiable(sorted);
 }
 
 class _MatchSectionHeader extends StatelessWidget {
