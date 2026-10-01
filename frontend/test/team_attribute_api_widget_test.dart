@@ -111,8 +111,7 @@ void main() {
     });
 
     for (final locale in appSupportedLocales) {
-      testWidgets(
-          'keeps original radar size in ${locale.languageCode} at $size',
+      testWidgets('balances radar labels in ${locale.languageCode} at $size',
           (tester) async {
         tester.view.physicalSize = size;
         tester.view.devicePixelRatio = 1;
@@ -127,13 +126,12 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // 문구의 언어와 길이가 바뀌어도 변경 전 차트 영역을 그대로 써요.
-        expect(tester.getSize(find.byType(RadarChart)),
-            Size(size.width - 48, 238));
+        final chartSize = tester.getSize(find.byType(RadarChart));
+        expect(chartSize.width, closeTo(chartSize.height, 0.01));
         final card = tester.getRect(
           find.byKey(const ValueKey('analysis-attributes-card')),
         );
-        expect(card.height, 288);
+        expect(card.height, 300);
         expect(card.left, 24);
         expect(card.right, size.width - 24);
         final data = tester.widget<RadarChart>(find.byType(RadarChart)).data;
@@ -163,8 +161,12 @@ void main() {
             for (var index = 0; index < 5; index++)
               center +
                   Offset(
-                    95.2 * math.cos(index * 2 * math.pi / 5 - math.pi / 2),
-                    95.2 * math.sin(index * 2 * math.pi / 5 - math.pi / 2),
+                    chartSize.width *
+                        0.4 *
+                        math.cos(index * 2 * math.pi / 5 - math.pi / 2),
+                    chartSize.height *
+                        0.4 *
+                        math.sin(index * 2 * math.pi / 5 - math.pi / 2),
                   ),
           ], true);
         final titleBounds = <Rect>[];
@@ -203,6 +205,10 @@ void main() {
         expect(titleBounds[4].bottom, lessThan(center.dy));
         expect(titleBounds[2].top, greaterThan(center.dy));
         expect(titleBounds[3].top, greaterThan(center.dy));
+        final topMargin = titleBounds[0].top - card.top;
+        final bottomMargin = card.bottom -
+            math.max(titleBounds[2].bottom, titleBounds[3].bottom);
+        expect(topMargin, closeTo(bottomMargin, 1));
         expect(tester.takeException(), isNull);
       });
     }
@@ -227,7 +233,7 @@ void main() {
       tester.getSize(
         find.byKey(const ValueKey('analysis-attributes-card')),
       ),
-      const Size(345, 288),
+      const Size(345, 300),
     );
     final filterCenter = tester.getCenter(
       find.byKey(const ValueKey('analysis-attributes-filter')),

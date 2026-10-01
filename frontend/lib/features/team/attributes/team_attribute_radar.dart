@@ -13,12 +13,14 @@ class TeamAttributeRadar extends StatelessWidget {
       required this.scores,
       this.comparisonScores,
       this.currentColor = const Color(0xFFE8434A),
-      this.comparisonColor});
+      this.comparisonColor,
+      this.balanceVerticalMargins = false});
 
   final TeamAttributeScores scores;
   final TeamAttributeScores? comparisonScores;
   final Color currentColor;
   final Color? comparisonColor;
+  final bool balanceVerticalMargins;
 
   //   Radar chart
 
@@ -31,6 +33,7 @@ class TeamAttributeRadar extends StatelessWidget {
   static const double _radarFloor = 0;
   static const double _radarCeil = 100;
   static const double _chartHeight = 238;
+  static const double _balancedChartHeight = 250;
 
   @override
   Widget build(BuildContext context) {
@@ -44,9 +47,10 @@ class TeamAttributeRadar extends StatelessWidget {
         .copyWith(height: 1.3);
     return LayoutBuilder(builder: (context, constraints) {
       final titles = <Widget>[];
-      // 축 문구가 길어져도 기존 차트 크기는 유지해요.
-      final radius = math.min(constraints.maxWidth, _chartHeight) * 0.4;
+      final frameHeight =
+          balanceVerticalMargins ? _balancedChartHeight : _chartHeight;
       final isEnglish = Localizations.localeOf(context).languageCode == 'en';
+      final labels = <(String, double, double)>[];
       for (var index = 0; index < teamAttributeLabels.length; index++) {
         var text = tr(context, teamAttributeLabels[index]);
         // 영어 복합 명칭은 항상 나누고, &는 앞 단어와 같은 줄에 둬요.
@@ -81,40 +85,65 @@ class TeamAttributeRadar extends StatelessWidget {
         painter
           ..text = TextSpan(text: title, style: titleStyle)
           ..layout();
+        labels.add((title, painter.width, painter.height));
+        painter.dispose();
+      }
+
+      const gap = 8.0;
+      const lowerVertexHeight = 0.8090169943749475; // sin(54°)
+      final topHeight = labels[0].$3;
+      final bottomHeight = math.max(labels[2].$3, labels[3].$3);
+      // The card adds 25px above and below. Keep 20px around the outermost
+      // labels, then fit each locale's pentagon into the same 300px card.
+      final radius = balanceVerticalMargins
+          ? math.min(
+              constraints.maxWidth * 0.4,
+              (frameHeight + 10 - topHeight - bottomHeight - 2 * gap) /
+                  (1 + lowerVertexHeight),
+            )
+          : math.min(constraints.maxWidth, frameHeight) * 0.4;
+      final centerY = balanceVerticalMargins
+          ? (frameHeight +
+                  (1 - lowerVertexHeight) * radius +
+                  topHeight -
+                  bottomHeight) /
+              2
+          : frameHeight / 2;
+
+      for (var index = 0; index < labels.length; index++) {
+        final (title, titleWidth, titleHeight) = labels[index];
 
         // fl_chart와 같은 꼭짓점 좌표를 쓰되, 문구는 도형과 별도로 배치해요.
         final angle =
             2 * math.pi * index / teamAttributeLabels.length - math.pi / 2;
         final vertex = Offset(
           constraints.maxWidth / 2 + radius * math.cos(angle),
-          _chartHeight / 2 + radius * math.sin(angle),
+          centerY + radius * math.sin(angle),
         );
-        const gap = 8.0;
-        var left = vertex.dx - painter.width / 2;
-        var top =
-            index == 0 ? vertex.dy - painter.height - gap : vertex.dy + gap;
+        var left = vertex.dx - titleWidth / 2;
+        var top = index == 0 ? vertex.dy - titleHeight - gap : vertex.dy + gap;
         if (index == 1 || index == 4) {
           final isRight = index == 1;
           left = isRight
               ? math.min(
-                  vertex.dx + gap, constraints.maxWidth - painter.width - gap)
-              : math.max(vertex.dx - painter.width - gap, gap);
-          top = vertex.dy - painter.height / 2;
-          final innerEdge = isRight ? left : left + painter.width;
+                  vertex.dx + gap, constraints.maxWidth - titleWidth - gap)
+              : math.max(vertex.dx - titleWidth - gap, gap);
+          top = vertex.dy - titleHeight / 2;
+          final innerEdge = isRight ? left : left + titleWidth;
           if (isRight ? innerEdge < vertex.dx : innerEdge > vertex.dx) {
             // 좁은 카드에서 좌우 문구가 들어오면 위쪽 빗변 위로 올려 겹치지 않게 해요.
-            final edgeY = _chartHeight / 2 -
+            final edgeY = centerY -
                 radius +
                 (innerEdge - constraints.maxWidth / 2) *
                     (1 + math.sin(angle)) /
                     math.cos(angle);
-            top = math.min(top, edgeY - painter.height - gap);
+            top = math.min(top, edgeY - titleHeight - gap);
           }
         }
         titles.add(Positioned(
           left: left,
           top: top,
-          width: painter.width,
+          width: titleWidth,
           child: Text(
             title,
             key: ValueKey('team-attribute-axis-$index'),
@@ -123,52 +152,56 @@ class TeamAttributeRadar extends StatelessWidget {
             softWrap: false,
           ),
         ));
-        painter.dispose();
       }
+      final radarChart = RadarChart(
+        RadarChartData(
+          radarShape: RadarShape.polygon,
+          tickCount: 4,
+          gridBorderData: BorderSide(color: appColors.divider, width: 1),
+          radarBorderData: BorderSide(color: appColors.divider, width: 1),
+          tickBorderData: BorderSide(color: appColors.divider, width: 1),
+          ticksTextStyle:
+              const TextStyle(color: Colors.transparent, fontSize: 0),
+          dataSets: [
+            RadarDataSet(
+              fillColor: currentColor.withValues(alpha: 0.3),
+              borderColor: currentColor,
+              borderWidth: 2,
+              entryRadius: 0,
+              dataEntries:
+                  scores.radarValues.map((v) => RadarEntry(value: v)).toList(),
+            ),
+            if (comparisonScores != null)
+              RadarDataSet(
+                fillColor: resolvedComparisonColor.withValues(alpha: 0.1),
+                borderColor: resolvedComparisonColor.withValues(alpha: 0.85),
+                borderWidth: 2,
+                entryRadius: 0,
+                dataEntries: comparisonScores!.radarValues
+                    .map((v) => RadarEntry(value: v))
+                    .toList(),
+              ),
+            _scaleAnchorDataSet(),
+          ],
+        ),
+      );
+      final chartSide = radius / 0.4;
       return SizedBox(
-        height: _chartHeight,
+        height: frameHeight,
         child: Stack(
           fit: StackFit.expand,
           clipBehavior: Clip.none,
           children: [
-            RadarChart(
-              RadarChartData(
-                radarShape: RadarShape.polygon,
-                tickCount: 4,
-                gridBorderData: BorderSide(color: appColors.divider, width: 1),
-                radarBorderData: BorderSide(color: appColors.divider, width: 1),
-                tickBorderData: BorderSide(color: appColors.divider, width: 1),
-                ticksTextStyle:
-                    const TextStyle(color: Colors.transparent, fontSize: 0),
-                dataSets: [
-                  // MY TEAM — the selected team's primary color.
-                  RadarDataSet(
-                    fillColor: currentColor.withValues(alpha: 0.3),
-                    borderColor: currentColor,
-                    borderWidth: 2,
-                    entryRadius: 0,
-                    dataEntries: scores.radarValues
-                        .map((v) => RadarEntry(value: v))
-                        .toList(),
-                  ),
-                  // Comparison — white outline
-                  if (comparisonScores != null)
-                    RadarDataSet(
-                      fillColor: resolvedComparisonColor.withValues(alpha: 0.1),
-                      borderColor:
-                          resolvedComparisonColor.withValues(alpha: 0.85),
-                      borderWidth: 2,
-                      entryRadius: 0,
-                      dataEntries: comparisonScores!.radarValues
-                          .map((v) => RadarEntry(value: v))
-                          .toList(),
-                    ),
-                  // Invisible anchor — pins the scale to a fixed [floor, ceil] range
-                  // so the visible polygons never rescale between comparisons.
-                  _scaleAnchorDataSet(),
-                ],
-              ),
-            ),
+            if (balanceVerticalMargins)
+              Positioned(
+                left: (constraints.maxWidth - chartSide) / 2,
+                top: centerY - chartSide / 2,
+                width: chartSide,
+                height: chartSide,
+                child: radarChart,
+              )
+            else
+              radarChart,
             ...titles,
           ],
         ),
