@@ -8,12 +8,12 @@ import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/models/community_rules.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
-void showGroundRulesModal(
+Future<bool?> showGroundRulesModal(
   BuildContext context, {
   required int teamId,
   CommunityRepository? repository,
 }) {
-  showDialog<void>(
+  return showDialog<bool>(
     context: context,
     barrierDismissible: true,
     builder: (context) => _GroundRulesDialog(
@@ -195,7 +195,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog> {
                   if (rules != null) ...[
                     const SizedBox(height: 16),
                     GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
+                      onTap: () => Navigator.of(context).pop(true),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
