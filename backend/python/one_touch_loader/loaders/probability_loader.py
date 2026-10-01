@@ -10,10 +10,11 @@ import json
 from pathlib import Path
 
 from ..core.clubelo import ClubEloClient, parse_history, parse_ranking, ranking_ratings, rating_before
-from ..core.fixture_states import LIVE_STATE_IDS
+from ..core.betting import SETTLEMENT_RULE
+from ..core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ..core.identity import validate_external_id_uniqueness
 from ..core.probability_forecast import forecast_day, forecast_dates
-from .probability_training import build_dataset, train_and_validate
+from .probability_training import BIG5_IDS, CURRENT_SEASON, METHOD, build_dataset, model_seasons, train_and_validate
 
 
 def _dump(value):
@@ -197,10 +198,13 @@ def prepare_run(**kwargs):
     return run
 
 
-def latest_model(method='multinomial_logistic_elo_difference_v1'):
+def latest_model(method=METHOD):
     # 큰 학습 JSON을 조건으로 정렬하면 MySQL 정렬 메모리가 부족해요. 작은 메타데이터만 비교해요.
+    # 과거 시즌 복원 모델을 나중에 저장해도 현재 리그 갱신 모델은 바뀌지 않아요.
+    scope = (f" AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.forecast_model.predict_from_season'))='{CURRENT_SEASON}'"
+             if method == METHOD else "")
     candidates = _fetch("""SELECT model_id,created_at FROM probability_models
-        WHERE JSON_UNQUOTE(JSON_EXTRACT(payload,'$.method'))=%s""", (method,))
+        WHERE JSON_UNQUOTE(JSON_EXTRACT(payload,'$.method'))=%s""" + scope, (method,))
     if not candidates:
         raise ValueError("Train and store the Probability model before refreshing")
     selected = max(candidates, key=lambda row: (row['created_at'], row['model_id']))
@@ -316,6 +320,56 @@ def store_runs(runs):
     return identifiers
 
 
+def reconstruct_betting_runs(fixtures, histories, model_report):
+    model = model_report['forecast_model']
+    season = model['predict_from_season']
+    model_seasons(season)
+    fixtures = [f for f in fixtures if f['season_name'] == season
+                and f['competition_id'] in BIG5_IDS and f['state_id'] in COMPLETED_STATE_IDS]
+    training_day = date.fromisoformat(model['last_training_fixture_at'][:10])
+    leagues = defaultdict(list)
+    for fixture in fixtures:
+        leagues[fixture['season_id']].append(fixture)
+    runs, excluded, available = [], [], 0
+    for season_id, league_fixtures in sorted(leagues.items()):
+        team_ids = {f[key] for f in league_fixtures for key in ('home_team_id', 'away_team_id')}
+        days = defaultdict(list)
+        for fixture in league_fixtures:
+            days[date.fromisoformat(str(fixture['starting_at'])[:10])].append(fixture)
+        for day, daily_fixtures in sorted(days.items()):
+            if day <= training_day:
+                raise ValueError('The model contains results on or after the reconstruction date')
+            elos = {team: rating_before(histories.get(team, []), day) for team in sorted(team_ids)}
+            for fixture in daily_fixtures:
+                missing = [fixture[key] for key in ('home_team_id', 'away_team_id') if elos[fixture[key]] is None]
+                if missing:
+                    excluded.append({'fixture_id': fixture['fixture_id'], 'competition_id': fixture['competition_id'],
+                                     'reason': 'missing_pre_match_elo', 'missing_team_ids': missing})
+                else:
+                    available += 1
+            # 승무패에는 두 팀 Elo만 필요해요. 한 팀의 Elo 누락으로 리그 전체를 막지 않아요.
+            # market_kind를 지정해 Elo만 담은 복원값이 리그 순위 예측에 섞이지 않게 해요.
+            runs.append({'model_id': model_report['model_id'], 'season_id': season_id,
+                         'as_of': f'{day}T00:00:00Z', 'history_kind': 'reconstructed',
+                         'market_kind': SETTLEMENT_RULE,
+                         'teams': {str(team): {'elo': elo} for team, elo in elos.items() if elo is not None}})
+    return runs, {'available': available, 'excluded': excluded}
+
+
+def reconstruct_betting(*, season, apply):
+    fixtures = read_fixtures((*model_seasons(season), season))
+    histories = read_histories()
+    report = train_and_validate(build_dataset(fixtures, histories, predict_from_season=season),
+                                predict_from_season=season)
+    runs, coverage = reconstruct_betting_runs(fixtures, histories, report)
+    if apply:
+        store_model(report)
+        store_runs(runs)
+    return {'season': season, 'model_id': report['model_id'], 'applied': apply,
+            'training_fixtures': report['forecast_model']['training_fixtures'],
+            'validation': report['validation']['metrics'], 'snapshots': len(runs), **coverage}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -334,16 +388,21 @@ def main(argv=None):
     forecast.add_argument("--audit-dir", type=Path)
     refresh_parser = commands.add_parser("refresh", help="공개 Elo를 확인하고 바뀐 리그와 빠진 일별 예측만 갱신해요.")
     refresh_parser.add_argument("--cache-dir", type=Path, help="검증한 원본을 다시 시험할 때만 사용해요.")
+    reconstruct = commands.add_parser("reconstruct-betting", help="이전 세 시즌으로 학습해 지난 시즌 승무패를 복원해요.")
+    reconstruct.add_argument("--season", choices=("2025/2026",), required=True)
     # 10만 회면 최악의 표본 표준오차가 약 0.158%p예요. 모델 오차와는 달라요.
     forecast.add_argument("--simulations", type=int, default=100000)
     forecast.add_argument("--seed", type=int, default=20260917)
     refresh_parser.add_argument("--simulations", type=int, default=100000)
     refresh_parser.add_argument("--seed", type=int, default=20260917)
-    for command in (sync, train, forecast, refresh_parser):
+    for command in (sync, train, forecast, refresh_parser, reconstruct):
         mode = command.add_mutually_exclusive_group()
         mode.add_argument("--apply", action="store_true", help="검증 결과를 운영 DB에 저장해요.")
         mode.add_argument("--check", action="store_true", help="DB를 변경하지 않아요. 기본 동작이에요.")
     args = parser.parse_args(argv)
+    if args.command == "reconstruct-betting":
+        print(_dump(reconstruct_betting(season=args.season, apply=args.apply)))
+        return
     if args.command == "refresh":
         print(_dump(refresh(apply=args.apply, simulations=args.simulations, seed=args.seed, cache_dir=args.cache_dir)))
         return
@@ -354,7 +413,7 @@ def main(argv=None):
         if args.audit_dir:
             fixtures, histories = _read(args.audit_dir / "db-fixtures.json"), cached_inputs(args.audit_dir)
         else:
-            fixtures, histories = read_fixtures(("2023/2024", "2024/2025", "2025/2026")), read_histories()
+            fixtures, histories = read_fixtures(model_seasons()), read_histories()
         report = train_and_validate(build_dataset(fixtures, histories))
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(_dump(report), encoding="utf-8")

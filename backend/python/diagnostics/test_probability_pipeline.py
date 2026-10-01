@@ -7,6 +7,7 @@ import unittest
 
 from one_touch_loader.core.probability_forecast import forecast_day, select_cards, league_events
 from one_touch_loader.loaders.probability_training import build_dataset, train_and_validate, BIG5_IDS
+from one_touch_loader.loaders.probability_loader import reconstruct_betting_runs
 
 
 def model_report():
@@ -134,6 +135,27 @@ class ForecastPipelineTests(unittest.TestCase):
 
 
 class TrainingPipelineTests(unittest.TestCase):
+    def test_previous_season_uses_only_its_three_prior_seasons(self):
+        fixtures = []
+        for year in (2022, 2023, 2024, 2025):
+            for league in BIG5_IDS:
+                for home, away in ((2, 0), (1, 1), (0, 2)):
+                    fixtures.append({"fixture_id": len(fixtures) + 1, "season_name": f"{year}/{year+1}",
+                                     "competition_id": league, "starting_at": f"{year}-09-20 15:00:00",
+                                     "state_id": 5, "home_team_id": 1, "away_team_id": 2,
+                                     "home_score": home, "away_score": away})
+        histories = {team: [{"date": "2022-09-17", "elo": 1500}] for team in (1, 2)}
+        dataset = build_dataset(fixtures, histories, predict_from_season="2025/2026")
+        report = train_and_validate(dataset, predict_from_season="2025/2026")
+        self.assertEqual(report["validation"]["training_seasons"], ["2022/2023", "2023/2024"])
+        self.assertEqual(report["validation"]["season"], "2024/2025")
+        self.assertEqual(report["forecast_model"]["training_seasons"], ["2022/2023", "2023/2024", "2024/2025"])
+        self.assertEqual(report["forecast_model"]["training_fixtures"], 45)
+        self.assertEqual(report["forecast_model"]["predict_from_season"], "2025/2026")
+        self.assertEqual({row["starting_at"][:4] for row in report["training_rows"]}, {"2022", "2023", "2024"})
+        with self.assertRaisesRegex(ValueError, "Unsupported"):
+            build_dataset(fixtures, histories, predict_from_season="2024/2025")
+
     def test_training_excludes_missing_elo_and_current_season(self):
         base = {"fixture_id": 1, "competition_id": 8, "season_name": "2023/2024", "state_id": 5,
                 "starting_at": "2023-08-10 15:00:00", "home_team_id": 1, "away_team_id": 2,
@@ -169,6 +191,45 @@ class TrainingPipelineTests(unittest.TestCase):
         changed["rows"][0]["season_name"] = "2026/2027"
         with self.assertRaisesRegex(ValueError, "approved three"):
             train_and_validate(changed)
+
+
+class ReconstructedBettingTests(unittest.TestCase):
+    def setUp(self):
+        self.model = {"model_id": "historical", "forecast_model": {
+            "predict_from_season": "2025/2026", "last_training_fixture_at": "2025-05-25 19:00:00"}}
+        base = {"fixture_id": 1, "competition_id": 384, "season_id": 12, "season_name": "2025/2026",
+                "starting_at": "2025-08-15 17:00:00", "state_id": 5,
+                "home_team_id": 1, "away_team_id": 2, "home_score": 2, "away_score": 0}
+        self.fixtures = [base, dict(base, fixture_id=2, away_team_id=3),
+                         dict(base, fixture_id=3, starting_at="2025-08-16 00:00:00")]
+        self.histories = {team: [{"date": "2025-08-14", "elo": 1500 + team * 100},
+                                {"date": "2025-08-15", "elo": 2000 + team * 100}]
+                          for team in (1, 2)}
+
+    def test_uses_pre_day_elo_and_missing_team_does_not_block_league(self):
+        runs, coverage = reconstruct_betting_runs(self.fixtures, self.histories, self.model)
+        self.assertEqual(len(runs), 2)
+        self.assertEqual(runs[0]["teams"], {"1": {"elo": 1600}, "2": {"elo": 1700}})
+        self.assertEqual(runs[1]["teams"]["1"]["elo"], 2100)
+        self.assertEqual(runs[0]["as_of"], "2025-08-15T00:00:00Z")
+        self.assertEqual(runs[0]["history_kind"], "reconstructed")
+        self.assertEqual(runs[0]["market_kind"], "single_match_final_v1")
+        self.assertEqual(coverage["available"], 2)
+        self.assertEqual(coverage["excluded"][0]["missing_team_ids"], [3])
+        changed = [dict(f, home_score=0, away_score=9) for f in self.fixtures]
+        self.assertEqual(reconstruct_betting_runs(changed, self.histories, self.model), (runs, coverage))
+
+    def test_ignores_other_seasons_and_unfinished_matches(self):
+        fixtures = [dict(self.fixtures[0], season_name="2024/2025"),
+                    dict(self.fixtures[0], state_id=1), dict(self.fixtures[0], competition_id=2)]
+        runs, coverage = reconstruct_betting_runs(fixtures, self.histories, self.model)
+        self.assertEqual(runs, [])
+        self.assertEqual(coverage, {"available": 0, "excluded": []})
+
+    def test_rejects_training_that_reaches_target_day(self):
+        self.model["forecast_model"]["last_training_fixture_at"] = "2025-08-15 12:00:00"
+        with self.assertRaisesRegex(ValueError, "model contains"):
+            reconstruct_betting_runs(self.fixtures, self.histories, self.model)
 
 
 if __name__ == "__main__":
