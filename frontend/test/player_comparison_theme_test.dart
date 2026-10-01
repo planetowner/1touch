@@ -38,7 +38,7 @@ class _SkewedStatsRepository extends FakePlayerDetailRepository {
     final finish = categories.first as Map<String, dynamic>;
     final goals =
         (finish['metrics'] as List<dynamic>).first as Map<String, dynamic>;
-    goals['value'] = playerId == 1 ? firstValue : secondValue;
+    goals['per90'] = playerId == 1 ? firstValue : secondValue;
     return playerDetailFromJson(json);
   }
 }
@@ -147,7 +147,7 @@ void main() {
                 matching: find.byType(Text),
               ),
             )
-            .firstWhere((text) => text.data == 'ㅡ');
+            .firstWhere((text) => text.data == '—');
         expect(statValue.style?.fontSize, Heading4.style.fontSize);
         expect(statValue.style?.fontWeight, Heading4.style.fontWeight);
         await tester.drag(find.byType(CustomScrollView), const Offset(0, -450));

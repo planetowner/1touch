@@ -71,8 +71,59 @@ class PlayerDetailMathTests(unittest.TestCase):
         stats = stat_index([dict(fixture_id=1, team_id=8, player_id=1, stat_type_id=52, value=2)])
         goal = metrics(season_categories(27, rows, stats))["goals"]
         self.assertIsNone(goal["value"])
-        self.assertIsNone(goal["rank_value"])
+        self.assertEqual(goal["per90"], 2)
+        self.assertEqual(goal["rank_value"], 2)
         self.assertEqual(goal["observed_matches"], 1)
+
+    def test_per90_uses_only_minutes_from_matches_with_the_metric(self):
+        minutes = [45, 85, 77, 81, 66, 61, 86]
+        values = [1, 3, 2, None, None, 5, 4]
+        rows = [match(fixture=i, position=26, minutes_played=minute)
+                for i, minute in enumerate(minutes, 1)]
+        stats = stat_index([dict(fixture_id=i, team_id=8, player_id=1,
+                                stat_type_id=117, value=value)
+                            for i, value in enumerate(values, 1) if value is not None])
+        metric = metrics(season_categories(26, rows, stats))["key_passes"]
+        self.assertIsNone(metric["value"])
+        self.assertAlmostEqual(metric["per90"], 15 * 90 / 354)
+        self.assertEqual((metric["observed_matches"], metric["total_matches"]), (5, 7))
+        self.assertEqual(metric["rank_value"], metric["per90"])
+
+    def test_per90_includes_explicit_zero_and_excludes_unknown_minutes(self):
+        rows = [match(fixture=1, minutes_played=45), match(fixture=2),
+                match(fixture=3, minutes_played=None), match(fixture=4)]
+        stats = defaultdict(dict, {(1, 8, 1): {52: 2}, (2, 8, 1): {52: 0},
+                                  (3, 8, 1): {52: 10}})
+        metric = metrics(season_categories(27, rows, stats))["goals"]
+        self.assertAlmostEqual(metric["per90"], 2 * 90 / 135)
+        self.assertEqual(metric["observed_matches"], 2)
+
+    def test_pair_per90_counts_successes_even_when_attempts_are_missing(self):
+        rows = [match(fixture=1, minutes_played=45), match(fixture=2), match(fixture=3)]
+        stats = defaultdict(dict, {(1, 8, 1): {116: 20, 80: 30},
+                                  (2, 8, 1): {116: 10}, (3, 8, 1): {80: 50}})
+        metric = metrics(season_categories(27, rows, stats))["passes"]
+        self.assertAlmostEqual(metric["per90"], 30 * 90 / 135)
+        self.assertEqual(metric["observed_matches"], 2)
+        self.assertIsNone(metric["numerator"])
+        self.assertIsNone(metric["denominator"])
+
+    def test_xg_per90_uses_available_matches_and_preserves_zero(self):
+        rows = [match(fixture=1, minutes_played=45, xg=0.5),
+                match(fixture=2, xg=None), match(fixture=3, xg=0)]
+        metric = metrics(season_categories(27, rows, defaultdict(dict)))["xg"]
+        self.assertIsNone(metric["value"])
+        self.assertAlmostEqual(metric["per90"], 0.5 * 90 / 135)
+        self.assertEqual(metric["observed_matches"], 2)
+
+    def test_no_observations_or_zero_minutes_do_not_produce_per90(self):
+        for rows, stats in (([], defaultdict(dict)),
+                            ([match()], defaultdict(dict)),
+                            ([match(minutes_played=0)], defaultdict(dict, {(1, 8, 1): {52: 0}}))):
+            with self.subTest(rows=rows):
+                metric = metrics(season_categories(27, rows, stats))["goals"]
+                self.assertIsNone(metric["per90"])
+                self.assertIsNone(metric["rank_value"])
 
     def test_percentages_use_summed_successes_and_attempts(self):
         stats = defaultdict(dict, {(1,8,1): {108: 2, 109: 1}, (2,8,1): {108: 8, 109: 8}})

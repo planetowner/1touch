@@ -13,6 +13,7 @@ import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
+import 'package:onetouch/features/player/player_stat_value.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/models/player_detail.dart';
 

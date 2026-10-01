@@ -112,7 +112,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   int _koreanTopStatFlex(PlayerSeasonMetric? stat) {
-    final label = appStatLabel(context, stat?.metric.label ?? 'Unavailable');
+    final label = appStatLabel(context, playerSeasonStat(stat).label);
     final painter = TextPainter(
       text: TextSpan(text: label, style: Body1.style),
       textDirection: Directionality.of(context),
@@ -126,7 +126,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _topStat(PlayerSeasonMetric? stat) {
-    final percent = stat?.metric.kind == 'percentage';
+    final presentation = playerSeasonStat(stat);
     final appColors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -141,20 +141,22 @@ class _AnalysisTabState extends State<AnalysisTab> {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              stat == null
-                  ? '—'
-                  : '${playerNumber(percent ? stat.metric.value : stat.per90)}${percent ? '%' : ''}',
+              presentation.text,
               style: Heading2.style,
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
+        if (stat != null)
+          Text(tr(context, presentation.unit),
+              textAlign: TextAlign.center, style: Eyebrow.style),
+        const SizedBox(height: 4),
         SizedBox(
           height: 38,
           child: Center(
             key: ValueKey('player-top-stat-label-${stat?.metric.label}'),
             child: Text(
-              appStatLabel(context, stat?.metric.label ?? 'Unavailable'),
+              appStatLabel(context, presentation.label),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -181,8 +183,10 @@ class _AnalysisTabState extends State<AnalysisTab> {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              tr(context, '{count} matches',
-                  {'count': '${stat.observedMatches}/${stat.totalMatches}'}),
+              tr(context, 'Based on {observed}/{total} matches', {
+                'observed': stat.observedMatches,
+                'total': stat.totalMatches,
+              }),
               textAlign: TextAlign.center,
               style: Eyebrow.style.copyWith(color: appColors.mutedForeground),
             ),

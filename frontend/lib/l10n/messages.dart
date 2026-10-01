@@ -2060,6 +2060,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "{total}試合中{observed}試合で提供",
     zh: "{total}场比赛中有{observed}场数据"
   ),
+  "Based on {observed}/{total} matches": (
+    ko: "{total}경기 중 {observed}경기 기준",
+    ja: "{total}試合中{observed}試合に基づく",
+    zh: "基于{total}场中的{observed}场"
+  ),
   "{count} Followers": (
     ko: "팔로워 {count}명",
     ja: "フォロワー {count}人",
