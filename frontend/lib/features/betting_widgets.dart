@@ -770,9 +770,8 @@ class BettingProbabilityBar extends StatelessWidget {
                     children: [
                       Text(
                         '${(values[index] * 100).toStringAsFixed(1)}%',
-                        style: TextStyle(
+                        style: Heading5.style.copyWith(
                           color: _foregroundFor(segmentColors[index]),
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       if (selected?.index == index)
