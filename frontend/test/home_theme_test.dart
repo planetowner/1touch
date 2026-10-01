@@ -133,6 +133,46 @@ void main() {
     });
   }
 
+  testWidgets('April calendar matches the reference card dimensions',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    Widget calendarFor(DateTime month) => MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: FixtureCalendar(
+                allMatches: const [],
+                favoriteTeamId: 8,
+                participatingCompetitions: const [],
+                selectedMonth: month,
+              ),
+            ),
+          ),
+        );
+    await tester.pumpWidget(calendarFor(DateTime(2025, 4)));
+
+    final card = find.byKey(const ValueKey('fixture-calendar-card'));
+    expect(tester.getSize(card).width, 345);
+    expect(tester.getSize(card).height, closeTo(521, 2));
+    expect(tester.widget<Icon>(find.byIcon(Icons.chevron_left)).size, 24);
+    expect(tester.widget<Icon>(find.byIcon(Icons.chevron_right)).size, 24);
+    expect(tester.getCenter(find.byIcon(Icons.chevron_left)).dx,
+        closeTo(tester.getCenter(find.text('6')).dx, 0.1));
+    expect(tester.getCenter(find.byIcon(Icons.chevron_right)).dx,
+        closeTo(tester.getCenter(find.text('5')).dx, 0.1));
+
+    await tester.pumpWidget(calendarFor(DateTime(2026, 9)));
+    expect(find.text('September'), findsOneWidget);
+    expect(tester.getCenter(find.byIcon(Icons.chevron_left)).dx,
+        closeTo(tester.getCenter(find.text('6')).dx, 0.1));
+    expect(tester.getCenter(find.byIcon(Icons.chevron_right)).dx,
+        closeTo(tester.getCenter(find.text('5')).dx, 0.1));
+    expect(tester.takeException(), isNull);
+  });
+
   for (final size in const [Size(320, 568), Size(430, 932)]) {
     testWidgets('Fixture calendar fits at ${size.width.toInt()}px',
         (tester) async {
@@ -186,6 +226,14 @@ void main() {
           closeTo(tester.getTopLeft(cupLegend).dy, 0.1));
       expect(tester.getTopLeft(cupLegend).dy,
           closeTo(tester.getTopLeft(leagueCupLegend).dy, 0.1));
+      final selectedDay = find
+          .ancestor(
+            of: find.text('${DateTime.now().day}'),
+            matching: find.byType(Container),
+          )
+          .first;
+      expect(tester.getSize(selectedDay).height, 70);
+      expect(tester.getSize(selectedDay).width, lessThanOrEqualTo(40));
       expect(tester.takeException(), isNull);
     });
   }

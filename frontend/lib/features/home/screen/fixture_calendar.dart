@@ -215,19 +215,29 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                 Container(
                   padding: EdgeInsets.all(24),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                        onPressed: _previousMonth,
-                        icon: Icon(
-                          Icons.chevron_left,
-                          color: colorScheme.onSurface,
-                          size: 24,
+                      Expanded(
+                        child: Center(
+                          child: IconButton(
+                            onPressed: _previousMonth,
+                            style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            icon: Icon(
+                              Icons.chevron_left,
+                              color: colorScheme.onSurface,
+                              size: 24,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 24,
+                              height: 24,
+                            ),
+                          ),
                         ),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
                       ),
                       Expanded(
+                        flex: 5,
                         child: Text(
                           tr(context, _getMonthName(_currentMonth.month)),
                           maxLines: 1,
@@ -237,15 +247,25 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                           style: Heading3.style,
                         ),
                       ),
-                      IconButton(
-                        onPressed: _nextMonth,
-                        icon: Icon(
-                          Icons.chevron_right,
-                          color: colorScheme.onSurface,
-                          size: 24,
+                      Expanded(
+                        child: Center(
+                          child: IconButton(
+                            onPressed: _nextMonth,
+                            style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            icon: Icon(
+                              Icons.chevron_right,
+                              color: colorScheme.onSurface,
+                              size: 24,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 24,
+                              height: 24,
+                            ),
+                          ),
                         ),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
@@ -253,7 +273,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
 
                 // Calendar grid
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
                       // thin divider under the month title
@@ -262,7 +282,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
               ],
             ),
           ),
@@ -373,6 +393,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                     );
                   },
                 ),
+              if (week < weekCount - 1) const SizedBox(height: 8),
             ],
           ),
       ],
@@ -391,7 +412,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
     // Don't show days outside the current month
     if (dayNumber < 1 || dayNumber > daysInMonth) {
       return SizedBox(
-        height: 90,
+        height: 75,
         child: const SizedBox(),
       );
     }
@@ -420,64 +441,79 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                 extra: displayedEvent.fixture,
               )
           : null,
-      child: Container(
-        height: 90,
-        decoration: BoxDecoration(
-          color: isHighlighted ? colorScheme.onSurface : Colors.transparent,
-          borderRadius: isHighlighted ? BorderRadius.circular(8) : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              dayNumber.toString(),
-              style: Heading4.style.copyWith(
-                color: isHighlighted
-                    ? colorScheme.onPrimary
-                    : isWeekend
-                        ? appColors.mutedForeground
-                        : colorScheme.onSurface,
+      child: SizedBox(
+        height: 75,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 40),
+            child: Container(
+              width: 40,
+              height: 70,
+              decoration: BoxDecoration(
+                color:
+                    isHighlighted ? colorScheme.onSurface : Colors.transparent,
+                borderRadius: isHighlighted ? BorderRadius.circular(4) : null,
               ),
-            ),
-            const SizedBox(height: 8),
-            if (displayedEvent != null) ...[
-              SizedBox(
-                width: double.infinity,
-                height: 28,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Image.network(
-                      displayedEvent.opponentLogoUrl,
-                      width: 28,
-                      height: 28,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => teamLogoFallback(
-                        displayedEvent.opponentTeamId,
-                        size: 28,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      dayNumber.toString(),
+                      maxLines: 1,
+                      softWrap: false,
+                      style: Heading4.style.copyWith(
+                        color: isHighlighted
+                            ? colorScheme.onPrimary
+                            : isWeekend
+                                ? appColors.mutedForeground
+                                : colorScheme.onSurface,
                       ),
                     ),
-                    if (displayedEvent.dotColor != null)
-                      Positioned(
-                        top: 0,
-                        right: 3,
-                        child: Container(
-                          key: ValueKey(
-                              'calendar-fixture-dot-${displayedEvent.fixtureId}'),
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: displayedEvent.dotColor,
-                            shape: BoxShape.circle,
+                  ),
+                  const SizedBox(height: 8),
+                  if (displayedEvent != null) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 28,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Image.network(
+                            displayedEvent.opponentLogoUrl,
+                            width: 28,
+                            height: 28,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => teamLogoFallback(
+                              displayedEvent.opponentTeamId,
+                              size: 28,
+                            ),
                           ),
-                        ),
+                          if (displayedEvent.dotColor != null)
+                            Positioned(
+                              top: 0,
+                              right: 3,
+                              child: Container(
+                                key: ValueKey(
+                                    'calendar-fixture-dot-${displayedEvent.fixtureId}'),
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: displayedEvent.dotColor,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                  ],
-                ),
+                    ),
+                  ] else
+                    const SizedBox(height: 28),
+                ],
               ),
-            ] else
-              const SizedBox(height: 28),
-          ],
+            ),
+          ),
         ),
       ),
     );
