@@ -1,3 +1,4 @@
+import 'package:onetouch/models/profile_change_limit_exception.dart';
 import 'support/app_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -36,8 +37,9 @@ void main() {
   testWidgets('keeps the sheet open when the backend rejects the update',
       (tester) async {
     final repository = _RecordingFollowingTeamsRepository(
-      error: FavoriteTeamChangeLimitException(
-        message: 'Favorite team can be changed later',
+      error: ProfileChangeLimitException(
+        maxChanges: 3,
+        windowDays: 7,
         availableAt: DateTime.utc(2026, 9, 20),
       ),
     );
@@ -58,7 +60,8 @@ void main() {
 
     expect(
         find.byKey(const ValueKey('profile-team-edit-sheet')), findsOneWidget);
-    expect(find.textContaining('Favorite team'), findsOneWidget);
+    expect(find.textContaining('Favorite team up to 3 times in 7 days'),
+        findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

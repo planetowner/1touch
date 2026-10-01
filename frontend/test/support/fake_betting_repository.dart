@@ -5,6 +5,9 @@ import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/models/betting.dart';
 
 class FakeBettingRepository implements BettingRepository {
+  int stakeUnit = 10;
+  DateTime? opensAt;
+  String? unavailableReason;
   int balance = 1000;
   FixtureBet? bet;
   int saveCalls = 0;
@@ -36,10 +39,12 @@ class FakeBettingRepository implements BettingRepository {
   @override
   Future<BettingMarket> loadMarket(int fixtureId) async => BettingMarket(
         fixtureId: fixtureId,
+        stakeUnit: stakeUnit,
+        opensAt: opensAt,
         available: true,
-        canBet: true,
+        canBet: unavailableReason == null,
         canCancel: bet?.isOpen == true,
-        unavailableReason: null,
+        unavailableReason: unavailableReason,
         closesAt: DateTime.now().add(const Duration(days: 1)),
         predictionRunId: 'a' * 64,
         predictionAsOf: DateTime.now(),

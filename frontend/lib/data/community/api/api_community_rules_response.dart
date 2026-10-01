@@ -16,16 +16,12 @@ class ApiCommunityRulesResponse {
 
 class ApiCommunityRulesContentResponse {
   ApiCommunityRulesContentResponse({
-    required this.language,
     required this.title,
     required List<ApiCommunityRuleResponse> items,
-    required this.confirmLabel,
   }) : items = List.unmodifiable(items);
 
-  final String language;
   final String title;
   final List<ApiCommunityRuleResponse> items;
-  final String confirmLabel;
 
   factory ApiCommunityRulesContentResponse.fromJson(
     Map<String, dynamic> json,
@@ -35,7 +31,6 @@ class ApiCommunityRulesContentResponse {
       throw const FormatException('Expected required list field "items".');
     }
     return ApiCommunityRulesContentResponse(
-      language: _requiredString(json, 'language'),
       title: _requiredString(json, 'title'),
       items: items.map((item) {
         if (item is! Map<String, dynamic>) {
@@ -45,7 +40,6 @@ class ApiCommunityRulesContentResponse {
         }
         return ApiCommunityRuleResponse.fromJson(item);
       }).toList(),
-      confirmLabel: _requiredString(json, 'confirm_label'),
     );
   }
 }

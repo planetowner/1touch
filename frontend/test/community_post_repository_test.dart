@@ -1,3 +1,5 @@
+import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 import 'support/app_catalog.dart';
 import 'dart:async';
 
@@ -15,6 +17,36 @@ import 'support/stub_community_repository.dart';
 
 void main() {
   setUpAppCatalog(favoriteTeamId: 9);
+  testWidgets('uses the server attachment limit before opening the file picker',
+      (tester) async {
+    _setScreenSize(tester, const Size(430, 932));
+    var pickerCalls = 0;
+    final post = _loadedPost.copyWith(attachments: const [
+      PostAttachment(attachmentId: 1, position: 0),
+      PostAttachment(attachmentId: 2, position: 1),
+    ]);
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      locale: const Locale('ko'),
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
+      home: AddPost(
+          teamId: 9,
+          editingPost: post,
+          postRepository: MockPostRepository(maxAttachments: 2),
+          pickMedia: () async {
+            pickerCalls++;
+            return [];
+          }),
+    ));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('사진 또는 동영상 추가'));
+    await tester.tap(find.text('사진 또는 동영상 추가'));
+    await tester.pumpAndSettle();
+    expect(pickerCalls, 0);
+    expect(find.text('파일은 최대 2개까지 첨부할 수 있어요.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('a followed team feed is visible without a post composer',
       (tester) async {
     _setScreenSize(tester, const Size(430, 932));
@@ -529,6 +561,9 @@ void _setScreenSize(WidgetTester tester, Size size) {
 }
 
 class _ScriptedPostRepository implements PostRepository {
+  @override
+  Future<int> loadAttachmentLimit() async => 10;
+
   _ScriptedPostRepository(
     this._responses, {
     Future<int> Function(CreatePostInput input)? onCreate,

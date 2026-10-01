@@ -28,6 +28,7 @@ class BettingController extends ChangeNotifier {
   bool _disposed = false;
   int _loadVersion = 0;
   Timer? _closeTimer;
+  Timer? _openTimer;
   String? _pendingSignature;
   String? _pendingRequestId;
 
@@ -49,6 +50,14 @@ class BettingController extends ChangeNotifier {
       final loaded = await repository.loadMarket(fixtureId);
       if (_disposed || version != _loadVersion) return;
       market = loaded;
+      _openTimer?.cancel();
+      final opensAt = loaded.opensAt;
+      if (loaded.unavailableReason == 'betting_not_open' &&
+          opensAt != null &&
+          DateTime.now().isBefore(opensAt)) {
+        // 개방 시각에는 서버 상태를 다시 받아 안내와 참여 가능 여부를 함께 바꿔요.
+        _openTimer = Timer(opensAt.difference(DateTime.now()), load);
+      }
       if (loaded.bet?.isOpen == true) {
         await _trackSettlement();
       }
@@ -172,6 +181,7 @@ class BettingController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _closeTimer?.cancel();
+    _openTimer?.cancel();
     super.dispose();
   }
 }

@@ -5,6 +5,5 @@ abstract interface class CommunityRepository {
 
   Future<CommunityRules> loadRules({
     required int teamId,
-    required CommunityLanguage language,
   });
 }

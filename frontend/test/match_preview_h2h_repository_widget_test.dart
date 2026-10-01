@@ -1,3 +1,4 @@
+import 'package:onetouch/features/betting/betting_controller.dart';
 import 'support/app_catalog.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -21,7 +22,8 @@ import 'package:onetouch/screens/MatchScreen_tabs/matchpreview.dart';
 
 void main() {
   setUpAppCatalog();
-  testWidgets('betting stays hidden until 24 hours before kickoff',
+  testWidgets(
+      'betting follows the server opening time instead of a 24-hour calculation',
       (tester) async {
     final repository = _RecordingFixtureRepository(loader: (_, __) async => []);
     Fixture fixtureIn(Duration fromNow) => Fixture(
@@ -36,17 +38,29 @@ void main() {
           startingAt: DateTime.now().add(fromNow).toUtc().toIso8601String(),
         );
 
+    final bettingRepository = FakeBettingRepository()
+      ..unavailableReason = 'betting_not_open'
+      ..opensAt = DateTime.utc(2030, 10, 2, 9);
+    final betting =
+        BettingController(fixtureId: 1001, repository: bettingRepository);
+    await betting.load();
     await tester.pumpWidget(_testApp(
-      fixture: fixtureIn(const Duration(hours: 25)),
+      betting: betting,
+      fixture: fixtureIn(const Duration(hours: 2)),
       repository: repository,
       locale: const Locale('ko'),
     ));
     await tester.pumpAndSettle();
-    expect(find.text('베팅은 경기 시작 24시간 전에 열려요.'), findsOneWidget);
-    expect(find.byType(MatchBettingSection), findsNothing);
+    expect(find.textContaining('에 베팅이 열려요.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('match-betting-opening-notice')),
+        findsOneWidget);
+    expect(find.text('PLACE A BET'), findsNothing);
+    bettingRepository.unavailableReason = null;
+    await betting.load();
 
     await tester.pumpWidget(_testApp(
-      fixture: fixtureIn(const Duration(hours: 23)),
+      betting: betting,
+      fixture: fixtureIn(const Duration(hours: 25)),
       repository: repository,
       locale: const Locale('ko'),
     ));
@@ -55,6 +69,8 @@ void main() {
     expect(find.byKey(const ValueKey('match-betting-opening-notice')),
         findsNothing);
     expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    betting.dispose();
   });
 
   testWidgets('loads backend current standings instead of the fixture season',
@@ -394,9 +410,12 @@ Widget _testApp({
   required Fixture fixture,
   required _RecordingFixtureRepository repository,
   Locale locale = const Locale('en'),
+  BettingController? betting,
 }) {
-  final betting = fakeBettingController(fixture.fixtureId);
-  addTearDown(betting.dispose);
+  if (betting == null) {
+    betting = fakeBettingController(fixture.fixtureId);
+    addTearDown(betting.dispose);
+  }
   return MaterialApp(
     locale: locale,
     supportedLocales: appSupportedLocales,

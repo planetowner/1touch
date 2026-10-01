@@ -1,3 +1,4 @@
+import 'package:onetouch/models/profile_change_limit_exception.dart';
 // ignore_for_file: file_names
 
 import 'package:flutter/cupertino.dart';
@@ -259,7 +260,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       setState(() {
         _isProfileSaving = false;
         _profileSaveError = profileChangeLimitMessage(context,
-            item: tr(context, 'Nickname'), availableAt: error.availableAt);
+            item: tr(context, 'Nickname'), limit: error);
       });
     } on ProfileNameConflictException {
       if (!mounted) return;

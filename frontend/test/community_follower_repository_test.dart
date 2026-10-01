@@ -109,7 +109,6 @@ class _ScriptedCommunityRepository implements CommunityRepository {
   @override
   Future<CommunityRules> loadRules({
     required int teamId,
-    required CommunityLanguage language,
   }) {
     throw UnsupportedError('This test double only scripts follower counts.');
   }

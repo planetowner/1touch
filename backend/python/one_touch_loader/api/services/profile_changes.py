@@ -8,7 +8,12 @@ MAX_CHANGES = 2
 class ProfileChangeLimitError(ValueError):
     def __init__(self, available_at: datetime):
         self.available_at = available_at
-        super().__init__("You can change this twice in 14 days")
+        super().__init__(f"You can change this {MAX_CHANGES} times in {CHANGE_WINDOW.days} days")
+
+    def detail(self) -> dict:
+        # 닉네임과 최애팀의 제한 안내도 실제 검증에 쓰는 값을 함께 내려줘요.
+        return {"message": str(self), "available_at": self.available_at.isoformat() + "Z",
+                "max_changes": MAX_CHANGES, "window_days": CHANGE_WINDOW.days}
 
 
 def check_change_limit(cur, user_id: int, change_type: str, now: datetime) -> None:

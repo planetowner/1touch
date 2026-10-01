@@ -9,6 +9,19 @@ import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 
 void main() {
+  test('loads the server attachment limit', () async {
+    final repository = ApiPostRepository(
+        api: ApiClient(
+      client: MockClient((request) async {
+        expect(request.url.path, '/v1/posts/limits');
+        return http.Response('{"max_attachments":3}', 200);
+      }),
+      baseUri: Uri.parse('https://example.test/v1/'),
+      requestHeaders: () => const {},
+    ));
+    expect(await repository.loadAttachmentLimit(), 3);
+  });
+
   test('updates a post without dropping its category or attachments', () async {
     final repository = ApiPostRepository(
       api: ApiClient(
@@ -456,13 +469,6 @@ void main() {
         category: PostCategory.general,
         title: 'Title',
         body: ''.padRight(10001, 'x'),
-      ),
-      CreatePostInput(
-        teamId: 83,
-        category: PostCategory.general,
-        title: 'Title',
-        body: 'Body',
-        attachmentIds: List.generate(11, (index) => index + 1),
       ),
       CreatePostInput(
         teamId: 83,

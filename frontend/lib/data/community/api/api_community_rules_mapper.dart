@@ -6,10 +6,6 @@ CommunityRules communityRulesFromApiResponse(
 ) {
   final rules = response.rules;
   final title = _nonEmpty(rules.title, fieldName: 'title');
-  final confirmLabel = _nonEmpty(
-    rules.confirmLabel,
-    fieldName: 'confirm_label',
-  );
   if (rules.items.isEmpty) {
     throw const FormatException(
       'Expected community rules to contain at least one item.',
@@ -17,7 +13,6 @@ CommunityRules communityRulesFromApiResponse(
   }
 
   return CommunityRules(
-    language: CommunityLanguage.fromApiValue(rules.language),
     title: title,
     items: rules.items
         .map(
@@ -27,7 +22,6 @@ CommunityRules communityRulesFromApiResponse(
           ),
         )
         .toList(),
-    confirmLabel: confirmLabel,
   );
 }
 

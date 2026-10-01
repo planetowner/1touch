@@ -50,6 +50,8 @@ class UpdatePostInput {
 }
 
 abstract interface class PostRepository {
+  Future<int> loadAttachmentLimit();
+
   Future<List<Post>> loadPosts({
     required int teamId,
     PostCategory? category,

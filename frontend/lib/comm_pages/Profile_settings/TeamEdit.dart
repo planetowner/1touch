@@ -1,3 +1,4 @@
+import 'package:onetouch/models/profile_change_limit_exception.dart';
 // ignore_for_file: file_names
 
 import 'dart:async';
@@ -212,14 +213,13 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
           favoriteTeamId: favoriteTeamId,
         ),
       );
-    } on FavoriteTeamChangeLimitException catch (error) {
+    } on ProfileChangeLimitException catch (error) {
       if (!mounted) return;
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(profileChangeLimitMessage(context,
-                item: tr(context, 'Favorite team'),
-                availableAt: error.availableAt))),
+                item: tr(context, 'Favorite team'), limit: error))),
       );
     } on Object {
       if (!mounted) return;

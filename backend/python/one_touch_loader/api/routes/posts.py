@@ -14,7 +14,7 @@ class DraftBody(BaseModel):
     category: Category = "general"
     title: str = Field(default="", max_length=200)
     body: str = Field(default="", max_length=10000)
-    attachment_ids: list[int] = Field(default_factory=list, max_length=10)
+    attachment_ids: list[int] = Field(default_factory=list, max_length=posts_repo.MAX_ATTACHMENTS)
 
 
 class PostBody(DraftBody):
@@ -86,6 +86,12 @@ def posts(team_id: int = Query(gt=0), category: Category | None = None,
           user_id: int = Depends(get_user_id)):
     return {"items": posts_repo.list_posts(user_id, team_id, category, sort, period, limit, offset, timezone),
             "limit": limit, "offset": offset}
+
+
+@router.get("/posts/limits")
+def post_limits(user_id: int = Depends(get_user_id)):
+    # 파일 선택 안내와 저장 검증이 같은 첨부 한도를 사용해요.
+    return {"max_attachments": posts_repo.MAX_ATTACHMENTS}
 
 
 @router.get("/posts/{post_id}")
