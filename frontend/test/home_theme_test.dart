@@ -128,7 +128,21 @@ void main() {
       );
 
       final todayText = tester.widget<Text>(find.text('${DateTime.now().day}'));
-      expect(todayText.style?.color, colorScheme.onPrimary);
+      expect(todayText.style?.color, colorScheme.onSurface);
+      final todayBox = tester.widget<Container>(
+        find.byKey(ValueKey('calendar-day-${DateTime.now().day}')),
+      );
+      expect(
+        (todayBox.decoration as BoxDecoration).color,
+        testCase.name == 'dark'
+            ? app_style.AppPalette.black
+            : app_style.AppPalette.lightModeDarkGrey,
+      );
+      final todaySize = tester.getSize(
+        find.byKey(ValueKey('calendar-day-${DateTime.now().day}')),
+      );
+      expect(todaySize.width, closeTo(40, 0.2));
+      expect(todaySize.height, 70);
       expect(tester.takeException(), isNull);
     });
   }
@@ -156,7 +170,22 @@ void main() {
 
     final card = find.byKey(const ValueKey('fixture-calendar-card'));
     expect(tester.getSize(card).width, 345);
-    expect(tester.getSize(card).height, closeTo(521, 2));
+    expect(tester.getSize(card).height, closeTo(526, 2));
+    final firstDay = find.byKey(const ValueKey('calendar-day-1'));
+    expect(
+      tester.getTopLeft(firstDay).dy -
+          tester
+              .getBottomLeft(find.byKey(const ValueKey('calendar-top-divider')))
+              .dy,
+      closeTo(6, 0.1),
+    );
+    expect(
+      tester
+              .getTopLeft(find.byKey(const ValueKey('calendar-week-divider-0')))
+              .dy -
+          tester.getBottomLeft(firstDay).dy,
+      closeTo(8, 0.1),
+    );
     expect(tester.widget<Icon>(find.byIcon(Icons.chevron_left)).size, 24);
     expect(tester.widget<Icon>(find.byIcon(Icons.chevron_right)).size, 24);
     expect(tester.getCenter(find.byIcon(Icons.chevron_left)).dx,

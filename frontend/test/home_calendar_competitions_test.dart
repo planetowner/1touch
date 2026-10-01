@@ -161,6 +161,34 @@ void main() {
         find.byKey(const ValueKey('calendar-fixture-dot-564')), findsNothing);
   });
 
+  for (final width in [320.0, 430.0]) {
+    testWidgets('cup dot clears the logo at ${width.toInt()}px',
+        (tester) async {
+      tester.view.physicalSize = Size(width, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final now = DateTime.now();
+      await tester.pumpWidget(calendar(
+        [570],
+        [match(570, DateTime(now.year, now.month, 12))],
+        const Locale('en'),
+      ));
+
+      final cell = find.byKey(const ValueKey('calendar-day-12'));
+      final logo = find.descendant(of: cell, matching: find.byType(Image));
+      final dot = find.byKey(const ValueKey('calendar-fixture-dot-570'));
+      expect(logo, findsOneWidget);
+      expect(dot, findsOneWidget);
+      expect(tester.getRect(dot).bottom,
+          lessThanOrEqualTo(tester.getRect(logo).top - 2));
+      expect(tester.getRect(dot).center.dx,
+          greaterThan(tester.getRect(logo).center.dx));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   for (final locale in appSupportedLocales) {
     for (final scenario
         in <({String name, List<int> ids, Map<String, Color> colors})>[
