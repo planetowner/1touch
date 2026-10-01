@@ -150,6 +150,7 @@ class KoreanHeading1 {
     fontWeight: FontWeight.w700,
     height: 1.40,
     letterSpacing: -0.88,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 }
 
@@ -161,6 +162,7 @@ class KoreanHeading2 {
     fontWeight: FontWeight.w700,
     height: 1.40,
     letterSpacing: -0.56,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 }
 
@@ -172,6 +174,7 @@ class KoreanHeading3 {
     fontWeight: FontWeight.w700,
     height: 1.50,
     letterSpacing: -0.44,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 }
 
@@ -183,6 +186,7 @@ class KoreanHeading4 {
     fontWeight: FontWeight.w700,
     height: 1.50,
     letterSpacing: -0.36,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 }
 
@@ -194,6 +198,7 @@ class KoreanHeading5 {
     fontWeight: FontWeight.w700,
     height: 1.60,
     letterSpacing: -0.32,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 }
 
@@ -204,6 +209,7 @@ class KoreanBody1 {
     fontFamilyFallback: _koreanFontFallback,
     fontWeight: FontWeight.w400,
     height: 1.60,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 }
 
@@ -214,6 +220,7 @@ class KoreanBody2 {
     fontFamilyFallback: _koreanFontFallback,
     fontWeight: FontWeight.w400,
     height: 1.60,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 }
 
@@ -224,6 +231,7 @@ class KoreanBody1Bold {
     fontFamilyFallback: _koreanFontFallback,
     fontWeight: FontWeight.w700,
     height: 1.60,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 }
 
@@ -234,6 +242,7 @@ class KoreanBody2Bold {
     fontFamilyFallback: _koreanFontFallback,
     fontWeight: FontWeight.w700,
     height: 1.60,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 }
 
@@ -245,5 +254,6 @@ class KoreanEyebrow {
     fontWeight: FontWeight.w400,
     height: 1.60,
     letterSpacing: -0.24,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 }
