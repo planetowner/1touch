@@ -257,6 +257,7 @@ class _AttributesSectionState extends State<AttributesSection> {
               comparisonScores: _comparisonScores,
               currentColor: teamPrimaryColor,
               comparisonColor: comparisonColor,
+              balanceVerticalMargins: true,
             ),
           ),
 
