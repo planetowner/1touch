@@ -119,7 +119,10 @@ void main() {
                   routes: [
                     GoRoute(
                       path: ':id',
-                      builder: (context, state) => const Text('player-detail'),
+                      pageBuilder: (context, state) => NoTransitionPage<void>(
+                        key: state.pageKey,
+                        child: const Text('player-detail'),
+                      ),
                     ),
                   ],
                 ),
@@ -143,23 +146,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(router.routeInformationProvider.value.uri.path, '/players/42');
 
-    await tester.tap(
-      find.byKey(const ValueKey('main-bottom-navigation-0')),
-    );
-    await tester.pumpAndSettle();
-    expect(router.routeInformationProvider.value.uri.path, '/home');
-    expect(mainTabActions.tabIndex, 0);
-
-    await tester.tap(
-      find.byKey(const ValueKey('main-bottom-navigation-2')),
-    );
-    await tester.pumpAndSettle();
-    expect(router.routeInformationProvider.value.uri.path, '/players');
-    expect(mainTabActions.tabIndex, 2);
-    expect(find.text('players-root'), findsOneWidget);
-
-    router.go('/team');
-    await tester.pumpAndSettle();
     final tabEvents = <String>[];
     void recordTabAction() {
       tabEvents.add(
@@ -170,6 +156,48 @@ void main() {
     mainTabActions.addListener(recordTabAction);
     addTearDown(() => mainTabActions.removeListener(recordTabAction));
 
+    await tester.tap(
+      find.byKey(const ValueKey('main-bottom-navigation-3')),
+    );
+    expect(tabEvents.first, '3:/players/42');
+    await tester.pump();
+    expect(router.routeInformationProvider.value.uri.path, '/community');
+    expect(find.text('community-root'), findsOneWidget);
+    await tester.pumpAndSettle();
+
+    tabEvents.clear();
+    await tester.tap(find.byKey(const ValueKey('main-bottom-navigation-2')));
+    expect(tabEvents.first, '2:/community');
+    await tester.pump();
+    expect(router.routeInformationProvider.value.uri.path, '/players');
+    expect(find.text('players-root'), findsOneWidget);
+    expect(find.text('player-detail'), findsNothing);
+    await tester.pumpAndSettle();
+
+    tabEvents.clear();
+    await tester.tap(find.byKey(const ValueKey('main-bottom-navigation-0')));
+    expect(tabEvents.first, '0:/players');
+    await tester.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, '/home');
+
+    tabEvents.clear();
+    await tester.tap(
+      find.byKey(const ValueKey('main-bottom-navigation-2')),
+    );
+    expect(tabEvents.first, '2:/home');
+    await tester.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, '/players');
+    expect(mainTabActions.tabIndex, 2);
+    expect(find.text('players-root'), findsOneWidget);
+
+    tabEvents.clear();
+    await tester.tap(find.byKey(const ValueKey('main-bottom-navigation-2')));
+    expect(tabEvents.first, '2:/players');
+    await tester.pumpAndSettle();
+
+    router.go('/team');
+    await tester.pumpAndSettle();
+    tabEvents.clear();
     await tester.tap(find.byKey(const ValueKey('main-bottom-navigation-3')));
     await tester.pumpAndSettle();
     expect(tabEvents.first, '3:/team');
