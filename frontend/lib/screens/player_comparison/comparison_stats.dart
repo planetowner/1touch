@@ -154,32 +154,40 @@ class _StatRow extends StatelessWidget {
     return null;
   }
 
-  String _display(double? value) {
-    if (value == null) return 'ㅡ';
-    if (value == value.roundToDouble()) return value.toInt().toString();
-    return value.toStringAsFixed(value.abs() < 10 ? 2 : 1);
-  }
-
   @override
   Widget build(BuildContext context) {
     final first = _find(category.first);
     final second = _find(category.second);
-    final firstValue = first?.metric.value ?? 0;
-    final secondValue = second?.metric.value ?? 0;
-    final total = firstValue.abs() + secondValue.abs();
-    final firstLabel = _display(first?.metric.value);
-    final secondLabel = _display(second?.metric.value);
-    final label = first?.metric.label ?? second?.metric.label ?? code;
+    final firstStat = playerSeasonStat(first);
+    final secondStat = playerSeasonStat(second);
+    final stat = first != null ? firstStat : secondStat;
+    final total = (firstStat.value ?? 0).abs() + (secondStat.value ?? 0).abs();
+    final comparable =
+        firstStat.value != null && secondStat.value != null && total > 0;
+    // 누락값을 0으로 간주한 비율 대신 중립 배경에 실제 표시값만 보여줘요.
+    final neutral = AppColors.of(context).subtleBackground;
+    final leftColor = comparable ? firstColor : neutral;
+    final rightColor = comparable ? secondColor : neutral;
+    final firstLabel = firstStat.text;
+    final secondLabel = secondStat.text;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            appStatLabel(context, label),
-            style: Body1_b.style.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  appStatLabel(context, stat.label),
+                  style: Body1_b.style.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(tr(context, stat.unit), style: Eyebrow.style),
+            ],
           ),
           const SizedBox(height: 5),
           ClipRRect(
@@ -206,9 +214,9 @@ class _StatRow extends StatelessWidget {
                     constraints.maxWidth,
                     firstMinimum + secondMinimum,
                   );
-                  final firstWidth = (total == 0
-                          ? contentWidth / 2
-                          : contentWidth * firstValue.abs() / total)
+                  final firstWidth = (comparable
+                          ? contentWidth * firstStat.value!.abs() / total
+                          : contentWidth / 2)
                       .clamp(firstMinimum, contentWidth - secondMinimum)
                       .toDouble();
                   final segments = Row(
@@ -217,12 +225,12 @@ class _StatRow extends StatelessWidget {
                         key: ValueKey('comparison-stat-first-$code'),
                         width: firstWidth,
                         child: Container(
-                          color: firstColor,
+                          color: leftColor,
                           alignment: Alignment.centerLeft,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: _StatValue(
                             value: firstLabel,
-                            color: _readableText(firstColor),
+                            color: _readableText(leftColor),
                           ),
                         ),
                       ),
@@ -230,12 +238,12 @@ class _StatRow extends StatelessWidget {
                         key: ValueKey('comparison-stat-second-$code'),
                         width: contentWidth - firstWidth,
                         child: Container(
-                          color: secondColor,
+                          color: rightColor,
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: _StatValue(
                             value: secondLabel,
-                            color: _readableText(secondColor),
+                            color: _readableText(rightColor),
                           ),
                         ),
                       ),
@@ -250,6 +258,35 @@ class _StatRow extends StatelessWidget {
               ),
             ),
           ),
+          if ([
+            first,
+            second
+          ].any((row) => row != null && row.observedMatches < row.totalMatches))
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final (index, row) in [first, second].indexed) ...[
+                    if (index > 0) const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        row == null
+                            ? '—'
+                            : tr(context,
+                                'Based on {observed}/{total} matches', {
+                                'observed': row.observedMatches,
+                                'total': row.totalMatches,
+                              }),
+                        textAlign:
+                            index == 0 ? TextAlign.left : TextAlign.right,
+                        style: Eyebrow.style,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
         ],
       ),
     );

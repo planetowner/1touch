@@ -75,17 +75,28 @@ def season_categories(position: int | None, matches: list[dict], stats: dict) ->
     xg_values = [r["xg"] for r in matches]
     xg = sum(xg_values) if xg_values and all(v is not None for v in xg_values) else None
     categories = build_categories(position, totals, xg)
-    minutes = sum(r["minutes_played"] or 0 for r in matches)
     for category in categories:
         for metric in category["metrics"]:
             metric["observed_matches"] = (sum(v is not None for v in xg_values) if metric["code"] == "xg"
                                            else min((coverage[t] for t in metric["stat_type_ids"]), default=0))
             metric["total_matches"] = len(matches)
             metric["lower_is_better"] = metric["code"] in LOWER_IS_BETTER
-            # 성공/시도 쌍은 성공 횟수의 90분당 값으로 순위를 매겨요.
-            value = metric.get("numerator") if metric["kind"] == "pair" else metric["value"]
-            metric["per90"] = float(value) * 90 / minutes if metric["kind"] != "percentage" and value is not None and minutes > 0 and all(r["minutes_played"] is not None for r in matches) else None
-            metric["rank_value"] = float(metric["numerator"] / metric["denominator"] * 100) if value is not None and metric["kind"] == "percentage" else metric["per90"]
+            metric["per90"] = None
+            if metric["kind"] != "percentage":
+                # 기록과 출전 시간이 함께 있는 경기만 써요. 실제 0회 기록도 포함해요.
+                # 성공/시도 쌍은 성공 횟수만 비교하므로 시도 기록의 누락과는 별개예요.
+                samples = []
+                for row in matches:
+                    match_metric = build_metric(
+                        metric["code"], stats[(row["fixture_id"], row["team_id"], row["player_id"])], row["xg"])
+                    value = match_metric["numerator" if metric["kind"] == "pair" else "value"]
+                    if value is not None and row["minutes_played"] is not None:
+                        samples.append((value, row["minutes_played"]))
+                metric["observed_matches"] = len(samples)
+                minutes = sum(minutes for _, minutes in samples)
+                if minutes > 0:
+                    metric["per90"] = float(sum(value for value, _ in samples)) * 90 / minutes
+            metric["rank_value"] = float(metric["numerator"] / metric["denominator"] * 100) if metric["value"] is not None and metric["kind"] == "percentage" else metric["per90"]
     return categories
 
 
