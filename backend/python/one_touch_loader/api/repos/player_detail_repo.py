@@ -15,6 +15,7 @@ from ...core.player_detail import (
 from ...core.player_match_metrics import POSITION_GROUPS
 from ...core.football_names import korean_name_ids
 from ...core.player_appearances import APPEARED, MATCH_FROM
+from ...core.player_ranking import season_player_positions
 
 COMPLETED = ','.join(map(str, COMPLETED_STATE_IDS))
 DISPLAY_STATES = ','.join(map(str, (*COMPLETED_STATE_IDS, *LIVE_STATE_IDS)))
@@ -181,18 +182,57 @@ def _analysis(fetch, player_id, season, clubs, roster, now):
                             if str(r["round_name"]).isdigit()]}
 
 
-def list_player_comparison_candidates(query: str, *, limit: int = 100) -> list[dict]:
+def list_player_comparison_candidates(query: str, *, limit: int | None = 100) -> list[dict]:
     player_ids = korean_name_ids("players", query)
     korean_condition = (" OR p.player_id IN (" + ",".join(["%s"] * len(player_ids)) + ")") if player_ids else ""
     with closing(get_conn()) as conn:
         conn.start_transaction(readonly=True)
         try:
             with conn.cursor(dictionary=True) as cur:
-                cur.execute(f"""SELECT DISTINCT p.player_id,p.display_name AS name,p.image_path AS image
+                sql = f"""SELECT DISTINCT p.player_id,p.display_name AS name,p.image_path AS image
                     FROM players p JOIN team_squad_members sm ON sm.player_id=p.player_id
                     JOIN seasons s ON s.season_id=sm.season_id
                     WHERE s.is_current=1 AND (p.display_name LIKE %s{korean_condition})
-                    ORDER BY p.display_name,p.player_id LIMIT %s""", (f"%{query.strip()}%", *player_ids, limit))
+                    ORDER BY p.display_name,p.player_id"""
+                params = (f"%{query.strip()}%", *player_ids)
+                if limit is not None:
+                    sql += " LIMIT %s"
+                    params += (limit,)
+                cur.execute(sql, params)
                 return cur.fetchall()
         finally:
             conn.rollback()
+
+
+def get_player_comparison_candidates(query: str, *, position=None, excluded_id=None, limit=100, offset=0):
+    # 먼저 자르면 같은 포지션의 뒤쪽 선수가 빠져요. 전체 후보를 거른 뒤 페이지를 나눠요.
+    candidates = list_player_comparison_candidates(query, limit=None)
+    season_name = None
+    players = []
+    total = 0
+    if candidates:
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        with closing(get_conn()) as conn:
+            conn.start_transaction(readonly=True, consistent_snapshot=True)
+            try:
+                with conn.cursor(dictionary=True) as cur:
+                    def fetch(sql, params=()):
+                        cur.execute(sql, params)
+                        return cur.fetchall()
+
+                    season_name = fetch(CURRENT_LEAGUE_SEASON)[0]['name']
+                    positions = season_player_positions(fetch, season_name, now)
+                    filtered = [row for row in candidates if row['player_id'] != excluded_id
+                                and (position is None or positions.get(row['player_id']) == position)]
+                    total = len(filtered)
+                    page = filtered[offset:offset + limit]
+                    # 목록에 필요한 소속만 한 번에 읽고, 통계가 포함된 상세는 선택 후 조회해요.
+                    teams = get_current_player_teams(fetch, [row['player_id'] for row in page])
+                    for row in page:
+                        team = teams.get(row['player_id']) or {}
+                        players.append(row | {'position_group': positions.get(row['player_id']),
+                                              'team_id': team.get('team_id'), 'team_name': team.get('team_name'),
+                                              'jersey_number': team.get('jersey_number')})
+            finally:
+                conn.rollback()
+    return {'players': players, 'season_name': season_name, 'total': total, 'limit': limit, 'offset': offset}
