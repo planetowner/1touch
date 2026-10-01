@@ -150,176 +150,183 @@ class _Header extends StatelessWidget {
     final primary = Color(player.teamPrimaryColor);
     final headerTextColor = isDark ? AppPalette.white : AppPalette.black;
     final darkPrimary = _ensureWhiteTextContrast(primary);
-    return Container(
-      key: const ValueKey('player-match-stat-header'),
-      decoration: BoxDecoration(
-        gradient: isDark
-            ? LinearGradient(
-                colors: [
-                  darkPrimary,
-                  Color.alphaBlend(
-                    Colors.black.withValues(alpha: 0.28),
+    void openPlayer() {
+      final playerId = player.playerId;
+      if (playerId == null) return;
+      final router = GoRouter.of(context);
+      final pushFromMatch = shouldPushFromMatch(context);
+      final destination = playerPageLocation(context, playerId.toString());
+      Navigator.of(context).pop();
+      if (pushFromMatch) {
+        router.push(destination);
+      } else {
+        router.go(destination);
+      }
+    }
+
+    return GestureDetector(
+      key: const ValueKey('player-match-stat-profile-surface'),
+      behavior: HitTestBehavior.opaque,
+      onTap: player.playerId == null ? null : openPlayer,
+      child: Container(
+        key: const ValueKey('player-match-stat-header'),
+        decoration: BoxDecoration(
+          gradient: isDark
+              ? LinearGradient(
+                  colors: [
                     darkPrimary,
-                  ),
-                  Color.alphaBlend(
-                    Colors.black.withValues(alpha: 0.62),
-                    darkPrimary,
-                  ),
-                ],
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-              )
-            : LinearGradient(
-                colors: [AppPalette.lightGreyBox, primary],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 12, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              //   Top row: name + action icons
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      key: const ValueKey('player-match-stat-profile-link'),
-                      onTap: player.playerId == null
-                          ? null
-                          : () {
-                              final router = GoRouter.of(context);
-                              final pushFromMatch = shouldPushFromMatch(context);
-                              final destination = playerPageLocation(
-                                  context, player.playerId!.toString());
-                              Navigator.of(context).pop();
-                              if (pushFromMatch) {
-                                router.push(destination);
-                              } else {
-                                router.go(destination);
-                              }
-                            },
-                      child: Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              playerNameLabel(
-                                  context, player.playerId, player.name),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Heading3.style.copyWith(
-                                color: headerTextColor,
+                    Color.alphaBlend(
+                      Colors.black.withValues(alpha: 0.28),
+                      darkPrimary,
+                    ),
+                    Color.alphaBlend(
+                      Colors.black.withValues(alpha: 0.62),
+                      darkPrimary,
+                    ),
+                  ],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                )
+              : LinearGradient(
+                  colors: [AppPalette.lightGreyBox, primary],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 12, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                //   Top row: name + action icons
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        key: const ValueKey('player-match-stat-profile-link'),
+                        behavior: HitTestBehavior.opaque,
+                        onTap: player.playerId == null ? null : openPlayer,
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                playerNameLabel(
+                                    context, player.playerId, player.name),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Heading3.style.copyWith(
+                                  color: headerTextColor,
+                                ),
                               ),
                             ),
-                          ),
-                          if (player.playerId != null) ...[
-                            const SizedBox(width: 6),
-                            Icon(
-                              Icons.chevron_right,
-                              color: headerTextColor,
-                              size: 24,
-                            ),
+                            if (player.playerId != null) ...[
+                              const SizedBox(width: 6),
+                              Icon(
+                                Icons.chevron_right,
+                                color: headerTextColor,
+                                size: 24,
+                              ),
+                            ],
                           ],
+                        ),
+                      ),
+                    ),
+                    _PlayerMatchFollowButton(
+                      playerId: player.playerId,
+                      controller: followingController,
+                    ),
+                    _HeaderIconBtn(
+                      icon: Icons.safety_divider, // compare players
+                      onTap: () {
+                        // TODO: open comparison sheet
+                      },
+                    ),
+                    _HeaderIconBtn(
+                      icon: Icons.close_rounded,
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                //   Jersey number + info + photo
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // Left: number & meta
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            player.jerseyNumber?.toString() ?? '—',
+                            style: Heading1.latinStyle.copyWith(
+                              color: headerTextColor,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            player.positions.join(' • '),
+                            style: Body1.style.copyWith(color: headerTextColor),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            teamNameLabel(context, player.teamId, player.club),
+                            style: Body1.style.copyWith(color: headerTextColor),
+                          ),
+                          _PlayerNationalityLine(
+                            player: player,
+                            repository: detailRepository,
+                            color: headerTextColor,
+                          ),
                         ],
                       ),
                     ),
-                  ),
-                  _PlayerMatchFollowButton(
-                    playerId: player.playerId,
-                    controller: followingController,
-                  ),
-                  _HeaderIconBtn(
-                    icon: Icons.safety_divider, // compare players
-                    onTap: () {
-                      // TODO: open comparison sheet
-                    },
-                  ),
-                  _HeaderIconBtn(
-                    icon: Icons.close_rounded,
-                    onTap: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
 
-              const SizedBox(height: 12),
-
-              //   Jersey number + info + photo
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // Left: number & meta
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          player.jerseyNumber?.toString() ?? '—',
-                          style: Heading1.latinStyle.copyWith(
-                            color: headerTextColor,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          player.positions.join(' • '),
-                          style: Body1.style.copyWith(color: headerTextColor),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          teamNameLabel(context, player.teamId, player.club),
-                          style: Body1.style.copyWith(color: headerTextColor),
-                        ),
-                        _PlayerNationalityLine(
-                          player: player,
-                          repository: detailRepository,
-                          color: headerTextColor,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Right: player headshot
-                  if (player.playerImageAsset != null ||
-                      player.playerImageUrl != null)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ShaderMask(
-                        key: const ValueKey(
-                            'player-match-stat-image-bottom-fade'),
-                        blendMode: BlendMode.dstIn,
-                        shaderCallback: (bounds) => const LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.white,
-                            Colors.white,
-                            Colors.transparent,
-                          ],
-                          stops: [0, 0.78, 1],
-                        ).createShader(bounds),
-                        child: player.playerImageAsset != null
-                            ? Image.asset(
-                                player.playerImageAsset!,
-                                height: 140,
-                                fit: BoxFit.contain,
-                              )
-                            : Image.network(
-                                player.playerImageUrl!,
-                                height: 140,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) => const SizedBox(
-                                  width: 90,
+                    // Right: player headshot
+                    if (player.playerImageAsset != null ||
+                        player.playerImageUrl != null)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ShaderMask(
+                          key: const ValueKey(
+                              'player-match-stat-image-bottom-fade'),
+                          blendMode: BlendMode.dstIn,
+                          shaderCallback: (bounds) => const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white,
+                              Colors.white,
+                              Colors.transparent,
+                            ],
+                            stops: [0, 0.78, 1],
+                          ).createShader(bounds),
+                          child: player.playerImageAsset != null
+                              ? Image.asset(
+                                  player.playerImageAsset!,
                                   height: 140,
+                                  fit: BoxFit.contain,
+                                )
+                              : Image.network(
+                                  player.playerImageUrl!,
+                                  height: 140,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) => const SizedBox(
+                                    width: 90,
+                                    height: 140,
+                                  ),
                                 ),
-                              ),
+                        ),
                       ),
-                    ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
