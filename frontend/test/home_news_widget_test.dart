@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/features/home/screen/home_screen_features.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/models/home_content_item.dart';
 
 void main() {
@@ -134,7 +135,7 @@ void main() {
         supportedLocales: appSupportedLocales,
         localizationsDelegates: appLocalizationDelegates,
         home: Scaffold(body: MyNews(news: [], isLoading: true))));
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsOneWidget);
     expect(find.text('No team news yet.'), findsNothing);
   });
 }

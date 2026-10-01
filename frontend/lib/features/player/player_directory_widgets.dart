@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/app_info_button.dart';
@@ -118,7 +119,7 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
             if (controller.loading)
               const SizedBox(
                 height: 112,
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: FootballLoadingIndicator()),
               )
             else if (controller.error != null)
               TextButton(
@@ -408,7 +409,7 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
         if (_loading)
           const Padding(
             padding: EdgeInsets.all(24),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: FootballLoadingIndicator()),
           ),
       ],
     );
@@ -633,7 +634,7 @@ class PlayersToWatchState extends State<PlayersToWatch> {
             if (snapshot.connectionState != ConnectionState.done) {
               return const SizedBox(
                 height: 200,
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: FootballLoadingIndicator()),
               );
             }
             if (snapshot.hasError) {

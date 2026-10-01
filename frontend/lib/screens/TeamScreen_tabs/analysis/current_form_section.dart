@@ -241,8 +241,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
               child: Center(
                 child: SizedBox.square(
                   key: ValueKey('analysis-current-form-loading'),
-                  dimension: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  dimension: 56,
+                  child: FootballLoadingIndicator(),
                 ),
               ),
             )

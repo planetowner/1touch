@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
@@ -163,7 +164,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
 
   Widget _buildContent(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: FootballLoadingIndicator());
     }
     if (_error != null && _items.isEmpty) {
       return _InboxMessage(
@@ -187,7 +188,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
           if (index == _items.length) {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: FootballLoadingIndicator()),
             );
           }
           return Padding(

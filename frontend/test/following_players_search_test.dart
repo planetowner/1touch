@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/features/player/player_directory_widgets.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/models/player_detail.dart';
 
@@ -66,7 +67,7 @@ void main() {
     expect(repository.searchQueries, isEmpty);
     await tester.pump(const Duration(milliseconds: 250));
     expect(repository.searchQueries, ['페드리']);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsOneWidget);
 
     repository.pending.single.complete([_pedri]);
     await tester.pumpAndSettle();

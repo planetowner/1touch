@@ -4,6 +4,7 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/community/community_repository_provider.dart'
     as community_providers;
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/models/community_rules.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -99,7 +100,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog> {
                       child: Center(
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 48),
-                          child: CircularProgressIndicator(
+                          child: FootballLoadingIndicator(
                             key: ValueKey('community-rules-loading'),
                           ),
                         ),

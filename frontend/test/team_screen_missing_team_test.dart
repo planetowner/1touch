@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/screens/TeamScreen.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 
 import 'support/test_team_overview_repository.dart';
 
@@ -52,7 +53,7 @@ void main() {
       ),
     );
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsOneWidget);
     firstRequest.complete();
     await tester.pump();
     await tester.pump();

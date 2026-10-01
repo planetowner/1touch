@@ -125,7 +125,7 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
             const Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),
-                child: CircularProgressIndicator(
+                child: FootballLoadingIndicator(
                   key: ValueKey('team-probability-loading'),
                 ),
               ),

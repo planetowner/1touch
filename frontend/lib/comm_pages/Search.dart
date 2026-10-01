@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/core/app_search_field.dart';
@@ -202,7 +203,7 @@ class _SearchContentState extends State<SearchContent> {
 
   Widget _buildBody() {
     if (_search.loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: FootballLoadingIndicator());
     }
     if (_search.error != null) {
       return Center(

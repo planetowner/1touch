@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
@@ -59,7 +60,7 @@ class _NotificationPostPageState extends State<NotificationPostPage> {
       ),
       body: Center(
         child: _error == null
-            ? const CircularProgressIndicator()
+            ? const FootballLoadingIndicator()
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

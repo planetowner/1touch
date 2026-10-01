@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
@@ -487,7 +488,7 @@ class _StandingTabState extends State<StandingTab> {
           return const Padding(
             key: ValueKey('standing-loading'),
             padding: EdgeInsets.symmetric(vertical: 48),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: FootballLoadingIndicator()),
           );
         }
         if (_standingLoadError != null && standings.isEmpty) {
@@ -528,7 +529,7 @@ class _StandingTabState extends State<StandingTab> {
           return const Padding(
             key: ValueKey('xg-standing-loading'),
             padding: EdgeInsets.symmetric(vertical: 48),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: FootballLoadingIndicator()),
           );
         }
         if (_xgLoadError != null && xgStandings.isEmpty) {

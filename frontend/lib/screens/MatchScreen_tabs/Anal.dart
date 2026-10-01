@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
@@ -158,7 +159,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           ],
           if (_isLoading) ...[
             const SizedBox(height: 48),
-            const Center(child: CircularProgressIndicator()),
+            const Center(child: FootballLoadingIndicator()),
           ] else if (_loadError != null) ...[
             const SizedBox(height: 48),
             _buildLoadError(),

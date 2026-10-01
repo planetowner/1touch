@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
@@ -160,7 +161,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       ]);
     }
     if (_options == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: FootballLoadingIndicator());
     }
     final providers =
         _options!.recommended.where((p) => p != LoginProvider.email).toList();

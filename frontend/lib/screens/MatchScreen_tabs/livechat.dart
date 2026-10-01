@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
@@ -334,7 +335,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
     }
 
     if (!_isInitialized) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: FootballLoadingIndicator());
     }
 
     return SizedBox(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_segmented_toggle.dart';
@@ -85,7 +86,7 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
               return Center(
                   child: Text(tr(context, 'Unable to load Profile.')));
             }
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: FootballLoadingIndicator());
           }
           final profile = snapshot.data!;
           return Column(
@@ -306,7 +307,7 @@ class _ActivityListState<T> extends State<_ActivityList<T>> {
   @override
   Widget build(BuildContext context) {
     final loading = Center(
-      child: CircularProgressIndicator(
+      child: FootballLoadingIndicator(
         key: ValueKey('profile-activity-loading-${widget.tab.name}'),
       ),
     );

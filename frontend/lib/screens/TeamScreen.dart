@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -228,7 +229,7 @@ class _TeamScreenState extends State<TeamScreen>
     if (isLoading) {
       return Scaffold(
         backgroundColor: pageBackground,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Center(child: FootballLoadingIndicator()),
       );
     }
 

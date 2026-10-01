@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -320,7 +321,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (_isLoading && homeData == null) {
       return Scaffold(
         backgroundColor: pageBackground,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Center(child: FootballLoadingIndicator()),
       );
     }
 

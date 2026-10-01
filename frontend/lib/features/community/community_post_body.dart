@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
@@ -38,7 +39,7 @@ class CommunityPostBody extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Center(
-        child: CircularProgressIndicator(
+        child: FootballLoadingIndicator(
           key: ValueKey('community-posts-loading'),
         ),
       );

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/cache/cache_policy.dart';
@@ -123,7 +124,7 @@ class _SessionScreenState extends State<SessionScreen> {
                   ])
                 : Center(
                     child: _error == null
-                        ? const CircularProgressIndicator()
+                        ? const FootballLoadingIndicator()
                         : Column(mainAxisSize: MainAxisSize.min, children: [
                             Text(tr(context,
                                 'Unable to load your account. Please try again.')),

@@ -13,6 +13,7 @@ import 'package:onetouch/models/team.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/screens/HomeScreen.dart';
 import 'package:onetouch/features/home/screen/home_screen_features.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 
 void main() {
   setUpAppCatalog();
@@ -186,7 +187,7 @@ void main() {
       await tester.scrollUntilVisible(find.byType(MyNews), 500,
           scrollable: find.byType(Scrollable).first);
       expect(find.text('이전 기사'), findsNothing);
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(FootballLoadingIndicator), findsOneWidget);
       content.calls.last.completer.complete(_news('새 기사'));
       await tester.pump();
       expect(find.text('새 기사'), findsOneWidget);

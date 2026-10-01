@@ -7,6 +7,7 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/models/betting.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -94,7 +95,7 @@ class MatchBettingSection extends StatelessWidget {
                 if (market == null && controller.loading)
                   const Padding(
                     padding: EdgeInsets.all(24),
-                    child: CircularProgressIndicator(),
+                    child: Center(child: FootballLoadingIndicator()),
                   ),
                 if (market != null &&
                     (!market.canBet || !controller.beforeKickoff))

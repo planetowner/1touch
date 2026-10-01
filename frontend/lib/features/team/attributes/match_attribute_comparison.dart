@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_baseline.dart';
@@ -102,7 +103,7 @@ class _MatchAttributeComparisonState extends State<MatchAttributeComparison> {
           child: _loading
               ? const SizedBox(
                   height: 260,
-                  child: Center(child: CircularProgressIndicator()),
+                  child: Center(child: FootballLoadingIndicator()),
                 )
               : _failed
                   ? TextButton(

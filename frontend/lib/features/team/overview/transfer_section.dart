@@ -141,8 +141,8 @@ class _TransferState extends State<Transfer> {
             child: Center(
               child: SizedBox.square(
                 key: ValueKey('transfer-loading'),
-                dimension: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                dimension: 56,
+                child: FootballLoadingIndicator(),
               ),
             ),
           )

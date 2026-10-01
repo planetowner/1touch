@@ -133,7 +133,7 @@ class _StandingState extends State<Standing> {
       return const Padding(
         key: ValueKey('overview-standing-loading'),
         padding: EdgeInsets.symmetric(vertical: 48),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: FootballLoadingIndicator()),
       );
     }
     if (_loadError != null && _standings.isEmpty) {

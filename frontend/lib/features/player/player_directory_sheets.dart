@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/debounced_search_controller.dart';
@@ -359,7 +360,7 @@ class _FollowingPlayersEditorSheetState
 
   Widget _searchResults(ScrollController controller, Color divider) {
     if (_candidateSearch.loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: FootballLoadingIndicator());
     }
     if (_candidateSearch.error != null) {
       return Center(
