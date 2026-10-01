@@ -14,13 +14,15 @@ class CommunitySliverAppBar extends StatelessWidget {
     required this.pageBackground,
     required this.opacityFactor,
     required this.onSearch,
-    required this.onProfile,
+    required this.onNotifications,
+    required this.onActivity,
   });
 
   final Color pageBackground;
   final double opacityFactor;
   final VoidCallback onSearch;
-  final VoidCallback onProfile;
+  final VoidCallback onNotifications;
+  final VoidCallback onActivity;
 
   @override
   Widget build(BuildContext context) {
@@ -76,8 +78,8 @@ class CommunitySliverAppBar extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               IconButton(
-                key: const ValueKey('community-profile-button'),
-                onPressed: onProfile,
+                key: const ValueKey('community-notifications-button'),
+                onPressed: onNotifications,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints.tightFor(
                   width: 32,
@@ -86,10 +88,47 @@ class CommunitySliverAppBar extends StatelessWidget {
                 style: IconButton.styleFrom(
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                icon: Icon(
-                  Icons.account_circle_outlined,
-                  size: 32,
-                  color: foreground,
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      Icons.notifications_none_rounded,
+                      size: 32,
+                      color: foreground,
+                    ),
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        key: const ValueKey('community-notification-badge'),
+                        width: 9,
+                        height: 9,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFD82457),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              IconButton(
+                key: const ValueKey('community-activity-button'),
+                onPressed: onActivity,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints.tightFor(
+                  width: 32,
+                  height: 32,
+                ),
+                style: IconButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                icon: SvgPicture.asset(
+                  'assets/community_activity.svg',
+                  width: 32,
+                  height: 32,
+                  colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
                 ),
               ),
             ],

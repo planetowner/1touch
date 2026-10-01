@@ -346,7 +346,9 @@ class _CommunityState extends State<Community>
                     pageBackground: pageBackground,
                     opacityFactor: opacityFactor,
                     onSearch: () => context.push('/search'),
-                    onProfile: () => context.push('/profile'),
+                    onNotifications: () => context.push('/notifications'),
+                    onActivity: () =>
+                        context.push('/profile/activity?tab=posts'),
                   ),
                   CommunityTeamHeader(
                     team: team,
