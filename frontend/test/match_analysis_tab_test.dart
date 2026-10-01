@@ -8,10 +8,99 @@ import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/match_tactical_analysis.dart';
+import 'package:onetouch/features/match_info/match_motion.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/Anal.dart';
 
 void main() {
   setUpAppCatalog();
+  test('shot-map dots lead lines, and arrows stagger by 420ms', () {
+    expect(matchShotTimelineMs, 503);
+    expect(matchShotTimelineDurationMs(1), 503);
+    expect(matchShotTimelineDurationMs(3), 669);
+    expect(matchProgressionTimelineMs, 1673);
+
+    double shotProgress(int elapsedMs, int shotIndex, {bool line = false}) =>
+        matchMotionSegmentProgress(
+          elapsedMs / matchShotTimelineDurationMs(3),
+          totalMs: matchShotTimelineDurationMs(3),
+          startMs: shotIndex * matchShotStaggerMs +
+              (line ? matchShotLineDelayMs : 0),
+          durationMs: matchShotCircleDurationMs,
+        );
+
+    expect(shotProgress(82, 0), greaterThan(0));
+    expect(shotProgress(82, 0, line: true), 0);
+    expect(shotProgress(82, 1), 0);
+    expect(shotProgress(100, 0, line: true), greaterThan(0));
+    expect(shotProgress(100, 1), greaterThan(0));
+    expect(shotProgress(165, 2), 0);
+    expect(shotProgress(420, 0), 1);
+    expect(shotProgress(503, 0, line: true), 1);
+    expect(shotProgress(669, 2, line: true), 1);
+
+    double arrowProgress(int elapsedMs, int arrowIndex) =>
+        matchMotionSegmentProgress(
+          elapsedMs / matchProgressionTimelineMs,
+          totalMs: matchProgressionTimelineMs,
+          startMs: arrowIndex * matchArrowStaggerMs,
+          durationMs: matchMotionDurationMs,
+        );
+
+    expect(arrowProgress(419, 1), 0);
+    expect(arrowProgress(600, 1), greaterThan(0));
+    expect(arrowProgress(600, 2), 0);
+    expect(arrowProgress(833, 0), 1);
+    expect(arrowProgress(1673, 2), 1);
+  });
+
+  testWidgets('attack reveals shots by match minute and preserves tied order',
+      (tester) async {
+    final fixture = mockFixtures.first;
+    MatchShot shot(String id, int minute, int? extraMinute, double y) =>
+        MatchShot(
+          eventId: id,
+          teamId: fixture.homeTeamId,
+          playerId: null,
+          playerName: null,
+          minute: minute,
+          extraMinute: extraMinute,
+          result: 'missed',
+          start: TacticalPitchPoint(x: 80, y: y),
+          end: const TacticalPitchPoint(x: 100, y: 50),
+        );
+    final repository = TestMatchAnalysisRepository(
+      MatchTacticalAnalysis(
+        fixtureId: fixture.fixtureId,
+        available: false,
+        home: null,
+        away: null,
+      ),
+      MatchShotMap(
+        fixtureId: fixture.fixtureId,
+        available: true,
+        homeCount: 5,
+        awayCount: 0,
+        shots: [
+          shot('45-plus-2-first', 45, 2, 40),
+          shot('10', 10, null, 10),
+          shot('45-plus-2-second', 45, 2, 50),
+          shot('20', 20, null, 20),
+          shot('45', 45, null, 30),
+        ],
+      ),
+    );
+    await tester.pumpWidget(MaterialApp(
+      home:
+          Scaffold(body: AnalysisTab(fixture: fixture, repository: repository)),
+    ));
+    await tester.pumpAndSettle();
+
+    final plots =
+        tester.widget<ShotMapDiagram>(find.byType(ShotMapDiagram)).shots;
+    expect(plots.map((plot) => plot.start.dx), [0.1, 0.2, 0.3, 0.4, 0.5]);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final locale in appSupportedLocales) {
     testWidgets('possession uses a bar without a team toggle in $locale',
         (tester) async {
@@ -223,6 +312,27 @@ void main() {
     expect(defenseTerritoryOpacity(-20.8), closeTo(0.292, 0.0001));
     expect(defenseTerritoryOpacity(23.4), closeTo(0.734, 0.0001));
     expect(defenseTerritoryOpacity(-2.7), closeTo(0.473, 0.0001));
+    expect(
+      [
+        for (var i = 0; i < 3; i++)
+          defenseTerritoryZoneReveal(0.5, i, rightToLeft: false)
+      ],
+      [1, 0.5, 0],
+    );
+    expect(
+      [
+        for (var i = 0; i < 3; i++)
+          defenseTerritoryZoneReveal(0.5, i, rightToLeft: true)
+      ],
+      [0, 0.5, 1],
+    );
+    expect(
+      [
+        for (var i = 0; i < 3; i++)
+          defenseTerritoryZoneReveal(1, i, rightToLeft: true)
+      ],
+      [1, 1, 1],
+    );
     expect(shotMapMarkerRadius, 5);
     expect(defenseTerritoryArrowGradient.begin, Alignment.centerLeft);
     expect(defenseTerritoryArrowGradient.end, Alignment.centerRight);
@@ -234,11 +344,22 @@ void main() {
       const Size(334, 208.75),
     );
     expect(arrowShaft.width, 233);
-    expect(arrowShaft.height, 28);
+    expect(arrowShaft.height,
+        closeTo(208.75 * defenseTerritoryCenterCircleRadiusFraction, 1e-9));
     expect(arrowShaft.left, lessThan(334 / 3));
     expect(arrowShaft.right, greaterThan(334 * 2 / 3));
     expect(arrowShaft.top, 208.75 / 2);
+    expect(
+      arrowShaft.bottom,
+      closeTo(
+        208.75 / 2 + 208.75 * defenseTerritoryCenterCircleRadiusFraction,
+        1e-9,
+      ),
+    );
     final arrowHeadTop = arrowShaft.center.dy - 208.75 * 0.18;
+    final arrowHeadBottom = arrowShaft.center.dy + 208.75 * 0.18;
+    expect(arrowShaft.center.dy - arrowHeadTop,
+        closeTo(arrowHeadBottom - arrowShaft.center.dy, 1e-9));
     final alignedLabelTop = defenseTerritoryLabelTop(
       labelHeight: 24,
       arrowHeadTop: arrowHeadTop,
@@ -250,6 +371,13 @@ void main() {
     );
     expect(compactArrowShaft.left, 8);
     expect(compactArrowShaft.right, greaterThan(224 * 2 / 3));
+    expect(compactArrowShaft.top, 70);
+    expect(compactArrowShaft.bottom,
+        closeTo(70 + 140 * defenseTerritoryCenterCircleRadiusFraction, 1e-9));
+    final compactArrowHeadTop = compactArrowShaft.center.dy - 140 * 0.18;
+    final compactArrowHeadBottom = compactArrowShaft.center.dy + 140 * 0.18;
+    expect(compactArrowShaft.center.dy - compactArrowHeadTop,
+        closeTo(compactArrowHeadBottom - compactArrowShaft.center.dy, 1e-9));
     expect(find.text('DEFENSE'), findsOneWidget);
     expect(find.text('PRESSURE'), findsNothing);
     expect(find.text('Tackles Won'), findsOneWidget);
@@ -462,6 +590,297 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('attack shots reveal once when the pitch enters a compact view',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final scroll = ScrollController();
+    addTearDown(scroll.dispose);
+    const shots = [
+      ShotMapPlot(
+        start: Offset(0.2, 0.7),
+        end: Offset(0.5, 1),
+        isGoal: false,
+      ),
+      ShotMapPlot(
+        start: Offset(0.7, 0.6),
+        end: Offset(0.5, 1),
+        isGoal: true,
+      ),
+      ShotMapPlot(
+        start: Offset(0.5, 0.5),
+        end: Offset(0.5, 1),
+        isGoal: false,
+      ),
+    ];
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          controller: scroll,
+          child: const Column(children: [
+            SizedBox(height: 850),
+            ShotMapDiagram(
+              shots: shots,
+              color: Colors.red,
+              lineColor: Colors.white,
+            ),
+          ]),
+        ),
+      ),
+    ));
+
+    expect(_shotMapProgress(tester), 0);
+    scroll.jumpTo(500);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(_shotMapProgress(tester), inInclusiveRange(0.1, 0.9));
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(_shotMapProgress(tester), lessThan(1));
+    await tester.pumpAndSettle();
+    expect(_shotMapProgress(tester), 1);
+    scroll.jumpTo(0);
+    await tester.pump();
+    scroll.jumpTo(500);
+    await tester.pump();
+    expect(_shotMapProgress(tester), 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('switching attack teams replays the new shot map on a tall view',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(430, 932));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final fixture = mockFixtures.first;
+    final repository = TestMatchAnalysisRepository(
+      MatchTacticalAnalysis(
+        fixtureId: fixture.fixtureId,
+        available: false,
+        home: null,
+        away: null,
+      ),
+      MatchShotMap(
+        fixtureId: fixture.fixtureId,
+        available: true,
+        homeCount: 1,
+        awayCount: 1,
+        shots: [
+          for (final teamId in [fixture.homeTeamId, fixture.awayTeamId])
+            MatchShot(
+              eventId: 'shot-$teamId',
+              teamId: teamId,
+              playerId: null,
+              playerName: null,
+              minute: 20,
+              extraMinute: null,
+              result: 'missed',
+              start: const TacticalPitchPoint(x: 80, y: 45),
+              end: const TacticalPitchPoint(x: 100, y: 50),
+            ),
+        ],
+      ),
+    );
+    await tester.pumpWidget(MaterialApp(
+      home:
+          Scaffold(body: AnalysisTab(fixture: fixture, repository: repository)),
+    ));
+    await tester.pump();
+    await tester.ensureVisible(find.byType(ShotMapDiagram));
+    await tester.pumpAndSettle();
+    expect(_shotMapProgress(tester), 1);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('match-analysis-away-toggle')).first,
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('match-analysis-away-toggle')).first,
+    );
+    await tester.pump();
+    expect(_shotMapProgress(tester), 0);
+    await tester.ensureVisible(find.byType(ShotMapDiagram));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(_shotMapProgress(tester), greaterThan(0));
+    await tester.pumpAndSettle();
+    expect(_shotMapProgress(tester), 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('reduced motion shows every attack shot immediately',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: MediaQuery(
+        data: MediaQueryData(disableAnimations: true),
+        child: Scaffold(
+          body: ShotMapDiagram(
+            shots: [
+              ShotMapPlot(
+                start: Offset(0.4, 0.6),
+                end: Offset(0.5, 1),
+                isGoal: false,
+              ),
+            ],
+            color: Colors.red,
+            lineColor: Colors.white,
+          ),
+        ),
+      ),
+    ));
+    expect(_shotMapProgress(tester), 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('progression and defense start when scrolled into a compact view',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final scroll = ScrollController();
+    addTearDown(scroll.dispose);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          controller: scroll,
+          child: const Column(children: [
+            SizedBox(height: 750),
+            ProgressionDiagram(
+              lanePercents: [22, 33, 45],
+              color: Colors.red,
+              labelColor: Colors.white,
+            ),
+            SizedBox(height: 350),
+            DefenseTerritoryDiagram(
+              zoneDeltas: [-20, 23, -3],
+              selectedTeamColor: Colors.red,
+              lineColor: Colors.white,
+            ),
+          ]),
+        ),
+      ),
+    ));
+
+    expect(_diagramProgress(tester, find.byType(ProgressionDiagram)), 0);
+    expect(_diagramProgress(tester, find.byType(DefenseTerritoryDiagram)), 0);
+    scroll.jumpTo(400);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 550));
+    expect(_diagramProgress(tester, find.byType(ProgressionDiagram)),
+        inInclusiveRange(0.1, 0.9));
+    expect(_diagramProgress(tester, find.byType(DefenseTerritoryDiagram)), 0);
+
+    scroll.jumpTo(900);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 550));
+    expect(_diagramProgress(tester, find.byType(DefenseTerritoryDiagram)),
+        inInclusiveRange(0.1, 0.9));
+    await tester.pumpAndSettle();
+    expect(_diagramProgress(tester, find.byType(ProgressionDiagram)), 1);
+    expect(_diagramProgress(tester, find.byType(DefenseTerritoryDiagram)), 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('team change replays both arrows in the reverse direction',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(430, 932));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    var away = false;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: StatefulBuilder(builder: (context, setState) {
+          return Column(children: [
+            TextButton(
+              onPressed: () => setState(() => away = !away),
+              child: const Text('switch team'),
+            ),
+            ProgressionDiagram(
+              rightToLeft: away,
+              lanePercents: const [22, 33, 45],
+              color: Colors.red,
+              labelColor: Colors.white,
+            ),
+            DefenseTerritoryDiagram(
+              rightToLeft: away,
+              zoneDeltas: const [-20, 23, -3],
+              selectedTeamColor: Colors.red,
+              lineColor: Colors.white,
+            ),
+          ]);
+        }),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(_diagramProgress(tester, find.byType(ProgressionDiagram)), 1);
+    expect(_diagramProgress(tester, find.byType(DefenseTerritoryDiagram)), 1);
+
+    await tester.tap(find.text('switch team'));
+    await tester.pump();
+    expect(
+        tester
+            .widget<ProgressionDiagram>(find.byType(ProgressionDiagram))
+            .rightToLeft,
+        isTrue);
+    expect(
+        tester
+            .widget<DefenseTerritoryDiagram>(
+                find.byType(DefenseTerritoryDiagram))
+            .rightToLeft,
+        isTrue);
+    expect(_diagramProgress(tester, find.byType(ProgressionDiagram)), 0);
+    expect(_diagramProgress(tester, find.byType(DefenseTerritoryDiagram)), 0);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 700));
+    expect(_diagramProgress(tester, find.byType(ProgressionDiagram)),
+        inInclusiveRange(0.1, 0.9));
+    expect(_diagramProgress(tester, find.byType(DefenseTerritoryDiagram)),
+        inInclusiveRange(0.1, 0.9));
+    await tester.pumpAndSettle();
+    expect(_diagramProgress(tester, find.byType(ProgressionDiagram)), 1);
+    expect(_diagramProgress(tester, find.byType(DefenseTerritoryDiagram)), 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('reduced motion displays progression and defense arrows',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: MediaQuery(
+        data: MediaQueryData(disableAnimations: true),
+        child: Scaffold(
+          body: SingleChildScrollView(
+            child: Column(children: [
+              ProgressionDiagram(
+                lanePercents: [22, 33, 45],
+                color: Colors.red,
+                labelColor: Colors.white,
+              ),
+              DefenseTerritoryDiagram(
+                zoneDeltas: [-20, 23, -3],
+                selectedTeamColor: Colors.red,
+                lineColor: Colors.white,
+              ),
+            ]),
+          ),
+        ),
+      ),
+    ));
+    expect(_diagramProgress(tester, find.byType(ProgressionDiagram)), 1);
+    expect(_diagramProgress(tester, find.byType(DefenseTerritoryDiagram)), 1);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+double _shotMapProgress(WidgetTester tester) {
+  final paint = tester.widget<CustomPaint>(find.descendant(
+    of: find.byType(ShotMapDiagram),
+    matching: find.byType(CustomPaint),
+  ));
+  return ((paint.painter! as dynamic).reveal.value as double);
+}
+
+double _diagramProgress(WidgetTester tester, Finder diagram) {
+  final paint = tester.widget<CustomPaint>(find.descendant(
+    of: diagram,
+    matching: find.byType(CustomPaint),
+  ));
+  return ((paint.painter! as dynamic).reveal.value as double);
 }
 
 FixtureDetail _detailWithStatistics(

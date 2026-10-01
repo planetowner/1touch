@@ -407,6 +407,7 @@ class MatchInfoTab extends StatelessWidget {
               values: momentumValues,
               homeColor: comparisonColors.anchor,
               awayColor: comparisonColors.opponent,
+              animate: fixture.status == FixtureStatus.past,
             ),
           ],
           if (statBars.isNotEmpty) ...[

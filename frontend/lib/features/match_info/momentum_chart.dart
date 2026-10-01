@@ -1,16 +1,18 @@
 part of 'match_info_features.dart';
 
-class MomentumChart extends StatelessWidget {
+class MomentumChart extends StatefulWidget {
   const MomentumChart({
     super.key,
     this.values = _defaultMomentum,
     this.homeColor = const Color(0xFFFF5C5C),
     this.awayColor = Colors.white,
+    this.animate = false,
   });
 
   final List<double> values;
   final Color homeColor;
   final Color awayColor;
+  final bool animate;
 
   // Mock per-5-minute momentum series, -100..100 (negative = away team
   // dominance, positive = home team), 0' through 90' inclusive.
@@ -37,6 +39,84 @@ class MomentumChart extends StatelessWidget {
   ];
 
   @override
+  State<MomentumChart> createState() => _MomentumChartState();
+}
+
+class _MomentumChartState extends State<MomentumChart>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _reveal = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: matchMotionDurationMs),
+    value: widget.animate ? 0 : 1,
+  );
+  late final Animation<double> _easedReveal =
+      _reveal.drive(CurveTween(curve: matchMotionCurve));
+  final List<ScrollPosition> _scrollPositions = [];
+  bool _started = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startIfVisible());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    for (final position in _scrollPositions) {
+      position.removeListener(_startIfVisible);
+    }
+    _scrollPositions.clear();
+    context.visitAncestorElements((element) {
+      if (element is StatefulElement && element.state is ScrollableState) {
+        final position = (element.state as ScrollableState).position;
+        _scrollPositions.add(position);
+        position.addListener(_startIfVisible);
+      }
+      return true;
+    });
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _started = true;
+      _reveal.value = 1;
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _startIfVisible());
+    }
+  }
+
+  @override
+  void didUpdateWidget(MomentumChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!widget.animate || MediaQuery.disableAnimationsOf(context)) {
+      _started = true;
+      _reveal.value = 1;
+    } else if (!oldWidget.animate) {
+      _started = false;
+      _reveal.value = 0;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _startIfVisible());
+    }
+  }
+
+  void _startIfVisible() {
+    if (!mounted || _started || !widget.animate) return;
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    final top = box.localToGlobal(Offset.zero).dy;
+    final height = MediaQuery.sizeOf(context).height;
+    if (top >= height || top + box.size.height <= 0) return;
+    _started = true;
+    _reveal.forward();
+  }
+
+  @override
+  void dispose() {
+    for (final position in _scrollPositions) {
+      position.removeListener(_startIfVisible);
+    }
+    _reveal.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
@@ -60,10 +140,11 @@ class MomentumChart extends StatelessWidget {
                 width: double.infinity,
                 child: CustomPaint(
                   painter: _MomentumPainter(
-                    values,
+                    widget.values,
                     foreground,
-                    homeColor: homeColor,
-                    awayColor: awayColor,
+                    homeColor: widget.homeColor,
+                    awayColor: widget.awayColor,
+                    reveal: _easedReveal,
                   ),
                 ),
               ),
@@ -101,13 +182,15 @@ class _MomentumPainter extends CustomPainter {
   final Color neutralColor;
   final Color homeColor;
   final Color awayColor;
+  final Animation<double> reveal;
 
   const _MomentumPainter(
     this.values,
     this.neutralColor, {
     this.homeColor = const Color(0xFFFF5C5C),
     this.awayColor = Colors.white,
-  });
+    required this.reveal,
+  }) : super(repaint: reveal);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -130,6 +213,10 @@ class _MomentumPainter extends CustomPainter {
     final midX = size.width / 2;
     _drawDashedLine(canvas, Offset(midX, 0), Offset(midX, size.height),
         neutralColor.withValues(alpha: 0.3));
+
+    canvas.save();
+    canvas
+        .clipRect(Rect.fromLTWH(0, 0, size.width * reveal.value, size.height));
 
     final abovePaint = Paint()
       ..shader = LinearGradient(
@@ -176,6 +263,7 @@ class _MomentumPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
     canvas.drawPath(path, linePaint);
+    canvas.restore();
   }
 
   // Fills the trapezoid between [a]→[b] and the zero baseline, splitting at
@@ -244,5 +332,6 @@ class _MomentumPainter extends CustomPainter {
       oldDelegate.values != values ||
       oldDelegate.neutralColor != neutralColor ||
       oldDelegate.homeColor != homeColor ||
-      oldDelegate.awayColor != awayColor;
+      oldDelegate.awayColor != awayColor ||
+      oldDelegate.reveal != reveal;
 }
