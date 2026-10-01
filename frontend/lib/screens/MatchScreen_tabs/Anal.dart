@@ -635,6 +635,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       containerKey: const ValueKey('match-analysis-team-toggle'),
       indicatorSurfaceKey:
           const ValueKey('match-analysis-team-toggle-indicator'),
+      lightTrackColor: const Color(0xFFF4F4F4),
       value: showHome,
       options: [
         AppSegmentedToggleOption(

@@ -456,9 +456,24 @@ void main() {
     final teamToggleIndicator = tester.widget<DecoratedBox>(
       find.byKey(const ValueKey('match-analysis-team-toggle-indicator')).first,
     );
+    final teamToggleTrack = tester.widget<Container>(
+      find.byKey(const ValueKey('match-analysis-team-toggle')).first,
+    );
+    expect((teamToggleTrack.decoration as BoxDecoration).color,
+        const Color(0xFFF4F4F4));
+    expect(homeToggle.padding, const EdgeInsets.all(8));
+    expect(awayToggle.padding, const EdgeInsets.all(8));
     expect(
       (teamToggleIndicator.decoration as BoxDecoration).color,
       app_style.AppPalette.lightModeDarkGrey,
+    );
+    expect(
+      (teamToggleIndicator.decoration as BoxDecoration).border?.top.color,
+      const Color(0xFFF4F4F4),
+    );
+    expect(
+      (teamToggleIndicator.decoration as BoxDecoration).border?.top.width,
+      2,
     );
     expect(
       awayPossessionFill.color,
