@@ -14,6 +14,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/match_tactical_analysis.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
+import 'package:onetouch/features/match_info/match_motion.dart';
 import 'package:onetouch/features/match_info/match_status_label.dart';
 
 import 'match_event_view_data.dart';
@@ -321,13 +322,27 @@ class _AnalysisTabState extends State<AnalysisTab> {
         : teamNameLabel(context, team.teamId, team.name, short: true);
   }
 
-  List<MatchShot> get _selectedShots => (_shotMap?.shots ?? const <MatchShot>[])
-      .where(
-        (shot) =>
-            shot.teamId ==
-            (showHome ? widget.fixture.homeTeamId : widget.fixture.awayTeamId),
-      )
-      .toList(growable: false);
+  List<MatchShot> get _selectedShots {
+    final selected = (_shotMap?.shots ?? const <MatchShot>[])
+        .asMap()
+        .entries
+        .where(
+          (entry) =>
+              entry.value.teamId ==
+              (showHome
+                  ? widget.fixture.homeTeamId
+                  : widget.fixture.awayTeamId),
+        )
+        .toList();
+    selected.sort((a, b) {
+      final minute = a.value.minute.compareTo(b.value.minute);
+      if (minute != 0) return minute;
+      final extra =
+          (a.value.extraMinute ?? 0).compareTo(b.value.extraMinute ?? 0);
+      return extra != 0 ? extra : a.key.compareTo(b.key);
+    });
+    return [for (final entry in selected) entry.value];
+  }
 
   List<ShotMapPlot> get _selectedShotPlots => [
         for (final shot in _selectedShots)
@@ -403,6 +418,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 const SizedBox(height: 24),
                 if (_shotMap?.available == true) ...[
                   ShotMapDiagram(
+                    key: ValueKey('match-attack-shot-map-$showHome'),
                     shots: _selectedShotPlots,
                     color: selectedTeamColor,
                     lineColor: foreground.withValues(alpha: 0.30),
@@ -914,7 +930,7 @@ class ShotMapPlot {
 const double shotMapMarkerRadius = 5;
 
 // Half-pitch shot map: goal along the bottom edge.
-class ShotMapDiagram extends StatelessWidget {
+class ShotMapDiagram extends StatefulWidget {
   final List<ShotMapPlot> shots;
   final Color color;
   final Color lineColor;
@@ -926,10 +942,99 @@ class ShotMapDiagram extends StatelessWidget {
   });
 
   @override
+  State<ShotMapDiagram> createState() => _ShotMapDiagramState();
+}
+
+class _ShotMapDiagramState extends State<ShotMapDiagram>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _reveal = AnimationController(
+    vsync: this,
+    duration: Duration(
+      milliseconds: matchShotTimelineDurationMs(widget.shots.length),
+    ),
+    value: widget.shots.isEmpty ? 1 : 0,
+  );
+  final List<ScrollPosition> _scrollPositions = [];
+  bool _started = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startIfVisible());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    for (final position in _scrollPositions) {
+      position.removeListener(_startIfVisible);
+    }
+    _scrollPositions.clear();
+    context.visitAncestorElements((element) {
+      if (element is StatefulElement && element.state is ScrollableState) {
+        final position = (element.state as ScrollableState).position;
+        _scrollPositions.add(position);
+        position.addListener(_startIfVisible);
+      }
+      return true;
+    });
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _started = true;
+      _reveal.value = 1;
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _startIfVisible());
+    }
+  }
+
+  @override
+  void didUpdateWidget(ShotMapDiagram oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.shots.length != widget.shots.length) {
+      _reveal.duration = Duration(
+        milliseconds: matchShotTimelineDurationMs(widget.shots.length),
+      );
+    }
+    if (oldWidget.shots.isEmpty &&
+        widget.shots.isNotEmpty &&
+        !MediaQuery.disableAnimationsOf(context)) {
+      _started = false;
+      _reveal.value = 0;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _startIfVisible());
+    }
+  }
+
+  void _startIfVisible() {
+    if (!mounted || _started || widget.shots.isEmpty) return;
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    final top = box.localToGlobal(Offset.zero).dy;
+    final height = MediaQuery.sizeOf(context).height;
+    if (top >= height || top + box.size.height <= 0) return;
+    _started = true;
+    _reveal.forward();
+  }
+
+  @override
+  void dispose() {
+    for (final position in _scrollPositions) {
+      position.removeListener(_startIfVisible);
+    }
+    _reveal.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1.2,
-      child: CustomPaint(painter: _ShotMapPainter(shots, color, lineColor)),
+      child: CustomPaint(
+        painter: _ShotMapPainter(
+          widget.shots,
+          widget.color,
+          widget.lineColor,
+          _reveal,
+        ),
+      ),
     );
   }
 }
@@ -938,7 +1043,9 @@ class _ShotMapPainter extends CustomPainter {
   final List<ShotMapPlot> shots;
   final Color color;
   final Color lineColor;
-  const _ShotMapPainter(this.shots, this.color, this.lineColor);
+  final Animation<double> reveal;
+  const _ShotMapPainter(this.shots, this.color, this.lineColor, this.reveal)
+      : super(repaint: reveal);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -982,11 +1089,27 @@ class _ShotMapPainter extends CustomPainter {
     );
 
     final dashPaint = Paint()
-      ..color = color.withValues(alpha: 0.5)
+      ..color = Colors.white
       ..strokeWidth = 1;
     final dotPaint = Paint()..color = color;
 
-    for (final shot in shots) {
+    final totalMs = matchShotTimelineDurationMs(shots.length);
+    for (var index = 0; index < shots.length; index++) {
+      final startMs = index * matchShotStaggerMs;
+      final dotProgress = matchMotionSegmentProgress(
+        reveal.value,
+        totalMs: totalMs,
+        startMs: startMs,
+        durationMs: matchShotCircleDurationMs,
+      );
+      if (dotProgress == 0) break;
+      final lineProgress = matchMotionSegmentProgress(
+        reveal.value,
+        totalMs: totalMs,
+        startMs: startMs + matchShotLineDelayMs,
+        durationMs: matchShotCircleDurationMs,
+      );
+      final shot = shots[index];
       final start = Offset(
         shot.start.dx * size.width,
         shot.start.dy * size.height,
@@ -995,8 +1118,17 @@ class _ShotMapPainter extends CustomPainter {
         shot.end.dx * size.width,
         shot.end.dy * size.height,
       );
-      _drawDashedLine(canvas, start, end, dashPaint);
-      canvas.drawCircle(start, shotMapMarkerRadius, dotPaint);
+      if (lineProgress > 0) {
+        _drawDashedLine(
+          canvas,
+          start,
+          Offset.lerp(start, end, lineProgress)!,
+          dashPaint,
+        );
+      }
+      if (dotProgress > 0) {
+        canvas.drawCircle(start, shotMapMarkerRadius * dotProgress, dotPaint);
+      }
     }
   }
 
@@ -1004,7 +1136,8 @@ class _ShotMapPainter extends CustomPainter {
   bool shouldRepaint(covariant _ShotMapPainter oldDelegate) =>
       oldDelegate.shots != shots ||
       oldDelegate.color != color ||
-      oldDelegate.lineColor != lineColor;
+      oldDelegate.lineColor != lineColor ||
+      oldDelegate.reveal != reveal;
 }
 
 // Channel progression: three gradient arrows with labels near their tips.
@@ -1023,19 +1156,102 @@ class ProgressionDiagram extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 594 / 320,
-      child: CustomPaint(
-        painter: _ProgressionPainter(
-          lanePercents,
-          color,
-          labelColor,
-          Theme.of(context).colorScheme.onSurface,
-          rightToLeft,
+    return _RevealWhenVisible(
+      key: ValueKey('progression-reveal-$rightToLeft'),
+      duration: const Duration(milliseconds: matchProgressionTimelineMs),
+      builder: (reveal) => AspectRatio(
+        aspectRatio: 594 / 320,
+        child: CustomPaint(
+          painter: _ProgressionPainter(
+            lanePercents,
+            color,
+            labelColor,
+            Theme.of(context).colorScheme.onSurface,
+            rightToLeft,
+            reveal,
+          ),
         ),
       ),
     );
   }
+}
+
+// Starts once when a diagram reaches the viewport; a team-direction key
+// replaces this state so switching teams plays the new arrows from the start.
+class _RevealWhenVisible extends StatefulWidget {
+  const _RevealWhenVisible({
+    super.key,
+    required this.duration,
+    required this.builder,
+  });
+
+  final Duration duration;
+  final Widget Function(Animation<double>) builder;
+
+  @override
+  State<_RevealWhenVisible> createState() => _RevealWhenVisibleState();
+}
+
+class _RevealWhenVisibleState extends State<_RevealWhenVisible>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _reveal = AnimationController(
+    vsync: this,
+    duration: widget.duration,
+  );
+  final List<ScrollPosition> _scrollPositions = [];
+  bool _started = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startIfVisible());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    for (final position in _scrollPositions) {
+      position.removeListener(_startIfVisible);
+    }
+    _scrollPositions.clear();
+    context.visitAncestorElements((element) {
+      if (element is StatefulElement && element.state is ScrollableState) {
+        final position = (element.state as ScrollableState).position;
+        _scrollPositions.add(position);
+        position.addListener(_startIfVisible);
+      }
+      return true;
+    });
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _started = true;
+      _reveal.value = 1;
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _startIfVisible());
+    }
+  }
+
+  void _startIfVisible() {
+    if (!mounted || _started) return;
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    final top = box.localToGlobal(Offset.zero).dy;
+    final height = MediaQuery.sizeOf(context).height;
+    if (top >= height || top + box.size.height <= 0) return;
+    _started = true;
+    _reveal.forward();
+  }
+
+  @override
+  void dispose() {
+    for (final position in _scrollPositions) {
+      position.removeListener(_startIfVisible);
+    }
+    _reveal.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(_reveal);
 }
 
 class _ProgressionPainter extends CustomPainter {
@@ -1044,8 +1260,10 @@ class _ProgressionPainter extends CustomPainter {
   final Color color;
   final Color labelColor;
   final Color lineColor;
+  final Animation<double> reveal;
   const _ProgressionPainter(this.lanePercents, this.color, this.labelColor,
-      this.lineColor, this.rightToLeft);
+      this.lineColor, this.rightToLeft, this.reveal)
+      : super(repaint: reveal);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1101,6 +1319,13 @@ class _ProgressionPainter extends CustomPainter {
     final laneHeight = size.height / 3;
     final headWidth = size.width * 0.10;
     for (var i = 0; i < values.length; i++) {
+      final progress = matchMotionSegmentProgress(
+        reveal.value,
+        totalMs: matchProgressionTimelineMs,
+        startMs: i * matchArrowStaggerMs,
+        durationMs: matchMotionDurationMs,
+      );
+      if (progress == 0) break;
       final midY = laneHeight * (i + 0.5);
       // A minimum shaft width keeps even small percentages legible.
       final relative = maximum == 0 ? 0.0 : values[i] / maximum;
@@ -1118,6 +1343,13 @@ class _ProgressionPainter extends CustomPainter {
         ..lineTo(0, midY + shaftHalf)
         ..close();
       final bounds = Rect.fromLTWH(0, midY - headHalf, tip, headHalf * 2);
+      canvas.save();
+      canvas.clipRect(Rect.fromLTWH(
+        rightToLeft ? size.width - tip * progress : 0,
+        midY - headHalf,
+        tip * progress,
+        headHalf * 2,
+      ));
       canvas.save();
       if (rightToLeft) {
         canvas.translate(size.width, 0);
@@ -1150,6 +1382,7 @@ class _ProgressionPainter extends CustomPainter {
                 : shoulder - size.width * 0.02 - label.width,
             midY - label.height / 2,
           ));
+      canvas.restore();
     }
   }
 
@@ -1159,7 +1392,8 @@ class _ProgressionPainter extends CustomPainter {
       oldDelegate.lanePercents != lanePercents ||
       oldDelegate.color != color ||
       oldDelegate.lineColor != lineColor ||
-      oldDelegate.labelColor != labelColor;
+      oldDelegate.labelColor != labelColor ||
+      oldDelegate.reveal != reveal;
 }
 
 // Team-relative recovery distribution across the defensive, middle, and
@@ -1180,17 +1414,22 @@ class DefenseTerritoryDiagram extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(5),
-      child: AspectRatio(
-        key: const ValueKey('match-defense-territory'),
-        aspectRatio: 1.6,
-        child: CustomPaint(
-          painter: _DefenseTerritoryPainter(
-            zoneDeltas,
-            selectedTeamColor,
-            lineColor,
-            rightToLeft,
+    return _RevealWhenVisible(
+      key: ValueKey('defense-reveal-$rightToLeft'),
+      duration: const Duration(milliseconds: matchMotionDurationMs),
+      builder: (reveal) => ClipRRect(
+        borderRadius: BorderRadius.circular(5),
+        child: AspectRatio(
+          key: const ValueKey('match-defense-territory'),
+          aspectRatio: 1.6,
+          child: CustomPaint(
+            painter: _DefenseTerritoryPainter(
+              zoneDeltas,
+              selectedTeamColor,
+              lineColor,
+              rightToLeft,
+              reveal,
+            ),
           ),
         ),
       ),
@@ -1203,23 +1442,31 @@ class _DefenseTerritoryPainter extends CustomPainter {
   final Color selectedTeamColor;
   final Color lineColor;
   final bool rightToLeft;
+  final Animation<double> reveal;
   const _DefenseTerritoryPainter(
     this.zoneDeltas,
     this.selectedTeamColor,
     this.lineColor,
     this.rightToLeft,
-  );
+    this.reveal,
+  ) : super(repaint: reveal);
 
   @override
   void paint(Canvas canvas, Size size) {
     final zoneWidth = size.width / 3;
+    final arrowProgress = matchMotionCurve.transform(reveal.value);
     for (var index = 0; index < 3; index += 1) {
       final delta = zoneDeltas[index];
+      final zoneReveal = defenseTerritoryZoneReveal(
+        arrowProgress,
+        index,
+        rightToLeft: rightToLeft,
+      );
       canvas.drawRect(
         Rect.fromLTWH(index * zoneWidth, 0, zoneWidth, size.height),
         Paint()
           ..color = selectedTeamColor.withValues(
-            alpha: defenseTerritoryOpacity(delta),
+            alpha: defenseTerritoryOpacity(delta) * zoneReveal,
           ),
       );
     }
@@ -1239,7 +1486,7 @@ class _DefenseTerritoryPainter extends CustomPainter {
     }
     canvas.drawCircle(
       Offset(size.width / 2, size.height / 2),
-      size.height * 0.17,
+      size.height * defenseTerritoryCenterCircleRadiusFraction,
       line,
     );
 
@@ -1274,6 +1521,12 @@ class _DefenseTerritoryPainter extends CustomPainter {
       canvas.translate(size.width, 0);
       canvas.scale(-1, 1);
     }
+    canvas.clipRect(Rect.fromLTWH(
+      arrowShaft.left,
+      arrowHeadTop,
+      arrowBounds.width * arrowProgress,
+      arrowBounds.height,
+    ));
     canvas.drawRect(arrowShaft, arrowPaint);
     canvas.drawPath(
       Path()
@@ -1287,13 +1540,20 @@ class _DefenseTerritoryPainter extends CustomPainter {
 
     for (var index = 0; index < 3; index += 1) {
       final value = zoneDeltas[index];
+      final zoneReveal = defenseTerritoryZoneReveal(
+        arrowProgress,
+        index,
+        rightToLeft: rightToLeft,
+      );
       final label = value >= 0
           ? '+${value.toStringAsFixed(1)}%'
           : '${value.toStringAsFixed(1)}%';
       final text = TextPainter(
         text: TextSpan(
           text: label,
-          style: Heading4.style.copyWith(color: AppPalette.white),
+          style: Heading4.style.copyWith(
+            color: AppPalette.white.withValues(alpha: zoneReveal),
+          ),
         ),
         textDirection: TextDirection.ltr,
       )..layout(maxWidth: zoneWidth);
@@ -1315,14 +1575,19 @@ class _DefenseTerritoryPainter extends CustomPainter {
       oldDelegate.zoneDeltas != zoneDeltas ||
       oldDelegate.selectedTeamColor != selectedTeamColor ||
       oldDelegate.lineColor != lineColor ||
-      oldDelegate.rightToLeft != rightToLeft;
+      oldDelegate.rightToLeft != rightToLeft ||
+      oldDelegate.reveal != reveal;
 }
 
 double defenseTerritoryOpacity(double zoneDelta) =>
     (0.5 + zoneDelta / 100).clamp(0.0, 1.0).toDouble();
 
+double defenseTerritoryZoneReveal(double progress, int index,
+        {required bool rightToLeft}) =>
+    (progress * 3 - (rightToLeft ? 2 - index : index)).clamp(0.0, 1.0);
+
 const double defenseTerritoryArrowShaftWidth = 233;
-const double defenseTerritoryArrowShaftHeight = 28;
+const double defenseTerritoryCenterCircleRadiusFraction = 0.17;
 const double defenseTerritoryArrowHeadWidth = 36;
 const double defenseTerritoryArrowHorizontalInset = 8;
 const double defenseTerritoryLabelGap = 8;
@@ -1345,7 +1610,7 @@ Rect defenseTerritoryArrowShaftRect(Size size) {
     (size.width - totalArrowWidth) / 2,
     size.height / 2,
     width,
-    defenseTerritoryArrowShaftHeight,
+    size.height * defenseTerritoryCenterCircleRadiusFraction,
   );
 }
 

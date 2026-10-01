@@ -463,6 +463,7 @@ void main() {
     expect(statistics.awayColor, const Color(0xFF18539F));
     expect(momentum.homeColor, const Color(0xFFD92455));
     expect(momentum.awayColor, const Color(0xFF18539F));
+    expect(momentum.animate, isTrue);
     expect(
       tester
           .widget<Container>(
