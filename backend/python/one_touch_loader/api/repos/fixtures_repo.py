@@ -216,10 +216,11 @@ def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
         (fixture_id,),
     )
     fixture["player_statistics"] = build_player_statistics(
-        fixture["lineups"], player_stat_rows, fixture["player_expected_goals"],
+        fixture["lineups"], player_stat_rows, fixture["player_expected_goals"], fixture,
     )
     fixture["statistics"].extend(build_team_player_statistics(
         [fixture["home_team_id"], fixture["away_team_id"]], fixture["lineups"], player_stat_rows,
+        fixture["statistics"],
     ))
     return fixture
 

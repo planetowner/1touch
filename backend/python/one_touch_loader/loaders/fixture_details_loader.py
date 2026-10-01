@@ -144,7 +144,8 @@ def normalize_fixture_lineups(payload: Dict, fixture_id: int) -> Dict[str, List[
         player_stats.extend(
             (fixture_id, lineup["team_id"], _canonical_player_id(lineup["player_id"]), type_id, value)
             for type_id, value in details.items()
-            if type_id in STORED_STAT_TYPE_IDS and value is not None
+            # 명시적인 null을 남겨야 생략된 0회와 미제공 값을 조회할 때 구분할 수 있어요.
+            if type_id in STORED_STAT_TYPE_IDS
         )
     formations = [
         (fixture_id, formation["participant_id"], formation["formation"])

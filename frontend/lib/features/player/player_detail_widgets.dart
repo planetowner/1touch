@@ -256,10 +256,7 @@ class PlayerDetailMatchCard extends StatelessWidget {
                 for (final metric in match.metrics)
                   (
                     label: metric.label,
-                    value: playerMetricValue(
-                      metric,
-                      zeroForMissingCount: true,
-                    ),
+                    value: playerMetricValue(metric),
                   )
               ],
               rating: match.rating?.toStringAsFixed(1) ?? '—')));

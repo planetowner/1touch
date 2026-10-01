@@ -25,7 +25,8 @@ class PartialFixtureStatisticsTests(unittest.TestCase):
             CREATE TABLE stages (stage_id INTEGER, season_id INTEGER);
             CREATE TABLE rounds (round_id INTEGER, name TEXT);
             CREATE TABLE fixtures (fixture_id INTEGER PRIMARY KEY, stage_id INTEGER,
-                round_id INTEGER, state_id INTEGER, home_team_id INTEGER, away_team_id INTEGER);
+                round_id INTEGER, state_id INTEGER, home_team_id INTEGER, away_team_id INTEGER,
+                home_score INTEGER, away_score INTEGER);
             CREATE TABLE fixture_stat_types (stat_type_id INTEGER PRIMARY KEY, code TEXT UNIQUE);
             CREATE TABLE fixture_team_stats (fixture_id INTEGER, team_id INTEGER,
                 stat_type_id INTEGER, stat_value REAL NOT NULL,
@@ -43,7 +44,7 @@ class PartialFixtureStatisticsTests(unittest.TestCase):
         self.db.close()
 
     def add_stats(self, fixture_id, team_id, stats):
-        self.db.execute("INSERT OR IGNORE INTO fixtures VALUES (?, 100, 1000, 5, 1, 2)", (fixture_id,))
+        self.db.execute("INSERT OR IGNORE INTO fixtures VALUES (?, 100, 1000, 5, 1, 2, NULL, NULL)", (fixture_id,))
         for code, value in stats.items():
             self.db.execute("INSERT OR IGNORE INTO fixture_stat_types (code) VALUES (?)", (code,))
             type_id = self.db.execute("SELECT stat_type_id FROM fixture_stat_types WHERE code=?", (code,)).fetchone()[0]
@@ -117,6 +118,33 @@ class PartialFixtureStatisticsTests(unittest.TestCase):
     def test_standing_without_statistics_has_null_features(self):
         row = self.feature_row()
         self.assertTrue(all(row[feature] is None for feature in ALL_FEATURES))
+
+    def test_score_confirmed_goalless_match_stays_in_finishing_and_defending(self):
+        # 발렌시아–셀타 0–0처럼 goals만 생략된 경기도 슈팅과 실점의 분모에 포함해요.
+        stats = {"shots-total": 8, "shots-insidebox": 4, "shots-on-target": 2,
+                 "big-chances-created": 1, "dangerous-attacks": 24}
+        self.add_stats(1, 1, stats)
+        self.add_stats(2, 1, dict(stats, goals=2))
+        self.db.execute("UPDATE fixtures SET home_score=0,away_score=0 WHERE fixture_id=1")
+        self.assertAlmostEqual(self.feature_row(1)["conversion_rate"], 2 / 16)
+        self.assertEqual(self.feature_row(2)["goals_against_per_match"], 1)
+        self.assertEqual(self.feature_row(2)["shots_on_target_against_per_match"], 2)
+
+    def test_goals_zero_uses_own_score_and_preserves_unknown_or_recorded_values(self):
+        stats = {"shots-total": 8, "shots-insidebox": 4, "shots-on-target": 2,
+                 "big-chances-created": 1, "dangerous-attacks": 24}
+        for team_id in (1, 2):
+            self.add_stats(1, team_id, stats)
+        self.db.execute("UPDATE fixtures SET home_score=0,away_score=2")
+        self.assertEqual(self.feature_row(1)["conversion_rate"], 0)
+        self.assertIsNone(self.feature_row(2)["conversion_rate"])
+        self.assertIsNone(self.feature_row(1)["goals_against_per_match"])
+        self.assertEqual(self.feature_row(2)["goals_against_per_match"], 0)
+        self.db.execute("UPDATE fixtures SET home_score=NULL")
+        self.assertIsNone(self.feature_row(1)["conversion_rate"])
+        self.add_stats(2, 1, dict(stats, goals=1))
+        self.db.execute("UPDATE fixtures SET home_score=0 WHERE fixture_id=2")
+        self.assertAlmostEqual(self.feature_row(1)["conversion_rate"], 1 / 8)
 
 
 def feature_frame():

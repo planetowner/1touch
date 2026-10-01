@@ -8,6 +8,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/screens/all_players_screen.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
@@ -20,6 +21,26 @@ import 'support/player_detail_fixture.dart';
 
 void main() {
   setUpAppCatalog();
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets(
+        'match card preserves unknown counts and confirmed zero at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final json = playerDetailJson();
+      json['matches'][0]['metrics'][0]['value'] = 0;
+      json['matches'][0]['metrics'][1]['value'] = null;
+      final match = playerDetailFromJson(json).matches.first;
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(body: PlayerDetailMatchCard(match: match)),
+      ));
+      await tester.pumpAndSettle();
+      final card = tester.widget<PlayerMatchCard>(find.byType(PlayerMatchCard));
+      expect(card.stats[0].value, '0');
+      expect(card.stats[1].value, '—');
+      expect(tester.takeException(), isNull);
+    });
+  }
   final player = playerRepository.findById('lee-kang-in')!;
   for (final (role, theme, size) in [
     (TeamLeadershipRole.captain, app_style.darktheme, const Size(320, 568)),

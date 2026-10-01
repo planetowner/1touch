@@ -7,14 +7,13 @@ String playerNumber(double? value, {int decimals = 2}) {
   return value.toStringAsFixed(decimals).replaceFirst(RegExp(r'\.?0+$'), '');
 }
 
-String playerMetricValue(FixturePlayerStatMetric metric,
-    {bool zeroForMissingCount = false}) {
+String playerMetricValue(FixturePlayerStatMetric metric) {
   if (metric.kind == 'pair') {
     if (metric.numerator == null || metric.denominator == null) return '—';
     return '${playerNumber(metric.numerator)} / ${playerNumber(metric.denominator)}';
   }
   if (metric.value == null) {
-    return zeroForMissingCount && metric.kind == 'count' ? '0' : '—';
+    return '—';
   }
   return '${playerNumber(metric.value)}${metric.kind == 'percentage' ? '%' : ''}';
 }

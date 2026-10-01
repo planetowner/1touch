@@ -15,7 +15,8 @@ from diagnostics import test_fixture_details as existing
 from one_touch_loader.api.deps import get_user_id
 from one_touch_loader.api.routes import fixtures as routes
 from one_touch_loader.core.player_match_metrics import (
-    CATEGORIES, METRICS, STORED_STAT_TYPE_IDS, build_player_statistics, build_team_player_statistics,
+    CATEGORIES, COVERAGE_COUNT_TYPES, METRICS, STORED_STAT_TYPE_IDS,
+    build_player_statistics, build_team_player_statistics, normalize_player_counts,
 )
 from one_touch_loader.loaders import fixture_details_loader as loader
 
@@ -50,6 +51,36 @@ def build_team_touches(team_ids, lineups, stats):
 
 
 class PlayerMetricTests(unittest.TestCase):
+    def test_collected_types_distinguish_sparse_zero_null_and_unsupported_counts(self):
+        for type_id in COVERAGE_COUNT_TYPES:
+            with self.subTest(type_id=type_id):
+                self.assertEqual(normalize_player_counts({120: 20}, {type_id})[type_id], 0)
+                self.assertNotIn(type_id, normalize_player_counts({120: 20}))
+                self.assertIsNone(normalize_player_counts({120: 20, type_id: None}, {type_id})[type_id])
+                self.assertNotIn(type_id, normalize_player_counts({}, {type_id}))
+
+    def test_player_sheet_uses_other_players_coverage_without_changing_identity(self):
+        lineups = [dict(team_id=team, player_id=1, match_position_id=27,
+                        minutes_played=90, rating=7) for team in (10, 20)]
+        rows = [dict(team_id=team, player_id=1, stat_type_id=t, value=v)
+                for team, values in [(10, {120: 60, 108: 3}), (20, {120: 50, 109: 2, 27271: 3})]
+                for t, v in values.items()]
+        home, away = build_player_statistics(lineups, rows, [])
+        self.assertEqual(metrics(home)["dribble_success_rate"]["value"], 0)
+        self.assertEqual(metrics(home)["ball_recoveries"]["value"], 0)
+        self.assertEqual(metrics(away)["ball_recoveries"]["value"], 3)
+        rows.append(dict(team_id=10, player_id=1, stat_type_id=109, value=None))
+        self.assertIsNone(metrics(build_player_statistics(lineups, rows, [])[0])["dribble_success_rate"]["value"])
+
+    def test_clean_sheet_uses_the_correct_opponent_score(self):
+        lineups = [dict(team_id=team, player_id=1, match_position_id=24,
+                        minutes_played=90, rating=7) for team in (10, 20)]
+        rows = [dict(team_id=team, player_id=1, stat_type_id=120, value=30) for team in (10, 20)]
+        home, away = build_player_statistics(lineups, rows, [],
+            dict(home_team_id=10, away_team_id=20, home_score=4, away_score=0))
+        self.assertEqual(metrics(home)["goals_conceded"]["value"], 0)
+        self.assertIsNone(metrics(away)["goals_conceded"]["value"])
+
     def test_actual_response_maps_positions_counts_ratios_and_understat_xg(self):
         gk, df, mf, fw = output_for(SAMPLE["cases"][0])
         self.assertEqual([p["position_group"] for p in (gk, df, mf, fw)], ["GK", "DF", "MF", "FW"])
@@ -188,6 +219,15 @@ class TeamTouchesTests(unittest.TestCase):
 
 
 class TeamBlocksTests(unittest.TestCase):
+    def test_missing_blocks_become_zero_only_with_explicit_opponent_zero(self):
+        def values(team_stats):
+            return {r["team_id"]: r["value"] for r in build_team_player_statistics(
+                [10, 20], [], [], team_stats) if r["stat_type_id"] == 97}
+        self.assertEqual(values([dict(team_id=20, stat_type_id=58, value=0)]), {10: 0, 20: None})
+        for value in (3, None):
+            self.assertEqual(values([dict(team_id=20, stat_type_id=58, value=value)]), {10: None, 20: None})
+        self.assertEqual(values([dict(team_id=30, stat_type_id=58, value=0)]), {10: None, 20: None})
+
     @staticmethod
     def blocks(team_ids, lineups, stats):
         return {row["team_id"]: row["value"]
@@ -224,6 +264,13 @@ class TeamBlocksTests(unittest.TestCase):
         self.assertEqual(self.blocks([10], [], []), {10: None})
         self.assertEqual(self.blocks([10], lineups, []), {10: None})
 
+    def test_explicit_null_block_prevents_a_partial_team_total(self):
+        lineups = [dict(team_id=10, player_id=pid, lineup_type_id=11, minutes_played=90) for pid in (1, 2)]
+        stats = [dict(team_id=10, player_id=1, stat_type_id=97, value=3)]
+        self.assertEqual(self.blocks([10], lineups, stats), {10: 3})
+        stats.append(dict(team_id=10, player_id=2, stat_type_id=97, value=None))
+        self.assertEqual(self.blocks([10], lineups, stats), {10: None})
+
     def test_http_statistics_exposes_blocks_count_and_missing_value(self):
         app = FastAPI()
         app.include_router(routes.router, prefix="/v1")
@@ -244,6 +291,19 @@ class TeamBlocksTests(unittest.TestCase):
 class PlayerMetricStorageTests(unittest.TestCase):
     setUp = existing.FixtureDetailsStorageTests.setUp
     tearDown = existing.FixtureDetailsStorageTests.tearDown
+
+    def test_explicit_null_survives_storage_and_is_not_a_sparse_zero(self):
+        payload = existing._payload()
+        payload["lineups"][0]["details"].extend([
+            {"type_id": 120, "data": {"value": 20}},
+            {"type_id": 79, "data": {"value": None}},
+        ])
+        loader.replace_fixture_detail_rows(500, loader.normalize_fixture_lineups(payload, 500), payload["lineups"])
+        values = dict(self.connection.execute("SELECT stat_type_id,stat_value FROM fixture_player_stats"))
+        self.assertIn(79, values)
+        normalized = normalize_player_counts(values)
+        self.assertIsNone(normalized[79])
+        self.assertEqual(normalized[52], 0)
 
     def test_replace_drops_removed_values_and_keeps_explicit_zero(self):
         payload = existing._payload()
@@ -285,7 +345,7 @@ class PlayerMetricStorageTests(unittest.TestCase):
                 loader.replace_fixture_detail_rows(500, rows, payload["lineups"])
             self.assertEqual(self.connection.execute(
                 "SELECT stat_type_id,stat_value FROM fixture_player_stats"
-            ).fetchall(), [(97, value)] if value is not None else [])
+            ).fetchall(), [(97, value)])
 
     def test_real_provider_rows_round_trip_without_losing_values(self):
         for case in SAMPLE["cases"]:

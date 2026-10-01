@@ -12,7 +12,7 @@ from ...core.player_detail import (
     MINIMUM_REFERENCE_MINUTES, build_career, current_player_team, dominant_position, match_cards,
     rank_categories, season_categories, stat_index, summarize,
 )
-from ...core.player_match_metrics import POSITION_GROUPS
+from ...core.player_match_metrics import COVERAGE_COUNT_TYPES, POSITION_GROUPS
 from ...core.football_names import korean_name_ids
 from ...core.player_appearances import APPEARED, MATCH_FROM
 from ...core.player_ranking import season_player_positions
@@ -32,6 +32,19 @@ JOIN teams t ON t.team_id=fl.team_id
 LEFT JOIN teams op ON op.team_id=IF(fl.team_id=f.home_team_id,f.away_team_id,f.home_team_id)
 LEFT JOIN fixture_player_expected_goals x ON x.fixture_id=fl.fixture_id AND x.player_id=fl.player_id
 """
+
+
+def _recorded_player_stat_types(fetch, matches):
+    # 조회 선수·비교 대상만 보면 제공 여부가 달라져요. 같은 경기 전체에서 확인해요.
+    recorded = defaultdict(set)
+    fixture_ids = sorted({r["fixture_id"] for r in matches})
+    if fixture_ids:
+        for row in fetch(f"""SELECT DISTINCT fixture_id,stat_type_id FROM fixture_player_stats
+            WHERE fixture_id IN ({','.join(['%s'] * len(fixture_ids))})
+              AND stat_type_id IN ({','.join(str(t) for t in sorted(COVERAGE_COUNT_TYPES))})
+              AND stat_value IS NOT NULL""", tuple(fixture_ids)):
+            recorded[row["fixture_id"]].add(row["stat_type_id"])
+    return recorded
 
 
 def get_player_rosters(fetch, player_ids):
@@ -106,6 +119,7 @@ def get_player_detail(player_id: int, season_id: int | None = None) -> dict | No
                     JOIN stages st ON st.stage_id=f.stage_id JOIN seasons s ON s.season_id=st.season_id
                     WHERE ps.player_id=%s AND s.name=%s""", (player_id, selected_name))
                 stats = stat_index(stat_rows)
+                recorded_types = _recorded_player_stat_types(fetch, displayed)
                 completed = [r for r in history if r["state_id"] in COMPLETED_STATE_IDS]
                 competitions = fetch("""SELECT DISTINCT s.season_id,s.competition_id,c.name AS competition_name
                     FROM team_seasons ts JOIN seasons s ON s.season_id=ts.season_id
@@ -130,7 +144,7 @@ def get_player_detail(player_id: int, season_id: int | None = None) -> dict | No
                 analysis = _analysis(fetch, player_id, selected, clubs, roster, now) if selected else None
                 return {"player_id": player_id, "profile": profile, "current_season_name": current_name,
                         "current_position": POSITION_GROUPS.get(position), "seasons": seasons, "selected_season": selected,
-                        "competitions": list(comp_map.values()), "matches": match_cards(displayed, position, stats),
+                        "competitions": list(comp_map.values()), "matches": match_cards(displayed, position, stats, recorded_types),
                         "analysis": analysis, "career": build_career(completed), "clubs": clubs, "honours": honours}
         finally:
             conn.rollback()
@@ -155,9 +169,10 @@ def _analysis(fetch, player_id, season, clubs, roster, now):
         FROM fixture_player_stats ps JOIN fixtures f ON f.fixture_id=ps.fixture_id JOIN stages st ON st.stage_id=f.stage_id
         WHERE st.season_id=%s""" + f" AND ps.player_id IN ({','.join(['%s'] * len(stat_players))})", (season["season_id"], *stat_players))
     stats = stat_index(stat_rows)
+    recorded_types = _recorded_player_stat_types(fetch, league)
     own = by_player[player_id]
-    categories = season_categories(position, own, stats)
-    reference = [season_categories(position, by_player[pid], stats) for pid in sorted(eligible)]
+    categories = season_categories(position, own, stats, recorded_types)
+    reference = [season_categories(position, by_player[pid], stats, recorded_types) for pid in sorted(eligible)]
     top = rank_categories(categories, reference, includes_player=summarize(own)["minutes"] >= MINIMUM_REFERENCE_MINUTES)
     teams = {r["team_id"] for r in own} | {r["team_id"] for r in roster if r["season_id"] == season["season_id"]}
     fixtures = fetch(f"""SELECT f.fixture_id,f.home_team_id,f.away_team_id,f.starting_at

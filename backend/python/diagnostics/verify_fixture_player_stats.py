@@ -36,7 +36,7 @@ def verify_schema(*, before: bool, print_report: bool = True) -> dict:
             if not before:
                 expected_stats = list(zip(STAT_COLUMNS,
                     ["bigint unsigned", "bigint unsigned", "bigint unsigned", "int", "decimal(12,4)"],
-                    ["NO"] * 5))
+                    ["NO"] * 4 + ["YES"]))
                 if [(name, kind, nullable) for table, name, kind, nullable in columns
                         if table == "fixture_player_stats"] != expected_stats:
                     raise AssertionError("Unexpected player statistics column types")

@@ -92,6 +92,27 @@ STORED_STAT_TYPE_IDS = frozenset(
     type_id for _, _, type_ids in METRICS.values() for type_id in type_ids
 ) | {MAN_OF_MATCH_TYPE_ID} | frozenset(TEAM_TOTALS)
 
+# 이벤트·선수·팀 기록으로 상세 통계의 0회 생략을 확인한 항목이에요.
+SPARSE_COUNT_TYPES = frozenset({42, 52, 78, 79, 96, 100, 117})
+# 나머지 횟수는 과거 경기에서 아예 제공되지 않기도 해요. 경기별 제공 여부를 확인해요.
+COVERAGE_COUNT_TYPES = frozenset(
+    type_id for _, _, type_ids in METRICS.values() for type_id in type_ids
+) - SPARSE_COUNT_TYPES - {120}
+
+
+def normalize_player_counts(stats: dict, recorded_types=(), *, opponent_score=None) -> dict:
+    """상세 기록의 생략된 횟수만 0으로 읽고, 명시적인 null은 보존해요."""
+    # 평점·출전 시간만 있는 선수는 상세 통계가 수집됐다고 볼 수 없어요.
+    if stats.get(120) is None:
+        return stats
+    # V3는 발생하지 않은 횟수를 생략해요. 추가 지표는 같은 경기의 실제 제공 여부도 확인해요.
+    # https://docs.sportmonks.com/v3/welcome/differences-between-api-2-and-api-3/api-changes#statistics
+    zero_types = SPARSE_COUNT_TYPES | (COVERAGE_COUNT_TYPES & set(recorded_types))
+    # 0–0에서는 양쪽 골키퍼의 실점 기록이 모두 생략돼요. 경기 점수로 무실점을 확인해요.
+    if opponent_score == 0:
+        zero_types = zero_types | {1535}
+    return dict.fromkeys(zero_types, 0) | stats
+
 
 def build_metric(code: str, stats: dict, xg) -> dict:
     label, kind, type_ids = METRICS[code]
@@ -119,7 +140,8 @@ def _stats_by_player(stat_rows: list[dict]) -> dict:
     return by_player
 
 
-def build_team_player_statistics(team_ids: list[int], lineups: list[dict], stat_rows: list[dict]) -> list[dict]:
+def build_team_player_statistics(team_ids: list[int], lineups: list[dict], stat_rows: list[dict],
+                                 team_stats: list[dict] = ()) -> list[dict]:
     """선수 통계를 공급자의 기록 방식에 맞춰 팀 statistics로 합쳐요."""
     by_player = _stats_by_player(stat_rows)
     result = []
@@ -129,13 +151,19 @@ def build_team_player_statistics(team_ids: list[int], lineups: list[dict], stat_
             value = by_player[(lineup["team_id"], lineup["player_id"])].get(type_id)
             # 미출전 벤치는 제외하고, 0분 교체 선수도 기록이 있으면 포함해요.
             if lineup["lineup_type_id"] == 11 or (lineup["minutes_played"] or 0) > 0 or value is not None:
-                if require_all_players or value is not None:
+                # 생략된 블록은 합계에서 빼지만, 명시적인 null은 부분합이 되지 않도록 남겨요.
+                if require_all_players or type_id in by_player[(lineup["team_id"], lineup["player_id"])]:
                     values[lineup["team_id"]].append(value)
         for team_id in team_ids:
             team_values = values[team_id]
             # 19134453처럼 Touches가 일부 빠지면 부분합을 표시하지 않아요.
-            # 블록도 기록 자체가 없으면 미수집·미제공과 0을 구분할 수 없어 null로 남겨요.
             total = sum(team_values) if team_values and all(v is not None for v in team_values) else None
+            # 상대의 막힌 슈팅이 명시적으로 0이면 우리 블록도 0이에요. 양수는 선수 합계를 유지해요.
+            if type_id == 97 and total is None and any(
+                row["team_id"] != team_id and row["team_id"] in team_ids
+                and row["stat_type_id"] == 58 and row["value"] == 0 for row in team_stats
+            ):
+                total = 0
             result.append({"team_id": team_id, "stat_type_id": type_id, "stat_code": code,
                            "stat_name": name, "value": total})
     return result
@@ -149,13 +177,18 @@ def build_categories(position_id: int | None, stats: dict, xg) -> list[dict]:
     ]
 
 
-def build_player_statistics(lineups: list[dict], stat_rows: list[dict], xg_rows: list[dict]) -> list[dict]:
+def build_player_statistics(lineups: list[dict], stat_rows: list[dict], xg_rows: list[dict],
+                            fixture: dict | None = None) -> list[dict]:
     by_player = _stats_by_player(stat_rows)
     xg_by_player = {row["player_id"]: row["xg"] for row in xg_rows}
+    recorded_types = {row["stat_type_id"] for row in stat_rows if row["value"] is not None}
     players = []
+    fixture = fixture or {}
     for lineup in lineups:
         position_id = lineup["match_position_id"]
         stats = by_player[(lineup["team_id"], lineup["player_id"])]
+        opponent_score = fixture.get("away_score" if lineup["team_id"] == fixture.get("home_team_id") else "home_score")
+        stats = normalize_player_counts(stats, recorded_types, opponent_score=opponent_score)
         pom = stats.get(MAN_OF_MATCH_TYPE_ID)
         players.append({
             "team_id": lineup["team_id"], "player_id": lineup["player_id"],

@@ -189,6 +189,47 @@ class PlayerDetailMathTests(unittest.TestCase):
         for code in ("goals", "assists"):
             self.assertEqual(metrics(own)[code]["rank"], 1)
 
+    def test_mbappe_recoveries_and_dribbles_keep_all_seven_matches(self):
+        # 26/27 라리가 7경기: 볼 회수는 2경기, 드리블 성공은 엘체전에서 생략됐어요.
+        recoveries = [None, 3, None, 3, 1, 2, 3]
+        attempts = [4, 4, 8, 10, 7, 3, 5]
+        successes = [3, 3, 7, 5, 4, None, 3]
+        rows = [match(fixture=i) for i in range(1, 8)]
+        stats = defaultdict(dict)
+        for i, (recovery, attempt, success) in enumerate(zip(recoveries, attempts, successes), 1):
+            stats[(i, 8, 1)] = {120: 50, 108: attempt}
+            if recovery is not None:
+                stats[(i, 8, 1)][27271] = recovery
+            if success is not None:
+                stats[(i, 8, 1)][109] = success
+        recorded = {i: {27271, 108, 109} for i in range(1, 8)}
+        values = metrics(season_categories(27, rows, stats, recorded))
+        self.assertAlmostEqual(values["ball_recoveries"]["per90"], 12 / 7)
+        self.assertEqual(values["dribble_success_rate"]["value"], 61)
+        self.assertEqual(values["dribble_success_rate"]["numerator"], 25)
+        self.assertEqual(values["dribble_success_rate"]["denominator"], 41)
+        self.assertEqual(values["ball_recoveries"]["observed_matches"], 7)
+        # 경기 전체의 수집 여부가 없으면 추가 지표를 임의로 0으로 만들지 않아요.
+        self.assertIsNone(metrics(season_categories(27, rows, stats))["ball_recoveries"]["value"])
+        stats[(6, 8, 1)][109] = None
+        self.assertIsNone(metrics(season_categories(27, rows, stats, recorded))["dribble_success_rate"]["value"])
+
+    def test_clean_sheet_is_included_even_when_both_keepers_concede_zero(self):
+        rows = [match(position=24, home_score=0, away_score=0), match(fixture=2, position=24)]
+        stats = defaultdict(dict, {(1, 8, 1): {120: 37}, (2, 8, 1): {120: 30, 1535: 1}})
+        values = metrics(season_categories(24, rows, stats))
+        self.assertEqual(values["goals_conceded"]["value"], 1)
+        self.assertEqual(values["goals_conceded"]["per90"], 0.5)
+        stats[(1, 8, 1)][1535] = None
+        self.assertIsNone(metrics(season_categories(24, rows, stats))["goals_conceded"]["value"])
+
+    def test_match_cards_share_collected_zero_and_unknown_rules(self):
+        rows = [match(position=24)]
+        stats = defaultdict(dict, {(1, 8, 1): {120: 30, 116: None}})
+        card = match_cards(rows, 24, stats, {1: {57, 123, 116}})[0]
+        self.assertEqual([m["value"] for m in card["metrics"]], [0, 0, None])
+        self.assertTrue(all(m["value"] is None for m in match_cards(rows, 24, defaultdict(dict))[0]["metrics"]))
+
     def test_percentages_use_summed_successes_and_attempts(self):
         stats = defaultdict(dict, {(1,8,1): {108: 2, 109: 1}, (2,8,1): {108: 8, 109: 8}})
         row = metrics(season_categories(27, [match(), match(fixture=2)], stats))["dribble_success_rate"]
@@ -262,6 +303,11 @@ class PlayerDetailRepositoryTests(unittest.TestCase):
         queries = []
         def fetch(sql, params):
             queries.append((sql, params))
+            if sql.startswith('SELECT DISTINCT fixture_id,stat_type_id'):
+                self.assertEqual(params, (1, 2, 3, 4, 5))
+                self.assertIn('stat_value IS NOT NULL', sql)
+                self.assertNotIn('player_id IN', sql)
+                return [dict(fixture_id=1, stat_type_id=27271)]
             if sql.startswith(repo.MATCH_SELECT): return own + peer + short_peer
             if sql.startswith('SELECT fl.player_id'): return own + peer + short_peer
             if 'FROM fixture_player_stats' in sql:
