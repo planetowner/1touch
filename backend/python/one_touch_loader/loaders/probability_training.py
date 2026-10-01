@@ -15,17 +15,29 @@ from ..core.fixture_states import COMPLETED_STATE_IDS
 from ..core.probability import WDLModel, evaluate_wdl, fit_wdl
 
 
-TRAIN_SEASONS = ("2023/2024", "2024/2025")
-VALIDATION_SEASON = "2025/2026"
-MODEL_SEASONS = (*TRAIN_SEASONS, VALIDATION_SEASON)
+METHOD = "multinomial_logistic_elo_difference_v1"
+CURRENT_SEASON = "2026/2027"
 BIG5_IDS = (8, 82, 301, 384, 564)
 
 
-def build_dataset(fixtures: list[dict], histories: dict[int, list[dict]]) -> dict:
+def model_seasons(predict_from_season=CURRENT_SEASON):
+    if predict_from_season not in ("2025/2026", CURRENT_SEASON):
+        raise ValueError(f"Unsupported prediction season: {predict_from_season}")
+    year = int(predict_from_season[:4])
+    return tuple(f"{start}/{start + 1}" for start in range(year - 3, year))
+
+
+MODEL_SEASONS = model_seasons()
+TRAIN_SEASONS, VALIDATION_SEASON = MODEL_SEASONS[:2], MODEL_SEASONS[2]
+
+
+def build_dataset(fixtures: list[dict], histories: dict[int, list[dict]], *,
+                  predict_from_season=CURRENT_SEASON) -> dict:
+    seasons = model_seasons(predict_from_season)
     rows, excluded = [], []
     seen = set()
     for fixture in fixtures:
-        if fixture["season_name"] not in MODEL_SEASONS or fixture["competition_id"] not in BIG5_IDS:
+        if fixture["season_name"] not in seasons or fixture["competition_id"] not in BIG5_IDS:
             continue
         if fixture["state_id"] not in COMPLETED_STATE_IDS:
             continue
@@ -55,7 +67,7 @@ def build_dataset(fixtures: list[dict], histories: dict[int, list[dict]]) -> dic
                      "outcome": 0 if home > away else 2 if home < away else 1})
     rows.sort(key=lambda row: (row["starting_at"], row["fixture_id"]))
     coverage = []
-    for season in MODEL_SEASONS:
+    for season in seasons:
         for competition_id in BIG5_IDS:
             available = sum(r["season_name"] == season and r["competition_id"] == competition_id for r in rows)
             missing = sum(r["season_name"] == season and r["competition_id"] == competition_id for r in excluded)
@@ -76,12 +88,14 @@ def _baseline(training):
                      float(np.log(counts[2] / counts[1])), 0.0))
 
 
-def train_and_validate(dataset: dict) -> dict:
+def train_and_validate(dataset: dict, *, predict_from_season=CURRENT_SEASON) -> dict:
+    seasons = model_seasons(predict_from_season)
+    training_seasons, validation_season = seasons[:2], seasons[2]
     rows = dataset["rows"]
-    if any(row["season_name"] not in MODEL_SEASONS for row in rows):
+    if any(row["season_name"] not in seasons for row in rows):
         raise ValueError("Only the approved three past seasons may train the V1 model")
-    training = [r for r in rows if r["season_name"] in TRAIN_SEASONS]
-    validation = [r for r in rows if r["season_name"] == VALIDATION_SEASON]
+    training = [r for r in rows if r["season_name"] in training_seasons]
+    validation = [r for r in rows if r["season_name"] == validation_season]
     if not training or not validation or max(r["starting_at"] for r in training) >= min(r["starting_at"] for r in validation):
         raise ValueError("Validation must be a nonempty later season, never a random split")
     model = fit_wdl(*_inputs(training))
@@ -118,16 +132,16 @@ def train_and_validate(dataset: dict) -> dict:
                                     "predicted_mean": float(probs[selected, outcome].mean()),
                                     "observed_fraction": float(actual[selected, outcome].mean())})
     report = {
-        "method": "multinomial_logistic_elo_difference_v1", "dataset_sha256": data_hash,
-        "validation": {"training_seasons": list(TRAIN_SEASONS), "training_fixtures": len(training),
-                       "season": VALIDATION_SEASON, "model": asdict(model), "metrics": metrics,
+        "method": METHOD, "dataset_sha256": data_hash,
+        "validation": {"training_seasons": list(training_seasons), "training_fixtures": len(training),
+                       "season": validation_season, "model": asdict(model), "metrics": metrics,
                        "frequency_baseline": baseline_metrics, "by_league": leagues,
                        "separate_leagues_log_loss": separate_log_loss / len(validation),
                        "calibration": calibration},
-        "forecast_model": {**asdict(refitted), "training_seasons": list(MODEL_SEASONS),
+        "forecast_model": {**asdict(refitted), "training_seasons": list(seasons),
                            "training_fixtures": len(rows),
                            "last_training_fixture_at": max(r["starting_at"] for r in rows),
-                           "predict_from_season": "2026/2027"},
+                           "predict_from_season": predict_from_season},
         "coverage": dataset["coverage"], "excluded": dataset["excluded"],
         "limitations": ["Excluded historical fixtures can bias coverage", "Historical Elo was retrieved retrospectively",
                         "Future Elo is fixed during each simulation", "Points ties use uniform random order"],

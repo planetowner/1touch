@@ -41,6 +41,49 @@ class Connection:
 
 
 class ProbabilityStorageTests(unittest.TestCase):
+    def test_historical_model_does_not_replace_current_refresh_model(self):
+        self.connection.execute('ALTER TABLE probability_models ADD COLUMN created_at TEXT')
+        self.connection.create_function('JSON_UNQUOTE', 1, lambda value: value)
+        for identifier, season, stamp in [('current', '2026/2027', '2026-09-01'),
+                                           ('previous', '2025/2026', '2026-10-01')]:
+            model = {'model_id': identifier, 'method': 'multinomial_logistic_elo_difference_v1',
+                     'forecast_model': {'predict_from_season': season}}
+            self.connection.execute('INSERT INTO probability_models VALUES (?,?,?)',
+                                    (identifier, json.dumps(model), stamp))
+        def fetch(sql, params=()):
+            cursor = self.connection.execute(sql.replace('%s', '?'), params)
+            return [dict(zip([c[0] for c in cursor.description], row)) for row in cursor.fetchall()]
+        with patch.object(loader, '_fetch', side_effect=fetch):
+            self.assertEqual(loader.latest_model()['model_id'], 'current')
+
+    def test_reconstruct_command_checks_by_default_and_repeated_apply_is_idempotent(self):
+        self.connection.executemany('INSERT INTO teams VALUES (?)', [(1,), (2,)])
+        self.connection.commit()
+        model = {'model_id': 'previous', 'forecast_model': {
+            'predict_from_season': '2025/2026', 'last_training_fixture_at': '2025-05-25 19:00:00',
+            'training_fixtures': 4654}, 'validation': {'metrics': {'fixtures': 1712}}}
+        fixture = {'fixture_id': 10, 'season_id': 2, 'competition_id': 8, 'season_name': '2025/2026',
+                   'home_team_id': 1, 'away_team_id': 2, 'state_id': 5, 'starting_at': '2025-08-15 17:00:00'}
+        histories = {team: [{'date': '2025-08-14', 'elo': 1500}] for team in (1, 2)}
+        with patch.object(loader, 'read_fixtures', return_value=[fixture]) as read, \
+                patch.object(loader, 'read_histories', return_value=histories), \
+                patch.object(loader, 'train_and_validate', return_value=model) as train, \
+                patch('sys.stdout', new=io.StringIO()) as output:
+            command = ['reconstruct-betting', '--season', '2025/2026']
+            loader.main(command)
+            result = json.loads(output.getvalue())
+            self.assertFalse(result['applied'])
+            self.assertEqual(result['available'], 1)
+            self.transaction.assert_not_called()
+            self.assertEqual(read.call_args.args[0], ('2022/2023', '2023/2024', '2024/2025', '2025/2026'))
+            self.assertEqual(train.call_args.kwargs, {'predict_from_season': '2025/2026'})
+            loader.main([*command, '--apply'])
+            loader.main([*command, '--apply'])
+        self.assertEqual(self.connection.execute('SELECT COUNT(*) FROM probability_models').fetchone()[0], 1)
+        self.assertEqual(self.connection.execute('SELECT COUNT(*) FROM probability_runs').fetchone()[0], 1)
+        self.assertEqual(self.connection.execute('SELECT COUNT(*) FROM probability_team_results').fetchone()[0], 2)
+        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM probability_runs WHERE json_extract(payload,'$.market_kind') IS NULL").fetchone()[0], 0)
+
     def test_latest_model_keeps_method_and_timestamp_order_with_large_payloads(self):
         self.connection.execute('ALTER TABLE probability_models ADD COLUMN created_at TEXT')
         self.connection.create_function('JSON_UNQUOTE', 1, lambda value: value)

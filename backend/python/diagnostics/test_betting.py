@@ -5,6 +5,7 @@ from decimal import Decimal
 import json
 import os
 from pathlib import Path
+import sqlite3
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -85,6 +86,94 @@ class BettingRuleTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 422, response.text)
 
 
+class HistoricalPredictionTests(unittest.TestCase):
+    def setUp(self):
+        self.connection = sqlite3.connect(':memory:')
+        self.connection.row_factory = sqlite3.Row
+        self.connection.create_function('JSON_UNQUOTE', 1, lambda value: value)
+        self.addCleanup(self.connection.close)
+        self.connection.executescript('''
+            CREATE TABLE probability_models (model_id TEXT PRIMARY KEY,payload TEXT);
+            CREATE TABLE probability_runs (run_id TEXT PRIMARY KEY,model_id TEXT,season_id INTEGER,
+                as_of TEXT,payload TEXT,created_at TEXT);
+            CREATE TABLE probability_team_results (run_id TEXT,team_id INTEGER,payload TEXT);
+        ''')
+        self.now = datetime(2026, 10, 1)
+        self.fixture = {'fixture_id': 1, 'season_id': 1, 'season_name': '2026/2027',
+                        'competition_id': 564, 'stage_type_id': 223, 'state_id': 5,
+                        'starting_at': datetime(2026, 9, 16, 19, 30),
+                        'home_team_id': 10, 'away_team_id': 20}
+
+    def add_run(self, identifier, stamp, *, kind='reconstructed', season='2026/2027', market=None, away=True):
+        model = {'forecast_model': {'coefficients': [.4, 1.6, 0, -1.6], 'predict_from_season': season}}
+        self.connection.execute('INSERT INTO probability_models VALUES (?,?)', (identifier, json.dumps(model)))
+        payload = {'history_kind': kind}
+        if market is not None:
+            payload['market_kind'] = market
+        self.connection.execute('INSERT INTO probability_runs VALUES (?,?,1,?,?,?)',
+                                (identifier, identifier, stamp, json.dumps(payload), str(self.now)))
+        for team, elo in ((10, 2000), (20, 1750)):
+            if team == 20 and not away:
+                continue
+            self.connection.execute('INSERT INTO probability_team_results VALUES (?,?,?)',
+                                    (identifier, team, json.dumps({'elo': elo})))
+
+    def read_one(self, sql, params=()):
+        row = self.connection.execute(sql.replace('%s', '?'), params).fetchone()
+        return dict(row) if row else None
+
+    def prediction(self):
+        return repo._prediction(self.read_one, self.fixture, self.now)
+
+    def test_completed_match_uses_reconstruction_but_observed_prediction_has_priority(self):
+        self.add_run('restored', '2026-09-16 00:00:00')
+        self.add_run('after', '2026-09-17 00:00:00', kind='observed_calculation')
+        self.assertEqual(self.prediction()['prediction_run_id'], 'restored')
+        self.add_run('before', '2026-09-15 12:00:00', kind='observed_calculation')
+        self.assertEqual(self.prediction()['prediction_run_id'], 'before')
+
+    def test_previous_season_reconstruction_uses_matching_model_and_existing_wdl_calculation(self):
+        self.fixture.update(season_name='2025/2026', starting_at=datetime(2025, 8, 15, 17))
+        self.add_run('wrong-model', '2025-08-15 00:00:00', market=SETTLEMENT_RULE)
+        self.assertIsNone(self.prediction())
+        self.add_run('previous', '2025-08-15 00:00:00', season='2025/2026', market=SETTLEMENT_RULE)
+        prediction = self.prediction()
+        self.assertEqual(prediction['prediction_run_id'], 'previous')
+        self.assertEqual(prediction['options'], prediction_options([.4, 1.6, 0, -1.6], 2000, 1750))
+
+    def test_reconstruction_cannot_open_betting_or_apply_to_live_cancelled_old_or_cup_matches(self):
+        self.add_run('restored', '2026-09-16 00:00:00', market=SETTLEMENT_RULE)
+        for change in ({'state_id': 1, 'starting_at': self.now + timedelta(hours=1)},
+                       {'state_id': 2}, {'state_id': 12}, {'season_name': '2024/2025'},
+                       {'competition_id': 2}, {'stage_type_id': 224}):
+            fixture = {**self.fixture, **change}
+            with self.subTest(change=change):
+                self.assertIsNone(repo._prediction(self.read_one, fixture, self.now))
+        with patch.object(repo, 'fetch_one_dict', side_effect=lambda sql, params=():
+                          self.fixture if sql == repo.FIXTURE_SQL else
+                          None if 'fixture_bets' in sql else self.read_one(sql, params)), \
+                patch.object(repo, 'fetch_all_dict', return_value=[]), \
+                patch.object(repo, 'get_wallet', return_value={'balance': 0, 'initialized': False}), \
+                patch.object(repo, 'utc_now', return_value=self.now):
+            market = repo.get_market(1, 1)
+        self.assertTrue(market['available'])
+        self.assertFalse(market['can_bet'])
+        self.assertFalse(market['can_cancel'])
+        self.assertEqual(market['unavailable_reason'], 'betting_closed')
+
+    def test_missing_team_elo_remains_unavailable(self):
+        self.add_run('missing', '2026-09-16 00:00:00', away=False)
+        self.assertIsNone(self.prediction())
+
+    def test_midnight_reconstruction_and_post_kickoff_cutoff(self):
+        self.fixture['starting_at'] = datetime(2026, 9, 16)
+        self.add_run('too-late', '2026-09-16 00:01:00')
+        self.add_run('observed-at-kickoff', '2026-09-16 00:00:00', kind='observed_calculation')
+        self.assertIsNone(self.prediction())
+        self.add_run('midnight', '2026-09-16 00:00:00')
+        self.assertEqual(self.prediction()['prediction_run_id'], 'midnight')
+
+
 @unittest.skipUnless(os.getenv('BETTING_TEST_MYSQL') == '1', 'Requires isolated local MySQL')
 class BettingDatabaseTests(unittest.TestCase):
     @classmethod
@@ -133,7 +222,8 @@ class BettingDatabaseTests(unittest.TestCase):
             self.execute("INSERT INTO fixtures VALUES (%s,10,20,%s,1,NULL,NULL,1,NULL,NULL,'1/1',NULL)",
                          (fixture_id, self.now + timedelta(days=1)))
         self.execute('INSERT INTO probability_models VALUES (%s,%s)', ('b' * 64, json.dumps({
-            'forecast_model': {'coefficients': [.4297, 1.671888, .04225, -1.545221]}})))
+            'forecast_model': {'coefficients': [.4297, 1.671888, .04225, -1.545221],
+                               'predict_from_season': '2026/2027'}})))
         self.add_prediction('a' * 64, self.now - timedelta(hours=1))
 
     def tearDown(self):
@@ -324,10 +414,14 @@ class BettingDatabaseTests(unittest.TestCase):
         self.assertEqual(repo.get_wallet(1)['balance'], 1000)
         self.assertEqual(self.execute('SELECT * FROM fixture_bets'), [])
 
-    def test_past_match_excludes_post_match_and_reconstructed_predictions(self):
+    def test_past_match_excludes_post_match_prediction_and_uses_reconstruction(self):
         self.execute('UPDATE fixtures SET starting_at=%s,state_id=5 WHERE fixture_id=1', (self.now - timedelta(days=1),))
-        self.add_prediction('d' * 64, self.now - timedelta(days=2), kind='reconstructed')
         self.assertFalse(repo.get_market(1, 1)['available'])
+        self.add_prediction('d' * 64, self.now - timedelta(days=2), kind='reconstructed')
+        market = repo.get_market(1, 1)
+        self.assertTrue(market['available'])
+        self.assertFalse(market['can_bet'])
+        self.assertEqual(market['prediction_run_id'], 'd' * 64)
 
     def test_http_contract_uses_session_user_and_preserves_decimal_probability(self):
         app = create_app()

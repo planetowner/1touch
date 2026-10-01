@@ -78,9 +78,11 @@ def _entry(cur, user_id, bet_id, request_id, request_hash, kind, amount, balance
 
 
 def _supported(fixture):
-    return fixture['season_name'] == '2026/2027' and (
-        fixture['competition_id'] in CUP_COMPETITION_IDS or
-        (fixture['competition_id'] in LEAGUE_RULES and fixture['stage_type_id'] == 223))
+    current = fixture['season_name'] == '2026/2027'
+    if fixture['competition_id'] in CUP_COMPETITION_IDS:
+        return current
+    return (fixture['competition_id'] in LEAGUE_RULES and fixture['stage_type_id'] == 223 and
+            (current or (fixture['season_name'] == '2025/2026' and fixture['state_id'] in COMPLETED_STATE_IDS)))
 
 
 def _before_start(fixture, now):
@@ -91,7 +93,7 @@ def _before_start(fixture, now):
 def _prediction(read_one, fixture, now):
     if not _supported(fixture) or fixture['starting_at'] is None:
         return None
-    # 지난 경기 화면에서도 경기 후 전력이나 사후 복원 예측을 경기 전 배당처럼 보여주지 않아요.
+    # 실제 경기 전 예측을 우선해 이미 참여한 경기의 표시값을 유지해요.
     cutoff = min(now, fixture['starting_at'])
     cup = fixture['competition_id'] in CUP_COMPETITION_IDS
     scope = ("AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.market_kind'))=%s" if cup else
@@ -101,6 +103,17 @@ def _prediction(read_one, fixture, now):
           AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.history_kind'))='observed_calculation'
         ''' + scope + ''' ORDER BY as_of DESC,created_at DESC,run_id DESC LIMIT 1''',
         (fixture['season_id'], cutoff, fixture['starting_at'], *((SETTLEMENT_RULE,) if cup else ())))
+    if selected is None and not cup and fixture['state_id'] in COMPLETED_STATE_IDS:
+        # 복원값은 종료된 리그 경기 표시에만 써요. 다른 시즌으로 학습한 모델은 섞지 않아요.
+        selected = read_one('''SELECT r.run_id FROM probability_runs r
+            JOIN probability_models m ON m.model_id=r.model_id
+            WHERE r.season_id=%s AND r.as_of<=%s
+              AND JSON_UNQUOTE(JSON_EXTRACT(r.payload,'$.history_kind'))='reconstructed'
+              AND (JSON_EXTRACT(r.payload,'$.market_kind') IS NULL
+                   OR JSON_UNQUOTE(JSON_EXTRACT(r.payload,'$.market_kind'))=%s)
+              AND JSON_UNQUOTE(JSON_EXTRACT(m.payload,'$.forecast_model.predict_from_season'))=%s
+            ORDER BY r.as_of DESC,r.created_at DESC,r.run_id DESC LIMIT 1''',
+            (fixture['season_id'], cutoff, SETTLEMENT_RULE, fixture['season_name']))
     if selected is None:
         return None
     if cup:
