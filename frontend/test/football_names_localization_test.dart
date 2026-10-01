@@ -157,20 +157,20 @@ void main() {
                   nextMatch: next,
                   lastMatch: last)),
           const MatchEventsSection(events: [
-            {
-              'playerId': 184798,
-              'player': 'Lionel Messi',
-              'minute': "12'",
-              'team': 'home',
-              'type': 'goal'
-            },
-            {
-              'playerId': 184798,
-              'player': 'Lionel Messi',
-              'minute': "24'",
-              'team': 'home',
-              'type': 'goal'
-            },
+            (
+              playerId: 184798,
+              player: 'Lionel Messi',
+              minute: "12'",
+              side: MatchEventSide.home,
+              type: MatchSummaryEventType.goal,
+            ),
+            (
+              playerId: 184798,
+              player: 'Lionel Messi',
+              minute: "24'",
+              side: MatchEventSide.home,
+              type: MatchSummaryEventType.goal,
+            ),
           ]),
         ]))),
       ));

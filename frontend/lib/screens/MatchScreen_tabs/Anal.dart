@@ -18,7 +18,6 @@ import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/features/match_info/match_motion.dart';
 import 'package:onetouch/features/match_info/match_status_label.dart';
 
-import 'match_event_view_data.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
 
@@ -402,7 +401,19 @@ class _AnalysisTabState extends State<AnalysisTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(tr(context, "ATTACK"), style: Body2_b.style),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(tr(context, 'ATTACK'), style: Body2_b.style),
+              const SizedBox(width: 4),
+              const AppInfoButton(
+                key: ValueKey('match-analysis-attack-info'),
+                message:
+                    'Shotmap showing where each shot on target was taken, with lines pointing to where it was aimed.',
+                layoutSize: 14,
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           Container(
             key: const ValueKey('match-analysis-attack-card'),

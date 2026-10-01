@@ -421,28 +421,24 @@ void main() {
     expect(scoreHeader.venueLabel, 'Test Stadium');
     expect(find.text('Full Time'), findsOneWidget);
     expect(
-      events.events,
-      contains(
-        predicate<Map<String, dynamic>>(
-          (event) =>
-              event['player'] == 'Home Starter' &&
-              event['minute'] == "45+2'" &&
-              event['team'] == 'home' &&
-              event['type'] == 'goal',
-        ),
+      events.events.any(
+        (event) =>
+            event.player == 'Home Starter' &&
+            event.minute == "45+2'" &&
+            event.side == MatchEventSide.home &&
+            event.type == MatchSummaryEventType.goal,
       ),
+      isTrue,
     );
     expect(
-      events.events,
-      contains(
-        predicate<Map<String, dynamic>>(
-          (event) =>
-              event['player'] == 'Away Defender' &&
-              event['minute'] == "70'" &&
-              event['team'] == 'away' &&
-              event['type'] == 'redCard',
-        ),
+      events.events.any(
+        (event) =>
+            event.player == 'Away Defender' &&
+            event.minute == "70'" &&
+            event.side == MatchEventSide.away &&
+            event.type == MatchSummaryEventType.redCard,
       ),
+      isTrue,
     );
     expect(expectedGoals.homePercent, 0.518846);
     expect(expectedGoals.awayPercent, 4.76916);
@@ -826,28 +822,24 @@ void main() {
     expect(analysis.detail, same(detail));
     expect(events.events, hasLength(2));
     expect(
-      events.events,
-      contains(
-        predicate<Map<String, dynamic>>(
-          (event) =>
-              event['player'] == 'Home Starter' &&
-              event['minute'] == "45+2'" &&
-              event['team'] == 'home' &&
-              event['type'] == 'goal',
-        ),
+      events.events.any(
+        (event) =>
+            event.player == 'Home Starter' &&
+            event.minute == "45+2'" &&
+            event.side == MatchEventSide.home &&
+            event.type == MatchSummaryEventType.goal,
       ),
+      isTrue,
     );
     expect(
-      events.events,
-      contains(
-        predicate<Map<String, dynamic>>(
-          (event) =>
-              event['player'] == 'Away Defender' &&
-              event['minute'] == "70'" &&
-              event['team'] == 'away' &&
-              event['type'] == 'redCard',
-        ),
+      events.events.any(
+        (event) =>
+            event.player == 'Away Defender' &&
+            event.minute == "70'" &&
+            event.side == MatchEventSide.away &&
+            event.type == MatchSummaryEventType.redCard,
       ),
+      isTrue,
     );
     expect(find.text('Lewandowski'), findsNothing);
     expect(find.byKey(const ValueKey('match-analysis-xg')), findsOneWidget);
