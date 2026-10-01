@@ -10,6 +10,44 @@ import 'package:share_plus/share_plus.dart';
 import 'support/stub_community_repository.dart';
 
 void main() {
+  for (final width in [320.0, 430.0]) {
+    testWidgets('post blank space opens the post at width $width',
+        (tester) async {
+      await tester.binding.setSurfaceSize(Size(width, 700));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      var opens = 0;
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: CommunityPostList(
+            posts: [
+              Post(
+                postId: 8,
+                teamId: 9,
+                userId: 1,
+                category: PostCategory.general,
+                title: 'Short title',
+                body: 'Short body',
+                createdAt: '2026-09-27T12:00:00Z',
+              ),
+            ],
+            onPostTap: (_) => opens++,
+          ),
+        ),
+      ));
+
+      final card = find
+          .ancestor(
+            of: find.text('Short title'),
+            matching: find.byType(GestureDetector),
+          )
+          .first;
+      final bounds = tester.getRect(card);
+      await tester.tapAt(Offset(bounds.right - 8, bounds.top + 42));
+      expect(opens, 1);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('community media sends auth to the API attachment endpoint',
       (tester) async {
     final previousToken = authSession.accessToken;
