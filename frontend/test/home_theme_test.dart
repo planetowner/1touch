@@ -13,6 +13,7 @@ import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/models/team_overview.dart';
+import 'package:onetouch/models/team_standing_summary.dart';
 
 void main() {
   setUpAppCatalog();
@@ -440,7 +441,9 @@ void main() {
                 name: 'Manchester City',
                 shortName: 'MCI',
                 imagePath: 'https://example.com/manchester-city.png',
-                standing: const {'position': 1},
+                standing: const TeamStandingSummary(
+                  position: 1,
+                ),
                 nextMatch: cupMatch,
               ),
             ),

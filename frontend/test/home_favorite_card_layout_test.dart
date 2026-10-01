@@ -11,6 +11,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team_overview.dart';
+import 'package:onetouch/models/team_standing_summary.dart';
 
 void main() {
   setUpAppCatalog();
@@ -117,7 +118,10 @@ Future<void> _pumpCard(WidgetTester tester,
               name: 'Manchester City',
               shortName: 'MCI',
               imagePath: 'https://example.test/city.png',
-              standing: {'position': position, 'rank_delta': delta},
+              standing: TeamStandingSummary(
+                position: position,
+                rankDelta: delta,
+              ),
               nextMatch: _fixture(1, DateTime(2026, 10, 11, 11, 30), false),
               lastMatch: _fixture(
                   2, DateTime(now.year, now.month, now.day - 35, 9), true),

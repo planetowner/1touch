@@ -27,6 +27,7 @@ import '../models/home_content_item.dart';
 import '../models/home_data.dart';
 import '../models/news_language.dart';
 import '../models/team_overview.dart';
+import '../models/team_standing_summary.dart';
 import 'package:onetouch/features/index.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/widgets/ads/banner_ad_widget.dart';
@@ -353,10 +354,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       imagePath: team.imagePath ?? '',
       standing: homeData.leaguePosition == null
           ? null
-          : {
-              'position': homeData.leaguePosition,
-              'rank_delta': homeData.leagueRankDelta,
-            },
+          : TeamStandingSummary(
+              position: homeData.leaguePosition!,
+              rankDelta: homeData.leagueRankDelta,
+            ),
       liveMatch: homeData.liveMatch,
       nextMatch: homeData.nextMatch,
       lastMatch: homeData.lastMatch,

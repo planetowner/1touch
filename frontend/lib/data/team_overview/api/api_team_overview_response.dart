@@ -101,26 +101,6 @@ class ApiTeamOverviewStandingResponse {
       lastFiveForm: rawForm.cast<String>(),
     );
   }
-
-  Map<String, dynamic> toDomainMap() {
-    return Map.unmodifiable({
-      'position': position,
-      'rank_delta': rankDelta,
-      'team_id': teamId,
-      'team_name': teamName,
-      'team_short_name': teamShortName,
-      'team_logo': teamLogo,
-      'matches_played': matchesPlayed,
-      'won': won,
-      'draw': draw,
-      'lost': lost,
-      'goals_for': goalsFor,
-      'goals_against': goalsAgainst,
-      'goal_diff': goalDiff,
-      'points': points,
-      'last5_form': List<String>.unmodifiable(lastFiveForm),
-    });
-  }
 }
 
 T _requiredObject<T>(

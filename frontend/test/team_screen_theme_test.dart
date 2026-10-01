@@ -36,13 +36,27 @@ void main() {
       .singleWhere((season) => season.competitionId == 8 && season.isCurrent)
       .seasonId;
   final standingRepository = MockStandingRepository(standings: [
-    standings.Standing.fromJson({
-      ...teamOverviewRepository.cachedForTeam(9)!.standing!,
-      'competition_id': 8,
-      'season_id': currentSeasonId,
-      'phase': 'league',
-      'group_name': '',
-    }),
+    standings.Standing(
+      competitionId: 8,
+      seasonId: currentSeasonId,
+      phase: standings.StandingPhase.league,
+      groupName: '',
+      teamId: 9,
+      teamName: 'Manchester City',
+      teamShortName: 'MCI',
+      teamLogo: 'https://cdn.example/9.png',
+      position: 1,
+      rankDelta: 0,
+      matchesPlayed: 3,
+      won: 3,
+      draw: 0,
+      lost: 0,
+      goalsFor: 8,
+      goalsAgainst: 2,
+      goalDiff: 6,
+      points: 9,
+      last5Form: const ['W', 'W', 'W'],
+    ),
   ]);
   final xgStandingRepository = MockXgStandingRepository(standings: [
     standings.XgStanding(

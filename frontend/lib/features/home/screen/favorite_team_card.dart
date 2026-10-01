@@ -14,11 +14,8 @@ class FavoriteTeamCard extends StatelessWidget {
         context,
         competitionContext?.competitionId,
         competitionContext?.competitionName ?? '');
-    final standingPosition = team.standing?['position'];
-    final rank = standingPosition is int
-        ? standingPosition
-        : competitionContext?.currentPosition;
-    final rankDelta = team.standing?['rank_delta'] as int?;
+    final rank = team.standing?.position ?? competitionContext?.currentPosition;
+    final rankDelta = team.standing?.rankDelta;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
