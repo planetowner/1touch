@@ -29,7 +29,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Kim Seung-gyu',
           teamLabel: 'Jeonbuk • 1',
           jerseyNumber: 1,
-          position: Position.GK,
+          position: Position.gk,
           age: 35,
           contractEndYear: 2025),
       SquadPlayer(
@@ -37,7 +37,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Park Jun-hyuk',
           teamLabel: 'Jeonbuk • 31',
           jerseyNumber: 31,
-          position: Position.GK,
+          position: Position.gk,
           age: 24,
           contractEndYear: 2027),
       SquadPlayer(
@@ -45,7 +45,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Lee Chang-geun',
           teamLabel: 'Jeonbuk • 41',
           jerseyNumber: 41,
-          position: Position.GK,
+          position: Position.gk,
           age: 21,
           contractEndYear: 2026),
 
@@ -55,7 +55,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Hong Jeong-ho',
           teamLabel: 'Jeonbuk • 4',
           jerseyNumber: 4,
-          position: Position.DF,
+          position: Position.df,
           age: 34,
           contractEndYear: 2025),
       SquadPlayer(
@@ -63,7 +63,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Choi Bo-kyung',
           teamLabel: 'Jeonbuk • 5',
           jerseyNumber: 5,
-          position: Position.DF,
+          position: Position.df,
           age: 29,
           contractEndYear: 2026),
       SquadPlayer(
@@ -71,7 +71,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Kim Jin-su',
           teamLabel: 'Jeonbuk • 13',
           jerseyNumber: 13,
-          position: Position.DF,
+          position: Position.df,
           age: 31,
           contractEndYear: 2026),
       SquadPlayer(
@@ -79,7 +79,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Lee Yong',
           teamLabel: 'Jeonbuk • 2',
           jerseyNumber: 2,
-          position: Position.DF,
+          position: Position.df,
           age: 36,
           contractEndYear: 2025),
       SquadPlayer(
@@ -87,7 +87,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Gu Ja-ryong',
           teamLabel: 'Jeonbuk • 3',
           jerseyNumber: 3,
-          position: Position.DF,
+          position: Position.df,
           age: 27,
           contractEndYear: 2027),
       SquadPlayer(
@@ -95,7 +95,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Park Jin-seop',
           teamLabel: 'Jeonbuk • 23',
           jerseyNumber: 23,
-          position: Position.DF,
+          position: Position.df,
           age: 23,
           contractEndYear: 2028),
       SquadPlayer(
@@ -103,7 +103,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Shin Hyung-min',
           teamLabel: 'Jeonbuk • 15',
           jerseyNumber: 15,
-          position: Position.DF,
+          position: Position.df,
           age: 26,
           contractEndYear: 2027),
       SquadPlayer(
@@ -111,7 +111,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Kim Tae-hyun',
           teamLabel: 'Jeonbuk • 33',
           jerseyNumber: 33,
-          position: Position.DF,
+          position: Position.df,
           age: 22,
           contractEndYear: 2026),
 
@@ -121,7 +121,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Baek Seung-ho',
           teamLabel: 'Jeonbuk • 6',
           jerseyNumber: 6,
-          position: Position.MF,
+          position: Position.mf,
           age: 30,
           contractEndYear: 2026),
       SquadPlayer(
@@ -129,7 +129,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Han Kyo-won',
           teamLabel: 'Jeonbuk • 8',
           jerseyNumber: 8,
-          position: Position.MF,
+          position: Position.mf,
           age: 28,
           contractEndYear: 2025),
       SquadPlayer(
@@ -137,7 +137,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Moon Seon-min',
           teamLabel: 'Jeonbuk • 7',
           jerseyNumber: 7,
-          position: Position.MF,
+          position: Position.mf,
           age: 32,
           contractEndYear: 2025),
       SquadPlayer(
@@ -145,7 +145,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Son Jun-ho',
           teamLabel: 'Jeonbuk • 10',
           jerseyNumber: 10,
-          position: Position.MF,
+          position: Position.mf,
           age: 33,
           contractEndYear: 2026),
       SquadPlayer(
@@ -153,7 +153,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Jeong Hyeok',
           teamLabel: 'Jeonbuk • 16',
           jerseyNumber: 16,
-          position: Position.MF,
+          position: Position.mf,
           age: 25,
           contractEndYear: 2027),
       SquadPlayer(
@@ -161,7 +161,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Lee Seung-gi',
           teamLabel: 'Jeonbuk • 22',
           jerseyNumber: 22,
-          position: Position.MF,
+          position: Position.mf,
           age: 24,
           contractEndYear: 2028),
       SquadPlayer(
@@ -169,7 +169,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Kim Bo-kyung',
           teamLabel: 'Jeonbuk • 26',
           jerseyNumber: 26,
-          position: Position.MF,
+          position: Position.mf,
           age: 35,
           contractEndYear: 2025),
       SquadPlayer(
@@ -177,7 +177,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Park Chan-ul',
           teamLabel: 'Jeonbuk • 28',
           jerseyNumber: 28,
-          position: Position.MF,
+          position: Position.mf,
           age: 20,
           contractEndYear: 2027),
 
@@ -187,7 +187,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Cho Gue-sung',
           teamLabel: 'Jeonbuk • 9',
           jerseyNumber: 9,
-          position: Position.FW,
+          position: Position.fw,
           age: 25,
           contractEndYear: 2027),
       SquadPlayer(
@@ -195,7 +195,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Gustav Wikheim',
           teamLabel: 'Jeonbuk • 11',
           jerseyNumber: 11,
-          position: Position.FW,
+          position: Position.fw,
           age: 30,
           contractEndYear: 2026),
       SquadPlayer(
@@ -203,7 +203,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Stanislav Iljutcenko',
           teamLabel: 'Jeonbuk • 17',
           jerseyNumber: 17,
-          position: Position.FW,
+          position: Position.fw,
           age: 34,
           contractEndYear: 2025),
       SquadPlayer(
@@ -211,7 +211,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Lee Dong-jun',
           teamLabel: 'Jeonbuk • 19',
           jerseyNumber: 19,
-          position: Position.FW,
+          position: Position.fw,
           age: 23,
           contractEndYear: 2028),
       SquadPlayer(
@@ -219,7 +219,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Kim In-sung',
           teamLabel: 'Jeonbuk • 29',
           jerseyNumber: 29,
-          position: Position.FW,
+          position: Position.fw,
           age: 21,
           contractEndYear: 2027),
       SquadPlayer(
@@ -227,7 +227,7 @@ List<SquadPlayer> _mockSquad() => [
           name: 'Park Sang-hyuk',
           teamLabel: 'Jeonbuk • 37',
           jerseyNumber: 37,
-          position: Position.FW,
+          position: Position.fw,
           age: 19,
           contractEndYear: 2028),
     ];
@@ -260,22 +260,22 @@ class _SquadTabState extends State<SquadTab> {
       widget.contractRepository ?? teamContractRepository;
 
   static const List<Position?> _positionOrder = [
-    Position.GK,
-    Position.DF,
-    Position.MF,
-    Position.FW,
+    Position.gk,
+    Position.df,
+    Position.mf,
+    Position.fw,
     null,
   ];
 
   String _positionLabel(Position? pos) {
     switch (pos) {
-      case Position.GK:
+      case Position.gk:
         return tr(context, 'GOALKEEPER');
-      case Position.DF:
+      case Position.df:
         return tr(context, 'DEFENDERS');
-      case Position.MF:
+      case Position.mf:
         return tr(context, 'MIDFIELDERS');
-      case Position.FW:
+      case Position.fw:
         return tr(context, 'ATTACKERS');
       case null:
         return tr(context, 'POSITION UNAVAILABLE');

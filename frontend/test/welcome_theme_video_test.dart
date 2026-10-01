@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:onetouch/WelcomeScreen.dart';
+import 'package:onetouch/welcome_screen.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:video_player/video_player.dart';

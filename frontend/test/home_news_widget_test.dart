@@ -38,7 +38,7 @@ void main() {
         expect(find.textContaining('포포투'), findsNWidgets(3));
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const MaterialApp(
-            locale: const Locale('ko'),
+            locale: Locale('ko'),
             supportedLocales: appSupportedLocales,
             localizationsDelegates: appLocalizationDelegates,
             home: Scaffold(body: MyNews(news: []))));
@@ -131,7 +131,7 @@ void main() {
     await tester.tap(find.text('다시 시도'));
     expect(retried, isTrue);
     await tester.pumpWidget(const MaterialApp(
-        locale: const Locale('ko'),
+        locale: Locale('ko'),
         supportedLocales: appSupportedLocales,
         localizationsDelegates: appLocalizationDelegates,
         home: Scaffold(body: MyNews(news: [], isLoading: true))));

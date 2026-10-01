@@ -5,7 +5,7 @@ import 'package:onetouch/data/community/community_rules_visit_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/models/community_rules.dart';
-import 'package:onetouch/screens/CommunityScreen.dart';
+import 'package:onetouch/screens/community_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/app_catalog.dart';

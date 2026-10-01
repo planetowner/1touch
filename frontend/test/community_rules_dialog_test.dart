@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'support/stub_community_repository.dart';
 import 'package:onetouch/models/community_rules.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/ground_rules.dart';
 
 void main() {
   testWidgets('loads and displays rules for the team and device language',

@@ -8,7 +8,7 @@ import 'package:onetouch/data/auth/auth_repository_provider.dart'
 import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/registration_field.dart';
-import 'package:onetouch/SignComps/VerifyEmail.dart';
+import 'package:onetouch/SignComps/verify_email.dart';
 import 'package:onetouch/SignComps/signup_availability_field.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/user_name_labels.dart';

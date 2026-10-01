@@ -17,7 +17,7 @@ import 'package:onetouch/models/home_content_item.dart';
 import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team.dart';
-import 'package:onetouch/screens/HomeScreen.dart';
+import 'package:onetouch/screens/home_screen.dart';
 
 void main() {
   setUpAppCatalog();

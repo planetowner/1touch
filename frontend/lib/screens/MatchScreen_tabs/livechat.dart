@@ -12,7 +12,7 @@ import 'package:onetouch/data/chat/chat_socket.dart';
 import 'package:onetouch/data/chat/chat_socket_provider.dart'
     as chat_socket_provider;
 import 'package:onetouch/models/fixture_chat_message.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/report_dialog.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class LiveChatTab extends StatefulWidget {

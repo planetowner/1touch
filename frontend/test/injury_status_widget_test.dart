@@ -10,7 +10,7 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/data/injuries/team_injury_repository.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
-import 'package:onetouch/features/TeamScreenFeatures.dart';
+import 'package:onetouch/features/team_screen_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_injury_report.dart';
 import 'package:onetouch/models/team_overview.dart';

@@ -6,7 +6,7 @@ import 'package:onetouch/data/team_probability/team_probability_repository.dart'
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_probability.dart';
-import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
+import 'package:onetouch/screens/TeamScreen_tabs/analysis.dart';
 
 void main() {
   testWidgets('renders backend cards in the existing two-column design',
@@ -130,12 +130,17 @@ void main() {
     );
     expect(probabilityTop.dy - deltaBottom.dy, closeTo(4, 1));
     expect(
-      tester.getTopLeft(
-        find.byKey(const ValueKey('team-probability-delta-row-league_winner')),
-      ).dx,
-      tester.getTopLeft(
-        find.byKey(const ValueKey('team-probability-value-league_winner')),
-      ).dx,
+      tester
+          .getTopLeft(
+            find.byKey(
+                const ValueKey('team-probability-delta-row-league_winner')),
+          )
+          .dx,
+      tester
+          .getTopLeft(
+            find.byKey(const ValueKey('team-probability-value-league_winner')),
+          )
+          .dx,
     );
     expect(tester.takeException(), isNull);
   });

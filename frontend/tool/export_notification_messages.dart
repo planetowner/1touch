@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import '../lib/l10n/messages.dart';
-import '../lib/services/notification_message_keys.dart';
+import 'package:onetouch/l10n/messages.dart';
+import 'package:onetouch/services/notification_message_keys.dart';
 
 // 서버에는 Flutter 런타임이 없어서 배포에 포함할 네 언어 템플릿을 미리 만들어요.
 String notificationMessagesJson() {

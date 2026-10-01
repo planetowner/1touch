@@ -8,7 +8,7 @@ import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/post.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/post_screen.dart';
 
 class NotificationPostPage extends StatefulWidget {
   const NotificationPostPage({

@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
-import 'package:onetouch/features/HomeScreenFeatures.dart';
+import 'package:onetouch/features/home_screen_features.dart';
 import 'package:onetouch/features/home/calendar_sync_service.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -42,12 +41,13 @@ void main() {
     final sync = service((request) async {
       requests.add(request);
       expect(request.headers['Authorization'], 'Bearer app-session');
-      if (request.method == 'GET')
+      if (request.method == 'GET') {
         return jsonResponse({
           'connected': connected,
           'subscribed': connected,
           'last_error': null
         });
+      }
       if (request.method == 'POST') {
         expect(jsonDecode(request.body), {'server_auth_code': 'consent-code'});
         connected = true;
@@ -218,10 +218,12 @@ void main() {
     var deletes = 0;
     final sync = service((request) async {
       requests.add(request.method);
-      if (request.method == 'GET')
+      if (request.method == 'GET') {
         return jsonResponse({'connected': true, 'subscribed': true});
-      if (request.method == 'DELETE' && deletes++ == 0)
+      }
+      if (request.method == 'DELETE' && deletes++ == 0) {
         return jsonResponse({}, 503);
+      }
       return jsonResponse({'ok': true});
     });
     await show(tester, sync);

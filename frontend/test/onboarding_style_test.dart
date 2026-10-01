@@ -5,7 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:onetouch/Onboarding.dart';
+import 'package:onetouch/onboarding.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/l10n/app_localizations.dart';

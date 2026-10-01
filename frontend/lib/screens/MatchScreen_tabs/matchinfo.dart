@@ -3,7 +3,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
-import 'package:onetouch/features/KaneRest.dart';
+import 'package:onetouch/features/kane_rest.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/features/match_info/match_status_label.dart';
 import 'package:onetouch/models/fixture.dart';

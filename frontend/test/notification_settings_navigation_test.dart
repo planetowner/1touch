@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/comm_pages/Profile_settings/Notification.dart';
+import 'package:onetouch/comm_pages/Profile_settings/notification.dart';
 import 'package:onetouch/data/notifications/notification_preferences.dart';
 import 'package:onetouch/data/notifications/notification_preferences_repository.dart';
 

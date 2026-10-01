@@ -1,4 +1,4 @@
-part of '../Analysis.dart';
+part of '../analysis.dart';
 
 class ProbabilitySection extends StatefulWidget {
   const ProbabilitySection({

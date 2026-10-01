@@ -8,7 +8,7 @@ import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/features/team/squad/squad_player_presentation.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
 import 'package:onetouch/models/team_overview.dart';
-import 'package:onetouch/screens/TeamScreen_tabs/Squad.dart';
+import 'package:onetouch/screens/TeamScreen_tabs/squad.dart';
 
 const _barcelona = TeamOverview(
   id: 83,
@@ -34,7 +34,7 @@ void main() {
       name: 'Player',
       teamLabel: 'Team • 1',
       jerseyNumber: 1,
-      position: Position.GK,
+      position: Position.gk,
       age: 25,
       contractEndYear: 2028,
     );
@@ -341,7 +341,7 @@ void main() {
     );
 
     final filter = find.byKey(const ValueKey('squad-filter-row'));
-    final header = find.byKey(const ValueKey('squad-position-FW-header'));
+    final header = find.byKey(const ValueKey('squad-position-fw-header'));
     final firstCard = find.byKey(const ValueKey('squad-player-card-1'));
     expect(
       tester.getTopLeft(header).dy - tester.getBottomLeft(filter).dy,
@@ -402,10 +402,10 @@ void main() {
     await tester.pumpAndSettle();
 
     final goalkeeperGrid = find.byKey(
-      const ValueKey('squad-position-GK-grid'),
+      const ValueKey('squad-position-gk-grid'),
     );
     final forwardHeader = find.byKey(
-      const ValueKey('squad-position-FW-header'),
+      const ValueKey('squad-position-fw-header'),
     );
     expect(
       tester.getTopLeft(forwardHeader).dy -

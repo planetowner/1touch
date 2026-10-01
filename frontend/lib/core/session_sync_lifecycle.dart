@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:onetouch/SessionScreen.dart';
+import 'package:onetouch/session_screen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/data/session/session_data_synchronizer.dart';

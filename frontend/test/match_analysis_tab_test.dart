@@ -9,7 +9,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/match_tactical_analysis.dart';
 import 'package:onetouch/features/match_info/match_motion.dart';
-import 'package:onetouch/screens/MatchScreen_tabs/Anal.dart';
+import 'package:onetouch/screens/MatchScreen_tabs/anal.dart';
 
 void main() {
   setUpAppCatalog();

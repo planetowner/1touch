@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/Onboarding.dart';
+import 'package:onetouch/onboarding.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
 import 'package:onetouch/data/auth/registration_field.dart';
 import 'package:onetouch/data/auth/auth_service.dart';

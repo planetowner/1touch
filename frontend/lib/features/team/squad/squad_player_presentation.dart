@@ -20,7 +20,7 @@ extension SortOptionLabel on SortOption {
   }
 }
 
-enum Position { GK, DF, MF, FW }
+enum Position { gk, df, mf, fw }
 
 @immutable
 class SquadPlayer {
@@ -88,13 +88,13 @@ class SquadPlayer {
 Position? positionFromTeamGroup(TeamPositionGroup? positionGroup) {
   switch (positionGroup) {
     case TeamPositionGroup.goalkeeper:
-      return Position.GK;
+      return Position.gk;
     case TeamPositionGroup.defender:
-      return Position.DF;
+      return Position.df;
     case TeamPositionGroup.midfielder:
-      return Position.MF;
+      return Position.mf;
     case TeamPositionGroup.forward:
-      return Position.FW;
+      return Position.fw;
     case null:
       return null;
   }

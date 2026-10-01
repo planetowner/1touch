@@ -7,7 +7,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
-import 'package:onetouch/features/StandingFeatures.dart';
+import 'package:onetouch/features/standing_features.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/features/team/overview/team_screen_features.dart';
 import 'package:onetouch/data/team_attributes/mock/mock_team_attribute_repository.dart';
@@ -18,7 +18,7 @@ import 'package:onetouch/data/current_form/mock/mock_current_form_repository.dar
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/l10n/date_labels.dart';
-import 'package:onetouch/screens/TeamScreen.dart';
+import 'package:onetouch/screens/team_screen.dart';
 
 import 'support/test_team_overview_repository.dart';
 

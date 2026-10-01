@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
-import 'package:onetouch/features/StandingFeatures.dart';
+import 'package:onetouch/features/standing_features.dart';
 
 void main() {
   group('2025/26 Big Five standing rules', () {

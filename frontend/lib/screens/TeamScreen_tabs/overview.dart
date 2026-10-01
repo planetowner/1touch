@@ -4,7 +4,7 @@ import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
 import 'package:onetouch/data/injuries/team_injury_repository.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
-import 'package:onetouch/features/TeamScreenFeatures.dart';
+import 'package:onetouch/features/team_screen_features.dart';
 import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_overview.dart';

@@ -1,5 +1,5 @@
-export 'Analysis.dart';
+export 'analysis.dart';
 export 'Matches.dart';
-export 'Overview.dart';
-export 'Squad.dart';
-export 'Standing.dart';
+export 'overview.dart';
+export 'squad.dart';
+export 'standing.dart';

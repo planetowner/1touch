@@ -13,7 +13,7 @@ import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/models/team_overview.dart';
-import 'package:onetouch/features/StandingFeatures.dart';
+import 'package:onetouch/features/standing_features.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
 import 'package:onetouch/data/competitions/tournament_bracket_repository.dart';
 import 'package:onetouch/l10n/app_localizations.dart';

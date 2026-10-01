@@ -15,8 +15,8 @@ import 'package:onetouch/features/community/community_delete_dialog.dart';
 import 'package:onetouch/features/community/community_post_share_link.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/ground_rules.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/report_dialog.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class PostDetailContent extends StatelessWidget {

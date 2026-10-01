@@ -10,7 +10,7 @@ import 'package:onetouch/models/team_best_eleven.dart';
 import 'package:onetouch/models/team_injury_report.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
 import 'package:onetouch/models/team_overview.dart';
-import 'package:onetouch/screens/TeamScreen_tabs/Overview.dart';
+import 'package:onetouch/screens/TeamScreen_tabs/overview.dart';
 
 void main() {
   testWidgets('omits unavailable overview sections and their headers',

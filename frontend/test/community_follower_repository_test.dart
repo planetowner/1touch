@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'support/stub_community_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
-import 'package:onetouch/screens/CommunityScreen.dart';
+import 'package:onetouch/screens/community_screen.dart';
 import 'package:onetouch/models/community_rules.dart';
 
 void main() {

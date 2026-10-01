@@ -16,7 +16,7 @@ import 'package:onetouch/data/posts/post_repository_provider.dart'
 import 'package:onetouch/data/profile/current_user_repository_provider.dart'
     as profile_providers;
 import 'package:onetouch/features/community/community_delete_dialog.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/add_post.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
 import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/models/post.dart';

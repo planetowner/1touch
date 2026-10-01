@@ -4,7 +4,7 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/All.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/all.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class CommunityPostBody extends StatelessWidget {

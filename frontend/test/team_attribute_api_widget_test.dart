@@ -16,7 +16,7 @@ import 'package:onetouch/data/team_attributes/api/api_team_attribute_repository.
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
 import 'package:onetouch/models/team_overview.dart';
-import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
+import 'package:onetouch/screens/TeamScreen_tabs/analysis.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

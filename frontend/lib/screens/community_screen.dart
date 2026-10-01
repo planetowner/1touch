@@ -26,8 +26,8 @@ import 'package:onetouch/features/community/community_header_slivers.dart';
 import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/features/community/community_ban_dialog.dart';
 import 'package:onetouch/features/community/community_post_body.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/add_post.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/ground_rules.dart';
 
 class Community extends StatefulWidget {
   final int teamId;

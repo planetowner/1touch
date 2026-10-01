@@ -97,10 +97,11 @@ class _SearchContentState extends State<SearchContent> {
     try {
       await widget.preferences.toggleFollowedTeam(id);
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(tr(context,
                 'Unable to update followed teams. Please try again.'))));
+      }
     }
   }
 
