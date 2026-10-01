@@ -39,7 +39,7 @@ class FollowedCommunityReadTests(unittest.TestCase):
             lambda: posts_repo.list_posts(1, 9, None, posts_repo.PostSort.newest, PostPeriod.all_time, 50, 0),
             lambda: posts_repo.get_post(1, 91),
             lambda: posts_repo.list_comments(1, 91, 0, 50),
-            lambda: community_repo.get_rules(1, 9, 'ko'),
+            lambda: community_repo.get_rules(1, 9),
             lambda: community_repo.count_followers(1, 9),
             lambda: attachments._accessible_attachment(7, 1),
         ]
