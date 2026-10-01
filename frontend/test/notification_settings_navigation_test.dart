@@ -11,6 +11,7 @@ class _RecordingNotificationRepository
     implements NotificationPreferencesRepository {
   int? savedTeamId;
   int? savedPlayerId;
+  Object? savedPreferences;
 
   @override
   Future<NotificationPreferenceSnapshot> load() async =>
@@ -25,6 +26,7 @@ class _RecordingNotificationRepository
     TeamNotificationPreferences preferences,
   ) async {
     savedTeamId = teamId;
+    savedPreferences = preferences;
   }
 
   @override
@@ -33,6 +35,7 @@ class _RecordingNotificationRepository
     PlayerNotificationPreferences preferences,
   ) async {
     savedPlayerId = playerId;
+    savedPreferences = preferences;
   }
 
   @override
@@ -116,6 +119,18 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(testCase.savedId(repository), isNotNull);
+      switch (repository.savedPreferences) {
+        case TeamNotificationPreferences preferences:
+          expect(preferences.matchReminder, isFalse);
+          expect(preferences.goal, isFalse);
+          expect(preferences.substitution, isFalse);
+        case PlayerNotificationPreferences preferences:
+          expect(preferences.startingXi, isFalse);
+          expect(preferences.goal, isFalse);
+          expect(preferences.injury, isFalse);
+        default:
+          fail('Expected typed notification preferences to be saved.');
+      }
       expect(find.text('OPEN'), findsOneWidget);
       expect(find.text('UPDATE NOTIFICATIONS'), findsNothing);
     });
