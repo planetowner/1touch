@@ -9,6 +9,61 @@ import 'package:onetouch/models/post_comment.dart';
 import 'support/profile_activity_fixture.dart';
 
 void main() {
+  test('counts use the current Bearer session without pagination', () async {
+    var token = 'first-session';
+    final repository = ApiProfileActivityRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.method, 'GET');
+          expect(request.url.path, '/v1/users/me/activity/counts');
+          expect(request.url.queryParameters, isEmpty);
+          expect(request.headers['Authorization'], 'Bearer $token');
+          expect(request.headers['Accept'], 'application/json');
+          return http.Response('{"post_count":122,"comment_count":124}', 200);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => {'Authorization': 'Bearer $token'},
+      ),
+    );
+    for (final session in ['first-session', 'next-session']) {
+      token = session;
+      final counts = await repository.loadCounts();
+      expect(counts.postCount, 122);
+      expect(counts.commentCount, 124);
+    }
+  });
+
+  test('counts distinguish zero from request errors and malformed responses',
+      () async {
+    final empty = await _repository((_) async =>
+        http.Response('{"post_count":0,"comment_count":0}', 200)).loadCounts();
+    expect(empty.postCount, 0);
+    expect(empty.commentCount, 0);
+    for (final status in [401, 403, 500]) {
+      await expectLater(
+        _repository((_) async => http.Response('{}', status)).loadCounts(),
+        throwsA(isA<http.ClientException>()),
+      );
+    }
+    for (final field in ['post_count', 'comment_count']) {
+      for (final invalid in [null, -1, 1.5, '4', true]) {
+        final json = <String, Object?>{'post_count': 1, 'comment_count': 2};
+        json[field] = invalid;
+        await expectLater(
+          _repository((_) async => http.Response(jsonEncode(json), 200))
+              .loadCounts(),
+          throwsFormatException,
+        );
+      }
+      final json = {'post_count': 1, 'comment_count': 2}..remove(field);
+      await expectLater(
+        _repository((_) async => http.Response(jsonEncode(json), 200))
+            .loadCounts(),
+        throwsFormatException,
+      );
+    }
+  });
+
   test('both activity endpoints use the current Bearer session and pagination',
       () async {
     var token = 'first-session';

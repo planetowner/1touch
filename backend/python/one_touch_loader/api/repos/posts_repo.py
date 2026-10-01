@@ -104,22 +104,43 @@ def _activity_team_ids(user_id: int) -> tuple[int, ...]:
     return community_read_team_ids(user["favorite_team_id"], list_following_team_ids(user_id))
 
 
-def list_my_posts(user_id: int, limit: int, offset: int) -> list[dict]:
+def _activity_filter(user_id: int, team_ids: tuple[int, ...], *, comments: bool = False) -> tuple[str, tuple]:
+    # 목록과 숫자가 같도록 작성자·공개 상태·현재 팀 권한을 함께 관리해요.
+    author = "c" if comments else "p"
+    clauses = [f"{author}.user_id=%s", "p.state='active'",
+               f"p.team_id IN ({','.join(['%s'] * len(team_ids))})"]
+    params = (user_id, *team_ids)
+    if comments:
+        clauses.extend(["c.state='active'", f"NOT {blocked_sql('p.user_id')}"])
+        params += (user_id,)
+    return " AND ".join(clauses), params
+
+
+def count_my_activity(user_id: int) -> dict:
     team_ids = _activity_team_ids(user_id)
-    rows = fetch_all_dict(f"""{_POST_SELECT}
-        WHERE p.user_id=%s AND p.state='active' AND p.team_id IN ({','.join(['%s'] * len(team_ids))})
+    post_filter, post_params = _activity_filter(user_id, team_ids)
+    comment_filter, comment_params = _activity_filter(user_id, team_ids, comments=True)
+    # 한 쿼리에서 집계해 게시글·댓글 수를 같은 시점 기준으로 읽어요.
+    return fetch_one_dict(f"""SELECT
+        (SELECT COUNT(*) FROM posts p WHERE {post_filter}) AS post_count,
+        (SELECT COUNT(*) FROM post_comments c JOIN posts p ON p.post_id=c.post_id
+            WHERE {comment_filter}) AS comment_count""", post_params + comment_params)
+
+
+def list_my_posts(user_id: int, limit: int, offset: int) -> list[dict]:
+    condition, params = _activity_filter(user_id, _activity_team_ids(user_id))
+    rows = fetch_all_dict(f"""{_POST_SELECT} WHERE {condition}
         ORDER BY p.created_at DESC,p.post_id DESC LIMIT %s OFFSET %s""",
-        (user_id, user_id, user_id, *team_ids, limit, offset))
+        (user_id, user_id, *params, limit, offset))
     return [_public_post(row) for row in rows]
 
 
 def list_my_comments(user_id: int, limit: int, offset: int) -> list[dict]:
-    team_ids = _activity_team_ids(user_id)
+    condition, params = _activity_filter(user_id, _activity_team_ids(user_id), comments=True)
     rows = fetch_all_dict(f"""{_COMMENT_SELECT} JOIN posts p ON p.post_id=c.post_id
-        WHERE c.user_id=%s AND c.state='active' AND p.state='active'
-          AND p.team_id IN ({','.join(['%s'] * len(team_ids))}) AND NOT {blocked_sql('p.user_id')}
+        WHERE {condition}
         ORDER BY c.created_at DESC,c.comment_id DESC LIMIT %s OFFSET %s""",
-        (user_id, user_id, user_id, *team_ids, user_id, limit, offset))
+        (user_id, user_id, *params, limit, offset))
     # 댓글 탭은 원문을 열 수 있어야 해요. 같은 글에 쓴 댓글들은 원문 조회를 함께 써요.
     posts = {post_id: get_post(user_id, post_id) for post_id in dict.fromkeys(row["post_id"] for row in rows)}
     return [{"post": posts[row["post_id"]], "comment": _public_comment(row)} for row in rows]

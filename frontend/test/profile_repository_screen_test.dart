@@ -9,6 +9,7 @@ import 'package:onetouch/comm_pages/Profile.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/comm_pages/profile_activity_screen.dart';
 import 'package:onetouch/comm_pages/Profile_settings/InfoEdit.dart';
+import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -16,17 +17,205 @@ import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/models/current_user_profile.dart';
+import 'package:onetouch/models/profile_activity_counts.dart';
 import 'package:onetouch/models/team.dart';
 import 'support/player_directory_fixture.dart';
 import 'support/stub_profile_activity_repository.dart';
 
 void main() {
   setUpAppCatalog();
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('activity counts load, retry and fit at $size', (tester) async {
+      await _setScreenSize(tester, size);
+      final activity = _ControlledActivityRepository();
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.whitetheme,
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        home: Profile(
+          repository: _StaticCurrentUserRepository(),
+          followingTeamsRepository: _StaticFollowingTeamsRepository(),
+          activityRepository: activity,
+        ),
+      ));
+      await tester.pump();
+      expect(find.text('@불광동호날두'), findsOneWidget);
+      expect(find.byKey(const ValueKey('profile-stat-posts-loading')),
+          findsOneWidget);
+      expect(find.byKey(const ValueKey('profile-stat-comments-loading')),
+          findsOneWidget);
+      _expectStat('points', '0');
+      _expectStat('posts', '0', absent: true);
+      _expectStat('comments', '0', absent: true);
+
+      activity.calls.single.completeError(StateError('offline'));
+      await tester.pumpAndSettle();
+      _expectStat('posts', '—');
+      _expectStat('comments', '—');
+      expect(find.text('게시글·댓글 수를 불러오지 못했어요.'), findsOneWidget);
+      final retry = find.byKey(const ValueKey('profile-activity-counts-retry'));
+      await tester.ensureVisible(retry);
+      await tester.tap(retry);
+      await tester.pump();
+      expect(activity.calls, hasLength(2));
+      activity.calls.last
+          .complete(const ProfileActivityCounts(postCount: 0, commentCount: 0));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('profile-stat-card')),
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      _expectStat('posts', '0');
+      _expectStat('comments', '0');
+      expect(retry, findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('large activity counts remain inside each box at $size',
+        (tester) async {
+      await _setScreenSize(tester, size);
+      final activity = _ControlledActivityRepository();
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.whitetheme,
+        home: Profile(
+          repository: _StaticCurrentUserRepository(),
+          followingTeamsRepository: _StaticFollowingTeamsRepository(),
+          activityRepository: activity,
+        ),
+      ));
+      activity.calls.single.complete(const ProfileActivityCounts(
+          postCount: 1234567890123, commentCount: 9876543210123));
+      await tester.pumpAndSettle();
+      for (final entry in {
+        'posts': '1234567890123',
+        'comments': '9876543210123',
+      }.entries) {
+        _expectStat(entry.key, entry.value);
+        final box =
+            tester.getRect(find.byKey(ValueKey('profile-stat-${entry.key}')));
+        final number = tester.getRect(find.text(entry.value));
+        expect(number.left, greaterThanOrEqualTo(box.left));
+        expect(number.right, lessThanOrEqualTo(box.right + 0.1));
+      }
+      _expectStat('points', '0');
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final tab in ['posts', 'comments']) {
+    testWidgets('returning from $tab reloads activity counts', (tester) async {
+      final activity = _ControlledActivityRepository();
+      final router = GoRouter(initialLocation: '/profile', routes: [
+        GoRoute(
+          path: '/profile',
+          builder: (_, __) => Profile(
+            repository: _StaticCurrentUserRepository(),
+            followingTeamsRepository: _StaticFollowingTeamsRepository(),
+            activityRepository: activity,
+          ),
+        ),
+        GoRoute(
+          path: '/profile/activity',
+          builder: (_, state) => ProfileActivityScreen(
+            repository: activity,
+            profile: state.extra as CurrentUserProfile?,
+            initialTab: state.uri.queryParameters['tab'] == 'comments'
+                ? ProfileActivityTab.comments
+                : ProfileActivityTab.posts,
+          ),
+        ),
+      ]);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      activity.calls.single.complete(
+          const ProfileActivityCounts(postCount: 122, commentCount: 124));
+      await tester.pumpAndSettle();
+      _expectStat('posts', '122');
+      _expectStat('comments', '124');
+      final stat = find.byKey(ValueKey('profile-stat-$tab'));
+      await tester.ensureVisible(stat);
+      await tester.tap(stat);
+      await tester.pumpAndSettle();
+      expect(
+          find.byKey(ValueKey('profile-activity-empty-$tab')), findsOneWidget);
+      router.pop();
+      await tester.pump();
+      expect(activity.calls, hasLength(2));
+      activity.calls.last.complete(
+          const ProfileActivityCounts(postCount: 121, commentCount: 123));
+      await tester.pumpAndSettle();
+      _expectStat('posts', '121');
+      _expectStat('comments', '123');
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('team changes refresh counts and discard an older pending result',
+      (tester) async {
+    final activity = _ControlledActivityRepository();
+    await tester.pumpWidget(MaterialApp(
+      home: Profile(
+        repository: _StaticCurrentUserRepository(),
+        followingTeamsRepository: _StaticFollowingTeamsRepository(),
+        activityRepository: activity,
+      ),
+    ));
+    await tester.pump();
+    final editIcon = find.byIcon(Icons.border_color).first;
+    await tester.ensureVisible(editIcon);
+    await tester.tap(editIcon);
+    await tester.pump(const Duration(milliseconds: 400));
+    Navigator.of(tester.element(find.byType(EditFollowingTeamsSheet))).pop(
+      const FollowingTeamsEditResult(
+        teams: [Team(teamId: 19, name: 'API Arsenal')],
+        favoriteTeamId: 19,
+      ),
+    );
+    await tester.pump();
+    expect(activity.calls, hasLength(2));
+    activity.calls.last
+        .complete(const ProfileActivityCounts(postCount: 3, commentCount: 5));
+    await tester.pumpAndSettle();
+    activity.calls.first.complete(
+        const ProfileActivityCounts(postCount: 122, commentCount: 124));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('profile-stat-card')),
+      -200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    _expectStat('posts', '3');
+    _expectStat('comments', '5');
+    expect(find.text('API Arsenal'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('activity requests can finish after leaving the profile',
+      (tester) async {
+    final activity = _ControlledActivityRepository();
+    await tester.pumpWidget(MaterialApp(
+      home: Profile(
+        repository: _StaticCurrentUserRepository(),
+        followingTeamsRepository: _StaticFollowingTeamsRepository(),
+        activityRepository: activity,
+      ),
+    ));
+    await tester.pumpWidget(const SizedBox());
+    activity.calls.single.completeError(StateError('offline'));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
       'profile nickname and personal info names stay distinct by locale',
       (tester) async {
     for (final page in [
       Profile(
+        activityRepository: const StubProfileActivityRepository(),
         repository: _StaticCurrentUserRepository(),
         followingTeamsRepository: _StaticFollowingTeamsRepository(),
       ),
@@ -65,6 +254,7 @@ void main() {
       MaterialApp(
         theme: app_style.whitetheme,
         home: Profile(
+          activityRepository: const StubProfileActivityRepository(),
           repository: repository,
           followingTeamsRepository: _StaticFollowingTeamsRepository(),
         ),
@@ -91,6 +281,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       theme: app_style.whitetheme,
       home: Profile(
+        activityRepository: const StubProfileActivityRepository(),
         repository: repository,
         followingTeamsRepository: _StaticFollowingTeamsRepository(),
       ),
@@ -119,6 +310,7 @@ void main() {
       MaterialApp(
         theme: app_style.whitetheme,
         home: Profile(
+          activityRepository: const StubProfileActivityRepository(),
           repository: repository,
           followingTeamsRepository: _StaticFollowingTeamsRepository(),
         ),
@@ -148,6 +340,7 @@ void main() {
       MaterialApp(
         theme: app_style.whitetheme,
         home: Profile(
+          activityRepository: const StubProfileActivityRepository(),
           repository: repository,
           followingTeamsRepository: _StaticFollowingTeamsRepository(),
           avatarRequestHeaders: const {
@@ -182,6 +375,7 @@ void main() {
       supportedLocales: appSupportedLocales,
       localizationsDelegates: appLocalizationDelegates,
       home: Profile(
+        activityRepository: const StubProfileActivityRepository(),
         repository: _StaticCurrentUserRepository(),
         followingTeamsRepository: _StaticFollowingTeamsRepository(),
       ),
@@ -212,6 +406,7 @@ void main() {
       supportedLocales: appSupportedLocales,
       localizationsDelegates: appLocalizationDelegates,
       home: Profile(
+        activityRepository: const StubProfileActivityRepository(),
         repository: _StaticCurrentUserRepository(),
         followingTeamsRepository: _StaticFollowingTeamsRepository(),
       ),
@@ -233,6 +428,7 @@ void main() {
         GoRoute(
           path: '/profile',
           builder: (_, __) => Profile(
+            activityRepository: const StubProfileActivityRepository(),
             repository: _StaticCurrentUserRepository(),
             followingTeamsRepository: _StaticFollowingTeamsRepository(),
           ),
@@ -298,6 +494,7 @@ void main() {
         GoRoute(
           path: '/profile',
           builder: (_, __) => Profile(
+            activityRepository: const StubProfileActivityRepository(),
             repository: _StaticCurrentUserRepository(),
             followingTeamsRepository: _StaticFollowingTeamsRepository(),
             followingController: followingController,
@@ -332,6 +529,7 @@ void main() {
         GoRoute(
           path: '/profile',
           builder: (_, __) => Profile(
+            activityRepository: const StubProfileActivityRepository(),
             repository: _StaticCurrentUserRepository(),
             followingTeamsRepository: _StaticFollowingTeamsRepository(),
           ),
@@ -389,6 +587,7 @@ void main() {
         GoRoute(
           path: '/profile',
           builder: (_, __) => Profile(
+            activityRepository: const StubProfileActivityRepository(),
             repository: _StaticCurrentUserRepository(),
             followingTeamsRepository: _StaticFollowingTeamsRepository(),
           ),
@@ -443,6 +642,27 @@ Future<void> _setScreenSize(WidgetTester tester, Size size) async {
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
+}
+
+void _expectStat(String stat, String value, {bool absent = false}) {
+  expect(
+    find.descendant(
+      of: find.byKey(ValueKey('profile-stat-$stat')),
+      matching: find.text(value),
+    ),
+    absent ? findsNothing : findsOneWidget,
+  );
+}
+
+class _ControlledActivityRepository extends StubProfileActivityRepository {
+  final List<Completer<ProfileActivityCounts>> calls = [];
+
+  @override
+  Future<ProfileActivityCounts> loadCounts() {
+    final completer = Completer<ProfileActivityCounts>();
+    calls.add(completer);
+    return completer.future;
+  }
 }
 
 CurrentUserProfile _profile({

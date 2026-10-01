@@ -12,6 +12,9 @@ import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/features/player/player_directory_widgets.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/data/profile/current_user_repository.dart';
+import 'package:onetouch/data/profile/profile_activity_repository.dart';
+import 'package:onetouch/data/profile/profile_activity_repository_provider.dart'
+    as activity_provider;
 import 'package:onetouch/data/profile/current_user_repository_provider.dart'
     as profile_provider;
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
@@ -22,6 +25,7 @@ import 'package:onetouch/data/teams/following_teams_repository_provider.dart'
 import 'package:onetouch/data/teams/team_page_eligibility_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/current_user_profile.dart';
+import 'package:onetouch/models/profile_activity_counts.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -29,12 +33,14 @@ class Profile extends StatefulWidget {
   const Profile({
     super.key,
     this.repository,
+    this.activityRepository,
     this.followingController,
     this.followingTeamsRepository,
     this.avatarRequestHeaders,
   });
 
   final CurrentUserRepository? repository;
+  final ProfileActivityRepository? activityRepository;
   final PlayerFollowingController? followingController;
   final FollowingTeamsRepository? followingTeamsRepository;
   final Map<String, String>? avatarRequestHeaders;
@@ -50,9 +56,15 @@ class _ProfileState extends State<Profile> {
   List<Team> _followingTeams = const [];
   int? _favoriteTeamId;
   bool _isLoading = true;
+  ProfileActivityCounts? _activityCounts;
+  bool _isLoadingCounts = true;
+  int _activityRequest = 0;
 
   CurrentUserRepository get _repository =>
       widget.repository ?? profile_provider.currentUserRepository;
+
+  ProfileActivityRepository get _activityRepository =>
+      widget.activityRepository ?? activity_provider.profileActivityRepository;
 
   FollowingTeamsRepository get _followingTeamsRepository =>
       widget.followingTeamsRepository ??
@@ -78,6 +90,7 @@ class _ProfileState extends State<Profile> {
   }
 
   Future<void> _loadProfile() async {
+    _loadActivityCounts();
     if (!_isLoading) {
       setState(() {
         _isLoading = true;
@@ -120,6 +133,32 @@ class _ProfileState extends State<Profile> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _loadActivityCounts() async {
+    final request = ++_activityRequest;
+    setState(() {
+      _isLoadingCounts = true;
+      _activityCounts = null;
+    });
+    ProfileActivityCounts? counts;
+    try {
+      counts = await _activityRepository.loadCounts();
+    } on Object {
+      // 조회 실패는 0건과 구분하고, 프로필 정보는 계속 보여줘요.
+    }
+    // 팀 변경 전 요청이 늦게 끝나도 최신 집계를 덮지 않아요.
+    if (!mounted || request != _activityRequest) return;
+    setState(() {
+      _activityCounts = counts;
+      _isLoadingCounts = false;
+    });
+  }
+
+  Future<void> _openActivity(String tab) async {
+    await context.push('/profile/activity?tab=$tab', extra: _profile);
+    if (!mounted) return;
+    await _loadActivityCounts();
   }
 
   Future<void> _openProfileEditor(CurrentUserProfile profile) async {
@@ -298,6 +337,7 @@ class _ProfileState extends State<Profile> {
                               _followingTeams = supportedTeams;
                               _favoriteTeamId = result.favoriteTeamId;
                             });
+                            await _loadActivityCounts();
                           },
                         ),
                       ],
@@ -401,35 +441,52 @@ class _ProfileState extends State<Profile> {
           color: appColors.cardBackground,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            const dividerWidth = 2.0;
-            const dividerGap = 10.0;
-            final statWidth =
-                (constraints.maxWidth - dividerWidth * 2 - dividerGap * 2) / 3;
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _buildStat('0', tr(context, "PTS"),
-                    statKey: 'points', width: statWidth, tab: 'posts'),
-                _verticalDivider('points-posts'),
-                const SizedBox(width: dividerGap),
-                _buildStat('0', tr(context, "POSTS"),
-                    statKey: 'posts', width: statWidth, tab: 'posts'),
-                _verticalDivider('posts-comments'),
-                const SizedBox(width: dividerGap),
-                _buildStat('0', tr(context, "COMMENTS"),
-                    statKey: 'comments', width: statWidth, tab: 'comments'),
-              ],
-            );
-          },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const dividerWidth = 2.0;
+                const dividerGap = 10.0;
+                final statWidth =
+                    (constraints.maxWidth - dividerWidth * 2 - dividerGap * 2) /
+                        3;
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _buildStat('0', tr(context, "PTS"),
+                        statKey: 'points', width: statWidth, tab: 'posts'),
+                    _verticalDivider('points-posts'),
+                    const SizedBox(width: dividerGap),
+                    _buildStat(_activityCounts?.postCount.toString(),
+                        tr(context, "POSTS"),
+                        statKey: 'posts', width: statWidth, tab: 'posts'),
+                    _verticalDivider('posts-comments'),
+                    const SizedBox(width: dividerGap),
+                    _buildStat(_activityCounts?.commentCount.toString(),
+                        tr(context, "COMMENTS"),
+                        statKey: 'comments', width: statWidth, tab: 'comments'),
+                  ],
+                );
+              },
+            ),
+            if (!_isLoadingCounts && _activityCounts == null) ...[
+              const SizedBox(height: 12),
+              Text(tr(context, 'Unable to load activity counts.')),
+              TextButton(
+                key: const ValueKey('profile-activity-counts-retry'),
+                onPressed: _loadActivityCounts,
+                child: Text(tr(context, 'Retry')),
+              ),
+            ],
+          ],
         ),
       ),
     );
   }
 
   Widget _buildStat(
-    String value,
+    String? value,
     String label, {
     required String statKey,
     required double width,
@@ -438,14 +495,29 @@ class _ProfileState extends State<Profile> {
     return GestureDetector(
       key: ValueKey('profile-stat-$statKey'),
       behavior: HitTestBehavior.opaque,
-      onTap: () => context.push('/profile/activity?tab=$tab', extra: _profile),
+      onTap: () => _openActivity(tab),
       child: SizedBox(
         width: width,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value, textAlign: TextAlign.left, style: Heading3.style),
+            SizedBox(
+              width: width,
+              height: MediaQuery.textScalerOf(context)
+                      .scale(Heading3.style.fontSize!) *
+                  Heading3.style.height!,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: value == null && _isLoadingCounts
+                    ? FootballLoadingIndicator(
+                        key: ValueKey('profile-stat-$statKey-loading'),
+                      )
+                    : Text(value ?? '—',
+                        textAlign: TextAlign.left, style: Heading3.style),
+              ),
+            ),
             const SizedBox(height: 4),
             SizedBox(
               width: width,
