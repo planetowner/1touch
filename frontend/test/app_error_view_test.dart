@@ -83,8 +83,41 @@ void main() {
 
     expect(find.text('오프사이드!'), findsOneWidget);
     expect(find.text('찾고 있는 페이지를 찾을 수 없어요.'), findsOneWidget);
+    expect(appErrorConfigFor(404).imageAsset, 'assets/error_offside.png');
+    expect(find.byType(Image), findsOneWidget);
+    final fade = tester.widget<DecoratedBox>(
+      find.byKey(const ValueKey('app-error-photo-fade')),
+    );
+    final gradient =
+        (fade.decoration as BoxDecoration).gradient! as LinearGradient;
+    expect(gradient.stops, [0.0, 0.45, 0.82, 1.0]);
+    expect(
+        gradient.colors.last,
+        app_style.AppColors.of(
+          tester.element(find.byType(AppErrorView)),
+        ).pageBackground);
     await tester.tap(find.text('홈으로'));
     expect(tapped, isTrue);
+  });
+
+  testWidgets('photo error fits a compact screen', (tester) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        theme: app_style.darktheme,
+        home: const Scaffold(body: AppErrorView(statusCode: 404)),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('app-error-photo-fade')), findsOneWidget);
   });
 
   testWidgets('does not create an action for a null configuration',

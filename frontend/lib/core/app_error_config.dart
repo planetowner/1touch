@@ -6,11 +6,13 @@ class AppErrorConfig {
     required this.title,
     required this.message,
     required this.action,
+    this.imageAsset,
   });
 
   final String title;
   final String message;
   final String? action;
+  final String? imageAsset;
 }
 
 const Map<int, AppErrorConfig> appErrorConfigs = {
@@ -18,6 +20,7 @@ const Map<int, AppErrorConfig> appErrorConfigs = {
     title: "Offside!",
     message: "The page could not be found.",
     action: "Go home",
+    imageAsset: 'assets/error_offside.png',
   ),
   401: AppErrorConfig(
     title: "Please join again",
