@@ -180,6 +180,7 @@ class _PostCard extends StatelessWidget {
     final isLight = Theme.of(context).brightness == Brightness.light;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.only(bottom: 20),

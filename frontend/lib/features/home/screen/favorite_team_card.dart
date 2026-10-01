@@ -36,6 +36,7 @@ class FavoriteTeamCard extends StatelessWidget {
             children: [
               // TEAM HEADER
               GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: isTeamPageSupported(team.id)
                     ? () => openTeamPage(context, team.id)
                     : null,

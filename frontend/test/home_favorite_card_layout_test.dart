@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/features/HomeScreenFeatures.dart';
@@ -32,6 +33,52 @@ void main() {
         fixtureDateLabel(DateTime(2026, 10, 11, 23, 30),
             locale: const Locale('ko')),
         "10월 11일 (일)\n오후 11:30");
+  });
+
+  testWidgets('blank space in favorite team header opens the team',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final router = GoRouter(
+      initialLocation: '/home',
+      routes: [
+        GoRoute(
+          path: '/home',
+          builder: (_, __) => const Scaffold(
+            body: FavoriteTeamCard(
+              team: TeamOverview(
+                id: 9,
+                name: 'Manchester City',
+                shortName: 'MCI',
+                imagePath: '',
+              ),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/team/:teamId',
+          builder: (_, state) => Scaffold(
+            body: Text('Team ${state.pathParameters['teamId']}'),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    final header = find
+        .descendant(
+          of: find.byType(FavoriteTeamCard),
+          matching: find.byType(GestureDetector),
+        )
+        .first;
+    final bounds = tester.getRect(header);
+    await tester.tapAt(Offset(bounds.right - 8, bounds.center.dy));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Team 9'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   for (final width in [320.0, 393.0, 430.0]) {
