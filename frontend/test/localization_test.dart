@@ -245,7 +245,19 @@ void main() {
       expect(find.text(translateMessage(locale, 'Continue with Kakao')),
           findsOneWidget);
       expect(find.byKey(const ValueKey('line-sign-in-button')), findsNothing);
-      expect(find.byKey(const ValueKey('other-login-methods')), findsNothing);
+      final otherMethods = find.byKey(const ValueKey('other-login-methods'));
+      expect(otherMethods, findsOneWidget);
+      await tester.ensureVisible(otherMethods);
+      await tester.tap(otherMethods);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('line-sign-in-button')), findsOneWidget);
+      await tester
+          .ensureVisible(find.byKey(const ValueKey('line-sign-in-button')));
+      expect(tester.takeException(), isNull);
+      await tester.ensureVisible(otherMethods);
+      await tester.tap(otherMethods);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('line-sign-in-button')), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(app(const EmailSignInScreen()));
       await tester.pumpAndSettle();
@@ -267,7 +279,18 @@ void main() {
           .instance.defaultBinaryMessenger
           .setMockMethodCallHandler(DeviceRegion.channel, null));
       final first =
-          switch (region) { 'KR' => 'kakao', 'JP' => 'line', _ => 'apple' };
+          switch (region) { 'KR' => 'kakao', 'JP' => 'line', _ => 'google' };
+      final recommended = [
+        if (region != 'US') first,
+        'google',
+        'apple',
+        'email',
+      ];
+      final other = switch (region) {
+        'KR' => ['line'],
+        'JP' => ['kakao'],
+        _ => ['kakao', 'line'],
+      };
       final repository = ApiLoginOptionsRepository(
           api: ApiClient(
         baseUri: Uri.parse('https://api.example.test/v1/'),
@@ -278,8 +301,8 @@ void main() {
               {'platform': 'ios', 'country_code': region});
           return http.Response(
               jsonEncode({
-                'providers': [first, 'email'],
-                'other_providers': []
+                'providers': recommended,
+                'other_providers': other,
               }),
               200);
         }),
@@ -296,6 +319,16 @@ void main() {
       await tester.pumpAndSettle();
       final provider = LoginProvider.values.byName(first);
       expect(find.text(provider.label), findsOneWidget);
+      for (final name in other) {
+        expect(find.byKey(ValueKey('$name-sign-in-button')), findsNothing);
+      }
+      final otherMethods = find.byKey(const ValueKey('other-login-methods'));
+      await tester.ensureVisible(otherMethods);
+      await tester.tap(otherMethods);
+      await tester.pumpAndSettle();
+      for (final name in other) {
+        expect(find.byKey(ValueKey('$name-sign-in-button')), findsOneWidget);
+      }
       expect(
           tester.getTopLeft(find.byKey(ValueKey('$first-sign-in-button'))).dy,
           lessThan(tester
@@ -303,4 +336,44 @@ void main() {
               .dy));
     }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
   }
+
+  testWidgets('Android US login keeps Apple hidden and offers regional methods',
+      (tester) async {
+    tester.platformDispatcher.localeTestValue = const Locale('en', 'US');
+    addTearDown(tester.platformDispatcher.clearLocaleTestValue);
+    final repository = ApiLoginOptionsRepository(
+      api: ApiClient(
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => {},
+        client: MockClient((request) async {
+          expect(request.url.queryParameters,
+              {'platform': 'android', 'country_code': 'US'});
+          return http.Response(
+              jsonEncode({
+                'providers': ['google', 'email'],
+                'other_providers': ['kakao', 'line'],
+              }),
+              200);
+        }),
+      ),
+    );
+    await tester.pumpWidget(MaterialApp(
+      home: OnboardingScreen(
+        loadOptions: () async => repository.load(
+          platform: 'android',
+          country: await const DeviceRegion().readCountryCode(),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('apple-sign-in-button')), findsNothing);
+    final otherMethods = find.byKey(const ValueKey('other-login-methods'));
+    await tester.ensureVisible(otherMethods);
+    await tester.tap(otherMethods);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('kakao-sign-in-button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('line-sign-in-button')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 }
