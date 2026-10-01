@@ -39,6 +39,7 @@ class AddPost extends StatefulWidget {
 class _AddPostState extends State<AddPost> {
   PostCategory _selectedCategory = PostCategory.general;
   bool _isSubmitting = false;
+  bool _isPickingMedia = false;
 
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
@@ -83,27 +84,39 @@ class _AddPostState extends State<AddPost> {
   }
 
   Future<void> _pickMedia() async {
-    const maximumAttachments = 10;
-    if (_existingAttachments.length + _mediaFiles.length >=
-        maximumAttachments) {
-      _showMessage(tr(context, 'You can attach up to 10 files.'));
-      return;
-    }
-
-    final picked =
-        await (widget.pickMedia?.call() ?? _picker.pickMultipleMedia());
-    if (!mounted || picked.isEmpty) return;
-
-    final remaining =
-        maximumAttachments - _existingAttachments.length - _mediaFiles.length;
-    setState(() => _mediaFiles.addAll(picked.take(remaining)));
-    if (picked.length > remaining) {
-      _showMessage(tr(context, 'You can attach up to 10 files.'));
+    if (_isPickingMedia || _isSubmitting) return;
+    setState(() => _isPickingMedia = true);
+    try {
+      final maximumAttachments = await _postRepository.loadAttachmentLimit();
+      if (!mounted) return;
+      void showLimit() => _showMessage(tr(
+          context,
+          'You can attach up to {count} files.',
+          {'count': maximumAttachments}));
+      if (_existingAttachments.length + _mediaFiles.length >=
+          maximumAttachments) {
+        showLimit();
+        return;
+      }
+      final picked =
+          await (widget.pickMedia?.call() ?? _picker.pickMultipleMedia());
+      if (!mounted || picked.isEmpty) return;
+      final remaining =
+          maximumAttachments - _existingAttachments.length - _mediaFiles.length;
+      setState(() => _mediaFiles.addAll(picked.take(remaining)));
+      if (picked.length > remaining) showLimit();
+    } on Object {
+      if (mounted) {
+        _showMessage(
+            tr(context, 'Unable to add attachments. Please try again.'));
+      }
+    } finally {
+      if (mounted) setState(() => _isPickingMedia = false);
     }
   }
 
   Future<void> _submitPost() async {
-    if (_isSubmitting) return;
+    if (_isSubmitting || _isPickingMedia) return;
 
     final title = _titleController.text.trim();
     final body = _bodyController.text.trim();
@@ -248,7 +261,7 @@ class _AddPostState extends State<AddPost> {
               onCategoryChanged: (category) {
                 setState(() => _selectedCategory = category);
               },
-              onPickMedia: _pickMedia,
+              onPickMedia: _isPickingMedia || _isSubmitting ? null : _pickMedia,
               onRemoveMedia: (index) {
                 setState(() => _mediaFiles.removeAt(index));
               },

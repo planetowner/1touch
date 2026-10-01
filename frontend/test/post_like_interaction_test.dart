@@ -168,6 +168,9 @@ void _setScreenSize(WidgetTester tester) {
 }
 
 class _LikePostRepository implements PostRepository {
+  @override
+  Future<int> loadAttachmentLimit() async => 10;
+
   _LikePostRepository(this._responses);
 
   final List<Future<void> Function(bool liked)> _responses;

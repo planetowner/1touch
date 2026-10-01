@@ -16,6 +16,13 @@ class ApiPostRepository implements PostRepository, PostDetailRepository {
   final ApiClient _api;
 
   @override
+  Future<int> loadAttachmentLimit() async {
+    final response = await _api.get(_api.baseUri.resolve('posts/limits'));
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    return decoded['max_attachments'] as int;
+  }
+
+  @override
   Future<Post> loadPost(int postId) async {
     if (postId < 1) {
       throw RangeError.value(postId, 'postId', 'Must be positive');
@@ -152,11 +159,10 @@ class ApiPostRepository implements PostRepository, PostDetailRepository {
       throw ArgumentError.value(
           input.body, 'body', 'Must be at most 10000 characters');
     }
-    if (input.attachmentIds.length > 10 ||
-        input.attachmentIds.any((id) => id < 1) ||
+    if (input.attachmentIds.any((id) => id < 1) ||
         input.attachmentIds.toSet().length != input.attachmentIds.length) {
-      throw ArgumentError.value(input.attachmentIds, 'attachmentIds',
-          'Must be up to 10 unique positive IDs');
+      throw ArgumentError.value(
+          input.attachmentIds, 'attachmentIds', 'Must be unique positive IDs');
     }
     final response = await _api.put(
       _api.baseUri.resolve('posts/${input.postId}'),
@@ -284,14 +290,6 @@ class ApiPostRepository implements PostRepository, PostDetailRepository {
         input.body,
         'input.body',
         'Must not exceed 10000 characters',
-      );
-    }
-    if (input.attachmentIds.length > 10) {
-      throw RangeError.range(
-        input.attachmentIds.length,
-        0,
-        10,
-        'input.attachmentIds.length',
       );
     }
     if (input.attachmentIds.any((id) => id < 1)) {

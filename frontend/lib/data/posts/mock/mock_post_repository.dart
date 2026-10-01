@@ -5,7 +5,8 @@ import 'package:onetouch/models/post.dart';
 typedef MockPostReport = ({int postId, int userId, String reason});
 
 class MockPostRepository implements PostRepository {
-  MockPostRepository({List<Post>? posts, int currentUserId = 1001})
+  MockPostRepository(
+      {List<Post>? posts, int currentUserId = 1001, this.maxAttachments = 10})
       : _posts = List.of(posts ?? mockPosts),
         _currentUserId = currentUserId {
     for (final post in _posts) {
@@ -18,11 +19,15 @@ class MockPostRepository implements PostRepository {
   // Temporary in-memory identity until an API implementation derives the
   // current user from the authenticated request.
   final int _currentUserId;
+  final int maxAttachments;
   final List<Post> _posts;
   final List<MockPostReport> _reports = [];
   int _nextPostId = 1;
 
   List<MockPostReport> get reports => List.unmodifiable(_reports);
+
+  @override
+  Future<int> loadAttachmentLimit() async => maxAttachments;
 
   @override
   Future<int> createPost(CreatePostInput input) async {
@@ -44,11 +49,11 @@ class MockPostRepository implements PostRepository {
         'Must not exceed 10000 characters',
       );
     }
-    if (input.attachmentIds.length > 10) {
+    if (input.attachmentIds.length > maxAttachments) {
       throw RangeError.range(
         input.attachmentIds.length,
         0,
-        10,
+        maxAttachments,
         'input.attachmentIds.length',
       );
     }

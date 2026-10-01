@@ -1,3 +1,4 @@
+import 'package:onetouch/models/profile_change_limit_exception.dart';
 import 'dart:convert';
 
 import 'package:onetouch/core/api_client.dart';
@@ -6,11 +7,6 @@ import 'package:onetouch/data/profile/api/api_current_user_response.dart';
 import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/models/current_user_profile.dart';
-
-class ProfileChangeLimitException implements Exception {
-  const ProfileChangeLimitException(this.availableAt);
-  final DateTime availableAt;
-}
 
 class ProfileNameConflictException implements Exception {}
 
@@ -84,10 +80,7 @@ class ApiCurrentUserRepository implements CurrentUserRepository {
           _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: 409);
       final detail = body['detail'];
       if (detail is Map<String, dynamic> && detail['available_at'] is String) {
-        final availableAt = DateTime.tryParse(detail['available_at'] as String);
-        if (availableAt != null) {
-          throw ProfileChangeLimitException(availableAt.toUtc());
-        }
+        throw ProfileChangeLimitException.fromJson(detail);
       }
       if (detail == 'Username or nickname is already in use') {
         throw ProfileNameConflictException();

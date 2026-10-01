@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
@@ -50,6 +53,27 @@ class MatchBettingSection extends StatelessWidget {
         builder: (context, _) {
           final market = controller.market;
           final bet = market?.bet;
+          if (market?.unavailableReason == 'betting_not_open') {
+            return Container(
+              key: const ValueKey('match-betting-opening-notice'),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              decoration: BoxDecoration(
+                color: AppColors.of(context).cardBackground,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: appCardShadows(context),
+              ),
+              child: Text(
+                tr(context, 'Betting opens {date}.', {
+                  'date': fixtureDateLabel(market!.opensAt!,
+                          locale: Localizations.localeOf(context))
+                      .replaceAll('\n', ' '),
+                }),
+                style: Body1.style,
+                textAlign: TextAlign.center,
+              ),
+            );
+          }
           return Container(
             key: const ValueKey('match-betting-card'),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -104,7 +128,7 @@ class MatchBettingSection extends StatelessWidget {
                     text: bet?.isOpen == true
                         ? tr(context, 'EDIT BET')
                         : tr(context, 'PLACE A BET'),
-                    onPressed: controller.spendingLimit < 10
+                    onPressed: controller.spendingLimit < market!.stakeUnit
                         ? null
                         : () => showModalBottomSheet<void>(
                               context: context,
@@ -118,11 +142,13 @@ class MatchBettingSection extends StatelessWidget {
                               ),
                             ),
                   ),
-                  if (controller.spendingLimit < 10)
+                  if (controller.spendingLimit < market.stakeUnit)
                     Padding(
                       padding: EdgeInsets.only(top: 8),
                       child: Text(tr(
-                          context, 'You need at least 10 pts to place a bet.')),
+                          context,
+                          'You need at least {points} pts to place a bet.',
+                          {'points': market.stakeUnit})),
                     ),
                 ],
                 if (controller.canCancel)
@@ -190,7 +216,11 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
       _selected = bet!.outcome;
       _amount = bet.stake;
     } else {
-      _amount = (widget.controller.spendingLimit ~/ 10 * 10).clamp(10, 100);
+      final unit = widget.controller.market!.stakeUnit;
+      final initialUnits = math.max(1, 100 ~/ unit);
+      _amount =
+          math.min(widget.controller.spendingLimit ~/ unit, initialUnits) *
+              unit;
     }
   }
 
@@ -334,9 +364,11 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                           children: [
                             IconButton(
                               key: const ValueKey('bet-decrease'),
-                              onPressed: controller.saving || _amount <= 10
+                              onPressed: controller.saving ||
+                                      _amount <= market.stakeUnit
                                   ? null
-                                  : () => setState(() => _amount -= 10),
+                                  : () => setState(
+                                      () => _amount -= market.stakeUnit),
                               icon: const Icon(Icons.remove_circle_outline),
                             ),
                             Flexible(
@@ -350,9 +382,11 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                             IconButton(
                               key: const ValueKey('bet-increase'),
                               onPressed: controller.saving ||
-                                      _amount + 10 > controller.spendingLimit
+                                      _amount + market.stakeUnit >
+                                          controller.spendingLimit
                                   ? null
-                                  : () => setState(() => _amount += 10),
+                                  : () => setState(
+                                      () => _amount += market.stakeUnit),
                               icon: const Icon(Icons.add_circle_outline),
                             ),
                           ],

@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/locale_controller.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:onetouch/services/notification_message_templates.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -13,30 +17,34 @@ class DeviceNotificationService {
 
   static const matchReminderLeadTime = Duration(minutes: 30);
 
-  static const _teamChannel = AndroidNotificationChannel(
-    'team_updates',
-    'Team updates',
-    description: 'Match and score updates for followed teams.',
-    importance: Importance.high,
-  );
-  static const _playerChannel = AndroidNotificationChannel(
-    'player_updates',
-    'Player updates',
-    description: 'Match events for followed players.',
-    importance: Importance.high,
-  );
-  static const _postsChannel = AndroidNotificationChannel(
-    'post_updates',
-    'Post updates',
-    description: 'Reactions and comments on your posts.',
-    importance: Importance.high,
-  );
-  static const _bettingChannel = AndroidNotificationChannel(
-    'betting_updates',
-    'Betting updates',
-    description: 'New bets and settled result updates.',
-    importance: Importance.high,
-  );
+  AndroidNotificationChannel get _teamChannel => AndroidNotificationChannel(
+        'team_updates',
+        translateMessage(appLocaleController.value, 'Team updates'),
+        description: translateMessage(appLocaleController.value,
+            'Match and score updates for followed teams.'),
+        importance: Importance.high,
+      );
+  AndroidNotificationChannel get _playerChannel => AndroidNotificationChannel(
+        'player_updates',
+        translateMessage(appLocaleController.value, 'Player updates'),
+        description: translateMessage(
+            appLocaleController.value, 'Match events for followed players.'),
+        importance: Importance.high,
+      );
+  AndroidNotificationChannel get _postsChannel => AndroidNotificationChannel(
+        'post_updates',
+        translateMessage(appLocaleController.value, 'Post updates'),
+        description: translateMessage(
+            appLocaleController.value, 'Reactions and comments on your posts.'),
+        importance: Importance.high,
+      );
+  AndroidNotificationChannel get _bettingChannel => AndroidNotificationChannel(
+        'betting_updates',
+        translateMessage(appLocaleController.value, 'Betting updates'),
+        description: translateMessage(
+            appLocaleController.value, 'New bets and settled result updates.'),
+        importance: Importance.high,
+      );
 
   final FlutterLocalNotificationsPlugin _plugin;
   bool _initialized = false;
@@ -66,10 +74,24 @@ class DeviceNotificationService {
         if (payload != null && payload.isNotEmpty) _onPayload?.call(payload);
       },
     );
-    if (defaultTargetPlatform == TargetPlatform.android) {
+    await _updateChannels();
+    appLocaleController.addListener(_handleLocaleChanged);
+    final launchDetails = await _plugin.getNotificationAppLaunchDetails();
+    if (launchDetails?.didNotificationLaunchApp ?? false) {
+      _initialPayload = launchDetails?.notificationResponse?.payload;
+    }
+    _initialized = true;
+  }
+
+  // 알림 설정 화면의 채널 이름도 앱에서 고른 언어를 따라가요.
+  void _handleLocaleChanged() => unawaited(_updateChannels());
+
+  Future<void> _updateChannels() async {
+    if (defaultTargetPlatform != TargetPlatform.android) return;
+    try {
       final android = _plugin.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
-      for (final channel in const [
+      for (final channel in [
         _teamChannel,
         _playerChannel,
         _postsChannel,
@@ -77,12 +99,9 @@ class DeviceNotificationService {
       ]) {
         await android?.createNotificationChannel(channel);
       }
+    } on Object catch (error) {
+      debugPrint('Unable to update notification channels: $error');
     }
-    final launchDetails = await _plugin.getNotificationAppLaunchDetails();
-    if (launchDetails?.didNotificationLaunchApp ?? false) {
-      _initialPayload = launchDetails?.notificationResponse?.payload;
-    }
-    _initialized = true;
   }
 
   String? takeInitialPayload() {
@@ -158,7 +177,10 @@ class DeviceNotificationService {
     final message = NotificationMessageTemplates.build(
       type: NotificationEventType.teamMatchReminder,
       locale: locale,
-      data: NotificationTemplateData(team: teamName),
+      data: NotificationTemplateData(
+        team: teamName,
+        minutesUntilKickoff: matchReminderLeadTime.inMinutes,
+      ),
       payload: payload,
     );
     await _plugin.zonedSchedule(

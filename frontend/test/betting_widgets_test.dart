@@ -14,6 +14,67 @@ import 'package:onetouch/models/betting.dart';
 import 'support/fake_betting_repository.dart';
 
 void main() {
+  testWidgets('uses the server stake unit for minimum and amount buttons',
+      (tester) async {
+    final repository = FakeBettingRepository()
+      ..stakeUnit = 25
+      ..balance = 24;
+    final controller = BettingController(fixtureId: 1, repository: repository);
+    await controller.load();
+    final teams = MockTeamRepository();
+    await tester.pumpWidget(MaterialApp(
+        theme: whitetheme,
+        home: Scaffold(
+          body: MatchBettingSection(
+              controller: controller,
+              homeTeam: teams.requireById(6),
+              awayTeam: teams.requireById(14)),
+        )));
+    expect(
+        find.text('You need at least 25 pts to place a bet.'), findsOneWidget);
+    await tester.tap(find.text('PLACE A BET'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BettingFlowModal), findsNothing);
+
+    repository.balance = 85;
+    await controller.load();
+    await tester.pump();
+    await tester.tap(find.text('PLACE A BET'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Draw').last);
+    await tester.pump();
+    await tester.tap(find.text('CONTINUE'));
+    await tester.pumpAndSettle();
+    expect(find.text('75 pts'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('bet-decrease')));
+    await tester.pump();
+    expect(find.text('50 pts'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('bet-increase')));
+    await tester.pump();
+    expect(find.text('75 pts'), findsOneWidget);
+    expect(
+        tester
+            .widget<IconButton>(find.byKey(const ValueKey('bet-increase')))
+            .onPressed,
+        isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    controller.dispose();
+  });
+
+  testWidgets('reloads betting when the server opening time arrives',
+      (tester) async {
+    final repository = FakeBettingRepository()
+      ..unavailableReason = 'betting_not_open'
+      ..opensAt = DateTime.now().add(const Duration(seconds: 2));
+    final controller = BettingController(fixtureId: 1, repository: repository);
+    await controller.load();
+    expect(controller.canBet, false);
+    repository.unavailableReason = null;
+    await tester.pump(const Duration(seconds: 2));
+    expect(controller.canBet, true);
+    controller.dispose();
+  });
+
   test('point return uses exact decimal arithmetic', () {
     expect(FakeBettingRepository.options[0].totalReturn(100), 166);
     expect(FakeBettingRepository.options[1].totalReturn(100), 1000);

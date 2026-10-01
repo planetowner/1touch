@@ -9,6 +9,112 @@ const teamScreenKoreanMessages = <String, String>{
 };
 
 const appMessages = <String, MessageTranslations>{
+  "Team updates": (ko: "팀 소식", ja: "チーム情報", zh: "球队动态"),
+  "Match and score updates for followed teams.": (
+    ko: "팔로우한 팀의 경기와 점수 소식이에요.",
+    ja: "フォロー中のチームの試合・スコア情報です。",
+    zh: "关注球队的比赛和比分动态。"
+  ),
+  "Player updates": (ko: "선수 소식", ja: "選手情報", zh: "球员动态"),
+  "Match events for followed players.": (
+    ko: "팔로우한 선수의 경기 소식이에요.",
+    ja: "フォロー中の選手の試合情報です。",
+    zh: "关注球员的比赛动态。"
+  ),
+  "Post updates": (ko: "게시물 소식", ja: "投稿への反応", zh: "帖子动态"),
+  "Reactions and comments on your posts.": (
+    ko: "내 게시물에 달린 좋아요와 댓글이에요.",
+    ja: "あなたの投稿へのいいねやコメントです。",
+    zh: "你的帖子收到的点赞和评论。"
+  ),
+  "Betting updates": (ko: "베팅 소식", ja: "予想のお知らせ", zh: "竞猜动态"),
+  "New bets and settled result updates.": (
+    ko: "새로운 베팅과 결과 소식이에요.",
+    ja: "新しい予想の受付と結果のお知らせです。",
+    zh: "新竞猜及结算结果动态。"
+  ),
+  "Team update": (ko: "팀 소식", ja: "チーム情報", zh: "球队动态"),
+  "Player update": (ko: "선수 소식", ja: "選手情報", zh: "球员动态"),
+  "{author_name} liked your post.": (
+    ko: "{author_name}님이 내 게시물에 좋아요를 눌렀어요.",
+    ja: "{author_name}さんがあなたの投稿にいいねしました。",
+    zh: "{author_name}赞了你的帖子。"
+  ),
+  "{author_name}: {comment_preview}": (
+    ko: "{author_name}: {comment_preview}",
+    ja: "{author_name}: {comment_preview}",
+    zh: "{author_name}: {comment_preview}"
+  ),
+  "Betting is open for {match}.": (
+    ko: "{match} 베팅이 열렸어요.",
+    ja: "{match}の予想受付が始まりました。",
+    zh: "{match}的竞猜已开放。"
+  ),
+  "{match} starts in {minutes_until_kickoff} minutes.": (
+    ko: "{match} 경기가 {minutes_until_kickoff}분 후 시작해요.",
+    ja: "{match}は{minutes_until_kickoff}分後にキックオフです。",
+    zh: "{match}将在{minutes_until_kickoff}分钟后开始。"
+  ),
+  "{match} — Kickoff!": (
+    ko: "{match} 경기가 시작했어요.",
+    ja: "{match} — キックオフ！",
+    zh: "{match} — 比赛开始！"
+  ),
+  "Half time · {match} {score}": (
+    ko: "전반 종료 · {match} {score}",
+    ja: "前半終了 · {match} {score}",
+    zh: "上半场结束 · {match} {score}"
+  ),
+  "Full time · {match} {score}": (
+    ko: "경기 종료 · {match} {score}",
+    ja: "試合終了 · {match} {score}",
+    zh: "全场结束 · {match} {score}"
+  ),
+  "⚽ {player} ({team}) {minute}' · {score}": (
+    ko: "⚽ {player} ({team}) {minute}' · {score}",
+    ja: "⚽ {player} ({team}) {minute}' · {score}",
+    zh: "⚽ {player} ({team}) {minute}' · {score}"
+  ),
+  "{team} sub: {out_player} → {in_player} {minute}'": (
+    ko: "{team} 교체: {out_player} → {in_player} {minute}'",
+    ja: "{team} 交代: {out_player} → {in_player} {minute}'",
+    zh: "{team}换人: {out_player} → {in_player} {minute}'"
+  ),
+  "{player} is in the starting lineup.": (
+    ko: "{player} 선발 출전이 확정됐어요.",
+    ja: "{player}のスタメン出場が決まりました。",
+    zh: "{player}确认首发出场。"
+  ),
+  "{player} comes on · {minute}'": (
+    ko: "{player} 교체 투입 · {minute}'",
+    ja: "{player}が途中出場 · {minute}'",
+    zh: "{player}替补登场 · {minute}'"
+  ),
+  "⚽ {player} scores · {minute}'": (
+    ko: "⚽ {player} 골 · {minute}'",
+    ja: "⚽ {player}がゴール · {minute}'",
+    zh: "⚽ {player}进球 · {minute}'"
+  ),
+  "{player} assists · {minute}'": (
+    ko: "{player} 도움 · {minute}'",
+    ja: "{player}がアシスト · {minute}'",
+    zh: "{player}助攻 · {minute}'"
+  ),
+  "{player} yellow card · {minute}'": (
+    ko: "{player} 경고 · {minute}'",
+    ja: "{player}にイエローカード · {minute}'",
+    zh: "{player}领到黄牌 · {minute}'"
+  ),
+  "{player} red card · {minute}'": (
+    ko: "{player} 퇴장 · {minute}'",
+    ja: "{player}にレッドカード · {minute}'",
+    zh: "{player}领到红牌 · {minute}'"
+  ),
+  "{player} substituted due to injury · {minute}'": (
+    ko: "{player} 부상으로 교체 · {minute}'",
+    ja: "{player}が負傷交代 · {minute}'",
+    zh: "{player}因伤被换下 · {minute}'"
+  ),
   "Open live match": (ko: "라이브 경기 보기", ja: "ライブ試合を見る", zh: "查看直播比赛"),
   "You won {points} points!": (
     ko: "{points}포인트를 획득했어요!",
@@ -197,10 +303,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "そのメールアドレス、ユーザー名、またはニックネームは既に登録されています。",
     zh: "该邮箱、用户名或昵称已被注册。"
   ),
-  "You can change {item} twice in 14 days. Try again after {date}.": (
-    ko: "{item}은 14일 동안 2번까지 바꿀 수 있어요. {date} 이후 다시 시도해 주세요.",
-    ja: "{item}は14日間に2回まで変更できます。{date}以降に再試行してください。",
-    zh: "{item}在14天内最多可修改两次。请在{date}之后重试。"
+  "You can change {item} up to {count} times in {days} days. Try again after {date}.":
+      (
+    ko: "{item}은 {days}일 동안 {count}번까지 바꿀 수 있어요. {date} 이후 다시 시도해 주세요.",
+    ja: "{item}は{days}日間に{count}回まで変更できます。{date}以降に再試行してください。",
+    zh: "{item}在{days}天内最多可修改{count}次。请在{date}之后重试。"
   ),
   "Password": (ko: "비밀번호", ja: "パスワード", zh: "密码"),
   "Email": (ko: "이메일", ja: "メールアドレス", zh: "邮箱"),
@@ -779,12 +886,14 @@ const appMessages = <String, MessageTranslations>{
   "ATTACK": (ko: "공격", ja: "攻撃", zh: "进攻"),
   "Attack": (ko: "공격", ja: "攻撃", zh: "进攻"),
   "DEFENSE": (ko: "수비", ja: "守備", zh: "防守"),
-  "Defense": (ko: "수비", ja: "守備", zh: "防守"),
-  "Defending": (ko: "수비", ja: "守備", zh: "防守"),
+  "Defending": (ko: "수비력", ja: "守備力", zh: "防守"),
+  "Possession & Build-Up": (ko: "점유·빌드업", ja: "ポゼッション・ビルドアップ", zh: "控球与推进"),
+  "Attacking Threat": (ko: "공격 위협", ja: "攻撃の脅威", zh: "进攻威胁"),
+  "Chance Creation": (ko: "기회 창출", ja: "チャンス創出", zh: "机会创造"),
+  "Shooting & Finishing": (ko: "슈팅·마무리", ja: "シュート・フィニッシュ", zh: "射门与终结"),
   "POSSESSION": (ko: "점유", ja: "ポゼッション", zh: "控球"),
   "Possession": (ko: "점유", ja: "ポゼッション", zh: "控球"),
   "PROGRESSION": (ko: "전진", ja: "前進", zh: "推进"),
-  "Progression": (ko: "전진", ja: "前進", zh: "推进"),
   "LINK-UP": (ko: "연계", ja: "連携", zh: "串联"),
   "DRIBBLE": (ko: "드리블", ja: "ドリブル", zh: "盘带"),
   "PLAY-MAKING": (ko: "플레이메이킹", ja: "チャンスメイク", zh: "组织进攻"),
@@ -1060,7 +1169,6 @@ const appMessages = <String, MessageTranslations>{
   "Passing": (ko: "패스", ja: "パス", zh: "传球"),
   "Physical": (ko: "피지컬", ja: "フィジカル", zh: "身体"),
   "Reaction": (ko: "반응", ja: "反応", zh: "反应"),
-  "Dominance": (ko: "기회창출", ja: "支配力", zh: "统治力"),
   "MATCH INFO": (ko: "경기 정보", ja: "試合情報", zh: "比赛信息"),
   "MATCH PREVIEW": (ko: "경기 프리뷰", ja: "試合プレビュー", zh: "赛前分析"),
   "HEAD TO HEAD": (ko: "상대 전적", ja: "対戦成績", zh: "交锋记录"),
@@ -1159,10 +1267,15 @@ const appMessages = <String, MessageTranslations>{
     zh: "请输入标题和正文。"
   ),
   "Add photo or video": (ko: "사진 또는 동영상 추가", ja: "写真・動画を追加", zh: "添加照片或视频"),
-  "You can attach up to 10 files.": (
-    ko: "파일은 최대 10개까지 첨부할 수 있어요.",
-    ja: "ファイルは10個まで添付できます。",
-    zh: "最多可添加10个文件。"
+  "You can attach up to {count} files.": (
+    ko: "파일은 최대 {count}개까지 첨부할 수 있어요.",
+    ja: "ファイルは{count}個まで添付できます。",
+    zh: "最多可添加{count}个文件。"
+  ),
+  "Unable to add attachments. Please try again.": (
+    ko: "파일을 첨부하지 못했어요. 다시 시도해 주세요.",
+    ja: "ファイルを添付できませんでした。もう一度お試しください。",
+    zh: "无法添加附件，请重试。"
   ),
   "Popular": (ko: "추천순", ja: "人気順", zh: "热门"),
   "Newest": (ko: "최신순", ja: "新しい順", zh: "最新"),
@@ -1292,7 +1405,59 @@ const appMessages = <String, MessageTranslations>{
     ja: "報告を送信できませんでした。もう一度お試しください。",
     zh: "无法提交举报，请重试。"
   ),
-  "Community Ground Rules": (ko: "커뮤니티 이용 규칙", ja: "コミュニティルール", zh: "社区规则"),
+  "Community Ground Rules": (ko: "커뮤니티 이용 약속", ja: "コミュニティのルール", zh: "社区公约"),
+  "Keep it about football": (
+    ko: "의견이 달라도 서로 존중해요",
+    ja: "意見が違っても、お互いを尊重しましょう",
+    zh: "即使意见不同，也请互相尊重",
+  ),
+  "Disagree with the take, not the person.": (
+    ko: "생각이 달라도 상대방을 공격하지 말고, 의견으로 이야기해주세요.",
+    ja: "考えが違っても、相手を攻撃せず、意見そのものについて話してください。",
+    zh: "想法不同没关系。请围绕观点本身交流，不要攻击他人。",
+  ),
+  "Respect the players": (
+    ko: "선수를 존중해요",
+    ja: "選手を尊重しましょう",
+    zh: "请尊重球员",
+  ),
+  "Talk about mistakes and performances without making it personal.": (
+    ko: "플레이와 경기력에 대한 의견은 자유롭게 나눠주세요. 선수 개인을 향한 모욕이나 인신공격은 삼가 주세요.",
+    ja: "プレーやパフォーマンスについては自由に意見を交わしてください。選手個人への侮辱や人格攻撃は控えてください。",
+    zh: "可以自由讨论球员的表现和比赛发挥。请不要侮辱球员，也不要进行人身攻击。",
+  ),
+  "Rivalries are part of the fun": (
+    ko: "응원하는 팀이 달라도 괜찮아요",
+    ja: "応援するチームが違っても大丈夫です",
+    zh: "支持不同的球队也没关系",
+  ),
+  "Banter and friendly rivalry are welcome. Keep it fun and respectful.": (
+    ko: "놀리고 티격태격하는 것도 축구의 재미예요. 팀이나 팬을 깎아내리는 말은 피해 주세요.",
+    ja: "軽いからかいやライバル同士のやり取りも、サッカーの楽しみのひとつです。楽しく、相手への敬意は忘れないでください。",
+    zh: "互相调侃、友好较劲也是足球的乐趣之一。请保持轻松，也尊重彼此。",
+  ),
+  "Keep the space safe": (
+    ko: "모두가 편하게 볼 수 있는 글을 올려요",
+    ja: "みんなが安心して読める投稿をしましょう",
+    zh: "请发布让大家都能安心阅读的内容",
+  ),
+  "Avoid spam, hate or discriminatory speech, promotional posts, and suspicious links.":
+      (
+    ko: "도배, 혐오·차별 표현, 광고성 글, 수상한 링크는 올리지 말아 주세요.",
+    ja: "スパム投稿、ヘイト・差別的な表現、宣伝目的の投稿、不審なリンクは投稿しないでください。",
+    zh: "请不要刷屏、发表仇恨或歧视性言论、发布广告内容或可疑链接。",
+  ),
+  "Add to the atmosphere": (
+    ko: "좋은 분위기를 함께 만들어요",
+    ja: "みんなでいい雰囲気をつくりましょう",
+    zh: "一起营造良好的氛围",
+  ),
+  "Cheer, debate, and joke around. Be considerate and help keep the community welcoming.":
+      (
+    ko: "응원하고, 토론하고, 농담도 나눠주세요. 서로를 배려하며 좋은 분위기를 만들어주세요.",
+    ja: "応援したり、議論したり、冗談を言い合ったりしながら楽しんでください。お互いに配慮し、気持ちのいいコミュニティを一緒につくってください。",
+    zh: "欢迎一起加油、讨论、开玩笑。请彼此体谅，一起营造友好的社区氛围。",
+  ),
   "I UNDERSTAND!": (ko: "이해했습니다!", ja: "理解しました！", zh: "我明白了！"),
   "I understand": (ko: "이해했어요", ja: "理解しました", zh: "我明白了"),
   "Unable to load community rules.": (
@@ -1317,11 +1482,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "チャットが切断されました。もう一度お試しください。",
     zh: "聊天已断开，请重试。"
   ),
-  "Chat unavailable": (
-    ko: "지금은 채팅할 수 없어요",
-    ja: "現在チャットは利用できません",
-    zh: "当前无法聊天"
-  ),
+  "Chat unavailable": (ko: "지금은 채팅할 수 없어요", ja: "現在チャットは利用できません", zh: "当前无法聊天"),
   "Live chat is only available during the match.": (
     ko: "경기 중에만 실시간 채팅을 이용할 수 있어요.",
     ja: "ライブチャットは試合中のみ利用できます。",
@@ -1528,16 +1689,16 @@ const appMessages = <String, MessageTranslations>{
     ja: "キックオフ時間が決まると予想受付が始まります。",
     zh: "开球时间确定后将开放竞猜。"
   ),
-  "Betting opens 24 hours before kickoff.": (
-    ko: "베팅은 경기 시작 24시간 전에 열려요.",
-    ja: "予想受付は試合開始の24時間前に始まります。",
-    zh: "竞猜将在开赛前24小时开放。"
+  "Betting opens {date}.": (
+    ko: "{date}에 베팅이 열려요.",
+    ja: "{date}に予想受付が始まります。",
+    zh: "竞猜将于{date}开放。"
   ),
   "Not enough points.": (ko: "포인트가 부족해요.", ja: "ポイントが足りません。", zh: "积分不足。"),
-  "You need at least 10 pts to place a bet.": (
-    ko: "베팅하려면 최소 10포인트가 필요해요.",
-    ja: "予想には最低10ポイントが必要です。",
-    zh: "参与竞猜至少需要10积分。"
+  "You need at least {points} pts to place a bet.": (
+    ko: "베팅하려면 최소 {points}포인트가 필요해요.",
+    ja: "予想には最低{points}ポイントが必要です。",
+    zh: "参与竞猜至少需要{points}积分。"
   ),
   "Sign in to use points.": (
     ko: "포인트를 사용하려면 로그인해 주세요.",
@@ -1936,36 +2097,6 @@ const appMessages = <String, MessageTranslations>{
     ko: "{user}님이 내 댓글에 답글을 남겼어요: ",
     ja: "{user}さんがあなたのコメントに返信しました：",
     zh: "{user}回复了你的评论："
-  ),
-  "Full time 3-1 — Big win for Barcelona!": (
-    ko: "경기 종료 3–1 — 바르셀로나의 승리!",
-    ja: "試合終了3–1 — バルセロナが快勝！",
-    zh: "全场结束3–1，巴塞罗那大胜！"
-  ),
-  "Kang-In is in the XI 👕": (
-    ko: "이강인이 선발로 출전해요 👕",
-    ja: "イ・ガンインが先発出場 👕",
-    zh: "李刚仁首发出场 👕"
-  ),
-  "Kane scored twice! Bayern 2-0 Dortmund.": (
-    ko: "케인 멀티골! 바이에른 2–0 도르트문트.",
-    ja: "ケインが2得点！バイエルン2–0ドルトムント。",
-    zh: "凯恩梅开二度！拜仁2–0多特蒙德。"
-  ),
-  "Barcelona vs Real Madrid — place your prediction.": (
-    ko: "바르셀로나 vs 레알 마드리드 — 승부를 예측해 보세요.",
-    ja: "バルセロナ対レアル・マドリード — 勝敗を予想しましょう。",
-    zh: "巴塞罗那对阵皇家马德里，快来预测赛果。"
-  ),
-  "Lewandowski scored! Barcelona lead 1-0.": (
-    ko: "레반도프스키 득점! 바르셀로나가 1–0으로 앞서요.",
-    ja: "レヴァンドフスキが得点！バルセロナが1–0でリード。",
-    zh: "莱万多夫斯基进球！巴塞罗那1–0领先。"
-  ),
-  "Your prediction was correct — Bayern won 3-1.": (
-    ko: "예측에 성공했어요. 바이에른이 3–1로 이겼어요.",
-    ja: "予想的中！バイエルンが3–1で勝利しました。",
-    zh: "预测正确！拜仁3–1获胜。"
   ),
   "Last {count} matches": (
     ko: "최근 {count}경기",
