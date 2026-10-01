@@ -444,7 +444,7 @@ class _ProfileState extends State<Profile> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value, textAlign: TextAlign.left, style: Heading4.style),
+            Text(value, textAlign: TextAlign.left, style: Heading3.style),
             const SizedBox(height: 4),
             SizedBox(
               width: width,
