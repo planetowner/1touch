@@ -26,11 +26,11 @@ void main() {
     expect(scores.competitionId, 564);
     expect(scores.seasonId, 27965);
     expect(scores.seasonLabel, '2026/2027');
-    expect(scores.attack, 79.76);
-    expect(scores.progression, 73.57);
-    expect(scores.dominance, 86.39);
-    expect(scores.defense, 72.96);
-    expect(scores.possession, 82.8);
+    expect(scores.shootingFinishing, 79.76);
+    expect(scores.attackingThreat, 73.57);
+    expect(scores.chanceCreation, 86.39);
+    expect(scores.defending, 72.96);
+    expect(scores.possessionBuildUp, 82.8);
     expect(scores.radarValues, [79.76, 73.57, 86.39, 72.96, 82.8]);
   });
 }

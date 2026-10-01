@@ -33,11 +33,11 @@ void main() {
     expect(
       teamAttributeLabels,
       const [
-        'Attack',
-        'Progression',
-        'Dominance',
-        'Defense',
-        'Possession',
+        'Shooting & Finishing',
+        'Attacking Threat',
+        'Chance Creation',
+        'Defending',
+        'Possession & Build-Up',
       ],
     );
     expect(

@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -15,7 +16,14 @@ import 'package:onetouch/models/team_attribute_scores.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   setUpAppCatalog();
+  setUpAll(() async {
+    // 긴 축 이름의 줄바꿈을 앱에서 쓰는 글꼴의 폭으로 확인해요.
+    await (FontLoader('Archivo')
+          ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
+        .load();
+  });
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets(
         'renders current API attributes at ${size.width}x${size.height}',
@@ -57,7 +65,7 @@ void main() {
       expect(
         List.generate(
           teamAttributeLabels.length,
-          (index) => chart.data.getTitle!(index, 0).text,
+          (index) => chart.data.getTitle!(index, 0).text.replaceAll('\n', ' '),
         ),
         teamAttributeLabels,
       );
