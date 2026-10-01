@@ -47,6 +47,8 @@ BettingMarket marketFromJson(Map<String, dynamic> json) {
   }
   return BettingMarket(
     fixtureId: json['fixture_id'] as int,
+    stakeUnit: json['stake_unit'] as int,
+    opensAt: _date(json['opens_at']),
     available: json['available'] as bool,
     canBet: json['can_bet'] as bool,
     canCancel: json['can_cancel'] as bool,

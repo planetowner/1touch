@@ -12,10 +12,8 @@ class StubCommunityRepository implements CommunityRepository {
   @override
   Future<CommunityRules> loadRules({
     required int teamId,
-    required CommunityLanguage language,
   }) async =>
       CommunityRules(
-        language: language,
         title: 'Community Ground Rules',
         items: const [
           CommunityRule(
@@ -39,6 +37,5 @@ class StubCommunityRepository implements CommunityRepository {
             body: 'Celebrate the game and enjoy the banter.',
           ),
         ],
-        confirmLabel: 'I UNDERSTAND!',
       );
 }

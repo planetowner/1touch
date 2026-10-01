@@ -1,4 +1,6 @@
 import 'package:flutter/widgets.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/services/notification_message_keys.dart';
 
 enum DeviceNotificationCategory { team, player, posts, betting }
 
@@ -39,6 +41,25 @@ enum NotificationEventType {
   final int spreadsheetNumber;
   final DeviceNotificationCategory category;
   final NotificationDeliveryTiming deliveryTiming;
+
+  String get kind => switch (this) {
+        NotificationEventType.teamMatchReminder => 'team_match_reminder',
+        NotificationEventType.teamKickoff => 'team_kickoff',
+        NotificationEventType.teamHalfTime => 'team_half_time',
+        NotificationEventType.teamFullTime => 'team_full_time',
+        NotificationEventType.teamGoal => 'team_goal',
+        NotificationEventType.teamSubstitution => 'team_substitution',
+        NotificationEventType.playerStartingXi => 'player_starting_xi',
+        NotificationEventType.playerSubstitute => 'player_substitute',
+        NotificationEventType.playerGoal => 'player_goal',
+        NotificationEventType.playerAssist => 'player_assist',
+        NotificationEventType.playerYellowCard => 'player_yellow_card',
+        NotificationEventType.playerRedCard => 'player_red_card',
+        NotificationEventType.playerInjury => 'player_injury',
+        NotificationEventType.postReaction => 'post_reaction',
+        NotificationEventType.postComment => 'post_comment',
+        NotificationEventType.bettingNewBet => 'team_new_bets',
+      };
 }
 
 class NotificationTemplateData {
@@ -92,78 +113,28 @@ class NotificationMessageTemplates {
     required NotificationTemplateData data,
     String? payload,
   }) {
-    final korean = locale.languageCode == 'ko';
+    final keys = notificationMessageKeys[type.kind]!;
+    final arguments = <String, Object>{
+      'match': data.homeTeam.isEmpty && data.awayTeam.isEmpty
+          ? data.team
+          : '${data.homeTeam} vs ${data.awayTeam}',
+      'team': data.team,
+      'player': data.player,
+      'out_player': data.outPlayer,
+      'in_player': data.inPlayer,
+      'author_name': data.displayName,
+      'comment_preview': _preview(data.commentPreview),
+      'minute': data.minute,
+      'score': data.score,
+      'minutes_until_kickoff': data.minutesUntilKickoff,
+    };
     return DeviceNotificationMessage(
       type: type,
-      title: _title(type.category, korean),
-      body: _body(type, data, korean),
+      title: translateMessage(locale, keys.title),
+      body: translateMessage(locale, keys.body, arguments),
       payload: payload,
     );
   }
-
-  static String _title(DeviceNotificationCategory category, bool korean) =>
-      switch (category) {
-        DeviceNotificationCategory.team => korean ? '팀 소식' : 'Team update',
-        DeviceNotificationCategory.player => korean ? '선수 소식' : 'Player update',
-        DeviceNotificationCategory.posts => korean ? '게시물' : 'Posts',
-        DeviceNotificationCategory.betting => korean ? '베팅' : 'Betting',
-      };
-
-  static String _body(
-    NotificationEventType type,
-    NotificationTemplateData d,
-    bool ko,
-  ) =>
-      switch (type) {
-        NotificationEventType.teamMatchReminder => ko
-            ? '${d.team} 경기가 ${d.minutesUntilKickoff}분 후에 시작됩니다.'
-            : '${d.team} kicks off in ${d.minutesUntilKickoff} minutes.',
-        NotificationEventType.teamKickoff => ko
-            ? '${d.homeTeam} vs ${d.awayTeam} 경기가 시작되었습니다!'
-            : '${d.homeTeam} vs ${d.awayTeam} — Kickoff!',
-        NotificationEventType.teamHalfTime => ko
-            ? '전반전 종료. ${d.homeTeam} ${d.score} ${d.awayTeam}'
-            : 'Half Time: ${d.homeTeam} ${d.score} ${d.awayTeam}',
-        NotificationEventType.teamFullTime => ko
-            ? '경기 종료. ${d.homeTeam} ${d.score} ${d.awayTeam}'
-            : 'Full Time: ${d.homeTeam} ${d.score} ${d.awayTeam}',
-        NotificationEventType.teamGoal => ko
-            ? "⚽ 골! ${d.player} (${d.team}) ${d.minute}' · ${d.score}"
-            : "⚽ GOAL! ${d.player} (${d.team}) ${d.minute}' · ${d.score}",
-        NotificationEventType.teamSubstitution => ko
-            ? "${d.team} 교체: ${d.outPlayer} → ${d.inPlayer} ${d.minute}'"
-            : "${d.team} Sub: ${d.outPlayer} → ${d.inPlayer} ${d.minute}'",
-        NotificationEventType.playerStartingXi => ko
-            ? '${d.player}이(가) 오늘 경기 선발 출전합니다.'
-            : '${d.player} is in the starting lineup today.',
-        NotificationEventType.playerSubstitute => ko
-            ? "${d.player}이(가) ${d.minute}'에 교체 투입되었습니다."
-            : "${d.player} has come on as a substitute (${d.minute}').",
-        NotificationEventType.playerGoal => ko
-            ? "⚽ ${d.player} 골! ${d.minute}' (${d.team})"
-            : "⚽ ${d.player} scores! ${d.minute}' (${d.team})",
-        NotificationEventType.playerAssist => ko
-            ? "🎯 ${d.player} 어시스트! ${d.minute}' (${d.team})"
-            : "🎯 ${d.player} with the assist! ${d.minute}' (${d.team})",
-        NotificationEventType.playerYellowCard => ko
-            ? "🟨 ${d.player} 경고 카드 ${d.minute}' (${d.team})"
-            : "🟨 ${d.player} receives a yellow card ${d.minute}' (${d.team})",
-        NotificationEventType.playerRedCard => ko
-            ? "🟥 ${d.player} 퇴장! ${d.minute}' (${d.team})"
-            : "🟥 ${d.player} is sent off! ${d.minute}' (${d.team})",
-        NotificationEventType.playerInjury => ko
-            ? "${d.player}이(가) 부상으로 교체되었습니다. ${d.minute}'"
-            : "${d.player} has been substituted due to injury. ${d.minute}'",
-        NotificationEventType.postReaction => ko
-            ? '${d.displayName}님이 회원님의 게시물에 반응했습니다.'
-            : '${d.displayName} reacted to your post.',
-        NotificationEventType.postComment => ko
-            ? '${d.displayName}: ${_preview(d.commentPreview)}'
-            : '${d.displayName}: ${_preview(d.commentPreview)}',
-        NotificationEventType.bettingNewBet => ko
-            ? '새로운 베팅이 등록되었습니다. 지금 확인하세요!'
-            : 'A new bet is now available. Check it out!',
-      };
 
   static String _preview(String value) =>
       value.length <= 60 ? value : '${value.substring(0, 60)}…';

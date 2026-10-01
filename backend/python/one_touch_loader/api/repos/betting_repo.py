@@ -11,7 +11,7 @@ from fastapi import HTTPException
 from ..db import fetch_all_dict, fetch_one_dict, transaction
 from ..services.community_periods import utc_now
 from .users_repo import lock_user
-from ...core.betting import (OPEN_STATE_IDS, SETTLEMENT_RULE, WELCOME_POINTS, betting_opens_at, prediction_options,
+from ...core.betting import (OPEN_STATE_IDS, SETTLEMENT_RULE, STAKE_UNIT, WELCOME_POINTS, betting_opens_at, prediction_options,
                              settlement, total_return)
 from ...core.cup_betting import CUP_COMPETITION_IDS, fixture_context
 from ...core.fixture_states import COMPLETED_STATE_IDS
@@ -142,7 +142,8 @@ def get_market(user_id, fixture_id):
     total = sum(counts.values())
     open_now = _before_start(fixture, now)
     reason = market_unavailable_reason(fixture, now, prediction)
-    return {'fixture_id': fixture_id, 'settlement_rule': SETTLEMENT_RULE, 'available': prediction is not None,
+    return {'fixture_id': fixture_id, 'stake_unit': STAKE_UNIT,
+            'settlement_rule': SETTLEMENT_RULE, 'available': prediction is not None,
             'can_bet': reason is None and (bet is None or bet['status'] in ('open', 'cancelled', 'refunded')),
             'can_cancel': open_now and bet is not None and bet['status'] == 'open',
             'unavailable_reason': reason, 'opens_at': _stamp(betting_opens_at(fixture)),

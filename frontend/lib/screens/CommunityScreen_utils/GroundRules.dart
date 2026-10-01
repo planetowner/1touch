@@ -12,17 +12,11 @@ void showGroundRulesModal(
   required int teamId,
   CommunityRepository? repository,
 }) {
-  final locale = Localizations.localeOf(context);
-  final language = CommunityLanguage.fromLocaleParts(
-    languageCode: locale.languageCode,
-    scriptCode: locale.scriptCode,
-  );
   showDialog<void>(
     context: context,
     barrierDismissible: true,
     builder: (context) => _GroundRulesDialog(
       teamId: teamId,
-      language: language,
       repository: repository ?? community_providers.communityRepository,
     ),
   );
@@ -31,12 +25,10 @@ void showGroundRulesModal(
 class _GroundRulesDialog extends StatefulWidget {
   const _GroundRulesDialog({
     required this.teamId,
-    required this.language,
     required this.repository,
   });
 
   final int teamId;
-  final CommunityLanguage language;
   final CommunityRepository repository;
 
   @override
@@ -55,7 +47,6 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog> {
   void _loadRules() {
     _rulesFuture = widget.repository.loadRules(
       teamId: widget.teamId,
-      language: widget.language,
     );
   }
 
@@ -94,7 +85,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          rules?.title ?? tr(context, 'Community Ground Rules'),
+                          tr(context, rules?.title ?? 'Community Ground Rules'),
                           style: Heading5.style.copyWith(
                             color: colors.onSurface,
                           ),
@@ -172,7 +163,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          rule.title,
+                                          tr(context, rule.title),
                                           key: ValueKey(
                                             'ground-rule-title-${index + 1}',
                                           ),
@@ -182,7 +173,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          rule.body,
+                                          tr(context, rule.body),
                                           key: ValueKey(
                                             'ground-rule-subtitle-${index + 1}',
                                           ),

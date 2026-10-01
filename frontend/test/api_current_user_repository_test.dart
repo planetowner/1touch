@@ -1,3 +1,4 @@
+import 'package:onetouch/models/profile_change_limit_exception.dart';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -131,6 +132,8 @@ void main() {
             jsonEncode({
               'detail': {
                 'message': 'limit',
+                'max_changes': 3,
+                'window_days': 7,
                 'available_at': '2026-10-13T12:00:00Z'
               }
             }),
@@ -145,7 +148,9 @@ void main() {
             displayName: 'Next',
             firstName: 'John',
             lastName: 'Doe'),
-        throwsA(isA<ProfileChangeLimitException>()));
+        throwsA(isA<ProfileChangeLimitException>()
+            .having((error) => error.maxChanges, 'maxChanges', 3)
+            .having((error) => error.windowDays, 'windowDays', 7)));
   });
 
   test('reports a duplicate ID or nickname from profile updates', () async {

@@ -76,6 +76,8 @@ class BetMutation {
 class BettingMarket {
   const BettingMarket({
     required this.fixtureId,
+    required this.stakeUnit,
+    required this.opensAt,
     required this.available,
     required this.canBet,
     required this.canCancel,
@@ -91,6 +93,8 @@ class BettingMarket {
   });
 
   final int fixtureId;
+  final int stakeUnit;
+  final DateTime? opensAt;
   final bool available;
   final bool canBet;
   final bool canCancel;
@@ -106,6 +110,8 @@ class BettingMarket {
 
   BettingMarket withMutation(BetMutation result) => BettingMarket(
         fixtureId: fixtureId,
+        stakeUnit: stakeUnit,
+        opensAt: opensAt,
         available: available,
         canBet: canBet,
         canCancel: canBet && result.bet.isOpen,
