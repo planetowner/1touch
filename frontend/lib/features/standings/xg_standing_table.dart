@@ -4,7 +4,7 @@ class XgTable extends StatelessWidget {
   static const double _minimumStatsWidth = 215;
   static const double _statCellWidth = 36;
 
-  final List<Map<String, dynamic>> standings;
+  final List<XgStanding> standings;
   final int? currentTeamId;
   final int leagueId;
   final ScrollController horizontalScrollController;
@@ -43,6 +43,11 @@ class XgTable extends StatelessWidget {
                     children: [
                       _ExpandableClubColumn(
                         standings: standings,
+                        teamIdOf: (standing) => standing.teamId,
+                        rankOf: (standing) => standing.position,
+                        teamNameOf: (standing) =>
+                            standing.teamName ?? 'Unknown Team',
+                        teamLogoOf: (standing) => standing.teamLogo ?? '',
                         currentTeamId: currentTeamId,
                         leagueId: leagueId,
                         expandedWidth: expandedClubWidth,
@@ -166,8 +171,8 @@ class XgTable extends StatelessWidget {
     ];
   }
 
-  Widget _buildStatRow(BuildContext context, Map<String, dynamic> team) {
-    final isCurrentTeam = team['teamId'] == currentTeamId;
+  Widget _buildStatRow(BuildContext context, XgStanding team) {
+    final isCurrentTeam = team.teamId == currentTeamId;
     final cellStyle = Body2.style.copyWith(
       color: isCurrentTeam
           ? Theme.of(context).colorScheme.onSurface
@@ -182,13 +187,13 @@ class XgTable extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _buildXgStatCell('${team['mp']}', cellStyle),
+          _buildXgStatCell('${team.matchesPlayed}', cellStyle),
           const SizedBox(width: 8),
-          _buildXgStatCell(_formatXg(team['xg']), cellStyle),
+          _buildXgStatCell(_formatXg(team.xg), cellStyle),
           const SizedBox(width: 8),
-          _buildXgStatCell(_formatXg(team['xga']), cellStyle),
+          _buildXgStatCell(_formatXg(team.xga), cellStyle),
           const SizedBox(width: 8),
-          _buildXgStatCell(_formatXpts(team['xpts']), cellStyle),
+          _buildXgStatCell(_formatXpts(team.xpts), cellStyle),
         ],
       ),
     );
@@ -210,13 +215,7 @@ class XgTable extends StatelessWidget {
     );
   }
 
-  String _formatXg(dynamic value) {
-    if (value is num) return value.toStringAsFixed(1);
-    return '—';
-  }
+  String _formatXg(double value) => value.toStringAsFixed(1);
 
-  String _formatXpts(dynamic value) {
-    if (value is num) return value.toStringAsFixed(0);
-    return '—';
-  }
+  String _formatXpts(double value) => value.toStringAsFixed(0);
 }

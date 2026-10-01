@@ -52,8 +52,8 @@ class _StandingTabState extends State<StandingTab> {
   final ScrollController _horizontalScrollController = ScrollController();
 
   // Two separate data sources — different shapes, different endpoints.
-  List<Map<String, dynamic>> standings = [];
-  List<Map<String, dynamic>> xgStandings = [];
+  List<Standing> standings = const [];
+  List<XgStanding> xgStandings = const [];
   bool _isStandingLoading = true;
   Object? _standingLoadError;
   int _standingRequestId = 0;
@@ -198,25 +198,6 @@ class _StandingTabState extends State<StandingTab> {
     }
   }
 
-  List<Map<String, dynamic>> _mapXgStandingRows(
-    List<XgStanding> rows,
-  ) {
-    return rows
-        .map(
-          (standing) => {
-            'rank': standing.position,
-            'teamId': standing.teamId,
-            'team': standing.teamName ?? 'Unknown Team',
-            'logo': standing.teamLogo ?? '',
-            'mp': standing.matchesPlayed,
-            'xg': standing.xg,
-            'xga': standing.xga,
-            'xpts': standing.xpts,
-          },
-        )
-        .toList(growable: false);
-  }
-
   void _resetXgState() {
     _xgRequestId++;
     xgStandings = const [];
@@ -243,7 +224,7 @@ class _StandingTabState extends State<StandingTab> {
     );
 
     void applyInitialState() {
-      xgStandings = cached == null ? const [] : _mapXgStandingRows(cached);
+      xgStandings = cached ?? const [];
       _isXgLoading = cached == null;
       _xgLoadError = null;
     }
@@ -278,7 +259,7 @@ class _StandingTabState extends State<StandingTab> {
         return;
       }
       setState(() {
-        xgStandings = _mapXgStandingRows(rows);
+        xgStandings = rows;
         _isXgLoading = false;
         _xgLoadError = null;
       });
@@ -294,30 +275,6 @@ class _StandingTabState extends State<StandingTab> {
         _xgLoadError = error;
       });
     }
-  }
-
-  List<Map<String, dynamic>> _mapStandingRows(
-    List<Standing> rows,
-  ) {
-    return rows
-        .map(
-          (standing) => {
-            'rank': standing.position,
-            'rankDelta': standing.rankDelta,
-            'teamId': standing.teamId,
-            'team': standing.teamName ?? 'Unknown Team',
-            'logo': standing.teamLogo ?? '',
-            'mp': standing.matchesPlayed,
-            'w': standing.won,
-            'd': standing.draw,
-            'l': standing.lost,
-            'gf': standing.goalsFor,
-            'ga': standing.goalsAgainst,
-            'pts': standing.points,
-            'last5': standing.last5Form,
-          },
-        )
-        .toList(growable: false);
   }
 
   void _startStandingLoad({bool updateState = true}) {
@@ -348,7 +305,7 @@ class _StandingTabState extends State<StandingTab> {
     );
 
     void applyInitialState() {
-      standings = cached == null ? const [] : _mapStandingRows(cached);
+      standings = cached ?? const [];
       _isStandingLoading = cached == null;
       _standingLoadError = null;
     }
@@ -383,7 +340,7 @@ class _StandingTabState extends State<StandingTab> {
         return;
       }
       setState(() {
-        standings = _mapStandingRows(rows);
+        standings = rows;
         _isStandingLoading = false;
         _standingLoadError = null;
       });

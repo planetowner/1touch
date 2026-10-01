@@ -1,7 +1,7 @@
 part of 'standing_features.dart';
 
 class StandingTable extends StatelessWidget {
-  final List<Map<String, dynamic>> standings;
+  final List<Standing> standings;
   final int? currentTeamId;
   final int leagueId;
   final ScrollController horizontalScrollController;
@@ -40,6 +40,11 @@ class StandingTable extends StatelessWidget {
                     children: [
                       _ExpandableClubColumn(
                         standings: standings,
+                        teamIdOf: (standing) => standing.teamId,
+                        rankOf: (standing) => standing.position,
+                        teamNameOf: (standing) =>
+                            standing.teamName ?? 'Unknown Team',
+                        teamLogoOf: (standing) => standing.teamLogo ?? '',
                         currentTeamId: currentTeamId,
                         leagueId: leagueId,
                         expandedWidth: expandedClubWidth,
@@ -184,9 +189,9 @@ class StandingTable extends StatelessWidget {
     ];
   }
 
-  Widget _buildStatRow(BuildContext context, Map<String, dynamic> team) {
-    final isCurrentTeam = team['teamId'] == currentTeamId;
-    final teamId = team['teamId'] as int;
+  Widget _buildStatRow(BuildContext context, Standing team) {
+    final isCurrentTeam = team.teamId == currentTeamId;
+    final teamId = team.teamId;
     final cellStyle = Body2.style.copyWith(
       color: isCurrentTeam
           ? Theme.of(context).colorScheme.onSurface
@@ -203,63 +208,63 @@ class StandingTable extends StatelessWidget {
         children: [
           _buildStatCell(
             context,
-            '${team['pts']}',
+            '${team.points}',
             style: cellStyle,
             key: ValueKey('standing-stat-$teamId-pts'),
           ),
           const SizedBox(width: 8),
           _buildStatCell(
             context,
-            '${team['mp']}',
+            '${team.matchesPlayed}',
             style: cellStyle,
             key: ValueKey('standing-stat-$teamId-mp'),
           ),
           const SizedBox(width: 8),
           _buildStatCell(
             context,
-            '${team['w']}',
+            '${team.won}',
             style: cellStyle,
             key: ValueKey('standing-stat-$teamId-w'),
           ),
           const SizedBox(width: 8),
           _buildStatCell(
             context,
-            '${team['d']}',
+            '${team.draw}',
             style: cellStyle,
             key: ValueKey('standing-stat-$teamId-d'),
           ),
           const SizedBox(width: 8),
           _buildStatCell(
             context,
-            '${team['l']}',
+            '${team.lost}',
             style: cellStyle,
             key: ValueKey('standing-stat-$teamId-l'),
           ),
           const SizedBox(width: 8),
           _buildStatCell(
             context,
-            '${team['gf']}',
+            '${team.goalsFor}',
             style: cellStyle,
             key: ValueKey('standing-stat-$teamId-gf'),
           ),
           const SizedBox(width: 8),
           _buildStatCell(
             context,
-            '${team['ga']}',
+            '${team.goalsAgainst}',
             style: cellStyle,
             key: ValueKey('standing-stat-$teamId-ga'),
           ),
           const SizedBox(width: 8),
           _buildStatCell(
             context,
-            '${(team['gf'] as int) - (team['ga'] as int)}',
+            '${team.goalDiff}',
             style: cellStyle,
             key: ValueKey('standing-stat-$teamId-gd'),
           ),
           const SizedBox(width: 12),
           _buildLastFive(
             context,
-            List<String>.from(team['last5'] as List),
+            team.last5Form,
             teamId: teamId,
           ),
         ],
