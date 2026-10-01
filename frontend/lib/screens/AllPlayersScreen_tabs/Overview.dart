@@ -7,6 +7,9 @@ import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/team_navigation.dart';
+import 'package:onetouch/data/contracts/team_contract_repository.dart';
+import 'package:onetouch/data/contracts/team_contract_repository_provider.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/players/player_indicators_repository.dart';
 import 'package:onetouch/data/players/player_indicators_repository_provider.dart';
 import 'package:onetouch/features/player/player_indicator_value.dart';
@@ -14,6 +17,7 @@ import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/player_indicators.dart';
 import 'package:onetouch/models/player_detail.dart';
+import 'package:onetouch/models/team_contract_roster.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -22,10 +26,12 @@ class PlayerOverviewTab extends StatelessWidget {
       {super.key,
       this.player,
       this.playerId,
+      this.contractRepository,
       this.onMatches,
       this.onTopBlockHeightChanged});
   final Player? player;
   final int? playerId;
+  final TeamContractRepository? contractRepository;
   int? get id => playerId ?? player?.externalPlayerId;
   final VoidCallback? onMatches;
   final ValueChanged<double>? onTopBlockHeightChanged;
@@ -151,28 +157,43 @@ class PlayerOverviewTab extends StatelessWidget {
                               ))),
                       Align(
                         alignment: Alignment.topCenter,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: ShaderMask(
-                            key: const ValueKey(
-                                'player-overview-image-bottom-fade'),
-                            blendMode: BlendMode.dstIn,
-                            shaderCallback: (bounds) => const LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.white,
-                                Colors.white,
-                                Colors.transparent,
-                              ],
-                              stops: [0, 0.78, 1],
-                            ).createShader(bounds),
-                            child: PlayerRemoteImage(
-                              detail.profile.image,
-                              key: const ValueKey('player-overview-image'),
-                              size: 160,
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: ShaderMask(
+                                key: const ValueKey(
+                                    'player-overview-image-bottom-fade'),
+                                blendMode: BlendMode.dstIn,
+                                shaderCallback: (bounds) =>
+                                    const LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.white,
+                                    Colors.white,
+                                    Colors.transparent,
+                                  ],
+                                  stops: [0, 0.78, 1],
+                                ).createShader(bounds),
+                                child: PlayerRemoteImage(
+                                  detail.profile.image,
+                                  key: const ValueKey('player-overview-image'),
+                                  size: 160,
+                                ),
+                              ),
                             ),
-                          ),
+                            if (detail.profile.teamId case final teamId?)
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: _PlayerLeadershipBadge(
+                                  teamId: teamId,
+                                  playerId: detail.playerId,
+                                  repository: contractRepository,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
@@ -253,6 +274,85 @@ class PlayerOverviewTab extends StatelessWidget {
                       ]))),
             ]));
       });
+}
+
+class _PlayerLeadershipBadge extends StatefulWidget {
+  const _PlayerLeadershipBadge({
+    required this.teamId,
+    required this.playerId,
+    this.repository,
+  });
+
+  final int teamId;
+  final int playerId;
+  final TeamContractRepository? repository;
+
+  @override
+  State<_PlayerLeadershipBadge> createState() => _PlayerLeadershipBadgeState();
+}
+
+class _PlayerLeadershipBadgeState extends State<_PlayerLeadershipBadge> {
+  late Future<TeamContractRoster> _roster;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(_PlayerLeadershipBadge oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.teamId != widget.teamId ||
+        oldWidget.repository != widget.repository) {
+      _load();
+    }
+  }
+
+  void _load() {
+    _roster = Future.sync(
+        () => (widget.repository ?? teamContractRepository).loadForTeam(
+              widget.teamId,
+              seasonId: footballCatalog.resolve(widget.teamId)?.seasonId,
+            ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<TeamContractRoster>(
+      future: _roster,
+      builder: (context, snapshot) {
+        TeamLeadershipRole? role;
+        for (final player in snapshot.data?.players ?? <TeamPlayerContract>[]) {
+          if (player.playerId == widget.playerId) {
+            role = player.leadershipRole;
+            break;
+          }
+        }
+        if (role == null) return const SizedBox.shrink();
+
+        final color = Theme.of(context).brightness == Brightness.dark
+            ? AppPalette.white
+            : AppPalette.black;
+        final isCaptain = role == TeamLeadershipRole.captain;
+        return Container(
+          key: ValueKey(
+              'player-overview-leadership-${isCaptain ? 'captain' : 'vice-captain'}'),
+          width: 24,
+          height: 18,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(border: Border.all(color: color)),
+          child: Text(
+            isCaptain ? 'C' : 'VC',
+            maxLines: 1,
+            softWrap: false,
+            textAlign: TextAlign.center,
+            style: Body2_b.style.copyWith(color: color, height: 1.3),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _PlayerOverviewProfileMeasure extends StatefulWidget {

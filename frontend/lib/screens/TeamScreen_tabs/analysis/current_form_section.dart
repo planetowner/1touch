@@ -406,18 +406,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final current = data.current;
     final comparison = data.comparison;
     final showComparison = _selectedOption != null;
-    final currentTeam = teamRepository.findById(current.teamId);
-    final comparisonTeam = teamRepository.findById(comparison.teamId);
-    final comparisonColors = TeamComparisonColorResolver.resolve(
-      anchorTeamName: current.teamName ?? currentTeam?.name,
-      anchorPrimaryFallback: currentTeam == null
-          ? _analysisTeamPrimaryColor(widget.team)
-          : Color(currentTeam.primaryColor),
-      opponentTeamName: comparison.teamName ?? comparisonTeam?.name,
-      opponentPrimaryFallback:
-          comparisonTeam == null ? null : Color(comparisonTeam.primaryColor),
-      background: appColors.cardBackground,
-    );
+    final comparisonColors = _currentFormColors(current, comparison);
     final teamPrimaryColor = comparisonColors.anchor;
     final comparisonColor = comparisonColors.opponent;
     final latestRound = current.points.fold<int>(
@@ -892,23 +881,44 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     );
   }
 
+  TeamComparisonColors _currentFormColors(
+    CurrentFormSeries current,
+    CurrentFormSeries comparison,
+  ) {
+    final currentTeam = teamRepository.findById(current.teamId);
+    final comparisonTeam = teamRepository.findById(comparison.teamId);
+    final currentName = current.teamName ?? currentTeam?.name;
+    final comparisonName = comparison.teamName ?? comparisonTeam?.name;
+    final missingColor = AppColors.of(context).mutedForeground;
+    final currentMissing = teamColorPaletteForName(currentName ?? '') == null;
+    final comparisonMissing =
+        teamColorPaletteForName(comparisonName ?? '') == null;
+    final resolved = TeamComparisonColorResolver.resolve(
+      anchorTeamName: currentName,
+      anchorPrimaryFallback: currentMissing
+          ? missingColor
+          : currentTeam == null
+              ? _analysisTeamPrimaryColor(widget.team)
+              : Color(currentTeam.primaryColor),
+      opponentTeamName: comparisonName,
+      opponentPrimaryFallback: comparisonMissing
+          ? missingColor
+          : comparisonTeam == null
+              ? null
+              : Color(comparisonTeam.primaryColor),
+      background: AppColors.of(context).cardBackground,
+    );
+    return TeamComparisonColors(
+      anchor: currentMissing ? missingColor : resolved.anchor,
+      opponent: comparisonMissing ? missingColor : resolved.opponent,
+    );
+  }
+
   Widget _buildLegend() {
-    final appColors = AppColors.of(context);
     final current = _comparison!.current;
     final comparison = _comparison!.comparison;
     final showComparison = _selectedOption != null;
-    final currentTeam = teamRepository.findById(current.teamId);
-    final comparisonTeam = teamRepository.findById(comparison.teamId);
-    final comparisonColors = TeamComparisonColorResolver.resolve(
-      anchorTeamName: current.teamName ?? currentTeam?.name,
-      anchorPrimaryFallback: currentTeam == null
-          ? _analysisTeamPrimaryColor(widget.team)
-          : Color(currentTeam.primaryColor),
-      opponentTeamName: comparison.teamName ?? comparisonTeam?.name,
-      opponentPrimaryFallback:
-          comparisonTeam == null ? null : Color(comparisonTeam.primaryColor),
-      background: appColors.cardBackground,
-    );
+    final comparisonColors = _currentFormColors(current, comparison);
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: SizedBox(

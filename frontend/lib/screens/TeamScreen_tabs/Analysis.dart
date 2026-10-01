@@ -22,6 +22,7 @@ import 'package:onetouch/data/team_attributes/team_attribute_repository_provider
 import 'package:onetouch/data/team_probability/team_probability_repository.dart';
 import 'package:onetouch/data/team_probability/team_probability_repository_provider.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
+import 'package:onetouch/data/teams/team_color_palette_2627.dart';
 import 'package:onetouch/data/teams/team_page_eligibility.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';

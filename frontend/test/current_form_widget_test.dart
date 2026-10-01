@@ -92,7 +92,10 @@ void main() {
     );
     final chart = tester.widget<LineChart>(find.byType(LineChart));
     expect(chart.data.lineBarsData, hasLength(1));
-    expect(chart.data.lineBarsData.first.color, const Color(0xFFD82457));
+    expect(
+      chart.data.lineBarsData.first.color,
+      whitetheme.extension<AppColors>()!.mutedForeground,
+    );
     final pointsLabel = find.byKey(
       const ValueKey('analysis-current-form-points-label'),
     );
@@ -401,6 +404,55 @@ void main() {
 
   for (final theme in [darktheme, whitetheme]) {
     final isDark = theme.brightness == Brightness.dark;
+    for (final missingIsCurrent in [true, false]) {
+      testWidgets(
+        'uses theme gray for ${missingIsCurrent ? 'current' : 'comparison'} team without a palette in ${isDark ? 'dark' : 'light'} mode',
+        (tester) async {
+          useScreen(tester, const Size(320, 568));
+          final repository = _TestCurrentFormRepository(
+            optionsLoader: (_) async => _optionsForTeam(1),
+            comparisonLoader: (query) async => _comparisonFor(
+              query,
+              comparisonShortCode: 'MCI',
+              currentTeamName:
+                  missingIsCurrent ? 'Heidenheim' : 'Manchester City',
+              comparisonTeamName:
+                  missingIsCurrent ? 'Manchester City' : 'Heidenheim',
+            ),
+          );
+          addTearDown(repository.dispose);
+
+          await tester.pumpWidget(
+            buildSubject(teamId: 1, repository: repository, theme: theme),
+          );
+          await tester.pumpAndSettle();
+          await _chooseCurrentForm(tester, seasonId: 200, teamId: 2);
+
+          final lines = tester
+              .widget<LineChart>(find.byType(LineChart))
+              .data
+              .lineBarsData;
+          final gray = theme.extension<AppColors>()!.mutedForeground;
+          expect(lines, hasLength(2));
+          expect(lines[missingIsCurrent ? 0 : 1].color, gray);
+          expect(lines[missingIsCurrent ? 1 : 0].color, isNot(gray));
+          final legend = find.byKey(
+            const ValueKey('analysis-current-form-legend'),
+          );
+          final dots = tester
+              .widgetList<Container>(
+                find.descendant(of: legend, matching: find.byType(Container)),
+              )
+              .where((container) =>
+                  container.decoration is BoxDecoration &&
+                  (container.decoration! as BoxDecoration).shape ==
+                      BoxShape.circle);
+          expect(dots.map((dot) => (dot.decoration! as BoxDecoration).color),
+              [lines[0].color, lines[1].color]);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
     testWidgets(
       'shows separate ${isDark ? 'dark' : 'light'} value boxes for a selected round',
       (tester) async {
@@ -794,6 +846,8 @@ CurrentFormOption _option({
 CurrentFormComparison _comparisonFor(
   CurrentFormComparisonQuery query, {
   required String comparisonShortCode,
+  String? currentTeamName,
+  String? comparisonTeamName,
 }) {
   return CurrentFormComparison(
     current: _series(
@@ -801,6 +855,7 @@ CurrentFormComparison _comparisonFor(
       seasonId: query.seasonId ?? 200,
       seasonName: '2025/26',
       shortCode: 'CURRENT',
+      teamName: currentTeamName,
       isCurrent: true,
     ),
     comparison: _series(
@@ -808,6 +863,7 @@ CurrentFormComparison _comparisonFor(
       seasonId: query.compareSeasonId,
       seasonName: query.compareSeasonId == 100 ? '2024/25' : '2025/26',
       shortCode: comparisonShortCode,
+      teamName: comparisonTeamName,
       isCurrent: false,
     ),
     maxRound: 2,
@@ -820,11 +876,12 @@ CurrentFormSeries _series({
   required int seasonId,
   required String seasonName,
   required String shortCode,
+  String? teamName,
   required bool isCurrent,
 }) {
   return CurrentFormSeries(
     teamId: teamId,
-    teamName: 'Team $teamId',
+    teamName: teamName ?? 'Team $teamId',
     teamShortCode: shortCode,
     leagueId: 8,
     seasonId: seasonId,
