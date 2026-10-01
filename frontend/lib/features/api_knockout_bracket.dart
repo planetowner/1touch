@@ -121,12 +121,8 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
 
   @override
   Widget build(BuildContext context) {
-    final maximumViewportHeight =
-        (MediaQuery.sizeOf(context).height * 0.62).clamp(320.0, 620.0);
-    final viewportHeight = math.min(
-      _contentHeightForWindow(_currentPage) + _shadowInset * 2,
-      maximumViewportHeight,
-    );
+    final viewportHeight =
+        _contentHeightForWindow(_currentPage) + _shadowInset * 2;
 
     return Padding(
       key: const ValueKey('tournament-bracket'),
@@ -187,9 +183,14 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
     final contentHeight = _contentHeightForWindow(stageIndex);
     final roundWidth = cardWidth + _connectorWidth;
 
-    return SingleChildScrollView(
+    return Padding(
       key: ValueKey('bracket-round-window-$stageIndex'),
-      padding: const EdgeInsets.all(_shadowInset),
+      padding: const EdgeInsets.fromLTRB(
+        _shadowInset,
+        _shadowInset,
+        _shadowInset,
+        _shadowInset,
+      ),
       child: SizedBox(
         width: hasNextStage ? cardWidth * 2 + _connectorWidth : cardWidth,
         height: contentHeight,
