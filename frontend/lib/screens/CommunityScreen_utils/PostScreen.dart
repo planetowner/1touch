@@ -64,6 +64,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   int? _currentUserId;
   bool _isDeletingPost = false;
   bool _isEditingPost = false;
+  bool _isRefreshingPost = false;
+  bool _postRefreshFailed = false;
   final Set<int> _deletingCommentIds = {};
 
   PostRepository get _postRepository =>
@@ -154,6 +156,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> _editPost() async {
     if (_isEditingPost ||
+        _isRefreshingPost ||
         _currentUserId == null ||
         _post.userId != _currentUserId) {
       return;
@@ -197,9 +200,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         ],
       );
       _isEditingPost = false;
+      _isRefreshingPost = true;
+      _postRefreshFailed = false;
     });
     if (widget.onPostUpdated != null) {
       unawaited(widget.onPostUpdated!());
+    }
+    await _refreshUpdatedPost();
+  }
+
+  Future<void> _refreshUpdatedPost() async {
+    if (!_isRefreshingPost) {
+      setState(() {
+        _isRefreshingPost = true;
+        _postRefreshFailed = false;
+      });
     }
     try {
       final repository = _postRepository;
@@ -211,13 +226,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         updatedPost = (await repository.loadPosts(teamId: _post.teamId))
             .firstWhere((post) => post.postId == _post.postId);
       }
-      if (mounted) setState(() => _post = updatedPost);
+      if (mounted) {
+        setState(() {
+          _post = updatedPost;
+          _postRefreshFailed = false;
+        });
+      }
     } catch (_) {
       if (!mounted) return;
+      setState(() => _postRefreshFailed = true);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content:
             Text(tr(context, 'Unable to load updated post. Please try again.')),
       ));
+    } finally {
+      if (mounted) setState(() => _isRefreshingPost = false);
     }
   }
 
@@ -433,8 +456,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   commentsError: _commentsError,
                   currentUserId: _currentUserId,
                   showMedia: !_isEditingPost,
+                  mediaLoading: _isRefreshingPost,
+                  mediaLoadFailed: _postRefreshFailed,
+                  onRetryMedia: _refreshUpdatedPost,
                   onEditPost:
-                      _isDeletingPost || _isEditingPost ? null : _editPost,
+                      _isDeletingPost || _isEditingPost || _isRefreshingPost
+                          ? null
+                          : _editPost,
                   onDeletePost: _isDeletingPost ? null : _deletePost,
                   onEditComment: _editComment,
                   onDeleteComment: (comment) {
