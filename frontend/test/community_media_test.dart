@@ -4,6 +4,7 @@ import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/api_image_headers.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
+import 'package:onetouch/features/community/community_post_share_link.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
 import 'package:share_plus/share_plus.dart';
@@ -240,7 +241,7 @@ void main() {
 
     expect(sharedParams?.title, '1Touch');
     expect(sharedParams?.subject, post.title);
-    expect(sharedParams?.text, '${post.title}\n\n${post.body}');
+    expect(sharedParams?.text, communityPostShareText(post));
     expect(sharedParams?.sharePositionOrigin, isNotNull);
     expect(sharedParams!.sharePositionOrigin!.isEmpty, isFalse);
     expect(tester.takeException(), isNull);

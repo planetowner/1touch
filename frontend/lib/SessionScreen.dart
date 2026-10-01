@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/core/notification_navigation.dart';
+import 'package:onetouch/core/community_link_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/home/home_repository.dart';
@@ -121,10 +122,13 @@ class _SessionScreenState extends State<SessionScreen> {
     }
     if (!mounted || sessionToken != authSession.accessToken) return;
     _readyToken = sessionToken;
-    final destination = notificationNavigation.take(
+    final communityDestination = communityLinkNavigation.take(
       sessionToken: sessionToken!,
     );
-    context.go(destination ?? '/home');
+    final notificationDestination = notificationNavigation.take(
+      sessionToken: sessionToken,
+    );
+    context.go(communityDestination ?? notificationDestination ?? '/home');
   }
 
   @override
