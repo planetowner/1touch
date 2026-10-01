@@ -11,7 +11,6 @@ import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
 
 import '../../models/match_data.dart';
-import 'match_event_view_data.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
 

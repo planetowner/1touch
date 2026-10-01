@@ -1,37 +1,49 @@
 import 'package:onetouch/models/fixture_detail.dart';
 
+enum MatchEventSide { home, away }
+
+enum MatchSummaryEventType { goal, redCard }
+
+typedef MatchSummaryEvent = ({
+  int? playerId,
+  String player,
+  String minute,
+  MatchEventSide side,
+  MatchSummaryEventType type,
+});
+
 const fixtureGoalEventCodes = {'goal', 'owngoal', 'penalty'};
 const fixtureRedCardEventCodes = {'redcard', 'yellowredcard'};
 
-List<Map<String, dynamic>> fixtureSummaryEventRows({
+List<MatchSummaryEvent> fixtureSummaryEventRows({
   required Iterable<FixtureEvent> events,
   required int homeTeamId,
   required int awayTeamId,
 }) {
   final source = List<FixtureEvent>.of(events)..sort(_compareEvents);
-  final result = <Map<String, dynamic>>[];
+  final result = <MatchSummaryEvent>[];
 
   for (final event in source) {
     final playerName = event.playerName?.trim();
     final type = _summaryEventType(event.eventTypeCode);
-    final team = event.teamId == homeTeamId
-        ? 'home'
+    final side = event.teamId == homeTeamId
+        ? MatchEventSide.home
         : event.teamId == awayTeamId
-            ? 'away'
+            ? MatchEventSide.away
             : null;
     if (playerName == null ||
         playerName.isEmpty ||
         type == null ||
-        team == null) {
+        side == null) {
       continue;
     }
-    result.add({
-      'player': playerName,
-      'playerId': event.playerId,
-      'minute': _minuteLabel(event),
-      'team': team,
-      'type': type,
-    });
+    result.add((
+      playerId: event.playerId,
+      player: playerName,
+      minute: _minuteLabel(event),
+      side: side,
+      type: type,
+    ));
   }
   return result;
 }
@@ -52,8 +64,12 @@ String _minuteLabel(FixtureEvent event) {
       : "${event.minute}+$extraMinute'";
 }
 
-String? _summaryEventType(String code) {
-  if (fixtureGoalEventCodes.contains(code)) return 'goal';
-  if (fixtureRedCardEventCodes.contains(code)) return 'redCard';
+MatchSummaryEventType? _summaryEventType(String code) {
+  if (fixtureGoalEventCodes.contains(code)) {
+    return MatchSummaryEventType.goal;
+  }
+  if (fixtureRedCardEventCodes.contains(code)) {
+    return MatchSummaryEventType.redCard;
+  }
   return null;
 }

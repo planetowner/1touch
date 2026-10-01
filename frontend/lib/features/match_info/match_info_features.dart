@@ -11,8 +11,11 @@ import 'package:onetouch/data/highlights/fixture_highlight_repository_provider.d
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture_highlight.dart';
 import 'package:onetouch/models/match_data.dart';
+import 'match_event_view_data.dart';
 import 'match_motion.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+export 'match_event_view_data.dart';
 
 part 'lineup_models.dart';
 part 'match_event_icon.dart';

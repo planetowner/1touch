@@ -6,36 +6,36 @@ part of 'match_info_features.dart';
 class _GroupedMatchEvent {
   final int? playerId;
   final String player;
-  final String team; // 'home' | 'away'
-  final String type; // 'goal' | 'redCard'
+  final MatchEventSide side;
+  final MatchSummaryEventType type;
   final List<String> minutes;
   _GroupedMatchEvent(
       {this.playerId,
       required this.player,
-      required this.team,
+      required this.side,
       required this.type})
       : minutes = [];
 }
 
-List<_GroupedMatchEvent> _groupMatchEvents(List<Map<String, dynamic>> events) {
+List<_GroupedMatchEvent> _groupMatchEvents(List<MatchSummaryEvent> events) {
   final rows = <_GroupedMatchEvent>[];
-  for (final e in events) {
-    final team = e['team'] as String;
-    final player = e['player'] as String;
-    final playerId = e['playerId'] as int?;
-    final type = (e['type'] as String?) ?? 'goal';
+  for (final event in events) {
     final existing = rows
         .where((r) =>
-            r.team == team &&
-            r.playerId == playerId &&
-            r.player == player &&
-            r.type == type)
+            r.side == event.side &&
+            r.playerId == event.playerId &&
+            r.player == event.player &&
+            r.type == event.type)
         .firstOrNull;
     final row = existing ??
         _GroupedMatchEvent(
-            playerId: playerId, player: player, team: team, type: type);
+          playerId: event.playerId,
+          player: event.player,
+          side: event.side,
+          type: event.type,
+        );
     if (existing == null) rows.add(row);
-    row.minutes.add(e['minute'] as String);
+    row.minutes.add(event.minute);
   }
   return rows;
 }
@@ -43,31 +43,37 @@ List<_GroupedMatchEvent> _groupMatchEvents(List<Map<String, dynamic>> events) {
 // A goal/red-card icon, shared by one whole section of rows rather than
 // repeated per row — there's one ball icon for the goals section and one
 // card icon for the red-cards section, not one per scorer.
-Widget _eventTypeIcon(String type) => MatchEventIcon(
-      type: type == 'redCard' ? LineupEventType.redCard : LineupEventType.goal,
+Widget _eventTypeIcon(MatchSummaryEventType type) => MatchEventIcon(
+      type: type == MatchSummaryEventType.redCard
+          ? LineupEventType.redCard
+          : LineupEventType.goal,
       size: 20,
     );
 
 class MatchEventsSection extends StatelessWidget {
-  final List<Map<String, dynamic>> events;
+  final List<MatchSummaryEvent> events;
 
   const MatchEventsSection({super.key, required this.events});
 
   @override
   Widget build(BuildContext context) {
     final rows = _groupMatchEvents(events);
-    final goalRows = rows.where((r) => r.type == 'goal').toList();
-    final redCardRows = rows.where((r) => r.type == 'redCard').toList();
+    final goalRows =
+        rows.where((r) => r.type == MatchSummaryEventType.goal).toList();
+    final redCardRows =
+        rows.where((r) => r.type == MatchSummaryEventType.redCard).toList();
 
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (goalRows.isNotEmpty) _buildSection(goalRows, 'goal'),
+          if (goalRows.isNotEmpty)
+            _buildSection(goalRows, MatchSummaryEventType.goal),
           if (goalRows.isNotEmpty && redCardRows.isNotEmpty)
             const SizedBox(height: 8),
-          if (redCardRows.isNotEmpty) _buildSection(redCardRows, 'redCard'),
+          if (redCardRows.isNotEmpty)
+            _buildSection(redCardRows, MatchSummaryEventType.redCard),
         ],
       ),
     );
@@ -75,21 +81,29 @@ class MatchEventsSection extends StatelessWidget {
 
   // Each team owns an independent chronological column. An event from one
   // team therefore never inserts an empty row into the other team's list.
-  Widget _buildSection(List<_GroupedMatchEvent> rows, String type) {
-    final homeRows = rows.where((row) => row.team == 'home').toList();
-    final awayRows = rows.where((row) => row.team == 'away').toList();
+  Widget _buildSection(
+    List<_GroupedMatchEvent> rows,
+    MatchSummaryEventType type,
+  ) {
+    final homeRows =
+        rows.where((row) => row.side == MatchEventSide.home).toList();
+    final awayRows =
+        rows.where((row) => row.side == MatchEventSide.away).toList();
 
-    Widget eventColumn(List<_GroupedMatchEvent> teamRows, String team) =>
+    Widget eventColumn(
+      List<_GroupedMatchEvent> teamRows,
+      MatchEventSide side,
+    ) =>
         Column(
-          key: ValueKey('match-events-$team-$type'),
+          key: ValueKey('match-events-${side.name}-${type.name}'),
           children: [
             for (var index = 0; index < teamRows.length; index++) ...[
               if (index > 0) const SizedBox(height: 8),
               _EventRowContent(
                 key: ValueKey(
-                    'match-event-$team-$type-${teamRows[index].player}'),
+                    'match-event-${side.name}-${type.name}-${teamRows[index].player}'),
                 row: teamRows[index],
-                alignRight: team == 'away',
+                alignRight: side == MatchEventSide.away,
               ),
             ],
           ],
@@ -99,18 +113,18 @@ class MatchEventsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: eventColumn(homeRows, 'home'),
+          child: eventColumn(homeRows, MatchEventSide.home),
         ),
         // 레퍼런스의 8px 간격으로 양 팀 이벤트와 중앙 아이콘을 분리해요.
         const SizedBox(width: 8),
         SizedBox(
-          key: ValueKey('match-events-icon-$type'),
+          key: ValueKey('match-events-icon-${type.name}'),
           width: 20,
           child: Center(child: _eventTypeIcon(type)),
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: eventColumn(awayRows, 'away'),
+          child: eventColumn(awayRows, MatchEventSide.away),
         ),
       ],
     );

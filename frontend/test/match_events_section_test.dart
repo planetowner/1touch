@@ -32,18 +32,22 @@ void main() {
               child: MatchEventsSection(events: [
                 for (final team in ['home', 'away'])
                   for (final minute in minutes)
-                    {
-                      'player': name,
-                      'minute': minute,
-                      'team': team,
-                      'type': 'goal'
-                    },
-                {
-                  'player': name,
-                  'minute': "88'",
-                  'team': 'home',
-                  'type': 'redCard'
-                },
+                    (
+                      playerId: null,
+                      player: name,
+                      minute: minute,
+                      side: team == 'home'
+                          ? MatchEventSide.home
+                          : MatchEventSide.away,
+                      type: MatchSummaryEventType.goal,
+                    ),
+                (
+                  playerId: null,
+                  player: name,
+                  minute: "88'",
+                  side: MatchEventSide.home,
+                  type: MatchSummaryEventType.redCard,
+                ),
               ]),
             ),
           ),
@@ -176,30 +180,34 @@ void main() {
             padding: EdgeInsets.symmetric(horizontal: 24),
             child: MatchEventsSection(
               events: [
-                {
-                  'player': 'Valverde',
-                  'minute': "20'",
-                  'team': 'home',
-                  'type': 'goal',
-                },
-                {
-                  'player': 'Valverde',
-                  'minute': "27'",
-                  'team': 'home',
-                  'type': 'goal',
-                },
-                {
-                  'player': 'Valverde',
-                  'minute': "42'",
-                  'team': 'home',
-                  'type': 'goal',
-                },
-                {
-                  'player': 'Vinicius',
-                  'minute': "55'",
-                  'team': 'home',
-                  'type': 'goal',
-                },
+                (
+                  playerId: null,
+                  player: 'Valverde',
+                  minute: "20'",
+                  side: MatchEventSide.home,
+                  type: MatchSummaryEventType.goal,
+                ),
+                (
+                  playerId: null,
+                  player: 'Valverde',
+                  minute: "27'",
+                  side: MatchEventSide.home,
+                  type: MatchSummaryEventType.goal,
+                ),
+                (
+                  playerId: null,
+                  player: 'Valverde',
+                  minute: "42'",
+                  side: MatchEventSide.home,
+                  type: MatchSummaryEventType.goal,
+                ),
+                (
+                  playerId: null,
+                  player: 'Vinicius',
+                  minute: "55'",
+                  side: MatchEventSide.home,
+                  type: MatchSummaryEventType.goal,
+                ),
               ],
             ),
           ),
@@ -257,36 +265,41 @@ void main() {
           home: Scaffold(
             body: MatchEventsSection(
               events: [
-                {
-                  'player': 'Rodrigo Muniz',
-                  'minute': "13'",
-                  'team': 'away',
-                  'type': 'goal',
-                },
-                {
-                  'player': 'Morata',
-                  'minute': "16'",
-                  'team': 'home',
-                  'type': 'goal',
-                },
-                {
-                  'player': 'Cesar Palacios',
-                  'minute': "37'",
-                  'team': 'away',
-                  'type': 'goal',
-                },
-                {
-                  'player': 'Pablo',
-                  'minute': "45+2'",
-                  'team': 'home',
-                  'type': 'goal',
-                },
-                {
-                  'player': 'Oscar Bobb',
-                  'minute': "78'",
-                  'team': 'away',
-                  'type': 'goal',
-                },
+                (
+                  playerId: null,
+                  player: 'Rodrigo Muniz',
+                  minute: "13'",
+                  side: MatchEventSide.away,
+                  type: MatchSummaryEventType.goal,
+                ),
+                (
+                  playerId: null,
+                  player: 'Morata',
+                  minute: "16'",
+                  side: MatchEventSide.home,
+                  type: MatchSummaryEventType.goal,
+                ),
+                (
+                  playerId: null,
+                  player: 'Cesar Palacios',
+                  minute: "37'",
+                  side: MatchEventSide.away,
+                  type: MatchSummaryEventType.goal,
+                ),
+                (
+                  playerId: null,
+                  player: 'Pablo',
+                  minute: "45+2'",
+                  side: MatchEventSide.home,
+                  type: MatchSummaryEventType.goal,
+                ),
+                (
+                  playerId: null,
+                  player: 'Oscar Bobb',
+                  minute: "78'",
+                  side: MatchEventSide.away,
+                  type: MatchSummaryEventType.goal,
+                ),
               ],
             ),
           ),
