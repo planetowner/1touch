@@ -254,13 +254,13 @@ class PlayerDetailMatchCard extends StatelessWidget {
               remoteLogo: true,
               stats: [
                 for (final metric in match.metrics)
-                  {
-                    'label': metric.label,
-                    'value': playerMetricValue(
+                  (
+                    label: metric.label,
+                    value: playerMetricValue(
                       metric,
                       zeroForMissingCount: true,
-                    )
-                  }
+                    ),
+                  )
               ],
               rating: match.rating?.toStringAsFixed(1) ?? '—')));
 }

@@ -63,7 +63,7 @@ void main() {
           score: '1 - 0',
           competition: 'Bundesliga',
           stats: [
-            {'label': 'Touches', 'value': '100'},
+            (label: 'Touches', value: '100'),
           ],
           rating: '8.0',
         ),
@@ -146,9 +146,9 @@ void main() {
             score: '3 - 0',
             competition: 'LA LIGA · Round 4',
             stats: [
-              {'label': 'Goals', 'value': '1'},
-              {'label': 'Assists', 'value': '2'},
-              {'label': 'Shots', 'value': '4'},
+              (label: 'Goals', value: '1'),
+              (label: 'Assists', value: '2'),
+              (label: 'Shots', value: '4'),
             ],
             rating: '8.4',
           ),
@@ -633,6 +633,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('top-stats-help-icon')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('app-info-popup')), findsOneWidget);
+    expect(
+      find.text(
+          'Top 3 stats where the player ranks best in the league. The displayed stats will only reflect good performance.'),
+      findsOneWidget,
+    );
     await tester.tapAt(const Offset(8, 8));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('app-info-popup')), findsNothing);
@@ -653,6 +658,11 @@ void main() {
     await tester.tap(help);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('app-info-popup')), findsOneWidget);
+    expect(
+      find.text(
+          "A quick overview of the player's average performance in each competition. Data has been collected since the 2017/18 season."),
+      findsOneWidget,
+    );
     await tester.tapAt(const Offset(8, 8));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('app-info-popup')), findsNothing);
