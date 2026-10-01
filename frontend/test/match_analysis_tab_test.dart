@@ -98,6 +98,24 @@ void main() {
     final plots =
         tester.widget<ShotMapDiagram>(find.byType(ShotMapDiagram)).shots;
     expect(plots.map((plot) => plot.start.dx), [0.1, 0.2, 0.3, 0.4, 0.5]);
+    final attackHelp = find.byKey(const ValueKey('match-analysis-attack-info'));
+    expect(attackHelp, findsOneWidget);
+    expect(tester.getSize(attackHelp), const Size(14, 14));
+    expect(
+        tester.getTopLeft(attackHelp).dx -
+            tester.getTopRight(find.text('ATTACK')).dx,
+        4);
+    await tester.ensureVisible(attackHelp);
+    await tester.tap(attackHelp);
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+          'Shotmap showing where each shot on target was taken, with lines pointing to where it was aimed.'),
+      findsOneWidget,
+    );
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('app-info-popup')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -743,7 +761,7 @@ void main() {
           child: const Column(children: [
             SizedBox(height: 750),
             ProgressionDiagram(
-              lanePercents: [22, 33, 45],
+              lanePercents: (left: 22, center: 33, right: 45),
               color: Colors.red,
               labelColor: Colors.white,
             ),
@@ -793,7 +811,7 @@ void main() {
             ),
             ProgressionDiagram(
               rightToLeft: away,
-              lanePercents: const [22, 33, 45],
+              lanePercents: (left: 22, center: 33, right: 45),
               color: Colors.red,
               labelColor: Colors.white,
             ),
@@ -847,7 +865,7 @@ void main() {
           body: SingleChildScrollView(
             child: Column(children: [
               ProgressionDiagram(
-                lanePercents: [22, 33, 45],
+                lanePercents: (left: 22, center: 33, right: 45),
                 color: Colors.red,
                 labelColor: Colors.white,
               ),
@@ -942,23 +960,20 @@ MatchTeamTacticalAnalysis _team(
       progression: MatchProgressionMetrics(
         completedPasses: 300,
         progressivePasses: 30,
-        channels: const [
-          MatchProgressionChannel(
-            channel: 'left',
+        channels: const MatchProgressionChannels(
+          left: MatchProgressionChannel(
             count: 10,
             percentage: 33.33,
           ),
-          MatchProgressionChannel(
-            channel: 'center',
+          center: MatchProgressionChannel(
             count: 12,
             percentage: 40,
           ),
-          MatchProgressionChannel(
-            channel: 'right',
+          right: MatchProgressionChannel(
             count: 8,
             percentage: 26.67,
           ),
-        ],
+        ),
       ),
       defensiveActivity: MatchDefensiveActivity(
         complete: true,

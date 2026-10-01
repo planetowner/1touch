@@ -22,27 +22,38 @@ class MatchAttackMetrics {
 @immutable
 class MatchProgressionChannel {
   const MatchProgressionChannel({
-    required this.channel,
     required this.count,
     required this.percentage,
   });
 
-  final String channel;
   final int count;
   final double? percentage;
 }
 
 @immutable
+class MatchProgressionChannels {
+  const MatchProgressionChannels({
+    required this.left,
+    required this.center,
+    required this.right,
+  });
+
+  final MatchProgressionChannel left;
+  final MatchProgressionChannel center;
+  final MatchProgressionChannel right;
+}
+
+@immutable
 class MatchProgressionMetrics {
-  MatchProgressionMetrics({
+  const MatchProgressionMetrics({
     required this.completedPasses,
     required this.progressivePasses,
-    required List<MatchProgressionChannel> channels,
-  }) : channels = List.unmodifiable(channels);
+    required this.channels,
+  });
 
   final int completedPasses;
   final int progressivePasses;
-  final List<MatchProgressionChannel> channels;
+  final MatchProgressionChannels channels;
 }
 
 @immutable

@@ -32,7 +32,7 @@ void main() {
 
     expect(analysis.home?.attack.keyPasses, 3);
     expect(analysis.away?.progression.progressivePasses, 0);
-    expect(analysis.away?.progression.channels.first.percentage, isNull);
+    expect(analysis.away?.progression.channels.left.percentage, isNull);
     expect(analysis.away?.defensiveActivity.recoveries, isNull);
     expect(analysis.away?.defensiveActivity.actions, hasLength(1));
     expect(shotMap.homeCount, 1);
@@ -99,6 +99,41 @@ void main() {
     );
     await expectLater(repository.loadAnalysis(42), throwsFormatException);
   });
+
+  test('rejects missing, duplicate, and unknown progression channels',
+      () async {
+    final missing = _analysisJson();
+    final missingChannels = _channelsFor(missing);
+    missingChannels.removeLast();
+
+    final duplicate = _analysisJson();
+    final duplicateChannels = _channelsFor(duplicate);
+    duplicateChannels[2] = Map<String, Object?>.from(duplicateChannels.first);
+
+    final unknown = _analysisJson();
+    _channelsFor(unknown).first['channel'] = 'middle';
+
+    for (final response in [missing, duplicate, unknown]) {
+      final repository = ApiMatchAnalysisRepository(
+        api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(jsonEncode(response), 200),
+          ),
+          baseUri: Uri.parse('https://example.test/v1/'),
+          requestHeaders: () => const {},
+        ),
+      );
+
+      await expectLater(repository.loadAnalysis(42), throwsFormatException);
+    }
+  });
+}
+
+List<Map<String, Object?>> _channelsFor(Map<String, Object?> analysis) {
+  final teams = analysis['teams']! as Map<String, Object?>;
+  final home = teams['home']! as Map<String, Object?>;
+  final progression = home['progression']! as Map<String, Object?>;
+  return progression['channels']! as List<Map<String, Object?>>;
 }
 
 Map<String, Object?> _analysisJson() => {

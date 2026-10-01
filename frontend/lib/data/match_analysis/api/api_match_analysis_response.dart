@@ -57,7 +57,7 @@ class ApiMatchTeamAnalysisResponse {
   final int completedPassesIntoFinalThird;
   final int completedPasses;
   final int progressivePasses;
-  final List<ApiProgressionChannelResponse> channels;
+  final ApiProgressionChannelsResponse channels;
   final ApiDefensiveActivityResponse defensiveActivity;
 
   factory ApiMatchTeamAnalysisResponse.fromJson(Map<String, dynamic> json) {
@@ -70,9 +70,9 @@ class ApiMatchTeamAnalysisResponse {
           _requiredInt(attack, 'completed_passes_into_final_third'),
       completedPasses: _requiredInt(progression, 'completed_passes'),
       progressivePasses: _requiredInt(progression, 'progressive_passes'),
-      channels: _requiredObjectList(progression, 'channels')
-          .map(ApiProgressionChannelResponse.fromJson)
-          .toList(growable: false),
+      channels: ApiProgressionChannelsResponse.fromJson(
+        _requiredObjectList(progression, 'channels'),
+      ),
       defensiveActivity: ApiDefensiveActivityResponse.fromJson(
         _requiredObject(json, 'defensive_activity'),
       ),
@@ -82,24 +82,74 @@ class ApiMatchTeamAnalysisResponse {
 
 class ApiProgressionChannelResponse {
   const ApiProgressionChannelResponse({
-    required this.channel,
     required this.count,
     required this.percentage,
   });
 
-  final String channel;
   final int count;
   final double? percentage;
+}
 
-  factory ApiProgressionChannelResponse.fromJson(Map<String, dynamic> json) {
-    final channel = _requiredString(json, 'channel');
-    if (!const {'left', 'center', 'right'}.contains(channel)) {
-      throw FormatException('Unknown progression channel "$channel".');
+class ApiProgressionChannelsResponse {
+  const ApiProgressionChannelsResponse({
+    required this.left,
+    required this.center,
+    required this.right,
+  });
+
+  final ApiProgressionChannelResponse left;
+  final ApiProgressionChannelResponse center;
+  final ApiProgressionChannelResponse right;
+
+  factory ApiProgressionChannelsResponse.fromJson(
+    List<Map<String, dynamic>> json,
+  ) {
+    ApiProgressionChannelResponse? left;
+    ApiProgressionChannelResponse? center;
+    ApiProgressionChannelResponse? right;
+
+    for (final item in json) {
+      final name = _requiredString(item, 'channel');
+      final channel = ApiProgressionChannelResponse(
+        count: _requiredInt(item, 'count'),
+        percentage: _requiredNullableDouble(item, 'percentage'),
+      );
+      switch (name) {
+        case 'left':
+          if (left != null) {
+            throw const FormatException(
+                'Duplicate progression channel "left".');
+          }
+          left = channel;
+        case 'center':
+          if (center != null) {
+            throw const FormatException(
+              'Duplicate progression channel "center".',
+            );
+          }
+          center = channel;
+        case 'right':
+          if (right != null) {
+            throw const FormatException(
+              'Duplicate progression channel "right".',
+            );
+          }
+          right = channel;
+        default:
+          throw FormatException('Unknown progression channel "$name".');
+      }
     }
-    return ApiProgressionChannelResponse(
-      channel: channel,
-      count: _requiredInt(json, 'count'),
-      percentage: _requiredNullableDouble(json, 'percentage'),
+
+    if (left == null || center == null || right == null) {
+      throw const FormatException(
+        'Expected left, center, and right progression channels.',
+      );
+    }
+
+    return ApiProgressionChannelsResponse(
+      left: left,
+      center: center,
+      right: right,
     );
   }
 }
