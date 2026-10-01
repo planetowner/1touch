@@ -196,9 +196,12 @@ final GoRouter _router = GoRouter(
                 path: ':id',
                 redirect: (context, state) =>
                     redirectUnsupportedTeamPath(state.pathParameters['id']),
-                builder: (context, state) {
+                pageBuilder: (context, state) {
                   final teamId = int.parse(state.pathParameters['id']!);
-                  return TeamScreen(teamId: teamId);
+                  return NoTransitionPage<void>(
+                    key: state.pageKey,
+                    child: TeamScreen(teamId: teamId),
+                  );
                 },
               ),
             ],
@@ -211,9 +214,12 @@ final GoRouter _router = GoRouter(
             routes: [
               GoRoute(
                 path: ':id',
-                builder: (context, state) {
+                pageBuilder: (context, state) {
                   final playerId = state.pathParameters['id']!;
-                  return PlayerCard(playerId: int.tryParse(playerId));
+                  return NoTransitionPage<void>(
+                    key: state.pageKey,
+                    child: PlayerCard(playerId: int.tryParse(playerId)),
+                  );
                 },
               ),
             ],
@@ -276,6 +282,7 @@ final GoRouter _router = GoRouter(
         bottomNavigationBar: OneTouchBottomNavigationBar(
           currentIndex: 0,
           onTap: (index) {
+            mainTabActions.select(index);
             if (index == 1) {
               openTeamPage(
                 context,
@@ -327,6 +334,7 @@ final GoRouter _router = GoRouter(
         bottomNavigationBar: OneTouchBottomNavigationBar(
           currentIndex: 0,
           onTap: (index) {
+            mainTabActions.select(index);
             if (index == 1) {
               openTeamPage(
                 context,
@@ -420,11 +428,8 @@ class MainScreen extends StatelessWidget {
       bottomNavigationBar: OneTouchBottomNavigationBar(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) {
-          if (navigationShell.currentIndex != index &&
-              navigationShell.currentIndex != 0) {
-            // Reset the persistent branch before another branch is shown.
-            mainTabActions.select(index);
-          }
+          // Reset persistent pages before the destination's first frame.
+          mainTabActions.select(index);
 
           void notifyRootScreen() {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -472,6 +477,7 @@ class _MatchOriginDetailPage extends StatelessWidget {
       bottomNavigationBar: OneTouchBottomNavigationBar(
         currentIndex: selectedIndex,
         onTap: (index) {
+          mainTabActions.select(index);
           if (index == 1) {
             context.go('/team/${currentUserPreferences.viewedTeamId.value}');
           } else {
