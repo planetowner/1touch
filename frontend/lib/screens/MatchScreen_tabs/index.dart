@@ -1,4 +1,4 @@
-export 'Anal.dart';
+export 'anal.dart';
 export 'H2H.dart';
 export 'livechat.dart';
 export 'matchinfo.dart';

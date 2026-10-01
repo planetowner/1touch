@@ -13,7 +13,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/profile_comment_activity.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/post_screen.dart';
 
 enum ProfileActivityTab { posts, comments }
 

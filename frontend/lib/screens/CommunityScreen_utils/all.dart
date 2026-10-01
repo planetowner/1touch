@@ -3,8 +3,8 @@ import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/models/post.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/ground_rules.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/post_screen.dart';
 
 class All extends StatelessWidget {
   const All({

@@ -23,7 +23,7 @@ void main() {
 
       expect(player.id, 7);
       expect(player.teamLabel, 'FC Example • 4');
-      expect(player.position, Position.DF);
+      expect(player.position, Position.df);
       expect(player.age, 25);
       expect(player.contractEndDate, DateTime.utc(2028, 6, 30));
       expect(player.estimatedWeeklyGrossEur, 125000);
@@ -92,7 +92,7 @@ void main() {
       name: 'Lower',
       teamLabel: 'Team',
       jerseyNumber: 4,
-      position: Position.DF,
+      position: Position.df,
       age: 20,
       contractEndDate: DateTime.utc(2027, 6, 30),
       estimatedWeeklyGrossEur: 1000,
@@ -102,7 +102,7 @@ void main() {
       name: 'Higher',
       teamLabel: 'Team',
       jerseyNumber: 8,
-      position: Position.FW,
+      position: Position.fw,
       age: 30,
       contractEndDate: DateTime.utc(2028, 6, 30),
       estimatedWeeklyGrossEur: 2000,

@@ -59,12 +59,13 @@ class _SyncDialogState extends State<SyncDialog> {
       await action();
       if (mounted) setState(() => _outcome = outcome);
     } on GoogleSignInException catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(() => _error = error.code == GoogleSignInExceptionCode.canceled
             ? 'Calendar connection cancelled.'
             : 'Could not connect to Google. Please try again.');
+      }
     } on CalendarSyncException catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(() => _error = switch (error.code) {
               'calendar_account_mismatch' =>
                 'Choose the Google account already connected to 1Touch.',
@@ -80,10 +81,12 @@ class _SyncDialogState extends State<SyncDialog> {
                 'Could not open Calendar. Please try again on your iPhone.',
               _ => 'Calendar sync could not finish. Please try again.',
             });
+      }
     } on Object {
-      if (mounted)
+      if (mounted) {
         setState(
             () => _error = 'Calendar sync could not finish. Please try again.');
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }

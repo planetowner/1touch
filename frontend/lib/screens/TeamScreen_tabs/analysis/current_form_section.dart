@@ -1,4 +1,4 @@
-part of '../Analysis.dart';
+part of '../analysis.dart';
 
 class CurrentFormSection extends StatefulWidget {
   final TeamOverview? team;

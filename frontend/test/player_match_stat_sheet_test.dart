@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
-import 'package:onetouch/features/KaneRest.dart';
+import 'package:onetouch/features/kane_rest.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/l10n/football_name_labels.dart';
 

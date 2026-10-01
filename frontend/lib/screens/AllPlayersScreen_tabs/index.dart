@@ -1,5 +1,5 @@
-export 'Anal.dart';
-export 'Career.dart';
-export 'Matches.dart';
+export 'anal.dart';
+export 'career.dart';
+export 'matches.dart';
 export 'match_card.dart';
 export 'Overview.dart';

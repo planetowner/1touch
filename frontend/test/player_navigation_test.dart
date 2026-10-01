@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
-import 'package:onetouch/features/PlayerScreenFeatures.dart';
+import 'package:onetouch/features/player_screen_features.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/player_detail.dart';
 

@@ -13,8 +13,8 @@ import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
 import 'package:onetouch/models/uploaded_post_attachment.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/add_post.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/post_screen.dart';
 
 import 'support/stub_community_repository.dart';
 import 'support/stub_post_comment_repository.dart';

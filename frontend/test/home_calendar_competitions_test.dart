@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:onetouch/features/HomeScreenFeatures.dart';
+import 'package:onetouch/features/home_screen_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/models/fixture.dart';

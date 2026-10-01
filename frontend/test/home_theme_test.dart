@@ -8,7 +8,7 @@ import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
-import 'package:onetouch/features/HomeScreenFeatures.dart';
+import 'package:onetouch/features/home_screen_features.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/competition.dart';

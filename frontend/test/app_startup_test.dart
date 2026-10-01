@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lottie/lottie.dart';
-import 'package:onetouch/Onboarding.dart';
+import 'package:onetouch/onboarding.dart';
 import 'package:onetouch/main.dart' as app;
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -24,7 +24,7 @@ import 'package:onetouch/core/keyboard_dismiss.dart';
 import 'package:onetouch/core/notification_navigation.dart';
 import 'package:onetouch/core/community_link_navigation.dart';
 import 'package:onetouch/core/session_sync_lifecycle.dart';
-import 'package:onetouch/SessionScreen.dart';
+import 'package:onetouch/session_screen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
@@ -44,10 +44,10 @@ import 'package:onetouch/comm_pages/index.dart'; // Imports all profile pages
 import 'package:onetouch/SignComps/index.dart'; // Imports auth components
 
 // Root Level Pages
-import 'package:onetouch/Splash.dart';
-import 'package:onetouch/Onboarding.dart';
+import 'package:onetouch/splash.dart';
+import 'package:onetouch/onboarding.dart';
 import 'package:onetouch/select_favorite_teams.dart';
-import 'package:onetouch/WelcomeScreen.dart';
+import 'package:onetouch/welcome_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

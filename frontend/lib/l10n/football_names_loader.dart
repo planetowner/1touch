@@ -38,7 +38,9 @@ class _FootballNamesLoaderState extends State<FootballNamesLoader> {
   void didUpdateWidget(FootballNamesLoader oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.enabled != oldWidget.enabled ||
-        widget.repository != oldWidget.repository) _load();
+        widget.repository != oldWidget.repository) {
+      _load();
+    }
   }
 
   void _load() {

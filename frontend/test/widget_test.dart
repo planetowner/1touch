@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/Onboarding.dart';
-import 'package:onetouch/Splash.dart';
+import 'package:onetouch/onboarding.dart';
+import 'package:onetouch/splash.dart';
 import 'package:onetouch/core/api_config.dart';
 import 'package:onetouch/main.dart';
-import 'package:onetouch/screens/HomeScreen.dart';
+import 'package:onetouch/screens/home_screen.dart';
 
 void main() {
   testWidgets('routes from splash using the configured onboarding mode',

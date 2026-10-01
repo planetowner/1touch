@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/catalog/football_names.dart';
-import 'package:onetouch/features/HomeScreenFeatures.dart';
+import 'package:onetouch/features/home_screen_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/models/fixture.dart';

@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:onetouch/SessionScreen.dart';
+import 'package:onetouch/session_screen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/notification_navigation.dart';
 import 'package:onetouch/core/community_link_navigation.dart';

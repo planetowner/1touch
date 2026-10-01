@@ -1,4 +1,4 @@
-part of '../Analysis.dart';
+part of '../analysis.dart';
 
 Color _analysisTeamPrimaryColor(TeamOverview? team) {
   final repositoryTeam = team == null ? null : teamRepository.findById(team.id);

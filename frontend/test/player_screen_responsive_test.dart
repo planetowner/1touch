@@ -9,13 +9,13 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
-import 'package:onetouch/screens/AllPlayersScreen.dart';
+import 'package:onetouch/screens/all_players_screen.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
-import 'package:onetouch/screens/AllPlayersScreen_tabs/Anal.dart';
+import 'package:onetouch/screens/AllPlayersScreen_tabs/anal.dart';
 import 'support/player_detail_fixture.dart';
 
 void main() {

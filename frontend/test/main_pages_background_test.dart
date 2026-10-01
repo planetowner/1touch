@@ -8,9 +8,9 @@ import 'package:onetouch/models/home_content_item.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/team.dart';
-import 'package:onetouch/screens/CommunityScreen.dart';
+import 'package:onetouch/screens/community_screen.dart';
 import 'support/stub_community_repository.dart';
-import 'package:onetouch/screens/HomeScreen.dart';
+import 'package:onetouch/screens/home_screen.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
 
 void main() {

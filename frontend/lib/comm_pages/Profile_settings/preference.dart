@@ -3,7 +3,7 @@ import "package:flutter/material.dart";
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'PreferenceDetails.dart';
+import 'preference_details.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class PreferencePage extends StatefulWidget {

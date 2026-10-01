@@ -1,5 +1,3 @@
-// ignore_for_file: file_names
-
 import 'dart:async';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_baseline.dart';

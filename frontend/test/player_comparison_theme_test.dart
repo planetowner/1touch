@@ -5,7 +5,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'package:onetouch/models/player_detail.dart';
-import 'package:onetouch/screens/PlayerComparisonScreen.dart';
+import 'package:onetouch/screens/player_comparison_screen.dart';
 import 'support/player_detail_fixture.dart';
 
 class _ImagePlayerDetailRepository extends FakePlayerDetailRepository {

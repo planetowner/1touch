@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:onetouch/comm_pages/Profile_settings/Preference.dart';
+import 'package:onetouch/comm_pages/Profile_settings/preference.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';

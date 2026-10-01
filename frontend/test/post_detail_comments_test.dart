@@ -8,7 +8,7 @@ import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/models/post_comment.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/post_screen.dart';
 
 import 'support/stub_community_repository.dart';
 

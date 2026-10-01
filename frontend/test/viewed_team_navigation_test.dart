@@ -10,9 +10,9 @@ import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/main.dart';
 import 'package:onetouch/features/community/community_access.dart';
-import 'package:onetouch/screens/CommunityScreen.dart';
-import 'package:onetouch/screens/HomeScreen.dart';
-import 'package:onetouch/screens/TeamScreen.dart';
+import 'package:onetouch/screens/community_screen.dart';
+import 'package:onetouch/screens/home_screen.dart';
+import 'package:onetouch/screens/team_screen.dart';
 
 void main() {
   testWidgets('Home selection reaches retained Team and Community tabs',

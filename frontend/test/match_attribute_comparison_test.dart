@@ -9,7 +9,7 @@ import 'package:onetouch/features/team/attributes/match_attribute_comparison.dar
 import 'package:onetouch/models/team_attribute_scores.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/models/team_attribute_season_option.dart';
-import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
+import 'package:onetouch/screens/TeamScreen_tabs/analysis.dart';
 
 void main() {
   setUpAppCatalog();

@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
-import 'package:onetouch/screens/TeamScreen.dart';
+import 'package:onetouch/screens/team_screen.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 
 import 'support/test_team_overview_repository.dart';

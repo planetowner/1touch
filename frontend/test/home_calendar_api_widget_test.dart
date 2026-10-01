@@ -4,7 +4,7 @@ import 'package:onetouch/data/fixtures/api/api_fixture_response.dart';
 import 'package:onetouch/data/home/api/api_home_mapper.dart';
 import 'package:onetouch/data/home/api/api_home_response.dart';
 import 'package:onetouch/data/teams/api/api_team_response.dart';
-import 'package:onetouch/features/HomeScreenFeatures.dart';
+import 'package:onetouch/features/home_screen_features.dart';
 import 'package:onetouch/models/competition.dart';
 
 void main() {

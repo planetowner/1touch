@@ -1,4 +1,4 @@
-part of '../Analysis.dart';
+part of '../analysis.dart';
 
 //
 // ATTRIBUTES — radar chart comparing the current team to a chosen reference

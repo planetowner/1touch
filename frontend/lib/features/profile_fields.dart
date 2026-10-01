@@ -50,9 +50,10 @@ class _ProfileFieldsState extends State<ProfileFields> {
             _error = tr(context, 'Username or nickname is already in use'));
       }
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() => _error = tr(context,
             'Unable to save profile. Check your username and try again.'));
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }

@@ -3,7 +3,7 @@ import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/SignComps/SignIn.dart';
+import 'package:onetouch/SignComps/sign_in.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;

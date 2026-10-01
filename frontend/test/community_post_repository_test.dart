@@ -1,5 +1,5 @@
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/add_post.dart';
 import 'support/app_catalog.dart';
 import 'dart:async';
 
@@ -11,8 +11,8 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
-import 'package:onetouch/screens/CommunityScreen.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+import 'package:onetouch/screens/community_screen.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/post_screen.dart';
 import 'support/stub_community_repository.dart';
 
 void main() {

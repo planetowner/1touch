@@ -8,7 +8,7 @@ import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
-import 'package:onetouch/features/KaneRest.dart';
+import 'package:onetouch/features/kane_rest.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/features/home/screen/home_screen_features.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
@@ -16,7 +16,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/football_names_loader.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team_overview.dart';
-import 'package:onetouch/screens/AllPlayersScreen.dart';
+import 'package:onetouch/screens/all_players_screen.dart';
 import 'support/app_catalog.dart';
 import 'support/player_detail_fixture.dart';
 

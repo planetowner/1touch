@@ -10,7 +10,7 @@ import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/profile/api/api_profile_activity_repository.dart';
 import 'package:onetouch/models/current_user_profile.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/post_screen.dart';
 
 import 'support/app_catalog.dart';
 import 'support/profile_activity_fixture.dart';

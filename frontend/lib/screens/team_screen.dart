@@ -49,7 +49,7 @@ class TeamScreen extends StatefulWidget {
   });
 
   @override
-  _TeamScreenState createState() => _TeamScreenState();
+  State<TeamScreen> createState() => _TeamScreenState();
 }
 
 class _TeamScreenState extends State<TeamScreen>

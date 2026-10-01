@@ -9,7 +9,7 @@ import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/features/community/community_ban_dialog.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/community_ban.dart';
-import 'package:onetouch/screens/CommunityScreen.dart';
+import 'package:onetouch/screens/community_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/app_catalog.dart';

@@ -16,7 +16,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_clock.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
-import 'package:onetouch/screens/MatchScreen_tabs/Anal.dart';
+import 'package:onetouch/screens/MatchScreen_tabs/anal.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/matchinfo.dart';
 
 void main() {

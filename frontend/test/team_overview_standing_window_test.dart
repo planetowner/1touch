@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
-import 'package:onetouch/features/TeamScreenFeatures.dart';
+import 'package:onetouch/features/team_screen_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/standing.dart' as standing_model;
 import 'package:onetouch/models/team_overview.dart';

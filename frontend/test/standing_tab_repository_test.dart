@@ -12,7 +12,7 @@ import 'package:onetouch/features/api_knockout_bracket.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/models/team_overview.dart';
-import 'package:onetouch/screens/TeamScreen_tabs/Standing.dart';
+import 'package:onetouch/screens/TeamScreen_tabs/standing.dart';
 
 void main() {
   setUpAppCatalog();

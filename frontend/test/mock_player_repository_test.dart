@@ -6,8 +6,8 @@ import 'package:onetouch/data/team_trophies/mock/mock_team_trophy_repository.dar
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_trophy_catalog.dart';
 import 'package:onetouch/models/player.dart';
-import 'package:onetouch/screens/AllPlayersScreen.dart';
-import 'package:onetouch/screens/AllPlayersScreen_tabs/Career.dart';
+import 'package:onetouch/screens/all_players_screen.dart';
+import 'package:onetouch/screens/AllPlayersScreen_tabs/career.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';

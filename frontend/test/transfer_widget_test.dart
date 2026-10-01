@@ -10,7 +10,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
-import 'package:onetouch/features/TeamScreenFeatures.dart';
+import 'package:onetouch/features/team_screen_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
 import 'package:onetouch/models/team_overview.dart';

@@ -11,7 +11,7 @@ import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/models/team.dart';
-import 'RankFavTeams.dart';
+import 'rank_fav_teams.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class SelectFavoriteTeamsScreen extends StatefulWidget {
