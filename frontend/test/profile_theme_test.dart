@@ -1,3 +1,4 @@
+import 'support/stub_profile_activity_repository.dart';
 import 'support/app_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,7 @@ void main() {
         MaterialApp(
           theme: app_style.whitetheme,
           home: Profile(
+            activityRepository: const StubProfileActivityRepository(),
             followingController: PlayerFollowingController()
               ..loaded = true
               ..players = [
@@ -161,6 +163,7 @@ void main() {
       MaterialApp(
         theme: app_style.darktheme,
         home: Profile(
+          activityRepository: const StubProfileActivityRepository(),
           followingController: PlayerFollowingController()
             ..loaded = true
             ..players = [

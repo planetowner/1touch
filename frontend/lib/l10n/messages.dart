@@ -533,6 +533,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "プロフィールを読み込めませんでした。",
     zh: "无法加载个人资料。"
   ),
+  "Unable to load activity counts.": (
+    ko: "게시글·댓글 수를 불러오지 못했어요.",
+    ja: "投稿・コメント数を読み込めませんでした。",
+    zh: "无法加载帖子和评论数量。"
+  ),
   "Retry": (ko: "다시 시도", ja: "再試行", zh: "重试"),
   "RETRY": (ko: "다시 시도", ja: "再試行", zh: "重试"),
   "Cancel": (ko: "취소", ja: "キャンセル", zh: "取消"),

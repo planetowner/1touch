@@ -11,6 +11,11 @@ from ..services.profile_changes import ProfileChangeLimitError
 router = APIRouter()
 
 
+@router.get("/users/me/activity/counts")
+def my_activity_counts(user_id: int = Depends(get_user_id)):
+    return posts_repo.count_my_activity(user_id)
+
+
 @router.get("/users/me/posts")
 def my_posts(limit: int = Query(default=50, ge=1, le=100), offset: int = Query(default=0, ge=0),
              user_id: int = Depends(get_user_id)):

@@ -5,12 +5,26 @@ import 'package:onetouch/data/posts/api/api_post_mapper.dart';
 import 'package:onetouch/data/posts/api/api_post_response.dart';
 import 'package:onetouch/data/profile/profile_activity_repository.dart';
 import 'package:onetouch/models/post.dart';
+import 'package:onetouch/models/profile_activity_counts.dart';
 import 'package:onetouch/models/profile_comment_activity.dart';
 
 class ApiProfileActivityRepository implements ProfileActivityRepository {
   ApiProfileActivityRepository({required ApiClient api}) : _api = api;
 
   final ApiClient _api;
+
+  @override
+  Future<ProfileActivityCounts> loadCounts() async {
+    final response =
+        await _api.get(_api.baseUri.resolve('users/me/activity/counts'));
+    final json = _api.decodeJson<Map<String, dynamic>>(response);
+    final posts = json['post_count'];
+    final comments = json['comment_count'];
+    if (posts is! int || comments is! int || posts < 0 || comments < 0) {
+      throw const FormatException('Expected non-negative activity counts.');
+    }
+    return ProfileActivityCounts(postCount: posts, commentCount: comments);
+  }
 
   @override
   Future<List<Post>> loadPosts({int limit = 50, int offset = 0}) =>

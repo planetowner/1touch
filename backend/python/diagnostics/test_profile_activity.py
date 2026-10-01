@@ -164,12 +164,44 @@ class ProfileActivityTests(unittest.TestCase):
         self.db.execute("DELETE FROM user_following_teams WHERE user_id=1")
         self.assertEqual([row["post_id"] for row in self.activity("posts")["items"]], [10])
         self.assertEqual([row["comment"]["comment_id"] for row in self.activity("comments")["items"]], [101, 100])
+        self.assertEqual(self.activity("activity/counts"), {"post_count": 1, "comment_count": 2})
 
     def test_changing_favorite_and_followed_teams_changes_activity_scope(self):
         self.db.execute("UPDATE users SET favorite_team_id=30 WHERE user_id=1")
         self.db.execute("DELETE FROM user_following_teams WHERE user_id=1")
         self.assertEqual([row["post_id"] for row in self.activity("posts")["items"]], [12])
         self.assertEqual([row["comment"]["comment_id"] for row in self.activity("comments")["items"]], [103])
+        self.assertEqual(self.activity("activity/counts"), {"post_count": 1, "comment_count": 1})
+
+    def test_counts_follow_list_visibility_including_replies_and_deleted_parent_authors(self):
+        self.assertEqual(self.activity("activity/counts"), {"post_count": 2, "comment_count": 4})
+        self.db.execute("INSERT INTO user_blocks VALUES (1,2)")
+        self.assertEqual(self.activity("activity/counts"), {"post_count": 2, "comment_count": 2})
+        for kind, field in (("posts", "post_count"), ("comments", "comment_count")):
+            self.assertEqual(self.activity("activity/counts")[field], len(self.activity(kind)["items"]))
+
+    def test_counts_cover_every_page_and_ignore_request_user_and_pagination(self):
+        for item_id in range(1000, 1120):
+            self.db.execute("INSERT INTO posts VALUES (?,10,1,'general','Title','Body',?,NULL,'active')",
+                            (item_id, self.now.isoformat()))
+            self.db.execute("INSERT INTO post_comments VALUES (?,13,1,NULL,'Comment',?,NULL,'active')",
+                            (item_id, self.now.isoformat()))
+        counts = self.activity("activity/counts", user_id=2, author_id=2, limit=1, offset=1000)
+        self.assertEqual(counts, {"post_count": 122, "comment_count": 124})
+        for kind, field in (("posts", "post_count"), ("comments", "comment_count")):
+            self.assertEqual(len(self.activity(kind)["items"]), 50)
+            total = sum(len(self.activity(kind, offset=offset)["items"]) for offset in (0, 50, 100))
+            self.assertEqual(counts[field], total)
+
+    def test_counts_return_zero_only_when_no_visible_activity_remains(self):
+        self.db.execute("UPDATE posts SET state='deleted' WHERE user_id=1")
+        self.db.execute("UPDATE post_comments SET state='hidden' WHERE user_id=1")
+        self.assertEqual(self.activity("activity/counts"), {"post_count": 0, "comment_count": 0})
+
+    def test_counts_propagate_database_failure(self):
+        self.patch(posts_repo, "fetch_one_dict", side_effect=RuntimeError("database unavailable"))
+        with self.assertRaisesRegex(RuntimeError, "database unavailable"):
+            self.activity("activity/counts")
 
     def test_session_owns_both_lists_even_when_another_user_id_is_supplied(self):
         for kind in ("posts", "comments"):
@@ -180,8 +212,8 @@ class ProfileActivityTests(unittest.TestCase):
                 self.assertTrue(items)
                 self.assertTrue(all((row if kind == "posts" else row["comment"])["user_id"] == 1 for row in items))
 
-    def test_both_endpoints_require_a_valid_bearer_session(self):
-        for kind in ("posts", "comments"):
+    def test_activity_endpoints_require_a_valid_bearer_session(self):
+        for kind in ("posts", "comments", "activity/counts"):
             for headers in ({}, {"X-User-Id": "1"}, {"Authorization": "Bearer invalid"}):
                 with self.subTest(kind=kind, headers=headers):
                     response = self.client.get(f"/v1/users/me/{kind}", headers=headers)
@@ -200,7 +232,7 @@ class ProfileActivityTests(unittest.TestCase):
         for field, value in cases:
             previous = self.db.execute(f"SELECT {field} FROM users WHERE user_id=1").fetchone()[0]
             self.db.execute(f"UPDATE users SET {field}=? WHERE user_id=1", (value,))
-            for kind in ("posts", "comments"):
+            for kind in ("posts", "comments", "activity/counts"):
                 with self.subTest(field=field, kind=kind):
                     self.assertEqual(self.get(f"/v1/users/me/{kind}").status_code, 403)
             self.db.execute(f"UPDATE users SET {field}=? WHERE user_id=1", (previous,))
