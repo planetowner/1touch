@@ -51,6 +51,38 @@ typedef PlayerHonour = ({
 typedef PlayerPerformancePoint = ({int fixtureId, int round, double? rating});
 typedef PlayerCandidate = ({int id, String name, String? image});
 
+class PlayerComparisonCandidate {
+  const PlayerComparisonCandidate({
+    required this.player,
+    required this.position,
+    required this.teamId,
+    required this.teamName,
+    required this.jerseyNumber,
+  });
+
+  final PlayerCandidate player;
+  final String? position;
+  final int? teamId;
+  final String? teamName;
+  final int? jerseyNumber;
+}
+
+class PlayerComparisonPage {
+  const PlayerComparisonPage({
+    required this.players,
+    required this.seasonName,
+    required this.total,
+    required this.limit,
+    required this.offset,
+  });
+
+  final List<PlayerComparisonCandidate> players;
+  final String? seasonName;
+  final int total;
+  final int limit;
+  final int offset;
+}
+
 class PlayerDetailMatch {
   const PlayerDetailMatch(
       {required this.id,

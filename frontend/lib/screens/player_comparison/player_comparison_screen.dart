@@ -61,18 +61,7 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
     try {
       final player = await _repository.load(id, seasonId: seasonId);
       if (!mounted || request != _request) return;
-      final other = _players[1 - slot];
-      final position = player.analysis?.position;
-      setState(() {
-        _players[slot] = player;
-        if (other != null &&
-            (position == null || position != other.analysis?.position)) {
-          _error = tr(context,
-              'Select a player with the same season position ({position}).', {
-            'position': other.analysis?.position ?? tr(context, 'Unavailable')
-          });
-        }
-      });
+      _applyPlayer(slot, player);
     } on Object {
       if (mounted && request == _request) {
         setState(() => _error = tr(context,
@@ -81,6 +70,21 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
     } finally {
       if (mounted && request == _request) setState(() => _loading = false);
     }
+  }
+
+  void _applyPlayer(int slot, PlayerDetail player) {
+    final other = _players[1 - slot];
+    final position = player.analysis?.position;
+    setState(() {
+      _players[slot] = player;
+      _error = other != null &&
+              (position == null || position != other.analysis?.position)
+          ? tr(context,
+              'Select a player with the same season position ({position}).', {
+              'position': other.analysis?.position ?? tr(context, 'Unavailable')
+            })
+          : null;
+    });
   }
 
   Future<void> _pickPlayer(int slot) async {
@@ -97,7 +101,7 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
     );
     if (player == null || !mounted) return;
     if (player.seasons.isEmpty) {
-      setState(() => _players[slot] = player);
+      _applyPlayer(slot, player);
       return;
     }
     final seasonId = await showModalBottomSheet<int>(
@@ -107,7 +111,12 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
       builder: (_) => _ComparisonSeasonPickerSheet(player: player),
     );
     if (seasonId != null && mounted) {
-      await _load(slot, player.playerId, seasonId: seasonId);
+      // 방금 조회한 시즌을 고르면 같은 상세를 다시 요청하지 않아요.
+      if (seasonId == player.selectedSeason?.id) {
+        _applyPlayer(slot, player);
+      } else {
+        await _load(slot, player.playerId, seasonId: seasonId);
+      }
     }
   }
 

@@ -9,7 +9,8 @@ import 'package:onetouch/models/player_detail.dart';
 
 import 'support/player_detail_fixture.dart';
 
-class _CacheRepository implements CachedPlayerDetailRepository {
+class _CacheRepository extends FakePlayerDetailRepository
+    implements CachedPlayerDetailRepository {
   final pending = Completer<PlayerDetailSnapshot?>();
   PlayerDetailSnapshot? cached;
   int restores = 0;

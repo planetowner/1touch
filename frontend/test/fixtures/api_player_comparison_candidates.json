@@ -1,0 +1,26 @@
+{
+  "players": [
+    {
+      "player_id": 101,
+      "name": "Example Forward",
+      "image": "https://example.com/player.png",
+      "position_group": "FW",
+      "team_id": 8,
+      "team_name": "Example Club",
+      "jersey_number": 9
+    },
+    {
+      "player_id": 102,
+      "name": "이름 없는 선수",
+      "image": null,
+      "position_group": null,
+      "team_id": null,
+      "team_name": null,
+      "jersey_number": null
+    }
+  ],
+  "season_name": "2026/2027",
+  "total": 22,
+  "limit": 20,
+  "offset": 20
+}
