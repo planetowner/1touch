@@ -160,7 +160,7 @@ class _StatRow extends StatelessWidget {
   }
 
   String _display(double? value) {
-    if (value == null) return '—';
+    if (value == null) return 'ㅡ';
     if (value == value.roundToDouble()) return value.toInt().toString();
     return value.toStringAsFixed(value.abs() < 10 ? 2 : 1);
   }
