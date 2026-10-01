@@ -8,6 +8,9 @@ import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/core/notification_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
+import 'package:onetouch/data/home/home_repository.dart';
+import 'package:onetouch/data/home/home_repository_provider.dart'
+    as home_provider;
 import 'package:onetouch/data/session/session_data_synchronizer.dart';
 import 'package:onetouch/data/profile/api/api_current_user_response.dart';
 import 'package:onetouch/data/teams/team_page_eligibility.dart';
@@ -19,7 +22,9 @@ bool get isAppSessionReady =>
     _readyToken != null && _readyToken == authSession.accessToken;
 
 class SessionScreen extends StatefulWidget {
-  const SessionScreen({super.key});
+  const SessionScreen({super.key, this.homeRepository});
+
+  final HomeSnapshotRepository? homeRepository;
   @override
   State<SessionScreen> createState() => _SessionScreenState();
 }
@@ -47,15 +52,17 @@ class _SessionScreenState extends State<SessionScreen> {
       final cached = await sessionDataSynchronizer.hydrate();
       if (!mounted) return;
       if (cached?.canOpenHome == true) {
-        _openHome();
-        unawaited(_refreshCachedSession());
+        await _openHome();
+        if (mounted && isAppSessionReady) {
+          unawaited(_refreshCachedSession());
+        }
         return;
       }
       final fresh = await sessionDataSynchronizer.synchronize(
         trigger: CacheSyncTrigger.bootstrap,
       );
       if (!mounted) return;
-      _handle(fresh);
+      await _handle(fresh);
     } catch (error) {
       if (mounted) setState(() => _error = error);
     }
@@ -71,7 +78,7 @@ class _SessionScreenState extends State<SessionScreen> {
     }
   }
 
-  void _handle(SessionDataSnapshot snapshot) {
+  Future<void> _handle(SessionDataSnapshot snapshot) async {
     final account = snapshot.account;
     if ([account.username, account.firstName, account.lastName]
         .any((s) => s == null || s.isEmpty)) {
@@ -91,19 +98,33 @@ class _SessionScreenState extends State<SessionScreen> {
     if (!snapshot.canOpenHome) {
       throw StateError('Complete session data is unavailable.');
     }
-    _openHome();
+    await _openHome();
   }
 
-  void _openHome() {
+  Future<void> _openHome() async {
+    final sessionToken = authSession.accessToken;
     // 새 로그인에서는 이전 계정의 탐색 팀을 이어받지 않아요.
-    if (_readyToken != authSession.accessToken) {
+    if (_readyToken != sessionToken) {
       currentUserPreferences.resetViewedTeam();
     }
-    _readyToken = authSession.accessToken;
+    final repository = widget.homeRepository ?? home_provider.homeRepository;
+    if (repository is HomeSnapshotRepository) {
+      final now = DateTime.now();
+      try {
+        await repository.restoreFor(
+          teamId: currentUserPreferences.viewedTeamId.value,
+          month: DateTime(now.year, now.month),
+        );
+      } on Object {
+        // Local storage is optional; an unreadable cache must not block Home.
+      }
+    }
+    if (!mounted || sessionToken != authSession.accessToken) return;
+    _readyToken = sessionToken;
     final destination = notificationNavigation.take(
-      sessionToken: authSession.accessToken!,
+      sessionToken: sessionToken!,
     );
-    if (mounted) context.go(destination ?? '/home');
+    context.go(destination ?? '/home');
   }
 
   @override

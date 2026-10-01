@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -9,7 +10,9 @@ import 'package:onetouch/SessionScreen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/notification_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/models/home_data.dart';
 
 void main() {
   late Map<String, dynamic> account;
@@ -64,9 +67,15 @@ void main() {
     };
   });
   Future<void> pump(WidgetTester tester,
-      {Locale locale = const Locale('en')}) async {
+      {Locale locale = const Locale('en'),
+      HomeSnapshotRepository? homeRepository,
+      bool settle = true}) async {
     final router = GoRouter(initialLocation: '/session', routes: [
-      GoRoute(path: '/session', builder: (_, __) => const SessionScreen()),
+      GoRoute(
+          path: '/session',
+          builder: (_, __) => SessionScreen(
+              homeRepository: homeRepository ??
+                  (_PendingHomeSnapshotRepository()..complete()))),
       GoRoute(
           path: '/home',
           builder: (_, __) => const Scaffold(body: Text('Ready Home'))),
@@ -90,8 +99,32 @@ void main() {
       supportedLocales: appSupportedLocales,
       localizationsDelegates: appLocalizationDelegates,
     ));
-    await tester.pumpAndSettle();
+    if (settle) {
+      await tester.pumpAndSettle();
+    } else {
+      await tester.pump();
+    }
   }
+
+  testWidgets('restores the local Home snapshot before entering Home',
+      (tester) async {
+    final repository = _PendingHomeSnapshotRepository();
+    await pump(tester, homeRepository: repository, settle: false);
+    for (var attempt = 0;
+        attempt < 30 && repository.teamId == null;
+        attempt++) {
+      await tester.pump(const Duration(milliseconds: 10));
+    }
+
+    expect(repository.teamId, 8);
+    final now = DateTime.now();
+    expect(repository.month, DateTime(now.year, now.month));
+    expect(find.text('Ready Home'), findsNothing);
+    repository.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('Ready Home'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('prepares real catalog and saved preferences before opening Home',
       (tester) async {
@@ -188,4 +221,33 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Ready Home'), findsOneWidget);
   });
+}
+
+class _PendingHomeSnapshotRepository implements HomeSnapshotRepository {
+  final _restored = Completer<HomeSnapshot?>();
+  int? teamId;
+  DateTime? month;
+
+  @override
+  Future<HomeSnapshot?> restoreFor({
+    required int teamId,
+    required DateTime month,
+  }) {
+    this.teamId = teamId;
+    this.month = month;
+    return _restored.future;
+  }
+
+  void complete() => _restored.complete(null);
+
+  @override
+  HomeSnapshot? snapshotFor({required int teamId, required DateTime month}) =>
+      null;
+
+  @override
+  Future<HomeData> load({int? teamId, DateTime? start, DateTime? end}) =>
+      throw UnimplementedError();
+
+  @override
+  void clearSnapshots() {}
 }
