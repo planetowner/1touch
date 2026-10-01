@@ -882,13 +882,16 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.darktheme,
-        home: TeamScreen(
-          fixtureRepository: fixtureRepository,
-          standingRepository: standingRepository,
-          currentFormRepository: currentFormRepository,
-          teamId: 9,
-          teamAttributeRepository: teamAttributeRepository,
-          teamOverviewRepository: teamOverviewRepository,
+        home: MediaQuery(
+          data: const MediaQueryData(disableAnimations: true),
+          child: TeamScreen(
+            fixtureRepository: fixtureRepository,
+            standingRepository: standingRepository,
+            currentFormRepository: currentFormRepository,
+            teamId: 9,
+            teamAttributeRepository: teamAttributeRepository,
+            teamOverviewRepository: teamOverviewRepository,
+          ),
         ),
       ),
     );

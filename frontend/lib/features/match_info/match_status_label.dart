@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:onetouch/l10n/match_status_labels.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_clock.dart';
+import 'live_match_motion.dart';
 
 class MatchStatusLabel extends StatefulWidget {
   const MatchStatusLabel({super.key, required this.fixture, this.clock});
@@ -52,12 +53,22 @@ class _MatchStatusLabelState extends State<MatchStatusLabel> {
   }
 
   @override
-  Widget build(BuildContext context) => Text(
-        matchStatusLabel(widget.fixture,
-            clock: widget.clock,
-            now: time.clock.now(),
-            locale: Localizations.localeOf(context)),
-        key: const ValueKey('match-status-label'),
-        textAlign: TextAlign.center,
+  Widget build(BuildContext context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            matchStatusLabel(widget.fixture,
+                clock: widget.clock,
+                now: time.clock.now(),
+                locale: Localizations.localeOf(context)),
+            key: const ValueKey('match-status-label'),
+            textAlign: TextAlign.center,
+          ),
+          if (fixtureHasPlayingClock(widget.fixture) &&
+              widget.clock != null) ...[
+            const SizedBox(height: 6),
+            const LiveTrimLine(),
+          ],
+        ],
       );
 }

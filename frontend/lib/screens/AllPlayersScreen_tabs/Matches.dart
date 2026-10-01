@@ -3,6 +3,7 @@ import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/features/match_info/live_match_motion.dart';
 
 class MatchesTab extends StatefulWidget {
   const MatchesTab({super.key, this.player, this.playerId});
@@ -42,6 +43,7 @@ class _MatchesTabState extends State<MatchesTab> {
             if (detail.matches.any((m) => m.live)) ...[
               PlayerSection(
                   title: tr(context, 'LIVE'),
+                  titleAccessory: const LivePulseDot(),
                   child: Column(children: [
                     for (final match in detail.matches.where((m) => m.live))
                       PlayerDetailMatchCard(match: match)

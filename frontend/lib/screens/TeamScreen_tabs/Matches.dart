@@ -17,6 +17,7 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/match_info/live_match_motion.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
@@ -257,7 +258,7 @@ class _MatchesTabState extends State<MatchesTab> {
         if (liveMatches.isNotEmpty)
           _MatchSectionData(
             type: _MatchSection.live,
-            title: tr(context, '• LIVE'),
+            title: tr(context, 'LIVE'),
             matches: liveMatches,
             key: _liveSectionKey,
           ),
@@ -340,7 +341,10 @@ class _MatchesTabState extends State<MatchesTab> {
             SizedBox(
               key: ValueKey('matches-${sections.first.type.name}-header'),
               height: _MatchSectionHeader.sectionHeight,
-              child: _MatchSectionHeader(title: sections.first.title),
+              child: _MatchSectionHeader(
+                title: sections.first.title,
+                live: sections.first.type == _MatchSection.live,
+              ),
             ),
             for (var index = 1; index < sections.length; index++)
               _AnimatedStickyHeaderSlot(
@@ -425,6 +429,8 @@ class _MatchesTabState extends State<MatchesTab> {
                                       'matches-inline-${sections[index].type.name}-header',
                                     ),
                                     title: sections[index].title,
+                                    live: sections[index].type ==
+                                        _MatchSection.live,
                                   ),
                                 ),
                               ),
@@ -675,8 +681,10 @@ List<Fixture> _sortFixturesByKickoff(
 
 class _MatchSectionHeader extends StatelessWidget {
   final String title;
+  final bool live;
 
-  const _MatchSectionHeader({super.key, required this.title});
+  const _MatchSectionHeader(
+      {super.key, required this.title, this.live = false});
 
   static const double sectionHeight = 34;
   static const double cardSpacing = 8;
@@ -692,7 +700,16 @@ class _MatchSectionHeader extends StatelessWidget {
           const SizedBox(height: 16),
           Align(
             alignment: Alignment.centerLeft,
-            child: Text(title, style: Body2_b.style.copyWith(height: 18 / 14)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (live) ...[
+                  LivePulseDot(color: Body2_b.style.color),
+                  const SizedBox(width: 4),
+                ],
+                Text(title, style: Body2_b.style.copyWith(height: 18 / 14)),
+              ],
+            ),
           ),
         ],
       ),
@@ -735,7 +752,10 @@ class _AnimatedStickyHeaderSlot extends StatelessWidget {
           ? SizedBox(
               key: ValueKey('matches-${section.type.name}-header'),
               height: _MatchSectionHeader.sectionHeight,
-              child: _MatchSectionHeader(title: section.title),
+              child: _MatchSectionHeader(
+                title: section.title,
+                live: section.type == _MatchSection.live,
+              ),
             )
           : SizedBox(
               key: ValueKey('matches-${section.type.name}-header-hidden'),

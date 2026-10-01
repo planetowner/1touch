@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/match_info/live_match_motion.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -172,12 +173,24 @@ class CommunityTeamHeader extends StatelessWidget {
                             color: Colors.redAccent,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
-                            tr(context, 'LIVE'),
-                            style: Body2_b.style.copyWith(
-                              color:
-                                  isLight ? AppPalette.black : AppPalette.white,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              LivePulseDot(
+                                color: isLight
+                                    ? AppPalette.black
+                                    : AppPalette.white,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                tr(context, 'LIVE'),
+                                style: Body2_b.style.copyWith(
+                                  color: isLight
+                                      ? AppPalette.black
+                                      : AppPalette.white,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
