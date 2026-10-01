@@ -10,7 +10,7 @@ class Transfer extends StatefulWidget {
     this.onDirectionChanged,
   });
 
-  final teams;
+  final TeamOverview? teams;
   final TransferRepository? repository;
   final VoidCallback? onUnavailable;
   final bool? showIncoming;
@@ -38,12 +38,7 @@ class _TransferState extends State<Transfer> {
     widget.onDirectionChanged?.call(value);
   }
 
-  int? get _teamId {
-    if (widget.teams is Map<String, dynamic>) {
-      return (widget.teams as Map<String, dynamic>)['id'] as int?;
-    }
-    return null;
-  }
+  int? get _teamId => widget.teams?.id;
 
   @override
   void initState() {
@@ -54,9 +49,7 @@ class _TransferState extends State<Transfer> {
   @override
   void didUpdateWidget(Transfer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final oldTeamId = oldWidget.teams is Map<String, dynamic>
-        ? (oldWidget.teams as Map<String, dynamic>)['id'] as int?
-        : null;
+    final oldTeamId = oldWidget.teams?.id;
     if (_teamId != oldTeamId || widget.repository != oldWidget.repository) {
       _startLoad();
     }

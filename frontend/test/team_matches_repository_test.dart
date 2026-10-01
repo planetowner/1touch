@@ -8,6 +8,7 @@ import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Matches.dart';
 
 void main() {
@@ -653,7 +654,12 @@ Widget _app(MockFixtureRepository repository,
     localizationsDelegates: appLocalizationDelegates,
     home: Scaffold(
       body: MatchesTab(
-        team: {'id': teamId},
+        team: TeamOverview(
+          id: teamId,
+          name: 'Team $teamId',
+          shortName: 'T$teamId',
+          imagePath: '',
+        ),
         fixtureRepository: repository,
         onTopOverscroll: onTopOverscroll,
       ),

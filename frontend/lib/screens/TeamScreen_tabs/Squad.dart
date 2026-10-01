@@ -14,6 +14,7 @@ import 'package:onetouch/data/teams/team_page_eligibility.dart';
 import 'package:onetouch/features/team/squad/squad_player_presentation.dart';
 import 'package:onetouch/models/season.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 // TODO(squad-api): Remove after the API-backed Squad screen is confirmed on
@@ -231,7 +232,7 @@ List<SquadPlayer> _mockSquad() => [
     ];
 
 class SquadTab extends StatefulWidget {
-  final Map<String, dynamic>? team;
+  final TeamOverview? team;
   final TeamContractRepository? contractRepository;
 
   const SquadTab({
@@ -299,7 +300,7 @@ class _SquadTabState extends State<SquadTab> {
   @override
   void didUpdateWidget(SquadTab oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.team?['id'] != widget.team?['id'] ||
+    if (oldWidget.team?.id != widget.team?.id ||
         oldWidget.contractRepository != widget.contractRepository) {
       _selectDefaultSeason();
       _startRosterLoad();
@@ -307,7 +308,7 @@ class _SquadTabState extends State<SquadTab> {
   }
 
   List<Season> get _availableSeasons {
-    final teamId = widget.team?['id'] as int?;
+    final teamId = widget.team?.id;
     if (teamId == null) return const [];
     final seasonIds = footballCatalog.memberships
         // 계약 API는 Big 5 정규리그 시즌만 받아요. 컵 소속 시즌은 제외해요.
@@ -353,8 +354,8 @@ class _SquadTabState extends State<SquadTab> {
 
   void _startRosterLoad({bool updateState = true}) {
     final requestId = ++_loadRequestId;
-    final teamId = widget.team?['id'] as int?;
-    final teamName = widget.team?['name'] as String?;
+    final teamId = widget.team?.id;
+    final teamName = widget.team?.name;
     final seasonId = _selectedSeasonId;
     // The API requires an explicit season for teams without a current Big 5
     // context. Until the backend exposes team-season options, only request a

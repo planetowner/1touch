@@ -11,13 +11,14 @@ import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/models/standing.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
 import 'package:onetouch/data/competitions/tournament_bracket_repository.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class StandingTab extends StatefulWidget {
-  final Map<String, dynamic>? team;
+  final TeamOverview? team;
   final StandingRepository? regularStandingRepository;
   final XgStandingRepository? xgStandingRepository;
   final int? requestedCompetitionId;
@@ -112,7 +113,7 @@ class _StandingTabState extends State<StandingTab> {
     // This tab's State is reused across team switches (the Team-tab branch
     // stays alive in the bottom-nav shell), so redo the team-based setup
     // instead of only doing it once in initState.
-    final dependenciesChanged = widget.team?['id'] != oldWidget.team?['id'] ||
+    final dependenciesChanged = widget.team?.id != oldWidget.team?.id ||
         widget.regularStandingRepository !=
             oldWidget.regularStandingRepository ||
         widget.xgStandingRepository != oldWidget.xgStandingRepository;
@@ -136,7 +137,7 @@ class _StandingTabState extends State<StandingTab> {
   }
 
   void _setDefaultLeagueAndSeason() {
-    currentTeamId = widget.team?['id'] as int?;
+    currentTeamId = widget.team?.id;
     _validLeagueIds = footballCatalog.memberships
         .where((m) => m.teamId == currentTeamId)
         .map((m) => m.competitionId)

@@ -11,6 +11,7 @@ import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/standing.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Standing.dart';
 
 void main() {
@@ -641,7 +642,12 @@ void main() {
         theme: app_style.whitetheme,
         home: Scaffold(
           body: StandingTab(
-            team: const {'id': 999999},
+            team: const TeamOverview(
+              id: 999999,
+              name: 'Unsupported Team',
+              shortName: 'Unsupported',
+              imagePath: '',
+            ),
             regularStandingRepository: repository,
           ),
         ),
@@ -672,7 +678,12 @@ Widget _app(
     theme: app_style.whitetheme,
     home: Scaffold(
       body: StandingTab(
-        team: const {'id': 9},
+        team: const TeamOverview(
+          id: 9,
+          name: 'Team 9',
+          shortName: 'T9',
+          imagePath: '',
+        ),
         regularStandingRepository: repository,
         xgStandingRepository: xgRepository,
         requestedCompetitionId: requestedCompetitionId,

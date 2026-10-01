@@ -26,6 +26,7 @@ import 'package:onetouch/models/current_form.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
 import 'package:onetouch/models/team_attribute_season_option.dart';
 import 'package:onetouch/models/team_probability.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/screens/TeamProbabilityScreen.dart';
 
 part 'analysis/analysis_shared.dart';
@@ -36,7 +37,7 @@ part 'analysis/current_form_chart_painters.dart';
 part 'analysis/probability_section.dart';
 
 class AnalysisTab extends StatelessWidget {
-  final Map<String, dynamic>? team;
+  final TeamOverview? team;
   final TeamAttributeRepository? repository;
   final TeamProbabilityRepository? probabilityRepository;
   final CurrentFormRepository? currentFormRepository;
@@ -58,11 +59,11 @@ class AnalysisTab extends StatelessWidget {
         children: [
           AttributesSection(team: team, repository: repository),
           ProbabilitySection(
-            teamId: team?['id'] as int?,
+            teamId: team?.id,
             repository: probabilityRepository,
           ),
           TeamBestElevenSection(
-            teamId: team?['id'] as int?,
+            teamId: team?.id,
             variant: TeamBestElevenVariant.analysis,
           ),
           CurrentFormSection(team: team, repository: currentFormRepository),

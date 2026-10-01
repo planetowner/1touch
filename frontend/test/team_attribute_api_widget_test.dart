@@ -13,6 +13,7 @@ import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/team_attributes/api/api_team_attribute_repository.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
 
 void main() {
@@ -43,7 +44,12 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: AttributesSection(
-                team: const {'id': 83},
+                team: const TeamOverview(
+                  id: 83,
+                  name: 'FC Barcelona',
+                  shortName: 'BAR',
+                  imagePath: '',
+                ),
                 repository: repository,
               ),
             ),
@@ -536,7 +542,12 @@ Future<void> _pumpAttributes(
       home: Scaffold(
         body: SingleChildScrollView(
           child: AttributesSection(
-            team: const {'id': 83},
+            team: const TeamOverview(
+              id: 83,
+              name: 'FC Barcelona',
+              shortName: 'BAR',
+              imagePath: '',
+            ),
             repository: repository,
           ),
         ),

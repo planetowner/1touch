@@ -6,6 +6,14 @@ import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/standing.dart' as standing_model;
+import 'package:onetouch/models/team_overview.dart';
+
+TeamOverview _team(int id) => TeamOverview(
+      id: id,
+      name: 'Team $id',
+      shortName: 'T$id',
+      imagePath: '',
+    );
 
 void main() {
   setUpAppCatalog();
@@ -13,7 +21,7 @@ void main() {
     return MaterialApp(
       home: Scaffold(
         body: Standing(
-          teams: <String, dynamic>{'id': teamId},
+          teams: _team(teamId),
           repository: MockStandingRepository(),
         ),
       ),
@@ -177,7 +185,7 @@ void main() {
         localizationsDelegates: appLocalizationDelegates,
         home: Scaffold(
           body: Standing(
-            teams: const <String, dynamic>{'id': 9},
+            teams: _team(9),
             repository: MockStandingRepository(),
           ),
         ),
@@ -208,7 +216,7 @@ void main() {
         localizationsDelegates: appLocalizationDelegates,
         home: Scaffold(
           body: Standing(
-            teams: const <String, dynamic>{'id': 9},
+            teams: _team(9),
             repository: MockStandingRepository(),
           ),
         ),
@@ -238,7 +246,7 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: Standing(
-            teams: const <String, dynamic>{'id': 9},
+            teams: _team(9),
             repository: MockStandingRepository(),
             onCompetitionSelected: (competitionId) {
               selectedCompetitionId = competitionId;
@@ -263,7 +271,7 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: Standing(
-            teams: const <String, dynamic>{'id': 9},
+            teams: _team(9),
             repository: repository,
           ),
         ),

@@ -16,6 +16,7 @@ import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/current_form/mock/mock_current_form_repository.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/screens/TeamScreen.dart';
 
@@ -194,8 +195,12 @@ void main() {
 
   testWidgets('Team overview fixture box shadows only in light mode',
       (tester) async {
-    final teams = {
-      'next_match': const Fixture(
+    const teams = TeamOverview(
+      id: 9,
+      name: 'Manchester City',
+      shortName: 'MCI',
+      imagePath: '',
+      nextMatch: Fixture(
         fixtureId: 9001,
         seasonId: 25583,
         competitionId: 8,
@@ -206,7 +211,7 @@ void main() {
         status: FixtureStatus.upcoming,
         startingAt: '2026-09-20T15:00:00.000Z',
       ),
-    };
+    );
 
     Future<BoxDecoration> pumpFixtureCard(ThemeData theme) async {
       await tester.pumpWidget(

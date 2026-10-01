@@ -1,16 +1,11 @@
 part of '../Analysis.dart';
 
-Color _analysisTeamPrimaryColor(Map<String, dynamic>? team) {
-  final directColor = team?['primary_color'];
-  final teamId = team?['id'];
-  final repositoryTeam = teamId is int ? teamRepository.findById(teamId) : null;
+Color _analysisTeamPrimaryColor(TeamOverview? team) {
+  final repositoryTeam = team == null ? null : teamRepository.findById(team.id);
   return TeamComparisonColorResolver.paletteFor(
-    teamName: team?['name'] as String? ?? repositoryTeam?.name,
-    primaryFallback: directColor is int
-        ? Color(directColor)
-        : repositoryTeam == null
-            ? null
-            : Color(repositoryTeam.primaryColor),
+    teamName: team?.name ?? repositoryTeam?.name,
+    primaryFallback:
+        repositoryTeam == null ? null : Color(repositoryTeam.primaryColor),
   ).primary;
 }
 

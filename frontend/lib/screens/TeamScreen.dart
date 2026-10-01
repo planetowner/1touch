@@ -57,7 +57,7 @@ class _TeamScreenState extends State<TeamScreen>
   late final TabController _tabController;
   final GlobalKey<NestedScrollViewState> _nestedScrollKey = GlobalKey();
 
-  Map<String, dynamic>? team;
+  TeamOverview? team;
   bool isLoading = true;
   Object? _loadError;
   int _loadRequestId = 0;
@@ -142,7 +142,7 @@ class _TeamScreenState extends State<TeamScreen>
     final cached = _teamOverviewRepository.cachedForTeam(widget.teamId);
 
     void prepare() {
-      team = cached == null ? null : _teamMap(cached);
+      team = cached;
       isLoading = cached == null;
       _loadError = null;
     }
@@ -162,7 +162,7 @@ class _TeamScreenState extends State<TeamScreen>
         return;
       }
       setState(() {
-        team = _teamMap(overview);
+        team = overview;
         isLoading = false;
         _loadError = null;
       });
@@ -175,29 +175,6 @@ class _TeamScreenState extends State<TeamScreen>
         if (team == null) _loadError = error;
       });
     }
-  }
-
-  Map<String, dynamic> _teamMap(TeamOverview overview) {
-    final leagueName = team_providers.teamCompetitionContextResolver
-        .resolve(overview.id)
-        ?.competitionName;
-    final positionValue = overview.standing?['position'];
-    final rankDeltaValue = overview.standing?['rank_delta'];
-
-    return {
-      'id': overview.id,
-      'name': overview.name,
-      'short_code': overview.shortName,
-      'image_path': overview.imagePath,
-      'position': positionValue,
-      'leagueName': leagueName,
-      'logo': overview.imagePath,
-      'rankChange': rankDeltaValue is int ? rankDeltaValue : null,
-      'standing': overview.standing,
-      'next_match': overview.nextMatch,
-      'last_match': overview.lastMatch,
-      'teamObj': overview,
-    };
   }
 
   void _retryOverviewLoad() {
@@ -277,22 +254,22 @@ class _TeamScreenState extends State<TeamScreen>
     }
 
     // 지역화한 문구는 화면을 그릴 때 만들어 언어 변경도 바로 반영해요.
-    final originalLeagueName = team!['leagueName'] as String?;
+    final currentTeam = team!;
+    final competitionContext =
+        team_providers.teamCompetitionContextResolver.resolve(currentTeam.id);
+    final originalLeagueName = competitionContext?.competitionName;
     final leagueName = originalLeagueName == null
         ? null
         : competitionNameLabel(
-            context,
-            team_providers.teamCompetitionContextResolver
-                .resolve(widget.teamId)
-                ?.competitionId,
-            originalLeagueName);
-    final rank = team!['position'];
+            context, competitionContext?.competitionId, originalLeagueName);
+    final rank = currentTeam.standing?['position'];
     final positionLabel = leagueName == null
         ? ''
         : rank is int
             ? '$leagueName ${ordinal(rank, locale: Localizations.localeOf(context))}'
             : leagueName;
-    final displayedTeamId = team!['id'] as int;
+    final displayedTeamId = currentTeam.id;
+    final rankChange = currentTeam.standing?['rank_delta'];
     final appBarForeground = colors.onSurface;
     final topInset = MediaQuery.paddingOf(context).top;
     const baseToolbarVerticalPadding =
@@ -386,10 +363,10 @@ class _TeamScreenState extends State<TeamScreen>
                               key: const ValueKey('team-app-bar-logo'),
                               dimension: _teamAppBarLogoSize,
                               child: Image.network(
-                                team?['logo'],
+                                currentTeam.imagePath,
                                 fit: BoxFit.contain,
                                 errorBuilder: (_, __, ___) => teamLogoFallback(
-                                  team!['id'] as int,
+                                  currentTeam.id,
                                   size: 48,
                                 ),
                               ),
@@ -403,8 +380,11 @@ class _TeamScreenState extends State<TeamScreen>
                                 Text(
                                   key: const ValueKey('team-app-bar-name'),
                                   // '1. Fußballclub Heidenheim 1846 e.V',
-                                  teamNameLabel(context, widget.teamId,
-                                      team?['name'] as String? ?? ''),
+                                  teamNameLabel(
+                                    context,
+                                    widget.teamId,
+                                    currentTeam.name,
+                                  ),
                                   style: Heading4.style
                                       .copyWith(color: appBarForeground),
                                   maxLines: 1, // Ensure it stays on one line
@@ -427,8 +407,7 @@ class _TeamScreenState extends State<TeamScreen>
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      if (team!['rankChange']
-                                          case final int delta
+                                      if (rankChange case final int delta
                                           when delta != 0) ...[
                                         Icon(
                                           delta > 0

@@ -9,6 +9,7 @@ import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
 import 'package:onetouch/models/team_injury_report.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Overview.dart';
 
 void main() {
@@ -26,10 +27,12 @@ void main() {
         theme: whitetheme,
         home: Scaffold(
           body: OverviewTab(
-            team: const <String, dynamic>{
-              'id': 68,
-              'standing': null,
-            },
+            team: const TeamOverview(
+              id: 68,
+              name: 'Team 68',
+              shortName: 'T68',
+              imagePath: '',
+            ),
             bestElevenRepository: bestElevenRepository,
             injuryRepository: injuryRepository,
             transferRepository: transferRepository,
@@ -66,7 +69,12 @@ void main() {
       theme: whitetheme,
       home: Scaffold(
         body: OverviewTab(
-          team: const <String, dynamic>{'id': 68, 'standing': null},
+          team: const TeamOverview(
+            id: 68,
+            name: 'Team 68',
+            shortName: 'T68',
+            imagePath: '',
+          ),
           bestElevenRepository: bestElevenRepository,
           injuryRepository: injuryRepository,
           transferRepository: transferRepository,

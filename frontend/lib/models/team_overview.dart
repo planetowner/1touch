@@ -16,7 +16,7 @@ class TeamOverview {
   final Fixture? nextMatch;
   final Fixture? lastMatch;
 
-  TeamOverview({
+  const TeamOverview({
     required this.id,
     required this.name,
     required this.shortName,
