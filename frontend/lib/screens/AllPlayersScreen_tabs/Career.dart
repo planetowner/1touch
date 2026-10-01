@@ -67,7 +67,7 @@ class _CareerTabState extends State<CareerTab> {
     return PlayerSurface(
       key: const ValueKey('player-career-trophies-card'),
       color: AppColors.of(context).subtleBackground,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -78,13 +78,14 @@ class _CareerTabState extends State<CareerTab> {
               teamIndex++) ...[
             if (teamIndex > 0)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 18),
+                padding: const EdgeInsets.only(top: 22, bottom: 26),
                 child: Divider(
                   color: AppColors.of(context).divider,
                   height: 1,
                 ),
               ),
             _teamHonours(teams.entries.elementAt(teamIndex).value),
+            if (teamIndex == teams.length - 1) const SizedBox(height: 16),
           ],
         ],
       ),
@@ -100,14 +101,15 @@ class _CareerTabState extends State<CareerTab> {
 
   Widget _teamHonours(List<PlayerHonour> honours) {
     final first = honours.first;
-    final competitions = honours.map((item) => item.competitionId).toSet();
+    final competitions =
+        honours.map((item) => item.competitionId).toSet().toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             PlayerRemoteImage(first.teamImage, size: 28),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 teamNameLabel(context, first.teamId,
@@ -119,8 +121,9 @@ class _CareerTabState extends State<CareerTab> {
             Text('${honours.length}', style: Body2_b.style),
           ],
         ),
-        const SizedBox(height: 18),
-        for (final competitionId in competitions) ...[
+        const SizedBox(height: 24),
+        for (var index = 0; index < competitions.length; index++) ...[
+          if (index > 0) const SizedBox(height: 20),
           Row(
             children: [
               const Icon(Icons.emoji_events_outlined, size: 18),
@@ -129,10 +132,10 @@ class _CareerTabState extends State<CareerTab> {
                 child: Text(
                   competitionShortNameLabel(
                       context,
-                      competitionId,
+                      competitions[index],
                       honours
-                              .firstWhere(
-                                  (item) => item.competitionId == competitionId)
+                              .firstWhere((item) =>
+                                  item.competitionId == competitions[index])
                               .competitionName ??
                           'Competition unavailable'),
                   style: Heading5.style,
@@ -140,16 +143,16 @@ class _CareerTabState extends State<CareerTab> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               for (final honour in honours
-                  .where((item) => item.competitionId == competitionId))
+                  .where((item) => item.competitionId == competitions[index]))
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
                   decoration: BoxDecoration(
                     color: AppPalette.black,
                     borderRadius: BorderRadius.circular(4),
@@ -163,7 +166,6 @@ class _CareerTabState extends State<CareerTab> {
                 ),
             ],
           ),
-          const SizedBox(height: 18),
         ],
       ],
     );

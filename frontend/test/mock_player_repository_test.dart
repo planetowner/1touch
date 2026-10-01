@@ -11,6 +11,7 @@ import 'package:onetouch/screens/AllPlayersScreen_tabs/Career.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
+import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'support/player_detail_fixture.dart';
 
@@ -186,6 +187,109 @@ void main() {
     await tester.pumpAndSettle();
     expect(competition, findsNothing);
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('career trophy spacing fits $size', (tester) async {
+      final json = playerDetailJson();
+      json['honours'] = [
+        {
+          'team_id': 1001,
+          'team_name': 'FC Barcelona',
+          'competition_id': 2001,
+          'competition_name': 'Spanish Champion',
+          'season_name': '2022/2023',
+        },
+        {
+          'team_id': 1001,
+          'team_name': 'FC Barcelona',
+          'competition_id': 2002,
+          'competition_name': 'Spanish Super Cup',
+          'season_name': '2022/2023',
+        },
+        {
+          'team_id': 1001,
+          'team_name': 'FC Barcelona',
+          'competition_id': 2002,
+          'competition_name': 'Spanish Super Cup',
+          'season_name': '2024/2025',
+        },
+        {
+          'team_id': 1002,
+          'team_name': 'Sporting CP',
+          'competition_id': 2003,
+          'competition_name': 'Portuguese Cup',
+          'season_name': '2019/2020',
+        },
+      ];
+      final detail = playerDetailFromJson(json);
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: PlayerDetailScope(
+            store: PlayerDetailStore(
+              playerId: detail.playerId,
+              initial: detail,
+            ),
+            child: CareerTab(playerId: detail.playerId),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final card = find.byKey(const ValueKey('player-career-trophies-card'));
+      final logos = find.descendant(
+        of: card,
+        matching: find.byType(PlayerRemoteImage),
+      );
+      Finder seasonPill(String season) => find
+          .ancestor(
+            of: find.descendant(of: card, matching: find.text(season)).first,
+            matching: find.byType(Container),
+          )
+          .first;
+      final firstLogo = logos.first;
+      final secondLogo = logos.last;
+      final divider = find.descendant(
+        of: card,
+        matching: find.byType(Divider),
+      );
+
+      expect(tester.getRect(firstLogo).left - tester.getRect(card).left, 16);
+      expect(tester.getRect(firstLogo).top - tester.getRect(card).top, 16);
+      expect(
+        tester.getRect(find.text('FC BARCELONA')).left -
+            tester.getRect(firstLogo).right,
+        12,
+      );
+      expect(
+        tester.getRect(find.text('Spanish Champion')).top -
+            tester.getRect(firstLogo).bottom,
+        24,
+      );
+      expect(
+        tester.getRect(seasonPill('22/23')).top -
+            tester.getRect(find.text('Spanish Champion')).bottom,
+        12,
+      );
+      expect(tester.getRect(seasonPill('22/23')).height, 33);
+      expect(
+        tester.getRect(divider).top -
+            tester.getRect(seasonPill('24/25')).bottom,
+        22,
+      );
+      expect(
+        tester.getRect(secondLogo).top - tester.getRect(divider).bottom,
+        26,
+      );
+      expect(
+        tester.getRect(card).bottom -
+            tester.getRect(seasonPill('19/20')).bottom,
+        32,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets(
       'career filter uses competition IDs and excludes unmatched seasons',
