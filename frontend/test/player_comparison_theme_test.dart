@@ -130,6 +130,16 @@ void main() {
             find.byKey(const ValueKey('comparison-stat-card-Finish')));
         final decoration = statCard.decoration as BoxDecoration;
         expect(decoration.color, dark ? AppPalette.darkGrey : AppPalette.white);
+        final categoryTitle = tester.widget<Text>(find.text('FINISH'));
+        expect(categoryTitle.style?.fontSize, Body2_b.style.fontSize);
+        expect(categoryTitle.style?.fontWeight, Body2_b.style.fontWeight);
+        final statName = tester.widget<Text>(find.text('Goals'));
+        expect(statName.style?.fontSize, Body1_b.style.fontSize);
+        expect(statName.style?.fontWeight, Body1_b.style.fontWeight);
+        expect(
+          statName.style?.color,
+          categoryTitle.style?.color,
+        );
         final statValue = tester
             .widgetList<Text>(
               find.descendant(
@@ -137,7 +147,7 @@ void main() {
                 matching: find.byType(Text),
               ),
             )
-            .firstWhere((text) => text.data == '—');
+            .firstWhere((text) => text.data == 'ㅡ');
         expect(statValue.style?.fontSize, Heading4.style.fontSize);
         expect(statValue.style?.fontWeight, Heading4.style.fontWeight);
         await tester.drag(find.byType(CustomScrollView), const Offset(0, -450));

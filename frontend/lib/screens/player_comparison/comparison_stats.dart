@@ -107,12 +107,7 @@ class _StatCategoryCard extends StatelessWidget {
         children: [
           Text(
             playerCategoryLabel(context, category.label).toUpperCase(),
-            style: TextStyle(
-              color: foreground,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.1,
-            ),
+            style: Body2_b.style.copyWith(color: foreground),
           ),
           const SizedBox(height: 8),
           Container(
@@ -182,9 +177,8 @@ class _StatRow extends StatelessWidget {
         children: [
           Text(
             appStatLabel(context, label),
-            style: TextStyle(
-              color: AppColors.of(context).mutedForeground,
-              fontSize: 12,
+            style: Body1_b.style.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 5),

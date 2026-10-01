@@ -6,6 +6,7 @@ import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
+import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/index.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -28,11 +29,24 @@ double playerDetailOverviewGradientHeight(
 double playerDetailHeaderGradientHeight(double topInset) =>
     topInset + _playerDetailAppBarHeight + _playerDetailTabBarHeight;
 
+double _playerGradientProgress(TabController controller) {
+  final value = controller.animation!.value;
+  if (!controller.indexIsChanging) return value.clamp(0.0, 1.0);
+  final from = controller.previousIndex;
+  final to = controller.index;
+  final start = from == 0 ? 0.0 : 1.0;
+  final end = to == 0 ? 0.0 : 1.0;
+  if (start == end) return start;
+  final fraction = ((value - from) / (to - from)).clamp(0.0, 1.0);
+  return start + (end - start) * fraction;
+}
+
 class PlayerCard extends StatefulWidget {
   final Player? player;
   final int? playerId;
   int? get id => playerId ?? player?.externalPlayerId;
   final PlayerDetailRepository? detailRepository;
+  final TeamContractRepository? contractRepository;
   final PlayerDetail? initialDetail;
 
   const PlayerCard(
@@ -40,6 +54,7 @@ class PlayerCard extends StatefulWidget {
       this.player,
       this.playerId,
       this.detailRepository,
+      this.contractRepository,
       this.initialDetail});
 
   @override
@@ -52,9 +67,7 @@ class _PlayerCardState extends State<PlayerCard>
   late TabController _tabController;
   double _scrollOffset = 0.0;
   double _overviewTopBlockHeight = _playerDetailTopBlockHeight;
-  int currentTabIndex = 0;
   late PlayerDetailStore _detailStore;
-  bool get isOverviewTab => currentTabIndex == 0;
 
   @override
   void initState() {
@@ -71,9 +84,6 @@ class _PlayerCardState extends State<PlayerCard>
       });
 
     _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(() {
-      setState(() => currentTabIndex = _tabController.index);
-    });
   }
 
   @override
@@ -99,7 +109,6 @@ class _PlayerCardState extends State<PlayerCard>
   @override
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
-    double gradientOpacity = 1.0 - opacityFactor;
     final pageBackground = mainPageBackground(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gradientForeground = Theme.of(context).colorScheme.onSurface;
@@ -128,6 +137,7 @@ class _PlayerCardState extends State<PlayerCard>
       topInset,
       topBlockHeight: _overviewTopBlockHeight,
     );
+    final tabAnimation = _tabController.animation!;
 
     return PlayerDetailScope(
         store: _detailStore,
@@ -136,31 +146,42 @@ class _PlayerCardState extends State<PlayerCard>
           backgroundColor: pageBackground,
           body: Stack(
             children: [
-              if (isOverviewTab)
-                Positioned(
-                  key: const ValueKey(
-                      'player-detail-overview-gradient-position'),
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: overviewGradientHeight,
-                  child: IgnorePointer(
-                    child: AnimatedOpacity(
-                      opacity: gradientOpacity,
-                      duration: const Duration(milliseconds: 50),
-                      child: Container(
-                        key: const ValueKey('player-detail-overview-gradient'),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: gradientColors,
+              Positioned(
+                key: const ValueKey('player-detail-overview-gradient-position'),
+                top: 0,
+                left: 0,
+                right: 0,
+                child: IgnorePointer(
+                  child: AnimatedBuilder(
+                    animation: tabAnimation,
+                    builder: (context, _) {
+                      final progress = _playerGradientProgress(_tabController);
+                      if (progress == 1) return const SizedBox.shrink();
+                      return TweenAnimationBuilder<double>(
+                        tween: Tween(end: opacityFactor),
+                        duration: const Duration(milliseconds: 50),
+                        builder: (context, scrollFade, _) => Opacity(
+                          opacity: 1 - scrollFade * (1 - progress),
+                          child: Container(
+                            key: const ValueKey(
+                                'player-detail-overview-gradient'),
+                            height: overviewGradientHeight +
+                                (headerExtent - overviewGradientHeight) *
+                                    progress,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: gradientColors,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
+              ),
               NestedScrollView(
                 controller: _scrollController,
                 physics: const ClampingScrollPhysics(),
@@ -177,10 +198,16 @@ class _PlayerCardState extends State<PlayerCard>
                     snap: true,
                     pinned: false,
                     toolbarHeight: _playerDetailAppBarHeight,
-                    flexibleSpace: Container(
-                      key: const ValueKey('player-detail-gradient'),
-                      decoration: BoxDecoration(
-                        gradient: isOverviewTab ? null : appBarGradient,
+                    flexibleSpace: AnimatedBuilder(
+                      animation: tabAnimation,
+                      builder: (context, child) => Container(
+                        key: const ValueKey('player-detail-gradient'),
+                        decoration: BoxDecoration(
+                          gradient: _playerGradientProgress(_tabController) >= 1
+                              ? appBarGradient
+                              : null,
+                        ),
+                        child: child,
                       ),
                       child: PlayerScreenHeader(
                         player: widget.player,
@@ -218,14 +245,13 @@ class _PlayerCardState extends State<PlayerCard>
                         ],
                         tabAlignment: TabAlignment.start,
                       ),
-                      backgroundGradient: isOverviewTab ? null : tabBarGradient,
-                      backgroundColor: isOverviewTab
-                          ? Color.lerp(
-                              Colors.transparent,
-                              pageBackground,
-                              opacityFactor,
-                            )
-                          : null,
+                      controller: _tabController,
+                      backgroundGradient: tabBarGradient,
+                      backgroundColor: Color.lerp(
+                        Colors.transparent,
+                        pageBackground,
+                        opacityFactor,
+                      ),
                     ),
                   ),
                 ],
@@ -235,6 +261,7 @@ class _PlayerCardState extends State<PlayerCard>
                     PlayerOverviewTab(
                         player: widget.player,
                         playerId: widget.id,
+                        contractRepository: widget.contractRepository,
                         onMatches: () => _tabController.animateTo(2),
                         onTopBlockHeightChanged: (height) {
                           final nextHeight =
@@ -364,11 +391,13 @@ class _PlayerFollowButtonState extends State<PlayerFollowButton> {
 
 class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar _tabBar;
+  final TabController controller;
   final Gradient? backgroundGradient;
   final Color? backgroundColor;
 
   _TabBarDelegate(
     this._tabBar, {
+    required this.controller,
     required this.backgroundGradient,
     required this.backgroundColor,
   });
@@ -382,19 +411,27 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      key: const ValueKey('player-detail-tab-gradient'),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        gradient: backgroundGradient,
-      ),
+    return AnimatedBuilder(
+      animation: controller.animation!,
       child: _tabBar,
+      builder: (context, child) => Container(
+        key: const ValueKey('player-detail-tab-gradient'),
+        decoration: BoxDecoration(
+          color:
+              _playerGradientProgress(controller) >= 1 ? null : backgroundColor,
+          gradient: _playerGradientProgress(controller) >= 1
+              ? backgroundGradient
+              : null,
+        ),
+        child: child,
+      ),
     );
   }
 
   @override
   bool shouldRebuild(_TabBarDelegate oldDelegate) {
-    return oldDelegate.backgroundGradient != backgroundGradient ||
+    return oldDelegate.controller != controller ||
+        oldDelegate.backgroundGradient != backgroundGradient ||
         oldDelegate.backgroundColor != backgroundColor;
   }
 }

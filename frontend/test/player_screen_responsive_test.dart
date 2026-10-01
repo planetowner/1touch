@@ -1,16 +1,19 @@
 import 'support/app_catalog.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/screens/AllPlayersScreen.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/models/team_contract_roster.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/Anal.dart';
 import 'support/player_detail_fixture.dart';
@@ -18,12 +21,151 @@ import 'support/player_detail_fixture.dart';
 void main() {
   setUpAppCatalog();
   final player = playerRepository.findById('lee-kang-in')!;
+  for (final (role, theme, size) in [
+    (TeamLeadershipRole.captain, app_style.darktheme, const Size(320, 568)),
+    (
+      TeamLeadershipRole.viceCaptain,
+      app_style.whitetheme,
+      const Size(430, 932)
+    ),
+    (null, app_style.darktheme, const Size(393, 852)),
+  ]) {
+    testWidgets('overview shows only the current leadership badge for $role',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final repository = _OverviewLeadershipRepository(role);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: theme,
+        home: PlayerCard(
+          playerId: 1,
+          detailRepository: FakePlayerDetailRepository(),
+          contractRepository: repository,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(repository.requestedTeamId, 7980);
+      expect(repository.requestedSeasonId, 27965);
+      final badge = find.byKey(ValueKey(
+        'player-overview-leadership-${role == TeamLeadershipRole.captain ? 'captain' : 'vice-captain'}',
+      ));
+      if (role == null) {
+        expect(find.byKey(const ValueKey('player-overview-leadership-captain')),
+            findsNothing);
+        expect(
+            find.byKey(
+                const ValueKey('player-overview-leadership-vice-captain')),
+            findsNothing);
+      } else {
+        expect(badge, findsOneWidget);
+        expect(tester.getSize(badge), const Size(24, 18));
+        expect(
+            find.descendant(
+                of: badge,
+                matching:
+                    find.text(role == TeamLeadershipRole.captain ? 'C' : 'VC')),
+            findsOneWidget);
+        final badgeRect = tester.getRect(badge);
+        final imageRect = tester.getRect(
+          find.byKey(const ValueKey('player-overview-image')),
+        );
+        expect(badgeRect.top, imageRect.top);
+        expect(badgeRect.right, imageRect.right);
+        final decoration =
+            tester.widget<Container>(badge).decoration! as BoxDecoration;
+        expect(
+            decoration.border!.top.color,
+            theme.brightness == Brightness.dark
+                ? app_style.AppPalette.white
+                : app_style.AppPalette.black);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
   test('player gradient is limited to the app bar and tabs', () {
     expect(playerDetailHeaderGradientHeight(20), 168);
     expect(playerDetailHeaderGradientHeight(59), 207);
     expect(playerDetailOverviewGradientHeight(20), 364);
     expect(playerDetailOverviewGradientHeight(59), 403);
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('player gradient smoothly shrinks and expands at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: MediaQuery(
+          data: MediaQueryData(
+              size: size, padding: const EdgeInsets.only(top: 59)),
+          child: PlayerCard(
+            player: player,
+            detailRepository: FakePlayerDetailRepository(),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      const gradientKey = ValueKey('player-detail-overview-gradient');
+      expect(
+          tester.getSize(find.byKey(gradientKey)).height, closeTo(403, 0.01));
+
+      await tester.tap(find.text('Analysis').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      final shrinkingHeight = tester.getSize(find.byKey(gradientKey)).height;
+      expect(shrinkingHeight, greaterThan(207));
+      expect(shrinkingHeight, lessThan(403));
+
+      await tester.pumpAndSettle();
+      expect(find.byKey(gradientKey), findsNothing);
+
+      tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(0);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      final expandingHeight = tester.getSize(find.byKey(gradientKey)).height;
+      expect(expandingHeight, greaterThan(207));
+      expect(expandingHeight, lessThan(403));
+
+      await tester.pumpAndSettle();
+      expect(
+          tester.getSize(find.byKey(gradientKey)).height, closeTo(403, 0.01));
+
+      final controller = tester.widget<TabBar>(find.byType(TabBar)).controller!;
+      controller.offset = 0.5;
+      await tester.pump();
+      expect(tester.getSize(find.byKey(gradientKey)).height,
+          closeTo((403 + 207) / 2, 1));
+      controller.offset = 0;
+      await tester.pump();
+
+      controller.animateTo(3);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      expect(tester.getSize(find.byKey(gradientKey)).height,
+          inInclusiveRange(208, 402));
+      await tester.pumpAndSettle();
+      expect(find.byKey(gradientKey), findsNothing);
+
+      controller.animateTo(0);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      expect(tester.getSize(find.byKey(gradientKey)).height,
+          inInclusiveRange(208, 402));
+      await tester.pumpAndSettle();
+      expect(
+          tester.getSize(find.byKey(gradientKey)).height, closeTo(403, 0.01));
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('player detail search opens the shared search page',
       (tester) async {
@@ -1065,4 +1207,39 @@ void main() {
     expect(find.text('team-7980'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+}
+
+class _OverviewLeadershipRepository implements TeamContractRepository {
+  _OverviewLeadershipRepository(this.role);
+
+  final TeamLeadershipRole? role;
+  int? requestedTeamId;
+  int? requestedSeasonId;
+  final ValueNotifier<Map<TeamContractQuery, TeamContractRoster>> _cache =
+      ValueNotifier(const {});
+
+  @override
+  ValueListenable<Map<TeamContractQuery, TeamContractRoster>>
+      get cachedRosters => _cache;
+
+  @override
+  TeamContractRoster? cachedForTeam(int teamId, {int? seasonId}) => null;
+
+  @override
+  Future<TeamContractRoster> loadForTeam(int teamId, {int? seasonId}) async {
+    requestedTeamId = teamId;
+    requestedSeasonId = seasonId;
+    return TeamContractRoster(
+      teamId: teamId,
+      seasonId: 27965,
+      isCurrent: true,
+      players: [
+        TeamPlayerContract(
+          playerId: 1,
+          playerName: 'Player 1',
+          leadershipRole: role,
+        ),
+      ],
+    );
+  }
 }
