@@ -113,6 +113,8 @@ ufw allow 443/tcp
 # 이전 API가 익명 이름 없이 메시지를 더 저장하지 않게 멈춘 뒤 기존 대화의 이름을 배정해요.
 bash compose-production.sh stop api
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m diagnostics.migrate_fixture_chat_aliases --apply
+# 기존 백업 이후, 새 API가 제재 사유를 조회하기 전에 컬럼을 준비해요.
+ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m diagnostics.migrate_community_suspension_reason --apply
 # 검증과 백업이 통과한 뒤에만 새 버전 설정으로 바꿔요.
 if [[ -f .env.production ]]; then
   cp -- .env.production .env.production.previous

@@ -1,9 +1,10 @@
 from datetime import datetime, timezone
 from typing import Literal
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 from ..deps import get_user_id
 from ..repos import moderation_repo
+from ..schemas.community import CommunityBanReason
 
 router = APIRouter()
 
@@ -20,6 +21,7 @@ class ResolutionBody(BaseModel):
 class SuspensionBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
     suspended_until: datetime | None
+    reason: CommunityBanReason | None = None
 
     @field_validator("suspended_until")
     @classmethod
@@ -29,6 +31,14 @@ class SuspensionBody(BaseModel):
                 raise ValueError("Include a timezone offset")
             return value.astimezone(timezone.utc).replace(tzinfo=None)
         return None
+
+    @model_validator(mode="after")
+    def reason_matches_suspension(self):
+        if self.suspended_until is not None and self.reason is None:
+            raise ValueError("A suspension requires a reason")
+        if self.suspended_until is None and self.reason is not None:
+            raise ValueError("Clearing a suspension also clears its reason")
+        return self
 
 
 @router.get("/admin/reports")
@@ -45,5 +55,5 @@ def resolve(report_id: int, body: ResolutionBody, admin_id: int = Depends(get_ad
 
 @router.put("/admin/users/{user_id}/suspension")
 def suspend(user_id: int, body: SuspensionBody, admin_id: int = Depends(get_admin_id)):
-    moderation_repo.set_suspension(admin_id, user_id, body.suspended_until)
+    moderation_repo.set_suspension(admin_id, user_id, body.suspended_until, body.reason)
     return {"ok": True}

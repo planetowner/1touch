@@ -3,7 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:onetouch/data/community/community_repository.dart';
+import 'support/stub_community_repository.dart';
 import 'package:onetouch/models/community_rules.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 
@@ -148,7 +148,7 @@ void main() {
   });
 }
 
-class _ScriptedRulesRepository implements CommunityRepository {
+class _ScriptedRulesRepository extends StubCommunityRepository {
   _ScriptedRulesRepository(this._responses);
 
   final List<Future<CommunityRules> Function()> _responses;

@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from ..db import fetch_all_dict, transaction
 from ..services.community_periods import public_row, utc_now
 from .users_repo import get_user, lock_user, require_profile
+from ..schemas.community import CommunityBanReason
 
 
 def require_admin(user_id: int) -> int:
@@ -55,7 +56,8 @@ def resolve_report(admin_id: int, report_id: int, resolution: str) -> None:
                     (resolution, admin_id, utc_now(), report_id))
 
 
-def set_suspension(admin_id: int, user_id: int, until: datetime | None) -> None:
+def set_suspension(admin_id: int, user_id: int, until: datetime | None,
+                   reason: CommunityBanReason | None) -> None:
     require_admin(admin_id)
     if until is not None and until <= utc_now():
         raise HTTPException(400, "Suspension must end in the future")
@@ -65,4 +67,5 @@ def set_suspension(admin_id: int, user_id: int, until: datetime | None) -> None:
         # 운영자 두 명이 서로 처리해도 사용자 잠금 순서를 통일해요.
         for target_id in sorted((admin_id, user_id)):
             lock_user(cur, target_id)
-        cur.execute("UPDATE users SET suspended_until=%s WHERE user_id=%s", (until, user_id))
+        cur.execute("UPDATE users SET suspended_until=%s,suspension_reason=%s WHERE user_id=%s",
+                    (until, reason.value if reason is not None else None, user_id))

@@ -1,4 +1,6 @@
 import 'package:onetouch/core/api_client.dart';
+import 'package:onetouch/data/community/api/api_community_ban_response.dart';
+import 'package:onetouch/models/community_ban.dart';
 import 'package:onetouch/data/community/api/api_community_followers_response.dart';
 import 'package:onetouch/data/community/api/api_community_rules_mapper.dart';
 import 'package:onetouch/data/community/api/api_community_rules_response.dart';
@@ -9,6 +11,15 @@ class ApiCommunityRepository implements CommunityRepository {
   ApiCommunityRepository({required ApiClient api}) : _api = api;
 
   final ApiClient _api;
+
+  @override
+  Future<CommunityBanStatus?> loadBanStatus() async {
+    final response =
+        await _api.get(_api.baseUri.resolve('community/suspension'));
+    return ApiCommunityBanResponse.fromJson(
+      _api.decodeJson<Map<String, dynamic>>(response),
+    ).ban;
+  }
 
   @override
   Future<int> loadFollowerCount({required int teamId}) async {

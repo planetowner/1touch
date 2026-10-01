@@ -1,16 +1,8 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
-
-/// Presentation input until the backend exposes a user-facing ban status.
-class CommunityBanStatus {
-  const CommunityBanStatus({required this.username, required this.endsAt});
-
-  final String username;
-  final DateTime endsAt;
-}
+import 'package:onetouch/models/community_ban.dart';
 
 Future<bool?> showCommunityBanDialog(
   BuildContext context, {
@@ -20,10 +12,8 @@ Future<bool?> showCommunityBanDialog(
     showDialog<bool>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.4),
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-        child: _CommunityBanDialog(ban: ban, now: now ?? DateTime.now),
-      ),
+      builder: (context) =>
+          _CommunityBanDialog(ban: ban, now: now ?? DateTime.now),
     );
 
 class _CommunityBanDialog extends StatefulWidget {
@@ -54,6 +44,7 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
     final milliseconds =
         widget.ban.endsAt.difference(widget.now()).inMilliseconds;
     if (milliseconds <= 0) return 0;
+    // 종료 시각 전에 0초로 보이지 않도록 남은 시간을 올림해요.
     return (milliseconds + 999) ~/ 1000;
   }
 
@@ -69,6 +60,7 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
     final hours = remaining ~/ 3600;
     final minutes = (remaining % 3600) ~/ 60;
     final seconds = remaining % 60;
+    final reason = widget.ban.reason;
     const numberStyle = TextStyle(
       color: Colors.white,
       fontSize: 32,
@@ -76,14 +68,10 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
       height: 1.2,
     );
     final unitStyle = numberStyle.copyWith(color: Colors.white54);
-    final greeting = tr(
-      context,
-      'Sorry, {username}. Your community access is suspended for',
-    ).replaceAll('{username}', widget.ban.username);
-
     return Dialog(
       key: const ValueKey('community-ban-dialog'),
       backgroundColor: const Color(0xFF3D3D3D),
+      surfaceTintColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
@@ -95,7 +83,7 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                greeting,
+                tr(context, 'TEMPORARILY SUSPENDED'),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 15,
@@ -136,7 +124,15 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
               ),
               const SizedBox(height: 12),
               Text(
-                tr(context, 'due to [ban reason].'),
+                // 사유는 문장 조각이에요. 언어별 연결 표현은 문장 틀에서 관리해요.
+                reason == null
+                    ? tr(context,
+                        'Your access to the community has been restricted.')
+                    : tr(
+                        context,
+                        'Your access to the community has been restricted for {reason}.',
+                        {'reason': tr(context, reason.messageKey)},
+                      ),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 15,
@@ -146,7 +142,8 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
               ),
               const SizedBox(height: 8),
               Text(
-                tr(context, 'Please try again after the suspension ends.'),
+                tr(context,
+                    'You’ll be able to use the community again when the time above runs out.'),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 15,
@@ -154,23 +151,20 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
                 ),
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                height: 54,
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 54),
                 child: TextButton(
-                  key: const ValueKey('community-ban-understand'),
-                  onPressed: remaining == 0
-                      ? () => Navigator.of(context).pop(true)
-                      : null,
+                  key: const ValueKey('community-ban-close'),
+                  // 닫기는 언제든 가능하지만 복귀 안내는 실제 만료 후에만 열어요.
+                  onPressed: () => Navigator.of(context).pop(_secondsLeft == 0),
                   style: TextButton.styleFrom(
                     backgroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.white38,
                     foregroundColor: const Color(0xFF090A0A),
-                    disabledForegroundColor: const Color(0xFF090A0A),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: Text(tr(context, 'I UNDERSTAND!')),
+                  child: Text(tr(context, 'Close')),
                 ),
               ),
             ],

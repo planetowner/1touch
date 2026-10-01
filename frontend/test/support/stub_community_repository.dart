@@ -1,10 +1,15 @@
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/models/community_rules.dart';
+import 'package:onetouch/models/community_ban.dart';
 
 class StubCommunityRepository implements CommunityRepository {
-  const StubCommunityRepository({this.followerCount = 0});
+  const StubCommunityRepository({this.followerCount = 0, this.banStatus});
 
   final int followerCount;
+  final CommunityBanStatus? banStatus;
+
+  @override
+  Future<CommunityBanStatus?> loadBanStatus() async => banStatus;
 
   @override
   Future<int> loadFollowerCount({required int teamId}) async => followerCount;

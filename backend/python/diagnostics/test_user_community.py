@@ -904,17 +904,19 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             self.assertEqual(self.request("PUT", f"/v1/admin/reports/{report}", json={"resolution": "dismissed"}).status_code, 409)
 
     def test_suspension_blocks_community_but_allows_account_deletion(self):
+        sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_community_suspension_reason.sql"
+        self.execute(sql.read_text(encoding="utf-8"))
         post = self.post()
         with patch.dict(os.environ, {"COMMUNITY_ADMIN_USER_IDS": str(self.b)}):
             url = f"/v1/admin/users/{self.a}/suspension"
             end = (utc_now() + timedelta(days=1)).isoformat() + "Z"
-            self.assertEqual(self.request("PUT", url, self.token_b, json={"suspended_until": end}).status_code, 200)
+            self.assertEqual(self.request("PUT", url, self.token_b, json={"suspended_until": end, "reason": "spam"}).status_code, 200)
             self.assertEqual(self.request("GET", f"/v1/posts/{post}").status_code, 403)
             self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages").status_code, 403)
             self.assertEqual(self.request("GET", "/v1/users/me").status_code, 200)
             self.assertEqual(self.request("PUT", url, self.token_b, json={"suspended_until": None}).status_code, 200)
             self.assertEqual(self.request("GET", f"/v1/posts/{post}").status_code, 200)
-            self.request("PUT", url, self.token_b, json={"suspended_until": end})
+            self.request("PUT", url, self.token_b, json={"suspended_until": end, "reason": "spam"})
             self.assertEqual(self.request("DELETE", "/v1/users/me").status_code, 200)
 
     def test_cleanup_preview_does_not_write_and_storage_failure_keeps_queue(self):

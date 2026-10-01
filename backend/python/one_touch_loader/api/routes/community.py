@@ -1,9 +1,14 @@
 from fastapi import APIRouter, Depends, Query
 from ..deps import get_user_id
 from ..repos import community_repo
-from ..schemas.community import CommunityRulesResponse
+from ..schemas.community import CommunityRulesResponse, CommunitySuspensionResponse
 
 router = APIRouter()
+
+
+@router.get("/community/suspension", response_model=CommunitySuspensionResponse)
+def suspension(user_id: int = Depends(get_user_id)):
+    return {"suspension": community_repo.get_suspension(user_id)}
 
 
 @router.get("/community/followers")
