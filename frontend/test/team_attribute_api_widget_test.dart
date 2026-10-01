@@ -1,6 +1,7 @@
 import 'support/app_catalog.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/team_attributes/api/api_team_attribute_repository.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
@@ -23,6 +25,9 @@ void main() {
     // 긴 축 이름의 줄바꿈을 앱에서 쓰는 글꼴의 폭으로 확인해요.
     await (FontLoader('Archivo')
           ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
+        .load();
+    await (FontLoader('Pretendard')
+          ..addFont(rootBundle.load('assets/fonts/Pretendard-Regular.otf')))
         .load();
   });
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
@@ -71,19 +76,16 @@ void main() {
       expect(
         List.generate(
           teamAttributeLabels.length,
-          (index) => chart.data.getTitle!(index, 0).text.replaceAll('\n', ' '),
+          (index) => tester
+              .widget<Text>(find.byKey(ValueKey('team-attribute-axis-$index')))
+              .data!
+              .replaceAll('\n', ' '),
         ),
         teamAttributeLabels,
       );
-      expect(
-        chart.data.getTitle!(1, 0).positionPercentageOffset,
-        0.3,
-      );
-      expect(
-        chart.data.getTitle!(4, 0).positionPercentageOffset,
-        0.3,
-      );
-      final titleTextStyle = chart.data.titleTextStyle!;
+      final titleTextStyle = tester
+          .widget<Text>(find.byKey(const ValueKey('team-attribute-axis-0')))
+          .style!;
       expect(titleTextStyle.fontSize, 12);
       expect(titleTextStyle.fontFamily, 'Archivo');
       expect(titleTextStyle.fontWeight, FontWeight.w400);
@@ -94,7 +96,7 @@ void main() {
       );
       expect(
         chart.data.dataSets.first.dataEntries.map((entry) => entry.value),
-        [79.76, 73.57, 86.39, 72.96, 82.8],
+        [82.8, 73.57, 86.39, 79.76, 72.96],
       );
       expect(chart.data.dataSets.first.borderColor, const Color(0xFFD92455));
       expect(
@@ -107,6 +109,103 @@ void main() {
       );
       expect(tester.takeException(), isNull);
     });
+
+    for (final locale in appSupportedLocales) {
+      testWidgets(
+          'keeps original radar size in ${locale.languageCode} at $size',
+          (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        await _pumpAttributes(
+          tester,
+          _repository(
+            (_) async => http.Response(jsonEncode(_attributeJson()), 200),
+          ),
+          locale: locale,
+        );
+        await tester.pumpAndSettle();
+
+        // 문구의 언어와 길이가 바뀌어도 변경 전 차트 영역을 그대로 써요.
+        expect(tester.getSize(find.byType(RadarChart)),
+            Size(size.width - 48, 238));
+        final card = tester.getRect(
+          find.byKey(const ValueKey('analysis-attributes-card')),
+        );
+        expect(card.height, 288);
+        expect(card.left, 24);
+        expect(card.right, size.width - 24);
+        final data = tester.widget<RadarChart>(find.byType(RadarChart)).data;
+        final titles = [
+          for (var index = 0; index < 5; index++)
+            tester
+                .widget<Text>(
+                    find.byKey(ValueKey('team-attribute-axis-$index')))
+                .data!,
+        ];
+        if (locale.languageCode == 'en') {
+          expect(titles, [
+            'Possession &\nBuild-Up',
+            'Attacking\nThreat',
+            'Chance\nCreation',
+            'Shooting &\nFinishing',
+            'Defending',
+          ]);
+        } else if (locale.languageCode == 'ko') {
+          expect(titles, ['점유·빌드업', '공격 위협', '기회 창출', '슈팅·마무리', '수비력']);
+        }
+        expect(data.dataSets.first.dataEntries.map((entry) => entry.value),
+            [82.8, 73.57, 86.39, 79.76, 72.96]);
+        final center = tester.getCenter(find.byType(RadarChart));
+        final outline = Path()
+          ..addPolygon([
+            for (var index = 0; index < 5; index++)
+              center +
+                  Offset(
+                    95.2 * math.cos(index * 2 * math.pi / 5 - math.pi / 2),
+                    95.2 * math.sin(index * 2 * math.pi / 5 - math.pi / 2),
+                  ),
+          ], true);
+        final titleBounds = <Rect>[];
+        for (var index = 0; index < 5; index++) {
+          final finder = find.byKey(ValueKey('team-attribute-axis-$index'));
+          final bounds = tester.getRect(finder);
+          titleBounds.add(bounds);
+          expect(bounds.left, greaterThanOrEqualTo(card.left));
+          expect(bounds.right, lessThanOrEqualTo(card.right));
+          expect(bounds.top, greaterThanOrEqualTo(card.top));
+          expect(bounds.bottom, lessThanOrEqualTo(card.bottom));
+          expect(
+              Path.combine(
+                      PathOperation.intersect, outline, Path()..addRect(bounds))
+                  .getBounds()
+                  .isEmpty,
+              isTrue);
+          final paragraph = tester.renderObject<RenderParagraph>(finder);
+          for (final box in paragraph.getBoxesForSelection(
+            TextSelection(baseOffset: 0, extentOffset: titles[index].length),
+          )) {
+            expect(box.left, greaterThanOrEqualTo(-0.5));
+            expect(box.right, lessThanOrEqualTo(bounds.width + 0.5));
+          }
+        }
+        // 위에서 시작해 오른쪽 위·아래, 왼쪽 아래·위로 이어져야 해요.
+        expect(titleBounds[0].center.dx, closeTo(center.dx, 0.01));
+        expect(titleBounds[0].bottom, lessThan(center.dy));
+        for (final index in [1, 2]) {
+          expect(titleBounds[index].center.dx, greaterThan(center.dx));
+        }
+        for (final index in [3, 4]) {
+          expect(titleBounds[index].center.dx, lessThan(center.dx));
+        }
+        expect(titleBounds[1].bottom, lessThan(center.dy));
+        expect(titleBounds[4].bottom, lessThan(center.dy));
+        expect(titleBounds[2].top, greaterThan(center.dy));
+        expect(titleBounds[3].top, greaterThan(center.dy));
+        expect(tester.takeException(), isNull);
+      });
+    }
   }
 
   testWidgets('keeps the attributes title and filter inline at 393px',
@@ -193,7 +292,7 @@ void main() {
           .first
           .dataEntries
           .map((entry) => entry.value),
-      [79.76, 73.57, 86.39, 72.96, 82.8],
+      [82.8, 73.57, 86.39, 79.76, 72.96],
     );
 
     historicalResponse.complete(
@@ -256,8 +355,7 @@ void main() {
           .widget<RadarChart>(find.byType(RadarChart))
           .data
           .dataSets[1]
-          .dataEntries
-          .first
+          .dataEntries[3]
           .value,
       61,
     );
@@ -479,8 +577,7 @@ void main() {
           .widget<RadarChart>(find.byType(RadarChart))
           .data
           .dataSets[1]
-          .dataEntries
-          .first
+          .dataEntries[3]
           .value,
       61,
     );
@@ -534,11 +631,15 @@ Map<String, dynamic> _optionsJson() {
 
 Future<void> _pumpAttributes(
   WidgetTester tester,
-  ApiTeamAttributeRepository repository,
-) async {
+  ApiTeamAttributeRepository repository, {
+  Locale locale = const Locale('en'),
+}) async {
   await tester.pumpWidget(
     MaterialApp(
-      theme: app_style.whitetheme,
+      locale: locale,
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
+      theme: app_style.lightThemeForLocale(locale),
       home: Scaffold(
         body: SingleChildScrollView(
           child: AttributesSection(

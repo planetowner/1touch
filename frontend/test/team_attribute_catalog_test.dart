@@ -29,15 +29,15 @@ void main() {
     }
   });
 
-  test('uses the five-axis backend attribute order', () {
+  test('orders axes clockwise from possession and build-up', () {
     expect(
       teamAttributeLabels,
       const [
-        'Shooting & Finishing',
+        'Possession & Build-Up',
         'Attacking Threat',
         'Chance Creation',
+        'Shooting & Finishing',
         'Defending',
-        'Possession & Build-Up',
       ],
     );
     expect(
