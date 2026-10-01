@@ -213,7 +213,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           mainAxisSpacing: 16,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          childAspectRatio: .75,
+          childAspectRatio: 1,
           children: [
             _influence(
                 tr(context, 'Starting Rate'), analysis.startingRate, '%'),
@@ -224,11 +224,21 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _influence(String label, double? value, String suffix) =>
       PlayerSurface(
+        radius: 24,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF272828)
+            : AppColors.of(context).cardBackground,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(tr(context, label), style: Body1.style),
-            const Spacer(),
+            Text(
+              label,
+              style: Body1.style.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+                height: 1.3,
+              ),
+            ),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.bottomLeft,
@@ -239,12 +249,19 @@ class _AnalysisTabState extends State<AnalysisTab> {
                     value == null
                         ? '—'
                         : playerNumber(value, decimals: suffix.isEmpty ? 0 : 1),
-                    style: Heading1.style,
+                    style: Heading1.latinStyle.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      height: 0.9,
+                    ),
                   ),
                   if (value != null && suffix.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 4, bottom: 4),
-                      child: Text(tr(context, suffix), style: Heading4.style),
+                    Text(
+                      tr(context, suffix),
+                      style: Heading4.style.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 20,
+                        height: 1.2,
+                      ),
                     ),
                 ],
               ),

@@ -702,6 +702,77 @@ void main() {
     expect(ratingText.style?.color, app_style.AppPalette.white);
     expect(tester.takeException(), isNull);
   });
+  for (final size in [
+    const Size(320, 568),
+    const Size(393, 852),
+    const Size(430, 932),
+  ]) {
+    for (final locale in [const Locale('en'), const Locale('ko')]) {
+      testWidgets('influence cards fit $size in ${locale.languageCode}',
+          (tester) async {
+        await tester.binding.setSurfaceSize(size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        appLocaleController.value = locale;
+        addTearDown(() => appLocaleController.value = const Locale('en'));
+        final detail = detailFixture();
+        await tester.pumpWidget(MaterialApp(
+          locale: locale,
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
+          theme: locale.languageCode == 'en'
+              ? app_style.darktheme
+              : app_style.whitetheme,
+          home: Scaffold(
+            body: PlayerDetailScope(
+              store: PlayerDetailStore(
+                playerId: detail.playerId,
+                initial: detail,
+              ),
+              child: AnalysisTab(playerId: detail.playerId),
+            ),
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        final cards = find.descendant(
+          of: find.byType(GridView),
+          matching: find.byType(PlayerSurface),
+        );
+        expect(cards, findsNWidgets(2));
+        for (final card in cards.evaluate()) {
+          final finder = find.byElementPredicate((element) => element == card);
+          final surface = tester.widget<PlayerSurface>(finder);
+          final rect = tester.getRect(finder);
+          final textFinders = find.descendant(
+            of: finder,
+            matching: find.byType(Text),
+          );
+          final texts = tester.widgetList<Text>(textFinders).toList();
+          expect(rect.width, closeTo((size.width - 64) / 2, 0.1));
+          expect(rect.height, closeTo(rect.width, 0.1));
+          expect(surface.padding, const EdgeInsets.all(16));
+          expect(surface.radius, 24);
+          expect(
+              surface.color,
+              locale.languageCode == 'en'
+                  ? const Color(0xFF272828)
+                  : Colors.white);
+          expect(texts.first.style?.fontSize, 15);
+          expect(texts.first.style?.height, 1.3);
+          expect(texts[1].style?.fontSize, 48);
+          expect(texts[1].style?.height, 0.9);
+          expect(texts.last.style?.fontSize, 20);
+          expect(texts.last.style?.height, 1.2);
+          expect(tester.getRect(textFinders.at(0)).top - rect.top,
+              closeTo(16, 0.1));
+          expect(rect.bottom - tester.getRect(textFinders.at(1)).bottom,
+              closeTo(16, 0.1));
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
   testWidgets('season selection loads its own data', (tester) async {
     final repository = FakePlayerDetailRepository();
     await tester.pumpWidget(MaterialApp(
