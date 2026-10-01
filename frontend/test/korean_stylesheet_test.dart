@@ -38,6 +38,11 @@ void main() {
       styles.map((style) => style.height),
       [1.4, 1.4, 1.5, 1.5, 1.6, 1.6, 1.6, 1.6, 1.6, 1.6],
     );
+    expect(
+      styles.every(
+          (style) => style.leadingDistribution == TextLeadingDistribution.even),
+      isTrue,
+    );
 
     expect(KoreanHeading1.style.letterSpacing, -0.88);
     expect(KoreanHeading2.style.letterSpacing, -0.56);

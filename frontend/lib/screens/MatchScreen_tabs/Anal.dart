@@ -1374,6 +1374,9 @@ class _ProgressionPainter extends CustomPainter {
           ),
         ),
         textDirection: TextDirection.ltr,
+        textHeightBehavior: const TextHeightBehavior(
+          leadingDistribution: TextLeadingDistribution.even,
+        ),
       )..layout();
       label.paint(
           canvas,
@@ -1557,6 +1560,9 @@ class _DefenseTerritoryPainter extends CustomPainter {
           ),
         ),
         textDirection: TextDirection.ltr,
+        textHeightBehavior: const TextHeightBehavior(
+          leadingDistribution: TextLeadingDistribution.even,
+        ),
       )..layout(maxWidth: zoneWidth);
       text.paint(
         canvas,
