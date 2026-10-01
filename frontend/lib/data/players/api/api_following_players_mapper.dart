@@ -21,5 +21,6 @@ FollowingPlayer followingPlayerFromApiResponse(
     playerId: response.playerId,
     name: name,
     imagePath: response.imagePath,
+    jerseyNumber: response.jerseyNumber,
   );
 }

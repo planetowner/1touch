@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from ..db import fetch_all_dict, transaction
 from ..deps import get_user_id
 from ..repos.users_repo import get_user, lock_user, update_profile
+from ..repos.player_directory_repo import get_following_players
 from ..repos import posts_repo, users_repo
 from ..schemas.users import DeleteAccountBody, UserProfileUpdateBody
 from ..services.community_periods import public_row
@@ -78,9 +79,7 @@ class FollowingPlayersBody(BaseModel):
 
 @router.get("/users/me/following/players")
 def following_players(user_id: int = Depends(get_user_id)):
-    return {"items": fetch_all_dict("""SELECT p.player_id,p.display_name AS name,p.image_path
-        FROM user_following_players f JOIN players p ON p.player_id=f.player_id
-        WHERE f.user_id=%s ORDER BY f.position""", (user_id,))}
+    return get_following_players(user_id)
 
 
 @router.put("/users/me/following/players")
