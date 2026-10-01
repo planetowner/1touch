@@ -6,12 +6,11 @@ from collections import defaultdict
 from .fixture_states import COMPLETED_STATE_IDS
 from .player_match_metrics import (
     CATEGORIES, METRICS, POSITION_GROUPS, SUMMARY_METRICS, build_categories, build_metric,
+    normalize_player_counts,
 )
 
 MINIMUM_REFERENCE_MINUTES = 450
 LOWER_IS_BETTER = frozenset({"goals_conceded", "possession_lost", "dribbled_past", "fouls_committed"})
-# 경기 이벤트·선수 상세·팀 통계를 대조해 0회 생략을 확인한 발생 횟수예요.
-SPARSE_COUNT_TYPES = frozenset({42, 52, 78, 79, 96, 100, 117})
 
 
 def current_player_team(roster: list[dict], current_matches: list[dict]) -> dict | None:
@@ -65,17 +64,18 @@ def stat_index(rows: list[dict]) -> dict:
     return result
 
 
-def season_categories(position: int | None, matches: list[dict], stats: dict) -> list[dict]:
+def season_categories(position: int | None, matches: list[dict], stats: dict,
+                      recorded_types: dict | None = None) -> list[dict]:
     totals, coverage = {}, {}
-    match_stats = [stats[(r["fixture_id"], r["team_id"], r["player_id"])] for r in matches]
+    recorded_types = recorded_types or {}
+    match_stats = [normalize_player_counts(stats[(r["fixture_id"], r["team_id"], r["player_id"])],
+                                          recorded_types.get(r["fixture_id"], ()),
+                                          opponent_score=r["away_score"] if r["team_id"] == r["home_team_id"] else r["home_score"])
+                   for r in matches]
     codes = [m for _, _, metrics in CATEGORIES.get(position, ()) for m in metrics]
     for code in codes:
         for type_id in METRICS[code][2]:
-            # Sportmonks V3는 발생하지 않은 횟수를 생략해요. 볼 터치까지 수집된
-            # 상세 기록의 확인된 횟수만 0으로 읽어요. 다른 지표의 미제공까지 0으로 만들지 않아요.
-            # https://docs.sportmonks.com/v3/welcome/differences-between-api-2-and-api-3/api-changes#statistics
-            values = [row.get(type_id, 0 if type_id in SPARSE_COUNT_TYPES and row.get(120) is not None else None)
-                      for row in match_stats]
+            values = [row.get(type_id) for row in match_stats]
             coverage[type_id] = sum(v is not None for v in values)
             totals[type_id] = sum(values) if values and all(v is not None for v in values) else None
     xg_values = [r["xg"] for r in matches]
@@ -146,8 +146,13 @@ def build_career(matches: list[dict]) -> list[dict]:
     return sorted(result, key=lambda r: (r["season_name"], r["last_match_at"]), reverse=True)
 
 
-def match_cards(matches: list[dict], position: int | None, stats: dict) -> list[dict]:
-    return [{**r, "result": result_for(r), "position_group": POSITION_GROUPS.get(position),
-             "metrics": [build_metric(code, stats[(r["fixture_id"], r["team_id"], r["player_id"])], r["xg"])
-                         for code in SUMMARY_METRICS.get(position, ())]}
-            for r in sorted(matches, key=lambda r: (r["starting_at"], r["fixture_id"]), reverse=True)]
+def match_cards(matches: list[dict], position: int | None, stats: dict,
+                recorded_types: dict | None = None) -> list[dict]:
+    recorded_types = recorded_types or {}
+    cards = []
+    for row in sorted(matches, key=lambda r: (r["starting_at"], r["fixture_id"]), reverse=True):
+        values = normalize_player_counts(stats[(row["fixture_id"], row["team_id"], row["player_id"])],
+                                         recorded_types.get(row["fixture_id"], ()))
+        cards.append({**row, "result": result_for(row), "position_group": POSITION_GROUPS.get(position),
+                      "metrics": [build_metric(code, values, row["xg"]) for code in SUMMARY_METRICS.get(position, ())]})
+    return cards

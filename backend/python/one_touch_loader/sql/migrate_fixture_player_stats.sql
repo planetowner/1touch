@@ -7,7 +7,7 @@ CREATE TABLE fixture_player_stats (
   team_id BIGINT UNSIGNED NOT NULL,
   player_id BIGINT UNSIGNED NOT NULL,
   stat_type_id INT NOT NULL,
-  stat_value DECIMAL(12,4) NOT NULL,
+  stat_value DECIMAL(12,4) NULL,
   PRIMARY KEY (fixture_id, team_id, player_id, stat_type_id),
   CONSTRAINT fk_fixture_player_stats_lineup
     FOREIGN KEY (fixture_id, team_id, player_id)

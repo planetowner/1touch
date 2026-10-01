@@ -102,11 +102,16 @@ def _build_feature_query(season_ids: list[int]) -> str:
         for code in codes
     })
     # PK와 통계 코드의 UNIQUE 제약으로 한 경기·팀·통계는 값이 하나예요.
-    pivot_columns = ",\n        ".join(
-        f"MAX(CASE WHEN stat_type.code = '{code}' THEN r.stat_value END) "
-        f"AS {code.replace('-', '_')}"
-        for code in stat_codes
-    )
+    pivot_columns = []
+    for code in stat_codes:
+        value = f"MAX(CASE WHEN stat_type.code = '{code}' THEN r.stat_value END)"
+        if code == "goals":
+            # 무득점 팀의 goals 행은 생략돼요. 경기 점수로 확인된 0을 넣어 그 경기도 집계해요.
+            value = f"""COALESCE({value}, CASE WHEN
+                (CASE WHEN r.team_id = f.home_team_id THEN f.home_score ELSE f.away_score END) = 0
+                THEN 0 END)"""
+        pivot_columns.append(f"{value} AS {code.replace('-', '_')}")
+    pivot_columns = ",\n        ".join(pivot_columns)
     group_ctes = []
     feature_columns = []
     joins = []
@@ -142,7 +147,7 @@ def _build_feature_query(season_ids: list[int]) -> str:
     WITH target_seasons AS (
       {_target_seasons_cte(season_ids)}
     ),
-    -- 제공된 0은 그대로 두고, 통계 행이 없으면 NULL로 남겨요.
+    -- 경기 점수로 확인한 무득점 외에는, 통계 행이 없으면 NULL로 남겨요.
     fixture_stat_pivot AS (
       SELECT
         fixture_season.competition_id,
@@ -162,7 +167,7 @@ def _build_feature_query(season_ids: list[int]) -> str:
         AND f.state_id IN ({','.join(str(value) for value in COMPLETED_STATE_IDS)})
         AND fixture_round.name REGEXP '^[0-9]+$'
       GROUP BY fixture_season.competition_id, fixture_stage.season_id,
-               f.fixture_id, r.team_id, f.home_team_id, f.away_team_id
+               f.fixture_id, r.team_id, f.home_team_id, f.away_team_id, f.home_score, f.away_score
     ),
     -- 영역별 필수 통계가 모두 있는 경기만 평균과 비율의 분자·분모에 함께 써요.
     -- 예를 들어 수비 자료가 38경기 중 30경기에 있으면 수비의 모든 항목은 그 30경기로 계산해요.
@@ -192,7 +197,7 @@ def build_team_attribute_training_features_for_seasons(
     season_ids: list[int] | None = None,
 ) -> int:
     # 학습 목표인 시즌 경기당 승점은 유지하고, 통계의 평균 분모만 실제 제공 경기 수로 맞춰요.
-    # 선수 합계나 경기 점수를 통계의 대체값으로 사용하지 않아요.
+    # 선수 합계로 대체하지 않고, 경기 점수는 생략된 무득점을 확인할 때만 써요.
     # 별도 최소 경기 수·제공률 기준은 두지 않고, 필수 통계가 함께 있는 경기를 사용해요.
     # 필수 항목의 공통 제공 경기가 없거나 비율의 분모가 0이면 NULL로 저장해 해당 영역을 미산출해요.
     season_ids = season_ids or TARGET_SEASON_IDS

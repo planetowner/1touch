@@ -325,7 +325,7 @@ class FixtureDetailsRepositoryTests(unittest.TestCase):
         get_fixture.return_value = {"fixture_id": 500, "home_team_id": 10, "away_team_id": 20}
         fetch_all_dict.side_effect = [
             [{"event_id": 900}],
-            [{"stat_type_id": 45}],
+            [{"team_id": 10, "stat_type_id": 45, "value": 63}],
             [{"player_id": 100, "team_id": 10, "lineup_type_id": 11, "match_position_id": 25,
               "minutes_played": 90, "rating": 7.38}],
             [{"team_id": 10, "formation": "4-3-3"}],
@@ -345,7 +345,7 @@ class FixtureDetailsRepositoryTests(unittest.TestCase):
 
         self.assertEqual(result["events"], [{"event_id": 900}])
         self.assertEqual(result["statistics"], [
-            {"stat_type_id": 45},
+            {"team_id": 10, "stat_type_id": 45, "value": 63},
             {"team_id": 10, "stat_type_id": 120, "stat_code": "touches", "stat_name": "Touches", "value": 64},
             {"team_id": 20, "stat_type_id": 120, "stat_code": "touches", "stat_name": "Touches", "value": None},
             {"team_id": 10, "stat_type_id": 97, "stat_code": "blocked-shots", "stat_name": "Blocks", "value": 3},
