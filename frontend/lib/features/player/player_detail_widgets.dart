@@ -64,17 +64,19 @@ class PlayerSurface extends StatelessWidget {
       {super.key,
       required this.child,
       this.padding = const EdgeInsets.all(16),
-      this.color});
+      this.color,
+      this.radius = 16});
   final Widget child;
   final EdgeInsets padding;
   final Color? color;
+  final double radius;
   @override
   Widget build(BuildContext context) => Container(
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
           color: color ?? AppColors.of(context).cardBackground,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(radius),
           boxShadow: appCardShadows(context)),
       child: child);
 }
