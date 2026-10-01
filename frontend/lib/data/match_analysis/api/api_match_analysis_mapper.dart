@@ -26,14 +26,11 @@ MatchTeamTacticalAnalysis? _teamAnalysis(
     progression: MatchProgressionMetrics(
       completedPasses: response.completedPasses,
       progressivePasses: response.progressivePasses,
-      channels: [
-        for (final channel in response.channels)
-          MatchProgressionChannel(
-            channel: channel.channel,
-            count: channel.count,
-            percentage: channel.percentage,
-          ),
-      ],
+      channels: MatchProgressionChannels(
+        left: _progressionChannel(response.channels.left),
+        center: _progressionChannel(response.channels.center),
+        right: _progressionChannel(response.channels.right),
+      ),
     ),
     defensiveActivity: MatchDefensiveActivity(
       complete: defensive.complete,
@@ -52,6 +49,14 @@ MatchTeamTacticalAnalysis? _teamAnalysis(
     ),
   );
 }
+
+MatchProgressionChannel _progressionChannel(
+  ApiProgressionChannelResponse response,
+) =>
+    MatchProgressionChannel(
+      count: response.count,
+      percentage: response.percentage,
+    );
 
 MatchShotMap matchShotMapFromApiResponse(ApiMatchShotMapResponse response) {
   return MatchShotMap(

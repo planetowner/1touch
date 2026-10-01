@@ -21,6 +21,12 @@ import 'package:onetouch/features/match_info/match_status_label.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
 
+typedef ProgressionLanePercentages = ({
+  double left,
+  double center,
+  double right,
+});
+
 class AnalysisTab extends StatefulWidget {
   final Fixture fixture;
   final FixtureDetail? detail;
@@ -816,17 +822,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
       )
       .length;
 
-  List<double> _channelPercentages(MatchProgressionMetrics? progression) {
-    if (progression == null) return const [0, 0, 0];
-    final byChannel = {
-      for (final channel in progression.channels)
-        channel.channel: channel.percentage ?? 0,
-    };
-    return [
-      byChannel['left'] ?? 0,
-      byChannel['center'] ?? 0,
-      byChannel['right'] ?? 0,
-    ];
+  ProgressionLanePercentages _channelPercentages(
+    MatchProgressionMetrics? progression,
+  ) {
+    final channels = progression?.channels;
+    return (
+      left: channels?.left.percentage ?? 0,
+      center: channels?.center.percentage ?? 0,
+      right: channels?.right.percentage ?? 0,
+    );
   }
 
   List<({String code, String label, num home, num away, bool isPercent})>
@@ -1155,7 +1159,7 @@ class _ShotMapPainter extends CustomPainter {
 // Channel progression: three gradient arrows with labels near their tips.
 class ProgressionDiagram extends StatelessWidget {
   final bool rightToLeft;
-  final List<double> lanePercents; // [left, center, right], 0..100
+  final ProgressionLanePercentages lanePercents;
   final Color color;
   final Color labelColor;
   const ProgressionDiagram({
@@ -1268,7 +1272,7 @@ class _RevealWhenVisibleState extends State<_RevealWhenVisible>
 
 class _ProgressionPainter extends CustomPainter {
   final bool rightToLeft;
-  final List<double> lanePercents;
+  final ProgressionLanePercentages lanePercents;
   final Color color;
   final Color labelColor;
   final Color lineColor;
@@ -1324,8 +1328,12 @@ class _ProgressionPainter extends CustomPainter {
   }
 
   void _paintArrows(Canvas canvas, Size size) {
-    final values =
-        lanePercents.take(3).map((v) => v.clamp(0.0, 100.0)).toList();
+    final percentages = [
+      lanePercents.left,
+      lanePercents.center,
+      lanePercents.right,
+    ];
+    final values = percentages.map((v) => v.clamp(0.0, 100.0)).toList();
     final maximum =
         values.fold<double>(0, (largest, v) => math.max(largest, v));
     final laneHeight = size.height / 3;
@@ -1378,7 +1386,7 @@ class _ProgressionPainter extends CustomPainter {
       canvas.restore();
       final label = TextPainter(
         text: TextSpan(
-          text: '${lanePercents[i].round()}%',
+          text: '${percentages[i].round()}%',
           style: Heading4.style.copyWith(
             color: labelColor,
             fontSize: size.width * 0.075,
