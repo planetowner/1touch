@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko" prefix="og: https://ogp.me/ns#">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>$title · 1Touch</title>
+  <meta name="description" content="$description">
+  <link rel="canonical" href="$canonical">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="1Touch">
+  <meta property="og:title" content="$title">
+  <meta property="og:description" content="$description">
+  <meta property="og:url" content="$canonical">
+  <meta property="og:image" content="$image">
+  <meta property="og:image:alt" content="$title">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#111111">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body { min-height: 100svh; display: flex; flex-direction: column; }
+    .share-wrap { width: min(760px, calc(100% - 2.5rem)); }
+    main { flex: 1; }
+    .shared-post { padding-block: clamp(2rem, 6vw, 3.5rem); word-break: keep-all; }
+    .shared-post h1 {
+      max-width: none;
+      margin-block: 1rem 1.5rem;
+      font-size: clamp(1.75rem, 5vw, 2.75rem);
+      line-height: 1.35;
+      letter-spacing: -.03em;
+      text-wrap: wrap;
+      overflow-wrap: anywhere;
+    }
+    .post-body { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 1.0625rem; line-height: 1.8; }
+    .post-images { display: grid; gap: 1rem; margin-top: 2rem; }
+    .post-images:empty { display: none; }
+    .post-images img { width: 100%; height: auto; border-radius: .75rem; }
+    .app-note { border-top: 1px solid var(--line); padding-block: 1.5rem 2rem; color: var(--muted); }
+    .app-note strong { color: var(--text); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">본문으로 이동</a>
+  <header class="header wrap share-wrap">
+    <a class="brand" href="/" aria-label="1Touch 소개"><img src="/assets/1touch-wordmark.jpg" alt="1Touch" width="1080" height="1080"></a>
+    <nav aria-label="사이트 메뉴"><a href="/">1Touch 소개</a></nav>
+  </header>
+  <main id="main" class="wrap share-wrap">
+    <article class="shared-post">
+      <p class="eyebrow">1Touch 커뮤니티</p>
+      <h1>$title</h1>
+      <div class="post-body">$body</div>
+      <div class="post-images">$images</div>
+    </article>
+    <aside class="app-note"><p><strong>함께 이야기를 나눠요</strong><br>댓글과 좋아요는 1Touch 앱에서 이용할 수 있어요.</p></aside>
+  </main>
+  <footer class="footer wrap share-wrap"><span>1Touch Football</span><span>축구와 팬을 잇는 커뮤니티</span></footer>
+</body>
+</html>
