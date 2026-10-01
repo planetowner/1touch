@@ -49,40 +49,39 @@ class TeamSelectionSheet extends StatefulWidget {
 }
 
 class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
-  late List<Map<String, dynamic>> _followingTeams;
+  late final List<_TeamSelectionOption> _followingTeams;
+  late int _selectedTeamId;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
+    _selectedTeamId = widget.initialTeamId;
     _followingTeams = widget.followingTeams
         .where((team) => teamPageEligibility.supports(team.teamId))
         .map((team) {
       final competition = teamCompetitionContextResolver.resolve(team.teamId)!;
-      return <String, dynamic>{
-        'id': team.teamId,
-        'name': team.name,
-        'competition': competition,
+      return _TeamSelectionOption(
+        team: team,
+        competition: competition,
         // 순위 화면과 같은 저장소를 써서 같은 리그의 중복 요청과 표기 차이를 줄여요.
-        'standings': (widget.standingsRepository ?? standingRepository)
+        standings: (widget.standingsRepository ?? standingRepository)
             .loadForCompetition(competition.competitionId!,
                 seasonId: competition.seasonId),
-        'logo': team.imagePath ?? '',
-        'isSelected': team.teamId == widget.initialTeamId,
-      };
-    }).toList();
+      );
+    }).toList(growable: false);
   }
 
   Future<void> _switchTeam() async {
     if (_isSaving || _followingTeams.isEmpty) return;
     final selected = _followingTeams.firstWhere(
-      (team) => team['isSelected'] == true,
+      (option) => option.team.teamId == _selectedTeamId,
       orElse: () => _followingTeams.first,
     );
     setState(() => _isSaving = true);
 
     try {
-      await widget.onSwitch(selected['id'] as int);
+      await widget.onSwitch(selected.team.teamId);
       if (!mounted) return;
       Navigator.of(context).pop();
     } on Object {
@@ -131,55 +130,52 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
               shrinkWrap: true,
               itemCount: _followingTeams.length,
               itemBuilder: (context, index) {
-                final team = _followingTeams[index];
-                final competition =
-                    team['competition'] as TeamCompetitionContext;
+                final option = _followingTeams[index];
+                final team = option.team;
+                final competition = option.competition;
                 return ListTile(
-                  key: ValueKey('team-selection-${team['id']}'),
+                  key: ValueKey('team-selection-${team.teamId}'),
                   contentPadding: EdgeInsets.zero,
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Image.network(
-                      team['logo'],
+                      team.imagePath ?? '',
                       width: 24,
                       height: 24,
                       errorBuilder: (context, error, stackTrace) =>
-                          teamLogoFallback(team['id'] as int, size: 24),
+                          teamLogoFallback(team.teamId, size: 24),
                     ),
                   ),
                   title: TeamNameWithFavoriteStar(
-                    teamId: team['id'] as int,
-                    name: team['name'] as String,
+                    teamId: team.teamId,
+                    name: team.name,
                     // 체크는 이번 선택을, 별은 저장된 최애팀을 나타내요.
-                    isFavorite: team['id'] == widget.favoriteTeamId,
+                    isFavorite: team.teamId == widget.favoriteTeamId,
                     style: Body1_b.style,
                   ),
                   subtitle: FutureBuilder<List<Standing>>(
-                    future: team['standings'] as Future<List<Standing>>,
+                    future: option.standings,
                     builder: (context, snapshot) => Text(
                       leaguePositionLabel(
                         context,
                         competitionNameLabel(context, competition.competitionId,
                             competition.competitionName ?? ''),
                         snapshot.data
-                            ?.where((row) => row.teamId == team['id'])
+                            ?.where((row) => row.teamId == team.teamId)
                             .firstOrNull
                             ?.position,
                       ),
                       style: Body2.style,
                     ),
                   ),
-                  trailing: team['isSelected']
+                  trailing: team.teamId == _selectedTeamId
                       ? Icon(Icons.check, color: colorScheme.onSurface)
                       : null,
                   onTap: _isSaving
                       ? null
                       : () {
                           setState(() {
-                            for (var t in _followingTeams) {
-                              t['isSelected'] = false;
-                            }
-                            team['isSelected'] = true;
+                            _selectedTeamId = team.teamId;
                           });
                         },
                 );
@@ -220,4 +216,16 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
       ),
     );
   }
+}
+
+class _TeamSelectionOption {
+  const _TeamSelectionOption({
+    required this.team,
+    required this.competition,
+    required this.standings,
+  });
+
+  final Team team;
+  final TeamCompetitionContext competition;
+  final Future<List<Standing>> standings;
 }
