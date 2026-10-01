@@ -215,13 +215,29 @@ void main() {
     await tester.tap(find.text('Match 55'));
     await tester.pumpAndSettle();
     await tester.tap(
-      find.byKey(const ValueKey('player-match-stat-profile-link')),
+      find.byKey(const ValueKey('player-match-stat-image-bottom-fade')),
     );
     await tester.pumpAndSettle();
 
     expect(find.text('Player 2'), findsOneWidget);
     expect(router.canPop(), isTrue);
     router.pop();
+    await tester.pumpAndSettle();
+    expect(find.text('Match 55'), findsOneWidget);
+    await tester.tap(find.text('Match 55'));
+    await tester.pumpAndSettle();
+    final header = tester.getRect(
+      find.byKey(const ValueKey('player-match-stat-profile-surface')),
+    );
+    await tester.tapAt(Offset(header.left + 24, header.bottom - 12));
+    await tester.pumpAndSettle();
+    expect(find.text('Player 2'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.text('Match 55'), findsOneWidget);
+    await tester.tap(find.text('Match 55'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.close_rounded));
     await tester.pumpAndSettle();
     expect(find.text('Match 55'), findsOneWidget);
     router.pop();
