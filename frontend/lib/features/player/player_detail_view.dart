@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/season_label.dart';
@@ -9,33 +12,88 @@ import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
-class PlayerDetailStore {
+class PlayerDetailStore extends ChangeNotifier {
   PlayerDetailStore(
       {required this.playerId, this.repository, PlayerDetail? initial}) {
-    if (initial != null) _requests[null] = Future.value(initial);
+    if (initial != null) {
+      _visible[null] = initial;
+      _requests[null] = Future.value(initial);
+    }
   }
   final int? playerId;
   final PlayerDetailRepository? repository;
   // 같은 화면의 네 탭이 같은 시즌 조회를 공유해요. 화면을 나가면 함께 해제돼요.
   final _requests = <int?, Future<PlayerDetail>>{};
-  Future<PlayerDetail> load(int? seasonId) => _requests.putIfAbsent(
-      seasonId,
-      () => Future.sync(() => (repository ?? playerDetailRepository)
-          .load(playerId!, seasonId: seasonId)));
+  final _visible = <int?, PlayerDetail>{};
+  final _refreshing = <int?>{};
+
+  PlayerDetail? snapshot(int? seasonId) =>
+      _visible[seasonId] ??
+      switch (repository ?? playerDetailRepository) {
+        CachedPlayerDetailRepository cached when playerId != null =>
+          cached.snapshotFor(playerId!, seasonId: seasonId)?.data,
+        _ => null,
+      };
+
+  Future<PlayerDetail> load(int? seasonId) =>
+      _requests.putIfAbsent(seasonId, () => _load(seasonId));
+
+  Future<PlayerDetail> _load(int? seasonId) async {
+    final source = repository ?? playerDetailRepository;
+    if (source is CachedPlayerDetailRepository) {
+      final memory = source.snapshotFor(playerId!, seasonId: seasonId);
+      if (memory != null) {
+        _visible[seasonId] = memory.data;
+        _refreshIfStale(source, seasonId, memory.savedAt);
+        return memory.data;
+      }
+      final restored = await source.restoreFor(playerId!, seasonId: seasonId);
+      if (restored != null) {
+        _visible[seasonId] = restored.data;
+        notifyListeners();
+        _refreshIfStale(source, seasonId, restored.savedAt);
+        return restored.data;
+      }
+    }
+    final fresh = await source.load(playerId!, seasonId: seasonId);
+    _visible[seasonId] = fresh;
+    notifyListeners();
+    return fresh;
+  }
+
+  void _refreshIfStale(
+      CachedPlayerDetailRepository source, int? seasonId, DateTime savedAt) {
+    if (!AppCachePolicy.shouldRefresh(
+          tier: CacheTier.standard,
+          trigger: CacheSyncTrigger.screenEnter,
+          savedAt: savedAt,
+        ) ||
+        !_refreshing.add(seasonId)) {
+      return;
+    }
+    unawaited(source.load(playerId!, seasonId: seasonId).then((fresh) {
+      _visible[seasonId] = fresh;
+      _requests[seasonId] = Future.value(fresh);
+      notifyListeners();
+    }).catchError((Object _) {
+      // Keep the restored detail visible while offline.
+    }).whenComplete(() => _refreshing.remove(seasonId)));
+  }
+
   void invalidate(int? seasonId) {
     _requests.remove(seasonId);
+    _visible.remove(seasonId);
+    notifyListeners();
   }
 }
 
-class PlayerDetailScope extends InheritedWidget {
+class PlayerDetailScope extends InheritedNotifier<PlayerDetailStore> {
   const PlayerDetailScope(
-      {super.key, required this.store, required super.child});
-  final PlayerDetailStore store;
+      {super.key, required PlayerDetailStore store, required super.child})
+      : super(notifier: store);
+  PlayerDetailStore get store => notifier!;
   static PlayerDetailStore? maybeOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<PlayerDetailScope>()?.store;
-  @override
-  bool updateShouldNotify(PlayerDetailScope oldWidget) =>
-      oldWidget.store != store;
+      context.dependOnInheritedWidgetOfExactType<PlayerDetailScope>()?.notifier;
 }
 
 class PlayerDetailView extends StatefulWidget {
@@ -65,14 +123,17 @@ class _PlayerDetailViewState extends State<PlayerDetailView> {
     return FutureBuilder<PlayerDetail>(
       future: store.load(widget.seasonId),
       builder: (context, snapshot) {
-        // 새 시즌을 불러오는 동안 이전 시즌의 값을 새 제목 아래 표시하지 않아요.
-        if (snapshot.connectionState != ConnectionState.done) {
+        // A snapshot is always keyed to this exact player and season.
+        final detail = snapshot.connectionState == ConnectionState.done
+            ? snapshot.data ?? store.snapshot(widget.seasonId)
+            : store.snapshot(widget.seasonId);
+        if (detail == null && !snapshot.hasError) {
           return const Center(
               child: Padding(
                   padding: EdgeInsets.all(24),
                   child: FootballLoadingIndicator()));
         }
-        if (snapshot.hasError) {
+        if (detail == null && snapshot.hasError) {
           return Center(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
             Text(tr(context, 'Could not load player data')),
@@ -82,7 +143,7 @@ class _PlayerDetailViewState extends State<PlayerDetailView> {
                 child: Text(tr(context, 'Retry'))),
           ]));
         }
-        return widget.builder(context, snapshot.requireData);
+        return widget.builder(context, detail!);
       },
     );
   }
