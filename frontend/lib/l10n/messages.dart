@@ -613,6 +613,11 @@ const appMessages = <String, MessageTranslations>{
   "Unfollow team": (ko: "팀 팔로우 취소", ja: "チームのフォローを解除", zh: "取消关注球队"),
   "Edit favorites": (ko: "즐겨찾기 수정", ja: "お気に入りを編集", zh: "编辑收藏"),
   "Add favorite players": (ko: "좋아하는 선수 추가", ja: "お気に入りの選手を追加", zh: "添加喜欢的球员"),
+  "You aren't following any players yet.\nAdd some now.": (
+    ko: "팔로우 하는 선수가 아직 없어요.\n지금 추가해보세요.",
+    ja: "フォローしている選手はまだいません。\n今すぐ追加しましょう。",
+    zh: "还没有关注的球员。\n现在添加吧。"
+  ),
   "Remove player": (ko: "선수 삭제", ja: "選手を削除", zh: "移除球员"),
   "Search players to add!": (
     ko: "선수 이름을 검색해 주세요",

@@ -568,13 +568,19 @@ class _SearchPlayerRow extends StatelessWidget {
 
 class _PlayerIdentity extends StatelessWidget {
   const _PlayerIdentity(
-      {required this.name, this.team, this.number, this.primary = false});
+      {required this.name,
+      this.team,
+      this.number,
+      this.primary = false,
+      this.rankingStyle = false});
   final String name;
   final String? team;
   final int? number;
   final bool primary;
+  final bool rankingStyle;
   @override
   Widget build(BuildContext context) => Column(
+        mainAxisSize: rankingStyle ? MainAxisSize.min : MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
@@ -582,18 +588,22 @@ class _PlayerIdentity extends StatelessWidget {
                 child: Text(name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Heading5.style)),
+                    style: rankingStyle
+                        ? Heading5.style.copyWith(height: 1.1)
+                        : Heading5.style)),
             if (primary)
               const Padding(
                   padding: EdgeInsets.only(left: 6),
                   child: Icon(Icons.star_border, size: 18)),
           ]),
           if (team != null) ...[
-            const SizedBox(height: 2),
+            SizedBox(height: rankingStyle ? 4 : 2),
             Text(number == null ? team! : '$team #$number',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Body2.style),
+                style: rankingStyle
+                    ? Body2.style.copyWith(height: 1.3)
+                    : Body2.style),
           ],
         ],
       );
@@ -664,35 +674,48 @@ class _PlayerFullRankingSheetState extends State<PlayerFullRankingSheet> {
           child: Column(children: [
             _SheetTitle(
                 title: tr(context, '1Touch Ranking'),
-                onClose: () => Navigator.pop(context)),
+                onClose: () => Navigator.pop(context),
+                compact: true),
             const SizedBox(height: 24),
-            Container(
-              key: const ValueKey('full-ranking-search'),
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
-                borderRadius:
-                    BorderRadius.circular(AppSearchFieldTokens.radius),
-              ),
-              child: TextField(
-                controller: _search,
-                style: Body1.style.copyWith(color: colors.onSurface),
-                decoration: InputDecoration(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  hintText: tr(context, 'Look for players'),
-                  hintStyle:
-                      Body1.style.copyWith(color: appColors.mutedForeground),
-                  border: InputBorder.none,
-                  suffixIcon: Icon(Icons.search, color: colors.onSurface),
+            SizedBox(
+              height: 40,
+              child: Container(
+                key: const ValueKey('full-ranking-search'),
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color:
+                      isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
+                  borderRadius:
+                      BorderRadius.circular(AppSearchFieldTokens.radius),
+                ),
+                child: TextField(
+                  controller: _search,
+                  textAlignVertical: TextAlignVertical.center,
+                  style: Body1.style.copyWith(color: colors.onSurface),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                    hintText: tr(context, 'Look for players'),
+                    hintStyle: Body1.style.copyWith(
+                      color: appColors.mutedForeground,
+                      height: 1.3,
+                    ),
+                    border: InputBorder.none,
+                    suffixIcon:
+                        Icon(Icons.search, color: colors.onSurface, size: 24),
+                    suffixIconConstraints:
+                        const BoxConstraints.tightFor(width: 24, height: 24),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Expanded(
-              child: ListView.builder(
+              child: ListView.separated(
                 controller: controller,
+                padding: const EdgeInsets.only(bottom: 24),
                 itemCount: players.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
                 itemBuilder: (_, index) {
                   final player = players[index];
                   final detail = _details.putIfAbsent(player.id, () async {
@@ -730,11 +753,11 @@ class _FullRankingRow extends StatelessWidget {
         key: ValueKey('full-ranking-player-${player.id}'),
         onTap: () => context.push('/players/${player.id}'),
         borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+        child: SizedBox(
+          height: 56,
           child: Row(children: [
             SizedBox(
-                width: 48,
+                width: 36,
                 child: Text('${player.rank}', style: Heading4.style)),
             ClipOval(
                 child: ColoredBox(
@@ -753,38 +776,57 @@ class _FullRankingRow extends StatelessWidget {
                         ? null
                         : teamNameLabel(
                             context, profile?.teamId, profile!.teamName!),
-                    number: profile?.jerseyNumber);
+                    number: profile?.jerseyNumber,
+                    rankingStyle: true);
               },
             )),
-            if (following) const Icon(Icons.star, size: 24),
-            const SizedBox(width: 8),
-            Text(player.score.toStringAsFixed(1), style: Heading5.style),
+            if (following) ...[
+              const Icon(Icons.star, size: 24),
+              const SizedBox(width: 8),
+            ],
+            Text(player.score.toStringAsFixed(1),
+                style: Heading5.style.copyWith(height: 1.1)),
           ]),
         ),
       );
 }
 
 class _SheetTitle extends StatelessWidget {
-  const _SheetTitle({required this.title, required this.onClose});
+  const _SheetTitle(
+      {required this.title, required this.onClose, this.compact = false});
   final String title;
   final VoidCallback onClose;
+  final bool compact;
   @override
-  Widget build(BuildContext context) => Stack(
+  Widget build(BuildContext context) => SizedBox(
+      height: compact ? 24 : null,
+      child: Stack(
         alignment: Alignment.center,
         children: [
           Center(
               child: Text(tr(context, title),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Heading5.style)),
+                  style: compact
+                      ? Heading5.style.copyWith(height: 1.1)
+                      : Heading5.style)),
           Align(
             alignment: Alignment.centerRight,
             child: IconButton(
               onPressed: onClose,
+              padding: compact ? EdgeInsets.zero : null,
+              constraints: compact
+                  ? const BoxConstraints.tightFor(width: 24, height: 24)
+                  : null,
+              style: compact
+                  ? IconButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap)
+                  : null,
               icon: Icon(Icons.close,
-                  color: Theme.of(context).colorScheme.onSurface, size: 28),
+                  color: Theme.of(context).colorScheme.onSurface,
+                  size: compact ? 24 : 28),
             ),
           ),
         ],
-      );
+      ));
 }

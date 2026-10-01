@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -106,9 +107,45 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
                 child: Text(tr(context, 'Could not load favorites · Retry')),
               )
             else if (controller.players.isEmpty)
-              TextButton(
-                onPressed: _edit,
-                child: Text(tr(context, 'Add favorite players')),
+              DottedBorder(
+                color: colors.onSurface.withValues(alpha: 0.5),
+                strokeWidth: 1,
+                dashPattern: const [6, 6],
+                borderType: BorderType.RRect,
+                radius: const Radius.circular(8),
+                child: Material(
+                  color: isDark
+                      ? const Color(0xFF272828)
+                      : AppColors.of(context).cardBackground,
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
+                    key: const ValueKey('players-empty-favorites'),
+                    onTap: _edit,
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.add, size: 32, color: colors.onSurface),
+                            const SizedBox(height: 8),
+                            Text(
+                              tr(context,
+                                  "You aren't following any players yet.\nAdd some now."),
+                              textAlign: TextAlign.center,
+                              style: Body1.style.copyWith(
+                                color: colors.onSurface,
+                                height: 1.6,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               )
             else
               SizedBox(
@@ -387,7 +424,7 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
     Widget buildCard() => Container(
           key: const ValueKey('players-ranking-card'),
           width: double.infinity,
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           decoration: BoxDecoration(
             color: AppColors.of(context).cardBackground,
             borderRadius: BorderRadius.circular(16),
@@ -395,13 +432,18 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
           ),
           child: Column(
             children: [
-              for (final player in _items.take(5))
+              for (var index = 0;
+                  index < _items.length && index < 5;
+                  index++) ...[
+                if (index > 0) const SizedBox(height: 16),
                 _RankingRow(
-                  player: player,
+                  player: _items[index],
                   isFollowing:
-                      widget.followingController?.contains(player.id) ?? false,
+                      widget.followingController?.contains(_items[index].id) ??
+                          false,
                 ),
-              const SizedBox(height: 8),
+              ],
+              const SizedBox(height: 24),
               GestureDetector(
                 onTap: () => showModalBottomSheet(
                   context: context,
@@ -413,7 +455,10 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
                     detailRepository: widget.detailRepository,
                   ),
                 ),
-                child: Text(tr(context, 'See all'), style: Body2.style),
+                child: Text(
+                  tr(context, 'See all'),
+                  style: Body2.style.copyWith(height: 1.3),
+                ),
               ),
             ],
           ),
@@ -480,12 +525,12 @@ class _RankingRow extends StatelessWidget {
         key: ValueKey('ranking-player-${player.id}'),
         onTap: () => context.push('/players/${player.id}'),
         borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+        child: SizedBox(
+          height: 56,
           child: Row(
             children: [
               SizedBox(
-                width: 28,
+                width: 36,
                 child: Text('${player.rank}', style: Heading4.style),
               ),
               ClipOval(
@@ -497,13 +542,14 @@ class _RankingRow extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       playerNameLabel(context, player.id, player.name),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Heading5.style,
+                      style: Heading5.style.copyWith(height: 1.1),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -513,7 +559,7 @@ class _RankingRow extends StatelessWidget {
                       }),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Body2.style,
+                      style: Body2.style.copyWith(height: 1.3),
                     ),
                   ],
                 ),
@@ -521,11 +567,13 @@ class _RankingRow extends StatelessWidget {
               if (isFollowing) ...[
                 Icon(
                   Icons.star,
+                  size: 24,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
                 const SizedBox(width: 8),
               ],
-              Text(player.score.toStringAsFixed(1), style: Heading5.style),
+              Text(player.score.toStringAsFixed(1),
+                  style: Heading5.style.copyWith(height: 1.1)),
             ],
           ),
         ),

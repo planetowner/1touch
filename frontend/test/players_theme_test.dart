@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
+import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/models/following_player.dart';
@@ -11,6 +13,7 @@ import 'package:onetouch/screens/PlayerScreen.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/player/player_directory_widgets.dart';
 import 'package:onetouch/features/player/player_picker_sheet.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'support/player_detail_fixture.dart';
 import 'support/player_directory_fixture.dart';
 
@@ -40,12 +43,18 @@ void main() {
   Future<void> pump(WidgetTester tester,
       {Size size = const Size(430, 932),
       bool dark = false,
+      Locale locale = const Locale('en'),
       FakePlayerDirectoryRepository? repository,
       FakeFollowingPlayersRepository? following,
       FakePlayerDetailRepository? detailRepository}) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
+    appLocaleController.value = locale;
+    addTearDown(() => appLocaleController.value = const Locale('en'));
     await tester.pumpWidget(MaterialApp(
+        locale: locale,
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
         theme: dark ? app_style.darktheme : app_style.whitetheme,
         home: Players(
             repository: repository ?? FakePlayerDirectoryRepository(),
@@ -162,7 +171,8 @@ void main() {
       find.byKey(const ValueKey('players-ranking-card')),
     );
     final decoration = ranking.decoration! as BoxDecoration;
-    expect(ranking.padding, const EdgeInsets.all(24));
+    expect(ranking.padding,
+        const EdgeInsets.symmetric(horizontal: 24, vertical: 16));
     expect(decoration.borderRadius, BorderRadius.circular(16));
     expect(decoration.boxShadow, app_style.lightModeCardShadows);
     final badge = find.byKey(const ValueKey('favorite-player-number-1'));
@@ -173,6 +183,95 @@ void main() {
         const Offset(5, 5));
     expect(find.byIcon(Icons.help_outline), findsNWidgets(2));
   });
+
+  for (final size in [
+    const Size(320, 568),
+    const Size(393, 852),
+    const Size(430, 932),
+  ]) {
+    testWidgets('ranking card and sheet share row spacing at $size',
+        (tester) async {
+      await pump(tester, size: size, dark: true);
+      final card = find.byKey(const ValueKey('players-ranking-card'));
+      final firstRow = find.byKey(const ValueKey('ranking-player-1'));
+      final secondRow = find.byKey(const ValueKey('ranking-player-2'));
+      final seeAll = find.text('See all');
+
+      expect(tester.getRect(firstRow).top - tester.getRect(card).top, 16);
+      expect(tester.getRect(firstRow).height, 56);
+      expect(
+        tester
+            .getCenter(
+              find
+                  .descendant(of: firstRow, matching: find.byType(Column))
+                  .first,
+            )
+            .dy,
+        closeTo(
+          tester
+              .getCenter(
+                find
+                    .descendant(of: firstRow, matching: find.byType(ClipOval))
+                    .first,
+              )
+              .dy,
+          0.5,
+        ),
+      );
+      expect(
+          tester.getRect(secondRow).top - tester.getRect(firstRow).bottom, 16);
+      expect(
+          tester.getRect(seeAll).top -
+              tester
+                  .getRect(find.byKey(const ValueKey('ranking-player-5')))
+                  .bottom,
+          24);
+      expect(tester.getRect(card).bottom - tester.getRect(seeAll).bottom, 16);
+
+      await tester.ensureVisible(seeAll);
+      await tester.pumpAndSettle();
+      await tester.tap(seeAll);
+      await tester.pumpAndSettle();
+
+      final sheet = find.byKey(const ValueKey('full-ranking-sheet'));
+      final search = find.byKey(const ValueKey('full-ranking-search'));
+      final fullFirstRow = find.byKey(const ValueKey('full-ranking-player-1'));
+      final fullSecondRow = find.byKey(const ValueKey('full-ranking-player-2'));
+      expect(tester.getRect(search).height, 40);
+      expect(tester.getRect(search).left - tester.getRect(sheet).left, 24);
+      expect(tester.getRect(sheet).right - tester.getRect(search).right, 24);
+      expect(
+          tester.getRect(fullFirstRow).top - tester.getRect(search).bottom, 24);
+      expect(tester.getRect(fullFirstRow).height, 56);
+      expect(
+        tester
+            .getCenter(
+              find
+                  .descendant(of: fullFirstRow, matching: find.byType(Column))
+                  .first,
+            )
+            .dy,
+        closeTo(
+          tester
+              .getCenter(
+                find
+                    .descendant(
+                      of: fullFirstRow,
+                      matching: find.byType(ClipOval),
+                    )
+                    .first,
+              )
+              .dy,
+          0.5,
+        ),
+      );
+      expect(
+          tester.getRect(fullSecondRow).top -
+              tester.getRect(fullFirstRow).bottom,
+          16);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('main player search opens the shared search page',
       (tester) async {
@@ -430,8 +529,47 @@ void main() {
     await tester.tap(find.text('UPDATE'));
     await tester.pumpAndSettle();
     expect(following.saved, isEmpty);
-    expect(find.text('Add favorite players'), findsOneWidget);
+    expect(
+        find.byKey(const ValueKey('players-empty-favorites')), findsOneWidget);
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    for (final dark in [false, true]) {
+      testWidgets('empty favorites card fits $size dark=$dark', (tester) async {
+        final following = FakeFollowingPlayersRepository()..players.value = [];
+        await pump(tester,
+            size: size,
+            dark: dark,
+            locale: const Locale('ko'),
+            following: following);
+
+        final card = find.byKey(const ValueKey('players-empty-favorites'));
+        final border = find.ancestor(
+          of: card,
+          matching: find.byType(DottedBorder),
+        );
+        final message = find.text('팔로우 하는 선수가 아직 없어요.\n지금 추가해보세요.');
+        expect(card, findsOneWidget);
+        expect(border, findsOneWidget);
+        expect(message, findsOneWidget);
+        expect(tester.getRect(border).left, closeTo(24, 0.1));
+        expect(tester.getRect(border).right, closeTo(size.width - 24, 0.1));
+        expect(
+            tester.getRect(find.byIcon(Icons.add)).top -
+                tester.getRect(card).top,
+            closeTo(24, 1));
+        expect(
+            tester.getRect(message).top -
+                tester.getRect(find.byIcon(Icons.add)).bottom,
+            closeTo(8, 1));
+        expect(tester.takeException(), isNull);
+
+        await tester.tap(card);
+        await tester.pumpAndSettle();
+        expect(find.text('팔로우한 선수'), findsOneWidget);
+      });
+    }
+  }
   testWidgets('favorite editor reuses cards while loading candidate details',
       (tester) async {
     final detailRepository = FakePlayerDetailRepository();
