@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/injuries/api/api_team_injury_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 
 void main() {
@@ -139,6 +141,186 @@ void main() {
     }
     expect(repository.cachedReports.value, isEmpty);
   });
+
+  test('restores a fresh report without requesting the API', () async {
+    final store = _SeededInjuryCacheStore(
+      payload: _reportJson(),
+      savedAt: DateTime.now().toUtc().subtract(const Duration(minutes: 30)),
+    );
+    final repository = ApiTeamInjuryRepository(
+      api: ApiClient(
+        client: MockClient((_) async => throw StateError('Unexpected request')),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final report = await repository.loadForTeam(83);
+
+    expect(report.players, hasLength(1));
+    expect(repository.cachedForTeam(83), same(report));
+  });
+
+  test('returns stale injuries then publishes a refreshed report', () async {
+    final response = Completer<http.Response>();
+    final requested = Completer<void>();
+    var requests = 0;
+    final store = _SeededInjuryCacheStore(
+      payload: _reportJson(),
+      savedAt: DateTime.now().toUtc().subtract(const Duration(hours: 2)),
+    );
+    final repository = ApiTeamInjuryRepository(
+      api: ApiClient(
+        client: MockClient((_) {
+          requests++;
+          if (!requested.isCompleted) requested.complete();
+          return response.future;
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+    final updated = Completer<void>();
+    repository.cachedReports.addListener(() {
+      if (repository.cachedForTeam(83)?.players.isEmpty ?? false) {
+        updated.complete();
+      }
+    });
+
+    final stale = await repository.loadForTeam(83);
+    await repository.loadForTeam(83);
+    await requested.future;
+    expect(stale.players, hasLength(1));
+    expect(requests, 1);
+
+    response.complete(http.Response(jsonEncode(_reportJson(players: [])), 200));
+    await updated.future;
+    await store.saved.future;
+    expect(repository.cachedForTeam(83)?.players, isEmpty);
+    expect((await store.read(LocalCacheKeys.teamInjuries(83)))?.payload,
+        isA<Map>());
+  });
+
+  test('keeps a stale report when background refresh fails', () async {
+    final repository = ApiTeamInjuryRepository(
+      api: ApiClient(
+        client: MockClient((_) async => http.Response('Offline', 500)),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: _SeededInjuryCacheStore(
+        payload: _reportJson(),
+        savedAt: DateTime.now().toUtc().subtract(const Duration(hours: 2)),
+      ),
+    );
+
+    final stale = await repository.loadForTeam(83);
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+
+    expect(repository.cachedForTeam(83), same(stale));
+  });
+
+  test('removes a stale report when the team is no longer supported', () async {
+    final repository = ApiTeamInjuryRepository(
+      api: ApiClient(
+        client: MockClient((_) async => http.Response('Not found', 404)),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: _SeededInjuryCacheStore(
+        payload: _reportJson(),
+        savedAt: DateTime.now().toUtc().subtract(const Duration(hours: 2)),
+      ),
+    );
+    final removed = Completer<void>();
+    var hadReport = false;
+    repository.cachedReports.addListener(() {
+      if (repository.cachedForTeam(83) != null) {
+        hadReport = true;
+      } else if (hadReport && !removed.isCompleted) {
+        removed.complete();
+      }
+    });
+
+    final stale = await repository.loadForTeam(83);
+    expect(stale.players, hasLength(1));
+    await removed.future;
+    expect(repository.cachedForTeam(83), isNull);
+  });
+
+  test('loads injuries even when local cache storage fails', () async {
+    final repository = ApiTeamInjuryRepository(
+      api: ApiClient(
+        client: MockClient(
+            (_) async => http.Response(jsonEncode(_reportJson()), 200)),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: _FailingInjuryCacheStore(),
+    );
+
+    final report = await repository.loadForTeam(83);
+    expect(report.players, hasLength(1));
+    expect(repository.cachedForTeam(83), same(report));
+  });
+}
+
+class _FailingInjuryCacheStore extends MemoryLocalCacheStore {
+  @override
+  Future<LocalCacheRecord?> read(
+    String key, {
+    String scope = LocalCacheScopes.global,
+    int schemaVersion = 1,
+  }) async =>
+      throw StateError('Storage unavailable');
+
+  @override
+  Future<void> write(
+    String key,
+    Object payload, {
+    String scope = LocalCacheScopes.global,
+    int schemaVersion = 1,
+  }) async =>
+      throw StateError('Storage unavailable');
+}
+
+class _SeededInjuryCacheStore extends MemoryLocalCacheStore {
+  _SeededInjuryCacheStore({required this.payload, required this.savedAt});
+
+  final Map<String, dynamic> payload;
+  final DateTime savedAt;
+  final Completer<void> saved = Completer<void>();
+  bool _restored = false;
+
+  @override
+  Future<LocalCacheRecord?> read(
+    String key, {
+    String scope = LocalCacheScopes.global,
+    int schemaVersion = 1,
+  }) async {
+    if (!_restored && key == LocalCacheKeys.teamInjuries(83)) {
+      _restored = true;
+      return LocalCacheRecord(
+        payload: payload,
+        savedAt: savedAt,
+        schemaVersion: schemaVersion,
+      );
+    }
+    return super.read(key, scope: scope, schemaVersion: schemaVersion);
+  }
+
+  @override
+  Future<void> write(
+    String key,
+    Object payload, {
+    String scope = LocalCacheScopes.global,
+    int schemaVersion = 1,
+  }) async {
+    await super.write(key, payload, scope: scope, schemaVersion: schemaVersion);
+    if (!saved.isCompleted) saved.complete();
+  }
 }
 
 Map<String, dynamic> _reportJson({

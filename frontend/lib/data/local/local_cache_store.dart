@@ -83,6 +83,8 @@ abstract final class LocalCacheKeys {
   ) =>
       'best-eleven:$teamId:${seasonId ?? 'current'}:'
       '${Uri.encodeComponent(formation ?? 'default')}';
+
+  static String teamInjuries(int teamId) => 'team-injuries:$teamId';
 }
 
 /// Deterministic in-memory implementation used by repository unit tests.
