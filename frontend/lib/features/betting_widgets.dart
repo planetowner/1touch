@@ -827,11 +827,21 @@ class BettingProbabilityBar extends StatelessWidget {
                     child: Container(
                       color: segmentColors[index],
                       padding: const EdgeInsets.symmetric(horizontal: 3),
-                      alignment: Alignment.center,
+                      alignment: index == 0
+                          ? Alignment.centerLeft
+                          : index == 2
+                              ? Alignment.centerRight
+                              : Alignment.center,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          if (selected?.index == index && index == 2)
+                            Icon(
+                              Icons.check_circle,
+                              size: 14,
+                              color: _foregroundFor(segmentColors[index]),
+                            ),
                           Text(
                             labels[index],
                             maxLines: 1,
@@ -840,7 +850,7 @@ class BettingProbabilityBar extends StatelessWidget {
                               color: _foregroundFor(segmentColors[index]),
                             ),
                           ),
-                          if (selected?.index == index)
+                          if (selected?.index == index && index != 2)
                             Icon(
                               Icons.check_circle,
                               size: 14,
