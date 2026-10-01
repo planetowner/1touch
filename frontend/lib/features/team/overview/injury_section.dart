@@ -16,7 +16,9 @@ class InjuryStatus extends StatefulWidget {
   State<InjuryStatus> createState() => _InjuryStatusState();
 }
 
-class _InjuryStatusState extends State<InjuryStatus> {
+class _InjuryStatusState extends State<InjuryStatus>
+    with WidgetsBindingObserver {
+  late TeamInjuryRepository _observedRepository;
   TeamInjuryReport? _report;
   bool _isLoading = false;
   bool _loadFailed = false;
@@ -36,18 +38,62 @@ class _InjuryStatusState extends State<InjuryStatus> {
   @override
   void initState() {
     super.initState();
+    _observedRepository = _repository;
+    _observedRepository.cachedReports.addListener(_handleCacheChanged);
+    WidgetsBinding.instance.addObserver(this);
+    mainTabActions.addListener(_handleTeamTabSelection);
     _startLoad();
   }
 
   @override
   void didUpdateWidget(InjuryStatus oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final repository = _repository;
+    if (!identical(repository, _observedRepository)) {
+      _observedRepository.cachedReports.removeListener(_handleCacheChanged);
+      _observedRepository = repository;
+      _observedRepository.cachedReports.addListener(_handleCacheChanged);
+    }
     final oldTeamId = oldWidget.teams is Map<String, dynamic>
         ? (oldWidget.teams as Map<String, dynamic>)['id'] as int?
         : null;
     if (_teamId != oldTeamId || widget.repository != oldWidget.repository) {
       _startLoad();
     }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _teamId != null) {
+      setState(_startLoad);
+    }
+  }
+
+  void _handleTeamTabSelection() {
+    if (mainTabActions.tabIndex == 1 && _teamId != null) {
+      setState(_startLoad);
+    }
+  }
+
+  void _handleCacheChanged() {
+    final teamId = _teamId;
+    if (!mounted || teamId == null) return;
+    final latest = _observedRepository.cachedForTeam(teamId);
+    if (latest == null) {
+      if (_report == null) return;
+      setState(() {
+        _report = null;
+        _isUnavailable = true;
+      });
+      widget.onUnavailable?.call();
+      return;
+    }
+    if (identical(latest, _report)) return;
+    setState(() {
+      _report = latest;
+      _isLoading = false;
+      _loadFailed = false;
+    });
   }
 
   void _startLoad() {
@@ -60,8 +106,8 @@ class _InjuryStatusState extends State<InjuryStatus> {
     _loadFailed = false;
     _isUnavailable = false;
 
-    if (_isLoading) {
-      unawaited(_loadInjuries(teamId!, requestId));
+    if (teamId != null) {
+      unawaited(_loadInjuries(teamId, requestId));
     }
   }
 
@@ -70,7 +116,7 @@ class _InjuryStatusState extends State<InjuryStatus> {
       final report = await _repository.loadForTeam(teamId);
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
-        _report = report;
+        _report = _repository.cachedForTeam(teamId) ?? report;
         _isLoading = false;
       });
     } on TeamFeatureUnavailableException {
@@ -90,6 +136,15 @@ class _InjuryStatusState extends State<InjuryStatus> {
   }
 
   void _retryLoad() => setState(_startLoad);
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    mainTabActions.removeListener(_handleTeamTabSelection);
+    _observedRepository.cachedReports.removeListener(_handleCacheChanged);
+    _loadRequestId++;
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

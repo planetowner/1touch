@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/data/injuries/team_injury_repository.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
@@ -401,6 +402,65 @@ void main() {
     expect(find.text('Stale Player'), findsNothing);
     expect(find.text('Current Player'), findsOneWidget);
   });
+
+  testWidgets('rechecks injuries on app resume and shows a cache update',
+      (tester) async {
+    final repository = _TestTeamInjuryRepository(
+      (teamId) async => _report(teamId: teamId, playerName: 'Old Player'),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(teamId: 83, repository: repository));
+    await tester.pumpAndSettle();
+    expect(repository.loadCalls, 1);
+    expect(find.text('Old Player'), findsOneWidget);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(repository.loadCalls, 2);
+
+    repository.publish(_report(teamId: 83, playerName: 'New Player'));
+    await tester.pump();
+    expect(find.text('Old Player'), findsNothing);
+    expect(find.text('New Player'), findsOneWidget);
+  });
+
+  testWidgets('rechecks cached injuries when the Team tab is selected',
+      (tester) async {
+    final repository = _TestTeamInjuryRepository(
+      (teamId) async => _report(teamId: teamId),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(teamId: 83, repository: repository));
+    await tester.pumpAndSettle();
+    expect(repository.loadCalls, 1);
+
+    mainTabActions.select(1);
+    await tester.pumpAndSettle();
+    expect(repository.loadCalls, 2);
+  });
+
+  testWidgets('hides a stale injury section after an unavailable update',
+      (tester) async {
+    var unavailableCalls = 0;
+    final repository = _TestTeamInjuryRepository(
+      (teamId) async => _report(teamId: teamId),
+    );
+    addTearDown(repository.dispose);
+    await tester.pumpWidget(buildSubject(
+      teamId: 83,
+      repository: repository,
+      onUnavailable: () => unavailableCalls++,
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('Injured Player'), findsOneWidget);
+
+    repository.remove(83);
+    await tester.pump();
+    expect(unavailableCalls, 1);
+    expect(find.byKey(const ValueKey('injury-unavailable')), findsOneWidget);
+  });
 }
 
 TeamInjuryReport _report({
@@ -440,6 +500,7 @@ class _TestTeamInjuryRepository implements TeamInjuryRepository {
   final Future<TeamInjuryReport> Function(int teamId) _loader;
   final ValueNotifier<Map<int, TeamInjuryReport>> _cachedReports =
       ValueNotifier(const {});
+  int loadCalls = 0;
 
   @override
   ValueListenable<Map<int, TeamInjuryReport>> get cachedReports =>
@@ -450,6 +511,7 @@ class _TestTeamInjuryRepository implements TeamInjuryRepository {
 
   @override
   Future<TeamInjuryReport> loadForTeam(int teamId) async {
+    loadCalls++;
     final cached = cachedForTeam(teamId);
     if (cached != null) return cached;
 
@@ -459,6 +521,18 @@ class _TestTeamInjuryRepository implements TeamInjuryRepository {
       teamId: report,
     });
     return report;
+  }
+
+  void publish(TeamInjuryReport report) {
+    _cachedReports.value = Map.unmodifiable({
+      ..._cachedReports.value,
+      report.teamId: report,
+    });
+  }
+
+  void remove(int teamId) {
+    _cachedReports.value =
+        Map.unmodifiable({..._cachedReports.value}..remove(teamId));
   }
 
   void dispose() => _cachedReports.dispose();
