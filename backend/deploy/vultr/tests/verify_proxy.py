@@ -28,7 +28,7 @@ class Upstream(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         type(self).calls += 1
-        payload = json.dumps({"ok": True, "scheme": self.headers.get("X-Forwarded-Proto"), "authorization": self.headers.get("Authorization")}).encode()
+        payload = json.dumps({"ok": True, "path": self.path, "scheme": self.headers.get("X-Forwarded-Proto"), "authorization": self.headers.get("Authorization")}).encode()
         self.send_response(401 if self.path == '/v1/home' and self.headers.get('Authorization') != 'Bearer test-session' else 200)
         self.end_headers()
         self.wfile.write(payload)
@@ -44,7 +44,10 @@ class Upstream(http.server.BaseHTTPRequestHandler):
 with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
     root = Path(temporary)
     env_file = root / "test.env"
-    env_file.write_text(f"COLLAB_PASSWORD_HASH='{hashed}'\nSES_FEEDBACK_EMAIL='operator@example.com'\n")
+    fingerprint = ":".join(["AB"] * 32)
+    env_file.write_text(f"COLLAB_PASSWORD_HASH='{hashed}'\nSES_FEEDBACK_EMAIL='operator@example.com'\n"
+                        f"ANDROID_APP_LINK_SHA256_FINGERPRINTS='{fingerprint}'\n"
+                        "IOS_APP_LINK_APP_ID='TESTTEAM12.com.onetouch.football'\n")
     environment = {
         **os.environ,
         "MYSQL_PASSWORD": "test-only",
@@ -70,6 +73,8 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
     api = model["services"]["api"]
     # 설정 파일 저장에 성공해도 API 환경에 빠지면 인증 메일이 503으로 실패해요.
     assert api["environment"]["SES_FEEDBACK_EMAIL"] == "operator@example.com"
+    assert api["environment"]["ANDROID_APP_LINK_SHA256_FINGERPRINTS"] == fingerprint
+    assert api["environment"]["IOS_APP_LINK_APP_ID"] == "TESTTEAM12.com.onetouch.football"
     assert not any(mount["target"] == "/app/python" for mount in api["volumes"])
     assert "--reload" not in api["command"] and api["user"] == "1001:1001"
     assert {port["published"] for port in model["services"]["proxy"]["ports"]} == {"80", "443"}
@@ -140,7 +145,7 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
             status, body = request("/docs", {"Authorization": f"Basic {credentials}"})
             assert status == 200 and json.loads(body)["scheme"] == "https"
             assert request("/v1/home", method="OPTIONS")[0] == 204
-            # 소개 도메인은 정적 파일만 공개하고 회원 API·환경 파일을 노출하지 않아요.
+            # 소개 파일은 그대로 제공하고 회원 API·환경 파일은 공개하지 않아요.
             before = Upstream.calls
             for filename in ("index.html", "styles.css", "assets/1touch-wordmark.jpg"):
                 status, body = request("/" if filename == "index.html" else "/" + filename, port=site_port)
@@ -148,6 +153,13 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
             assert request("/.env", port=site_port)[0] == 404
             assert request("/v1/users/me", port=site_port)[0] == 404
             assert Upstream.calls == before
+            # 공유 페이지·이미지·앱 연결 파일은 경로를 바꾸지 않고 API로 전달해요.
+            for path in ("/community/12", "/community/12/images/3",
+                         "/.well-known/apple-app-site-association", "/.well-known/assetlinks.json"):
+                status, body = request(path, port=site_port)
+                assert status == 200 and json.loads(body)["scheme"] == "https"
+                assert json.loads(body)["path"] == path
+            assert Upstream.calls == before + 4
             print("PASS: public introduction and assets match source; private API and configuration stay inaccessible")
             print("PASS: verified local TLS, unauthenticated/spoofed/wrong-password requests blocked, authenticated proxy and OPTIONS")
         except Exception:

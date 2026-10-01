@@ -21,6 +21,13 @@
 # 서비스 소개는 회원 로그인 없이 읽고, API 문서의 접근 제한은 위 호스트에 유지해요.
 1touch.football {
 	encode zstd gzip
-	root * /srv/1touch
-	file_server
+	# 공유 페이지·이미지·앱 연결 정보만 API로 보내고, 회원 API는 기존 호스트에 유지해요.
+	@sharing path /community/* /.well-known/apple-app-site-association /.well-known/assetlinks.json
+	handle @sharing {
+		reverse_proxy api:8000
+	}
+	handle {
+		root * /srv/1touch
+		file_server
+	}
 }

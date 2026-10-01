@@ -20,6 +20,7 @@ from .routes.chat import ChatHub, router as chat_router
 from .routes.avatars import router as avatars_router
 from .routes.moderation import router as moderation_router
 from .routes.community import router as community_router
+from .routes.community_share import router as community_share_router
 from .routes.kakao_events import router as kakao_events_router
 from .routes.apple_events import router as apple_events_router
 from .routes.betting import router as betting_router
@@ -77,6 +78,7 @@ def create_app() -> FastAPI:
     app.include_router(avatars_router, prefix="/v1", tags=["users"])
     app.include_router(moderation_router, prefix="/v1", tags=["moderation"])
     app.include_router(community_router, prefix="/v1", tags=["community"])
+    app.include_router(community_share_router, include_in_schema=False)
     app.include_router(betting_router, prefix="/v1", tags=["betting"])
     app.include_router(football_names_router, prefix="/v1", tags=["football-names"])
     app.include_router(catalog_router, prefix="/v1", tags=["catalog"])
