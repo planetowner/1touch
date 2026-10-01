@@ -27,6 +27,8 @@ String _singularMatchStatLabel(BuildContext context, String label) {
   });
 }
 
+typedef PlayerMatchCardStat = ({String label, String value});
+
 /// A single player match box, shared by the Overview "MATCHES" preview and the
 /// Matches tab so every box follows the same detailed design:
 
@@ -35,7 +37,7 @@ class PlayerMatchCard extends StatelessWidget {
   final String score; // e.g. "0 - 2"
   final String competition; // e.g. "League / Round"
   final String? againstLogo; // asset path, or null for the empty placeholder
-  final List<Map<String, String>> stats; // [{"label": "Goal", "value": "1"}]
+  final List<PlayerMatchCardStat> stats;
   final String rating; // e.g. "8.4"
   final bool remoteLogo;
   final bool live;
@@ -51,18 +53,6 @@ class PlayerMatchCard extends StatelessWidget {
     this.remoteLogo = false,
     this.live = false,
   });
-
-  /// Convenience for the map-shaped mock data used across the player tabs.
-  factory PlayerMatchCard.fromMap(Map<String, dynamic> match) {
-    return PlayerMatchCard(
-      result: match["result"] as String,
-      score: match["score"] as String,
-      competition: match["competition"] as String,
-      againstLogo: match["againstLogo"] as String?,
-      stats: (match["stats"] as List).cast<Map<String, String>>(),
-      rating: match["rating"] as String,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -185,14 +175,14 @@ class PlayerMatchCard extends StatelessWidget {
                       Flexible(
                         child: Row(
                           key: ValueKey(
-                              'player-match-stat-pair-${stats[index]["label"]}'),
+                              'player-match-stat-pair-${stats[index].label}'),
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Flexible(
                               child: Text(
                                 _singularMatchStatLabel(
-                                    context, stats[index]["label"]!),
+                                    context, stats[index].label),
                                 textAlign: TextAlign.left,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -202,13 +192,13 @@ class PlayerMatchCard extends StatelessWidget {
                             const SizedBox(width: 8),
                             Container(
                               key: ValueKey(
-                                  'player-match-stat-value-${stats[index]["label"]}'),
+                                  'player-match-stat-value-${stats[index].label}'),
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: statColor,
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: Text(stats[index]["value"]!,
+                              child: Text(stats[index].value,
                                   style: Body2_b.style),
                             ),
                           ],
