@@ -243,6 +243,7 @@ class PlayerDetailMatchCard extends StatelessWidget {
           onTap: () => context.push(
               '/match/${match.id}?status=${match.live ? 'live' : 'past'}'),
           child: PlayerMatchCard(
+              live: match.live,
               result: match.live ? tr(context, 'LIVE') : match.result ?? '—',
               score: '${match.homeScore ?? '—'} - ${match.awayScore ?? '—'}',
               competition:

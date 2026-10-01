@@ -155,6 +155,7 @@ void main() {
       final sample = _clock(clock.now(), minute: 65, second: 31);
       await show(_fixture(22), sample);
       expect(find.text('65:31'), findsOneWidget);
+      expect(find.byKey(const ValueKey('live-trim-line')), findsOneWidget);
       await tester.pump(const Duration(seconds: 1));
       expect(find.text('65:32'), findsOneWidget);
       await tester.pump(const Duration(seconds: 1));
@@ -168,6 +169,7 @@ void main() {
       await show(_fixture(3), sample);
       await tester.pump(const Duration(seconds: 10));
       expect(find.text('Half Time'), findsOneWidget);
+      expect(find.byKey(const ValueKey('live-trim-line')), findsNothing);
 
       await show(_fixture(22), _clock(clock.now(), minute: 63, second: 59),
           locale: ko);

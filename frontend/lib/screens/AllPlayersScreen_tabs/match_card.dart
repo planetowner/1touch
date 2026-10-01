@@ -2,6 +2,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/features/match_info/live_match_motion.dart';
 
 String _singularMatchStatLabel(BuildContext context, String label) {
   final localized = appStatLabel(context, label);
@@ -37,6 +38,7 @@ class PlayerMatchCard extends StatelessWidget {
   final List<Map<String, String>> stats; // [{"label": "Goal", "value": "1"}]
   final String rating; // e.g. "8.4"
   final bool remoteLogo;
+  final bool live;
 
   const PlayerMatchCard({
     super.key,
@@ -47,6 +49,7 @@ class PlayerMatchCard extends StatelessWidget {
     required this.rating,
     this.againstLogo,
     this.remoteLogo = false,
+    this.live = false,
   });
 
   /// Convenience for the map-shaped mock data used across the player tabs.
@@ -118,6 +121,10 @@ class PlayerMatchCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      if (live) ...[
+                        LivePulseDot(color: Heading5.style.color),
+                        const SizedBox(width: 6),
+                      ],
                       Text(
                         result,
                         key: const ValueKey('player-match-result'),

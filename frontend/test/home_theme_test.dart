@@ -355,9 +355,31 @@ void main() {
     final displayedMatch = tester.widget<MatchCard>(find.byType(MatchCard));
     expect(displayedMatch.match?.fixtureId, liveMatch.fixtureId);
     expect(find.text('LIVE MATCH'), findsOneWidget);
+    expect(find.byKey(const ValueKey('live-pulse-dot')), findsOneWidget);
+    expect(find.byKey(const ValueKey('live-trim-line')), findsOneWidget);
     expect(find.text('NEXT MATCH'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  for (final width in [320.0, 430.0]) {
+    testWidgets('Live match card fits ${width.toInt()}px', (tester) async {
+      tester.view.physicalSize = Size(width, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: app_style.darktheme,
+          home: Scaffold(
+            body: SingleChildScrollView(child: MatchCard(match: liveMatch)),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('Favorite team header keeps the domestic league for a cup match',
       (tester) async {

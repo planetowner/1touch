@@ -7,6 +7,7 @@ import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/features/match_info/live_match_motion.dart';
 
 // Maps a team's id to its local crest file in TeamLogos/, used as the
 // fallback when the network image fails to load. Filenames don't follow a
@@ -159,12 +160,16 @@ class MatchCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            match!.status == FixtureStatus.live
-                ? tr(context, 'LIVE MATCH')
-                : tr(context, 'NEXT MATCH'),
-            style: Body1_b.style,
-          ),
+          if (match!.status == FixtureStatus.live)
+            Row(
+              children: [
+                LivePulseDot(color: Body1_b.style.color),
+                const SizedBox(width: 6),
+                Text(tr(context, 'LIVE MATCH'), style: Body1_b.style),
+              ],
+            )
+          else
+            Text(tr(context, 'NEXT MATCH'), style: Body1_b.style),
           const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
@@ -647,11 +652,14 @@ class _MatchInfo extends StatelessWidget {
               locale: Localizations.localeOf(context)),
         ),
         const SizedBox(height: 8),
-        Container(
-          width: 24,
-          height: 1,
-          color: AppColors.of(context).divider,
-        ),
+        if (match!.status == FixtureStatus.live)
+          LiveTrimLine(color: AppColors.of(context).divider)
+        else
+          Container(
+            width: 24,
+            height: 1,
+            color: AppColors.of(context).divider,
+          ),
         const SizedBox(height: 8),
         Text(
           competitionAndRound,

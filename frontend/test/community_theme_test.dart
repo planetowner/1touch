@@ -212,6 +212,7 @@ void main() {
       find.byKey(const ValueKey('community-live-badge')),
       findsOneWidget,
     );
+    expect(find.byKey(const ValueKey('live-pulse-dot')), findsOneWidget);
 
     await tester.pumpWidget(
       MaterialApp(
