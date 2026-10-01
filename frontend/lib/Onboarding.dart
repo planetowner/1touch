@@ -27,6 +27,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     with WidgetsBindingObserver {
   LoginProvider? _signingIn;
   LoginOptions? _options;
+  bool _showOtherProviders = false;
   bool _loadFailed = false;
   bool _passwordBusy = false;
   int _requestId = 0;
@@ -163,12 +164,39 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     if (_options == null) {
       return const Center(child: FootballLoadingIndicator());
     }
-    final providers =
-        _options!.recommended.where((p) => p != LoginProvider.email).toList();
+    final providers = _options!.recommended
+        .where((p) => p != LoginProvider.email)
+        .toSet()
+        .toList();
+    final otherProviders = _options!.other
+        .where((p) => p != LoginProvider.email && !providers.contains(p))
+        .toSet()
+        .toList();
     return Column(children: [
       for (var i = 0; i < providers.length; i++) ...[
         if (i > 0) const SizedBox(height: 16),
         _providerButton(providers[i]),
+      ],
+      if (otherProviders.isNotEmpty) ...[
+        const SizedBox(height: 12),
+        TextButton.icon(
+          key: const ValueKey('other-login-methods'),
+          onPressed: _signingIn != null || _passwordBusy
+              ? null
+              : () =>
+                  setState(() => _showOtherProviders = !_showOtherProviders),
+          icon: Icon(_showOtherProviders
+              ? Icons.keyboard_arrow_up
+              : Icons.keyboard_arrow_down),
+          label: Text(tr(context, 'Other login methods')),
+        ),
+        if (_showOtherProviders) ...[
+          const SizedBox(height: 12),
+          for (var i = 0; i < otherProviders.length; i++) ...[
+            if (i > 0) const SizedBox(height: 16),
+            _providerButton(otherProviders[i]),
+          ],
+        ],
       ],
     ]);
   }
