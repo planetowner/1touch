@@ -6,6 +6,7 @@ import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/models/standing.dart';
 
 part 'club_column.dart';
 part 'qualification_rules.dart';

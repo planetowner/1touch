@@ -1,23 +1,32 @@
 part of 'standing_features.dart';
 
-class _ExpandableClubColumn extends StatefulWidget {
+class _ExpandableClubColumn<T> extends StatefulWidget {
   const _ExpandableClubColumn({
     required this.standings,
+    required this.teamIdOf,
+    required this.rankOf,
+    required this.teamNameOf,
+    required this.teamLogoOf,
     required this.currentTeamId,
     required this.leagueId,
     required this.expandedWidth,
   });
 
-  final List<Map<String, dynamic>> standings;
+  final List<T> standings;
+  final int Function(T standing) teamIdOf;
+  final int Function(T standing) rankOf;
+  final String Function(T standing) teamNameOf;
+  final String Function(T standing) teamLogoOf;
   final int? currentTeamId;
   final int leagueId;
   final double expandedWidth;
 
   @override
-  State<_ExpandableClubColumn> createState() => _ExpandableClubColumnState();
+  State<_ExpandableClubColumn<T>> createState() =>
+      _ExpandableClubColumnState<T>();
 }
 
-class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
+class _ExpandableClubColumnState<T> extends State<_ExpandableClubColumn<T>> {
   static const _collapsedWidth = 130.0;
   static const _maximumExpandedWidth = 226.0;
 
@@ -111,12 +120,12 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
 
   Widget _buildClubRow(
     BuildContext context,
-    Map<String, dynamic> team, {
+    T team, {
     required double horizontalPadding,
     required double teamNameWidth,
   }) {
-    final teamId = team['teamId'] as int;
-    final teamName = '${team['team']}';
+    final teamId = widget.teamIdOf(team);
+    final teamName = widget.teamNameOf(team);
     final isCurrentTeam = teamId == widget.currentTeamId;
     final textStyle = Body2.style.copyWith(
       color: isCurrentTeam
@@ -125,7 +134,7 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
       fontWeight: isCurrentTeam ? FontWeight.bold : FontWeight.normal,
     );
     final marker =
-        rulesForLeague(widget.leagueId)?.markerFor(team['rank'] as int);
+        rulesForLeague(widget.leagueId)?.markerFor(widget.rankOf(team));
 
     return SizedBox(
       width: double.infinity,
@@ -152,7 +161,7 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
                     key: ValueKey('standing-rank-$teamId'),
                     width: 18,
                     child: Text(
-                      '${team['rank']}',
+                      '${widget.rankOf(team)}',
                       style: textStyle,
                       textAlign: TextAlign.center,
                     ),
@@ -164,7 +173,7 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
                         ? () => openTeamPage(context, teamId)
                         : null,
                     child: Image.network(
-                      '${team['logo']}',
+                      widget.teamLogoOf(team),
                       width: 24,
                       height: 24,
                       errorBuilder: (_, __, ___) =>
