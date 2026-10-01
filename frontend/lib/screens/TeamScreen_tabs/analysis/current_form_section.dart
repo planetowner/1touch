@@ -1,7 +1,7 @@
 part of '../Analysis.dart';
 
 class CurrentFormSection extends StatefulWidget {
-  final Map<String, dynamic>? team;
+  final TeamOverview? team;
   final CurrentFormRepository? repository;
 
   const CurrentFormSection({
@@ -27,7 +27,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   CurrentFormRepository get _repository =>
       widget.repository ?? currentFormRepository;
 
-  int? get _teamId => widget.team?['id'] as int?;
+  int? get _teamId => widget.team?.id;
 
   @override
   void initState() {
@@ -38,7 +38,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   @override
   void didUpdateWidget(CurrentFormSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_teamId != oldWidget.team?['id'] ||
+    if (_teamId != oldWidget.team?.id ||
         widget.repository != oldWidget.repository) {
       _startDefaultLoad();
     }

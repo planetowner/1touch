@@ -3,7 +3,7 @@ part of 'team_screen_features.dart';
 class Fixtures extends StatefulWidget {
   Fixtures({super.key, this.teams});
 
-  final teams;
+  final TeamOverview? teams;
 
   @override
   State<Fixtures> createState() => _FixturesState();
@@ -12,12 +12,11 @@ class Fixtures extends StatefulWidget {
 class _FixturesState extends State<Fixtures> {
   @override
   Widget build(BuildContext context) {
-    if (widget.teams == null) return const SizedBox.shrink();
-    if (widget.teams is! Map<String, dynamic>) return const SizedBox.shrink();
+    final team = widget.teams;
+    if (team == null) return const SizedBox.shrink();
 
-    final map = widget.teams as Map<String, dynamic>;
-    final Fixture? match = map['next_match'] as Fixture?;
-    final Fixture? lastMatch = map['last_match'] as Fixture?;
+    final match = team.nextMatch;
+    final lastMatch = team.lastMatch;
     final competitionId = match?.competitionId ?? lastMatch?.competitionId;
     final leagueName = competitionId == null
         ? tr(context, 'Unknown League')

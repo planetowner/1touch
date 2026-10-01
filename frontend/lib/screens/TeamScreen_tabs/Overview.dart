@@ -7,10 +7,11 @@ import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/widgets/ads/banner_ad_widget.dart';
 
 class OverviewTab extends StatefulWidget {
-  final Map<String, dynamic>? team;
+  final TeamOverview? team;
   final ValueChanged<int>? onStandingCompetitionSelected;
   final BestElevenRepository? bestElevenRepository;
   final TeamInjuryRepository? injuryRepository;
@@ -37,12 +38,12 @@ class _OverviewTabState extends State<OverviewTab> {
   bool _showTransferSection = true;
   bool _showIncomingTransfers = true;
 
-  int? get _teamId => widget.team?['id'] as int?;
+  int? get _teamId => widget.team?.id;
 
   @override
   void didUpdateWidget(OverviewTab oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.team?['id'] != _teamId) {
+    if (oldWidget.team?.id != _teamId) {
       _showBestElevenSection = true;
       _showInjurySection = true;
       _showTransferSection = true;
@@ -67,7 +68,7 @@ class _OverviewTabState extends State<OverviewTab> {
 
   @override
   Widget build(BuildContext context) {
-    final hasStanding = widget.team?['standing'] != null;
+    final hasStanding = widget.team?.standing != null;
     return CustomScrollView(
       slivers: [
         SliverList(

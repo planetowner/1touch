@@ -8,7 +8,7 @@ class InjuryStatus extends StatefulWidget {
     this.onUnavailable,
   });
 
-  final Object? teams;
+  final TeamOverview? teams;
   final TeamInjuryRepository? repository;
   final VoidCallback? onUnavailable;
 
@@ -28,12 +28,7 @@ class _InjuryStatusState extends State<InjuryStatus>
   TeamInjuryRepository get _repository =>
       widget.repository ?? teamInjuryRepository;
 
-  int? get _teamId {
-    if (widget.teams is Map<String, dynamic>) {
-      return (widget.teams as Map<String, dynamic>)['id'] as int?;
-    }
-    return null;
-  }
+  int? get _teamId => widget.teams?.id;
 
   @override
   void initState() {
@@ -54,9 +49,7 @@ class _InjuryStatusState extends State<InjuryStatus>
       _observedRepository = repository;
       _observedRepository.cachedReports.addListener(_handleCacheChanged);
     }
-    final oldTeamId = oldWidget.teams is Map<String, dynamic>
-        ? (oldWidget.teams as Map<String, dynamic>)['id'] as int?
-        : null;
+    final oldTeamId = oldWidget.teams?.id;
     if (_teamId != oldTeamId || widget.repository != oldWidget.repository) {
       _startLoad();
     }

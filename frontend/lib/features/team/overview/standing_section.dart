@@ -8,7 +8,7 @@ class Standing extends StatefulWidget {
     this.repository,
   });
 
-  final teams;
+  final TeamOverview? teams;
   final ValueChanged<int>? onCompetitionSelected;
   final StandingRepository? repository;
 
@@ -32,12 +32,7 @@ class _StandingState extends State<Standing> {
   StandingRepository get _repository =>
       widget.repository ?? apiStandingRepository;
 
-  int? get _teamId {
-    if (widget.teams case final Map<String, dynamic> teams) {
-      return teams['id'] as int?;
-    }
-    return null;
-  }
+  int? get _teamId => widget.teams?.id;
 
   int? get _domesticCompetitionId {
     final teamId = _teamId;
@@ -54,9 +49,7 @@ class _StandingState extends State<Standing> {
   @override
   void didUpdateWidget(covariant Standing oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final oldTeamId = oldWidget.teams is Map<String, dynamic>
-        ? (oldWidget.teams as Map<String, dynamic>)['id'] as int?
-        : null;
+    final oldTeamId = oldWidget.teams?.id;
     if (oldTeamId != _teamId || oldWidget.repository != widget.repository) {
       _startLoad();
     }

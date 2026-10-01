@@ -23,9 +23,9 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/data/transfers/transfer_repository_provider.dart';
-import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/standing.dart' as standing_model;
 import 'package:onetouch/models/team_injury_report.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
 import 'package:intl/intl.dart';
 

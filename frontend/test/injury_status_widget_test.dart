@@ -13,6 +13,14 @@ import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_injury_report.dart';
+import 'package:onetouch/models/team_overview.dart';
+
+TeamOverview _team(int id) => TeamOverview(
+      id: id,
+      name: 'Team $id',
+      shortName: 'T$id',
+      imagePath: '',
+    );
 
 void main() {
   Widget buildSubject({
@@ -30,7 +38,7 @@ void main() {
       home: Scaffold(
         body: SingleChildScrollView(
           child: InjuryStatus(
-            teams: <String, dynamic>{'id': teamId},
+            teams: _team(teamId),
             repository: repository,
             onUnavailable: onUnavailable,
           ),
@@ -289,7 +297,7 @@ void main() {
           path: '/team',
           builder: (_, __) => Scaffold(
             body: InjuryStatus(
-              teams: const <String, dynamic>{'id': 83},
+              teams: _team(83),
               repository: repository,
             ),
           ),

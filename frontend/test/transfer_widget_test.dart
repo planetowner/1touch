@@ -13,6 +13,14 @@ import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
+import 'package:onetouch/models/team_overview.dart';
+
+TeamOverview _team(int id) => TeamOverview(
+      id: id,
+      name: 'Team $id',
+      shortName: 'T$id',
+      imagePath: '',
+    );
 
 void main() {
   setUpAll(() async {
@@ -36,7 +44,7 @@ void main() {
       home: Scaffold(
         body: SingleChildScrollView(
           child: Transfer(
-            teams: <String, dynamic>{'id': teamId},
+            teams: _team(teamId),
             repository: repository,
             onUnavailable: onUnavailable,
           ),
@@ -185,7 +193,7 @@ void main() {
           rebuildParent = setState;
           return Transfer(
             key: ValueKey(generation),
-            teams: const <String, dynamic>{'id': 9},
+            teams: _team(9),
             repository: repository,
             showIncoming: showIncoming,
             onDirectionChanged: (value) {
@@ -230,7 +238,7 @@ void main() {
           path: '/team',
           builder: (_, __) => Scaffold(
             body: Transfer(
-              teams: const <String, dynamic>{'id': 9},
+              teams: _team(9),
               repository: repository,
             ),
           ),

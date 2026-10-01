@@ -6,7 +6,7 @@ part of '../Analysis.dart';
 //
 
 class AttributesSection extends StatefulWidget {
-  final Map<String, dynamic>? team;
+  final TeamOverview? team;
   final TeamAttributeRepository? repository;
 
   const AttributesSection({
@@ -31,7 +31,7 @@ class _AttributesSectionState extends State<AttributesSection> {
   int _requestId = 0;
   int _comparisonRequestId = 0;
 
-  int? get _teamId => widget.team?['id'] as int?;
+  int? get _teamId => widget.team?.id;
   TeamAttributeRepository get _repository =>
       widget.repository ?? teamAttributeRepository;
 
@@ -47,7 +47,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     // This section's State is reused across team switches (the Team-tab
     // branch stays alive in the bottom-nav shell), so reload instead of
     // only loading once in initState.
-    if (widget.team?['id'] != oldWidget.team?['id'] ||
+    if (widget.team?.id != oldWidget.team?.id ||
         widget.repository != oldWidget.repository) {
       setState(_resetAttributes);
       unawaited(_loadAttributes());
@@ -208,7 +208,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     final comparisonColor = comparisonTeam == null
         ? null
         : TeamComparisonColorResolver.resolve(
-            anchorTeamName: widget.team?['name'] as String? ??
+            anchorTeamName: widget.team?.name ??
                 teamRepository.findById(_myScores!.teamId)?.name,
             anchorPrimaryFallback: teamPrimaryColor,
             opponentTeamName: comparisonTeam.name,
@@ -296,8 +296,8 @@ class _AttributesSectionState extends State<AttributesSection> {
             seasonId: season.seasonId,
             seasonName: season.seasonName,
             teamId: ownTeamId,
-            teamName: teamNameLabel(
-                context, ownTeamId, widget.team?['name'] as String? ?? ''),
+            teamName:
+                teamNameLabel(context, ownTeamId, widget.team?.name ?? ''),
           ),
       for (final season in _comparisonOptions)
         for (final team in teamRepository.allTeams)

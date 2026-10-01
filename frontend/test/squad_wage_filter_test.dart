@@ -7,7 +7,22 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/features/team/squad/squad_player_presentation.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Squad.dart';
+
+const _barcelona = TeamOverview(
+  id: 83,
+  name: 'FC Barcelona',
+  shortName: 'BAR',
+  imagePath: '',
+);
+
+const _historicalTeam = TeamOverview(
+  id: 999999,
+  name: 'Historical FC',
+  shortName: 'HFC',
+  imagePath: '',
+);
 
 void main() {
   setUpAppCatalog();
@@ -38,7 +53,7 @@ void main() {
         theme: whitetheme,
         home: Scaffold(
           body: SquadTab(
-            team: const {'id': 83, 'name': 'FC Barcelona'},
+            team: _barcelona,
             contractRepository: repository,
           ),
         ),
@@ -120,7 +135,7 @@ void main() {
         theme: whitetheme,
         home: Scaffold(
           body: SquadTab(
-            team: const {'id': 83, 'name': 'FC Barcelona'},
+            team: _barcelona,
             contractRepository: _FakeTeamContractRepository(
               playerName: 'Andreas Christensen',
             ),
@@ -148,7 +163,7 @@ void main() {
         theme: whitetheme,
         home: Scaffold(
           body: SquadTab(
-            team: const {'id': 83, 'name': 'FC Barcelona'},
+            team: _barcelona,
             contractRepository: repository,
           ),
         ),
@@ -188,7 +203,7 @@ void main() {
         theme: whitetheme,
         home: Scaffold(
           body: SquadTab(
-            team: const {'id': 83, 'name': 'FC Barcelona'},
+            team: _barcelona,
             contractRepository: repository,
           ),
         ),
@@ -212,7 +227,7 @@ void main() {
         theme: whitetheme,
         home: Scaffold(
           body: SquadTab(
-            team: const {'id': 83, 'name': 'FC Barcelona'},
+            team: _barcelona,
             contractRepository: repository,
           ),
         ),
@@ -233,7 +248,7 @@ void main() {
         theme: whitetheme,
         home: Scaffold(
           body: SquadTab(
-            team: const {'id': 999999, 'name': 'Historical FC'},
+            team: _historicalTeam,
             contractRepository: repository,
           ),
         ),
@@ -258,7 +273,7 @@ void main() {
         theme: darktheme,
         home: Scaffold(
           body: SquadTab(
-            team: const {'id': 83, 'name': 'FC Barcelona'},
+            team: _barcelona,
             contractRepository: _FakeTeamContractRepository(
               includeLeadershipPlayers: true,
             ),
@@ -343,7 +358,7 @@ void main() {
         theme: whitetheme,
         home: Scaffold(
           body: SquadTab(
-            team: const {'id': 83, 'name': 'FC Barcelona'},
+            team: _barcelona,
             contractRepository: _FakeTeamContractRepository(
               includeLeadershipPlayers: true,
             ),
@@ -376,7 +391,7 @@ void main() {
         theme: darktheme,
         home: Scaffold(
           body: SquadTab(
-            team: const {'id': 83, 'name': 'FC Barcelona'},
+            team: _barcelona,
             contractRepository: _FakeTeamContractRepository(
               includeMultiplePositions: true,
             ),

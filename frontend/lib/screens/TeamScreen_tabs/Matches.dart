@@ -14,13 +14,14 @@ import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
 
 class MatchesTab extends StatefulWidget {
-  final Map<String, dynamic>? team;
+  final TeamOverview? team;
   final FixtureRepository? fixtureRepository;
   final VoidCallback? onTopOverscroll;
 
@@ -97,7 +98,7 @@ class _MatchesTabState extends State<MatchesTab> {
     // This tab's State is reused across team switches (the Team-tab branch
     // stays alive in the bottom-nav shell), so reload instead of only
     // loading once in initState.
-    if (widget.team?['id'] != oldWidget.team?['id'] ||
+    if (widget.team?.id != oldWidget.team?.id ||
         widget.fixtureRepository != oldWidget.fixtureRepository) {
       setState(() {
         _resetForLoad();
@@ -108,7 +109,7 @@ class _MatchesTabState extends State<MatchesTab> {
 
   Future<void> _loadFixtures() async {
     final requestId = ++_requestId;
-    final teamId = widget.team?['id'] as int?;
+    final teamId = widget.team?.id;
     if (teamId == null) {
       if (!mounted || requestId != _requestId) return;
       setState(() => _isLoading = false);
@@ -134,7 +135,7 @@ class _MatchesTabState extends State<MatchesTab> {
           limit: 200,
         ),
       ]);
-      if (!mounted || requestId != _requestId || teamId != widget.team?['id']) {
+      if (!mounted || requestId != _requestId || teamId != widget.team?.id) {
         return;
       }
 
@@ -152,7 +153,7 @@ class _MatchesTabState extends State<MatchesTab> {
       });
       _schedulePostLoadLayout();
     } on Object catch (error) {
-      if (!mounted || requestId != _requestId || teamId != widget.team?['id']) {
+      if (!mounted || requestId != _requestId || teamId != widget.team?.id) {
         return;
       }
       setState(() {

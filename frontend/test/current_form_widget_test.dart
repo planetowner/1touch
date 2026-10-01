@@ -12,6 +12,7 @@ import 'package:onetouch/data/current_form/current_form_repository.dart';
 import 'package:onetouch/data/current_form/mock/mock_current_form_repository.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/current_form.dart';
+import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
 
 void main() {
@@ -30,7 +31,14 @@ void main() {
       home: Scaffold(
         body: SingleChildScrollView(
           child: CurrentFormSection(
-            team: teamId == null ? null : <String, dynamic>{'id': teamId},
+            team: teamId == null
+                ? null
+                : TeamOverview(
+                    id: teamId,
+                    name: 'Team $teamId',
+                    shortName: 'T$teamId',
+                    imagePath: '',
+                  ),
             repository: repository,
           ),
         ),
