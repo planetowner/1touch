@@ -28,6 +28,8 @@ import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
+import 'package:onetouch/data/players/player_detail_repository.dart';
+import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/features/app_error_view.dart';
 import 'package:onetouch/features/betting/bet_settlement_notifications.dart';
 import 'package:onetouch/features/community/notification_post_page.dart';
@@ -97,6 +99,22 @@ void _openNotificationPayload(String payload) {
     return;
   }
   _router.go(payload);
+}
+
+Future<void> restorePlayerDetailBeforeNavigation(
+  String? rawPlayerId, {
+  PlayerDetailRepository? repository,
+}) async {
+  final playerId = int.tryParse(rawPlayerId ?? '');
+  final source = repository ?? playerDetailRepository;
+  if (playerId == null || source is! CachedPlayerDetailRepository) return;
+  try {
+    if (source.snapshotFor(playerId) == null) {
+      await source.restoreFor(playerId);
+    }
+  } on Object {
+    // An unreadable local cache must not prevent navigation.
+  }
 }
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -214,6 +232,11 @@ final GoRouter _router = GoRouter(
             routes: [
               GoRoute(
                 path: ':id',
+                redirect: (context, state) async {
+                  await restorePlayerDetailBeforeNavigation(
+                      state.pathParameters['id']);
+                  return null;
+                },
                 pageBuilder: (context, state) {
                   final playerId = state.pathParameters['id']!;
                   return NoTransitionPage<void>(
@@ -267,6 +290,11 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/match-player/:playerId',
       parentNavigatorKey: _rootNavigatorKey,
+      redirect: (context, state) async {
+        await restorePlayerDetailBeforeNavigation(
+            state.pathParameters['playerId']);
+        return null;
+      },
       builder: (context, state) => _MatchOriginDetailPage(
         selectedIndex: 2,
         child: PlayerCard(

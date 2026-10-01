@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/players/api/api_player_detail_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
 import 'support/player_detail_fixture.dart';
 
@@ -46,6 +47,54 @@ void main() {
       );
       await expectLater(repo.load(1), throwsA(anything));
     }
+  });
+  test('restores player detail for the same player and season after restart',
+      () async {
+    final store = MemoryLocalCacheStore();
+    final seasonId = detailFixture().seasons.last.id;
+    var requests = 0;
+    ApiPlayerDetailRepository repository() => ApiPlayerDetailRepository(
+          api: ApiClient(
+            client: MockClient((_) async {
+              requests++;
+              return http.Response.bytes(
+                  utf8.encode(jsonEncode(
+                      playerDetailJson(playerId: 1, seasonId: seasonId))),
+                  200);
+            }),
+            baseUri: Uri.parse('https://example.com/v1/'),
+            requestHeaders: () => const {},
+          ),
+          cacheStore: store,
+        );
+
+    await repository().load(1, seasonId: seasonId);
+    final restored = await repository().restoreFor(1, seasonId: seasonId);
+    expect(restored?.data.playerId, 1);
+    expect(restored?.data.selectedSeason?.id, seasonId);
+    expect(requests, 1);
+    expect(await repository().restoreFor(2, seasonId: seasonId), isNull);
+    expect(await repository().restoreFor(1), isNull);
+
+    await store.clearScope(LocalCacheScopes.global);
+    expect(await repository().restoreFor(1, seasonId: seasonId), isNull);
+  });
+
+  test('discards a malformed cached player detail', () async {
+    final store = MemoryLocalCacheStore();
+    final key = LocalCacheKeys.playerDetail(1, null);
+    await store.write(key, {'player_id': 1});
+    final repository = ApiPlayerDetailRepository(
+      api: ApiClient(
+        client: MockClient((_) async => http.Response('{}', 200)),
+        baseUri: Uri.parse('https://example.com/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    expect(await repository.restoreFor(1), isNull);
+    expect(await store.read(key), isNull);
   });
   test('zero stays zero and whole numbers retain trailing zeros', () {
     expect(playerNumber(0), '0');
