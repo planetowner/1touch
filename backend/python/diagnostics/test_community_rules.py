@@ -27,31 +27,23 @@ class RulesTests(CommunityDatabaseCase):
         with self.assertRaises(AssertionError):
             verify_schema(before=True, print_report=False)
 
-    def test_same_localized_contract_is_available_to_each_home_team_without_a_rules_table(self):
+    def test_same_message_keys_are_available_to_each_home_team_without_a_rules_table(self):
         self.remove_rules_table()
-        for language, title, label, first_title in (
-            ("ko", "커뮤니티 이용 약속", "확인했어요", "의견이 달라도 서로 존중해요"),
-            ("en", "Community Ground Rules", "Got it", "Keep it about football"),
-            ("ja", "コミュニティのルール", "わかりました", "意見が違っても、お互いを尊重しましょう"),
-            ("zh-Hans", "社区公约", "我知道了", "即使意见不同，也请互相尊重"),
-        ):
-            with self.subTest(language=language):
-                one = self.request("GET", f"/v1/community/rules?team_id=6&language={language}")
-                two = self.request("GET", f"/v1/community/rules?team_id=503&language={language}", self.token_b)
-                self.assertEqual(one.status_code, 200, one.text)
-                self.assertEqual(one.json(), two.json())
-                rules = one.json()["rules"]
-                self.assertEqual(set(rules), {"language", "title", "items", "confirm_label"})
-                self.assertEqual((rules["language"], rules["title"], rules["confirm_label"]), (language, title, label))
-                self.assertEqual(len(rules["items"]), 5)
-                self.assertEqual(rules["items"][0]["title"], first_title)
-                self.assertTrue(all(set(item) == {"title", "body"} and item["body"] for item in rules["items"]))
-        english = self.request("GET", "/v1/community/rules?team_id=6&language=en").json()["rules"]
-        self.assertEqual(english["items"][2]["body"], "Banter and friendly rivalry are welcome. Keep it fun and respectful.")
+        one = self.request("GET", "/v1/community/rules?team_id=6")
+        two = self.request("GET", "/v1/community/rules?team_id=503", self.token_b)
+        self.assertEqual(one.status_code, 200, one.text)
+        self.assertEqual(one.json(), two.json())
+        rules = one.json()["rules"]
+        self.assertEqual(set(rules), {"title", "items"})
+        self.assertEqual(rules["title"], "Community Ground Rules")
+        self.assertEqual(len(rules["items"]), 5)
+        self.assertEqual(rules["items"][0]["title"], "Keep it about football")
+        self.assertTrue(all(set(item) == {"title", "body"} and item["body"] for item in rules["items"]))
+        self.assertEqual(rules["items"][2]["body"], "Banter and friendly rivalry are welcome. Keep it fun and respectful.")
 
     def test_authentication_and_followed_team_access_apply_to_static_rules(self):
         self.remove_rules_table()
-        url = "/v1/community/rules?team_id=6&language=zh-Hans"
+        url = "/v1/community/rules?team_id=6"
         self.assertEqual(self.client.get(url).status_code, 401)
         self.assertEqual(self.request("GET", url, self.token_b).status_code, 403)
         # 다른 팔로우 팀도 안내를 읽을 수 있고, 팔로우를 해제하면 조회 권한을 잃어요.
@@ -59,15 +51,13 @@ class RulesTests(CommunityDatabaseCase):
         self.assertEqual(self.request("GET", url, self.token_b).status_code, 200)
         self.execute("UPDATE users SET favorite_team_id=6 WHERE user_id=%s", (self.b,))
         self.assertEqual(self.request("GET", url, self.token_b).status_code, 200)
-        self.assertEqual(self.request("GET", "/v1/community/rules?team_id=503&language=zh-Hans", self.token_b).status_code, 200)
+        self.assertEqual(self.request("GET", "/v1/community/rules?team_id=503", self.token_b).status_code, 200)
         self.execute("DELETE FROM user_following_teams WHERE user_id=%s AND team_id=503", (self.b,))
-        self.assertEqual(self.request("GET", "/v1/community/rules?team_id=503&language=zh-Hans", self.token_b).status_code, 403)
+        self.assertEqual(self.request("GET", "/v1/community/rules?team_id=503", self.token_b).status_code, 403)
 
-    def test_language_is_explicit_and_admin_editing_is_not_exposed(self):
+    def test_language_is_not_required_and_admin_editing_is_not_exposed(self):
         self.remove_rules_table()
-        for language in (None, "kr", "jp", "fr", "KO", "CN", "zh-Hant"):
-            query = {} if language is None else {"language": language}
-            self.assertEqual(self.request("GET", "/v1/community/rules", params={"team_id": 6, **query}).status_code, 422)
+        self.assertEqual(self.request("GET", "/v1/community/rules", params={"team_id": 6}).status_code, 200)
         # 운영자도 API로 코드에 있는 문구를 덮어쓰지 못해요.
         with patch.dict("os.environ", {"COMMUNITY_ADMIN_USER_IDS": str(self.a)}):
             for method in ("GET", "PUT"):

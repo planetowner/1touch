@@ -1,3 +1,4 @@
+import 'package:onetouch/models/profile_change_limit_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:onetouch/l10n/messages.dart';
@@ -47,9 +48,9 @@ String tr(BuildContext context, String message,
 String profileChangeLimitMessage(
   BuildContext context, {
   required String item,
-  required DateTime availableAt,
+  required ProfileChangeLimitException limit,
 }) {
-  final utc = availableAt.toUtc();
+  final utc = limit.availableAt.toUtc();
   final minute =
       DateTime.utc(utc.year, utc.month, utc.day, utc.hour, utc.minute);
   // 초를 숨겨도 실제 해제 시각보다 이르게 안내하지 않도록 다음 분으로 올려요.
@@ -61,23 +62,29 @@ String profileChangeLimitMessage(
       '${labels.formatFullDate(local)} ${labels.formatTimeOfDay(TimeOfDay.fromDateTime(local))}';
   return tr(
       context,
-      'You can change {item} twice in 14 days. Try again after {date}.',
-      {'item': item, 'date': date});
+      'You can change {item} up to {count} times in {days} days. Try again after {date}.',
+      {
+        'item': item,
+        'count': limit.maxChanges,
+        'days': limit.windowDays,
+        'date': date
+      });
 }
 
 String translateMessage(Locale locale, String message,
     [Map<String, Object> arguments = const {}]) {
   final translations = appMessages[message];
-  var translated = switch (locale.languageCode) {
+  final translated = switch (locale.languageCode) {
     'ko' => translations?.ko ?? message,
     'ja' => translations?.ja ?? message,
     'zh' => translations?.zh ?? message,
     _ => message,
   };
-  for (final entry in arguments.entries) {
-    translated = translated.replaceAll('{${entry.key}}', '${entry.value}');
-  }
-  return translated;
+  // 삽입한 닉네임·댓글의 중괄호를 다른 번역 인자로 다시 치환하지 않아요.
+  return translated.replaceAllMapped(
+    RegExp(r'\{(\w+)\}'),
+    (match) => '${arguments[match[1]] ?? match[0]}',
+  );
 }
 
 // 골키퍼 통계의 Save는 저장 버튼과 뜻이 달라요.

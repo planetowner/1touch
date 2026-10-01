@@ -35,14 +35,12 @@ class ApiCommunityRepository implements CommunityRepository {
   @override
   Future<CommunityRules> loadRules({
     required int teamId,
-    required CommunityLanguage language,
   }) async {
     _validateTeamId(teamId);
 
     final uri = _api.baseUri.resolve('community/rules').replace(
       queryParameters: {
         'team_id': '$teamId',
-        'language': language.apiValue,
       },
     );
     final response = await _api.get(
@@ -53,12 +51,6 @@ class ApiCommunityRepository implements CommunityRepository {
     final rules = communityRulesFromApiResponse(
       ApiCommunityRulesResponse.fromJson(decoded),
     );
-    if (rules.language != language) {
-      throw FormatException(
-        'Expected community rules in ${language.apiValue}, received '
-        '${rules.language.apiValue}.',
-      );
-    }
     return rules;
   }
 

@@ -162,6 +162,9 @@ void _setScreenSize(WidgetTester tester, Size size) {
 }
 
 class _ReportPostRepository implements PostRepository {
+  @override
+  Future<int> loadAttachmentLimit() async => 10;
+
   _ReportPostRepository({required this.onReport});
 
   final Future<void> Function(int postId, String reason) onReport;

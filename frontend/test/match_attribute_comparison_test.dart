@@ -99,11 +99,11 @@ TeamAttributeScores _scores(int teamId) => TeamAttributeScores(
       competitionId: 564,
       seasonId: 27965,
       seasonLabel: '2026/2027',
-      attack: teamId.toDouble(),
-      progression: 54,
-      dominance: 63,
-      defense: 72,
-      possession: 81,
+      shootingFinishing: teamId.toDouble(),
+      attackingThreat: 54,
+      chanceCreation: 63,
+      defending: 72,
+      possessionBuildUp: 81,
     );
 
 class _Repository implements TeamAttributeRepository {

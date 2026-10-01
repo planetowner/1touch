@@ -37,6 +37,8 @@ void main() {
     expect(market.predictionRunId, 'a' * 64);
     expect(market.userProbabilities, [0.5, 0.0, 0.5]);
     expect(market.closesAt!.isUtc, isTrue);
+    expect(market.stakeUnit, 25);
+    expect(market.opensAt, DateTime.utc(2026, 9, 20, 6));
   });
 
   test('sends accepted quote, revision and request ID for place and cancel',
@@ -133,6 +135,8 @@ Map<String, dynamic> _market() => {
       'can_bet': true,
       'can_cancel': false,
       'unavailable_reason': null,
+      'stake_unit': 25,
+      'opens_at': '2026-09-20T06:00:00Z',
       'closes_at': '2026-09-20T18:00:00Z',
       'prediction_run_id': 'a' * 64,
       'prediction_as_of': '2026-09-18T12:00:00Z',

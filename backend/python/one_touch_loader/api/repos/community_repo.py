@@ -1,13 +1,13 @@
 """커뮤니티 안내와 홈 최애팀 회원 수를 조회해요."""
 from ..db import fetch_one_dict
-from ..schemas.community import CommunityLanguage, CommunityRules
+from ..schemas.community import CommunityRules
 from ..services.community_rules import get_rules_content
 from .posts_repo import community_user
 
 
-def get_rules(user_id: int, team_id: int, language: CommunityLanguage) -> CommunityRules:
+def get_rules(user_id: int, team_id: int) -> CommunityRules:
     community_user(user_id, team_id, read_only=True)
-    return get_rules_content(language)
+    return get_rules_content()
 
 
 def count_followers(user_id: int, team_id: int) -> int:

@@ -1,3 +1,4 @@
+import 'package:onetouch/models/profile_change_limit_exception.dart';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -5,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/teams/api/api_following_teams_repository.dart';
-import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
@@ -147,6 +147,8 @@ void main() {
               jsonEncode({
                 'detail': {
                   'message': 'Favorite team can be changed later',
+                  'max_changes': 3,
+                  'window_days': 7,
                   'available_at': '2026-09-20T12:30:00Z',
                 },
               }),
@@ -163,8 +165,9 @@ void main() {
         favoriteTeamId: 19,
       ),
       throwsA(
-        isA<FavoriteTeamChangeLimitException>()
-            .having((error) => error.message, 'message', contains('later'))
+        isA<ProfileChangeLimitException>()
+            .having((error) => error.maxChanges, 'maxChanges', 3)
+            .having((error) => error.windowDays, 'windowDays', 7)
             .having(
               (error) => error.availableAt,
               'availableAt',

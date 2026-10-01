@@ -4,7 +4,7 @@ from datetime import timedelta
 from ..api.db import fetch_all_dict, transaction
 from ..api.repos import betting_repo as betting, notifications_repo as notifications
 from ..api.services.community_periods import utc_now
-from ..core.notifications import NotificationEvent
+from ..core.notifications import MATCH_REMINDER_LEAD_TIME, NotificationEvent
 from ..core.sportmonks import SportmonksClient
 from .live_fixtures_loader import read_live_fixture_batches, store_live_fixture
 
@@ -21,7 +21,7 @@ def scheduled_events(fixture, now, prediction):
     if betting.market_unavailable_reason(fixture, now, prediction) is None:
         events.append(NotificationEvent(f'fixture:{fid}:bets:{start.isoformat()}', 'team_new_bets',
                                         subjects, payload, start, fid))
-    due = start - timedelta(hours=1)
+    due = start - MATCH_REMINDER_LEAD_TIME
     # 중단 후 경기가 임박해서 재개됐을 때 지난 1시간 전 알림을 뒤늦게 보내지 않아요.
     if due <= now < due + timedelta(minutes=5):
         events.append(NotificationEvent(f'fixture:{fid}:reminder:{start.isoformat()}', 'team_match_reminder',

@@ -143,7 +143,7 @@ def put_following_teams(body: PutFollowingTeamsBody, user_id: int = Depends(get_
     try:
         set_following_and_favorite(user_id, body.teamIds, body.favoriteTeamId)
     except ProfileChangeLimitError as exc:
-        raise HTTPException(409, {"message": str(exc), "available_at": exc.available_at.isoformat() + "Z"}) from exc
+        raise HTTPException(409, exc.detail()) from exc
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
     return {"ok": True}

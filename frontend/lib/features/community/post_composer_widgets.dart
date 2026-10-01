@@ -30,7 +30,7 @@ class PostComposerFields extends StatelessWidget {
   final List<XFile> mediaFiles;
   final List<PostAttachment> existingAttachments;
   final ValueChanged<PostCategory> onCategoryChanged;
-  final VoidCallback onPickMedia;
+  final VoidCallback? onPickMedia;
   final ValueChanged<int> onRemoveMedia;
   final ValueChanged<int>? onRemoveExistingAttachment;
 

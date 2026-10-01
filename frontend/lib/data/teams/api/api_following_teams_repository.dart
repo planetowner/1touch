@@ -1,3 +1,4 @@
+import 'package:onetouch/models/profile_change_limit_exception.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -130,22 +131,10 @@ class ApiFollowingTeamsRepository implements FollowingTeamsRepository {
     return teams;
   }
 
-  static FavoriteTeamChangeLimitException _changeLimitException(
-      Map<String, dynamic> body) {
-    final response = ApiFavoriteTeamChangeLimitResponse.fromJson(
-      body,
-    );
-    final availableAt = DateTime.tryParse(response.availableAt)?.toUtc();
-    if (availableAt == null) {
-      throw const FormatException(
-        'Expected a valid favorite-team change limit available_at timestamp.',
-      );
-    }
-    return FavoriteTeamChangeLimitException(
-      message: response.message,
-      availableAt: availableAt,
-    );
-  }
+  static ProfileChangeLimitException _changeLimitException(
+          Map<String, dynamic> body) =>
+      ProfileChangeLimitException.fromJson(
+          body['detail'] as Map<String, dynamic>);
 
   static void _validateSelection(List<int> ids, int favoriteTeamId) {
     if (ids.isEmpty || ids.length > maxFollowingTeams) {

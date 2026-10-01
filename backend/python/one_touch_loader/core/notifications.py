@@ -1,6 +1,8 @@
 """알림 종류별 입력만 나누고 설정·중복 식별·메시지 규칙은 함께 사용해요."""
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+import json
+from pathlib import Path
 
 from .fixture_states import COMPLETED_STATE_IDS
 from .identity import canonical_sportmonks_player_id
@@ -115,34 +117,18 @@ def state_event(fixture: dict, previous_state: int, now: datetime) -> Notificati
                               'score': score, 'destination': f'/match/{fid}'}, now + timedelta(minutes=5), fid)
 
 
+# messages.dart의 번역 원본에서 생성한 파일을 배포에 포함해요.
+_MESSAGE_TEMPLATES = json.loads(Path(__file__).with_name('notification_messages.json').read_text(encoding='utf-8'))['messages']
+MATCH_REMINDER_LEAD_TIME = timedelta(hours=1)
+
+
 def message(kind: str, data: dict, locale: str) -> dict:
-    ko = locale.lower().startswith('ko')
-    scope, _ = KINDS[kind]
-    d = {key: data.get(key, '') for key in ('home_team', 'away_team', 'team', 'player', 'minute',
-                                         'score', 'in_player', 'out_player', 'username', 'display_name', 'comment_preview')}
-    author_name = d['display_name'] or d['username']
-    match = f"{d['home_team']} vs {d['away_team']}"
-    bodies = {
-        'post_reaction': (f"{author_name}님이 내 게시물에 좋아요를 눌렀어요.", f"{author_name} liked your post."),
-        'post_comment': (f"{author_name}: {d['comment_preview']}", f"{author_name}: {d['comment_preview']}"),
-        'team_new_bets': (f'{match} 베팅이 열렸어요.', f'Betting is open for {match}.'),
-        'team_match_reminder': (f"{match} 경기가 {data.get('minutes_until_kickoff', 60)}분 후 시작해요.",
-                                f"{match} starts in {data.get('minutes_until_kickoff', 60)} minutes."),
-        'team_kickoff': (f'{match} 경기가 시작했어요.', f'{match} — Kickoff!'),
-        'team_half_time': (f"전반 종료 · {match} {d['score']}", f"Half time · {match} {d['score']}"),
-        'team_full_time': (f"경기 종료 · {match} {d['score']}", f"Full time · {match} {d['score']}"),
-        'team_goal': (f"⚽ {d['player']} ({d['team']}) {d['minute']}' · {d['score']}",
-                      f"⚽ {d['player']} ({d['team']}) {d['minute']}' · {d['score']}"),
-        'team_substitution': (f"{d['team']} 교체: {d['out_player']} → {d['in_player']} {d['minute']}'",
-                              f"{d['team']} sub: {d['out_player']} → {d['in_player']} {d['minute']}'"),
-        'player_starting_xi': (f"{d['player']} 선발 출전이 확정됐어요.", f"{d['player']} is in the starting lineup."),
-        'player_substitute': (f"{d['player']} 교체 투입 · {d['minute']}'", f"{d['player']} comes on · {d['minute']}'"),
-        'player_goal': (f"⚽ {d['player']} 골 · {d['minute']}'", f"⚽ {d['player']} scores · {d['minute']}'"),
-        'player_assist': (f"{d['player']} 도움 · {d['minute']}'", f"{d['player']} assists · {d['minute']}'"),
-        'player_yellow_card': (f"{d['player']} 경고 · {d['minute']}'", f"{d['player']} yellow card · {d['minute']}'"),
-        'player_red_card': (f"{d['player']} 퇴장 · {d['minute']}'", f"{d['player']} red card · {d['minute']}'"),
-        'player_injury': (f"{d['player']} 부상으로 교체 · {d['minute']}'", f"{d['player']} substituted due to injury · {d['minute']}'"),
-    }
-    titles = {'community': ('커뮤니티', 'Community'), 'team': ('팀 소식', 'Team update'),
-              'player': ('선수 소식', 'Player update')}
-    return {'title': titles[scope][0 if ko else 1], 'body': bodies[kind][0 if ko else 1]}
+    language = locale.replace('_', '-').split('-')[0].lower()
+    if language not in ('ko', 'ja', 'zh'):
+        language = 'en'
+    arguments = {key: data.get(key, '') for key in ('home_team', 'away_team', 'team', 'player', 'minute',
+                                                   'score', 'in_player', 'out_player', 'comment_preview')}
+    arguments['author_name'] = data.get('display_name') or data.get('username', '')
+    arguments['match'] = f"{arguments['home_team']} vs {arguments['away_team']}"
+    arguments['minutes_until_kickoff'] = data.get('minutes_until_kickoff', int(MATCH_REMINDER_LEAD_TIME.total_seconds() // 60))
+    return {part: template.format_map(arguments) for part, template in _MESSAGE_TEMPLATES[kind][language].items()}

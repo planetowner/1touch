@@ -109,10 +109,33 @@ class EventTests(unittest.TestCase):
         for old, new in [(2, 2), (3, 3), (3, 4), (5, 7), (1, 10), (2, 15)]:
             self.assertIsNone(state_event(payload(new), old, NOW))
 
-    def test_all_registered_kinds_render_both_languages(self):
+    def test_all_registered_kinds_render_four_languages(self):
         for kind in KINDS:
-            for locale in ('ko-KR', 'en-US'):
+            for locale in ('ko-KR', 'en-US', 'ja-JP', 'zh-Hans'):
                 self.assertTrue(message(kind, {}, locale)['body'])
+
+    def test_push_provider_receives_localized_copy_for_each_language(self):
+        row = {'notification_id': 5, 'kind': 'player_starting_xi', 'expires_at': NOW + timedelta(minutes=5)}
+        data = {'destination': '/match/500', 'player': 'Son'}
+        expected = {
+            'en-US': ('Player update', 'Son is in the starting lineup.'),
+            'ko-KR': ('선수 소식', 'Son 선발 출전이 확정됐어요.'),
+            'ja-JP': ('選手情報', 'Sonのスタメン出場が決まりました。'),
+            'zh-Hans': ('球员动态', 'Son确认首发出场。'),
+        }
+        for locale, (title, body) in expected.items():
+            with self.subTest(locale=locale):
+                result = push_sender.fcm_message(row, 'test-token', locale, data, NOW)
+                self.assertEqual(result['notification'], {'title': title, 'body': body})
+                self.assertEqual(result['apns']['payload']['aps']['alert'], result['notification'])
+        self.assertEqual(message(row['kind'], data, 'fr-FR'), message(row['kind'], data, 'en'))
+        self.assertEqual(message(row['kind'], data, 'zh_CN'), message(row['kind'], data, 'zh-Hans'))
+
+    def test_template_arguments_preserve_user_text_and_use_reminder_minutes(self):
+        data = {'display_name': '{player}', 'comment_preview': 'Keep {score} as text', 'player': 'Son'}
+        self.assertEqual(message('post_comment', data, 'ja')['body'], '{player}: Keep {score} as text')
+        self.assertEqual(message('team_match_reminder', {'home_team': 'Home', 'away_team': 'Away',
+                         'minutes_until_kickoff': 15}, 'en')['body'], 'Home vs Away starts in 15 minutes.')
 
     def test_community_notifications_show_display_name(self):
         data = {'username': 'john_doe', 'display_name': '불광동호날두', 'comment_preview': '좋아요'}

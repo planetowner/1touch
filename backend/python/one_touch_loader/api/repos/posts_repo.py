@@ -11,6 +11,7 @@ from .media_repo import remove_attachments
 from ..services.content_visibility import blocked_sql, public_author, require_visible_author
 from .notifications_repo import notify_post
 
+MAX_ATTACHMENTS = 10
 
 class PostSort(str, Enum):
     newest = "newest"
@@ -125,8 +126,8 @@ def list_my_comments(user_id: int, limit: int, offset: int) -> list[dict]:
 
 
 def _set_attachments(cur, user_id: int, post_id: int, attachment_ids: list[int]) -> None:
-    if len(attachment_ids) > 10 or len(attachment_ids) != len(set(attachment_ids)):
-        raise HTTPException(400, "Use up to ten different attachments")
+    if len(attachment_ids) > MAX_ATTACHMENTS or len(attachment_ids) != len(set(attachment_ids)):
+        raise HTTPException(400, f"Use up to {MAX_ATTACHMENTS} different attachments")
     for attachment_id in sorted(attachment_ids):
         cur.execute("SELECT user_id,post_id,created_at FROM post_attachments WHERE attachment_id=%s FOR UPDATE", (attachment_id,))
         item = cur.fetchone()
