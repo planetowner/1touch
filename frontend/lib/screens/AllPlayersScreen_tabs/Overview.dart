@@ -185,10 +185,10 @@ class PlayerOverviewTab extends StatelessWidget {
               const SizedBox(height: 48),
               PlayerSection(
                   title: tr(context, 'COMPETITION STATS'),
-                  titleAccessory: AppInfoButton(
-                    key: const ValueKey('competition-stats-help-icon'),
-                    message: tr(context,
-                        'Competition statistics for the selected season.'),
+                  titleAccessory: const AppInfoButton(
+                    key: ValueKey('competition-stats-help-icon'),
+                    message:
+                        "A quick overview of the player's average performance in each competition. Data has been collected since the 2017/18 season.",
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
