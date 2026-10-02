@@ -810,26 +810,15 @@ void main() {
     expect(find.text('LIVE'), findsNothing);
     expect(repository.calls.length, 1);
   });
-  testWidgets('help icons stay directly beside their section titles',
+  testWidgets('top stats help stays directly beside its section title',
       (tester) async {
     final repository = FakePlayerDetailRepository();
     await tester.pumpWidget(MaterialApp(
         home: PlayerCard(player: player, detailRepository: repository)));
     await tester.pumpAndSettle();
 
-    expect(
-      tester
-              .getTopLeft(
-                find.byKey(const ValueKey('competition-stats-help-icon')),
-              )
-              .dx -
-          tester.getTopRight(find.text('COMPETITION STATS')).dx,
-      4,
-    );
-    expect(
-      tester.getSize(find.byKey(const ValueKey('competition-stats-help-icon'))),
-      const Size(20, 20),
-    );
+    expect(find.byKey(const ValueKey('competition-stats-help-icon')),
+        findsNothing);
     await tester.tap(find.text('Analysis').first);
     await tester.pumpAndSettle();
     expect(
@@ -852,32 +841,7 @@ void main() {
     expect(find.byKey(const ValueKey('app-info-popup')), findsNothing);
     expect(tester.takeException(), isNull);
   });
-  testWidgets('competition stats help uses the shared dismissible popup',
-      (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: PlayerCard(
-        player: player,
-        detailRepository: FakePlayerDetailRepository(),
-      ),
-    ));
-    await tester.pumpAndSettle();
-    final help = find.byKey(const ValueKey('competition-stats-help-icon'));
-    await tester.ensureVisible(help);
-    await tester.pumpAndSettle();
-    await tester.tap(help);
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('app-info-popup')), findsOneWidget);
-    expect(
-      find.text(
-          "A quick overview of the player's average performance in each competition. Data has been collected since the 2017/18 season."),
-      findsOneWidget,
-    );
-    await tester.tapAt(const Offset(8, 8));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('app-info-popup')), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
-  testWidgets('competition stats keep the collected-since note below the card',
+  testWidgets('competition stats show the card without help or footer note',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
       theme: app_style.darktheme,
@@ -889,12 +853,6 @@ void main() {
     await tester.pumpAndSettle();
 
     final card = find.byKey(const ValueKey('player-competition-stats-card'));
-    final note =
-        find.byKey(const ValueKey('player-competition-collected-note'));
-    final opacity = tester.widget<Opacity>(note);
-    final noteText = tester.widget<Text>(
-      find.descendant(of: note, matching: find.byType(Text)),
-    );
     final ratingFinder =
         find.byKey(const ValueKey('player-competition-rating-2'));
     final ratingBox = tester.widget<Container>(ratingFinder);
@@ -903,11 +861,11 @@ void main() {
       find.descendant(of: ratingFinder, matching: find.byType(Text)),
     );
 
-    expect(tester.getTopLeft(note).dy - tester.getBottomLeft(card).dy, 12);
-    expect(opacity.opacity, 0.5);
-    expect(noteText.style?.fontSize, 14);
-    expect(noteText.style?.fontWeight, FontWeight.w400);
-    expect(noteText.style?.height, 1.3);
+    expect(card, findsOneWidget);
+    expect(find.byKey(const ValueKey('competition-stats-help-icon')),
+        findsNothing);
+    expect(find.byKey(const ValueKey('player-competition-collected-note')),
+        findsNothing);
     expect(find.text('UCL'), findsOneWidget);
     expect(find.text('Champions League'), findsNothing);
     expect(find.text('LA LIGA'), findsOneWidget);
