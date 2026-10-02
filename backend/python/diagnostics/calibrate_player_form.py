@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 
-from one_touch_loader.api.repos.player_indicators_repo import fetch_indicator_matches, LEAGUES_SQL
+from one_touch_loader.loaders.player_indicators_loader import fetch_indicator_matches, LEAGUES_SQL
 from one_touch_loader.core.db import get_conn
 from one_touch_loader.core.player_indicators import calibrate_form_decay
 
