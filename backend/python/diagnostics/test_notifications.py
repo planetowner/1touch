@@ -15,6 +15,7 @@ from unittest.mock import Mock, patch
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 import requests
+from diagnostics.point_test_support import create_point_tables
 
 with patch('mysql.connector.pooling.MySQLConnectionPool'):
     from one_touch_loader.core import db
@@ -258,6 +259,9 @@ class RepositoryTests(unittest.TestCase):
         ddl = re.sub(r'\n\s+KEY \w+ \([^)]*\),', '', ddl)
         ddl = re.sub(r'\) ENGINE=InnoDB DEFAULT [^;]+;', ');', ddl)
         self.db.executescript(ddl)
+        self.db.execute('ALTER TABLE posts ADD COLUMN created_at TEXT')
+        self.db.execute('UPDATE posts SET created_at=?', (NOW,))
+        create_point_tables(self.db)
         self.conn = SqliteConnection(self.db)
         self.stack.enter_context(patch.object(db, '_pool', SimpleNamespace(get_connection=lambda: self.conn)))
         for module in (repo, push, posts_repo):

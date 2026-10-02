@@ -20,6 +20,7 @@ with patch('mysql.connector.pooling.MySQLConnectionPool'):
     from one_touch_loader.api.main import create_app
     from one_touch_loader.api.deps import get_user_id
     from one_touch_loader.api.repos import betting_repo as repo
+    from one_touch_loader.api.repos import points_repo
 
 from one_touch_loader.core.betting import SETTLEMENT_RULE, prediction_options, settlement, total_return
 from one_touch_loader.core.cup_betting import fixture_context
@@ -199,6 +200,7 @@ class BettingDatabaseTests(unittest.TestCase):
         self.addCleanup(self.time_patch.stop)
         sql = '''
             CREATE TABLE users (user_id BIGINT UNSIGNED PRIMARY KEY);
+            CREATE TABLE posts (post_id BIGINT UNSIGNED PRIMARY KEY);
             CREATE TABLE fixture_states (state_id INT PRIMARY KEY,state_code VARCHAR(50));
             CREATE TABLE seasons (season_id BIGINT UNSIGNED PRIMARY KEY,competition_id INT,name VARCHAR(20));
             CREATE TABLE stages (stage_id INT PRIMARY KEY,season_id BIGINT UNSIGNED,stage_type_id INT,name VARCHAR(50));
@@ -211,6 +213,7 @@ class BettingDatabaseTests(unittest.TestCase):
             CREATE TABLE probability_team_results (run_id CHAR(64),team_id BIGINT,payload JSON,PRIMARY KEY(run_id,team_id));
         '''
         sql += (Path(__file__).resolve().parents[1] / 'one_touch_loader/sql/create_betting_tables.sql').read_text(encoding='utf-8')
+        sql += (Path(__file__).resolve().parents[1] / 'one_touch_loader/sql/migrate_community_points.sql').read_text(encoding='utf-8')
         for statement in sql.split(';'):
             if statement.strip():
                 self.execute(statement)
@@ -408,7 +411,7 @@ class BettingDatabaseTests(unittest.TestCase):
 
     def test_failed_ledger_write_rolls_back_bet_and_balance(self):
         repo.initialize_wallet(1)
-        with patch.object(repo, '_entry', side_effect=RuntimeError('test failure')):
+        with patch.object(points_repo, 'record_entry', side_effect=RuntimeError('test failure')):
             with self.assertRaises(RuntimeError):
                 repo.mutate_bet(1, 1, self.body())
         self.assertEqual(repo.get_wallet(1)['balance'], 1000)

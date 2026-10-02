@@ -24,6 +24,28 @@ import 'support/stub_profile_activity_repository.dart';
 
 void main() {
   setUpAppCatalog();
+  testWidgets('point balance loads independently and failure is not zero',
+      (tester) async {
+    final points = Completer<int>();
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: Profile(
+        loadPointBalance: () => points.future,
+        repository: _StaticCurrentUserRepository(),
+        followingTeamsRepository: _StaticFollowingTeamsRepository(),
+        activityRepository: const StubProfileActivityRepository(),
+      ),
+    ));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('profile-stat-points-loading')),
+        findsOneWidget);
+    points.completeError(StateError('offline'));
+    await tester.pumpAndSettle();
+    _expectStat('points', '—');
+    _expectStat('points', '0', absent: true);
+    _expectStat('posts', '0');
+  });
+
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets('activity counts load, retry and fit at $size', (tester) async {
       await _setScreenSize(tester, size);
@@ -34,6 +56,7 @@ void main() {
         supportedLocales: appSupportedLocales,
         localizationsDelegates: appLocalizationDelegates,
         home: Profile(
+          loadPointBalance: () async => 1430,
           repository: _StaticCurrentUserRepository(),
           followingTeamsRepository: _StaticFollowingTeamsRepository(),
           activityRepository: activity,
@@ -45,7 +68,7 @@ void main() {
           findsOneWidget);
       expect(find.byKey(const ValueKey('profile-stat-comments-loading')),
           findsOneWidget);
-      _expectStat('points', '0');
+      _expectStat('points', '1430');
       _expectStat('posts', '0', absent: true);
       _expectStat('comments', '0', absent: true);
 
@@ -81,6 +104,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         theme: app_style.whitetheme,
         home: Profile(
+          loadPointBalance: () async => 1430,
           repository: _StaticCurrentUserRepository(),
           followingTeamsRepository: _StaticFollowingTeamsRepository(),
           activityRepository: activity,
@@ -100,7 +124,7 @@ void main() {
         expect(number.left, greaterThanOrEqualTo(box.left));
         expect(number.right, lessThanOrEqualTo(box.right + 0.1));
       }
-      _expectStat('points', '0');
+      _expectStat('points', '1430');
       expect(tester.takeException(), isNull);
     });
   }
@@ -112,6 +136,7 @@ void main() {
         GoRoute(
           path: '/profile',
           builder: (_, __) => Profile(
+            loadPointBalance: () async => 1430,
             repository: _StaticCurrentUserRepository(),
             followingTeamsRepository: _StaticFollowingTeamsRepository(),
             activityRepository: activity,
@@ -158,6 +183,7 @@ void main() {
     final activity = _ControlledActivityRepository();
     await tester.pumpWidget(MaterialApp(
       home: Profile(
+        loadPointBalance: () async => 1430,
         repository: _StaticCurrentUserRepository(),
         followingTeamsRepository: _StaticFollowingTeamsRepository(),
         activityRepository: activity,
@@ -199,6 +225,7 @@ void main() {
     final activity = _ControlledActivityRepository();
     await tester.pumpWidget(MaterialApp(
       home: Profile(
+        loadPointBalance: () async => 1430,
         repository: _StaticCurrentUserRepository(),
         followingTeamsRepository: _StaticFollowingTeamsRepository(),
         activityRepository: activity,
@@ -215,6 +242,7 @@ void main() {
       (tester) async {
     for (final page in [
       Profile(
+        loadPointBalance: () async => 1430,
         activityRepository: const StubProfileActivityRepository(),
         repository: _StaticCurrentUserRepository(),
         followingTeamsRepository: _StaticFollowingTeamsRepository(),
@@ -254,6 +282,7 @@ void main() {
       MaterialApp(
         theme: app_style.whitetheme,
         home: Profile(
+          loadPointBalance: () async => 1430,
           activityRepository: const StubProfileActivityRepository(),
           repository: repository,
           followingTeamsRepository: _StaticFollowingTeamsRepository(),
@@ -281,6 +310,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       theme: app_style.whitetheme,
       home: Profile(
+        loadPointBalance: () async => 1430,
         activityRepository: const StubProfileActivityRepository(),
         repository: repository,
         followingTeamsRepository: _StaticFollowingTeamsRepository(),
@@ -310,6 +340,7 @@ void main() {
       MaterialApp(
         theme: app_style.whitetheme,
         home: Profile(
+          loadPointBalance: () async => 1430,
           activityRepository: const StubProfileActivityRepository(),
           repository: repository,
           followingTeamsRepository: _StaticFollowingTeamsRepository(),
@@ -340,6 +371,7 @@ void main() {
       MaterialApp(
         theme: app_style.whitetheme,
         home: Profile(
+          loadPointBalance: () async => 1430,
           activityRepository: const StubProfileActivityRepository(),
           repository: repository,
           followingTeamsRepository: _StaticFollowingTeamsRepository(),
@@ -375,6 +407,7 @@ void main() {
       supportedLocales: appSupportedLocales,
       localizationsDelegates: appLocalizationDelegates,
       home: Profile(
+        loadPointBalance: () async => 1430,
         activityRepository: const StubProfileActivityRepository(),
         repository: _StaticCurrentUserRepository(),
         followingTeamsRepository: _StaticFollowingTeamsRepository(),
@@ -406,6 +439,7 @@ void main() {
       supportedLocales: appSupportedLocales,
       localizationsDelegates: appLocalizationDelegates,
       home: Profile(
+        loadPointBalance: () async => 1430,
         activityRepository: const StubProfileActivityRepository(),
         repository: _StaticCurrentUserRepository(),
         followingTeamsRepository: _StaticFollowingTeamsRepository(),
@@ -428,6 +462,7 @@ void main() {
         GoRoute(
           path: '/profile',
           builder: (_, __) => Profile(
+            loadPointBalance: () async => 1430,
             activityRepository: const StubProfileActivityRepository(),
             repository: _StaticCurrentUserRepository(),
             followingTeamsRepository: _StaticFollowingTeamsRepository(),
@@ -494,6 +529,7 @@ void main() {
         GoRoute(
           path: '/profile',
           builder: (_, __) => Profile(
+            loadPointBalance: () async => 1430,
             activityRepository: const StubProfileActivityRepository(),
             repository: _StaticCurrentUserRepository(),
             followingTeamsRepository: _StaticFollowingTeamsRepository(),
@@ -529,6 +565,7 @@ void main() {
         GoRoute(
           path: '/profile',
           builder: (_, __) => Profile(
+            loadPointBalance: () async => 1430,
             activityRepository: const StubProfileActivityRepository(),
             repository: _StaticCurrentUserRepository(),
             followingTeamsRepository: _StaticFollowingTeamsRepository(),
@@ -587,6 +624,7 @@ void main() {
         GoRoute(
           path: '/profile',
           builder: (_, __) => Profile(
+            loadPointBalance: () async => 1430,
             activityRepository: const StubProfileActivityRepository(),
             repository: _StaticCurrentUserRepository(),
             followingTeamsRepository: _StaticFollowingTeamsRepository(),

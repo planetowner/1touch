@@ -27,6 +27,7 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/profile_activity_counts.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/data/betting/betting_repository_provider.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class Profile extends StatefulWidget {
@@ -37,6 +38,7 @@ class Profile extends StatefulWidget {
     this.followingController,
     this.followingTeamsRepository,
     this.avatarRequestHeaders,
+    this.loadPointBalance,
   });
 
   final CurrentUserRepository? repository;
@@ -44,6 +46,7 @@ class Profile extends StatefulWidget {
   final PlayerFollowingController? followingController;
   final FollowingTeamsRepository? followingTeamsRepository;
   final Map<String, String>? avatarRequestHeaders;
+  final Future<int> Function()? loadPointBalance;
 
   @override
   State<Profile> createState() => _ProfileState();
@@ -59,6 +62,9 @@ class _ProfileState extends State<Profile> {
   ProfileActivityCounts? _activityCounts;
   bool _isLoadingCounts = true;
   int _activityRequest = 0;
+  int? _pointBalance;
+  bool _isLoadingPoints = true;
+  int _pointRequest = 0;
 
   CurrentUserRepository get _repository =>
       widget.repository ?? profile_provider.currentUserRepository;
@@ -91,6 +97,7 @@ class _ProfileState extends State<Profile> {
 
   Future<void> _loadProfile() async {
     _loadActivityCounts();
+    _loadPoints();
     if (!_isLoading) {
       setState(() {
         _isLoading = true;
@@ -158,7 +165,28 @@ class _ProfileState extends State<Profile> {
   Future<void> _openActivity(String tab) async {
     await context.push('/profile/activity?tab=$tab', extra: _profile);
     if (!mounted) return;
-    await _loadActivityCounts();
+    await Future.wait([_loadActivityCounts(), _loadPoints()]);
+  }
+
+  Future<void> _loadPoints() async {
+    final request = ++_pointRequest;
+    setState(() {
+      _isLoadingPoints = true;
+      _pointBalance = null;
+    });
+    int? balance;
+    try {
+      balance = widget.loadPointBalance != null
+          ? await widget.loadPointBalance!()
+          : (await bettingRepository.initializeWallet()).balance;
+    } on Object {
+      // 조회 실패를 0점으로 표시하지 않아요.
+    }
+    if (!mounted || request != _pointRequest) return;
+    setState(() {
+      _pointBalance = balance;
+      _isLoadingPoints = false;
+    });
   }
 
   Future<void> _openProfileEditor(CurrentUserProfile profile) async {
@@ -454,18 +482,27 @@ class _ProfileState extends State<Profile> {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildStat('0', tr(context, "PTS"),
-                        statKey: 'points', width: statWidth, tab: 'posts'),
+                    _buildStat(_pointBalance?.toString(), tr(context, "PTS"),
+                        statKey: 'points',
+                        width: statWidth,
+                        tab: 'posts',
+                        loading: _isLoadingPoints),
                     _verticalDivider('points-posts'),
                     const SizedBox(width: dividerGap),
                     _buildStat(_activityCounts?.postCount.toString(),
                         tr(context, "POSTS"),
-                        statKey: 'posts', width: statWidth, tab: 'posts'),
+                        statKey: 'posts',
+                        width: statWidth,
+                        tab: 'posts',
+                        loading: _isLoadingCounts),
                     _verticalDivider('posts-comments'),
                     const SizedBox(width: dividerGap),
                     _buildStat(_activityCounts?.commentCount.toString(),
                         tr(context, "COMMENTS"),
-                        statKey: 'comments', width: statWidth, tab: 'comments'),
+                        statKey: 'comments',
+                        width: statWidth,
+                        tab: 'comments',
+                        loading: _isLoadingCounts),
                   ],
                 );
               },
@@ -491,6 +528,7 @@ class _ProfileState extends State<Profile> {
     required String statKey,
     required double width,
     required String tab,
+    required bool loading,
   }) {
     return GestureDetector(
       key: ValueKey('profile-stat-$statKey'),
@@ -510,7 +548,7 @@ class _ProfileState extends State<Profile> {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: value == null && _isLoadingCounts
+                child: value == null && loading
                     ? FootballLoadingIndicator(
                         key: ValueKey('profile-stat-$statKey-loading'),
                       )

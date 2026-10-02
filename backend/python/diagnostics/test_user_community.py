@@ -191,6 +191,7 @@ class CommunityDatabaseCase(unittest.TestCase):
     account_management_schema = True
     post_drafts_schema = True
     display_name_schema = True
+    community_points_schema = True
     @classmethod
     def setUpClass(cls):
         cls.config = {"host": "127.0.0.1", "port": 14873, "user": "root", "password": "", "connection_timeout": 5}
@@ -241,6 +242,13 @@ class CommunityDatabaseCase(unittest.TestCase):
         for statement in notification_sql.read_text(encoding='utf-8').split(';'):
             if statement.strip():
                 self.execute(statement)
+        # 게시 보상도 같은 트랜잭션에 저장하므로 기존 베팅 지갑과 적립 확장을 함께 준비해요.
+        self.execute('CREATE TABLE probability_runs (run_id CHAR(64) CHARACTER SET ascii PRIMARY KEY)')
+        for filename in ('create_betting_tables.sql',) + (('migrate_community_points.sql',) if self.community_points_schema else ()):
+            sql = Path(__file__).resolve().parents[1] / 'one_touch_loader/sql' / filename
+            for statement in sql.read_text(encoding='utf-8').split(';'):
+                if statement.strip():
+                    self.execute(statement)
         self.execute("INSERT INTO teams (team_id,name) VALUES (6,'A'),(14,'B'),(503,'C'),(591,'D')")
         self.execute("INSERT INTO players VALUES (832,'Player A',NULL),(268,'Player B',NULL)")
         self.execute("INSERT INTO competitions VALUES (8,'league'),(82,'league'),(301,'league')")
