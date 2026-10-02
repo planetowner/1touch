@@ -1,8 +1,10 @@
-import 'package:onetouch/l10n/app_localizations.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/match_info/live_match_motion.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 String _singularMatchStatLabel(BuildContext context, String label) {
   final localized = appStatLabel(context, label);
@@ -58,7 +60,6 @@ class PlayerMatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isKorean = Localizations.localeOf(context).languageCode == 'ko';
     final topColor = isDark ? const Color(0xFF3D3D3D) : AppPalette.white;
     final bottomColor =
         isDark ? AppPalette.darkGrey : appColors.subtleBackground;
@@ -180,16 +181,14 @@ class PlayerMatchCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Flexible(
-                              child: Text(
-                                _singularMatchStatLabel(
+                              child: _ScrollingStatLabel(
+                                key: ValueKey(
+                                    'player-match-stat-label-${stats[index].label}'),
+                                label: _singularMatchStatLabel(
                                     context, stats[index].label),
-                                textAlign: TextAlign.left,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: Eyebrow.style,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 4),
                             Container(
                               key: ValueKey(
                                   'player-match-stat-value-${stats[index].label}'),
@@ -204,7 +203,7 @@ class PlayerMatchCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      if (index != stats.length - 1) const SizedBox(width: 16),
+                      if (index != stats.length - 1) const SizedBox(width: 8),
                     ],
                   ],
                 ),
@@ -212,7 +211,7 @@ class PlayerMatchCard extends StatelessWidget {
               if (stats.isNotEmpty)
                 SizedBox(
                   key: const ValueKey('player-match-rating-gap'),
-                  width: isKorean ? 8 : 16,
+                  width: 8,
                 ),
               // Rating badge sits on the app's near-black chip, distinct from
               // the grey stat pills.
@@ -234,4 +233,93 @@ class PlayerMatchCard extends StatelessWidget {
       ]),
     );
   }
+}
+
+class _ScrollingStatLabel extends StatefulWidget {
+  const _ScrollingStatLabel({super.key, required this.label});
+
+  final String label;
+
+  @override
+  State<_ScrollingStatLabel> createState() => _ScrollingStatLabelState();
+}
+
+class _ScrollingStatLabelState extends State<_ScrollingStatLabel> {
+  final ScrollController _controller = ScrollController();
+  Timer? _timer;
+  bool _needsScroll = false;
+
+  @override
+  void didUpdateWidget(covariant _ScrollingStatLabel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.label != widget.label) {
+      _timer?.cancel();
+      _needsScroll = false;
+      if (_controller.hasClients) _controller.jumpTo(0);
+    }
+  }
+
+  void _scheduleScroll() {
+    _timer?.cancel();
+    _timer = Timer(const Duration(milliseconds: 800), () async {
+      if (!mounted || !_needsScroll || !_controller.hasClients) return;
+      final distance = _controller.position.maxScrollExtent;
+      if (distance <= 0) return;
+      await _controller.animateTo(
+        distance,
+        duration:
+            Duration(milliseconds: (distance * 35).round().clamp(1200, 6000)),
+        curve: Curves.linear,
+      );
+      if (!mounted || !_needsScroll || !_controller.hasClients) return;
+      _timer = Timer(const Duration(milliseconds: 800), () {
+        if (!mounted || !_needsScroll || !_controller.hasClients) return;
+        _controller.jumpTo(0);
+        _scheduleScroll();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) {
+          final painter = TextPainter(
+            text: TextSpan(text: widget.label, style: Eyebrow.style),
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+            maxLines: 1,
+          )..layout();
+          final overflow = painter.width > constraints.maxWidth + 0.5;
+          painter.dispose();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted || overflow == _needsScroll) return;
+            _needsScroll = overflow;
+            if (overflow) {
+              _scheduleScroll();
+            } else {
+              _timer?.cancel();
+              if (_controller.hasClients) _controller.jumpTo(0);
+            }
+          });
+          return SingleChildScrollView(
+            key: const ValueKey('player-match-scrolling-label'),
+            controller: _controller,
+            scrollDirection: Axis.horizontal,
+            physics: const NeverScrollableScrollPhysics(),
+            child: Text(
+              widget.label,
+              maxLines: 1,
+              softWrap: false,
+              style: Eyebrow.style,
+            ),
+          );
+        },
+      );
 }

@@ -255,6 +255,8 @@ void main() {
         matching: find.byType(Divider),
       );
 
+      expect(find.descendant(of: card, matching: find.text('3')), findsNothing);
+      expect(find.descendant(of: card, matching: find.text('1')), findsNothing);
       expect(tester.getRect(firstLogo).left - tester.getRect(card).left, 16);
       expect(tester.getRect(firstLogo).top - tester.getRect(card).top, 16);
       expect(

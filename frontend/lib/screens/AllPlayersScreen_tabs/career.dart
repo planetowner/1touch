@@ -118,7 +118,6 @@ class _CareerTabState extends State<CareerTab> {
                 style: Body2_b.style,
               ),
             ),
-            Text('${honours.length}', style: Body2_b.style),
           ],
         ),
         const SizedBox(height: 24),

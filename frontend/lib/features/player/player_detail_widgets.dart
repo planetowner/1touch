@@ -116,6 +116,28 @@ class PlayerRecordRow extends StatelessWidget {
 class PlayerCompetitionTable extends StatelessWidget {
   const PlayerCompetitionTable({super.key, required this.competitions});
   final List<PlayerCompetitionRecord> competitions;
+  static const double _ratingColumnWidth = 72;
+
+  Widget _statColumns(
+          String keyPrefix, Widget matches, Widget winRate, Widget rating) =>
+      Expanded(
+        flex: 7,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            for (final (name, width, child) in [
+              ('mp', 36.0, matches),
+              ('wr', 52.0, winRate),
+              ('rating', _ratingColumnWidth, rating),
+            ])
+              SizedBox(
+                key: ValueKey('player-competition-$keyPrefix-$name'),
+                width: width,
+                child: Center(child: child),
+              ),
+          ],
+        ),
+      );
 
   String _competitionLabel(
           BuildContext context, PlayerCompetitionRecord competition) =>
@@ -147,18 +169,14 @@ class PlayerCompetitionTable extends StatelessWidget {
                     textAlign: TextAlign.left,
                     style: headerStyle,
                   )),
-              Expanded(
-                  flex: 2,
-                  child: Text(tr(context, 'MP'),
-                      textAlign: TextAlign.center, style: headerStyle)),
-              Expanded(
-                  flex: 2,
-                  child: Text('WR',
-                      textAlign: TextAlign.center, style: headerStyle)),
-              Expanded(
-                  flex: 3,
-                  child: Text(tr(context, 'Rating'),
-                      textAlign: TextAlign.right, style: headerStyle)),
+              _statColumns(
+                'header',
+                Text(tr(context, 'MP'),
+                    textAlign: TextAlign.center, style: headerStyle),
+                Text('WR', textAlign: TextAlign.center, style: headerStyle),
+                Text(tr(context, 'Rating'),
+                    textAlign: TextAlign.center, style: headerStyle),
+              ),
             ]),
           ),
           Padding(
@@ -181,48 +199,41 @@ class PlayerCompetitionTable extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.left,
                             style: Heading5.style)),
-                    Expanded(
-                        flex: 2,
-                        child: Text('${competitions[index].record.appearances}',
-                            textAlign: TextAlign.center,
-                            style: Heading5.style)),
-                    Expanded(
-                        flex: 2,
-                        child: Text(
+                    _statColumns(
+                        'row-${competitions[index].id}',
+                        Text('${competitions[index].record.appearances}',
+                            textAlign: TextAlign.center, style: Heading5.style),
+                        Text(
                             competitions[index].record.winRate == null
                                 ? '—'
                                 : '${playerNumber(competitions[index].record.winRate, decimals: 0)}%',
                             textAlign: TextAlign.center,
-                            style: Heading5.style)),
-                    Expanded(
-                        flex: 3,
-                        child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Container(
-                                key: ValueKey(
-                                    'player-competition-rating-${competitions[index].id}'),
-                                height: 32,
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                    color: AppPalette.black,
-                                    borderRadius: BorderRadius.circular(4)),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                        competitions[index]
-                                                .record
-                                                .rating
-                                                ?.toStringAsFixed(1) ??
-                                            '—',
-                                        style: Body1_b.style.copyWith(
-                                          color: AppPalette.white,
-                                          height: 1.3,
-                                        )),
-                                  ],
-                                )))),
+                            style: Heading5.style),
+                        Container(
+                            key: ValueKey(
+                                'player-competition-rating-${competitions[index].id}'),
+                            height: 32,
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                                color: AppPalette.black,
+                                borderRadius: BorderRadius.circular(4)),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                    competitions[index]
+                                            .record
+                                            .rating
+                                            ?.toStringAsFixed(1) ??
+                                        '—',
+                                    style: Body1_b.style.copyWith(
+                                      color: AppPalette.white,
+                                      height: 1.3,
+                                    )),
+                              ],
+                            ))),
                   ],
                 ),
                 if (index != competitions.length - 1) const SizedBox(height: 8),
