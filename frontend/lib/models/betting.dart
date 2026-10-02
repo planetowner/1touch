@@ -34,6 +34,15 @@ class BettingOption {
   }
 }
 
+List<double> bettingProbabilitiesByOutcome(Iterable<BettingOption> options) {
+  // 그래프는 홈·무·원정 순서를 유지하고, 없는 무승부 구간은 0으로 숨겨요.
+  final probabilities = List<double>.filled(BetOutcome.values.length, 0);
+  for (final option in options) {
+    probabilities[option.outcome.index] = option.probability;
+  }
+  return probabilities;
+}
+
 class PointWallet {
   const PointWallet({required this.balance, required this.initialized});
   final int balance;

@@ -9,6 +9,7 @@ import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/betting_widgets.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/betting.dart';
 
 import 'support/fake_betting_repository.dart';
@@ -111,19 +112,50 @@ void main() {
     controller.dispose();
   });
 
-  testWidgets('reloads betting when the server opening time arrives',
-      (tester) async {
-    final repository = FakeBettingRepository()
-      ..unavailableReason = 'betting_not_open'
-      ..opensAt = DateTime.now().add(const Duration(seconds: 2));
-    final controller = BettingController(fixtureId: 1, repository: repository);
-    await controller.load();
-    expect(controller.canBet, false);
-    repository.unavailableReason = null;
-    await tester.pump(const Duration(seconds: 2));
-    expect(controller.canBet, true);
-    controller.dispose();
-  });
+  for (final drawAllowed in [true, false]) {
+    testWidgets(
+        'shows opening notice then reloads with drawAllowed=$drawAllowed',
+        (tester) async {
+      final repository = FakeBettingRepository(
+        marketOptions: drawAllowed
+            ? FakeBettingRepository.options
+            : FakeBettingRepository.decisiveOptions,
+      )
+        ..unavailableReason = 'betting_not_open'
+        ..opensAt = DateTime.now().add(const Duration(seconds: 2));
+      final controller =
+          BettingController(fixtureId: 1, repository: repository);
+      await controller.load();
+      final teams = MockTeamRepository();
+      await tester.pumpWidget(MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        home: Scaffold(
+          body: MatchBettingSection(
+            controller: controller,
+            homeTeam: teams.requireById(6),
+            awayTeam: teams.requireById(14),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(controller.canBet, false);
+      expect(find.textContaining('에 베팅이 열려요.'), findsOneWidget);
+      expect(find.byKey(const ValueKey('match-betting-opening-notice')),
+          findsOneWidget);
+      repository.unavailableReason = null;
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+      expect(controller.canBet, true);
+      expect(find.byKey(const ValueKey('match-betting-opening-notice')),
+          findsNothing);
+      expect(find.byKey(const ValueKey('match-betting-card')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
+    });
+  }
 
   test('point return uses exact decimal arithmetic', () {
     expect(FakeBettingRepository.options[0].totalReturn(100), 166);
@@ -203,138 +235,204 @@ void main() {
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
-    testWidgets('place edit cancel at $size', (tester) async {
-      await tester.binding.setSurfaceSize(size);
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-      final repository = FakeBettingRepository();
-      final controller = BettingController(
-        fixtureId: 1,
-        repository: repository,
-      );
-      await controller.load();
-      final teams = MockTeamRepository();
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: size.width == 320 ? whitetheme : darktheme,
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: Column(
-                children: [
-                  MatchBettingSection(
-                    controller: controller,
-                    homeTeam: teams.requireById(6),
-                    awayTeam: teams.requireById(14),
-                  ),
-                  BettingParticipationCard(controller: controller),
-                ],
+    for (final drawAllowed in [true, false]) {
+      testWidgets('place edit cancel at $size with drawAllowed=$drawAllowed',
+          (tester) async {
+        await tester.binding.setSurfaceSize(size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final repository = FakeBettingRepository(
+          marketOptions: drawAllowed
+              ? FakeBettingRepository.options
+              : FakeBettingRepository.decisiveOptions,
+        );
+        final outcome = drawAllowed ? BetOutcome.draw : BetOutcome.awayWin;
+        final profit = drawAllowed ? 900 : 400;
+        const participationColors = [Colors.red, Colors.grey, Colors.blue];
+        final controller = BettingController(
+          fixtureId: 1,
+          repository: repository,
+        );
+        await controller.load();
+        final teams = MockTeamRepository();
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: size.width == 320 ? whitetheme : darktheme,
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    MatchBettingSection(
+                      controller: controller,
+                      homeTeam: teams.requireById(6),
+                      awayTeam: teams.requireById(14),
+                    ),
+                    BettingParticipationCard(
+                      controller: controller,
+                      barColors: participationColors,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      );
-      expect(find.text('1touch'), findsOneWidget);
-      expect(find.text('EXPERT'), findsNothing);
-      expect(find.text('No bets yet.'), findsOneWidget);
-      final noBetsBar = find.byKey(const ValueKey('match-h2h-no-bets-bar'));
-      final noBetsContainer = tester.widget<Container>(noBetsBar);
-      final noBetsText = tester.widget<Text>(
-        find.descendant(of: noBetsBar, matching: find.byType(Text)),
-      );
-      expect(tester.getSize(noBetsBar).height, 40);
-      expect(noBetsContainer.padding, const EdgeInsets.all(8));
-      expect(noBetsContainer.alignment, Alignment.center);
-      expect((noBetsContainer.decoration as BoxDecoration).color,
-          AppPalette.lightGrey);
-      expect((noBetsContainer.decoration as BoxDecoration).borderRadius,
-          const BorderRadius.all(Radius.circular(6)));
-      expect(noBetsText.style?.fontSize, 18);
-      expect(noBetsText.style?.fontWeight, FontWeight.w700);
-      expect(noBetsText.style?.color, AppPalette.white);
-      await tester.ensureVisible(find.text('PLACE A BET'));
-      await tester.tap(find.text('PLACE A BET'));
-      await tester.pumpAndSettle();
-      final drawHomeLogo = tester.getRect(
-        find.byKey(const ValueKey('match-betting-draw-home-logo')),
-      );
-      final drawAwayLogo = tester.getRect(
-        find.byKey(const ValueKey('match-betting-draw-away-logo')),
-      );
-      expect(
-        find.byKey(const ValueKey('match-betting-draw-home-clip')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('match-betting-draw-away-clip')),
-        findsOneWidget,
-      );
-      expect(drawHomeLogo.overlaps(drawAwayLogo), isTrue);
-      expect(drawAwayLogo.left, greaterThan(drawHomeLogo.left));
-      expect(drawAwayLogo.top, greaterThan(drawHomeLogo.top));
-      expect(
-        tester
-            .widget<Divider>(
-              find.byKey(
-                const ValueKey('match-betting-option-divider-draw'),
-              ),
-            )
-            .color,
-        size.width == 320
-            ? AppColors.of(
-                tester.element(
+        );
+        expect(find.text('1touch'), findsOneWidget);
+        expect(find.text('EXPERT'), findsNothing);
+        expect(find.text('Draw'), drawAllowed ? findsOneWidget : findsNothing);
+        expect(find.text('D'), drawAllowed ? findsOneWidget : findsNothing);
+        for (final bar in tester.widgetList<BettingProbabilityBar>(
+            find.byType(BettingProbabilityBar))) {
+          expect(bar.values, drawAllowed ? [0.6, 0.1, 0.3] : [0.8, 0, 0.2]);
+        }
+        if (!drawAllowed) {
+          for (final label in find.text('20.0%').evaluate()) {
+            final segment = tester.widget<Container>(find
+                .ancestor(
+                  of: find.byWidget(label.widget),
+                  matching: find.byType(Container),
+                )
+                .first);
+            final bar = tester.widget<BettingProbabilityBar>(find.ancestor(
+              of: find.byWidget(label.widget),
+              matching: find.byType(BettingProbabilityBar),
+            ));
+            expect(segment.color, bar.colors![BetOutcome.awayWin.index]);
+          }
+        }
+        expect(find.text('No bets yet.'), findsOneWidget);
+        final noBetsBar = find.byKey(const ValueKey('match-h2h-no-bets-bar'));
+        final noBetsContainer = tester.widget<Container>(noBetsBar);
+        final noBetsText = tester.widget<Text>(
+          find.descendant(of: noBetsBar, matching: find.byType(Text)),
+        );
+        expect(tester.getSize(noBetsBar).height, 40);
+        expect(noBetsContainer.padding, const EdgeInsets.all(8));
+        expect(noBetsContainer.alignment, Alignment.center);
+        expect((noBetsContainer.decoration as BoxDecoration).color,
+            AppPalette.lightGrey);
+        expect((noBetsContainer.decoration as BoxDecoration).borderRadius,
+            const BorderRadius.all(Radius.circular(6)));
+        expect(noBetsText.style?.fontSize, 18);
+        expect(noBetsText.style?.fontWeight, FontWeight.w700);
+        expect(noBetsText.style?.color, AppPalette.white);
+        await tester.ensureVisible(find.text('PLACE A BET'));
+        await tester.tap(find.text('PLACE A BET'));
+        await tester.pumpAndSettle();
+        expect(find.byType(ListTile), findsNWidgets(drawAllowed ? 3 : 2));
+        if (drawAllowed) {
+          final drawHomeLogo = tester.getRect(
+            find.byKey(const ValueKey('match-betting-draw-home-logo')),
+          );
+          final drawAwayLogo = tester.getRect(
+            find.byKey(const ValueKey('match-betting-draw-away-logo')),
+          );
+          expect(
+            find.byKey(const ValueKey('match-betting-draw-home-clip')),
+            findsOneWidget,
+          );
+          expect(
+            find.byKey(const ValueKey('match-betting-draw-away-clip')),
+            findsOneWidget,
+          );
+          expect(drawHomeLogo.overlaps(drawAwayLogo), isTrue);
+          expect(drawAwayLogo.left, greaterThan(drawHomeLogo.left));
+          expect(drawAwayLogo.top, greaterThan(drawHomeLogo.top));
+          expect(
+            tester
+                .widget<Divider>(
                   find.byKey(
                     const ValueKey('match-betting-option-divider-draw'),
                   ),
-                ),
-              ).divider
-            : AppPalette.lightGrey,
-      );
-      await tester.ensureVisible(find.widgetWithText(ListTile, 'Draw'));
-      await tester.tap(find.widgetWithText(ListTile, 'Draw'));
-      await tester.pump();
-      await tester.ensureVisible(find.text('CONTINUE'));
-      await tester.tap(find.text('CONTINUE'));
-      await tester.pumpAndSettle();
-      expect(find.text('If correct: +900 pts'), findsOneWidget);
-      repository.submitGate = Completer<void>();
-      await tester.ensureVisible(find.text('CONFIRM BET'));
-      await tester.tap(find.text('CONFIRM BET'));
-      await tester.pump();
-      expect(find.text('Bet Submitted!'), findsNothing);
-      expect(repository.saveCalls, 1);
-      repository.submitGate!.complete();
-      await tester.pumpAndSettle();
-      expect(find.text('Bet Submitted!'), findsOneWidget);
-      await tester.tap(find.text('DONE'));
-      await tester.pumpAndSettle();
-      expect(find.text('You’ve got 900 pts!'), findsOneWidget);
-      expect(find.text('EDIT BET'), findsOneWidget);
-      await tester.ensureVisible(find.text('EDIT BET'));
-      await tester.tap(find.text('EDIT BET'));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('CONTINUE'));
-      await tester.tap(find.text('CONTINUE'));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byKey(const ValueKey('bet-increase')));
-      await tester.tap(find.byKey(const ValueKey('bet-increase')));
-      await tester.pump();
-      await tester.ensureVisible(find.text('CONFIRM BET'));
-      await tester.tap(find.text('CONFIRM BET'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('DONE'));
-      await tester.pumpAndSettle();
-      expect(find.text('You’ve got 890 pts!'), findsOneWidget);
-      await tester.ensureVisible(find.text('CANCEL BET'));
-      await tester.tap(find.text('CANCEL BET'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'CANCEL BET').last);
-      await tester.pumpAndSettle();
-      expect(find.text('You’ve got 1000 pts!'), findsOneWidget);
-      expect(find.text('No bets yet.'), findsOneWidget);
-      expect(noBetsBar, findsOneWidget);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox.shrink());
-      controller.dispose();
-    });
+                )
+                .color,
+            size.width == 320
+                ? AppColors.of(
+                    tester.element(
+                      find.byKey(
+                        const ValueKey('match-betting-option-divider-draw'),
+                      ),
+                    ),
+                  ).divider
+                : AppPalette.lightGrey,
+          );
+        } else {
+          expect(find.text('Draw'), findsNothing);
+          expect(find.text('D'), findsNothing);
+          expect(find.text('1.25×'), findsWidgets);
+          expect(find.text('5.00×'), findsWidgets);
+        }
+        final selection = find.byType(ListTile).at(1);
+        await tester.ensureVisible(selection);
+        await tester.tap(selection);
+        await tester.pump();
+        await tester.ensureVisible(find.text('CONTINUE'));
+        await tester.tap(find.text('CONTINUE'));
+        await tester.pumpAndSettle();
+        expect(find.text('If correct: +$profit pts'), findsOneWidget);
+        repository.submitGate = Completer<void>();
+        await tester.ensureVisible(find.text('CONFIRM BET'));
+        await tester.tap(find.text('CONFIRM BET'));
+        await tester.pump();
+        expect(find.text('Bet Submitted!'), findsNothing);
+        expect(repository.saveCalls, 1);
+        repository.submitGate!.complete();
+        await tester.pumpAndSettle();
+        expect(find.text('Bet Submitted!'), findsOneWidget);
+        await tester.tap(find.text('DONE'));
+        await tester.pumpAndSettle();
+        expect(find.text('You’ve got 900 pts!'), findsOneWidget);
+        expect(find.text('EDIT BET'), findsOneWidget);
+        expect(repository.bet!.outcome, outcome);
+        expect(repository.bet!.potentialReturn, profit + 100);
+        final participationBar = find
+            .descendant(
+              of: find.byKey(const ValueKey('match-h2h-bets-card')),
+              matching: find.byType(BettingProbabilityBar),
+            )
+            .last;
+        expect(tester.widget<BettingProbabilityBar>(participationBar).selected,
+            outcome);
+        final selectedSegment = tester.widget<Container>(find
+            .ancestor(
+              of: find.descendant(
+                  of: participationBar, matching: find.text('100.0%')),
+              matching: find.byType(Container),
+            )
+            .first);
+        expect(selectedSegment.color, participationColors[outcome.index]);
+        expect(
+            find.descendant(
+                of: participationBar,
+                matching: find.byIcon(Icons.check_circle)),
+            findsOneWidget);
+        await tester.ensureVisible(find.text('EDIT BET'));
+        await tester.tap(find.text('EDIT BET'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('CONTINUE'));
+        await tester.tap(find.text('CONTINUE'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byKey(const ValueKey('bet-increase')));
+        await tester.tap(find.byKey(const ValueKey('bet-increase')));
+        await tester.pump();
+        await tester.ensureVisible(find.text('CONFIRM BET'));
+        await tester.tap(find.text('CONFIRM BET'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('DONE'));
+        await tester.pumpAndSettle();
+        expect(find.text('You’ve got 890 pts!'), findsOneWidget);
+        await tester.ensureVisible(find.text('CANCEL BET'));
+        await tester.tap(find.text('CANCEL BET'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(TextButton, 'CANCEL BET').last);
+        await tester.pumpAndSettle();
+        expect(find.text('You’ve got 1000 pts!'), findsOneWidget);
+        expect(find.text('No bets yet.'), findsOneWidget);
+        expect(noBetsBar, findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+        controller.dispose();
+      });
+    }
   }
 
   testWidgets('H2H shows the accepted payout after settlement', (tester) async {

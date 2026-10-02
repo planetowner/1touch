@@ -543,16 +543,16 @@ class MatchStatsHeader extends StatelessWidget {
         const SizedBox(height: 20),
         if (options.isNotEmpty)
           BettingProbabilityBar(
-            values: options.map((option) => option.probability).toList(),
+            values: bettingProbabilitiesByOutcome(options),
             colors: barColors,
           ),
         const SizedBox(height: 8),
         Row(
-          children: BetOutcome.values
+          children: options
               .map(
-                (outcome) => Expanded(
+                (option) => Expanded(
                   child: Text(
-                    _label(context, outcome, homeTeam, awayTeam),
+                    _label(context, option.outcome, homeTeam, awayTeam),
                     textAlign: TextAlign.center,
                     style: Body2.style,
                   ),
@@ -598,9 +598,7 @@ class BettingParticipationCard extends StatelessWidget {
                     const SizedBox(height: 12),
                     if (market?.available == true)
                       BettingProbabilityBar(
-                        values: market!.options
-                            .map((option) => option.probability)
-                            .toList(),
+                        values: bettingProbabilitiesByOutcome(market!.options),
                         colors: barColors,
                       )
                     else

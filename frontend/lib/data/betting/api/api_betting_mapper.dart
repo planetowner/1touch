@@ -34,15 +34,20 @@ BettingMarket marketFromJson(Map<String, dynamic> json) {
       decimalOdds: double.parse(option['decimal_odds'] as String),
     );
   }).toList(growable: false);
-  if (options.isNotEmpty &&
-      (options.length != 3 ||
-          options.asMap().entries.any(
-                (entry) =>
-                    entry.value.outcome != BetOutcome.values[entry.key] ||
-                    !entry.value.probability.isFinite ||
-                    entry.value.probability <= 0 ||
-                    entry.value.probability > 1,
-              ))) {
+  // 단판 경기는 무승부 없이 홈 승·원정 승만 제공해요.
+  final validOutcomes =
+      switch (options.map((option) => option.outcome).toList()) {
+    [] ||
+    [BetOutcome.homeWin, BetOutcome.awayWin] ||
+    [BetOutcome.homeWin, BetOutcome.draw, BetOutcome.awayWin] =>
+      true,
+    _ => false,
+  };
+  if (!validOutcomes ||
+      options.any((option) =>
+          !option.probability.isFinite ||
+          option.probability <= 0 ||
+          option.probability > 1)) {
     throw const FormatException('Invalid betting probabilities');
   }
   return BettingMarket(
