@@ -8,6 +8,7 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/features/match_info/live_match_motion.dart';
+import 'package:onetouch/core/overflow_scrolling_text.dart';
 
 // Maps a team's id to its local crest file in TeamLogos/, used as the
 // fallback when the network image fails to load. Filenames don't follow a
@@ -282,9 +283,7 @@ class MatchCard2 extends StatelessWidget {
           ],
           LayoutBuilder(
             builder: (context, constraints) {
-              final veryCompact = constraints.maxWidth < 270;
               const teamWidth = 48.0;
-              const teamScoreGap = 16.0;
               final resolvedDateStyle = dateTextStyle ?? Body2.style;
               final homeDimmed = homeScore != null &&
                   awayScore != null &&
@@ -312,24 +311,21 @@ class MatchCard2 extends StatelessWidget {
                   textWidth(homeScore?.toString() ?? '-', scoreStyle) + 24;
               final awayScoreWidth =
                   textWidth(awayScore?.toString() ?? '-', scoreStyle) + 24;
-              final fixedContentWidth = teamWidth * 2 +
-                  teamScoreGap * 2 +
-                  homeScoreWidth +
-                  awayScoreWidth;
+              final fixedContentWidth =
+                  teamWidth * 2 + homeScoreWidth + awayScoreWidth;
               final dateWidth = date
                   .split('\n')
                   .map((line) => textWidth(line, resolvedDateStyle))
                   .fold(
                       0.0, (widest, width) => width > widest ? width : widest);
-              // 측정값과 실제 RenderBox 사이의 소수점 오차로 날짜가 미세하게
-              // 축소되지 않도록 날짜 영역에 8px의 안전 여유를 먼저 배정해요.
-              final spacingRoom =
-                  constraints.maxWidth - fixedContentWidth - dateWidth - 8;
-              final sectionSpacing =
-                  (spacingRoom / 2).clamp(4.0, 30.0).toDouble();
+              // 로고·점수·날짜 사이 네 간격을 남는 폭에 맞춰 균등하게 나눠요.
+              // 날짜가 더 길면 글자 크기 대신 가운데 영역만 스크롤해요.
+              final gap =
+                  ((constraints.maxWidth - fixedContentWidth - dateWidth - 8) /
+                          4)
+                      .clamp(4.0, 16.0)
+                      .toDouble();
               final matchRow = Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                spacing: sectionSpacing,
                 children: [
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -344,7 +340,7 @@ class MatchCard2 extends StatelessWidget {
                           logoKey: const ValueKey('last-match-home-logo'),
                         ),
                       ),
-                      SizedBox(width: teamScoreGap),
+                      SizedBox(width: gap),
                       _ScoreBoard(
                         key: const ValueKey('last-match-home-score'),
                         score: homeScore,
@@ -352,6 +348,7 @@ class MatchCard2 extends StatelessWidget {
                       ),
                     ],
                   ),
+                  SizedBox(width: gap),
                   Expanded(
                     child: _MatchInfo2(
                       key: const ValueKey('last-match-date-time'),
@@ -360,6 +357,7 @@ class MatchCard2 extends StatelessWidget {
                       textStyle: resolvedDateStyle,
                     ),
                   ),
+                  SizedBox(width: gap),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -368,7 +366,7 @@ class MatchCard2 extends StatelessWidget {
                         score: awayScore,
                         isDimmed: awayDimmed,
                       ),
-                      SizedBox(width: teamScoreGap),
+                      SizedBox(width: gap),
                       SizedBox(
                         width: teamWidth,
                         child: _TeamDisplay2(
@@ -383,16 +381,7 @@ class MatchCard2 extends StatelessWidget {
                   ),
                 ],
               );
-              if (!veryCompact) return matchRow;
-              return SizedBox(
-                height: 92,
-                child: OverflowBox(
-                  alignment: Alignment.center,
-                  minWidth: constraints.maxWidth + 16,
-                  maxWidth: constraints.maxWidth + 16,
-                  child: matchRow,
-                ),
-              );
+              return matchRow;
             },
           ),
         ],
@@ -689,10 +678,16 @@ class _MatchInfo2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FixtureDateTime(
-      label: date,
-      textStyle: textStyle,
-      overflow: TextOverflow.visible,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final line in date.split('\n'))
+          OverflowScrollingText(
+            text: line,
+            style: textStyle,
+            alignment: Alignment.center,
+          ),
+      ],
     );
   }
 }
