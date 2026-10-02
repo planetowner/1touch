@@ -13,6 +13,7 @@ import 'package:onetouch/screens/PlayerScreen.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/player/player_directory_widgets.dart';
 import 'package:onetouch/features/player/player_picker_sheet.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'support/player_detail_fixture.dart';
 import 'support/player_directory_fixture.dart';
@@ -327,6 +328,61 @@ void main() {
     expect(cardTop.dy - titleBottom.dy, 16);
   });
 
+  testWidgets('ranking shows cached first page while request is pending',
+      (tester) async {
+    final cached = PlayerRankingPage(
+      season: '2026/2027',
+      leagues: const [],
+      items: const [
+        (
+          id: 301,
+          name: 'Cached rank',
+          image: null,
+          position: 'DF',
+          rank: 1,
+          score: 84.0,
+          rating: 7.5,
+          appearances: 12,
+        ),
+      ],
+      total: 1,
+    );
+    final repository = _PendingCachedRankingRepository()..seedRanking(cached);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(body: PlayerRankingPanel(repository: repository)),
+    ));
+
+    expect(find.text('Cached rank'), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsNothing);
+
+    final fresh = PlayerRankingPage(
+      season: '2026/2027',
+      leagues: const [],
+      items: const [
+        (
+          id: 301,
+          name: 'Fresh rank',
+          image: null,
+          position: 'DF',
+          rank: 1,
+          score: 85.0,
+          rating: 7.6,
+          appearances: 13,
+        ),
+      ],
+      total: 1,
+    );
+    repository.seedRanking(fresh);
+    await tester.pump();
+    expect(find.text('Fresh rank'), findsOneWidget);
+
+    // An older load result must not replace a newer cache publication.
+    repository.pending.complete(cached);
+    await tester.pumpAndSettle();
+    expect(find.text('Fresh rank'), findsOneWidget);
+    expect(find.text('Cached rank'), findsNothing);
+  });
+
   testWidgets('active ranking filters have 16px spacing on both sides',
       (tester) async {
     await tester.pumpWidget(
@@ -401,7 +457,7 @@ void main() {
     expect(completed, isFalse);
 
     directory.rankingRefreshCompleter.complete(
-      const PlayerRankingPage(
+      PlayerRankingPage(
         season: '2026/2027',
         leagues: [],
         items: [],
@@ -643,6 +699,18 @@ void main() {
     expect(controller.offset, controller.position.minScrollExtent);
     expect(tester.takeException(), isNull);
   });
+}
+
+class _PendingCachedRankingRepository extends FakePlayerDirectoryRepository {
+  final pending = Completer<PlayerRankingPage>();
+
+  @override
+  Future<PlayerRankingPage> ranking({
+    int? league,
+    String? position,
+    int offset = 0,
+  }) =>
+      pending.future;
 }
 
 class _ControlledRefreshDirectoryRepository
