@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh 1Touch player indicators when inputs change
+
+[Timer]
+# 계산을 마친 뒤 1분마다 입력을 확인해요. 같은 작업을 겹쳐 실행하지 않아요.
+OnBootSec=45s
+OnUnitInactiveSec=60s
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

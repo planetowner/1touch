@@ -1,118 +1,35 @@
-"""원본 경기·급여를 읽기 전용으로 조회해 현재 시즌 지표를 반환해요."""
+"""미리 계산한 선수 한 명의 지표와 최신 팀 내 역할을 조회해요."""
+
 from __future__ import annotations
 
-from contextlib import closing
-from datetime import datetime, timezone
-import json
-from pathlib import Path
-from threading import Lock
-from time import monotonic
-
-from ..db import get_conn
-from ...core.fixture_states import COMPLETED_STATE_IDS
-from ...core.player_indicators import build_player_indicators
+from ..db import fetch_one_dict
+from ...core.db_json import decoded
 from ...core.player_rating_percentile import RATING_COMPETITION_IDS
 
 
-CALIBRATION_PATH = Path(__file__).parents[2] / "core" / "player_form_calibration.json"
-LEAGUES_SQL = ",".join(map(str, RATING_COMPETITION_IDS))
-COMPLETED_SQL = ",".join(map(str, COMPLETED_STATE_IDS))
-_snapshot_lock = Lock()
-_snapshot_inputs = None
-_snapshot: dict[int, dict] = {}
-_snapshot_expires_at = 0.0
+class IndicatorsNotReadyError(RuntimeError):
+    """현재 소속의 첫 계산이 아직 저장되지 않았어요."""
 
 
-def fetch_indicator_matches(cur, season_ids: list[int], as_of: datetime) -> list[dict]:
-    cur.execute(f"""
-        SELECT s.season_id, s.competition_id, fl.fixture_id, fl.player_id, fl.team_id,
-               fl.minutes_played, fl.rating, f.starting_at
-        FROM seasons s JOIN stages st ON st.season_id=s.season_id
-        JOIN fixtures f ON f.stage_id=st.stage_id
-        JOIN rounds r ON r.round_id=f.round_id
-        JOIN fixture_lineups fl ON fl.fixture_id=f.fixture_id
-        WHERE s.season_id IN ({','.join(['%s'] * len(season_ids))})
-          AND f.state_id IN ({COMPLETED_SQL}) AND r.name REGEXP '^[0-9]+$'
-          AND f.starting_at<=%s AND fl.minutes_played>0
-        ORDER BY f.starting_at, f.fixture_id, fl.player_id, fl.team_id
-    """, (*season_ids, as_of))
-    return cur.fetchall()
-
-
-def get_current_player_indicators(player_id: int, *, as_of: datetime | None = None) -> dict | None:
-    items = _build_current_snapshot(as_of) if as_of is not None else _cached_current_snapshot()
-    return items.get(player_id)
-
-
-def _cached_current_snapshot() -> dict[int, dict]:
-    global _snapshot_inputs, _snapshot, _snapshot_expires_at
-    # 동시 요청도 같은 계산을 기다려요. 만료는 긴 계산을 마친 뒤부터 1분으로 잡아요.
-    with _snapshot_lock:
-        if monotonic() < _snapshot_expires_at:
-            return _snapshot
-        as_of = datetime.now(timezone.utc).replace(tzinfo=None)
-        inputs = _read_current_inputs(as_of)
-        if inputs != _snapshot_inputs:
-            snapshot = _build_current_snapshot(as_of, inputs=inputs)
-        else:
-            # 점수는 입력에만 의존해요. 최신 DB 조회가 같으면 모델을 다시 맞추지 않아요.
-            snapshot = {key: {**item, 'as_of': as_of.replace(tzinfo=timezone.utc)}
-                        for key, item in _snapshot.items()}
-        _snapshot_inputs, _snapshot = inputs, snapshot
-        _snapshot_expires_at = monotonic() + 60
-        return _snapshot
-
-
-def _read_current_inputs(as_of: datetime) -> tuple:
-    # DB의 starting_at은 UTC DATETIME이에요. 모든 집계에 같은 기준 시각을 써요.
-    with closing(get_conn()) as conn:
-        conn.start_transaction(readonly=True, consistent_snapshot=True)
-        try:
-            with conn.cursor(dictionary=True) as cur:
-                cur.execute(f"""
-                    SELECT sm.player_id, sm.team_id, sm.season_id, sm.position_group_id, sm.squad_role,
-                           s.competition_id, s.name AS season_name, w.estimated_weekly_gross_eur
-                    FROM team_squad_members sm JOIN seasons s ON s.season_id=sm.season_id
-                    LEFT JOIN player_wages w ON w.team_id=sm.team_id
-                         AND w.season_id=sm.season_id AND w.player_id=sm.player_id
-                    WHERE s.is_current=1 AND s.competition_id IN ({LEAGUES_SQL})
-                    ORDER BY sm.player_id, sm.team_id, sm.season_id
-                """)
-                roster = cur.fetchall()
-                if not roster:
-                    return ([], [], [], None)
-                seasons = sorted({r["season_id"] for r in roster})
-                matches = fetch_indicator_matches(cur, seasons, as_of)
-                cur.execute(f"""
-                    SELECT st.season_id, f.fixture_id, f.home_team_id, f.away_team_id, f.starting_at
-                    FROM fixtures f JOIN stages st ON st.stage_id=f.stage_id
-                    JOIN rounds r ON r.round_id=f.round_id
-                    WHERE st.season_id IN ({','.join(['%s'] * len(seasons))})
-                      AND f.state_id IN ({COMPLETED_SQL}) AND r.name REGEXP '^[0-9]+$'
-                      AND f.starting_at<=%s
-                    ORDER BY f.fixture_id
-                """, (*seasons, as_of))
-                fixtures = cur.fetchall()
-        finally:
-            conn.rollback()
-    calibration = json.loads(CALIBRATION_PATH.read_text(encoding="utf-8"))
-    # 직전 시즌의 학습값을 다음 시즌에만 적용해요. 새 시즌의 보정값을 임의로 만들어 쓰지 않아요.
-    current_names = {r["season_name"] for r in roster}
-    if current_names != {calibration["applies_to_season"]}:
-        calibration = None
-    return roster, matches, fixtures, calibration
-
-
-def _build_current_snapshot(as_of: datetime, *, inputs: tuple | None = None) -> dict[int, dict]:
-    roster, matches, fixtures, calibration = _read_current_inputs(as_of) if inputs is None else inputs
-    if not roster:
-        return {}
-    items = build_player_indicators(roster, matches, fixtures, calibration, as_of=as_of)
-    roles = {(r['player_id'], r['team_id'], r['season_id']): r['squad_role'] for r in roster}
-    for result in items:
-        result['squad_role'] = roles[(result['player_id'], result['team_id'], result['season_id'])]
-        result["form_calibration"] = calibration
-        result["as_of"] = as_of.replace(tzinfo=timezone.utc)
-        if result["form"]["last_match_at"] is not None:
-            result["form"]["last_match_at"] = result["form"]["last_match_at"].replace(tzinfo=timezone.utc)
-    return {item["player_id"]: item for item in items}
+def get_current_player_indicators(player_id: int) -> dict | None:
+    row = fetch_one_dict(
+        f"""
+        SELECT i.payload, sm.squad_role
+        FROM team_squad_members sm
+        JOIN seasons s ON s.season_id=sm.season_id
+        LEFT JOIN player_indicator_snapshots i ON i.player_id=sm.player_id
+             AND i.team_id=sm.team_id AND i.season_id=sm.season_id
+        WHERE sm.player_id=%s AND s.is_current=1
+          AND s.competition_id IN ({",".join(map(str, RATING_COMPETITION_IDS))})
+        ORDER BY sm.team_id DESC, sm.season_id DESC LIMIT 1
+    """,
+        (player_id,),
+    )
+    if row is None:
+        return None
+    if row["payload"] is None:
+        raise IndicatorsNotReadyError(
+            "Current player indicators have not been calculated yet"
+        )
+    # 역할 변경은 모델 입력이 아니에요. 점수를 다시 계산하지 않고 최신 값을 보여 줘요.
+    return {**decoded(row["payload"]), "squad_role": row["squad_role"]}
