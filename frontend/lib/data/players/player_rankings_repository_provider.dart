@@ -3,6 +3,7 @@ import 'package:onetouch/data/competitions/competition_repository_provider.dart'
 import 'package:onetouch/data/players/api/api_player_rankings_repository.dart';
 import 'package:onetouch/data/players/player_ranking_season_resolver.dart';
 import 'package:onetouch/data/players/player_rankings_repository.dart';
+import 'package:onetouch/data/local/local_cache_store_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
 
 /// Staged real provider kept separate from the mock-backed `playerRepository`.
@@ -13,6 +14,7 @@ import 'package:onetouch/data/seasons/season_repository_provider.dart';
 final PlayerRankingsRepository playerRankingsRepository =
     ApiPlayerRankingsRepository(
   api: apiClient,
+  cacheStore: localCacheStore,
 );
 
 /// Temporary local label-to-season resolver. Replace its season source when a

@@ -10,7 +10,7 @@ PlayerRankingsPage playerRankingsFromApiResponse(
     );
   }
   final seasonName = _nonEmpty(response.seasonName, 'season_name');
-  if (response.method != 'fixed_historical_percentile') {
+  if (response.method != 'cumulative_all_leagues_percentile') {
     throw FormatException(
       'Unknown player-ranking method "${response.method}".',
     );
@@ -24,7 +24,10 @@ PlayerRankingsPage playerRankingsFromApiResponse(
   }
 
   final reference = response.reference;
-  if (reference.minimumRatedMatches < 1 || reference.sampleCount < 0) {
+  if (reference.minimumRatedMatches < 1 ||
+      reference.sampleCount < 0 ||
+      reference.competitionIds.isEmpty ||
+      reference.competitionIds.any((id) => id < 1)) {
     throw const FormatException('Invalid player-ranking reference metadata.');
   }
 
@@ -32,7 +35,7 @@ PlayerRankingsPage playerRankingsFromApiResponse(
     competitionId: response.competitionId,
     seasonId: response.seasonId,
     seasonName: seasonName,
-    method: PlayerRankingMethod.fixedHistoricalPercentile,
+    method: PlayerRankingMethod.cumulativeAllLeaguesPercentile,
     reference: PlayerRatingReference(
       startSeasonName: _nonEmpty(
         reference.startSeasonName,
@@ -43,8 +46,9 @@ PlayerRankingsPage playerRankingsFromApiResponse(
         'reference.end_season_name',
       ),
       minimumRatedMatches: reference.minimumRatedMatches,
+      competitionIds: reference.competitionIds,
       sampleCount: reference.sampleCount,
-      frozenAt: _dateTime(reference.frozenAt, 'reference.frozen_at'),
+      updatedAt: _dateTime(reference.updatedAt, 'reference.updated_at'),
     ),
     total: response.total,
     limit: response.limit,

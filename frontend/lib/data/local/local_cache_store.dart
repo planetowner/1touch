@@ -69,6 +69,9 @@ abstract final class LocalCacheKeys {
 
   static String fixtureDetail(int fixtureId) => 'fixture-detail:$fixtureId';
 
+  static String playerRankings(int seasonId, int limit, int offset) =>
+      'player-rankings:$seasonId:$limit:$offset';
+
   static String home(int teamId, DateTime month, String viewerCountry) =>
       'home:$teamId:${month.year}-${month.month.toString().padLeft(2, '0')}:'
       '$viewerCountry';
