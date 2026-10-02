@@ -1,0 +1,2892 @@
+[
+  {
+    "competition_id": 2,
+    "season_id": 12950,
+    "season_name": "2018/2019",
+    "fetched_at": "2026-10-02T06:37:50.848296+00:00",
+    "fixtures": [
+      {
+        "id": 11414780,
+        "league_id": 2,
+        "season_id": 12950,
+        "stage_id": 7743657,
+        "starting_at": "2019-02-12 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 41794,
+        "stage": {
+          "id": 7743657,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "placeholder": false,
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 14,
+            "name": "Manchester United",
+            "placeholder": false,
+            "short_code": "MUN",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/14/14.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 41794,
+          "league_id": 2,
+          "season_id": 12950,
+          "stage_id": 7743657,
+          "name": "PSG vs Manchester United",
+          "fixture_ids": [
+            11414780,
+            11414781
+          ],
+          "result": "3-3",
+          "detail": "After Full Time",
+          "winner_participant_id": 591
+        },
+        "scores": [
+          {
+            "id": 7707664,
+            "fixture_id": 11414780,
+            "type_id": 1525,
+            "participant_id": 14,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 7707665,
+            "fixture_id": 11414780,
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 2,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11414781,
+        "league_id": 2,
+        "season_id": 12950,
+        "stage_id": 7743657,
+        "starting_at": "2019-03-06 20:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "aggregate_id": 41794,
+        "stage": {
+          "id": 7743657,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 14,
+            "name": "Manchester United",
+            "placeholder": false,
+            "short_code": "MUN",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/14/14.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "placeholder": false,
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 41794,
+          "league_id": 2,
+          "season_id": 12950,
+          "stage_id": 7743657,
+          "name": "PSG vs Manchester United",
+          "fixture_ids": [
+            11414780,
+            11414781
+          ],
+          "result": "3-3",
+          "detail": "After Full Time",
+          "winner_participant_id": 591
+        },
+        "scores": [
+          {
+            "id": 7707671,
+            "fixture_id": 11414781,
+            "type_id": 1525,
+            "participant_id": 14,
+            "score": {
+              "goals": 3,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 7707670,
+            "fixture_id": 11414781,
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11840585,
+        "league_id": 2,
+        "season_id": 12950,
+        "stage_id": 7743656,
+        "starting_at": "2019-04-09 19:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 41792,
+        "stage": {
+          "id": 7743656,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 9
+        },
+        "participants": [
+          {
+            "id": 9,
+            "name": "Manchester City",
+            "placeholder": false,
+            "short_code": "MCI",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/9/9.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 6,
+            "name": "Tottenham Hotspur",
+            "placeholder": false,
+            "short_code": "TOT",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/6/6.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 41792,
+          "league_id": 2,
+          "season_id": 12950,
+          "stage_id": 7743656,
+          "name": "Manchester City vs Tottenham Hotspur",
+          "fixture_ids": [
+            11840585,
+            11840586
+          ],
+          "result": "4-4",
+          "detail": "After Full Time",
+          "winner_participant_id": 9
+        },
+        "scores": [
+          {
+            "id": 7926402,
+            "fixture_id": 11840585,
+            "type_id": 1525,
+            "participant_id": 6,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 7926403,
+            "fixture_id": 11840585,
+            "type_id": 1525,
+            "participant_id": 9,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11840586,
+        "league_id": 2,
+        "season_id": 12950,
+        "stage_id": 7743656,
+        "starting_at": "2019-04-17 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "aggregate_id": 41792,
+        "stage": {
+          "id": 7743656,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 9
+        },
+        "participants": [
+          {
+            "id": 6,
+            "name": "Tottenham Hotspur",
+            "placeholder": false,
+            "short_code": "TOT",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/6/6.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 9,
+            "name": "Manchester City",
+            "placeholder": false,
+            "short_code": "MCI",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/9/9.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 41792,
+          "league_id": 2,
+          "season_id": 12950,
+          "stage_id": 7743656,
+          "name": "Manchester City vs Tottenham Hotspur",
+          "fixture_ids": [
+            11840585,
+            11840586
+          ],
+          "result": "4-4",
+          "detail": "After Full Time",
+          "winner_participant_id": 9
+        },
+        "scores": [
+          {
+            "id": 7926409,
+            "fixture_id": 11840586,
+            "type_id": 1525,
+            "participant_id": 6,
+            "score": {
+              "goals": 3,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 7926408,
+            "fixture_id": 11840586,
+            "type_id": 1525,
+            "participant_id": 9,
+            "score": {
+              "goals": 4,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11855626,
+        "league_id": 2,
+        "season_id": 12950,
+        "stage_id": 7743655,
+        "starting_at": "2019-04-30 19:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 41789,
+        "stage": {
+          "id": 7743655,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 10
+        },
+        "participants": [
+          {
+            "id": 629,
+            "name": "Ajax",
+            "placeholder": false,
+            "short_code": "AJA",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/21/629.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 6,
+            "name": "Tottenham Hotspur",
+            "placeholder": false,
+            "short_code": "TOT",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/6/6.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 41789,
+          "league_id": 2,
+          "season_id": 12950,
+          "stage_id": 7743655,
+          "name": "Tottenham Hotspur vs Ajax",
+          "fixture_ids": [
+            11855626,
+            11855627
+          ],
+          "result": "3-3",
+          "detail": "After Full Time",
+          "winner_participant_id": 629
+        },
+        "scores": [
+          {
+            "id": 8015040,
+            "fixture_id": 11855626,
+            "type_id": 1525,
+            "participant_id": 6,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8015041,
+            "fixture_id": 11855626,
+            "type_id": 1525,
+            "participant_id": 629,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11855627,
+        "league_id": 2,
+        "season_id": 12950,
+        "stage_id": 7743655,
+        "starting_at": "2019-05-08 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "aggregate_id": 41789,
+        "stage": {
+          "id": 7743655,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 10
+        },
+        "participants": [
+          {
+            "id": 6,
+            "name": "Tottenham Hotspur",
+            "placeholder": false,
+            "short_code": "TOT",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/6/6.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 629,
+            "name": "Ajax",
+            "placeholder": false,
+            "short_code": "AJA",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/21/629.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 41789,
+          "league_id": 2,
+          "season_id": 12950,
+          "stage_id": 7743655,
+          "name": "Tottenham Hotspur vs Ajax",
+          "fixture_ids": [
+            11855626,
+            11855627
+          ],
+          "result": "3-3",
+          "detail": "After Full Time",
+          "winner_participant_id": 629
+        },
+        "scores": [
+          {
+            "id": 8015047,
+            "fixture_id": 11855627,
+            "type_id": 1525,
+            "participant_id": 6,
+            "score": {
+              "goals": 3,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8015046,
+            "fixture_id": 11855627,
+            "type_id": 1525,
+            "participant_id": 629,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      }
+    ]
+  },
+  {
+    "competition_id": 2,
+    "season_id": 16029,
+    "season_name": "2019/2020",
+    "fetched_at": "2026-10-02T06:38:14.615042+00:00",
+    "fixtures": [
+      {
+        "id": 11989253,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-02-18 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 20928,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "placeholder": false,
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 68,
+            "name": "Borussia Dortmund",
+            "placeholder": false,
+            "short_code": "BVB",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/4/68.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20928,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Borussia Dortmund vs Paris Saint Germain",
+          "fixture_ids": [
+            11989253,
+            11989254
+          ],
+          "result": "2-3",
+          "detail": "After Full Time",
+          "winner_participant_id": 591
+        },
+        "scores": [
+          {
+            "id": 8669184,
+            "fixture_id": 11989253,
+            "type_id": 1525,
+            "participant_id": 68,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669185,
+            "fixture_id": 11989253,
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989254,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-03-11 20:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "aggregate_id": 20928,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 68,
+            "name": "Borussia Dortmund",
+            "placeholder": false,
+            "short_code": "BVB",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/4/68.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "placeholder": false,
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20928,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Borussia Dortmund vs Paris Saint Germain",
+          "fixture_ids": [
+            11989253,
+            11989254
+          ],
+          "result": "2-3",
+          "detail": "After Full Time",
+          "winner_participant_id": 591
+        },
+        "scores": [
+          {
+            "id": 8669191,
+            "fixture_id": 11989254,
+            "type_id": 1525,
+            "participant_id": 68,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669190,
+            "fixture_id": 11989254,
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989255,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-02-26 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 20929,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 9,
+            "name": "Manchester City",
+            "placeholder": false,
+            "short_code": "MCI",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/9/9.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 3468,
+            "name": "Real Madrid",
+            "placeholder": false,
+            "short_code": "RMA",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/3468.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20929,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Real Madrid vs Manchester City",
+          "fixture_ids": [
+            11989255,
+            11989256
+          ],
+          "result": "2-4",
+          "detail": "After Full Time",
+          "winner_participant_id": 9
+        },
+        "scores": [
+          {
+            "id": 8669197,
+            "fixture_id": 11989255,
+            "type_id": 1525,
+            "participant_id": 9,
+            "score": {
+              "goals": 2,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669196,
+            "fixture_id": 11989255,
+            "type_id": 1525,
+            "participant_id": 3468,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989256,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-08-07 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "aggregate_id": 20929,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 3468,
+            "name": "Real Madrid",
+            "placeholder": false,
+            "short_code": "RMA",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/3468.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 9,
+            "name": "Manchester City",
+            "placeholder": false,
+            "short_code": "MCI",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/9/9.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20929,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Real Madrid vs Manchester City",
+          "fixture_ids": [
+            11989255,
+            11989256
+          ],
+          "result": "2-4",
+          "detail": "After Full Time",
+          "winner_participant_id": 9
+        },
+        "scores": [
+          {
+            "id": 8669202,
+            "fixture_id": 11989256,
+            "type_id": 1525,
+            "participant_id": 9,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669203,
+            "fixture_id": 11989256,
+            "type_id": 1525,
+            "participant_id": 3468,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989257,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-02-19 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 20930,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 214,
+            "name": "Valencia",
+            "placeholder": false,
+            "short_code": "VAL",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/22/214.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 708,
+            "name": "Atalanta",
+            "placeholder": false,
+            "short_code": "ATA",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/4/708.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20930,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Atalanta vs Valencia",
+          "fixture_ids": [
+            11989257,
+            11989258
+          ],
+          "result": "8-4",
+          "detail": "After Full Time",
+          "winner_participant_id": 708
+        },
+        "scores": [
+          {
+            "id": 8669209,
+            "fixture_id": 11989257,
+            "type_id": 1525,
+            "participant_id": 214,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669208,
+            "fixture_id": 11989257,
+            "type_id": 1525,
+            "participant_id": 708,
+            "score": {
+              "goals": 4,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989258,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-03-10 20:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "aggregate_id": 20930,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 708,
+            "name": "Atalanta",
+            "placeholder": false,
+            "short_code": "ATA",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/4/708.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 214,
+            "name": "Valencia",
+            "placeholder": false,
+            "short_code": "VAL",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/22/214.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20930,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Atalanta vs Valencia",
+          "fixture_ids": [
+            11989257,
+            11989258
+          ],
+          "result": "8-4",
+          "detail": "After Full Time",
+          "winner_participant_id": 708
+        },
+        "scores": [
+          {
+            "id": 8669214,
+            "fixture_id": 11989258,
+            "type_id": 1525,
+            "participant_id": 214,
+            "score": {
+              "goals": 3,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669215,
+            "fixture_id": 11989258,
+            "type_id": 1525,
+            "participant_id": 708,
+            "score": {
+              "goals": 4,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989259,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-02-18 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 20931,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 8,
+            "name": "Liverpool",
+            "placeholder": false,
+            "short_code": "LIV",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "placeholder": false,
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20931,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Atlético Madrid vs Liverpool",
+          "fixture_ids": [
+            11989259,
+            11989260
+          ],
+          "result": "4-2",
+          "detail": "After Extra Time",
+          "winner_participant_id": 7980
+        },
+        "scores": [
+          {
+            "id": 8669221,
+            "fixture_id": 11989259,
+            "type_id": 1525,
+            "participant_id": 8,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669220,
+            "fixture_id": 11989259,
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989260,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-03-11 20:00:00",
+        "state_id": 7,
+        "leg": "2/2",
+        "aggregate_id": 20931,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "placeholder": false,
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 8,
+            "name": "Liverpool",
+            "placeholder": false,
+            "short_code": "LIV",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20931,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Atlético Madrid vs Liverpool",
+          "fixture_ids": [
+            11989259,
+            11989260
+          ],
+          "result": "4-2",
+          "detail": "After Extra Time",
+          "winner_participant_id": 7980
+        },
+        "scores": [
+          {
+            "id": 8669228,
+            "fixture_id": 11989260,
+            "type_id": 1525,
+            "participant_id": 8,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669229,
+            "fixture_id": 11989260,
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 3,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "AET"
+        }
+      },
+      {
+        "id": 11989261,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-02-25 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 20932,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 503,
+            "name": "FC Bayern München",
+            "placeholder": false,
+            "short_code": "FCB",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/23/503.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 18,
+            "name": "Chelsea",
+            "placeholder": false,
+            "short_code": "CHE",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/18/18.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20932,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Chelsea vs FC Bayern München",
+          "fixture_ids": [
+            11989261,
+            11989262
+          ],
+          "result": "1-7",
+          "detail": "After Full Time",
+          "winner_participant_id": 503
+        },
+        "scores": [
+          {
+            "id": 8669234,
+            "fixture_id": 11989261,
+            "type_id": 1525,
+            "participant_id": 18,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669235,
+            "fixture_id": 11989261,
+            "type_id": 1525,
+            "participant_id": 503,
+            "score": {
+              "goals": 3,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989262,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-08-08 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "aggregate_id": 20932,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 18,
+            "name": "Chelsea",
+            "placeholder": false,
+            "short_code": "CHE",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/18/18.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 503,
+            "name": "FC Bayern München",
+            "placeholder": false,
+            "short_code": "FCB",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/23/503.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20932,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Chelsea vs FC Bayern München",
+          "fixture_ids": [
+            11989261,
+            11989262
+          ],
+          "result": "1-7",
+          "detail": "After Full Time",
+          "winner_participant_id": 503
+        },
+        "scores": [
+          {
+            "id": 8669241,
+            "fixture_id": 11989262,
+            "type_id": 1525,
+            "participant_id": 18,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669240,
+            "fixture_id": 11989262,
+            "type_id": 1525,
+            "participant_id": 503,
+            "score": {
+              "goals": 4,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989263,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-02-26 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 20933,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 625,
+            "name": "Juventus",
+            "placeholder": false,
+            "short_code": "JUV",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/17/625.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 79,
+            "name": "Olympique Lyonnais",
+            "placeholder": false,
+            "short_code": "LYO",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/79.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20933,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Olympique Lyonnais vs Juventus",
+          "fixture_ids": [
+            11989263,
+            11989264
+          ],
+          "result": "2-2",
+          "detail": "After Full Time",
+          "winner_participant_id": 625
+        },
+        "scores": [
+          {
+            "id": 8669246,
+            "fixture_id": 11989263,
+            "type_id": 1525,
+            "participant_id": 79,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669247,
+            "fixture_id": 11989263,
+            "type_id": 1525,
+            "participant_id": 625,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989264,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-08-07 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "aggregate_id": 20933,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 79,
+            "name": "Olympique Lyonnais",
+            "placeholder": false,
+            "short_code": "LYO",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/79.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 625,
+            "name": "Juventus",
+            "placeholder": false,
+            "short_code": "JUV",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/17/625.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20933,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Olympique Lyonnais vs Juventus",
+          "fixture_ids": [
+            11989263,
+            11989264
+          ],
+          "result": "2-2",
+          "detail": "After Full Time",
+          "winner_participant_id": 625
+        },
+        "scores": [
+          {
+            "id": 8669253,
+            "fixture_id": 11989264,
+            "type_id": 1525,
+            "participant_id": 79,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669252,
+            "fixture_id": 11989264,
+            "type_id": 1525,
+            "participant_id": 625,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989265,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-02-19 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 20934,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 277,
+            "name": "RB Leipzig",
+            "placeholder": false,
+            "short_code": "RBL",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/21/277.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 6,
+            "name": "Tottenham Hotspur",
+            "placeholder": false,
+            "short_code": "TOT",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/6/6.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20934,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Tottenham Hotspur vs RB Leipzig",
+          "fixture_ids": [
+            11989265,
+            11989266
+          ],
+          "result": "0-4",
+          "detail": "After Full Time",
+          "winner_participant_id": 277
+        },
+        "scores": [
+          {
+            "id": 8669258,
+            "fixture_id": 11989265,
+            "type_id": 1525,
+            "participant_id": 6,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669259,
+            "fixture_id": 11989265,
+            "type_id": 1525,
+            "participant_id": 277,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989266,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-03-10 20:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "aggregate_id": 20934,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 6,
+            "name": "Tottenham Hotspur",
+            "placeholder": false,
+            "short_code": "TOT",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/6/6.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 277,
+            "name": "RB Leipzig",
+            "placeholder": false,
+            "short_code": "RBL",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/21/277.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20934,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Tottenham Hotspur vs RB Leipzig",
+          "fixture_ids": [
+            11989265,
+            11989266
+          ],
+          "result": "0-4",
+          "detail": "After Full Time",
+          "winner_participant_id": 277
+        },
+        "scores": [
+          {
+            "id": 8669265,
+            "fixture_id": 11989266,
+            "type_id": 1525,
+            "participant_id": 6,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669264,
+            "fixture_id": 11989266,
+            "type_id": 1525,
+            "participant_id": 277,
+            "score": {
+              "goals": 3,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989267,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-02-25 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 20935,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 83,
+            "name": "FC Barcelona",
+            "placeholder": false,
+            "short_code": "BAR",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/83.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 597,
+            "name": "Napoli",
+            "placeholder": false,
+            "short_code": "NAP",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/21/597.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20935,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Napoli vs FC Barcelona",
+          "fixture_ids": [
+            11989267,
+            11989268
+          ],
+          "result": "2-4",
+          "detail": "After Full Time",
+          "winner_participant_id": 83
+        },
+        "scores": [
+          {
+            "id": 8669271,
+            "fixture_id": 11989267,
+            "type_id": 1525,
+            "participant_id": 83,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669270,
+            "fixture_id": 11989267,
+            "type_id": 1525,
+            "participant_id": 597,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 11989268,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443827,
+        "starting_at": "2020-08-08 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "aggregate_id": 20935,
+        "stage": {
+          "id": 77443827,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 597,
+            "name": "Napoli",
+            "placeholder": false,
+            "short_code": "NAP",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/21/597.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 83,
+            "name": "FC Barcelona",
+            "placeholder": false,
+            "short_code": "BAR",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/83.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 20935,
+          "league_id": 2,
+          "season_id": 16029,
+          "stage_id": 77443827,
+          "name": "Napoli vs FC Barcelona",
+          "fixture_ids": [
+            11989267,
+            11989268
+          ],
+          "result": "2-4",
+          "detail": "After Full Time",
+          "winner_participant_id": 83
+        },
+        "scores": [
+          {
+            "id": 8669276,
+            "fixture_id": 11989268,
+            "type_id": 1525,
+            "participant_id": 83,
+            "score": {
+              "goals": 3,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8669277,
+            "fixture_id": 11989268,
+            "type_id": 1525,
+            "participant_id": 597,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 16485428,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443826,
+        "starting_at": "2020-08-13 19:00:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "aggregate_id": null,
+        "stage": {
+          "id": 77443826,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 9
+        },
+        "participants": [
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "placeholder": false,
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 277,
+            "name": "RB Leipzig",
+            "placeholder": false,
+            "short_code": "RBL",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/21/277.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": null,
+        "scores": [
+          {
+            "id": 8901844,
+            "fixture_id": 16485428,
+            "type_id": 1525,
+            "participant_id": 277,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8901845,
+            "fixture_id": 16485428,
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 16485430,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443826,
+        "starting_at": "2020-08-12 19:00:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "aggregate_id": null,
+        "stage": {
+          "id": 77443826,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 9
+        },
+        "participants": [
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "placeholder": false,
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 708,
+            "name": "Atalanta",
+            "placeholder": false,
+            "short_code": "ATA",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/4/708.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": null,
+        "scores": [
+          {
+            "id": 8901851,
+            "fixture_id": 16485430,
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 2,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 8901850,
+            "fixture_id": 16485430,
+            "type_id": 1525,
+            "participant_id": 708,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 16845968,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443826,
+        "starting_at": "2020-08-15 19:00:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "aggregate_id": null,
+        "stage": {
+          "id": 77443826,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 9
+        },
+        "participants": [
+          {
+            "id": 79,
+            "name": "Olympique Lyonnais",
+            "placeholder": false,
+            "short_code": "LYO",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/79.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 9,
+            "name": "Manchester City",
+            "placeholder": false,
+            "short_code": "MCI",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/9/9.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": null,
+        "scores": [
+          {
+            "id": 9150942,
+            "fixture_id": 16845968,
+            "type_id": 1525,
+            "participant_id": 9,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 9150943,
+            "fixture_id": 16845968,
+            "type_id": 1525,
+            "participant_id": 79,
+            "score": {
+              "goals": 3,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 16856187,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443826,
+        "starting_at": "2020-08-14 19:00:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "aggregate_id": null,
+        "stage": {
+          "id": 77443826,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 9
+        },
+        "participants": [
+          {
+            "id": 503,
+            "name": "FC Bayern München",
+            "placeholder": false,
+            "short_code": "FCB",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/23/503.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 83,
+            "name": "FC Barcelona",
+            "placeholder": false,
+            "short_code": "BAR",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/83.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": null,
+        "scores": [
+          {
+            "id": 9151818,
+            "fixture_id": 16856187,
+            "type_id": 1525,
+            "participant_id": 83,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 9151819,
+            "fixture_id": 16856187,
+            "type_id": 1525,
+            "participant_id": 503,
+            "score": {
+              "goals": 8,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 16895298,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443825,
+        "starting_at": "2020-08-18 19:00:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "aggregate_id": null,
+        "stage": {
+          "id": 77443825,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 10
+        },
+        "participants": [
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "placeholder": false,
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 277,
+            "name": "RB Leipzig",
+            "placeholder": false,
+            "short_code": "RBL",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/21/277.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": null,
+        "scores": [
+          {
+            "id": 9171674,
+            "fixture_id": 16895298,
+            "type_id": 1525,
+            "participant_id": 277,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 9171675,
+            "fixture_id": 16895298,
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 3,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 16903636,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443825,
+        "starting_at": "2020-08-19 19:00:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "aggregate_id": null,
+        "stage": {
+          "id": 77443825,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 10
+        },
+        "participants": [
+          {
+            "id": 503,
+            "name": "FC Bayern München",
+            "placeholder": false,
+            "short_code": "FCB",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/23/503.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 79,
+            "name": "Olympique Lyonnais",
+            "placeholder": false,
+            "short_code": "LYO",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/79.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": null,
+        "scores": [
+          {
+            "id": 9175542,
+            "fixture_id": 16903636,
+            "type_id": 1525,
+            "participant_id": 79,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 9175543,
+            "fixture_id": 16903636,
+            "type_id": 1525,
+            "participant_id": 503,
+            "score": {
+              "goals": 3,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 16922979,
+        "league_id": 2,
+        "season_id": 16029,
+        "stage_id": 77443824,
+        "starting_at": "2020-08-23 19:00:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "aggregate_id": null,
+        "stage": {
+          "id": 77443824,
+          "name": "Final",
+          "type_id": 224,
+          "sort_order": 11
+        },
+        "participants": [
+          {
+            "id": 503,
+            "name": "FC Bayern München",
+            "placeholder": false,
+            "short_code": "FCB",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/23/503.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": null
+            }
+          },
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "placeholder": false,
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": null,
+        "scores": [
+          {
+            "id": 9196787,
+            "fixture_id": 16922979,
+            "type_id": 1525,
+            "participant_id": 503,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 9196786,
+            "fixture_id": 16922979,
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      }
+    ]
+  },
+  {
+    "competition_id": 2,
+    "season_id": 17299,
+    "season_name": "2020/2021",
+    "fetched_at": "2026-10-02T06:38:35.935867+00:00",
+    "fixtures": [
+      {
+        "id": 17687748,
+        "league_id": 2,
+        "season_id": 17299,
+        "stage_id": 77447936,
+        "starting_at": "2021-02-17 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 23873,
+        "stage": {
+          "id": 77447936,
+          "name": "8th Finals",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 625,
+            "name": "Juventus",
+            "placeholder": false,
+            "short_code": "JUV",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/17/625.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 652,
+            "name": "Porto",
+            "placeholder": false,
+            "short_code": "FCP",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/652.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 23873,
+          "league_id": 2,
+          "season_id": 17299,
+          "stage_id": 77447936,
+          "name": "Juventus vs Porto",
+          "fixture_ids": [
+            17687748,
+            17687749
+          ],
+          "result": "4-4",
+          "detail": "After Extra Time",
+          "winner_participant_id": 652
+        },
+        "scores": [
+          {
+            "id": 9569337,
+            "fixture_id": 17687748,
+            "type_id": 1525,
+            "participant_id": 625,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 9569336,
+            "fixture_id": 17687748,
+            "type_id": 1525,
+            "participant_id": 652,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 17687749,
+        "league_id": 2,
+        "season_id": 17299,
+        "stage_id": 77447936,
+        "starting_at": "2021-03-09 20:00:00",
+        "state_id": 7,
+        "leg": "2/2",
+        "aggregate_id": 23873,
+        "stage": {
+          "id": 77447936,
+          "name": "8th Finals",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "participants": [
+          {
+            "id": 652,
+            "name": "Porto",
+            "placeholder": false,
+            "short_code": "FCP",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/652.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": null
+            }
+          },
+          {
+            "id": 625,
+            "name": "Juventus",
+            "placeholder": false,
+            "short_code": "JUV",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/17/625.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": null
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 23873,
+          "league_id": 2,
+          "season_id": 17299,
+          "stage_id": 77447936,
+          "name": "Juventus vs Porto",
+          "fixture_ids": [
+            17687748,
+            17687749
+          ],
+          "result": "4-4",
+          "detail": "After Extra Time",
+          "winner_participant_id": 652
+        },
+        "scores": [
+          {
+            "id": 9569344,
+            "fixture_id": 17687749,
+            "type_id": 1525,
+            "participant_id": 625,
+            "score": {
+              "goals": 3,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 9569345,
+            "fixture_id": 17687749,
+            "type_id": 1525,
+            "participant_id": 652,
+            "score": {
+              "goals": 2,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "AET"
+        }
+      }
+    ]
+  },
+  {
+    "competition_id": 2,
+    "season_id": 23619,
+    "season_name": "2024/2025",
+    "fetched_at": "2026-10-02T06:40:18.501449+00:00",
+    "fixtures": [
+      {
+        "id": 19380923,
+        "league_id": 2,
+        "season_id": 23619,
+        "stage_id": 77471315,
+        "starting_at": "2025-03-05 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 58611,
+        "stage": {
+          "id": 77471315,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 7
+        },
+        "participants": [
+          {
+            "id": 8,
+            "name": "Liverpool",
+            "placeholder": false,
+            "short_code": "LIV",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": 2
+            }
+          },
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "placeholder": false,
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": 1
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 58611,
+          "league_id": 2,
+          "season_id": 23619,
+          "stage_id": 77471315,
+          "name": "Paris Saint Germain vs Liverpool",
+          "fixture_ids": [
+            19380923,
+            19380924
+          ],
+          "result": "1-1",
+          "detail": "After Penalties",
+          "winner_participant_id": 8
+        },
+        "scores": [
+          {
+            "id": 16011237,
+            "fixture_id": 19380923,
+            "type_id": 1525,
+            "participant_id": 8,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 16011236,
+            "fixture_id": 19380923,
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 19380924,
+        "league_id": 2,
+        "season_id": 23619,
+        "stage_id": 77471315,
+        "starting_at": "2025-03-11 20:00:00",
+        "state_id": 8,
+        "leg": "2/2",
+        "aggregate_id": 58611,
+        "stage": {
+          "id": 77471315,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 7
+        },
+        "participants": [
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "placeholder": false,
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": 2
+            }
+          },
+          {
+            "id": 8,
+            "name": "Liverpool",
+            "placeholder": false,
+            "short_code": "LIV",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": 1
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 58611,
+          "league_id": 2,
+          "season_id": 23619,
+          "stage_id": 77471315,
+          "name": "Paris Saint Germain vs Liverpool",
+          "fixture_ids": [
+            19380923,
+            19380924
+          ],
+          "result": "1-1",
+          "detail": "After Penalties",
+          "winner_participant_id": 8
+        },
+        "scores": [
+          {
+            "id": 16050091,
+            "fixture_id": 19380924,
+            "type_id": 5,
+            "participant_id": 8,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            },
+            "description": "PENALTY_SHOOTOUT"
+          },
+          {
+            "id": 16050090,
+            "fixture_id": 19380924,
+            "type_id": 5,
+            "participant_id": 591,
+            "score": {
+              "goals": 4,
+              "participant": "away"
+            },
+            "description": "PENALTY_SHOOTOUT"
+          },
+          {
+            "id": 16049605,
+            "fixture_id": 19380924,
+            "type_id": 1525,
+            "participant_id": 8,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 16049604,
+            "fixture_id": 19380924,
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT_PEN"
+        }
+      },
+      {
+        "id": 19380927,
+        "league_id": 2,
+        "season_id": 23619,
+        "stage_id": 77471315,
+        "starting_at": "2025-03-04 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "aggregate_id": 58613,
+        "stage": {
+          "id": 77471315,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 7
+        },
+        "participants": [
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "placeholder": false,
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "meta": {
+              "location": "away",
+              "winner": false,
+              "position": 2
+            }
+          },
+          {
+            "id": 3468,
+            "name": "Real Madrid",
+            "placeholder": false,
+            "short_code": "RMA",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/3468.png",
+            "meta": {
+              "location": "home",
+              "winner": true,
+              "position": 1
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 58613,
+          "league_id": 2,
+          "season_id": 23619,
+          "stage_id": 77471315,
+          "name": "Real Madrid vs Atlético Madrid",
+          "fixture_ids": [
+            19380927,
+            19380928
+          ],
+          "result": "2-2",
+          "detail": "After Penalties",
+          "winner_participant_id": 7980
+        },
+        "scores": [
+          {
+            "id": 16008872,
+            "fixture_id": 19380927,
+            "type_id": 1525,
+            "participant_id": 3468,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 16008873,
+            "fixture_id": 19380927,
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT"
+        }
+      },
+      {
+        "id": 19380928,
+        "league_id": 2,
+        "season_id": 23619,
+        "stage_id": 77471315,
+        "starting_at": "2025-03-12 20:00:00",
+        "state_id": 8,
+        "leg": "2/2",
+        "aggregate_id": 58613,
+        "stage": {
+          "id": 77471315,
+          "name": "Round of 16",
+          "type_id": 224,
+          "sort_order": 7
+        },
+        "participants": [
+          {
+            "id": 3468,
+            "name": "Real Madrid",
+            "placeholder": false,
+            "short_code": "RMA",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/3468.png",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": 1
+            }
+          },
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "placeholder": false,
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": 2
+            }
+          }
+        ],
+        "aggregate": {
+          "id": 58613,
+          "league_id": 2,
+          "season_id": 23619,
+          "stage_id": 77471315,
+          "name": "Real Madrid vs Atlético Madrid",
+          "fixture_ids": [
+            19380927,
+            19380928
+          ],
+          "result": "2-2",
+          "detail": "After Penalties",
+          "winner_participant_id": 7980
+        },
+        "scores": [
+          {
+            "id": 16052473,
+            "fixture_id": 19380928,
+            "type_id": 5,
+            "participant_id": 3468,
+            "score": {
+              "goals": 4,
+              "participant": "away"
+            },
+            "description": "PENALTY_SHOOTOUT"
+          },
+          {
+            "id": 16052472,
+            "fixture_id": 19380928,
+            "type_id": 5,
+            "participant_id": 7980,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            },
+            "description": "PENALTY_SHOOTOUT"
+          },
+          {
+            "id": 16051959,
+            "fixture_id": 19380928,
+            "type_id": 1525,
+            "participant_id": 3468,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 16051958,
+            "fixture_id": 19380928,
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          }
+        ],
+        "state": {
+          "developer_name": "FT_PEN"
+        }
+      }
+    ]
+  }
+]

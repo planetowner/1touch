@@ -5,7 +5,7 @@ import json
 
 from .betting import match_outcome
 from .cup_betting import CUP_COMPETITION_IDS, EUROPE_COMPETITION_IDS, utc_datetime
-from .fixture_scores import CURRENT_SCORE_TYPE_ID, PENALTY_SCORE_TYPE_ID, score_pair
+from .fixture_scores import CURRENT_SCORE_TYPE_ID, PENALTY_SCORE_TYPE_ID, aggregate_winner, score_pair
 from .fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 
 
@@ -26,6 +26,9 @@ STAGE_ORDER = {
     390: ('preliminary', 'round1', 'round2', 'round16', 'quarterfinal', 'semifinal', 'final'),
     570: ('preliminary', 'round1', 'round2', 'round32', 'round16', 'quarterfinal', 'semifinal', 'final'),
 }
+# 챔스의 과거 규칙만 검증했어요. 다른 컵의 재경기 규칙은 기존 지원 범위를 유지해요.
+BRACKET_START_YEARS = {competition: 2017 if competition == 2 else 2024
+                       for competition in CUP_COMPETITION_IDS}
 
 
 def stage_key(competition_id, stage):
@@ -82,10 +85,10 @@ def _normalize(raw, teams, available_ids):
             'state_id': raw['state_id'], 'state': raw['state']['developer_name'],
             'leg': leg, 'source_leg': raw['leg'], 'detail_available': raw['id'] in available_ids,
             'slots': slots, 'aggregate_id': raw['aggregate_id'],
-            'aggregate_winner': (raw['aggregate'] or {}).get('winner_participant_id')}
+            'aggregate_winner': aggregate_winner(raw)}
 
 
-def _tie(fixtures, stage_id, key, issues):
+def _tie(fixtures, stage_id, key, issues, *, away_goals):
     fixtures.sort(key=lambda f: (f['leg'], f['fixture_id']))
     first = fixtures[0]
     tie_id = f"fixture:{min(f['fixture_id'] for f in fixtures)}"
@@ -117,11 +120,19 @@ def _tie(fixtures, stage_id, key, issues):
                     winner = participants[int(totals[1] > totals[0])]
                     basis = 'aggregate_score'
                 else:
-                    last = fixtures[-1]
-                    hp, ap = last['home_penalty_score'], last['away_penalty_score']
-                    if hp is not None and ap is not None and hp != ap:
-                        winner = last['home_team_id'] if hp > ap else last['away_team_id']
-                        basis = 'penalties'
+                    away = [sum(f['away_score'] for f in fixtures if f['away_team_id'] == team)
+                            for team in participants]
+                    # UEFA는 2021/22부터 원정 다득점을 폐지했어요. 이전 시즌에는 연장 득점도 포함해요.
+                    # https://www.uefa.com/news-media/news/026a-1298aeb73a7a-5b64cb68d920-1000/
+                    if away_goals and away[0] != away[1]:
+                        winner = participants[int(away[1] > away[0])]
+                        basis = 'away_goals'
+                    else:
+                        last = fixtures[-1]
+                        hp, ap = last['home_penalty_score'], last['away_penalty_score']
+                        if hp is not None and ap is not None and hp != ap:
+                            winner = last['home_team_id'] if hp > ap else last['away_team_id']
+                            basis = 'penalties'
         official = {f['aggregate_winner'] for f in fixtures if f['aggregate_winner'] in participants}
         if len(official) > 1 or (official and winner is not None and winner not in official):
             raise ValueError(f'Aggregate winner conflicts with scores: {tie_id}')
@@ -145,9 +156,11 @@ def build_bracket(*, competition_id, season_id, season_name, fixtures, fetched_a
                   available_fixture_ids=(), provider_edges=()):
     if competition_id not in CUP_COMPETITION_IDS:
         raise ValueError('Unsupported bracket competition')
-    # FA컵 본선 재경기·예전 원정 다득점을 현재 시즌 규칙으로 계산하지 않아요.
-    if int(season_name[:4]) < 2024:
-        raise ValueError('Brackets support seasons from 2024/2025')
+    start_year = int(season_name[:4])
+    minimum = BRACKET_START_YEARS[competition_id]
+    if start_year < minimum:
+        raise ValueError(f'Brackets support seasons from {minimum}/{minimum + 1}')
+    away_goals = competition_id in EUROPE_COMPETITION_IDS and start_year < 2021
     stages, teams, issues, seen = {}, {}, [], set()
     available = set(available_fixture_ids)
     for raw in fixtures:
@@ -179,7 +192,8 @@ def build_bracket(*, competition_id, season_id, season_name, fixtures, fetched_a
                 elif None not in ids and ids[0] != ids[1]:
                     group = ('participants', tuple(sorted(ids)))
             groups[group].append(f)
-        stage['ties'] = sorted((_tie(fs, stage['stage_id'], stage['key'], issues) for fs in groups.values()),
+        stage['ties'] = sorted((_tie(fs, stage['stage_id'], stage['key'], issues, away_goals=away_goals)
+                                for fs in groups.values()),
                                key=lambda t: t['tie_id'])
     ties = {t['tie_id']: t for s in ordered for t in s['ties']}
     fixture_ties = {f['fixture_id']: t for t in ties.values() for f in t['fixtures']}
