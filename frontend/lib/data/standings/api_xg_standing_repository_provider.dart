@@ -1,4 +1,5 @@
 import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/data/local/local_cache_store_provider.dart';
 import 'package:onetouch/data/standings/api/api_xg_standing_repository.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
 
@@ -6,4 +7,5 @@ import 'package:onetouch/data/standings/xg_standing_repository.dart';
 /// legacy `xgStandingRepository` remains mock-backed for catalog consumers.
 final XgStandingRepository apiXgStandingRepository = ApiXgStandingRepository(
   api: apiClient,
+  cacheStore: localCacheStore,
 );

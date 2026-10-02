@@ -50,6 +50,12 @@ abstract final class LocalCacheKeys {
 
   static String teamOverview(int teamId) => 'team-overview:$teamId';
 
+  static String standings(int competitionId, int? seasonId) =>
+      'standings:$competitionId:${seasonId ?? 'current'}';
+
+  static String xgStandings(int competitionId, int? seasonId) =>
+      'xg-standings:$competitionId:${seasonId ?? 'current'}';
+
   static String home(int teamId, DateTime month, String viewerCountry) =>
       'home:$teamId:${month.year}-${month.month.toString().padLeft(2, '0')}:'
       '$viewerCountry';

@@ -509,14 +509,13 @@ class _TeamScreenState extends State<TeamScreen>
                     onTopOverscroll: _revealTeamAppBar,
                   ),
                   StandingTab(
-                    key: ValueKey(
-                      'team-standing-refresh-${_tabRefreshEpochs[2]}',
-                    ),
+                    key: const ValueKey('team-standing'),
                     team: team,
                     regularStandingRepository: widget.standingRepository,
                     xgStandingRepository: widget.xgStandingRepository,
                     requestedCompetitionId: _requestedStandingCompetitionId,
                     selectionRequestId: _standingSelectionRequestId,
+                    refreshRequestId: _tabRefreshEpochs[2],
                     onBracketInteractionChanged: (isInteracting) {
                       if (_isBracketInteracting == isInteracting) return;
                       setState(() => _isBracketInteracting = isInteracting);

@@ -11,7 +11,7 @@ enum CacheSyncTrigger {
   mutation,
 }
 
-enum CacheTier { staticData, standard, realtime, userData }
+enum CacheTier { staticData, extended, standard, realtime, userData }
 
 enum CacheFreshness { missing, fresh, stale }
 
@@ -21,11 +21,13 @@ enum CacheFreshness { missing, fresh, stale }
 /// copied into screens or endpoint implementations.
 abstract final class AppCachePolicy {
   static const staticTtl = Duration(days: 7);
+  static const extendedTtl = Duration(hours: 6);
   static const standardTtl = Duration(hours: 1);
   static const realtimeTtl = Duration.zero;
 
   static Duration? ttl(CacheTier tier) => switch (tier) {
         CacheTier.staticData => staticTtl,
+        CacheTier.extended => extendedTtl,
         CacheTier.standard => standardTtl,
         CacheTier.realtime => realtimeTtl,
         // User data is synchronized once per authenticated session and after

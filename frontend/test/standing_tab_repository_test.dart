@@ -1,6 +1,7 @@
 import 'support/app_catalog.dart';
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,8 @@ import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
+import 'package:onetouch/data/standings/standing_repository.dart';
+import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/standing.dart';
@@ -75,6 +78,96 @@ void main() {
     expect(find.text('ARS'), findsOneWidget);
     expect(tester.getSize(clubColumn).width, 130);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('applies regular standing cache publications', (tester) async {
+    final repository = _PublishingStandingRepository([
+      _standing(seasonId: 28083, teamName: 'Cached United'),
+    ]);
+
+    await tester.pumpWidget(_app(repository));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('standing-club-name-9')));
+    await tester.pumpAndSettle();
+    expect(find.text('Cached United'), findsOneWidget);
+
+    repository.publish([
+      _standing(seasonId: 28083, teamName: 'Fresh United'),
+    ]);
+    await tester.pump();
+
+    expect(find.text('Fresh United'), findsOneWidget);
+    expect(find.text('Cached United'), findsNothing);
+  });
+
+  testWidgets('applies xG standing cache publications', (tester) async {
+    final xgRepository = _PublishingXgStandingRepository([
+      _xgStanding(seasonId: 28083, teamName: 'Cached Expected United'),
+    ]);
+
+    await tester.pumpWidget(_app(
+      _successfulStandingRepository(),
+      xgRepository: xgRepository,
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('standing-club-name-9')));
+    await tester.pumpAndSettle();
+    expect(find.text('Cached Expected United'), findsOneWidget);
+
+    xgRepository.publish([
+      _xgStanding(seasonId: 28083, teamName: 'Fresh Expected United'),
+    ]);
+    await tester.pump();
+
+    expect(find.text('Fresh Expected United'), findsOneWidget);
+    expect(find.text('Cached Expected United'), findsNothing);
+  });
+
+  testWidgets('manual refresh bypasses the regular standing cache',
+      (tester) async {
+    final repository = _ControlledStandingRepository(
+      (_, seasonId) async => [_standing(seasonId: seasonId!)],
+      cached: [_standing(seasonId: 28083)],
+    );
+
+    await tester.pumpWidget(_app(repository));
+    await tester.pump();
+    expect(repository.requests, hasLength(1));
+
+    await tester.pumpWidget(_app(repository, refreshRequestId: 1));
+    await tester.pump();
+
+    expect(repository.requests, hasLength(2));
+    expect(repository.requests.last, (competitionId: 8, seasonId: 28083));
+  });
+
+  testWidgets('manual refresh bypasses the visible xG cache', (tester) async {
+    final regularRepository = _successfulStandingRepository();
+    final xgRepository = _ControlledXgStandingRepository(
+      (_, seasonId) async => [_xgStanding(seasonId: seasonId!)],
+      cached: [_xgStanding(seasonId: 28083)],
+    );
+
+    await tester.pumpWidget(_app(
+      regularRepository,
+      xgRepository: xgRepository,
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
+    await tester.pump();
+    expect(xgRepository.requests, hasLength(1));
+
+    await tester.pumpWidget(_app(
+      regularRepository,
+      xgRepository: xgRepository,
+      refreshRequestId: 1,
+    ));
+    await tester.pump();
+
+    expect(xgRepository.requests, hasLength(2));
+    expect(xgRepository.requests.last, (competitionId: 8, seasonId: 28083));
   });
 
   testWidgets('uses the approved standing table geometry', (tester) async {
@@ -665,10 +758,11 @@ void main() {
 }
 
 Widget _app(
-  _ControlledStandingRepository repository, {
-  _ControlledXgStandingRepository? xgRepository,
+  StandingRepository repository, {
+  XgStandingRepository? xgRepository,
   int? requestedCompetitionId,
   int selectionRequestId = 0,
+  int refreshRequestId = 0,
   Locale? locale,
 }) {
   return MaterialApp(
@@ -688,6 +782,7 @@ Widget _app(
         xgStandingRepository: xgRepository,
         requestedCompetitionId: requestedCompetitionId,
         selectionRequestId: selectionRequestId,
+        refreshRequestId: refreshRequestId,
       ),
     ),
   );
@@ -803,5 +898,75 @@ class _ControlledXgStandingRepository extends MockXgStandingRepository {
   }) {
     requests.add((competitionId: competitionId, seasonId: seasonId));
     return _loader(competitionId, seasonId);
+  }
+}
+
+class _PublishingStandingRepository extends MockStandingRepository {
+  _PublishingStandingRepository(List<Standing> initial)
+      : _tables = ValueNotifier({
+          const StandingQuery(competitionId: 8, seasonId: 28083): initial,
+        }),
+        super(standings: const []);
+
+  final ValueNotifier<Map<StandingQuery, List<Standing>>> _tables;
+
+  @override
+  ValueListenable<Map<StandingQuery, List<Standing>>> get cachedTables =>
+      _tables;
+
+  @override
+  List<Standing>? cachedForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) =>
+      _tables.value[
+          StandingQuery(competitionId: competitionId, seasonId: seasonId)];
+
+  @override
+  Future<List<Standing>> loadForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) async =>
+      cachedForCompetition(competitionId, seasonId: seasonId) ?? const [];
+
+  void publish(List<Standing> rows) {
+    _tables.value = {
+      const StandingQuery(competitionId: 8, seasonId: 28083): rows,
+    };
+  }
+}
+
+class _PublishingXgStandingRepository extends MockXgStandingRepository {
+  _PublishingXgStandingRepository(List<XgStanding> initial)
+      : _tables = ValueNotifier({
+          const XgStandingQuery(competitionId: 8, seasonId: 28083): initial,
+        }),
+        super(standings: const []);
+
+  final ValueNotifier<Map<XgStandingQuery, List<XgStanding>>> _tables;
+
+  @override
+  ValueListenable<Map<XgStandingQuery, List<XgStanding>>> get cachedTables =>
+      _tables;
+
+  @override
+  List<XgStanding>? cachedForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) =>
+      _tables.value[
+          XgStandingQuery(competitionId: competitionId, seasonId: seasonId)];
+
+  @override
+  Future<List<XgStanding>> loadForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) async =>
+      cachedForCompetition(competitionId, seasonId: seasonId) ?? const [];
+
+  void publish(List<XgStanding> rows) {
+    _tables.value = {
+      const XgStandingQuery(competitionId: 8, seasonId: 28083): rows,
+    };
   }
 }

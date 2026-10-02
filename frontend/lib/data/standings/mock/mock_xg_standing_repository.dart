@@ -68,6 +68,13 @@ class MockXgStandingRepository implements XgStandingRepository {
   }
 
   @override
+  Future<List<XgStanding>> refreshForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) =>
+      loadForCompetition(competitionId, seasonId: seasonId);
+
+  @override
   List<XgStanding> forCompetition(
     int competitionId, {
     int? seasonId,
