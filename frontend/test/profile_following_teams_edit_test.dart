@@ -11,6 +11,55 @@ import 'package:onetouch/models/team.dart';
 
 void main() {
   setUpAppCatalog();
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    for (final target in ['name', 'logo']) {
+      testWidgets('selects a searched team by tapping its $target at $size',
+          (tester) async {
+        await tester.binding.setSurfaceSize(size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final repository = _RecordingFollowingTeamsRepository();
+        await tester.pumpWidget(MaterialApp(
+          theme: app_style.whitetheme,
+          home: _EditSheetHost(repository: repository),
+        ));
+        await tester.tap(find.text('OPEN'));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), 'Real Madrid');
+        await tester.pumpAndSettle();
+
+        final teamRow = find.widgetWithText(ListTile, 'Real Madrid');
+        expect(teamRow, findsOneWidget);
+        if (target == 'logo') {
+          final rowRect = tester.getRect(teamRow);
+          await tester.tapAt(Offset(rowRect.left + 26, rowRect.center.dy));
+        } else {
+          await tester.tap(find.descendant(
+            of: teamRow,
+            matching: find.text('Real Madrid'),
+          ));
+        }
+        await tester.pump();
+
+        expect(
+          find.descendant(
+            of: teamRow,
+            matching: find.byIcon(Icons.radio_button_checked),
+          ),
+          findsOneWidget,
+        );
+        expect(
+            tester
+                .widget<ElevatedButton>(find.widgetWithText(
+                  ElevatedButton,
+                  'UPDATE',
+                ))
+                .onPressed,
+            isNotNull);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
   testWidgets('saves edited following teams through the API repository',
       (tester) async {
     final repository = _RecordingFollowingTeamsRepository();
