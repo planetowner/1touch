@@ -6,7 +6,6 @@
 
 # 안내 문서는 로컬에 두되, 공통 작업 지침 AGENTS.md만 공유해요.
 *.[mM][dD]
-!/AGENTS.md
 
 # Android
 **/android/.gradle/
