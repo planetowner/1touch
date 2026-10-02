@@ -10,7 +10,7 @@ from ..deps import get_user_id
 from ..repos.transfers_repo import get_player_club_history
 from ..repos.player_rankings_repo import get_player_rankings
 from ..schemas.player_rankings import PlayerRankingsResponse
-from ..repos.player_indicators_repo import get_current_player_indicators
+from ..repos.player_indicators_repo import IndicatorsNotReadyError, get_current_player_indicators
 from ..schemas.player_indicators import PlayerIndicatorsResponse
 from ..services.media_storage import player_image_content
 from ...core.player_images import IMAGE_ROUTE
@@ -64,7 +64,10 @@ def player_detail(player_id: int = Path(gt=0), season_id: int | None = Query(def
 @router.get("/players/{player_id}/indicators", response_model=PlayerIndicatorsResponse)
 def player_indicators(player_id: int = Path(gt=0), user_id: int = Depends(get_user_id)):
     """현재 시즌 5대 리그 전체 선수를 비교해요. 과거 시즌 조회·DB 갱신은 하지 않아요."""
-    result = get_current_player_indicators(player_id)
+    try:
+        result = get_current_player_indicators(player_id)
+    except IndicatorsNotReadyError as exc:
+        raise HTTPException(503, str(exc), headers={'Retry-After': '60'}) from exc
     if result is None:
         raise HTTPException(404, "Player not in a current five-league squad")
     return result
