@@ -12,6 +12,7 @@ import 'package:onetouch/core/notification_navigation.dart';
 import 'package:onetouch/core/community_link_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/home/home_repository.dart';
+import 'package:onetouch/data/local/local_cache_store_provider.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/home_data.dart';
 
@@ -34,6 +35,8 @@ void main() {
                 case '/v1/users/me':
                   if (fail) return http.Response('{}', 500);
                   body = account;
+                case '/v1/users/me/points/initialize':
+                  body = {'balance': 0, 'initialized': true};
                 case '/v1/users/me/profile':
                   account
                       .addAll(jsonDecode(request.body) as Map<String, dynamic>);
@@ -49,7 +52,8 @@ void main() {
               return http.Response.bytes(utf8.encode(jsonEncode(body)), 200);
             }));
   });
-  setUp(() {
+  setUp(() async {
+    await clearAuthenticatedLocalCache();
     notificationNavigation.clear();
     communityLinkNavigation.clear();
     fail = false;
@@ -223,6 +227,7 @@ void main() {
           find.byKey(const ValueKey('social-last-name-field')), 'Last');
       await tester.enterText(
           find.byKey(const ValueKey('social-nickname-field')), 'Supporter');
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
       await tester.tap(find.text(translateMessage(locale, 'CONTINUE')));
       await tester.pumpAndSettle();

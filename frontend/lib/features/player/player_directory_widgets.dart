@@ -96,12 +96,17 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
               ],
             ),
             const SizedBox(height: 16),
-            if (controller.loading)
+            if (controller.error != null && controller.loaded)
+              TextButton(
+                onPressed: controller.loading ? null : controller.load,
+                child: Text(tr(context, 'Could not load favorites · Retry')),
+              ),
+            if (controller.loading && !controller.loaded)
               const SizedBox(
                 height: 112,
                 child: Center(child: FootballLoadingIndicator()),
               )
-            else if (controller.error != null)
+            else if (controller.error != null && !controller.loaded)
               TextButton(
                 onPressed: controller.load,
                 child: Text(tr(context, 'Could not load favorites · Retry')),
@@ -651,8 +656,44 @@ class PlayersToWatchState extends State<PlayersToWatch> {
   late Future<List<PlayerWatch>> _request =
       Future.sync(widget.repository.watch);
 
+  CachedPlayerWatchRepository? get _cachedRepository =>
+      widget.repository is CachedPlayerWatchRepository
+          ? widget.repository as CachedPlayerWatchRepository
+          : null;
+
+  @override
+  void initState() {
+    super.initState();
+    _cachedRepository?.cachedWatch.addListener(_handleCachedWatch);
+  }
+
+  @override
+  void didUpdateWidget(PlayersToWatch oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (identical(oldWidget.repository, widget.repository)) return;
+    if (oldWidget.repository is CachedPlayerWatchRepository) {
+      (oldWidget.repository as CachedPlayerWatchRepository)
+          .cachedWatch
+          .removeListener(_handleCachedWatch);
+    }
+    _cachedRepository?.cachedWatch.addListener(_handleCachedWatch);
+    _request = Future.sync(widget.repository.watch);
+  }
+
+  @override
+  void dispose() {
+    _cachedRepository?.cachedWatch.removeListener(_handleCachedWatch);
+    super.dispose();
+  }
+
+  void _handleCachedWatch() {
+    if (mounted) setState(() {});
+  }
+
   Future<void> refresh() async {
-    final request = Future.sync(widget.repository.watch);
+    final repository = _cachedRepository;
+    final request = Future.sync(
+        repository == null ? widget.repository.watch : repository.refreshWatch);
     setState(() {
       _request = request;
     });
@@ -661,6 +702,25 @@ class PlayersToWatchState extends State<PlayersToWatch> {
     } on Object {
       // 요청이 실패하면 FutureBuilder에서 다시 시도 버튼을 보여줘요.
     }
+  }
+
+  Widget _watchResult(List<PlayerWatch> players) {
+    if (players.isEmpty) {
+      return Text(
+        tr(context,
+            'No players with 10 rated appearances and an improved average'),
+      );
+    }
+    return SizedBox(
+      height: 200,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
+        itemCount: players.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 16),
+        itemBuilder: (_, index) => _WatchCard(player: players[index]),
+      ),
+    );
   }
 
   @override
@@ -675,50 +735,35 @@ class PlayersToWatchState extends State<PlayersToWatch> {
             const AppInfoButton(
               key: ValueKey('players-ones-to-watch-info'),
               message:
-                  'Highlights players with the highest performance growth over recent matches, based on 1touch metrics.',
+                  'Highlights players with the highest performance growth over the recent 5 matches, based on 1touch metrics.',
               layoutSize: 16,
             ),
           ],
         ),
         const SizedBox(height: 16),
-        FutureBuilder<List<PlayerWatch>>(
-          future: _request,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const SizedBox(
-                height: 200,
-                child: Center(child: FootballLoadingIndicator()),
-              );
-            }
-            if (snapshot.hasError) {
-              return TextButton(
-                onPressed: () => setState(
-                  () => _request = Future.sync(widget.repository.watch),
-                ),
-                child: Text(tr(context, 'Could not load players · Retry')),
-              );
-            }
-            final players = snapshot.requireData;
-            if (players.isEmpty) {
-              return Text(
-                tr(context,
-                    'No players with 10 rated appearances and an improved average'),
-              );
-            }
-            return SizedBox(
-              height: 200,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                clipBehavior: Clip.none,
-                itemCount: players.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 16),
-                itemBuilder: (_, index) => _WatchCard(
-                  player: players[index],
-                ),
-              ),
-            );
-          },
-        ),
+        if (_cachedRepository?.cachedWatch.value case final players?)
+          _watchResult(players)
+        else
+          FutureBuilder<List<PlayerWatch>>(
+            future: _request,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const SizedBox(
+                  height: 200,
+                  child: Center(child: FootballLoadingIndicator()),
+                );
+              }
+              if (snapshot.hasError) {
+                return TextButton(
+                  onPressed: () => setState(
+                    () => _request = Future.sync(widget.repository.watch),
+                  ),
+                  child: Text(tr(context, 'Could not load players · Retry')),
+                );
+              }
+              return _watchResult(snapshot.requireData);
+            },
+          ),
       ],
     );
   }

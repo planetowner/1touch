@@ -2286,11 +2286,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "1touch独自のデータに基づくパフォーマンス指標で選手を評価・順位付けします。",
     zh: "使用1touch自有的数据驱动表现指标评估球员并进行排名。"
   ),
-  "Highlights players with the highest performance growth over recent matches, based on 1touch metrics.":
+  "Highlights players with the highest performance growth over the recent 5 matches, based on 1touch metrics.":
       (
-    ko: "1touch 지표를 기준으로 최근 경기에서 경기력이 가장 크게 향상된 선수를 보여줘요.",
-    ja: "1touchの指標に基づき、最近の試合で最も成長した選手を紹介します。",
-    zh: "根据1touch指标，展示近期比赛中表现进步最大的球员。"
+    ko: "1touch 지표를 기준으로 최근 5경기에서 경기력이 가장 크게 향상된 선수를 보여줘요.",
+    ja: "1touchの指標に基づき、直近5試合で最も成長した選手を紹介します。",
+    zh: "根据1touch指标，展示最近5场比赛中表现进步最大的球员。"
   ),
   "Measured by comparing actual salary against 1touch’s predicted market value based on performance and playtime.":
       (

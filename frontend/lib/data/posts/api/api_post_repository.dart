@@ -57,6 +57,21 @@ class ApiPostRepository implements CachedPostRepository {
       _cachedFeeds.value[
           _query(teamId, category, sort, period, timezone, limit, offset)];
 
+  /// Promotes a local feed page to memory without starting an API request.
+  Future<List<Post>?> restoreCachedFeed({
+    required int teamId,
+    PostCategory? category,
+    PostSort sort = PostSort.newest,
+    PostPeriod period = PostPeriod.allTime,
+    String? timezone,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final query =
+        _query(teamId, category, sort, period, timezone, limit, offset);
+    return _cachedFeeds.value[query] ?? await _restoreFeed(query);
+  }
+
   @override
   Future<void> invalidatePostCaches() async {
     _cacheGeneration++;
@@ -260,8 +275,19 @@ class ApiPostRepository implements CachedPostRepository {
   }
 
   Future<List<Post>> _restoreOrFetchFeed(PostFeedQuery query) async {
+    final restored = await _restoreFeed(query);
+    if (restored != null) {
+      _refreshFeedIfStale(query);
+      return restored;
+    }
+    return _fetchFeed(query);
+  }
+
+  Future<List<Post>?> _restoreFeed(PostFeedQuery query) async {
     final generation = _cacheGeneration;
     final store = _cacheStore;
+    final cached = _cachedFeeds.value[query];
+    if (cached != null) return cached;
     if (store != null) {
       final key = _feedKey(query);
       try {
@@ -274,7 +300,6 @@ class ApiPostRepository implements CachedPostRepository {
             final decoded = Map<String, dynamic>.from(record.payload as Map);
             final posts = _mapFeed(decoded, query);
             _publishFeed(query, posts, record.savedAt);
-            _refreshFeedIfStale(query);
             return posts;
           } on Object {
             await store.delete(key, scope: LocalCacheScopes.communityPosts);
@@ -284,7 +309,7 @@ class ApiPostRepository implements CachedPostRepository {
         // A storage failure falls back to the API.
       }
     }
-    return _fetchFeed(query);
+    return null;
   }
 
   void _refreshFeedIfStale(PostFeedQuery query) {

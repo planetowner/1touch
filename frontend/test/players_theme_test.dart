@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
@@ -20,7 +21,7 @@ import 'support/player_detail_fixture.dart';
 import 'support/player_directory_fixture.dart';
 
 void main() {
-  test('failed reload clears previous favorites and remains retryable',
+  test('failed reload keeps previous favorites and remains retryable',
       () async {
     final repository = FakeFollowingPlayersRepository();
     final controller = PlayerFollowingController(repository: repository);
@@ -30,8 +31,8 @@ void main() {
 
     repository.fail = true;
     await controller.load();
-    expect(controller.players, isEmpty);
-    expect(controller.loaded, isFalse);
+    expect(controller.contains(1), isTrue);
+    expect(controller.loaded, isTrue);
     expect(controller.error, isA<StateError>());
 
     repository.fail = false;
@@ -40,6 +41,31 @@ void main() {
     expect(controller.loaded, isTrue);
     expect(controller.players, isEmpty);
     expect(controller.error, isNull);
+  });
+
+  testWidgets('following cards stay visible during a refresh and failure',
+      (tester) async {
+    final repository = _ControlledRefreshFollowingRepository();
+    final controller = PlayerFollowingController(repository: repository);
+    addTearDown(controller.dispose);
+    await controller.load();
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: PlayerFavorites(controller: controller, searchRepository: null),
+      ),
+    ));
+    expect(find.byKey(const ValueKey('favorite-player-1')), findsOneWidget);
+
+    final refreshing = controller.load();
+    await tester.pump();
+    expect(find.byKey(const ValueKey('favorite-player-1')), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsNothing);
+
+    repository.refreshCompleter.completeError(StateError('offline'));
+    await refreshing;
+    await tester.pump();
+    expect(find.byKey(const ValueKey('favorite-player-1')), findsOneWidget);
+    expect(find.text('Could not load favorites · Retry'), findsOneWidget);
   });
 
   Future<void> pump(WidgetTester tester,
@@ -164,6 +190,26 @@ void main() {
       expect(portrait.width, imageSurface.height - 10);
     }
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('cached watch cards appear on the first frame during refresh',
+      (tester) async {
+    final repository = _CachedWatchDirectoryRepository();
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(body: PlayersToWatch(repository: repository)),
+    ));
+    expect(find.byKey(const ValueKey('ones-to-watch-card')), findsOneWidget);
+    expect(find.byType(FootballLoadingIndicator), findsNothing);
+
+    final state =
+        tester.state<PlayersToWatchState>(find.byType(PlayersToWatch));
+    final refreshing = state.refresh();
+    await tester.pump();
+    expect(find.byKey(const ValueKey('ones-to-watch-card')), findsOneWidget);
+    repository.completeRefresh();
+    await refreshing;
+    await tester.pump();
+    expect(find.textContaining('Updated'), findsOneWidget);
   });
 
   testWidgets('directory keeps the pre-merge card treatment with API data',
@@ -563,7 +609,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Could not load favorites · Retry'), findsOneWidget);
     expect(
-        find.byKey(const ValueKey('favorite-player-number-1')), findsNothing);
+        find.byKey(const ValueKey('favorite-player-number-1')), findsOneWidget);
 
     following.fail = false;
     following.players.value = const [
@@ -796,6 +842,54 @@ class _ControlledRefreshDirectoryRepository
     watchCalls += 1;
     if (watchCalls == 1) return super.watch();
     return watchRefreshCompleter.future;
+  }
+}
+
+class _CachedWatchDirectoryRepository extends FakePlayerDirectoryRepository
+    implements CachedPlayerWatchRepository {
+  final ValueNotifier<List<PlayerWatch>?> _cachedWatch = ValueNotifier(const [
+    (
+      id: 1,
+      name: 'Improving player',
+      image: null,
+      jerseyNumber: 17,
+      teamId: 7980,
+      teamName: 'Atlético de Madrid',
+      recent: 8.4,
+      previous: 6.2,
+      change: 2.2,
+    ),
+  ]);
+  final _refresh = Completer<List<PlayerWatch>>();
+
+  @override
+  ValueListenable<List<PlayerWatch>?> get cachedWatch => _cachedWatch;
+
+  @override
+  Future<List<PlayerWatch>?> restoreCachedWatch() async => _cachedWatch.value;
+
+  @override
+  Future<List<PlayerWatch>> watch() async => _cachedWatch.value!;
+
+  @override
+  Future<List<PlayerWatch>> refreshWatch() => _refresh.future;
+
+  void completeRefresh() {
+    const updated = [
+      (
+        id: 1,
+        name: 'Updated player',
+        image: null,
+        jerseyNumber: 17,
+        teamId: 7980,
+        teamName: 'Atlético de Madrid',
+        recent: 8.5,
+        previous: 6.2,
+        change: 2.3,
+      ),
+    ];
+    _cachedWatch.value = updated;
+    _refresh.complete(updated);
   }
 }
 

@@ -19,9 +19,9 @@ class PlayerFollowingController extends ChangeNotifier {
 
   Future<void> load() => _request ??= _load();
   Future<void> _load() async {
+    final hadSnapshot = loaded;
     loading = true;
-    loaded = false;
-    players = [];
+    if (!hadSnapshot) players = [];
     error = null;
     notifyListeners();
     try {
@@ -29,6 +29,7 @@ class PlayerFollowingController extends ChangeNotifier {
       loaded = true;
     } catch (e) {
       error = e;
+      if (!hadSnapshot) loaded = false;
     } finally {
       loading = false;
       _request = null;

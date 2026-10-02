@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/app_close_header.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -38,34 +39,24 @@ class AppInfoButton extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 345),
               child: Padding(
+                key: const ValueKey('app-info-content'),
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        key: const ValueKey('app-info-close'),
-                        tooltip: tr(dialogContext, 'Close'),
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        padding: const EdgeInsets.all(8),
-                        constraints: const BoxConstraints.tightFor(
-                          width: 40,
-                          height: 40,
-                        ),
-                        icon: Icon(
-                          Icons.close,
-                          size: 24,
+                    AppCloseHeader(
+                      closeKey: const ValueKey('app-info-close'),
+                      onClose: () => Navigator.of(dialogContext).pop(),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        tr(dialogContext, message),
+                        style: Body1.style.copyWith(
                           color: Theme.of(dialogContext).colorScheme.onSurface,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      tr(dialogContext, message),
-                      style: Body1.style.copyWith(
-                        color: Theme.of(dialogContext).colorScheme.onSurface,
                       ),
                     ),
                   ],

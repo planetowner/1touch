@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_search_field.dart';
+import 'package:onetouch/core/app_close_header.dart';
 import 'package:onetouch/core/debounced_search_controller.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/season_label.dart';
@@ -64,8 +65,9 @@ class _PlayerRankingFilterSheetState extends State<PlayerRankingFilterSheet> {
             controller: controller,
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
             children: [
-              _SheetTitle(
+              AppCloseHeader(
                   title: tr(context, 'Filter'),
+                  iconSize: 28,
                   onClose: () => Navigator.pop(context)),
               const SizedBox(height: 48),
               Text(tr(context, 'LEAGUE'), style: Body2_b.style),
@@ -292,8 +294,9 @@ class _FollowingPlayersEditorSheetState
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(children: [
-            _SheetTitle(
+            AppCloseHeader(
                 title: tr(context, 'Following Players'),
+                iconSize: 28,
                 onClose: () => Navigator.pop(context)),
             const SizedBox(height: 12),
             Container(
@@ -672,10 +675,11 @@ class _PlayerFullRankingSheetState extends State<PlayerFullRankingSheet> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(children: [
-            _SheetTitle(
+            AppCloseHeader(
                 title: tr(context, '1touch Ranking'),
                 onClose: () => Navigator.pop(context),
-                compact: true),
+                buttonSize: 24,
+                titleStyle: Heading5.style.copyWith(height: 1.1)),
             const SizedBox(height: 24),
             SizedBox(
               height: 40,
@@ -797,44 +801,4 @@ class _FullRankingRow extends StatelessWidget {
           ]),
         ),
       );
-}
-
-class _SheetTitle extends StatelessWidget {
-  const _SheetTitle(
-      {required this.title, required this.onClose, this.compact = false});
-  final String title;
-  final VoidCallback onClose;
-  final bool compact;
-  @override
-  Widget build(BuildContext context) => SizedBox(
-      height: compact ? 24 : null,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Center(
-              child: Text(tr(context, title),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: compact
-                      ? Heading5.style.copyWith(height: 1.1)
-                      : Heading5.style)),
-          Align(
-            alignment: Alignment.centerRight,
-            child: IconButton(
-              onPressed: onClose,
-              padding: compact ? EdgeInsets.zero : null,
-              constraints: compact
-                  ? const BoxConstraints.tightFor(width: 24, height: 24)
-                  : null,
-              style: compact
-                  ? IconButton.styleFrom(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap)
-                  : null,
-              icon: Icon(Icons.close,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  size: compact ? 24 : 28),
-            ),
-          ),
-        ],
-      ));
 }

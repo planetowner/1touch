@@ -8,6 +8,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/round_chart_window.dart';
+import 'package:onetouch/core/app_close_header.dart';
 import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';

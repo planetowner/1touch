@@ -64,10 +64,17 @@ abstract interface class PlayerDirectoryRepository {
   Future<List<PlayerWatch>> watch();
 }
 
+abstract interface class CachedPlayerWatchRepository
+    implements PlayerDirectoryRepository {
+  ValueListenable<List<PlayerWatch>?> get cachedWatch;
+  Future<List<PlayerWatch>?> restoreCachedWatch();
+  Future<List<PlayerWatch>> refreshWatch();
+}
+
 final PlayerDirectoryRepository playerDirectoryRepository =
     ApiPlayerDirectoryRepository(api: apiClient, cacheStore: localCacheStore);
 
-class ApiPlayerDirectoryRepository implements PlayerDirectoryRepository {
+class ApiPlayerDirectoryRepository implements CachedPlayerWatchRepository {
   ApiPlayerDirectoryRepository(
       {required ApiClient api, LocalCacheStore? cacheStore})
       : _api = api,
@@ -82,6 +89,13 @@ class ApiPlayerDirectoryRepository implements PlayerDirectoryRepository {
       _inFlightLoads = {};
   final Map<PlayerDirectoryRankingQuery, Future<PlayerRankingPage>>
       _inFlightFetches = {};
+  final ValueNotifier<List<PlayerWatch>?> _cachedWatch = ValueNotifier(null);
+  DateTime? _watchSavedAt;
+  Future<List<PlayerWatch>>? _watchLoad;
+  Future<List<PlayerWatch>>? _watchFetch;
+
+  @override
+  ValueListenable<List<PlayerWatch>?> get cachedWatch => _cachedWatch;
 
   @override
   ValueListenable<Map<PlayerDirectoryRankingQuery, PlayerRankingPage>>
@@ -92,6 +106,14 @@ class ApiPlayerDirectoryRepository implements PlayerDirectoryRepository {
           {int? league, String? position, int offset = 0}) =>
       _cachedRankings
           .value[(league: league, position: position, offset: offset)];
+
+  /// Promotes a local page to memory without starting an API request.
+  Future<PlayerRankingPage?> restoreCachedRanking(
+      {int? league, String? position, int offset = 0}) async {
+    _validateQuery(league, position, offset);
+    return cachedRanking(league: league, position: position, offset: offset) ??
+        await _restore((league: league, position: position, offset: offset));
+  }
 
   @override
   Future<PlayerRankingPage> ranking(
@@ -165,6 +187,12 @@ class ApiPlayerDirectoryRepository implements PlayerDirectoryRepository {
       return null;
     }
     if (record == null) return null;
+    final alreadyCached = cachedRanking(
+      league: query.league,
+      position: query.position,
+      offset: query.offset,
+    );
+    if (alreadyCached != null) return alreadyCached;
     try {
       final decoded = Map<String, dynamic>.from(record.payload as Map);
       final page = _mapRanking(decoded, query);
@@ -277,20 +305,133 @@ class ApiPlayerDirectoryRepository implements PlayerDirectoryRepository {
   }
 
   @override
-  Future<List<PlayerWatch>> watch() async {
+  Future<List<PlayerWatch>> watch() {
+    final cached = _cachedWatch.value;
+    if (cached != null) {
+      _refreshWatchIfStale();
+      return Future.value(cached);
+    }
+    final inFlight = _watchLoad;
+    if (inFlight != null) return inFlight;
+    late final Future<List<PlayerWatch>> load;
+    load = _restoreOrFetchWatch().whenComplete(() {
+      if (identical(_watchLoad, load)) _watchLoad = null;
+    });
+    _watchLoad = load;
+    return load;
+  }
+
+  @override
+  Future<List<PlayerWatch>?> restoreCachedWatch() async =>
+      _cachedWatch.value ?? await _restoreWatch();
+
+  @override
+  Future<List<PlayerWatch>> refreshWatch() => _fetchWatch();
+
+  Future<List<PlayerWatch>> _restoreOrFetchWatch() async {
+    final restored = await _restoreWatch();
+    if (restored != null) {
+      _refreshWatchIfStale();
+      return restored;
+    }
+    return _fetchWatch();
+  }
+
+  void _refreshWatchIfStale() {
+    if (AppCachePolicy.shouldRefresh(
+      tier: CacheTier.standard,
+      trigger: CacheSyncTrigger.screenEnter,
+      savedAt: _watchSavedAt,
+    )) {
+      unawaited(_fetchWatch().then<void>((_) {}, onError: (Object _) {}));
+    }
+  }
+
+  Future<List<PlayerWatch>?> _restoreWatch() async {
+    final store = _cacheStore;
+    if (store == null) return null;
+    LocalCacheRecord? record;
+    try {
+      record = await store.read(LocalCacheKeys.onesToWatch);
+    } on Object {
+      return null;
+    }
+    if (record == null) return null;
+    final cached = _cachedWatch.value;
+    if (cached != null) return cached;
+    try {
+      final decoded = Map<String, dynamic>.from(record.payload as Map);
+      final players = _mapWatch(decoded);
+      _publishWatch(players, record.savedAt);
+      return players;
+    } on Object {
+      try {
+        await store.delete(LocalCacheKeys.onesToWatch);
+      } on Object {
+        // A damaged row must not prevent an API recovery.
+      }
+      return null;
+    }
+  }
+
+  Future<List<PlayerWatch>> _fetchWatch() {
+    final inFlight = _watchFetch;
+    if (inFlight != null) return inFlight;
+    late final Future<List<PlayerWatch>> fetch;
+    fetch = _fetchAndCacheWatch().whenComplete(() {
+      if (identical(_watchFetch, fetch)) _watchFetch = null;
+    });
+    _watchFetch = fetch;
+    return fetch;
+  }
+
+  Future<List<PlayerWatch>> _fetchAndCacheWatch() async {
     final json = await _get('players/ones-to-watch', {});
-    return (json['items'] as List)
-        .map((r) => (
-              id: r['player_id'] as int,
-              name: r['name'] as String,
-              image: r['image'] as String?,
-              jerseyNumber: r['jersey_number'] as int?,
-              teamId: r['team_id'] as int?,
-              teamName: r['team_name'] as String?,
-              recent: (r['recent_average'] as num).toDouble(),
-              previous: (r['previous_average'] as num).toDouble(),
-              change: (r['change'] as num).toDouble()
-            ))
-        .toList();
+    final players = _mapWatch(json);
+    _publishWatch(players, DateTime.now().toUtc());
+    try {
+      await _cacheStore?.write(LocalCacheKeys.onesToWatch, json);
+    } on Object {
+      // A storage failure must not hide a valid API response.
+    }
+    return players;
+  }
+
+  List<PlayerWatch> _mapWatch(Map<String, dynamic> json) {
+    final items = json['items'] as List;
+    if (items.length > 10) {
+      throw const FormatException('Too many ones-to-watch players.');
+    }
+    final players = items.map((raw) {
+      final row = Map<String, dynamic>.from(raw as Map);
+      final player = (
+        id: row['player_id'] as int,
+        name: row['name'] as String,
+        image: row['image'] as String?,
+        jerseyNumber: row['jersey_number'] as int?,
+        teamId: row['team_id'] as int?,
+        teamName: row['team_name'] as String?,
+        recent: (row['recent_average'] as num).toDouble(),
+        previous: (row['previous_average'] as num).toDouble(),
+        change: (row['change'] as num).toDouble(),
+      );
+      if (player.id < 1 ||
+          player.name.trim().isEmpty ||
+          !player.recent.isFinite ||
+          !player.previous.isFinite ||
+          !player.change.isFinite) {
+        throw const FormatException('Invalid ones-to-watch player.');
+      }
+      return player;
+    }).toList(growable: false);
+    if (players.map((player) => player.id).toSet().length != players.length) {
+      throw const FormatException('Duplicate ones-to-watch player.');
+    }
+    return List.unmodifiable(players);
+  }
+
+  void _publishWatch(List<PlayerWatch> players, DateTime savedAt) {
+    _watchSavedAt = savedAt;
+    _cachedWatch.value = players;
   }
 }
