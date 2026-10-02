@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/overflow_scrolling_text.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/match_info/live_match_motion.dart';
@@ -181,11 +180,12 @@ class PlayerMatchCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Flexible(
-                              child: _ScrollingStatLabel(
+                              child: OverflowScrollingText(
                                 key: ValueKey(
                                     'player-match-stat-label-${stats[index].label}'),
-                                label: _singularMatchStatLabel(
+                                text: _singularMatchStatLabel(
                                     context, stats[index].label),
+                                style: Eyebrow.style,
                               ),
                             ),
                             const SizedBox(width: 4),
@@ -233,93 +233,4 @@ class PlayerMatchCard extends StatelessWidget {
       ]),
     );
   }
-}
-
-class _ScrollingStatLabel extends StatefulWidget {
-  const _ScrollingStatLabel({super.key, required this.label});
-
-  final String label;
-
-  @override
-  State<_ScrollingStatLabel> createState() => _ScrollingStatLabelState();
-}
-
-class _ScrollingStatLabelState extends State<_ScrollingStatLabel> {
-  final ScrollController _controller = ScrollController();
-  Timer? _timer;
-  bool _needsScroll = false;
-
-  @override
-  void didUpdateWidget(covariant _ScrollingStatLabel oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.label != widget.label) {
-      _timer?.cancel();
-      _needsScroll = false;
-      if (_controller.hasClients) _controller.jumpTo(0);
-    }
-  }
-
-  void _scheduleScroll() {
-    _timer?.cancel();
-    _timer = Timer(const Duration(milliseconds: 800), () async {
-      if (!mounted || !_needsScroll || !_controller.hasClients) return;
-      final distance = _controller.position.maxScrollExtent;
-      if (distance <= 0) return;
-      await _controller.animateTo(
-        distance,
-        duration:
-            Duration(milliseconds: (distance * 35).round().clamp(1200, 6000)),
-        curve: Curves.linear,
-      );
-      if (!mounted || !_needsScroll || !_controller.hasClients) return;
-      _timer = Timer(const Duration(milliseconds: 800), () {
-        if (!mounted || !_needsScroll || !_controller.hasClients) return;
-        _controller.jumpTo(0);
-        _scheduleScroll();
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, constraints) {
-          final painter = TextPainter(
-            text: TextSpan(text: widget.label, style: Eyebrow.style),
-            textDirection: Directionality.of(context),
-            textScaler: MediaQuery.textScalerOf(context),
-            maxLines: 1,
-          )..layout();
-          final overflow = painter.width > constraints.maxWidth + 0.5;
-          painter.dispose();
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted || overflow == _needsScroll) return;
-            _needsScroll = overflow;
-            if (overflow) {
-              _scheduleScroll();
-            } else {
-              _timer?.cancel();
-              if (_controller.hasClients) _controller.jumpTo(0);
-            }
-          });
-          return SingleChildScrollView(
-            key: const ValueKey('player-match-scrolling-label'),
-            controller: _controller,
-            scrollDirection: Axis.horizontal,
-            physics: const NeverScrollableScrollPhysics(),
-            child: Text(
-              widget.label,
-              maxLines: 1,
-              softWrap: false,
-              style: Eyebrow.style,
-            ),
-          );
-        },
-      );
 }
