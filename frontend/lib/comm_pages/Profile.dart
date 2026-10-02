@@ -733,7 +733,7 @@ class _SettingsListState extends State<SettingsList> {
         _settingItem(
           itemKey: const ValueKey('profile-setting-personal-info'),
           icon: Icons.badge_outlined,
-          title: tr(context, 'Personal Info'),
+          title: tr(context, 'Account'),
           onTap: widget.onPersonalInfo,
         ),
         _divider(),

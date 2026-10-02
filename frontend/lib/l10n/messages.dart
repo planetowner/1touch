@@ -482,7 +482,7 @@ const appMessages = <String, MessageTranslations>{
   "General": (ko: "자유", ja: "一般", zh: "通用"),
   "Legal": (ko: "법적 고지", ja: "法的情報", zh: "法律信息"),
   "Preferences": (ko: "환경 설정", ja: "環境設定", zh: "偏好设置"),
-  "Personal Info": (ko: "개인 정보", ja: "個人情報", zh: "个人信息"),
+  "Account": (ko: "개인 정보", ja: "個人情報", zh: "个人信息"),
   "Notification": (ko: "알림", ja: "通知", zh: "通知"),
   "Notifications": (ko: "알림", ja: "通知", zh: "通知"),
   "All Notifications": (ko: "모든 알림", ja: "すべての通知", zh: "所有通知"),
