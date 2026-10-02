@@ -7,7 +7,7 @@ import re
 import sqlite3
 import unittest
 from contextlib import ExitStack, redirect_stdout
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -53,6 +53,13 @@ class TransfersContractsTests(unittest.TestCase):
             CREATE TABLE teams (team_id BIGINT PRIMARY KEY, name TEXT, short_code TEXT, image_path TEXT);
             CREATE TABLE players (player_id BIGINT PRIMARY KEY, display_name TEXT, image_path TEXT, date_of_birth DATE);
             CREATE TABLE seasons (season_id BIGINT PRIMARY KEY, competition_id BIGINT, name TEXT, is_current INT);
+            CREATE TABLE competitions (competition_id BIGINT PRIMARY KEY);
+            CREATE TABLE stages (stage_id BIGINT PRIMARY KEY, season_id BIGINT);
+            CREATE TABLE fixtures (fixture_id BIGINT PRIMARY KEY, stage_id BIGINT, state_id INT, starting_at TEXT);
+            CREATE TABLE fixture_lineups (fixture_id BIGINT, team_id BIGINT, player_id BIGINT,
+                lineup_type_id INT, match_position_id INT, minutes_played INT, rating REAL);
+            CREATE TABLE fixture_events (fixture_id BIGINT, team_id BIGINT, event_type_id INT,
+                player_id BIGINT, related_player_id BIGINT);
             CREATE TABLE team_seasons (team_id BIGINT, season_id BIGINT, PRIMARY KEY (team_id, season_id));
             CREATE TABLE team_squad_members (team_id BIGINT, season_id BIGINT, player_id BIGINT, jersey_number INT, position_group_id INT, leadership_role TEXT);
             CREATE TABLE team_leadership_assignments (team_id BIGINT, season_id BIGINT, player_id BIGINT, leadership_role TEXT, PRIMARY KEY (team_id, season_id, leadership_role, player_id));
@@ -463,6 +470,65 @@ class TransfersContractsTests(unittest.TestCase):
                       "estimated_weekly_gross_eur","leadership_role","start_date","end_date"):
             self.assertIsNone(missing[field])
 
+    def test_squad_positions_use_all_competitions_and_keep_roster_positions_without_appearances(self):
+        self.sql.executescript("""
+            INSERT INTO teams VALUES (6,'Spurs',NULL,NULL);
+            INSERT INTO team_seasons VALUES (6,28083);
+            INSERT INTO team_squad_members VALUES
+                (6,28083,997,9,26,NULL),(6,28083,4313,7,27,NULL),
+                (6,28083,163152,1,24,NULL),(6,28083,185658,8,26,NULL),
+                (6,28083,832,NULL,NULL,NULL);
+            INSERT INTO competitions VALUES (8),(2);
+            INSERT INTO seasons VALUES (90000,2,'2026/2027',1);
+            INSERT INTO stages VALUES (1,28083),(2,90000),(3,25000);
+            INSERT INTO fixtures VALUES
+                (1,1,5,'2026-08-01 10:00:00'),(2,2,7,'2026-08-02 10:00:00'),
+                (3,2,8,'2026-08-03 10:00:00'),(4,1,2,'2026-08-04 10:00:00'),
+                (5,1,5,'2026-11-01 10:00:00'),(6,3,5,'2025-08-01 10:00:00');
+            INSERT INTO fixture_lineups VALUES
+                (1,6,997,11,26,90,7),(2,6,997,12,27,5,NULL),(3,18,997,11,27,5,7),
+                (4,6,997,11,26,90,7),(5,6,997,11,26,90,7),(6,6,997,11,26,90,7),
+                (1,6,4313,12,26,0,NULL),(4,6,4313,11,26,90,7),(5,6,4313,11,26,90,7),
+                (1,6,185658,11,NULL,90,7),(1,6,11353231,11,25,90,7);
+        """)
+        writes_before = self.sql.total_changes
+        with patch.object(contracts_repo, "datetime") as clock, \
+             patch.object(contracts_repo, "fetch_all_dict", wraps=self.fetch_dicts) as fetch:
+            clock.now.return_value = datetime(2026,10,2,tzinfo=timezone.utc)
+            response = self.api_client().get('/v1/teams/6/contracts?season_id=28083')
+        self.assertEqual(response.status_code, 200)
+        positions = {row['player_id']: row['position_group_id'] for row in response.json()['players']}
+        self.assertEqual(positions, {997:27, 4313:27, 163152:24, 185658:26, 832:None})
+        self.assertEqual(self.sql.total_changes, writes_before)
+        self.assertEqual(self.sql.execute(
+            'SELECT position_group_id FROM team_squad_members WHERE player_id=997').fetchone()[0], 26)
+        position_queries = [call for call in fetch.call_args_list if 'FROM fixture_lineups fl' in call.args[0]]
+        self.assertEqual(len(position_queries), 1)
+        self.assertEqual(position_queries[0].args[1][:2], ('2026/2027', datetime(2026,10,2)))
+        self.assertEqual(set(position_queries[0].args[1][2:]), set(positions))
+
+    def test_squad_positions_follow_selected_past_season_and_shared_tie_rules(self):
+        self.sql.executescript("""
+            INSERT INTO teams VALUES (6,'Spurs',NULL,NULL);
+            INSERT INTO team_seasons VALUES (6,25000);
+            INSERT INTO team_squad_members VALUES (6,25000,997,9,27,NULL),(6,25000,4313,7,27,NULL);
+            INSERT INTO competitions VALUES (8);
+            INSERT INTO stages VALUES (1,25000),(2,28083);
+            INSERT INTO fixtures VALUES
+                (1,1,5,'2025-08-01 10:00:00'),(2,1,5,'2025-08-02 10:00:00'),
+                (3,1,5,'2025-08-03 10:00:00'),(4,2,5,'2026-08-01 10:00:00');
+            INSERT INTO fixture_lineups VALUES
+                (1,6,997,11,26,5,7),(2,6,997,11,26,5,7),(3,6,997,11,25,90,7),
+                (1,6,4313,11,26,90,7),(2,6,4313,11,25,90,7),
+                (4,6,997,11,27,90,7),(4,6,4313,11,27,90,7);
+        """)
+        with patch.object(contracts_repo, "datetime") as clock:
+            clock.now.return_value = datetime(2026,10,2,tzinfo=timezone.utc)
+            result = contracts_repo.get_team_contracts(6,25000)
+        self.assertFalse(result['is_current'])
+        self.assertEqual({row['player_id']: row['position_group_id'] for row in result['players']},
+                         {997:26, 4313:25})
+
     def test_historical_squad_uses_its_season_and_has_no_contract_dates_or_contract_sort(self):
         self.sql.executescript("""
             INSERT INTO teams VALUES (6,'Spurs',NULL,NULL);
@@ -511,7 +577,9 @@ class TransfersContractsTests(unittest.TestCase):
                      "/v1/teams/6/contracts?season_id=999"):
             with self.subTest(path=path):
                 self.assertEqual(client.get(path).status_code,404)
-        response = client.get("/v1/teams/6/contracts?season_id=28083")
+        with patch.object(contracts_repo, "fetch_all_dict", wraps=self.fetch_dicts) as fetch:
+            response = client.get("/v1/teams/6/contracts?season_id=28083")
+        self.assertFalse(any('FROM fixture_lineups fl' in call.args[0] for call in fetch.call_args_list))
         self.assertEqual(response.status_code,200)
         self.assertEqual(response.json(),{"team_id":6,"season_id":28083,"is_current":True,"players":[],"leadership":[]})
         for season_id in ("0","-1","invalid"):
