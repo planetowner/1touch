@@ -64,6 +64,26 @@ void main() {
     );
   });
 
+  test('community data becomes stale after five minutes', () {
+    expect(AppCachePolicy.shortLivedTtl, const Duration(minutes: 5));
+    expect(
+      AppCachePolicy.freshness(
+        CacheTier.shortLived,
+        savedAt: now.subtract(const Duration(minutes: 4)),
+        now: now,
+      ),
+      CacheFreshness.fresh,
+    );
+    expect(
+      AppCachePolicy.freshness(
+        CacheTier.shortLived,
+        savedAt: now.subtract(const Duration(minutes: 5)),
+        now: now,
+      ),
+      CacheFreshness.stale,
+    );
+  });
+
   test('force refresh and realtime always use the network', () {
     expect(
       AppCachePolicy.shouldRefresh(

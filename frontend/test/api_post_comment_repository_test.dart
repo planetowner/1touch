@@ -9,6 +9,27 @@ import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/models/post_comment.dart';
 
 void main() {
+  test('successful comment mutations invalidate post caches', () async {
+    var invalidations = 0;
+    final repository = ApiPostCommentRepository(
+      api: ApiClient(
+        client: MockClient((request) async => request.method == 'POST'
+            ? http.Response('{"comment_id":17}', 201)
+            : http.Response('{"ok":true}', 200)),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => const {},
+      ),
+      onMutation: () async {
+        invalidations++;
+      },
+    );
+
+    await repository.createComment(postId: 42, body: 'New comment');
+    await repository.updateComment(commentId: 17, body: 'Updated comment');
+    await repository.deleteComment(commentId: 17);
+    expect(invalidations, 3);
+  });
+
   test('updates a comment through the authenticated endpoint', () async {
     final repository = ApiPostCommentRepository(
       api: ApiClient(

@@ -34,6 +34,9 @@ class _NotificationPostPageState extends State<NotificationPostPage> {
   @override
   void initState() {
     super.initState();
+    if (_repository case CachedPostRepository cached) {
+      _post = cached.cachedPost(widget.postId);
+    }
     unawaited(_load());
   }
 
@@ -41,7 +44,12 @@ class _NotificationPostPageState extends State<NotificationPostPage> {
     setState(() => _error = null);
     try {
       final post = await _repository.loadPost(widget.postId);
-      if (mounted) setState(() => _post = post);
+      if (mounted) {
+        final repository = _repository;
+        setState(() => _post = repository is CachedPostRepository
+            ? repository.cachedPost(widget.postId) ?? post
+            : post);
+      }
     } on Object catch (error) {
       if (mounted) setState(() => _error = error);
     }
