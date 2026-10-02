@@ -275,38 +275,93 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
   List<PlayerRank> _items = [];
   bool _loading = true;
   bool _failed = false;
+  int _requestId = 0;
 
   @override
   void initState() {
     super.initState();
+    widget.repository.cachedRankings.addListener(_handleCachedRanking);
+    _applyCachedRanking();
     _load();
   }
 
-  Future<void> _load({bool more = false}) async {
-    setState(() {
-      _loading = true;
-      _failed = false;
-      if (!more) _items = [];
-    });
-    try {
-      final page = await widget.repository.ranking(
-        league: _league,
-        position: _position,
-        offset: more ? _items.length : 0,
-      );
-      if (!mounted) return;
-      setState(() {
-        _page = page;
-        _items = [..._items, ...page.items];
-      });
-    } catch (_) {
-      if (mounted) setState(() => _failed = true);
-    } finally {
-      if (mounted) setState(() => _loading = false);
+  @override
+  void didUpdateWidget(PlayerRankingPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(widget.repository, oldWidget.repository)) {
+      oldWidget.repository.cachedRankings.removeListener(_handleCachedRanking);
+      widget.repository.cachedRankings.addListener(_handleCachedRanking);
+    }
+    if (!identical(widget.repository, oldWidget.repository) ||
+        widget.league != oldWidget.league ||
+        widget.position != oldWidget.position) {
+      _league = widget.league;
+      _position = widget.position;
+      _load();
     }
   }
 
-  Future<void> refresh() => _load();
+  @override
+  void dispose() {
+    widget.repository.cachedRankings.removeListener(_handleCachedRanking);
+    super.dispose();
+  }
+
+  void _handleCachedRanking() {
+    final cached =
+        widget.repository.cachedRanking(league: _league, position: _position);
+    if (cached == null || identical(cached, _page)) return;
+    setState(() => _showPage(cached));
+  }
+
+  void _applyCachedRanking() {
+    final cached =
+        widget.repository.cachedRanking(league: _league, position: _position);
+    if (cached != null) _showPage(cached);
+  }
+
+  void _showPage(PlayerRankingPage page) {
+    _page = page;
+    _items = page.items;
+    _loading = false;
+    _failed = false;
+  }
+
+  Future<void> _load({bool forceRefresh = false}) async {
+    final requestId = ++_requestId;
+    final league = _league;
+    final position = _position;
+    final cached = forceRefresh
+        ? _page
+        : widget.repository.cachedRanking(league: league, position: position);
+    setState(() {
+      if (!forceRefresh) {
+        _page = cached;
+        _items = cached?.items ?? [];
+      }
+      _loading = cached == null || forceRefresh;
+      _failed = false;
+    });
+    try {
+      final page = await (forceRefresh
+          ? widget.repository.refreshRanking(league: league, position: position)
+          : widget.repository.ranking(league: league, position: position));
+      if (!mounted || requestId != _requestId) return;
+      final latest =
+          widget.repository.cachedRanking(league: league, position: position);
+      setState(() => _showPage(latest ?? page));
+    } catch (_) {
+      if (mounted && requestId == _requestId) {
+        setState(() => _failed = true);
+      }
+    } finally {
+      if (mounted && requestId == _requestId) {
+        setState(() => _loading = false);
+      }
+    }
+  }
+
+  Future<void> refresh() => _load(forceRefresh: true);
 
   Future<void> _filters() async {
     final selection = await showModalBottomSheet<PlayerRankingFilterSelection>(
@@ -405,13 +460,13 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
         const SizedBox(height: 16),
         if (_failed)
           TextButton(
-            onPressed: () => _load(more: _items.isNotEmpty),
+            onPressed: () => _load(forceRefresh: _items.isNotEmpty),
             child: Text(tr(context, 'Could not load ranking · Retry')),
           ),
         if (!_loading && !_failed && _items.isEmpty)
           Text(tr(context, 'No ranking data for these filters')),
         if (_items.isNotEmpty) _rankingCard(context),
-        if (_loading)
+        if (_loading && _items.isEmpty)
           const Padding(
             padding: EdgeInsets.all(24),
             child: Center(child: FootballLoadingIndicator()),

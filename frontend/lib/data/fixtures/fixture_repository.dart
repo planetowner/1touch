@@ -2,14 +2,51 @@ import 'package:flutter/foundation.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 
+@immutable
+class TeamMatchesQuery {
+  const TeamMatchesQuery({
+    required this.teamId,
+    required this.status,
+    required this.start,
+    required this.end,
+    required this.limit,
+    required this.offset,
+  });
+
+  final int teamId;
+  final FixtureStatus? status;
+  final String? start;
+  final String? end;
+  final int limit;
+  final int offset;
+
+  @override
+  bool operator ==(Object other) =>
+      other is TeamMatchesQuery &&
+      other.teamId == teamId &&
+      other.status == status &&
+      other.start == start &&
+      other.end == end &&
+      other.limit == limit &&
+      other.offset == offset;
+
+  @override
+  int get hashCode => Object.hash(teamId, status, start, end, limit, offset);
+}
+
 abstract interface class FixtureRepository {
   List<Fixture> get allFixtures;
   ValueListenable<List<Fixture>> get fixtures;
+  ValueListenable<Map<TeamMatchesQuery, List<Fixture>>> get cachedTeamMatches;
+  ValueListenable<Map<int, FixtureDetail>> get cachedDetails;
 
   Fixture? findById(int fixtureId);
 
   /// Loads the contextual data returned by `GET /v1/fixtures/{fixture_id}`.
   Future<FixtureDetail> loadDetail(int fixtureId);
+  FixtureDetail? cachedDetail(int fixtureId);
+  Future<FixtureDetail> refreshDetail(int fixtureId);
+  bool isRefreshingDetail(int fixtureId);
 
   List<Fixture> forTeam(
     int teamId, {
@@ -26,6 +63,33 @@ abstract interface class FixtureRepository {
   // API 순서(예정은 시간순, 나머지는 최신순)를 유지해요.
   // 일정 화면은 예정 경기 묶음을 뒤집어 미래에서 과거로 보여줘요.
   Future<List<Fixture>> loadForTeam(
+    int teamId, {
+    FixtureStatus? status,
+    DateTime? start,
+    DateTime? end,
+    int limit = 50,
+    int offset = 0,
+  });
+
+  List<Fixture>? cachedForTeamMatches(
+    int teamId, {
+    FixtureStatus? status,
+    DateTime? start,
+    DateTime? end,
+    int limit = 50,
+    int offset = 0,
+  });
+
+  Future<List<Fixture>> refreshForTeam(
+    int teamId, {
+    FixtureStatus? status,
+    DateTime? start,
+    DateTime? end,
+    int limit = 50,
+    int offset = 0,
+  });
+
+  bool isRefreshingForTeam(
     int teamId, {
     FixtureStatus? status,
     DateTime? start,

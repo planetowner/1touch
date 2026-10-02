@@ -8,6 +8,8 @@ void main() {
     expect(response.competitionId, 8);
     expect(response.seasonId, 28083);
     expect(response.reference.minimumRatedMatches, 10);
+    expect(response.reference.competitionIds, [8, 82, 301, 384, 564]);
+    expect(response.reference.updatedAt, '2026-09-01T12:00:00Z');
     expect(response.items.first.playerName, 'Player One');
     expect(response.items.first.playerImage, isNull);
     expect(response.items.first.averageRating, 7.25);
@@ -41,13 +43,14 @@ Map<String, dynamic> _rankingsJson() => {
       'competition_id': 8,
       'season_id': 28083,
       'season_name': '2026/2027',
-      'method': 'fixed_historical_percentile',
+      'method': 'cumulative_all_leagues_percentile',
       'reference': {
         'start_season_name': '2020/2021',
         'end_season_name': '2024/2025',
         'minimum_rated_matches': 10,
+        'competition_ids': [8, 82, 301, 384, 564],
         'sample_count': 900,
-        'frozen_at': '2026-09-01T12:00:00Z',
+        'updated_at': '2026-09-01T12:00:00Z',
       },
       'total': 1,
       'limit': 20,

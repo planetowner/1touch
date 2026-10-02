@@ -42,6 +42,8 @@ class ApiCurrentUserResponse {
       favoriteTeamId: _optionalInt(json, 'favorite_team_id'),
       createdAt: _requiredString(json, 'created_at'),
       onboardingComplete: _requiredBool(json, 'onboarding_complete'),
+      // 백엔드가 이 필드를 배포하기 전에는 빈 목록으로 읽어요. 배포 전에는
+      // 실제 연결 계정도 '연결 안 됨'으로 보일 수 있으므로 함께 출시해야 해요.
       socialAccounts: (json['social_accounts'] as List<dynamic>? ?? const [])
           .map((value) => value as String)
           .toList(growable: false),

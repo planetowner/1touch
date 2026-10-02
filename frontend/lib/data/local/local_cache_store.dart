@@ -36,6 +36,7 @@ abstract interface class LocalCacheStore {
 
 abstract final class LocalCacheScopes {
   static const global = 'global';
+  static const communityPosts = 'community-posts';
 
   /// A device has one active authenticated account at a time. This entire
   /// scope is cleared before a new sign-in and during local logout.
@@ -49,6 +50,51 @@ abstract final class LocalCacheKeys {
   static const followingPlayers = 'following-players';
 
   static String teamOverview(int teamId) => 'team-overview:$teamId';
+
+  static String standings(int competitionId, int? seasonId) =>
+      'standings:$competitionId:${seasonId ?? 'current'}';
+
+  static String xgStandings(int competitionId, int? seasonId) =>
+      'xg-standings:$competitionId:${seasonId ?? 'current'}';
+
+  static String teamMatches(
+    int teamId,
+    String status,
+    String? start,
+    String? end,
+    int limit,
+    int offset,
+  ) =>
+      'team-matches:$teamId:$status:${start ?? 'all'}:${end ?? 'all'}:'
+      '$limit:$offset';
+
+  static String fixtureDetail(int fixtureId) => 'fixture-detail:$fixtureId';
+
+  static String playerRankings(int seasonId, int limit, int offset) =>
+      'player-rankings:$seasonId:$limit:$offset';
+
+  static String currentPlayerRanking(
+    int? league,
+    String? position,
+    int limit,
+    int offset,
+  ) =>
+      'current-player-ranking:${league ?? 'all'}:${position ?? 'all'}:'
+      '$limit:$offset';
+
+  static String communityFeed(
+    int teamId,
+    String? category,
+    String sort,
+    String period,
+    String? timezone,
+    int limit,
+    int offset,
+  ) =>
+      'community-feed:$teamId:${category ?? 'all'}:$sort:$period:'
+      '${Uri.encodeComponent(timezone ?? 'all')}:$limit:$offset';
+
+  static String communityPost(int postId) => 'community-post:$postId';
 
   static String home(int teamId, DateTime month, String viewerCountry) =>
       'home:$teamId:${month.year}-${month.month.toString().padLeft(2, '0')}:'

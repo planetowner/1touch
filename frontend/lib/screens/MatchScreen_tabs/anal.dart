@@ -1049,6 +1049,9 @@ class _ShotMapDiagramState extends State<ShotMapDiagram>
           widget.shots,
           widget.color,
           widget.lineColor,
+          Theme.of(context).brightness == Brightness.light
+              ? AppPalette.black
+              : Colors.white,
           _reveal,
         ),
       ),
@@ -1060,8 +1063,10 @@ class _ShotMapPainter extends CustomPainter {
   final List<ShotMapPlot> shots;
   final Color color;
   final Color lineColor;
+  final Color dashColor;
   final Animation<double> reveal;
-  const _ShotMapPainter(this.shots, this.color, this.lineColor, this.reveal)
+  const _ShotMapPainter(
+      this.shots, this.color, this.lineColor, this.dashColor, this.reveal)
       : super(repaint: reveal);
 
   @override
@@ -1106,7 +1111,7 @@ class _ShotMapPainter extends CustomPainter {
     );
 
     final dashPaint = Paint()
-      ..color = Colors.white
+      ..color = dashColor
       ..strokeWidth = 1;
     final dotPaint = Paint()..color = color;
 
@@ -1154,6 +1159,7 @@ class _ShotMapPainter extends CustomPainter {
       oldDelegate.shots != shots ||
       oldDelegate.color != color ||
       oldDelegate.lineColor != lineColor ||
+      oldDelegate.dashColor != dashColor ||
       oldDelegate.reveal != reveal;
 }
 
@@ -1284,10 +1290,12 @@ class _ProgressionPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.save();
-    canvas.translate(
+    final arrowOffset = Offset(
         size.width * (rightToLeft ? 114 : 48) / 594, size.height * 28 / 320);
-    _paintArrows(canvas, Size(size.width * 432 / 594, size.height * 264 / 320));
+    final arrowSize = Size(size.width * 432 / 594, size.height * 264 / 320);
+    canvas.save();
+    canvas.translate(arrowOffset.dx, arrowOffset.dy);
+    _paintArrows(canvas, arrowSize, paintLabels: false);
     canvas.restore();
 
     final line = _pitchLinePaint(lineColor);
@@ -1326,9 +1334,16 @@ class _ProgressionPainter extends CustomPainter {
       canvas.restore();
       canvas.restore();
     }
+
+    // Keep the field markings over the arrows, then cover only the label
+    // bounds so the center line cannot show through the digits or their gaps.
+    canvas.save();
+    canvas.translate(arrowOffset.dx, arrowOffset.dy);
+    _paintArrows(canvas, arrowSize, paintLabels: true);
+    canvas.restore();
   }
 
-  void _paintArrows(Canvas canvas, Size size) {
+  void _paintArrows(Canvas canvas, Size size, {required bool paintLabels}) {
     final percentages = [
       lanePercents.left,
       lanePercents.center,
@@ -1354,16 +1369,6 @@ class _ProgressionPainter extends CustomPainter {
       final shoulder = tip - headWidth;
       final shaftHalf = laneHeight * 0.32;
       final headHalf = laneHeight * 0.49;
-      final path = Path()
-        ..moveTo(0, midY - shaftHalf)
-        ..lineTo(shoulder, midY - shaftHalf)
-        ..lineTo(shoulder, midY - headHalf)
-        ..lineTo(tip, midY)
-        ..lineTo(shoulder, midY + headHalf)
-        ..lineTo(shoulder, midY + shaftHalf)
-        ..lineTo(0, midY + shaftHalf)
-        ..close();
-      final bounds = Rect.fromLTWH(0, midY - headHalf, tip, headHalf * 2);
       canvas.save();
       canvas.clipRect(Rect.fromLTWH(
         rightToLeft ? size.width - tip * progress : 0,
@@ -1371,41 +1376,57 @@ class _ProgressionPainter extends CustomPainter {
         tip * progress,
         headHalf * 2,
       ));
-      canvas.save();
-      if (rightToLeft) {
-        canvas.translate(size.width, 0);
-        canvas.scale(-1, 1);
-      }
-      canvas.drawPath(
-        path,
-        Paint()
-          ..shader = LinearGradient(
-            colors: [color.withValues(alpha: 0), color, color],
-            stops: const [0, 0.35, 1],
-          ).createShader(bounds),
-      );
-      canvas.restore();
-      final label = TextPainter(
-        text: TextSpan(
-          text: '${percentages[i].round()}%',
-          style: Heading4.style.copyWith(
-            color: labelColor,
-            fontSize: size.width * 0.075,
+      if (paintLabels) {
+        final label = TextPainter(
+          text: TextSpan(
+            text: '${percentages[i].round()}%',
+            style: Heading4.style.copyWith(
+              color: labelColor,
+              fontSize: size.width * 0.075,
+            ),
           ),
-        ),
-        textDirection: TextDirection.ltr,
-        textHeightBehavior: const TextHeightBehavior(
-          leadingDistribution: TextLeadingDistribution.even,
-        ),
-      )..layout();
-      label.paint(
-          canvas,
-          Offset(
-            rightToLeft
-                ? size.width - shoulder + size.width * 0.02
-                : shoulder - size.width * 0.02 - label.width,
-            midY - label.height / 2,
-          ));
+          textDirection: TextDirection.ltr,
+          textHeightBehavior: const TextHeightBehavior(
+            leadingDistribution: TextLeadingDistribution.even,
+          ),
+        )..layout();
+        final labelOffset = Offset(
+          rightToLeft
+              ? size.width - shoulder + size.width * 0.02
+              : shoulder - size.width * 0.02 - label.width,
+          midY - label.height / 2,
+        );
+        canvas.drawRect(
+          (labelOffset & label.size).inflate(2),
+          Paint()..color = color,
+        );
+        label.paint(canvas, labelOffset);
+      } else {
+        final path = Path()
+          ..moveTo(0, midY - shaftHalf)
+          ..lineTo(shoulder, midY - shaftHalf)
+          ..lineTo(shoulder, midY - headHalf)
+          ..lineTo(tip, midY)
+          ..lineTo(shoulder, midY + headHalf)
+          ..lineTo(shoulder, midY + shaftHalf)
+          ..lineTo(0, midY + shaftHalf)
+          ..close();
+        final bounds = Rect.fromLTWH(0, midY - headHalf, tip, headHalf * 2);
+        canvas.save();
+        if (rightToLeft) {
+          canvas.translate(size.width, 0);
+          canvas.scale(-1, 1);
+        }
+        canvas.drawPath(
+          path,
+          Paint()
+            ..shader = LinearGradient(
+              colors: [color.withValues(alpha: 0), color, color],
+              stops: const [0, 0.35, 1],
+            ).createShader(bounds),
+        );
+        canvas.restore();
+      }
       canvas.restore();
     }
   }

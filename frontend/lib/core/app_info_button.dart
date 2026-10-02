@@ -43,39 +43,29 @@ class AppInfoButton extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        key: const ValueKey('app-info-close'),
+                        tooltip: tr(dialogContext, 'Close'),
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        padding: const EdgeInsets.all(8),
+                        constraints: const BoxConstraints.tightFor(
+                          width: 40,
+                          height: 40,
+                        ),
+                        icon: Icon(
+                          Icons.close,
+                          size: 24,
+                          color: Theme.of(dialogContext).colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     Text(
                       tr(dialogContext, message),
                       style: Body1.style.copyWith(
                         color: Theme.of(dialogContext).colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        key: const ValueKey('app-info-understand'),
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        style: FilledButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(dialogContext).colorScheme.onSurface,
-                          foregroundColor: Theme.of(dialogContext).brightness ==
-                                  Brightness.dark
-                              ? AppPalette.black
-                              : AppPalette.white,
-                          padding: const EdgeInsets.all(16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Text(
-                          tr(dialogContext, 'I understand'),
-                          style: Body2_b.style.copyWith(
-                            color: Theme.of(dialogContext).brightness ==
-                                    Brightness.dark
-                                ? AppPalette.black
-                                : AppPalette.white,
-                          ),
-                        ),
                       ),
                     ),
                   ],

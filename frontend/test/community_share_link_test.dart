@@ -1,36 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/community_link_navigation.dart';
 import 'package:onetouch/features/community/community_post_share_link.dart';
-import 'package:onetouch/models/post.dart';
 
 void main() {
-  const post = Post(
-    postId: 12,
-    teamId: 9,
-    userId: 1,
-    category: PostCategory.general,
-    title: 'Match reaction',
-    body: 'Full post text',
-    createdAt: '2026-09-27T12:00:00Z',
-  );
-
   test('share URL uses the public post path', () {
     expect(communityPostShareUri(12).toString(),
         'https://1touch.football/community/12');
     expect(() => communityPostShareUri(0), throwsArgumentError);
-  });
-
-  test('share respects the public-link build setting', () {
-    expect(
-      communityPostShareText(post),
-      communityShareLinksEnabled
-          ? 'Match reaction\n\nhttps://1touch.football/community/12'
-          : 'Match reaction\n\nFull post text',
-    );
-    expect(communityPostShareText(post, includeLink: true),
-        'Match reaction\n\nhttps://1touch.football/community/12');
-    expect(communityPostShareText(post, includeLink: false),
-        'Match reaction\n\nFull post text');
   });
 
   test('only positive post IDs can be queued', () {

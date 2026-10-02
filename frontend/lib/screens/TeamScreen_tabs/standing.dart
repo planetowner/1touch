@@ -24,6 +24,7 @@ class StandingTab extends StatefulWidget {
   final XgStandingRepository? xgStandingRepository;
   final int? requestedCompetitionId;
   final int selectionRequestId;
+  final int refreshRequestId;
   final ValueChanged<bool>? onBracketInteractionChanged;
 
   const StandingTab({
@@ -33,6 +34,7 @@ class StandingTab extends StatefulWidget {
     this.xgStandingRepository,
     this.requestedCompetitionId,
     this.selectionRequestId = 0,
+    this.refreshRequestId = 0,
     this.onBracketInteractionChanged,
   });
 
@@ -72,8 +74,14 @@ class _StandingTabState extends State<StandingTab> {
   StandingRepository get _regularStandingRepository =>
       widget.regularStandingRepository ?? apiStandingRepository;
 
+  StandingRepository _regularRepositoryFor(StandingTab configuration) =>
+      configuration.regularStandingRepository ?? apiStandingRepository;
+
   XgStandingRepository get _xgStandingRepository =>
       widget.xgStandingRepository ?? apiXgStandingRepository;
+
+  XgStandingRepository _xgRepositoryFor(StandingTab configuration) =>
+      configuration.xgStandingRepository ?? apiXgStandingRepository;
 
   // 챔스는 과거 원정 다득점까지 검증한 2017/18 시즌부터 열어요.
   bool get _knockoutBracketAvailable =>
@@ -102,6 +110,8 @@ class _StandingTabState extends State<StandingTab> {
 
     _setDefaultLeagueAndSeason();
     _applyRequestedCompetition(widget.requestedCompetitionId);
+    _regularStandingRepository.cachedTables.addListener(_handleStandingCache);
+    _xgStandingRepository.cachedTables.addListener(_handleXgStandingCache);
     _startStandingLoad(updateState: false);
 
     _horizontalScrollController.addListener(_handleHorizontalScroll);
@@ -110,13 +120,26 @@ class _StandingTabState extends State<StandingTab> {
   @override
   void didUpdateWidget(StandingTab oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final oldRegularRepository = _regularRepositoryFor(oldWidget);
+    final regularRepositoryChanged =
+        !identical(oldRegularRepository, _regularStandingRepository);
+    if (regularRepositoryChanged) {
+      oldRegularRepository.cachedTables.removeListener(_handleStandingCache);
+      _regularStandingRepository.cachedTables.addListener(_handleStandingCache);
+    }
+    final oldXgRepository = _xgRepositoryFor(oldWidget);
+    final xgRepositoryChanged =
+        !identical(oldXgRepository, _xgStandingRepository);
+    if (xgRepositoryChanged) {
+      oldXgRepository.cachedTables.removeListener(_handleXgStandingCache);
+      _xgStandingRepository.cachedTables.addListener(_handleXgStandingCache);
+    }
     // This tab's State is reused across team switches (the Team-tab branch
     // stays alive in the bottom-nav shell), so redo the team-based setup
     // instead of only doing it once in initState.
     final dependenciesChanged = widget.team?.id != oldWidget.team?.id ||
-        widget.regularStandingRepository !=
-            oldWidget.regularStandingRepository ||
-        widget.xgStandingRepository != oldWidget.xgStandingRepository;
+        regularRepositoryChanged ||
+        xgRepositoryChanged;
     if (dependenciesChanged) {
       _setDefaultLeagueAndSeason();
       if (_selectedView == StandingView.xgTable && _xgAvailable) {
@@ -128,12 +151,47 @@ class _StandingTabState extends State<StandingTab> {
       return;
     }
 
+    if (widget.refreshRequestId != oldWidget.refreshRequestId) {
+      _startStandingLoad(forceRefresh: true);
+      if (_selectedView == StandingView.xgTable && _xgAvailable) {
+        _startXgLoad(forceRefresh: true);
+      }
+    }
+
     if (widget.selectionRequestId != oldWidget.selectionRequestId) {
       final competitionId = widget.requestedCompetitionId;
       if (competitionId != null) {
         _selectOverviewCompetition(competitionId);
       }
     }
+  }
+
+  void _handleStandingCache() {
+    if (!_hasStandingContext) return;
+    final cached = _regularStandingRepository.cachedForCompetition(
+      selectedLeagueId,
+      seasonId: selectedSeasonId,
+    );
+    if (cached == null || identical(standings, cached)) return;
+    setState(() {
+      standings = cached;
+      _isStandingLoading = false;
+      _standingLoadError = null;
+    });
+  }
+
+  void _handleXgStandingCache() {
+    if (!_hasStandingContext || !_xgAvailable) return;
+    final cached = _xgStandingRepository.cachedForCompetition(
+      selectedLeagueId,
+      seasonId: selectedSeasonId,
+    );
+    if (cached == null || identical(xgStandings, cached)) return;
+    setState(() {
+      xgStandings = cached;
+      _isXgLoading = false;
+      _xgLoadError = null;
+    });
   }
 
   void _setDefaultLeagueAndSeason() {
@@ -182,6 +240,9 @@ class _StandingTabState extends State<StandingTab> {
 
   @override
   void dispose() {
+    _regularStandingRepository.cachedTables
+        .removeListener(_handleStandingCache);
+    _xgStandingRepository.cachedTables.removeListener(_handleXgStandingCache);
     _horizontalScrollController.removeListener(_handleHorizontalScroll);
     _horizontalScrollController.dispose();
     super.dispose();
@@ -204,7 +265,10 @@ class _StandingTabState extends State<StandingTab> {
     _xgLoadError = null;
   }
 
-  void _startXgLoad({bool updateState = true}) {
+  void _startXgLoad({
+    bool updateState = true,
+    bool forceRefresh = false,
+  }) {
     if (!_hasStandingContext || !_xgAvailable) {
       if (updateState) {
         setState(_resetXgState);
@@ -238,6 +302,7 @@ class _StandingTabState extends State<StandingTab> {
       competitionId: competitionId,
       seasonId: seasonId,
       requestId: requestId,
+      forceRefresh: forceRefresh,
     );
   }
 
@@ -245,12 +310,18 @@ class _StandingTabState extends State<StandingTab> {
     required int competitionId,
     required int seasonId,
     required int requestId,
+    bool forceRefresh = false,
   }) async {
     try {
-      final rows = await _xgStandingRepository.loadForCompetition(
-        competitionId,
-        seasonId: seasonId,
-      );
+      final rows = await (forceRefresh
+          ? _xgStandingRepository.refreshForCompetition(
+              competitionId,
+              seasonId: seasonId,
+            )
+          : _xgStandingRepository.loadForCompetition(
+              competitionId,
+              seasonId: seasonId,
+            ));
       if (!mounted ||
           requestId != _xgRequestId ||
           competitionId != selectedLeagueId ||
@@ -276,7 +347,10 @@ class _StandingTabState extends State<StandingTab> {
     }
   }
 
-  void _startStandingLoad({bool updateState = true}) {
+  void _startStandingLoad({
+    bool updateState = true,
+    bool forceRefresh = false,
+  }) {
     if (!_hasStandingContext) {
       final requestId = ++_standingRequestId;
 
@@ -319,6 +393,7 @@ class _StandingTabState extends State<StandingTab> {
       competitionId: competitionId,
       seasonId: seasonId,
       requestId: requestId,
+      forceRefresh: forceRefresh,
     );
   }
 
@@ -326,12 +401,18 @@ class _StandingTabState extends State<StandingTab> {
     required int competitionId,
     required int seasonId,
     required int requestId,
+    bool forceRefresh = false,
   }) async {
     try {
-      final rows = await _regularStandingRepository.loadForCompetition(
-        competitionId,
-        seasonId: seasonId,
-      );
+      final rows = await (forceRefresh
+          ? _regularStandingRepository.refreshForCompetition(
+              competitionId,
+              seasonId: seasonId,
+            )
+          : _regularStandingRepository.loadForCompetition(
+              competitionId,
+              seasonId: seasonId,
+            ));
       if (!mounted ||
           requestId != _standingRequestId ||
           competitionId != selectedLeagueId ||

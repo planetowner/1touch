@@ -12,7 +12,7 @@ void main() {
     expect(matchMotionCurve.transform(1), 1);
   });
 
-  testWidgets('past-match graph reveals once when scrolled into view',
+  testWidgets('past-match graph replays after leaving and reentering view',
       (tester) async {
     final outer = ScrollController();
     addTearDown(outer.dispose);
@@ -49,8 +49,17 @@ void main() {
     expect(_revealProgress(tester), 1);
     outer.jumpTo(0);
     await tester.pump();
+    expect(_revealProgress(tester), 0);
     outer.jumpTo(850);
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 450));
+    expect(_revealProgress(tester), inInclusiveRange(0.1, 0.9));
+    outer.jumpTo(0);
+    await tester.pump();
+    expect(_revealProgress(tester), 0);
+    outer.jumpTo(850);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 833));
     expect(_revealProgress(tester), 1);
     expect(tester.takeException(), isNull);
   });

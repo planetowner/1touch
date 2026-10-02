@@ -82,33 +82,78 @@ void main() {
         ),
         findsNothing,
       );
-      expect(
-        tester
-                .getTopLeft(
-                  find.byKey(const ValueKey('last-match-home-score')),
-                )
-                .dx -
-            tester
-                .getTopRight(
-                  find.byKey(const ValueKey('last-match-home-logo')),
-                )
-                .dx,
-        16,
-      );
-      expect(
-        tester
-                .getTopLeft(
-                  find.byKey(const ValueKey('last-match-away-logo')),
-                )
-                .dx -
-            tester
-                .getTopRight(
-                  find.byKey(const ValueKey('last-match-away-score')),
-                )
-                .dx,
-        16,
-      );
+      final surface =
+          tester.getRect(find.byKey(const ValueKey('last-match-card-surface')));
+      final homeLogo =
+          tester.getRect(find.byKey(const ValueKey('last-match-home-logo')));
+      final homeScore =
+          tester.getRect(find.byKey(const ValueKey('last-match-home-score')));
+      final date =
+          tester.getRect(find.byKey(const ValueKey('last-match-date-time')));
+      final awayScore =
+          tester.getRect(find.byKey(const ValueKey('last-match-away-score')));
+      final awayLogo =
+          tester.getRect(find.byKey(const ValueKey('last-match-away-logo')));
+      expect(homeLogo.left - surface.left, 16);
+      expect(surface.right - awayLogo.right, 16);
+      final gaps = [
+        homeScore.left - homeLogo.right,
+        date.left - homeScore.right,
+        awayScore.left - date.right,
+        awayLogo.left - awayScore.right,
+      ];
+      expect(gaps.every((gap) => gap >= 4 && gap <= 16), isTrue);
+      expect(gaps.every((gap) => (gap - gaps.first).abs() < 0.1), isTrue);
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('long last-match date scrolls between fixed scores',
+      (tester) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: MatchCard2(
+          date: '2 weeks ago in extra time',
+          venue: '',
+          team1shortname: 'FCB',
+          team1Logo: '',
+          team1Id: 8,
+          team2shortname: 'FCU',
+          team2Logo: '',
+          team2Id: 19,
+          homeScore: 7,
+          awayScore: 0,
+        ),
+      ),
+    ));
+
+    final date = find.byKey(const ValueKey('last-match-date-time'));
+    final scrollable = tester.state<ScrollableState>(
+      find.descendant(of: date, matching: find.byType(Scrollable)),
+    );
+    expect(scrollable.position.maxScrollExtent, greaterThan(0));
+    expect(find.descendant(
+            of: date, matching: find.text('2 weeks ago in extra time')),
+        findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 800));
+    await tester.pump(const Duration(milliseconds: 800));
+    expect(scrollable.position.pixels, greaterThan(0));
+    final dateRect = tester.getRect(date);
+    expect(
+        dateRect.left,
+        greaterThan(tester
+            .getRect(find.byKey(const ValueKey('last-match-home-score')))
+            .right));
+    expect(
+        dateRect.right,
+        lessThan(tester
+            .getRect(find.byKey(const ValueKey('last-match-away-score')))
+            .left));
+    expect(tester.takeException(), isNull);
+  });
 }

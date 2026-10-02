@@ -107,6 +107,10 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   void _handleMainTabAction() {
+    // The branch stays mounted while another bottom tab is visible. Reset its
+    // scroll positions before navigation so the old viewport cannot flash on
+    // the first frame when the user returns to Team.
+    _showRootAppBar();
     if (_tabController.index != 0) {
       _tabController.index = 0;
       setState(() => _tabViewEpoch++);
@@ -501,22 +505,20 @@ class _TeamScreenState extends State<TeamScreen>
                     standingRepository: widget.standingRepository,
                   ),
                   MatchesTab(
-                    key: ValueKey(
-                      'team-matches-refresh-${_tabRefreshEpochs[1]}',
-                    ),
+                    key: const ValueKey('team-matches'),
                     team: team,
                     fixtureRepository: widget.fixtureRepository,
                     onTopOverscroll: _revealTeamAppBar,
+                    refreshRequestId: _tabRefreshEpochs[1],
                   ),
                   StandingTab(
-                    key: ValueKey(
-                      'team-standing-refresh-${_tabRefreshEpochs[2]}',
-                    ),
+                    key: const ValueKey('team-standing'),
                     team: team,
                     regularStandingRepository: widget.standingRepository,
                     xgStandingRepository: widget.xgStandingRepository,
                     requestedCompetitionId: _requestedStandingCompetitionId,
                     selectionRequestId: _standingSelectionRequestId,
+                    refreshRequestId: _tabRefreshEpochs[2],
                     onBracketInteractionChanged: (isInteracting) {
                       if (_isBracketInteracting == isInteracting) return;
                       setState(() => _isBracketInteracting = isInteracting);

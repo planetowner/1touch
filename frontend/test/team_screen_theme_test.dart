@@ -213,6 +213,7 @@ void main() {
     expect(find.byKey(const ValueKey('team-app-bar-logo')), findsNothing);
 
     mainTabActions.select(1);
+    expect(outerController.offset, outerController.position.minScrollExtent);
     await tester.pumpAndSettle();
 
     expect(innerController.offset, innerController.position.minScrollExtent);
@@ -235,7 +236,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(teamPageView().controller!.page, 2);
 
+    await tester.drag(find.byType(NestedScrollView), const Offset(0, -700));
+    await tester.pumpAndSettle();
+    expect(outerController.offset + innerController.offset, greaterThan(0));
+
     mainTabActions.select(2);
+    expect(outerController.offset, outerController.position.minScrollExtent);
+    expect(innerController.offset, innerController.position.minScrollExtent);
     await tester.pump();
     expect(tabController.index, 0);
     expect(teamPageView().controller!.page, 0);

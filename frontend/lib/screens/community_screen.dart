@@ -97,6 +97,10 @@ class _CommunityState extends State<Community>
     _postsByTab = List.generate(tabCount, (_) => const <Post>[]);
     _isLoadingPostsByTab = List<bool>.filled(tabCount, true);
     _postLoadErrorsByTab = List<Object?>.filled(tabCount, null);
+    if (_postRepository case CachedPostRepository cached) {
+      cached.cachedFeeds.addListener(_handleCachedFeeds);
+      _applyCachedFeeds(cached);
+    }
 
     _scrollController = ScrollController()
       ..addListener(() {
@@ -211,7 +215,7 @@ class _CommunityState extends State<Community>
     await Future.wait<void>([
       _loadLiveStatus(),
       _loadFollowerCount(),
-      _loadPosts(preserveCurrentPosts: true),
+      _loadPosts(preserveCurrentPosts: true, forceRefresh: true),
       _showFirstVisitRules(),
     ]);
   }
@@ -219,6 +223,16 @@ class _CommunityState extends State<Community>
   @override
   void didUpdateWidget(Community oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final oldPostRepository =
+        oldWidget.postRepository ?? post_providers.postRepository;
+    if (!identical(oldPostRepository, _postRepository)) {
+      if (oldPostRepository case CachedPostRepository cached) {
+        cached.cachedFeeds.removeListener(_handleCachedFeeds);
+      }
+      if (_postRepository case CachedPostRepository cached) {
+        cached.cachedFeeds.addListener(_handleCachedFeeds);
+      }
+    }
     if (widget.banStatus != oldWidget.banStatus) {
       _checkedRulesThisVisit = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -258,6 +272,27 @@ class _CommunityState extends State<Community>
       _postsByTab[index] = const <Post>[];
       _isLoadingPostsByTab[index] = true;
       _postLoadErrorsByTab[index] = null;
+    }
+  }
+
+  void _handleCachedFeeds() {
+    if (_postRepository case CachedPostRepository cached) {
+      setState(() => _applyCachedFeeds(cached));
+    }
+  }
+
+  void _applyCachedFeeds(CachedPostRepository repository) {
+    for (var index = 0; index < _postsByTab.length; index++) {
+      final page = repository.cachedFeed(
+        teamId: widget.teamId,
+        category: CommunityPostTabHeader.categories[index],
+        sort: _selectedPostSort,
+      );
+      if (page != null && !identical(page, _postsByTab[index])) {
+        _postsByTab[index] = page;
+        _isLoadingPostsByTab[index] = false;
+        _postLoadErrorsByTab[index] = null;
+      }
     }
   }
 
@@ -321,32 +356,58 @@ class _CommunityState extends State<Community>
     }
   }
 
-  Future<void> _loadPosts({bool preserveCurrentPosts = false}) async {
+  Future<void> _loadPosts({
+    bool preserveCurrentPosts = false,
+    bool forceRefresh = false,
+  }) async {
     final requestId = ++_postRequestId;
     final tabIndex = _selectedTabIndex;
+    final category = CommunityPostTabHeader.categories[tabIndex];
+    final repository = _postRepository;
+    final cache = repository is CachedPostRepository ? repository : null;
+    final cached = cache?.cachedFeed(
+      teamId: widget.teamId,
+      category: category,
+      sort: _selectedPostSort,
+    );
     final preserveCurrent =
         preserveCurrentPosts && _postsByTab[tabIndex].isNotEmpty;
-    final category = CommunityPostTabHeader.categories[tabIndex];
     setState(() {
-      _isLoadingPostsByTab[tabIndex] = !preserveCurrent;
+      if (cached != null) {
+        _postsByTab[tabIndex] = cached;
+      } else if (!preserveCurrent) {
+        _postsByTab[tabIndex] = const [];
+      }
+      _isLoadingPostsByTab[tabIndex] = cached == null && !preserveCurrent;
       _postLoadErrorsByTab[tabIndex] = null;
     });
 
     try {
-      final posts = await _postRepository.loadPosts(
-        teamId: widget.teamId,
-        category: category,
-        sort: _selectedPostSort,
-      );
+      final posts = await (forceRefresh && cache != null
+          ? cache.refreshPosts(
+              teamId: widget.teamId,
+              category: category,
+              sort: _selectedPostSort,
+            )
+          : repository.loadPosts(
+              teamId: widget.teamId,
+              category: category,
+              sort: _selectedPostSort,
+            ));
       if (!mounted || requestId != _postRequestId) return;
       setState(() {
-        _postsByTab[tabIndex] = posts;
+        _postsByTab[tabIndex] = cache?.cachedFeed(
+                teamId: widget.teamId,
+                category: category,
+                sort: _selectedPostSort) ??
+            posts;
         _isLoadingPostsByTab[tabIndex] = false;
       });
     } catch (error) {
       if (!mounted || requestId != _postRequestId) return;
       setState(() {
-        _postLoadErrorsByTab[tabIndex] = preserveCurrent ? null : error;
+        _postLoadErrorsByTab[tabIndex] =
+            cached != null || preserveCurrent ? null : error;
         _isLoadingPostsByTab[tabIndex] = false;
       });
     }
@@ -387,6 +448,9 @@ class _CommunityState extends State<Community>
 
   @override
   void dispose() {
+    if (_postRepository case CachedPostRepository cached) {
+      cached.cachedFeeds.removeListener(_handleCachedFeeds);
+    }
     mainTabActions.removeListener(_handleMainTabAction);
     _scrollController.dispose();
     _tabController.removeListener(_handlePostTabChange);

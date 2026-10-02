@@ -149,6 +149,28 @@ void main() {
     expect(requested, isFalse);
   });
 
+  test('startup restore reads disk without starting an API request', () async {
+    final store = MemoryLocalCacheStore();
+    await store.write(LocalCacheKeys.teamOverview(83), _overviewJson());
+    var requests = 0;
+    final repository = ApiTeamOverviewRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response('Unexpected request', 500);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    expect((await repository.restoreCachedForTeam(83))?.name, 'FC Barcelona');
+    expect(repository.cachedForTeam(83)?.name, 'FC Barcelona');
+    expect(await repository.restoreCachedForTeam(19), isNull);
+    expect(requests, 0);
+  });
+
   test('returns stale data then publishes one background refresh', () async {
     final response = Completer<http.Response>();
     final requested = Completer<void>();
