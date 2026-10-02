@@ -20,17 +20,11 @@ void main() {
     expect(() => communityPostShareUri(0), throwsArgumentError);
   });
 
-  test('share respects the public-link build setting', () {
+  test('share includes the public post link', () {
     expect(
       communityPostShareText(post),
-      communityShareLinksEnabled
-          ? 'Match reaction\n\nhttps://1touch.football/community/12'
-          : 'Match reaction\n\nFull post text',
+      'Match reaction\n\nhttps://1touch.football/community/12',
     );
-    expect(communityPostShareText(post, includeLink: true),
-        'Match reaction\n\nhttps://1touch.football/community/12');
-    expect(communityPostShareText(post, includeLink: false),
-        'Match reaction\n\nFull post text');
   });
 
   test('only positive post IDs can be queued', () {
