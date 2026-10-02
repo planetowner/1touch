@@ -7,6 +7,7 @@ import json
 import re
 import socket
 import subprocess
+import sys
 from html import unescape
 from pathlib import Path
 from time import monotonic, sleep
@@ -31,8 +32,11 @@ CAPOLOGY_LEAGUES = {
     384: ("it", "serie-a"),
     564: ("es", "la-liga"),
 }
+# 수동 인증에 쓰는 Chrome은 운영체제별 설치 경로에서 실행해요.
 CAPOLOGY_CHROME_PATH = Path(
-    r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    if sys.platform == "darwin"
+    else r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 )
 CLOUDFLARE_VERIFICATION_WAIT_SECONDS = 300
 CAPOLOGY_POSITION_GROUP_IDS = {
@@ -77,6 +81,15 @@ VERIFIED_CAPOLOGY_PLAYER_SLUG_ALIASES = {
     "adama-traore-34855": "adama-traore-34878",
     # 과거 명단의 긴 슬러그는 404라 현재 열리는 선수 페이지 슬러그를 사용해요.
     "noel-aseko-nkili-38678": "noel-aseko-38678",
+    # 26/27 Coventry 명단의 링크는 404예요. 이름·나이·국적·DB 소속과 기존 페이지의 생년월일을 대조했어요.
+    # 선수 ID만 기존 값에 연결하고, 주급은 해당 팀 명단의 값을 사용해요.
+    "yann-gboho": "yann-gboho-36905",
+    # 26/27 Union Berlin·Mainz 원문과 DB의 이름·팀·나이를 대조한 기존 선수 ID예요.
+    "livan-burcu": "livan-burcu-38258",
+    "sota-kawasaki": "sota-kawasaki-37102",
+    # 26/27 Levante·Alavés 원문과 DB의 이름·팀·나이·국적을 대조한 기존 선수 ID예요.
+    "adrian-dela-46079": "adrian-de-la-fuente-36217",
+    "carlos-protesoni-35884": "carlos-benavidez-35884",
 }
 
 SQL_SELECT_TARGET_OBSERVATIONS = """
@@ -274,8 +287,9 @@ def _parse_capology_salary_page(
         if path_match is None:
             raise ValueError(f"Capology player name has no path: {name_html}")
         player_path = path_match.group("path")
+        # 26/27 명단에는 james-wright처럼 숫자 접미사가 없는 링크도 있어요.
         player_id_match = re.fullmatch(
-            r"/player/(?P<player_id>[a-z0-9-]+-\d+)/",
+            r"/player/(?P<player_id>[a-z0-9-]+)/",
             player_path,
         )
         if player_id_match is None:
