@@ -67,14 +67,30 @@ class ApiCurrentUserRepository implements CurrentUserRepository {
       required String displayName,
       required String firstName,
       required String lastName}) async {
+    await _saveProfile({
+      'username': username,
+      'display_name': displayName,
+      'first_name': firstName,
+      'last_name': lastName
+    });
+  }
+
+  /// The server will generate the login username for a new social account.
+  Future<void> completeSocialProfile({
+    required String displayName,
+    required String firstName,
+    required String lastName,
+  }) =>
+      _saveProfile({
+        'display_name': displayName,
+        'first_name': firstName,
+        'last_name': lastName,
+      });
+
+  Future<void> _saveProfile(Map<String, String> fields) async {
     final response = await _api.put(_api.baseUri.resolve('users/me/profile'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': username,
-          'display_name': displayName,
-          'first_name': firstName,
-          'last_name': lastName
-        }));
+        body: jsonEncode(fields));
     if (response.statusCode == 409) {
       final body =
           _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: 409);

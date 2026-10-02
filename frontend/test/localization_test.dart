@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/onboarding.dart';
+import 'package:onetouch/SignComps/other_login_methods.dart';
 import 'package:onetouch/SignComps/sign_in.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/device_region.dart';
@@ -231,16 +233,22 @@ void main() {
             localizationsDelegates: appLocalizationDelegates,
             home: child,
           );
-      await tester.pumpWidget(app(OnboardingScreen(
-          loadOptions: () async => const LoginOptions(
-                recommended: [
-                  LoginProvider.kakao,
-                  LoginProvider.apple,
-                  LoginProvider.google,
-                  LoginProvider.email
-                ],
-                other: [LoginProvider.line],
-              ))));
+      final router = _loginRouter(() async => const LoginOptions(
+            recommended: [
+              LoginProvider.kakao,
+              LoginProvider.apple,
+              LoginProvider.google,
+              LoginProvider.email
+            ],
+            other: [LoginProvider.line],
+          ));
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(
+        routerConfig: router,
+        locale: locale,
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+      ));
       await tester.pumpAndSettle();
       expect(find.text(translateMessage(locale, 'Continue with Kakao')),
           findsOneWidget);
@@ -254,8 +262,7 @@ void main() {
       await tester
           .ensureVisible(find.byKey(const ValueKey('line-sign-in-button')));
       expect(tester.takeException(), isNull);
-      await tester.ensureVisible(otherMethods);
-      await tester.tap(otherMethods);
+      await tester.tap(find.byKey(const ValueKey('other-login-back')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('line-sign-in-button')), findsNothing);
       expect(tester.takeException(), isNull);
@@ -307,14 +314,15 @@ void main() {
               200);
         }),
       ));
-      await tester.pumpWidget(MaterialApp(
+      final router = _loginRouter(() async => repository.load(
+          platform: 'ios',
+          country: await const DeviceRegion().readCountryCode()));
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(
+        routerConfig: router,
         supportedLocales: appSupportedLocales,
         localizationsDelegates: appLocalizationDelegates,
         localeListResolutionCallback: resolveAppLocale,
-        home: OnboardingScreen(
-            loadOptions: () async => repository.load(
-                platform: 'ios',
-                country: await const DeviceRegion().readCountryCode())),
       ));
       await tester.pumpAndSettle();
       final provider = LoginProvider.values.byName(first);
@@ -329,11 +337,8 @@ void main() {
       for (final name in other) {
         expect(find.byKey(ValueKey('$name-sign-in-button')), findsOneWidget);
       }
-      expect(
-          tester.getTopLeft(find.byKey(ValueKey('$first-sign-in-button'))).dy,
-          lessThan(tester
-              .getTopLeft(find.byKey(const ValueKey('email-sign-in-button')))
-              .dy));
+      expect(find.byKey(ValueKey('$first-sign-in-button')), findsOneWidget);
+      expect(find.byKey(const ValueKey('email-sign-in-button')), findsNothing);
     }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
   }
 
@@ -357,14 +362,12 @@ void main() {
         }),
       ),
     );
-    await tester.pumpWidget(MaterialApp(
-      home: OnboardingScreen(
-        loadOptions: () async => repository.load(
+    final router = _loginRouter(() async => repository.load(
           platform: 'android',
           country: await const DeviceRegion().readCountryCode(),
-        ),
-      ),
-    ));
+        ));
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('apple-sign-in-button')), findsNothing);
@@ -377,3 +380,19 @@ void main() {
     expect(tester.takeException(), isNull);
   }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 }
+
+GoRouter _loginRouter(Future<LoginOptions> Function() loadOptions) => GoRouter(
+      initialLocation: '/onboarding',
+      routes: [
+        GoRoute(
+          path: '/onboarding',
+          builder: (_, __) => OnboardingScreen(loadOptions: loadOptions),
+        ),
+        GoRoute(
+          path: '/auth/other-methods',
+          builder: (_, state) => OtherLoginMethodsScreen(
+            initialOptions: state.extra as LoginOptions?,
+          ),
+        ),
+      ],
+    );

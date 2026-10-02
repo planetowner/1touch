@@ -29,6 +29,7 @@ import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
+import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/features/app_error_view.dart';
@@ -46,6 +47,7 @@ import 'package:onetouch/SignComps/index.dart'; // Imports auth components
 // Root Level Pages
 import 'package:onetouch/splash.dart';
 import 'package:onetouch/onboarding.dart';
+import 'package:onetouch/SignComps/other_login_methods.dart';
 import 'package:onetouch/select_favorite_teams.dart';
 import 'package:onetouch/welcome_screen.dart';
 
@@ -179,6 +181,13 @@ final GoRouter _router = GoRouter(
             builder: (context, state) => const SelectFavoriteTeamsScreen(),
           ),
         ]),
+    GoRoute(
+      path: '/auth/other-methods',
+      builder: (context, state) => OtherLoginMethodsScreen(
+        initialOptions:
+            state.extra is LoginOptions ? state.extra! as LoginOptions : null,
+      ),
+    ),
     GoRoute(
       path: '/auth/signin',
       builder: (context, state) => const EmailSignInScreen(),
