@@ -501,12 +501,11 @@ class _TeamScreenState extends State<TeamScreen>
                     standingRepository: widget.standingRepository,
                   ),
                   MatchesTab(
-                    key: ValueKey(
-                      'team-matches-refresh-${_tabRefreshEpochs[1]}',
-                    ),
+                    key: const ValueKey('team-matches'),
                     team: team,
                     fixtureRepository: widget.fixtureRepository,
                     onTopOverscroll: _revealTeamAppBar,
+                    refreshRequestId: _tabRefreshEpochs[1],
                   ),
                   StandingTab(
                     key: const ValueKey('team-standing'),

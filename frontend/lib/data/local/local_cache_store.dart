@@ -56,6 +56,19 @@ abstract final class LocalCacheKeys {
   static String xgStandings(int competitionId, int? seasonId) =>
       'xg-standings:$competitionId:${seasonId ?? 'current'}';
 
+  static String teamMatches(
+    int teamId,
+    String status,
+    String? start,
+    String? end,
+    int limit,
+    int offset,
+  ) =>
+      'team-matches:$teamId:$status:${start ?? 'all'}:${end ?? 'all'}:'
+      '$limit:$offset';
+
+  static String fixtureDetail(int fixtureId) => 'fixture-detail:$fixtureId';
+
   static String home(int teamId, DateTime month, String viewerCountry) =>
       'home:$teamId:${month.year}-${month.month.toString().padLeft(2, '0')}:'
       '$viewerCountry';

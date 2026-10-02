@@ -37,12 +37,32 @@ class MockFixtureRepository implements FixtureRepository {
   late final Map<int, List<Fixture>> _fixturesByTeam;
   late final Map<int, FixtureDetail> _fixtureDetailsById;
   late final ValueNotifier<List<Fixture>> _fixtures;
+  final ValueNotifier<Map<TeamMatchesQuery, List<Fixture>>> _cachedTeamMatches =
+      ValueNotifier(const {});
+  final ValueNotifier<Map<int, FixtureDetail>> _cachedDetails =
+      ValueNotifier(const {});
 
   @override
   List<Fixture> get allFixtures => _allFixtures;
 
   @override
   ValueListenable<List<Fixture>> get fixtures => _fixtures;
+
+  @override
+  ValueListenable<Map<TeamMatchesQuery, List<Fixture>>> get cachedTeamMatches =>
+      _cachedTeamMatches;
+
+  @override
+  ValueListenable<Map<int, FixtureDetail>> get cachedDetails => _cachedDetails;
+
+  @override
+  FixtureDetail? cachedDetail(int fixtureId) => _fixtureDetailsById[fixtureId];
+
+  @override
+  Future<FixtureDetail> refreshDetail(int fixtureId) => loadDetail(fixtureId);
+
+  @override
+  bool isRefreshingDetail(int fixtureId) => false;
 
   @override
   Fixture? findById(int fixtureId) => _fixturesById[fixtureId];
@@ -114,6 +134,46 @@ class MockFixtureRepository implements FixtureRepository {
 
     return List.unmodifiable(matches.skip(offset).take(limit));
   }
+
+  @override
+  List<Fixture>? cachedForTeamMatches(
+    int teamId, {
+    FixtureStatus? status,
+    DateTime? start,
+    DateTime? end,
+    int limit = 50,
+    int offset = 0,
+  }) =>
+      null;
+
+  @override
+  Future<List<Fixture>> refreshForTeam(
+    int teamId, {
+    FixtureStatus? status,
+    DateTime? start,
+    DateTime? end,
+    int limit = 50,
+    int offset = 0,
+  }) =>
+      loadForTeam(
+        teamId,
+        status: status,
+        start: start,
+        end: end,
+        limit: limit,
+        offset: offset,
+      );
+
+  @override
+  bool isRefreshingForTeam(
+    int teamId, {
+    FixtureStatus? status,
+    DateTime? start,
+    DateTime? end,
+    int limit = 50,
+    int offset = 0,
+  }) =>
+      false;
 
   @override
   List<Fixture> forCompetition(

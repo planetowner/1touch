@@ -60,6 +60,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
   BettingController? _betting;
   Timer? _refreshTimer;
   bool _requestInFlight = false;
+  bool _isLiveVerifying = false;
 
   List<String> _tabsFor(String status) => switch (status) {
         'past' => ['MATCH INFO', 'HEAD TO HEAD', 'ANALYSIS'],
@@ -70,11 +71,37 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
   FixtureRepository get _repository =>
       widget.repository ?? fixture_provider.fixtureDetailRepository;
 
+  void _handleCachedDetail() {
+    final fixtureId = _fixtureId;
+    if (fixtureId == null) return;
+    final cached = _repository.cachedDetail(fixtureId);
+    if (cached == null || identical(_fixtureDetail, cached)) return;
+    _applyDetail(cached);
+  }
+
+  void _applyDetail(FixtureDetail detail) {
+    final wasShowingLiveCache = _isLiveVerifying;
+    final firstLiveDetail =
+        _fixtureDetail == null && detail.fixture.status == FixtureStatus.live;
+    setState(() {
+      final selectedTab = tabs[selectedIndex];
+      fixture = detail.fixture;
+      _fixtureDetail = detail;
+      tabs = _tabsFor(detail.fixture.status.name);
+      final nextIndex = tabs.indexOf(selectedTab);
+      selectedIndex = nextIndex < 0 ? 0 : nextIndex;
+      _isLoading = false;
+      _hasLoadError = false;
+      _isLiveVerifying = firstLiveDetail && !wasShowingLiveCache;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     tabs = _tabsFor(widget.matchStatus);
+    _repository.cachedDetails.addListener(_handleCachedDetail);
 
     _fixtureId = int.tryParse(widget.matchId);
     if (_fixtureId != null) {
@@ -84,7 +111,13 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
         repository: widget.bettingRepository,
       )..load();
       final initialFixture = widget.initialFixture;
-      fixture = initialFixture?.fixtureId == _fixtureId ? initialFixture : null;
+      _fixtureDetail = _repository.cachedDetail(_fixtureId!);
+      fixture = _fixtureDetail?.fixture ??
+          (initialFixture?.fixtureId == _fixtureId ? initialFixture : null);
+      if (_fixtureDetail != null) {
+        tabs = _tabsFor(fixture!.status.name);
+        _isLiveVerifying = fixture!.status == FixtureStatus.live;
+      }
       _isLoading = fixture == null;
       _loadFixture(_fixtureId!);
     }
@@ -95,24 +128,21 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
     _requestInFlight = true;
     _refreshTimer?.cancel();
     try {
-      final detail = await _repository.loadDetail(fixtureId);
+      var detail = await (refresh
+          ? _repository.refreshDetail(fixtureId)
+          : _repository.loadDetail(fixtureId));
+      if (!refresh && _repository.isRefreshingDetail(fixtureId)) {
+        detail = await _repository.refreshDetail(fixtureId);
+      }
       if (!mounted) return;
-      setState(() {
-        final selectedTab = tabs[selectedIndex];
-        fixture = detail.fixture;
-        _fixtureDetail = detail;
-        tabs = _tabsFor(detail.fixture.status.name);
-        final nextIndex = tabs.indexOf(selectedTab);
-        selectedIndex = nextIndex < 0 ? 0 : nextIndex;
-        _isLoading = false;
-        _hasLoadError = false;
-      });
+      if (!identical(_fixtureDetail, detail)) _applyDetail(detail);
+      if (_isLiveVerifying) setState(() => _isLiveVerifying = false);
     } on Object {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
         // 재조회 실패로 이미 표시한 경기 전체를 오류 화면으로 바꾸지 않아요.
-        if (!refresh) _hasLoadError = true;
+        if (!refresh && _fixtureDetail == null) _hasLoadError = true;
       });
     } finally {
       _requestInFlight = false;
@@ -147,6 +177,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _repository.cachedDetails.removeListener(_handleCachedDetail);
     WidgetsBinding.instance.removeObserver(this);
     _refreshTimer?.cancel();
     _betting?.dispose();
@@ -260,7 +291,16 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
         ],
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: _buildTabContent(),
+          child: _isLiveVerifying
+              ? Column(
+                  children: [
+                    const LinearProgressIndicator(
+                      key: ValueKey('match-live-verifying'),
+                    ),
+                    _buildTabContent(),
+                  ],
+                )
+              : _buildTabContent(),
         ),
       ),
     );
