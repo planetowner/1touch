@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/player_navigation.dart';
@@ -58,8 +61,9 @@ class PlayerMatchStatData {
 }
 
 void showPlayerMatchStatSheet(BuildContext context, PlayerMatchStatData player,
-    {PlayerDetailRepository? detailRepository}) {
-  showModalBottomSheet(
+    {PlayerDetailRepository? detailRepository,
+    PlayerFollowingController? followingController}) {
+  showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -67,6 +71,7 @@ void showPlayerMatchStatSheet(BuildContext context, PlayerMatchStatData player,
     builder: (_) => PlayerMatchStatSheet(
       player: player,
       detailRepository: detailRepository,
+      followingController: followingController,
     ),
   );
 }
@@ -238,12 +243,14 @@ class _Header extends StatelessWidget {
                       playerId: player.playerId,
                       controller: followingController,
                     ),
-                    _HeaderIconBtn(
-                      icon: Icons.safety_divider, // compare players
-                      onTap: () {
-                        // TODO: open comparison sheet
-                      },
-                    ),
+                    if (player.playerId != null)
+                      _HeaderIconBtn(
+                        icon: Icons.safety_divider,
+                        onTap: () => context.push(
+                          '/compare',
+                          extra: '${player.playerId}',
+                        ),
+                      ),
                     _HeaderIconBtn(
                       icon: Icons.close_rounded,
                       onTap: () => Navigator.of(context).pop(),
@@ -350,7 +357,8 @@ class _PlayerNationalityLine extends StatefulWidget {
 }
 
 class _PlayerNationalityLineState extends State<_PlayerNationalityLine> {
-  Future<PlayerDetail>? _detail;
+  PlayerDetail? _detail;
+  int _requestGeneration = 0;
 
   @override
   void initState() {
@@ -369,6 +377,7 @@ class _PlayerNationalityLineState extends State<_PlayerNationalityLine> {
   }
 
   void _loadNationality() {
+    final generation = ++_requestGeneration;
     final playerId = widget.player.playerId;
     if (widget.player.nationality?.trim().isNotEmpty == true ||
         playerId == null) {
@@ -376,34 +385,77 @@ class _PlayerNationalityLineState extends State<_PlayerNationalityLine> {
       return;
     }
     final repository = widget.repository ?? playerDetailRepository;
-    _detail = Future.sync(() => repository.load(playerId));
+    if (repository is CachedPlayerDetailRepository) {
+      _detail = repository.snapshotFor(playerId)?.data;
+      unawaited(_restoreNationality(repository, playerId, generation));
+    } else {
+      _detail = null;
+      unawaited(_refreshNationality(repository, playerId, generation));
+    }
+  }
+
+  Future<void> _restoreNationality(CachedPlayerDetailRepository repository,
+      int playerId, int generation) async {
+    var snapshot = repository.snapshotFor(playerId);
+    if (snapshot == null) {
+      try {
+        snapshot = await repository.restoreFor(playerId);
+      } on Object {
+        // A missing or unreadable cache can still be recovered from the API.
+      }
+      if (!mounted || generation != _requestGeneration) return;
+      if (snapshot != null) setState(() => _detail = snapshot!.data);
+    }
+    if (snapshot != null &&
+        snapshot.data.profile.nationality?.trim().isNotEmpty == true &&
+        !AppCachePolicy.shouldRefresh(
+          tier: CacheTier.standard,
+          trigger: CacheSyncTrigger.screenEnter,
+          savedAt: snapshot.savedAt,
+        )) {
+      return;
+    }
+    await _refreshNationality(repository, playerId, generation);
+  }
+
+  Future<void> _refreshNationality(
+      PlayerDetailRepository repository, int playerId, int generation) async {
+    try {
+      final fresh = await repository.load(playerId);
+      if (mounted && generation == _requestGeneration) {
+        setState(() => _detail = fresh);
+      }
+    } on Object {
+      // Keep the cached country visible when the network is unavailable.
+    }
+  }
+
+  @override
+  void dispose() {
+    _requestGeneration++;
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<PlayerDetail>(
-      future: _detail,
-      builder: (context, snapshot) {
-        final nationality = widget.player.nationality?.trim().isNotEmpty == true
-            ? widget.player.nationality!.trim()
-            : snapshot.data?.profile.nationality?.trim();
-        if (nationality == null || nationality.isEmpty) {
-          return const SizedBox.shrink();
-        }
-        final flag = widget.player.flagEmoji;
-        final label = countryNameLabel(
-          context,
-          widget.player.nationalityId ?? snapshot.data?.profile.nationalityId,
-          nationality,
-        );
-        return Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Text(
-            flag == null || flag.isEmpty ? label : '$label $flag',
-            style: Body1.style.copyWith(color: widget.color),
-          ),
-        );
-      },
+    final nationality = widget.player.nationality?.trim().isNotEmpty == true
+        ? widget.player.nationality!.trim()
+        : _detail?.profile.nationality?.trim();
+    if (nationality == null || nationality.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final flag = widget.player.flagEmoji;
+    final label = countryNameLabel(
+      context,
+      widget.player.nationalityId ?? _detail?.profile.nationalityId,
+      nationality,
+    );
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Text(
+        flag == null || flag.isEmpty ? label : '$label $flag',
+        style: Body1.style.copyWith(color: widget.color),
+      ),
     );
   }
 }
