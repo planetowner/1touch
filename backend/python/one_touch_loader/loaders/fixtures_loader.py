@@ -43,6 +43,7 @@ from .teams_loader import (
     matches_competition_scope,
 )
 from .team_seasons_loader import SQL_UPSERT_TEAM_SEASON
+from . import player_season_positions_loader as player_positions
 
 
 FIXTURE_INCLUDE = "participants;state;scores;round;stage;group;venue;aggregate"
@@ -508,7 +509,7 @@ def _collect_and_upsert(
         )
 
     if fixtures and apply:
-        with transaction() as connection:
+        with transaction() as connection, player_positions.refresh_positions_after_fixtures(connection, sorted(fixtures)):
             with connection.cursor() as cursor:
                 if teams:
                     cursor.executemany(SQL_UPSERT_TEAM, [teams[key] for key in sorted(teams)])
