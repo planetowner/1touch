@@ -13,6 +13,7 @@ class ProbabilityEvent(BaseModel):
     probability: float = Field(ge=0, le=1)
     change_pp: float | None = None
     entropy: float | None = None
+    resolution: Literal['unresolved', 'impossible', 'certain'] = 'unresolved'
 
 
 class PositionProbability(BaseModel):
@@ -77,6 +78,7 @@ class EuropeanTitleProbability(BaseModel):
     season_id: int
     season_name: str
     probability: float = Field(ge=0, le=1)
+    resolution: Literal['unresolved', 'impossible', 'certain'] = 'unresolved'
     as_of: datetime
     model_id: str
     simulations: int

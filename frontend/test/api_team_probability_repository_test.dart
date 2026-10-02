@@ -7,8 +7,28 @@ import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/team_probability/api/api_team_probability_repository.dart';
 import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
+import 'package:onetouch/models/team_probability.dart';
 
 void main() {
+  test('maps resolution metadata and treats old sample endpoints as unresolved',
+      () async {
+    for (final resolution in ProbabilityResolution.values) {
+      final body = _probabilityJson();
+      final cards = body['cards'] as List;
+      cards.first['resolution'] = resolution.name;
+      final repository = ApiTeamProbabilityRepository(
+        api: ApiClient(
+          client: MockClient((_) async => http.Response(jsonEncode(body), 200)),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {},
+        ),
+      );
+      final snapshot = await repository.loadForTeam(83);
+      expect(snapshot.cards.first.resolution, resolution);
+      expect(snapshot.cards.last.resolution, ProbabilityResolution.unresolved);
+    }
+  });
+
   test('requests, maps, and caches current team probability cards', () async {
     var requestCount = 0;
     final repository = ApiTeamProbabilityRepository(
