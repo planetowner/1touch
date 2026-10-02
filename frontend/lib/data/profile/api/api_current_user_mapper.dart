@@ -29,6 +29,7 @@ CurrentUserProfile currentUserProfileFromApiResponse(
       'favorite_team_id',
     ),
     createdAt: createdAt.toUtc(),
+    socialAccounts: response.socialAccounts.toSet(),
   );
 }
 

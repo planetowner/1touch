@@ -16,6 +16,16 @@ void main() {
       expect(response.favoriteTeamId, 8);
       expect(response.createdAt, '2026-09-01T14:00:00Z');
       expect(response.onboardingComplete, isTrue);
+      expect(response.socialAccounts, isEmpty);
+    });
+
+    test('reads linked social providers from the account response', () {
+      final response = ApiCurrentUserResponse.fromJson({
+        ..._profileJson(),
+        'social_accounts': ['google', 'apple'],
+      });
+
+      expect(response.socialAccounts, ['google', 'apple']);
     });
 
     test('preserves legitimate pre-onboarding and social-account nulls', () {

@@ -17,6 +17,12 @@ import 'package:onetouch/data/profile/profile_avatar_repository_provider.dart'
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/user_name_labels.dart';
+import 'package:onetouch/data/auth/google_identity_service.dart';
+import 'package:onetouch/data/auth/login_provider.dart';
+import 'package:onetouch/data/auth/social_identity_service.dart';
+import 'package:onetouch/data/profile/social_account_service.dart';
+import 'package:onetouch/data/profile/social_account_service_provider.dart'
+    as social_account_provider;
 
 typedef AvatarImagePicker = Future<XFile?> Function();
 
@@ -29,12 +35,14 @@ class EditProfileScreen extends StatefulWidget {
     this.avatarRepository,
     this.pickAvatar,
     this.avatarRequestHeaders,
+    this.socialAccountService,
   });
 
   final CurrentUserProfile? profile;
   final ProfileAvatarRepository? avatarRepository;
   final AvatarImagePicker? pickAvatar;
   final Map<String, String>? avatarRequestHeaders;
+  final SocialAccountService? socialAccountService;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -48,6 +56,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isAvatarSaving = false;
   bool _isProfileSaving = false;
   String? _profileSaveError;
+  LoginProvider? _connectingProvider;
+  late Set<String> _socialAccounts;
+
+  SocialAccountService get _socialAccountService =>
+      widget.socialAccountService ??
+      social_account_provider.socialAccountService;
 
   ProfileAvatarRepository get _avatarRepository =>
       widget.avatarRepository ?? avatar_provider.profileAvatarRepository;
@@ -62,6 +76,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void initState() {
     super.initState();
     final profile = widget.profile;
+    _socialAccounts = {...?profile?.socialAccounts};
     nameController = TextEditingController();
     usernameController = TextEditingController(
       text: profile?.username ?? '',
@@ -281,6 +296,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  Future<void> _connectSocialAccount(LoginProvider provider) async {
+    if (_connectingProvider != null ||
+        _socialAccounts.contains(provider.name)) {
+      return;
+    }
+    setState(() => _connectingProvider = provider);
+    try {
+      final accounts = await _socialAccountService.connect(provider);
+      if (!mounted) return;
+      setState(() => _socialAccounts = accounts);
+    } on SocialLoginCancelled {
+      // 공급자 인증 창을 닫았으면 연결 상태를 그대로 둬요.
+    } on GoogleIdentityException catch (error) {
+      if (error.type != GoogleIdentityFailureType.cancelled && mounted) {
+        _showSocialConnectionError(provider);
+      }
+    } on Object {
+      if (mounted) _showSocialConnectionError(provider);
+    } finally {
+      if (mounted) setState(() => _connectingProvider = null);
+    }
+  }
+
+  void _showSocialConnectionError(LoginProvider provider) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(tr(
+        context,
+        'Unable to connect {provider}. It may already be linked to another account.',
+        {'provider': provider.displayName},
+      )),
+    ));
+  }
+
   @override
   void dispose() {
     nameController.dispose();
@@ -422,14 +470,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               // Updated to use SVGs
               _buildSocialRow(
                   iconPath: 'assets/google.svg',
-                  name: 'Google',
-                  status: tr(context, 'Connected')),
+                  provider: LoginProvider.google),
               _divider(),
-              _buildSocialRow(
-                  iconPath: 'assets/apple.svg',
-                  name: 'Apple',
-                  status: tr(context, 'Not Connected')),
-              _divider(),
+              if (Theme.of(context).platform == TargetPlatform.iOS) ...[
+                _buildSocialRow(
+                    iconPath: 'assets/apple.svg',
+                    provider: LoginProvider.apple),
+                _divider(),
+              ],
 
               const SizedBox(height: 48),
 
@@ -581,43 +629,54 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildSocialRow(
-      {required String iconPath,
-      required String name,
-      required String status}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            alignment: Alignment.center,
-            // Changed to SvgPicture.asset
-            child: SvgPicture.asset(
-              iconPath,
+      {required String iconPath, required LoginProvider provider}) {
+    final connected = _socialAccounts.contains(provider.name);
+    return InkWell(
+      key: ValueKey('social-account-${provider.name}'),
+      onTap: connected || _connectingProvider != null
+          ? null
+          : () => _connectSocialAccount(provider),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Container(
               width: 24,
               height: 24,
-              // Add color filter if icons are monochromatic and need to match theme
-              // colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              alignment: Alignment.center,
+              // Changed to SvgPicture.asset
+              child: SvgPicture.asset(
+                iconPath,
+                width: 24,
+                height: 24,
+                // Add color filter if icons are monochromatic and need to match theme
+                // colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: Body1.style),
-                const SizedBox(height: 4),
-                Text(tr(context, status), style: Eyebrow.style),
-              ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(provider.displayName, style: Body1.style),
+                  const SizedBox(height: 4),
+                  Text(tr(context, connected ? 'Connected' : 'Not Connected'),
+                      style: Eyebrow.style),
+                ],
+              ),
             ),
-          ),
-          Icon(
-            Icons.arrow_forward_ios,
-            color: Theme.of(context).colorScheme.onSurface,
-            size: 16,
-          ),
-        ],
+            if (_connectingProvider == provider)
+              const SizedBox.square(
+                  dimension: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+            else if (!connected)
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).colorScheme.onSurface,
+                size: 16,
+              ),
+          ],
+        ),
       ),
     );
   }

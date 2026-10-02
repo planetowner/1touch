@@ -15,6 +15,7 @@ class ApiCurrentUserResponse {
     required this.favoriteTeamId,
     required this.createdAt,
     required this.onboardingComplete,
+    this.socialAccounts = const [],
   });
 
   final int userId;
@@ -27,6 +28,7 @@ class ApiCurrentUserResponse {
   final int? favoriteTeamId;
   final String createdAt;
   final bool onboardingComplete;
+  final List<String> socialAccounts;
 
   factory ApiCurrentUserResponse.fromJson(Map<String, dynamic> json) {
     return ApiCurrentUserResponse(
@@ -40,6 +42,9 @@ class ApiCurrentUserResponse {
       favoriteTeamId: _optionalInt(json, 'favorite_team_id'),
       createdAt: _requiredString(json, 'created_at'),
       onboardingComplete: _requiredBool(json, 'onboarding_complete'),
+      socialAccounts: (json['social_accounts'] as List<dynamic>? ?? const [])
+          .map((value) => value as String)
+          .toList(growable: false),
     );
   }
 }
