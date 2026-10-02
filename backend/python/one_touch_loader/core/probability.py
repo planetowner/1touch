@@ -89,6 +89,14 @@ def summarize_points(points: np.ndarray) -> dict:
     }
 
 
+def position_bounds(current_points: dict[int, int], maximum_points: dict[int, int]) -> dict[int, tuple[int, int]]:
+    """승점만으로 증명되는 순위 범위예요. 동률 팀은 유리·불리한 경우를 모두 남겨요."""
+    return {team: (
+        1 + sum(points > maximum_points[team] for other, points in current_points.items() if other != team),
+        1 + sum(points >= current_points[team] for other, points in maximum_points.items() if other != team),
+    ) for team in current_points}
+
+
 def simulate_league(
     team_ids: list[int], current_points: dict[int, int], remaining_fixtures: list[dict],
     *, simulations: int, seed: int, forced_outcome: tuple[int, int] | None = None,

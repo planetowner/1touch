@@ -6,6 +6,7 @@ class ApiTeamProbabilityCardResponse {
     required this.probability,
     required this.changePp,
     required this.entropy,
+    this.resolution = 'unresolved',
   });
 
   final String event;
@@ -14,6 +15,7 @@ class ApiTeamProbabilityCardResponse {
   final double probability;
   final double? changePp;
   final double? entropy;
+  final String resolution;
 
   factory ApiTeamProbabilityCardResponse.fromJson(Map<String, dynamic> json) {
     final probability = _requiredDouble(json, 'probability');
@@ -29,6 +31,9 @@ class ApiTeamProbabilityCardResponse {
       probability: probability,
       changePp: _requiredNullableDouble(json, 'change_pp'),
       entropy: _requiredNullableDouble(json, 'entropy'),
+      resolution: json.containsKey('resolution')
+          ? _requiredString(json, 'resolution')
+          : 'unresolved',
     );
   }
 }

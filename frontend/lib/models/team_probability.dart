@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+enum ProbabilityResolution { unresolved, impossible, certain }
+
 @immutable
 class TeamProbabilityCard {
   const TeamProbabilityCard({
@@ -9,6 +11,7 @@ class TeamProbabilityCard {
     required this.probability,
     required this.changePercentagePoints,
     required this.entropy,
+    this.resolution = ProbabilityResolution.unresolved,
   });
 
   final String event;
@@ -22,6 +25,7 @@ class TeamProbabilityCard {
   /// points. Null means that no valid comparison snapshot exists.
   final double? changePercentagePoints;
   final double? entropy;
+  final ProbabilityResolution resolution;
 }
 
 @immutable

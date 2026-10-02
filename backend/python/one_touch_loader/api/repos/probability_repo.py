@@ -5,10 +5,11 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from ..db import fetch_all_dict, fetch_one_dict
-from ...core.probability_forecast import select_cards, with_probability_changes
+from ...core.probability_forecast import select_cards, with_probability_changes, resolve_league_events
+from ...core.probability import position_bounds
 from ...core.probability_storage import load_run
 from ...core.db_json import decoded
-from ...core.european_probability import OUTCOME_KIND
+from ...core.european_probability import OUTCOME_KIND, bracket_title_resolutions
 from ...core.cup_betting import utc_datetime
 
 
@@ -38,7 +39,7 @@ def _pre_match_comparison(team_id, run, basis):
 
 
 def get_european_title(team_id, season_name):
-    selected = fetch_one_dict("""SELECT r.run_id FROM probability_runs r
+    selected = fetch_one_dict("""SELECT r.run_id,b.payload AS bracket_payload FROM probability_runs r
         JOIN seasons s ON s.season_id=r.season_id
         LEFT JOIN tournament_brackets b ON b.season_id=s.season_id
         JOIN probability_team_results tr ON tr.run_id=r.run_id AND tr.team_id=%s
@@ -58,12 +59,16 @@ def get_european_title(team_id, season_name):
     previous_events = ([{key: previous['teams'][str(team_id)][key] for key in ('event', 'probability')}
                         | {'competition_id': previous['competition_id']}] if previous else [])
     change = with_probability_changes([event], previous_events)[0]['change_pp']
+    resolution = team.get('resolution', 'unresolved')
+    bracket = decoded(selected['bracket_payload']) if selected['bracket_payload'] else None
+    if bracket and bracket.get('path_status') == 'complete':
+        resolution = bracket_title_resolutions(bracket, [team_id])[team_id]
     # 리그 비교 시각과 유럽대항전 비교 시각을 분리해요.
     return {key: run[key] for key in ('competition_id', 'season_id', 'season_name', 'as_of', 'model_id',
         'simulations', 'probability_method', 'strength_source_url', 'coefficient_source_url',
         'validation', 'limitations')} | {'event': team['event'], 'probability': team['probability'],
         'sampling_standard_error_pp': team['sampling_standard_error_pp'], 'change_pp': change,
-        'comparison': comparison}
+        'comparison': comparison, 'resolution': resolution}
 
 
 def _history_point(snapshot, entry):
@@ -110,11 +115,25 @@ def get_team_probability(team_id: int, season_id: int) -> dict | None:
         history.append(_history_point(run, team))
     previous_run, comparison = _pre_match_comparison(team_id, run, 'previous_league_fixture_pre_match_snapshot')
     previous = previous_run['teams'][str(team_id)] if previous_run else None
-    events = with_probability_changes(team['events'], previous['events'] if previous else [])
+    # 같은 예측 시점의 전 팀 승점을 읽어 기존 저장값에도 확정 상태를 붙여요.
+    points = fetch_all_dict("""SELECT team_id,
+        JSON_EXTRACT(payload,'$.current_points') AS current_points,
+        JSON_EXTRACT(payload,'$.maximum_points') AS maximum_points
+        FROM probability_team_results WHERE run_id=%s""", (selected['run_id'],))
+    bounds = position_bounds({r['team_id']: int(r['current_points']) for r in points},
+                             {r['team_id']: int(r['maximum_points']) for r in points})[team_id]
+    if not run['remaining_fixtures']:
+        official = fetch_one_dict("""SELECT position,points,won+draw+lost AS played FROM standings
+            WHERE season_id=%s AND team_id=%s""", (season_id, team_id))
+        # 경기 수와 승점까지 같은 최종 순위만 사용하고, 동률 시뮬레이션은 확정 근거로 쓰지 않아요.
+        if official and official['played'] == team['played'] and official['points'] == team['current_points']:
+            bounds = (official['position'], official['position'])
+    events = resolve_league_events(team['events'], run['competition_id'], bounds)
+    events = with_probability_changes(events, previous['events'] if previous else [])
     europe = get_european_title(team_id, run['season_name'])
-    card_events = list(events) if run['remaining_fixtures'] else []
+    card_events = list(events)
     if europe:
-        event = {key: europe[key] for key in ('event', 'competition_id', 'probability', 'change_pp')}
+        event = {key: europe[key] for key in ('event', 'competition_id', 'probability', 'change_pp', 'resolution')}
         event.update(category='TITLE')
         events.append(event)
         card_events.append(event)
