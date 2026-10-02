@@ -757,8 +757,16 @@ class _FullRankingRow extends StatelessWidget {
           height: 56,
           child: Row(children: [
             SizedBox(
-                width: 36,
-                child: Text('${player.rank}', style: Heading4.style)),
+                width: 48,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${player.rank}',
+                    maxLines: 1,
+                    softWrap: false,
+                    style: Heading4.style,
+                  ),
+                )),
             ClipOval(
                 child: ColoredBox(
               color: AppColors.of(context).subtleBackground,
