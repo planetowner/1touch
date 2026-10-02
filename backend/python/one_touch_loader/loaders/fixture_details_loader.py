@@ -14,6 +14,7 @@ from ..core.player_match_metrics import STORED_STAT_TYPE_IDS
 from .players_loader import insert_missing_player_profiles
 from . import player_rating_rankings_loader as player_rankings
 from . import squad_roles_loader as squad_roles
+from . import player_season_positions_loader as player_positions
 
 
 # 2026-09-17 Sportmonks Core /types에서 확인한 코드예요. 팀·선수 통계가 같은 사전을 써요.
@@ -192,7 +193,9 @@ def replace_fixture_detail_rows(
     lineups: Optional[List[Dict]] = None,
     verified_event_profiles: Optional[Dict[int, Dict]] = None,
 ) -> int:
-    with transaction() as connection:
+    with transaction() as connection, player_positions.refresh_positions_after_fixtures(
+        connection, [fixture_id], records_changed='lineups' in rows or 'events' in rows,
+    ):
         with player_rankings.refresh_player_ratings_after_fixture(
             connection, fixture_id, lineups_changed="lineups" in rows,
         ), squad_roles.refresh_squad_roles_after_fixture(

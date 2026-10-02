@@ -7,7 +7,7 @@ import re
 import sqlite3
 import unittest
 from contextlib import ExitStack, redirect_stdout
-from datetime import date, datetime, timezone
+from datetime import date, datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -26,6 +26,7 @@ from one_touch_loader.core.transfer_team_levels import VERIFIED_NON_SENIOR_TEAM_
 from one_touch_loader.loaders import transfers_loader as transfers
 from one_touch_loader.loaders import player_contracts_loader as contracts
 from one_touch_loader.loaders import team_squad_members_loader as squads
+from one_touch_loader.loaders import player_season_positions_loader as player_positions
 from one_touch_loader.api.repos import transfers_repo, contracts_repo
 from one_touch_loader.api.routes import teams as routes
 from one_touch_loader.api.deps import get_user_id
@@ -69,7 +70,8 @@ class TransfersContractsTests(unittest.TestCase):
             INSERT INTO seasons VALUES (28083,8,'2026/2027',1),(25000,8,'2025/2026',0);
         """)
         folder = Path(__file__).parents[1] / "one_touch_loader/sql"
-        for name in ("migrate_transfers_contracts_minimal.sql", "create_transfers.sql", "create_player_contracts.sql"):
+        for name in ("migrate_transfers_contracts_minimal.sql", "create_transfers.sql", "create_player_contracts.sql",
+                     "create_player_season_positions.sql"):
             self.sql.executescript(sqlite_ddl((folder / name).read_text(encoding="utf-8")))
         for pid in (832, 997, 4313, 163152, 185658, 25162, 11353231):
             self.sql.execute("INSERT INTO players (player_id, display_name, image_path) VALUES (?, ?, NULL)", (pid, f"Existing {pid}"))
@@ -112,6 +114,12 @@ class TransfersContractsTests(unittest.TestCase):
         client = TestClient(app)
         self.addCleanup(client.close)
         return client
+
+    def refresh_positions(self, season_name):
+        from diagnostics.test_player_rating_rankings import MemoryCursor
+        with MemoryCursor(self.sql) as cur:
+            cur.cursor.row_factory = sqlite3.Row
+            player_positions.refresh_season_positions(cur, season_name, as_of=datetime(2026,10,2))
 
     def store(self, player_id):
         rows = transfers.build_transfer_rows(player_id, CASES["players"][str(player_id)], SENIOR)
@@ -491,10 +499,9 @@ class TransfersContractsTests(unittest.TestCase):
                 (1,6,4313,12,26,0,NULL),(4,6,4313,11,26,90,7),(5,6,4313,11,26,90,7),
                 (1,6,185658,11,NULL,90,7),(1,6,11353231,11,25,90,7);
         """)
+        self.refresh_positions('2026/2027')
         writes_before = self.sql.total_changes
-        with patch.object(contracts_repo, "datetime") as clock, \
-             patch.object(contracts_repo, "fetch_all_dict", wraps=self.fetch_dicts) as fetch:
-            clock.now.return_value = datetime(2026,10,2,tzinfo=timezone.utc)
+        with patch.object(contracts_repo, "fetch_all_dict", wraps=self.fetch_dicts) as fetch:
             response = self.api_client().get('/v1/teams/6/contracts?season_id=28083')
         self.assertEqual(response.status_code, 200)
         positions = {row['player_id']: row['position_group_id'] for row in response.json()['players']}
@@ -502,10 +509,10 @@ class TransfersContractsTests(unittest.TestCase):
         self.assertEqual(self.sql.total_changes, writes_before)
         self.assertEqual(self.sql.execute(
             'SELECT position_group_id FROM team_squad_members WHERE player_id=997').fetchone()[0], 26)
-        position_queries = [call for call in fetch.call_args_list if 'FROM fixture_lineups fl' in call.args[0]]
+        self.assertFalse(any('FROM fixture_lineups fl' in call.args[0] for call in fetch.call_args_list))
+        position_queries = [call for call in fetch.call_args_list if 'JOIN player_season_positions' in call.args[0]]
         self.assertEqual(len(position_queries), 1)
-        self.assertEqual(position_queries[0].args[1][:2], ('2026/2027', datetime(2026,10,2)))
-        self.assertEqual(set(position_queries[0].args[1][2:]), set(positions))
+        self.assertEqual(position_queries[0].args[1][0], '2026/2027')
 
     def test_squad_positions_follow_selected_past_season_and_shared_tie_rules(self):
         self.sql.executescript("""
@@ -522,9 +529,9 @@ class TransfersContractsTests(unittest.TestCase):
                 (1,6,4313,11,26,90,7),(2,6,4313,11,25,90,7),
                 (4,6,997,11,27,90,7),(4,6,4313,11,27,90,7);
         """)
-        with patch.object(contracts_repo, "datetime") as clock:
-            clock.now.return_value = datetime(2026,10,2,tzinfo=timezone.utc)
-            result = contracts_repo.get_team_contracts(6,25000)
+        self.refresh_positions('2025/2026')
+        self.refresh_positions('2026/2027')
+        result = contracts_repo.get_team_contracts(6,25000)
         self.assertFalse(result['is_current'])
         self.assertEqual({row['player_id']: row['position_group_id'] for row in result['players']},
                          {997:26, 4313:25})
