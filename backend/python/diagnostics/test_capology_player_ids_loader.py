@@ -320,6 +320,36 @@ class CapologyPlayerIdsLoaderTest(unittest.TestCase):
     def test_verified_source_slug_alias_uses_existing_canonical_slug(self):
         cases = (
             (
+                17168898,
+                "yann-gboho",
+                "yann-gboho-36905",
+                "Yann Gboho",
+            ),
+            (
+                37706595,
+                "livan-burcu",
+                "livan-burcu-38258",
+                "Livan Burcu",
+            ),
+            (
+                37429228,
+                "sota-kawasaki",
+                "sota-kawasaki-37102",
+                "Sota Kawasaki",
+            ),
+            (
+                4545454,
+                "adrian-dela-46079",
+                "adrian-de-la-fuente-36217",
+                "Adrián Dela",
+            ),
+            (
+                261130,
+                "carlos-protesoni-35884",
+                "carlos-benavidez-35884",
+                "Carlos Protesoni",
+            ),
+            (
                 37685630,
                 "el-hadji-malick-diouf-38350",
                 "el-hadji-malick-diouf-38349",
@@ -706,6 +736,29 @@ class CapologyPlayerIdsLoaderTest(unittest.TestCase):
         self.assertEqual(players[0]["position_group_id"], 26)
         self.assertEqual(players[0]["age"], 24)
         self.assertIsNone(players[0]["estimated_weekly_gross_eur"])
+
+    def test_salary_page_parser_accepts_slugs_without_numeric_suffix(self):
+        # 26/27 Villa·Coventry 명단은 숫자가 없는 선수 링크도 제공해요.
+        for slug in ("james-wright", "yann-gboho"):
+            with self.subTest(slug=slug):
+                html = """
+                <title>2026-2027 Test FC Salaries and Contracts</title>
+                <script>
+                  var data = [
+                    {
+                      'name': "<a href='/player/%s/'>Test Player</a>",
+                      'weekly_gross_eur': accounting.formatMoney("520000"/52, eur),
+                    },
+                  ];
+                  var data_payroll = [];
+                </script>
+                """ % slug
+
+                players = _parse_capology_salary_page(html, "2026/2027")
+
+                self.assertEqual(len(players), 1)
+                self.assertEqual(players[0]["external_player_id"], slug)
+                self.assertEqual(players[0]["estimated_weekly_gross_eur"], 10000)
 
     def test_salary_page_parser_uses_capology_eur_fixed_weekly_wage(self):
         html = """

@@ -47,6 +47,14 @@ INSERT INTO player_wages (
 ) VALUES (%s,%s,%s,%s)
 """
 
+# 26/27 Levante·Alavés 명단은 같은 선수를 서로 다른 주급으로 두 번 제공해요.
+# 새 링크는 404라 같은 명단에 있는 정상 선수 페이지의 행을 사용해요.
+# Capology가 이 시즌의 중복 행을 정리하면 해당 항목을 제거해요.
+VERIFIED_DUPLICATE_WAGE_SOURCES = {
+    (3457, 27965, "adrian-dela-46079"): "adrian-de-la-fuente-36217",
+    (2975, 27965, "carlos-protesoni-35884"): "carlos-benavidez-35884",
+}
+
 
 def _write_wage_report(payload: Dict[str, object]) -> Path:
     CAPOLOGY_DIAGNOSTICS_DIRECTORY.mkdir(parents=True, exist_ok=True)
@@ -67,8 +75,18 @@ def _build_wage_rows(
     wage_rows: List[Tuple[int, int, int, int]] = []
     ignored_without_loaded_db_match: List[Dict] = []
     unavailable_wages: List[Dict] = []
+    source_slugs = {
+        str(source_player["external_player_id"])
+        for source_player in source_players
+    }
     for source_player in source_players:
         source_slug = str(source_player["external_player_id"])
+        preferred_slug = VERIFIED_DUPLICATE_WAGE_SOURCES.get(
+            (int(target["team_id"]), int(target["season_id"]), source_slug)
+        )
+        # 같은 팀·시즌 명단에 확인된 원문 행이 함께 있을 때만 중복을 제외해요.
+        if preferred_slug in source_slugs:
+            continue
         canonical_slug = _canonical_capology_player_id(source_slug)
         player_id = player_ids_by_capology_slug.get(canonical_slug)
         source_summary = {
@@ -127,6 +145,7 @@ def _collect_wages(
     unavailable_wages: List[Dict] = []
     source_failures: List[Dict] = []
     source_player_count = 0
+    excluded_duplicate_source_rows = 0
 
     session = _CapologyBrowserSession()
     try:
@@ -171,6 +190,9 @@ def _collect_wages(
                     player_ids_by_capology_slug,
                 )
                 wage_rows.extend(rows)
+                excluded_duplicate_source_rows += (
+                    len(source_players) - len(rows) - len(ignored) - len(unavailable)
+                )
                 ignored_without_loaded_db_match.extend(
                     {**item, "source_url": response_url} for item in ignored
                 )
@@ -220,6 +242,7 @@ def _collect_wages(
             ignored_without_loaded_db_match
         ),
         "unavailable_wages": len(unavailable_wages),
+        "excluded_duplicate_source_rows": excluded_duplicate_source_rows,
         "source_failures": len(source_failures),
         "deleted_wages": 0,
         "inserted_wages": 0,

@@ -38,6 +38,11 @@ class PlayerWageLoaderTest(unittest.TestCase):
                 "name": "El Hadji Malick Diouf",
                 "estimated_weekly_gross_eur": None,
             },
+            {
+                "external_player_id": "yann-gboho",
+                "name": "Yann Gboho",
+                "estimated_weekly_gross_eur": 50000,
+            },
         ]
 
         rows, ignored, unavailable = _build_wage_rows(
@@ -47,14 +52,57 @@ class PlayerWageLoaderTest(unittest.TestCase):
                 "adama-traore-34878": 65651,
                 "noel-aseko-38678": 37590606,
                 "el-hadji-malick-diouf-38349": 37685630,
+                "yann-gboho-36905": 17168898,
             },
         )
 
-        self.assertEqual(rows, [(10, 20, 65651, 100000)])
+        self.assertEqual(
+            rows,
+            [(10, 20, 65651, 100000), (10, 20, 17168898, 50000)],
+        )
         self.assertEqual(ignored[0]["capology_player_id"], "not-loaded-1")
         self.assertEqual(unavailable[0]["player_id"], 37590606)
         # 링크 ID 보정 후에도 Brentford에서 미제공한 Diouf 급여는 그대로 구분해요.
         self.assertEqual(unavailable[1]["player_id"], 37685630)
+
+    def test_duplicate_uses_verified_row_only_in_affected_team_season(self):
+        players = (
+            (3457, 4545454, "adrian-dela-46079", "adrian-de-la-fuente-36217",
+             24038, 18077),
+            (2975, 261130, "carlos-protesoni-35884", "carlos-benavidez-35884",
+             20000, 14038),
+        )
+        for team, player, alias, canonical, alias_wage, canonical_wage in players:
+            duplicate = {
+                "external_player_id": alias,
+                "name": "Source Player",
+                "estimated_weekly_gross_eur": alias_wage,
+            }
+            verified = {
+                "external_player_id": canonical,
+                "name": "Source Player",
+                "estimated_weekly_gross_eur": canonical_wage,
+            }
+            cases = (
+                (team, 27965, [duplicate, verified], [canonical_wage]),
+                (team, 27965, [verified, duplicate], [canonical_wage]),
+                (team, 27965, [duplicate], [alias_wage]),
+                (team, 20, [duplicate, verified], [alias_wage, canonical_wage]),
+                (10, 27965, [duplicate, verified], [alias_wage, canonical_wage]),
+            )
+            for team_id, season_id, source_players, expected_wages in cases:
+                with self.subTest(team=team_id, season=season_id, slug=alias):
+                    rows, ignored, unavailable = _build_wage_rows(
+                        {"team_id": team_id, "season_id": season_id},
+                        source_players,
+                        {canonical: player},
+                    )
+                    self.assertEqual(
+                        rows,
+                        [(team_id, season_id, player, w) for w in expected_wages],
+                    )
+                    self.assertEqual(ignored, [])
+                    self.assertEqual(unavailable, [])
 
     @patch(
         "one_touch_loader.loaders.player_wage_loader._write_wage_report",
