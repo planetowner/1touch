@@ -39,6 +39,11 @@ abstract interface class StandingRepository {
     int? seasonId,
   });
 
+  Future<List<Standing>> refreshForCompetition(
+    int competitionId, {
+    int? seasonId,
+  });
+
   List<Standing> forCompetition(
     int competitionId, {
     int? seasonId,

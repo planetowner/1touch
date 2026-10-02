@@ -44,6 +44,26 @@ void main() {
     );
   });
 
+  test('keeps extended data fresh for six hours', () {
+    expect(AppCachePolicy.extendedTtl, const Duration(hours: 6));
+    expect(
+      AppCachePolicy.freshness(
+        CacheTier.extended,
+        savedAt: now.subtract(const Duration(hours: 5, minutes: 59)),
+        now: now,
+      ),
+      CacheFreshness.fresh,
+    );
+    expect(
+      AppCachePolicy.freshness(
+        CacheTier.extended,
+        savedAt: now.subtract(const Duration(hours: 6)),
+        now: now,
+      ),
+      CacheFreshness.stale,
+    );
+  });
+
   test('force refresh and realtime always use the network', () {
     expect(
       AppCachePolicy.shouldRefresh(
