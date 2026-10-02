@@ -68,10 +68,11 @@ class _CurrentFormSelectionPainter extends CustomPainter {
 
     const dashHeight = 8.0;
     const dashGap = 7.0;
-    for (var y = 0.0; y < size.height; y += dashHeight + dashGap) {
+    final guideBottom = size.height;
+    for (var y = 0.0; y < guideBottom; y += dashHeight + dashGap) {
       canvas.drawLine(
         Offset(x, y),
-        Offset(x, math.min(y + dashHeight, size.height)),
+        Offset(x, math.min(y + dashHeight, guideBottom)),
         guidePaint,
       );
     }

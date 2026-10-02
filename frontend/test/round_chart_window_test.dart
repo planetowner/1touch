@@ -90,4 +90,49 @@ void main() {
       closeTo(8, 0.01),
     );
   });
+
+  testWidgets('selection handle stays on its round while the viewport scrolls',
+      (tester) async {
+    final window = RoundChartWindow.endingAt(20);
+    final movedX = <double>[];
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: SizedBox(
+            width: 140,
+            height: 100,
+            child: RoundChartViewport(
+              roundWindow: window,
+              viewportSize: const Size(140, 100),
+              selectedRound: 17,
+              onPointerMove: movedX.add,
+              builder: (_, size) => const SizedBox.expand(),
+            ),
+          ),
+        ),
+      ),
+    ));
+
+    final viewport = find.byType(RoundChartViewport);
+    final handle = find.byKey(const ValueKey('round-chart-selection-handle'));
+    final viewportRect = tester.getRect(viewport);
+    expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
+        closeTo(viewportRect.center.dx, 0.1));
+    expect(tester.getRect(handle).top,
+        viewportRect.bottom - RoundChartSelectionHandle.height);
+    expect(
+        tester.getSize(handle),
+        const Size(
+            RoundChartSelectionHandle.width, RoundChartSelectionHandle.height));
+
+    final gesture = await tester.startGesture(viewportRect.center);
+    await gesture.moveBy(const Offset(30, 0));
+    await tester.pump();
+    expect(movedX, isNotEmpty);
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
+        greaterThan(viewportRect.center.dx));
+    expect(tester.takeException(), isNull);
+  });
 }

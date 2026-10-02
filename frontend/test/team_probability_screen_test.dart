@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
@@ -137,6 +138,14 @@ void main() {
       find.byKey(const ValueKey('probability-history-tooltip')),
       findsOneWidget,
     );
+    final historyHandle = find.descendant(
+      of: find.byKey(const ValueKey('probability-history-viewport')),
+      matching: find.byKey(const ValueKey('round-chart-selection-handle')),
+    );
+    expect(
+        tester.getRect(historyHandle).left + RoundChartSelectionHandle.tipInset,
+        closeTo(historyChart.left + historyChart.width / 2, 0.1));
+    expect(tester.getRect(historyHandle).top, historyChart.bottom);
     expect(find.text('Round 4'), findsOneWidget);
     expect(find.text('26%'), findsOneWidget);
     expect(
@@ -146,6 +155,16 @@ void main() {
           .dy,
       closeTo(historyChart.top + historyChart.height * 0.7, 1),
     );
+    final drag = await tester.startGesture(
+      Offset(historyChart.center.dx, historyChart.center.dy),
+    );
+    await drag.moveBy(Offset(historyChart.width / 6, 0));
+    await tester.pump();
+    expect(find.text('Round 5'), findsOneWidget);
+    expect(
+        tester.getRect(historyHandle).left + RoundChartSelectionHandle.tipInset,
+        closeTo(historyChart.left + historyChart.width * 4 / 6, 0.1));
+    await drag.up();
     expect(find.text('PROJECTED FINAL POSITION'), findsOneWidget);
     expect(
       tester
