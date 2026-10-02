@@ -125,7 +125,7 @@ class FullRankingPopup extends StatelessWidget {
                   const SizedBox(width: 48),
                   Expanded(
                     child: Text(
-                      tr(context, "1Touch Ranking"),
+                      tr(context, "1touch Ranking"),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,

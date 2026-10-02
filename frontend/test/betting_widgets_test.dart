@@ -232,7 +232,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('1Touch'), findsOneWidget);
+      expect(find.text('1touch'), findsOneWidget);
       expect(find.text('EXPERT'), findsNothing);
       expect(find.text('No bets yet.'), findsOneWidget);
       final noBetsBar = find.byKey(const ValueKey('match-h2h-no-bets-bar'));

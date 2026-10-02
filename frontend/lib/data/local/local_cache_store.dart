@@ -48,6 +48,8 @@ abstract final class LocalCacheKeys {
   static const followingTeams = 'following-teams';
   static const followingPlayers = 'following-players';
 
+  static String teamOverview(int teamId) => 'team-overview:$teamId';
+
   static String home(int teamId, DateTime month, String viewerCountry) =>
       'home:$teamId:${month.year}-${month.month.toString().padLeft(2, '0')}:'
       '$viewerCountry';

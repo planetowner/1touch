@@ -243,7 +243,7 @@ void main() {
           await tester.pumpAndSettle();
           expect(
             find.textContaining(
-                'Measured by comparing actual salary against 1Touch’s predicted market value'),
+                'Measured by comparing actual salary against 1touch’s predicted market value'),
             findsOneWidget,
           );
         },

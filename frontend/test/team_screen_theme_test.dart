@@ -77,6 +77,41 @@ void main() {
     Size(393, 852),
   ];
 
+  testWidgets('Team screen applies a background overview refresh',
+      (tester) async {
+    final repository = TestTeamOverviewRepository(
+      initial: {33: testTeamOverview(teamId: 33, name: 'Cached Team')},
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: TeamScreen(
+          fixtureRepository: fixtureRepository,
+          standingRepository: standingRepository,
+          currentFormRepository: currentFormRepository,
+          teamId: 33,
+          teamAttributeRepository: teamAttributeRepository,
+          teamOverviewRepository: repository,
+          xgStandingRepository: xgStandingRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    Text appBarName() => tester.widget<Text>(
+          find.byKey(const ValueKey('team-app-bar-name')),
+        );
+
+    expect(appBarName().data, 'Cached Team');
+
+    repository.publish(testTeamOverview(teamId: 33, name: 'Fresh Team'));
+    await tester.pump();
+
+    expect(appBarName().data, 'Fresh Team');
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Team app bar keeps its content at least 47dp from the top',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);

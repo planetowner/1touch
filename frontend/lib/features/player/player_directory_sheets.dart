@@ -673,7 +673,7 @@ class _PlayerFullRankingSheetState extends State<PlayerFullRankingSheet> {
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(children: [
             _SheetTitle(
-                title: tr(context, '1Touch Ranking'),
+                title: tr(context, '1touch Ranking'),
                 onClose: () => Navigator.pop(context),
                 compact: true),
             const SizedBox(height: 24),

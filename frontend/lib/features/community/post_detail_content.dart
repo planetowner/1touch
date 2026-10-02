@@ -75,7 +75,7 @@ class PostDetailContent extends StatelessWidget {
         ? renderBox.localToGlobal(Offset.zero) & renderBox.size
         : null;
     final params = ShareParams(
-      title: '1Touch',
+      title: '1touch',
       subject: post.title,
       text: communityPostShareText(post),
       sharePositionOrigin: shareOrigin,

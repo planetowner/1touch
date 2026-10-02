@@ -418,10 +418,10 @@ const appMessages = <String, MessageTranslations>{
     ja: "アカウントを読み込めませんでした。もう一度お試しください。",
     zh: "无法加载账号信息，请重试。"
   ),
-  "Welcome to 1Touch!": (
-    ko: "1Touch에 오신 걸 환영해요!",
-    ja: "1Touchへようこそ！",
-    zh: "欢迎来到1Touch！"
+  "Welcome to 1touch!": (
+    ko: "1touch에 오신 걸 환영해요!",
+    ja: "1touchへようこそ！",
+    zh: "欢迎来到1touch！"
   ),
   "Let’s start by choosing\nyour favorite teams!": (
     ko: "먼저 좋아하는 팀을\n선택해 주세요!",
@@ -548,10 +548,10 @@ const appMessages = <String, MessageTranslations>{
   "RETRY": (ko: "다시 시도", ja: "再試行", zh: "重试"),
   "Cancel": (ko: "취소", ja: "キャンセル", zh: "取消"),
   "Log out?": (ko: "로그아웃할까요?", ja: "ログアウトしますか？", zh: "要退出登录吗？"),
-  "You will need to sign in again to use 1Touch.": (
-    ko: "1Touch를 사용하려면 다시 로그인해야 해요.",
-    ja: "1Touchを利用するには、もう一度ログインする必要があります。",
-    zh: "要继续使用 1Touch，您需要重新登录。"
+  "You will need to sign in again to use 1touch.": (
+    ko: "1touch를 사용하려면 다시 로그인해야 해요.",
+    ja: "1touchを利用するには、もう一度ログインする必要があります。",
+    zh: "要继续使用 1touch，您需要重新登录。"
   ),
   "Log out": (ko: "로그아웃", ja: "ログアウト", zh: "退出登录"),
   "Logging out...": (ko: "로그아웃 중...", ja: "ログアウト中...", zh: "正在退出..."),
@@ -1144,7 +1144,7 @@ const appMessages = <String, MessageTranslations>{
   "Player data unavailable": (ko: "선수 정보가 없어요", ja: "選手情報がありません", zh: "暂无球员信息"),
   "Player": (ko: "선수", ja: "選手", zh: "球员"),
   "1TOUCH RANKING": (ko: "1TOUCH 순위", ja: "1TOUCHランキング", zh: "1TOUCH排名"),
-  "1Touch Ranking": (ko: "1Touch 순위", ja: "1Touchランキング", zh: "1Touch排名"),
+  "1touch Ranking": (ko: "1touch 순위", ja: "1touchランキング", zh: "1touch排名"),
   "No ranking data for these filters": (
     ko: "이 필터에 맞는 순위 정보가 없어요",
     ja: "この条件に合うランキングがありません",
@@ -1415,9 +1415,9 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Thanks again for your report — we’ve got your back, and your fellow 1touchers too. Every report helps make 1touch a safer, better place for everyone.":
       (
-    ko: "신고 내용을 확인할게요. 보내주신 신고는 모두가 안전하게 1Touch를 이용하는 데 도움이 돼요.",
-    ja: "ご報告を確認します。皆さまのご協力が、安心して1Touchを利用できる環境づくりにつながります。",
-    zh: "我们会核查举报内容。你的每一次举报都能帮助大家更安全地使用1Touch。"
+    ko: "신고 내용을 확인할게요. 보내주신 신고는 모두가 안전하게 1touch를 이용하는 데 도움이 돼요.",
+    ja: "ご報告を確認します。皆さまのご協力が、安心して1touchを利用できる環境づくりにつながります。",
+    zh: "我们会核查举报内容。你的每一次举报都能帮助大家更安全地使用1touch。"
   ),
   "Unable to submit report. Please try again.": (
     ko: "신고를 보내지 못했어요. 다시 시도해 주세요.",
@@ -1639,11 +1639,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "{team}の今後の全試合を同期します。各予定は2時間で、開始30分前に通知します。",
     zh: "同步{team}的所有未来比赛。每场按2小时保存，并在开赛前30分钟提醒。"
   ),
-  "Connected to the 1Touch calendar in Google. Match changes will update even when this app is closed.":
+  "Connected to the 1touch calendar in Google. Match changes will update even when this app is closed.":
       (
-    ko: "Google의 1Touch 캘린더에 연결했어요. 앱을 닫아도 변경된 경기 일정을 자동으로 반영해요.",
-    ja: "Googleの1Touchカレンダーに接続しました。アプリを閉じていても試合日程の変更を自動で反映します。",
-    zh: "已连接Google中的1Touch日历。即使关闭本应用，赛程变更也会自动更新。"
+    ko: "Google의 1touch 캘린더에 연결했어요. 앱을 닫아도 변경된 경기 일정을 자동으로 반영해요.",
+    ja: "Googleの1touchカレンダーに接続しました。アプリを閉じていても試合日程の変更を自動で反映します。",
+    zh: "已连接Google中的1touch日历。即使关闭本应用，赛程变更也会自动更新。"
   ),
   "Finish subscribing in Calendar and enable event alerts. Apple controls when subscription changes appear.":
       (
@@ -1677,25 +1677,25 @@ const appMessages = <String, MessageTranslations>{
     ja: "Googleに接続できませんでした。もう一度お試しください。",
     zh: "无法连接Google，请重试。"
   ),
-  "Choose the Google account already connected to 1Touch.": (
-    ko: "1Touch에 이미 연결한 Google 계정을 선택해 주세요.",
-    ja: "1Touchに接続済みのGoogleアカウントを選択してください。",
-    zh: "请选择已连接1Touch的Google账号。"
+  "Choose the Google account already connected to 1touch.": (
+    ko: "1touch에 이미 연결한 Google 계정을 선택해 주세요.",
+    ja: "1touchに接続済みのGoogleアカウントを選択してください。",
+    zh: "请选择已连接1touch的Google账号。"
   ),
-  "Allow 1Touch to manage its calendar, then try again.": (
-    ko: "1Touch 캘린더 관리 권한을 허용하고 다시 시도해 주세요.",
-    ja: "1Touchのカレンダー管理を許可してから、もう一度お試しください。",
-    zh: "请允许1Touch管理其日历，然后重试。"
+  "Allow 1touch to manage its calendar, then try again.": (
+    ko: "1touch 캘린더 관리 권한을 허용하고 다시 시도해 주세요.",
+    ja: "1touchのカレンダー管理を許可してから、もう一度お試しください。",
+    zh: "请允许1touch管理其日历，然后重试。"
   ),
   "Google calendar access expired. Please connect again.": (
     ko: "Google 캘린더 접근 권한이 만료됐어요. 다시 연결해 주세요.",
     ja: "Googleカレンダーへのアクセスが期限切れです。再接続してください。",
     zh: "Google日历访问权限已过期，请重新连接。"
   ),
-  "The 1Touch calendar was removed. Connect again to create it.": (
-    ko: "1Touch 캘린더가 삭제됐어요. 다시 연결하면 새로 만들어요.",
-    ja: "1Touchカレンダーが削除されました。再接続すると作成されます。",
-    zh: "1Touch日历已被删除。重新连接即可创建。"
+  "The 1touch calendar was removed. Connect again to create it.": (
+    ko: "1touch 캘린더가 삭제됐어요. 다시 연결하면 새로 만들어요.",
+    ja: "1touchカレンダーが削除されました。再接続すると作成されます。",
+    zh: "1touch日历已被删除。重新连接即可创建。"
   ),
   "Could not load the calendar subscription. Please try again.": (
     ko: "캘린더 구독 정보를 불러오지 못했어요. 다시 시도해 주세요.",
@@ -1729,10 +1729,10 @@ const appMessages = <String, MessageTranslations>{
     ja: "このチームの同期を停止",
     zh: "停止同步此球队"
   ),
-  "Upcoming events for this team will be removed from the 1Touch calendar.": (
-    ko: "이 팀의 예정 경기를 1Touch 캘린더에서 삭제해요.",
-    ja: "このチームの今後の予定を1Touchカレンダーから削除します。",
-    zh: "此球队的未来比赛将从1Touch日历中删除。"
+  "Upcoming events for this team will be removed from the 1touch calendar.": (
+    ko: "이 팀의 예정 경기를 1touch 캘린더에서 삭제해요.",
+    ja: "このチームの今後の予定を1touchカレンダーから削除します。",
+    zh: "此球队的未来比赛将从1touch日历中删除。"
   ),
   "Disconnect Google Calendar": (
     ko: "Google 캘린더 연결 해제",
@@ -1892,11 +1892,11 @@ const appMessages = <String, MessageTranslations>{
   "October": (ko: "10월", ja: "10月", zh: "10月"),
   "November": (ko: "11월", ja: "11月", zh: "11月"),
   "December": (ko: "12월", ja: "12月", zh: "12月"),
-  "By clicking sign up, I hereby agree and consent to\n1Touch’s Terms & Conditions; I confirm that I have\nread 1Touch’s Privacy Policy.":
+  "By clicking sign up, I hereby agree and consent to\n1touch’s Terms & Conditions; I confirm that I have\nread 1touch’s Privacy Policy.":
       (
-    ko: "회원가입을 누르면 1Touch 이용약관에 동의하고\n개인정보 처리방침을 확인한 것으로 간주해요.",
-    ja: "新規登録を押すと、1Touchの利用規約に同意し、\nプライバシーポリシーを確認したものとみなします。",
-    zh: "点击注册即表示同意1Touch服务条款，\n并确认已阅读隐私政策。"
+    ko: "회원가입을 누르면 1touch 이용약관에 동의하고\n개인정보 처리방침을 확인한 것으로 간주해요.",
+    ja: "新規登録を押すと、1touchの利用規約に同意し、\nプライバシーポリシーを確認したものとみなします。",
+    zh: "点击注册即表示同意1touch服务条款，\n并确认已阅读隐私政策。"
   ),
   "Unable to load attributes. Retry": (
     ko: "능력치를 불러오지 못했어요. 다시 시도",
@@ -2258,7 +2258,7 @@ const appMessages = <String, MessageTranslations>{
   "Explanation": (ko: "설명", ja: "説明", zh: "说明"),
   "Calculated using proprietary performance metrics and predictive analytics model":
       (
-    ko: "1Touch의 자체 경기력 지표와 예측 분석 모델을 사용해 계산해요.",
+    ko: "1touch의 자체 경기력 지표와 예측 분석 모델을 사용해 계산해요.",
     ja: "独自のパフォーマンス指標と予測分析モデルを使って算出しています。",
     zh: "使用专有表现指标和预测分析模型计算。"
   ),
@@ -2274,22 +2274,22 @@ const appMessages = <String, MessageTranslations>{
     ja: "枠内シュートを放った位置と、狙った方向を線で示すシュートマップです。",
     zh: "射门图显示每次射正的起脚位置，并用线条指向瞄准的位置。"
   ),
-  "Evaluates and ranks players using 1Touch's own data-driven performance metrics.":
+  "Evaluates and ranks players using 1touch's own data-driven performance metrics.":
       (
-    ko: "1Touch의 자체 데이터 기반 경기력 지표로 선수를 평가하고 순위를 매겨요.",
-    ja: "1Touch独自のデータに基づくパフォーマンス指標で選手を評価・順位付けします。",
-    zh: "使用1Touch自有的数据驱动表现指标评估球员并进行排名。"
+    ko: "1touch의 자체 데이터 기반 경기력 지표로 선수를 평가하고 순위를 매겨요.",
+    ja: "1touch独自のデータに基づくパフォーマンス指標で選手を評価・順位付けします。",
+    zh: "使用1touch自有的数据驱动表现指标评估球员并进行排名。"
   ),
-  "Highlights players with the highest performance growth over recent matches, based on 1Touch metrics.":
+  "Highlights players with the highest performance growth over recent matches, based on 1touch metrics.":
       (
-    ko: "1Touch 지표를 기준으로 최근 경기에서 경기력이 가장 크게 향상된 선수를 보여줘요.",
-    ja: "1Touchの指標に基づき、最近の試合で最も成長した選手を紹介します。",
-    zh: "根据1Touch指标，展示近期比赛中表现进步最大的球员。"
+    ko: "1touch 지표를 기준으로 최근 경기에서 경기력이 가장 크게 향상된 선수를 보여줘요.",
+    ja: "1touchの指標に基づき、最近の試合で最も成長した選手を紹介します。",
+    zh: "根据1touch指标，展示近期比赛中表现进步最大的球员。"
   ),
-  "Measured by comparing actual salary against 1Touch’s predicted market value based on performance and playtime.":
+  "Measured by comparing actual salary against 1touch’s predicted market value based on performance and playtime.":
       (
-    ko: "실제 급여를 경기력과 출전 시간을 바탕으로 1Touch가 예측한 시장 가치와 비교해요.",
-    ja: "実際の給与を、パフォーマンスと出場時間から1Touchが予測した市場価値と比較します。",
-    zh: "将实际薪资与1Touch根据表现和出场时间预测的市场价值进行比较。"
+    ko: "실제 급여를 경기력과 출전 시간을 바탕으로 1touch가 예측한 시장 가치와 비교해요.",
+    ja: "実際の給与を、パフォーマンスと出場時間から1touchが予測した市場価値と比較します。",
+    zh: "将实际薪资与1touch根据表现和出场时间预测的市场价值进行比较。"
   ),
 };

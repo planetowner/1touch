@@ -239,7 +239,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(sharedParams?.title, '1Touch');
+    expect(sharedParams?.title, '1touch');
     expect(sharedParams?.subject, post.title);
     expect(sharedParams?.text, communityPostShareText(post));
     expect(sharedParams?.sharePositionOrigin, isNotNull);

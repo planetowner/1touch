@@ -361,7 +361,7 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
             const AppInfoButton(
               key: ValueKey('players-ranking-info'),
               message:
-                  "Evaluates and ranks players using 1Touch's own data-driven performance metrics.",
+                  "Evaluates and ranks players using 1touch's own data-driven performance metrics.",
               layoutSize: 18,
             ),
             const Spacer(),
@@ -620,7 +620,7 @@ class PlayersToWatchState extends State<PlayersToWatch> {
             const AppInfoButton(
               key: ValueKey('players-ones-to-watch-info'),
               message:
-                  'Highlights players with the highest performance growth over recent matches, based on 1Touch metrics.',
+                  'Highlights players with the highest performance growth over recent matches, based on 1touch metrics.',
               layoutSize: 16,
             ),
           ],

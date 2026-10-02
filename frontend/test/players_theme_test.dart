@@ -613,7 +613,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('full-ranking-sheet')), findsOneWidget);
-    expect(find.text('1Touch Ranking'), findsOneWidget);
+    expect(find.text('1touch Ranking'), findsOneWidget);
     expect(find.widgetWithText(TextField, 'Look for players'), findsOneWidget);
     final search = tester.widget<Container>(
       find.byKey(const ValueKey('full-ranking-search')),
