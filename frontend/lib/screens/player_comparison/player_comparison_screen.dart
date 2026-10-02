@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -13,6 +14,7 @@ import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
+import 'package:onetouch/features/player/player_image_cache.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/models/player_detail.dart';
