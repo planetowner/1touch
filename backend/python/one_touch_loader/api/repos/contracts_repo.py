@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from ..db import fetch_all_dict, fetch_one_dict
+from ...core.player_ranking import season_player_position_ids
 
 
 def get_team_contracts(team_id: int, season_id: int, *, descending: bool = False) -> dict | None:
     season = fetch_one_dict("""
-        SELECT s.is_current
+        SELECT s.is_current, s.name
         FROM team_seasons ts
         JOIN seasons s ON s.season_id=ts.season_id
         WHERE ts.team_id=%s AND ts.season_id=%s
@@ -45,7 +48,15 @@ def get_team_contracts(team_id: int, season_id: int, *, descending: bool = False
         # 한 선수가 시즌 중 부주장에서 주장으로 바뀌면 명단 배지에는 주장을 보여줘요.
         if player_id not in roles_by_player or assignment["leadership_role"] == "captain":
             roles_by_player[player_id] = assignment["leadership_role"]
+    positions = season_player_position_ids(
+        fetch_all_dict, season["name"], datetime.now(timezone.utc).replace(tzinfo=None),
+        player_ids=[row["player_id"] for row in rows],
+    )
     for row in rows:
+        # 출전 포지션을 계산할 수 없으면 팀 명단에 저장된 분류를 유지해요.
+        position = positions.get(row["player_id"])
+        if position is not None:
+            row["position_group_id"] = position
         row["leadership_role"] = roles_by_player.get(row["player_id"])
     return {"team_id": team_id, "season_id": season_id, "is_current": is_current,
             "players": rows, "leadership": leadership}
