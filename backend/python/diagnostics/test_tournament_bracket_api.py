@@ -25,7 +25,7 @@ class BracketApiTests(unittest.TestCase):
             CREATE TABLE fixtures (fixture_id INTEGER PRIMARY KEY,stage_id INTEGER);
             CREATE TABLE tournament_brackets (season_id INTEGER PRIMARY KEY,payload TEXT);
             INSERT INTO seasons VALUES (100,2,'2026/2027',1),(99,2,'2025/2026',0),(200,24,'2026/2027',1),
-                (98,2,'2023/2024',0);
+                (98,2,'2016/2017',0),(97,2,'2017/2018',0),(96,24,'2023/2024',0);
             INSERT INTO stages VALUES (4,100);
         ''')
         for name, method in (('fetch_all_dict', self.fetch_all), ('fetch_one_dict', self.fetch_one)):
@@ -75,12 +75,21 @@ class BracketApiTests(unittest.TestCase):
     def test_season_must_belong_to_competition_and_errors_are_explicit(self):
         for query, status in (('/2/bracket?season_id=200', 404), ('/24/bracket?season_id=100', 404),
                               ('/8/bracket', 400), ('/2/bracket?season_id=0', 422),
-                              ('/2/bracket?season_id=98', 400)):
+                              ('/2/bracket?season_id=98', 400), ('/24/bracket?season_id=96', 400)):
             self.assertEqual(self.client.get('/v1/competitions' + query).status_code, status)
         bracket = build([])
         bracket.update(season_id=99, season_name='2025/2026')
         self.save(bracket)
         self.assertEqual(self.client.get('/v1/competitions/2/bracket?season_id=99').json()['season_id'], 99)
+
+    def test_2017_ucl_can_be_loaded_without_lowering_other_cup_limits(self):
+        self.assertEqual(self.client.get('/v1/competitions/2/bracket?season_id=97').status_code, 503)
+        bracket = build([fixture(1, 1, 2, score=(3, 1))])
+        bracket.update(season_id=97, season_name='2017/2018')
+        self.save(bracket)
+        response = self.client.get('/v1/competitions/2/bracket?season_id=97')
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()['champion_team_id'], 1)
 
     def test_token_is_required_and_contract_is_in_openapi(self):
         self.app.dependency_overrides.clear()

@@ -9,7 +9,7 @@ import numpy as np
 
 from one_touch_loader.core.tournament_bracket import build_bracket
 from one_touch_loader.core.european_probability import ScoreModel, simulate_bracket_title, tie_winners
-from one_touch_loader.core.fixture_scores import score_pair, CURRENT_SCORE_TYPE_ID
+from one_touch_loader.core.fixture_scores import aggregate_winner, score_pair, CURRENT_SCORE_TYPE_ID
 from one_touch_loader.loaders import tournament_bracket_loader as loader
 
 
@@ -52,6 +52,64 @@ def actual_bracket(season_id):
 
 
 class TournamentBracketTests(unittest.TestCase):
+    def test_historical_ucl_uses_verified_winners_and_2020_single_legs(self):
+        records = json.loads((Path(__file__).parent / 'fixtures/ucl_historical_brackets.json').read_text())
+        expected = {
+            11414780: (14, 'away_goals'), 11840585: (6, 'away_goals'),
+            11855626: (6, 'away_goals'), 11989263: (79, 'away_goals'),
+            17687748: (652, 'away_goals'),
+            19380923: (591, 'penalties'), 19380927: (3468, 'penalties'),
+        }
+        checked = set()
+        for record in records:
+            original = copy.deepcopy(record)
+            bracket = build_bracket(**record)
+            self.assertEqual(record, original)
+            for stage in bracket['stages']:
+                for tie in stage['ties']:
+                    fid = int(tie['tie_id'].split(':')[1])
+                    if fid in expected:
+                        self.assertEqual((tie['winner_team_id'], tie['winner_basis']), expected[fid])
+                        checked.add(fid)
+            if record['season_id'] == 16029:
+                self.assertEqual(bracket['path_status'], 'complete')
+                self.assertEqual(bracket['champion_team_id'], 503)
+                self.assertEqual(len(bracket['edges']), 14)
+                self.assertEqual([len(s['ties']) for s in bracket['stages']], [8, 4, 2, 1])
+                self.assertTrue(all(t['format'] == 'single_match'
+                                    for s in bracket['stages'][1:] for t in s['ties']))
+        self.assertEqual(checked, set(expected))
+
+    def test_away_goals_stop_at_2021_and_unknown_conflicts_still_fail(self):
+        rows = [fixture(1, 1, 2, 'Semi-finals', leg='1/2', score=(2, 1)),
+                fixture(2, 2, 1, 'Semi-finals', leg='2/2', score=(1, 0), penalties=(3, 4), state=8)]
+        for season, winner, basis in (('2020/2021', 2, 'away_goals'), ('2021/2022', 1, 'penalties')):
+            b = build_bracket(competition_id=2, season_id=100, season_name=season,
+                              fixtures=rows, fetched_at='2026-10-02T00:00:00Z')
+            self.assertEqual((b['stages'][0]['ties'][0]['winner_team_id'],
+                              b['stages'][0]['ties'][0]['winner_basis']), (winner, basis))
+        for f in rows:
+            f.update(aggregate_id=99, aggregate={'winner_participant_id': 2})
+        with self.assertRaisesRegex(ValueError, 'Aggregate winner conflicts'):
+            build(rows)
+
+    def test_only_verified_old_aggregate_values_are_replaced(self):
+        for value in (8, 591, None, 999):
+            f = {'aggregate_id': 58611, 'aggregate': {'winner_participant_id': value}}
+            self.assertEqual(aggregate_winner(f), 591 if value == 8 else value)
+            self.assertEqual(f['aggregate']['winner_participant_id'], value)
+
+    def test_historical_support_is_limited_to_verified_competition_and_years(self):
+        for competition, season, allowed in ((2, '2017/2018', True), (2, '2016/2017', False),
+                                              (24, '2023/2024', False), (5, '2023/2024', False)):
+            args = dict(competition_id=competition, season_id=100, season_name=season,
+                        fixtures=[], fetched_at='2026-10-02T00:00:00Z')
+            if allowed:
+                self.assertEqual(build_bracket(**args)['status'], 'not_published')
+            else:
+                with self.assertRaisesRegex(ValueError, 'Brackets support seasons from'):
+                    build_bracket(**args)
+
     def test_results_reconstruct_aggregate_winner_not_second_leg_bet_winner(self):
         rows = [fixture(1, 1, 2, 'Semi-finals', leg='1/2', score=(1, 0)),
                 fixture(2, 2, 1, 'Semi-finals', leg='2/2', score=(1, 0), penalties=(3, 4), state=8),

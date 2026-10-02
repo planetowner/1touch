@@ -13,7 +13,7 @@ Sportmonks의 league_id는 1Touch DB의 competition_id와 같은 값으로 연�
 fixture.leg는 1/1, 1/2, 2/2 같은 원문을 그대로 저장해 경기 방식과 차전을
 대회별 규칙 없이 판단해요. aggregate는 Sportmonks가 제공한 경우에만 저장하고,
 누락된 대진을 팀·날짜·점수로 추정해 만들지 않아요. aggregate의
-winner_participant_id는 1Touch DB의 winner_team_id로 연결해요. aggregate의
+winner_participant_id는 공식 기록으로 확인한 오류를 공통 함수에서 보정해 winner_team_id로 연결해요. aggregate의
 name, fixture_ids, result, detail은 fixtures 관계와 점수로 조회할 수 있어
 중복 저장하지 않아요. 과거 aggregate의 우승 팀 ID가 현재 fixture 참가자 ID와
 다르면 추측해 매핑하지 않고 winner_team_id를 NULL로 저장해요.
@@ -31,6 +31,7 @@ from ..core.fixture_states import LIVE_STATE_IDS, COMPLETED_STATE_IDS
 from ..core.fixture_scores import (
     CURRENT_SCORE_TYPE_ID as SPORTMONKS_CURRENT_SCORE_TYPE_ID,
     PENALTY_SCORE_TYPE_ID as SPORTMONKS_PENALTY_SCORE_TYPE_ID,
+    aggregate_winner,
     score_pair as _score_pair,
 )
 from .teams_loader import (
@@ -326,7 +327,7 @@ def _normalize_fixture(
         # 실제 UCL·UECL·코파 델 레이 응답에는 2차전인데 aggregate_id가 없는
         # 사례도 있었어요. 팀과 날짜로 추정해 연결하면 원본과 자체 추론을
         # 구분할 수 없으므로 Sportmonks가 준 대진만 저장해요.
-        winner_team_id = fixture["aggregate"]["winner_participant_id"]
+        winner_team_id = aggregate_winner(fixture)
         aggregate_row = (
             aggregate_id,
             stage_id,
