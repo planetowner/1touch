@@ -83,13 +83,12 @@ class _StandingTabState extends State<StandingTab> {
   XgStandingRepository _xgRepositoryFor(StandingTab configuration) =>
       configuration.xgStandingRepository ?? apiXgStandingRepository;
 
+  // 챔스는 과거 원정 다득점까지 검증한 2017/18 시즌부터 열어요.
   bool get _knockoutBracketAvailable =>
       TournamentBracketRepository.supportedCompetitions
           .contains(selectedLeagueId) &&
-      (seasonRepository
-                  .findById(selectedSeasonId)
-                  ?.name
-                  .compareTo('2024/2025') ??
+      (seasonRepository.findById(selectedSeasonId)?.name.compareTo(
+                  selectedLeagueId == 2 ? '2017/2018' : '2024/2025') ??
               -1) >=
           0;
 

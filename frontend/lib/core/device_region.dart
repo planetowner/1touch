@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-/// 화면 언어와 별도로 로그인 추천에 쓸 기기 지역을 읽어요.
+/// 화면 언어와 별도로 로그인 추천과 포인트 적립에 쓸 기기 지역을 읽어요.
 class DeviceRegion {
   const DeviceRegion();
 

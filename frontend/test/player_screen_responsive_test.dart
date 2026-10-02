@@ -726,8 +726,8 @@ void main() {
               teamHeader.style?.color,
               dark ? app_style.AppPalette.white : app_style.AppPalette.black,
             );
-            expect(find.text('UCL'), findsOneWidget);
-            expect(find.text('Champions League'), findsNothing);
+            expect(find.text('UCL'), findsNothing);
+            expect(find.text('Champions League'), findsOneWidget);
             expect(find.text('PERSONAL'), findsNothing);
             expect(
                 find.text('Team trophy records unavailable'), findsOneWidget);
