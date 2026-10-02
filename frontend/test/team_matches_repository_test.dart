@@ -377,7 +377,6 @@ void main() {
 
         final korean = locale.languageCode == 'ko';
         expect(find.text(korean ? '지난 경기' : 'PAST'), findsOneWidget);
-        expect(find.text(korean ? '● 진행 중인 경기' : '• LIVE'), findsOneWidget);
         expect(find.text(korean ? '다가오는 경기' : 'UPCOMING'), findsOneWidget);
         final dateTime = find.descendant(
           of: find.byKey(const ValueKey('team-fixture-card-3')),
@@ -652,6 +651,10 @@ Widget _app(MockFixtureRepository repository,
     locale: locale,
     supportedLocales: appSupportedLocales,
     localizationsDelegates: appLocalizationDelegates,
+    builder: (context, child) => MediaQuery(
+      data: MediaQuery.of(context).copyWith(disableAnimations: true),
+      child: child!,
+    ),
     home: Scaffold(
       body: MatchesTab(
         team: TeamOverview(

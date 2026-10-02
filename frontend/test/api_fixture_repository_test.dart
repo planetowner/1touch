@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/models/fixture.dart';
 
 void main() {
@@ -168,6 +170,181 @@ void main() {
     expect(requestCount, 0);
   });
 
+  test('restores a team page after recreation and separates query keys',
+      () async {
+    final store = MemoryLocalCacheStore();
+    var requests = 0;
+    ApiFixtureRepository repository() => ApiFixtureRepository(
+          api: ApiClient(
+            client: MockClient((request) async {
+              requests++;
+              final offset = int.parse(request.url.queryParameters['offset']!);
+              return http.Response(
+                jsonEncode({
+                  'items': [_fixtureJson(fixtureId: 100 + offset)],
+                  'limit': 1,
+                  'offset': offset,
+                }),
+                200,
+              );
+            }),
+            baseUri: Uri.parse('http://localhost:8000/v1/'),
+            requestHeaders: () => const {},
+          ),
+          cacheStore: store,
+        );
+
+    await repository().loadForTeam(8, status: FixtureStatus.upcoming, limit: 1);
+    final reader = repository();
+    final restored =
+        await reader.loadForTeam(8, status: FixtureStatus.upcoming, limit: 1);
+    final nextPage = await reader.loadForTeam(
+      8,
+      status: FixtureStatus.upcoming,
+      limit: 1,
+      offset: 1,
+    );
+
+    expect(restored.single.fixtureId, 100);
+    expect(nextPage.single.fixtureId, 101);
+    expect(requests, 2);
+    expect(
+        reader.cachedForTeamMatches(8,
+            status: FixtureStatus.upcoming, limit: 1),
+        same(restored));
+  });
+
+  test('keeps an expired page visible during one background refresh', () async {
+    final store = _AgedCacheStore();
+    await store.write(
+      LocalCacheKeys.teamMatches(8, 'upcoming', null, null, 1, 0),
+      {
+        'items': [_fixtureJson(fixtureId: 10)],
+        'limit': 1,
+        'offset': 0
+      },
+    );
+    final response = Completer<http.Response>();
+    var requests = 0;
+    final repository = ApiFixtureRepository(
+      api: ApiClient(
+        client: MockClient((_) {
+          requests++;
+          return response.future;
+        }),
+        baseUri: Uri.parse('http://localhost:8000/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final stale = await repository.loadForTeam(8,
+        status: FixtureStatus.upcoming, limit: 1);
+    final duplicate = await repository.loadForTeam(8,
+        status: FixtureStatus.upcoming, limit: 1);
+    await Future<void>.delayed(Duration.zero);
+    expect(stale.single.fixtureId, 10);
+    expect(duplicate, same(stale));
+    expect(requests, 1);
+
+    final updated = Completer<void>();
+    repository.cachedTeamMatches.addListener(() {
+      if (repository
+                  .cachedForTeamMatches(8,
+                      status: FixtureStatus.upcoming, limit: 1)
+                  ?.single
+                  .fixtureId ==
+              11 &&
+          !updated.isCompleted) {
+        updated.complete();
+      }
+    });
+    response.complete(http.Response(
+      jsonEncode({
+        'items': [_fixtureJson(fixtureId: 11)],
+        'limit': 1,
+        'offset': 0
+      }),
+      200,
+    ));
+    await updated.future;
+    expect(
+        repository
+            .cachedForTeamMatches(8, status: FixtureStatus.upcoming, limit: 1)!
+            .single
+            .fixtureId,
+        11);
+  });
+
+  test('drops only a corrupt team page and recovers from the API', () async {
+    final store = MemoryLocalCacheStore();
+    final key = LocalCacheKeys.teamMatches(8, 'past', null, null, 1, 0);
+    await store.write(key, {'items': 'bad', 'limit': 1, 'offset': 0});
+    await store.write('unrelated', {'value': true});
+    var requests = 0;
+    final repository = ApiFixtureRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response(
+            jsonEncode({
+              'items': [_fixtureJson()],
+              'limit': 1,
+              'offset': 0
+            }),
+            200,
+          );
+        }),
+        baseUri: Uri.parse('http://localhost:8000/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    expect(
+        await repository.loadForTeam(8, status: FixtureStatus.past, limit: 1),
+        hasLength(1));
+    expect(requests, 1);
+    expect((await store.read(key))!.payload, isA<Map>());
+    expect(await store.read('unrelated'), isNotNull);
+  });
+
+  test('always rechecks a cached live page and retains it when offline',
+      () async {
+    final store = MemoryLocalCacheStore();
+    final live = {..._fixtureJson(fixtureId: 12), 'status': 'live'};
+    await store.write(
+      LocalCacheKeys.teamMatches(8, 'live', null, null, 1, 0),
+      {
+        'items': [live],
+        'limit': 1,
+        'offset': 0
+      },
+    );
+    var requests = 0;
+    final repository = ApiFixtureRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response('Offline', 503);
+        }),
+        baseUri: Uri.parse('http://localhost:8000/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final cached =
+        await repository.loadForTeam(8, status: FixtureStatus.live, limit: 1);
+    await Future<void>.delayed(Duration.zero);
+    expect(cached.single.fixtureId, 12);
+    expect(requests, 1);
+    expect(
+        repository.cachedForTeamMatches(8,
+            status: FixtureStatus.live, limit: 1),
+        same(cached));
+  });
+
   test('requests, maps, and caches fixture detail', () async {
     final client = MockClient((request) async {
       expect(request.method, 'GET');
@@ -193,6 +370,83 @@ void main() {
     expect(detail.expectedGoals?.homeXg, 1.75);
     expect(detail.pressure.single.pressure, 0.78);
     expect(repository.findById(19712345), same(detail.fixture));
+  });
+
+  test('restores detail after recreation and explicit refresh bypasses TTL',
+      () async {
+    final store = MemoryLocalCacheStore();
+    var requests = 0;
+    ApiFixtureRepository repository() => ApiFixtureRepository(
+          api: ApiClient(
+            client: MockClient((_) async {
+              requests++;
+              return http.Response(jsonEncode(_fixtureDetailJson()), 200);
+            }),
+            baseUri: Uri.parse('http://localhost:8000/v1/'),
+            requestHeaders: () => const {},
+          ),
+          cacheStore: store,
+        );
+
+    await repository().loadDetail(19712345);
+    final reader = repository();
+    final restored = await reader.loadDetail(19712345);
+    expect(restored.venueName, 'Anfield');
+    expect(reader.cachedDetail(19712345), same(restored));
+    expect(requests, 1);
+
+    await reader.refreshDetail(19712345);
+    expect(requests, 2);
+  });
+
+  test('keeps expired detail when its background refresh fails', () async {
+    final store = _AgedCacheStore();
+    await store.write(
+        LocalCacheKeys.fixtureDetail(19712345), _fixtureDetailJson());
+    var requests = 0;
+    final repository = ApiFixtureRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response('Offline', 503);
+        }),
+        baseUri: Uri.parse('http://localhost:8000/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final stale = await repository.loadDetail(19712345);
+    expect(stale.venueName, 'Anfield');
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, 1);
+    expect(repository.cachedDetail(19712345), same(stale));
+  });
+
+  test('always rechecks restored live detail', () async {
+    final store = MemoryLocalCacheStore();
+    await store.write(LocalCacheKeys.fixtureDetail(19712345), {
+      ..._fixtureDetailJson(),
+      'status': 'live',
+    });
+    var requests = 0;
+    final repository = ApiFixtureRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response('Offline', 503);
+        }),
+        baseUri: Uri.parse('http://localhost:8000/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final restored = await repository.loadDetail(19712345);
+    await Future<void>.delayed(Duration.zero);
+    expect(restored.fixture.status, FixtureStatus.live);
+    expect(requests, 1);
+    expect(repository.cachedDetail(19712345), same(restored));
   });
 
   test('rejects a mismatched fixture-detail identity', () async {
@@ -304,6 +558,35 @@ void main() {
     );
     expect(requestCount, 0);
   });
+}
+
+class _AgedCacheStore implements LocalCacheStore {
+  final MemoryLocalCacheStore _delegate = MemoryLocalCacheStore();
+
+  @override
+  Future<LocalCacheRecord?> read(String key,
+      {String scope = LocalCacheScopes.global, int schemaVersion = 1}) async {
+    final record =
+        await _delegate.read(key, scope: scope, schemaVersion: schemaVersion);
+    if (record == null) return null;
+    return LocalCacheRecord(
+      payload: record.payload,
+      savedAt: DateTime.now().toUtc().subtract(const Duration(days: 8)),
+      schemaVersion: record.schemaVersion,
+    );
+  }
+
+  @override
+  Future<void> write(String key, Object payload,
+          {String scope = LocalCacheScopes.global, int schemaVersion = 1}) =>
+      _delegate.write(key, payload, scope: scope, schemaVersion: schemaVersion);
+
+  @override
+  Future<void> delete(String key, {String scope = LocalCacheScopes.global}) =>
+      _delegate.delete(key, scope: scope);
+
+  @override
+  Future<void> clearScope(String scope) => _delegate.clearScope(scope);
 }
 
 Map<String, dynamic> _fixtureJson({
