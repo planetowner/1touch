@@ -32,7 +32,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Probability'), findsOneWidget);
-    expect(find.text('32'), findsOneWidget);
+    expect(find.text('32.4'), findsOneWidget);
     expect(find.text('Chances to Win\nLeague Trophy'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('team-probability-gradient')),

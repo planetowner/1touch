@@ -178,7 +178,7 @@ def prepare_runs(fixtures, histories, report, card_fixtures, *, observed_at, sim
             'model': report['forecast_model']})
         previous = (previous_by_season or {}).get(season_id)
         if common.calculation_unchanged(previous, model_id=report['model_id'], input_sha256=fingerprint,
-                outcome_kind=OUTCOME_KIND, simulations=simulations, seed=seed, refresh_input_version=1):
+                outcome_kind=OUTCOME_KIND, simulations=simulations, seed=seed, refresh_input_version=2):
             statuses.append({'season_id': season_id, 'status': 'unchanged', 'teams': len(teams)})
             continue
         if drawn:
@@ -197,7 +197,7 @@ def prepare_runs(fixtures, histories, report, card_fixtures, *, observed_at, sim
                 'elo': elos[t], 'event': TITLE_EVENTS[competition_id], **estimates[t],
                 'played': len(played_at[t]),
                 'previous_fixture_at': max(played_at[t]).isoformat() if played_at[t] else None} for t in teams}}
-        run.update(input_sha256=fingerprint, refresh_input_version=1)
+        run.update(input_sha256=fingerprint, refresh_input_version=2)
         runs.append(run)
         statuses.append({'season_id': season_id, 'status': 'updated', 'teams': len(teams)})
     return runs, statuses

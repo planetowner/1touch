@@ -110,6 +110,77 @@ class ProbabilityApiTests(unittest.TestCase):
         self.assertIsNone(body["projected_points"]["change_points"])
         self.context.assert_not_called()
 
+    def test_cards_are_reselected_when_domestic_and_european_probabilities_change(self):
+        cases = [
+            ({'league_winner': .00036, 'top_4': .15165, 'top_6': .5,
+              'direct_relegation': .00101, 'relegation_playoff': 0}, .01639,
+             ['top_4', 'ucl_winner']),
+            ({'league_winner': .001, 'top_4': .01, 'top_6': .5,
+              'direct_relegation': .4, 'relegation_playoff': .3}, .0001,
+             ['direct_relegation', 'relegation_playoff']),
+            ({'league_winner': 0, 'top_4': 1, 'top_6': 1,
+              'direct_relegation': .2, 'relegation_playoff': 0}, 0,
+             ['top_4', 'direct_relegation']),
+            ({'league_winner': 1, 'top_4': 1, 'top_6': 1,
+              'direct_relegation': 0, 'relegation_playoff': 0}, 1, ['league_winner', 'ucl_winner']),
+        ]
+        for index, (probabilities, european_probability, expected) in enumerate(cases):
+            with self.subTest(expected=expected):
+                run = deepcopy(self.latest)
+                run['as_of'] = f'2026-09-{11 + index}T00:00:00Z'
+                team = run['teams']['1']
+                for event in team['events']:
+                    event['probability'] = probabilities[event['event']]
+                # 저장된 카드 대신 조회 시점의 국내·유럽 확률로 다시 선택하는지 확인해요.
+                team['cards'] = []
+                self.add_run(f'updated-{index}', run)
+                self.add_european_run(2, 'ucl_winner', run_id=f'europe-{index}',
+                                     as_of=f'2026-09-{21 + index} 12:00:00',
+                                     probability=european_probability)
+                response = self.client.get('/v1/teams/1/probability')
+                self.assertEqual(response.status_code, 200, response.text)
+                body = response.json()
+                self.assertEqual([card['event'] for card in body['cards']], expected)
+                self.assertEqual(len(body['events']), 6)
+                for card in body['cards']:
+                    event = next(e for e in body['events'] if e['event'] == card['event'])
+                    self.assertEqual(card['probability'], event['probability'])
+                    self.assertEqual(card['change_pp'], event['change_pp'])
+                    self.assertGreaterEqual(card['entropy'], 0)
+                    self.assertEqual(card['resolution'], 'unresolved')
+
+    def test_proven_league_outcomes_are_exposed_without_trusting_sample_endpoints(self):
+        run = deepcopy(self.latest)
+        run['as_of'] = '2026-09-11T00:00:00Z'
+        for key, team in run['teams'].items():
+            team.update(current_points=100 - int(key) * 4, maximum_points=103 - int(key) * 4)
+        self.add_run('proven', run)
+        for team_id, event in ((1, 'league_winner'), (16, 'relegation_playoff'), (17, 'direct_relegation')):
+            with self.subTest(team_id=team_id):
+                response = self.client.get(f'/v1/teams/{team_id}/probability')
+                self.assertEqual(response.status_code, 200, response.text)
+                card = response.json()['cards'][0]
+                self.assertEqual((card['event'], card['probability'], card['resolution']), (event, 1, 'certain'))
+        body = self.client.get('/v1/teams/17/probability').json()
+        title = next(e for e in body['events'] if e['event'] == 'top_4')
+        self.assertEqual((title['probability'], title['resolution']), (0, 'impossible'))
+
+    def test_finished_league_uses_matching_official_rank_and_keeps_cards(self):
+        self.db.execute('CREATE TABLE standings (season_id INTEGER,team_id INTEGER,position INTEGER,'
+                        'points INTEGER,won INTEGER,draw INTEGER,lost INTEGER)')
+        run = deepcopy(self.latest)
+        run.update(as_of='2026-09-11T00:00:00Z', remaining_fixtures=0)
+        for team in run['teams'].values():
+            team.update(current_points=50, maximum_points=50, played=34)
+        self.add_run('finished', run)
+        self.db.execute('INSERT INTO standings VALUES (1,1,1,50,10,20,4)')
+        body = self.client.get('/v1/teams/1/probability').json()
+        self.assertEqual(len(body['cards']), 2)
+        self.assertEqual((body['cards'][0]['event'], body['cards'][0]['resolution']), ('league_winner', 'certain'))
+        self.db.execute('UPDATE standings SET points=49')
+        body = self.client.get('/v1/teams/1/probability').json()
+        self.assertTrue(all(e['resolution'] == 'unresolved' for e in body['events']))
+
     def test_observed_run_compares_to_pre_match_snapshot_not_daily_history_or_post_match(self):
         post_match = deepcopy(self.latest)
         post_match.update(as_of='2026-09-09T16:00:00Z', cutoff='observed_state', history_kind='observed_calculation')
@@ -216,7 +287,8 @@ class ProbabilityApiTests(unittest.TestCase):
             run_id, 1, json.dumps(team)))
 
     def test_european_changes_use_latest_snapshot_before_own_match_for_all_competitions(self):
-        for competition, event, probability in ((2, 'ucl_winner', .10), (5, 'uel_winner', .25),
+        # 변동량을 검증할 유럽 우승 카드가 엔트로피 상위 2개에 드는 확률을 써요.
+        for competition, event, probability in ((2, 'ucl_winner', .15), (5, 'uel_winner', .25),
                                                  (2286, 'uecl_winner', .20)):
             with self.subTest(competition=competition):
                 self.add_european_run(competition, event, run_id='early', as_of='2026-09-18 12:00:00',

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import copy
+from collections import Counter
 from datetime import date, datetime, timezone
 from itertools import permutations
 import unittest
 
-from one_touch_loader.core.probability_forecast import forecast_day, select_cards, league_events
+from one_touch_loader.core.probability_forecast import forecast_day, select_cards, league_events, resolve_league_events
+from one_touch_loader.core.probability import position_bounds
 from one_touch_loader.loaders.probability_training import build_dataset, train_and_validate, BIG5_IDS
 from one_touch_loader.loaders.probability_loader import reconstruct_betting_runs
 
@@ -108,14 +110,17 @@ class ForecastPipelineTests(unittest.TestCase):
         self.assertEqual(result["remaining_fixtures"], 306)
         self.assertNotEqual(result["teams"]["1"]["what_if"]["fixture"]["fixture_id"], 1)
 
-    def test_european_participant_gets_europe_and_most_relevant_league_card(self):
+    def test_european_title_is_not_mandatory_and_top_six_is_not_a_card_candidate(self):
         events = [{"event": name, "competition_id": competition, "category": category, "probability": p}
                   for name, competition, category, p in [("ucl_winner", 2, "TITLE", 0),
                      ("league_winner", 8, "TITLE", .2), ("top_4", 8, "LEAGUE_FINISH", .9),
                      ("top_6", 8, "LEAGUE_FINISH", .5),
                      ("direct_relegation", 8, "RELEGATION", .01)]]
-        self.assertEqual([e["event"] for e in select_cards(events)],
-                         ["ucl_winner", "league_winner"])
+        for probability in (0, .01):
+            with self.subTest(european_probability=probability):
+                events[0]["probability"] = probability
+                self.assertEqual([e["event"] for e in select_cards(events)],
+                                 ["top_4", "league_winner"])
 
     def test_non_european_team_gets_top_four_and_relegation(self):
         events = [{"event": name, "competition_id": 8, "category": category, "probability": p}
@@ -125,13 +130,108 @@ class ForecastPipelineTests(unittest.TestCase):
         self.assertEqual([e["event"] for e in select_cards(events)],
                          ["top_4", "direct_relegation"])
 
-    def test_non_european_title_contender_gets_top_four_and_league_title(self):
+    def test_domestic_cards_are_displayed_by_probability_after_entropy_selection(self):
         events = [{"event": name, "competition_id": 8, "category": category, "probability": p}
                   for name, category, p in [("league_winner", "TITLE", .35),
                      ("top_4", "LEAGUE_FINISH", .75),
                      ("direct_relegation", "RELEGATION", .01)]]
         self.assertEqual([e["event"] for e in select_cards(events)],
                          ["top_4", "league_winner"])
+
+    def test_card_selection_matches_spreadsheet_examples(self):
+        # 엑셀의 실제 확률에 새 0% 보완·표시 순서 규칙을 적용해요.
+        cases = [
+            ("Aston Villa", 8, {"league_winner": .00036, "top_4": .15165,
+                               "direct_relegation": .00101, "ucl_winner": .01639},
+             ["top_4", "ucl_winner"]),
+            ("Elversberg", 82, {"league_winner": .00001, "top_4": .0065,
+                               "direct_relegation": .07451, "relegation_playoff": .06184},
+             ["direct_relegation", "relegation_playoff"]),
+            ("Frankfurt", 82, {"league_winner": .00002, "top_4": .03514,
+                              "direct_relegation": .01695, "relegation_playoff": .01958},
+             ["top_4", "relegation_playoff"]),
+            ("Coventry", 8, {"league_winner": 0, "top_4": 0, "direct_relegation": .79937},
+             ["direct_relegation", "top_4"]),
+        ]
+        for team, competition, probabilities, expected in cases:
+            with self.subTest(team=team):
+                events = [{"event": name, "competition_id": 2 if name == "ucl_winner" else competition,
+                           "probability": probability} for name, probability in probabilities.items()]
+                self.assertEqual([e["event"] for e in select_cards(events)], expected)
+
+    def test_sample_endpoints_remain_candidates_and_event_metadata_is_preserved(self):
+        events = [{"event": "league_winner", "competition_id": 8, "probability": 0},
+                  {"event": "top_4", "competition_id": 8, "probability": 1},
+                  {"event": "direct_relegation", "competition_id": 8, "probability": .000001,
+                   "category": "RELEGATION", "change_pp": -.01}]
+        original = copy.deepcopy(events)
+        cards = select_cards(events)
+        self.assertEqual([e['event'] for e in cards], ['top_4', 'direct_relegation'])
+        self.assertGreater(cards[1]["entropy"], 0)
+        self.assertEqual({k: v for k, v in cards[1].items() if k != "entropy"}, events[2])
+        self.assertEqual(events, original)
+        self.assertEqual([e['event'] for e in select_cards(events[:2])], ['top_4', 'league_winner'])
+        self.assertEqual(select_cards([]), [])
+
+    def test_equal_entropy_keeps_deterministic_order_and_respects_limit(self):
+        events = [{"event": "top_4", "competition_id": 8, "probability": .5},
+                  {"event": "league_winner", "competition_id": 8, "probability": .5},
+                  {"event": "ucl_winner", "competition_id": 2, "probability": .5}]
+        for ordered in permutations(events):
+            self.assertEqual([e["event"] for e in select_cards(list(ordered))],
+                             ["league_winner", "ucl_winner"])
+        self.assertEqual(select_cards(events, limit=1), [{**events[2], "entropy": 1}])
+        self.assertEqual(select_cards(events, limit=0), [])
+
+    def test_zero_probability_companion_uses_nearest_domestic_rank_only_after_entropy(self):
+        for competition, expected in ((8, 'top_4'), (82, 'relegation_playoff'), (301, 'relegation_playoff')):
+            events = league_events(competition, [])
+            next(e for e in events if e['event'] == 'direct_relegation')['probability'] = .61424
+            self.assertEqual([e['event'] for e in select_cards(events)], ['direct_relegation', expected])
+            next(e for e in events if e['event'] == 'league_winner')['probability'] = .000001
+            self.assertEqual([e['event'] for e in select_cards(events)], ['direct_relegation', 'league_winner'])
+
+    def test_european_card_stays_right_even_with_higher_probability(self):
+        for event, competition in (('ucl_winner', 2), ('uel_winner', 5), ('uecl_winner', 2286)):
+            events = [{'event': 'top_4', 'competition_id': 8, 'probability': .1},
+                      {'event': event, 'competition_id': competition, 'probability': .4}]
+            self.assertEqual([e['event'] for e in select_cards(events)], ['top_4', event])
+
+    def test_mathematical_resolution_does_not_use_simulation_frequency(self):
+        points = {t: 100 - 4 * t for t in range(1, 19)}
+        bounds = position_bounds(points, {t: p + 3 for t, p in points.items()})
+        for team, expected in ((1, 'league_winner'), (4, 'top_4'), (16, 'relegation_playoff'),
+                               (17, 'direct_relegation')):
+            with self.subTest(team=team):
+                events = resolve_league_events(league_events(82, []), 82, bounds[team])
+                event = next(e for e in events if e['event'] == expected)
+                self.assertEqual((event['resolution'], event['probability']), ('certain', 1))
+        top_four = next(e for e in resolve_league_events(league_events(82, []), 82, bounds[5])
+                        if e['event'] == 'top_4')
+        self.assertEqual(top_four['resolution'], 'impossible')
+        ties = position_bounds(dict.fromkeys(range(18), 50), dict.fromkeys(range(18), 50))
+        self.assertEqual(ties[0], (1, 18))
+        unresolved = resolve_league_events(league_events(82, [{'position': 1, 'probability': 1}]), 82, ties[0])
+        self.assertTrue(all(e['resolution'] == 'unresolved' for e in unresolved))
+
+    def test_point_bounds_contain_every_actual_result_of_remaining_fixtures(self):
+        # 같은 경기가 양 팀 승점에 영향을 줘도, 증명한 범위 밖의 결과가 나오면 안 돼요.
+        from itertools import product
+        points = {1: 8, 2: 6, 3: 3, 4: 0}
+        fixtures = [(1, 2), (2, 3), (3, 4)]
+        remaining = Counter(t for pair in fixtures for t in pair)
+        bounds = position_bounds(points, {t: p + 3 * remaining[t] for t, p in points.items()})
+        for outcomes in product(((3, 0), (1, 1), (0, 3)), repeat=len(fixtures)):
+            final = points.copy()
+            for (home, away), (h, a) in zip(fixtures, outcomes):
+                final[home] += h
+                final[away] += a
+            for order in permutations(final):
+                if [final[t] for t in order] != sorted(final.values(), reverse=True):
+                    continue
+                for rank, team in enumerate(order, 1):
+                    self.assertLessEqual(bounds[team][0], rank)
+                    self.assertGreaterEqual(bounds[team][1], rank)
 
 
 class TrainingPipelineTests(unittest.TestCase):
