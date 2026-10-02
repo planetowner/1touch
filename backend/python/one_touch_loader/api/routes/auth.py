@@ -1,7 +1,7 @@
 from typing import Literal
 from fastapi import APIRouter, Depends, Query, Request
 from ..deps import get_token, get_user_id
-from ..repos import auth_repo
+from ..repos import auth_repo, users_repo
 from ..schemas.users import (
     AccessTokenBody, AppleLoginBody, CodeBody, EmailCodeBody, EmailChangeRequestBody, EmailChangeConfirmBody, GoogleLoginBody,
     PasswordLoginBody, RegisterEmailBody, RegistrationAvailabilityBody, ResetPasswordBody,
@@ -87,6 +87,18 @@ def google_login(body: GoogleLoginBody, find_username: bool = False):
 @router.post("/auth/apple", dependencies=[Depends(auth_request_limit)])
 def apple_login(body: AppleLoginBody, find_username: bool = False):
     return _social_response("apple", social_login.apple_subject(body.code, body.client_id, body.nonce), find_username)
+
+
+@router.put("/users/me/social-accounts/google", dependencies=[Depends(auth_request_limit)])
+def connect_google(body: GoogleLoginBody, user_id: int = Depends(get_user_id)):
+    return {"social_accounts": users_repo.connect_social_account(
+        user_id, "google", social_login.google_subject(body.id_token))}
+
+
+@router.put("/users/me/social-accounts/apple", dependencies=[Depends(auth_request_limit)])
+def connect_apple(body: AppleLoginBody, user_id: int = Depends(get_user_id)):
+    return {"social_accounts": users_repo.connect_social_account(
+        user_id, "apple", social_login.apple_subject(body.code, body.client_id, body.nonce))}
 
 
 @router.post("/auth/kakao", dependencies=[Depends(auth_request_limit)])

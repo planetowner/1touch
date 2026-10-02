@@ -29,6 +29,33 @@ def lock_user(cur, user_id: int) -> dict:
     return row
 
 
+def list_social_accounts(user_id: int) -> list[str]:
+    return [row["provider"] for row in fetch_all_dict(
+        "SELECT provider FROM user_social_identities WHERE user_id=%s ORDER BY provider", (user_id,))]
+
+
+def connect_social_account(user_id: int, provider: Literal["google", "apple"], subject: str) -> list[str]:
+    try:
+        with transaction() as conn, conn.cursor(dictionary=True) as cur:
+            lock_user(cur, user_id)
+            cur.execute("SELECT subject FROM user_social_identities WHERE user_id=%s AND provider=%s",
+                        (user_id, provider))
+            identity = cur.fetchone()
+            if identity is not None:
+                if identity["subject"] != subject:
+                    raise HTTPException(409, "A different identity is already linked for this provider")
+            else:
+                # 검증된 공급자 ID만 현재 회원에 연결해요. 이메일로 합치거나 기존 연결을 옮기지 않아요.
+                cur.execute("INSERT INTO user_social_identities (provider,subject,user_id) VALUES (%s,%s,%s)",
+                            (provider, subject, user_id))
+    except IntegrityError as exc:
+        if exc.errno != 1062:
+            raise
+        # 다른 회원이 이미 연결했거나 동시에 연결한 소셜 계정은 가져오지 않아요.
+        raise HTTPException(409, "Social identity is already linked to another account") from exc
+    return list_social_accounts(user_id)
+
+
 def profile_complete(user: dict) -> bool:
     # 로그인 수단과 관계없이 닉네임을 정하면 프로필 입력이 끝나요.
     return bool(user["display_name"])
@@ -159,5 +186,15 @@ def delete_social_account(provider: Literal["apple", "kakao"], subject: str, eve
         cur.execute("SELECT user_id FROM users WHERE user_id=%s FOR UPDATE", (user_id,))
         if cur.fetchone() is None:
             return
-        # 현재 소셜 가입은 공급자별 독립 계정이에요. 이미 연결이 해제된 공급자에 다시 탈퇴 요청하지 않아요.
+        cur.execute("DELETE FROM user_social_identities WHERE provider=%s AND subject=%s AND user_id=%s",
+                    (provider, subject, user_id))
+        cur.execute("SELECT user_id FROM user_email_credentials WHERE user_id=%s", (user_id,))
+        has_email = cur.fetchone() is not None
+        cur.execute("SELECT provider FROM user_social_identities WHERE user_id=%s LIMIT 1", (user_id,))
+        has_other_social = cur.fetchone() is not None
+        if has_email or has_other_social:
+            # 다른 로그인 수단이 남아 있으면 회원·게시물을 유지해요. 해제 전 세션은 다시 인증받아요.
+            cur.execute("DELETE FROM user_sessions WHERE user_id=%s", (user_id,))
+            return
+        # 마지막 로그인 수단이 해제됐을 때만 기존 탈퇴 규칙을 적용해요.
         _delete_account_rows(cur, user_id)
