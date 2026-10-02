@@ -56,6 +56,10 @@ docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compo
 docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compose.yaml" exec -T db sh -c \
   'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --execute="SELECT user_id,scope,subject_id,preferences FROM user_notification_preferences LIMIT 0; SELECT notification_id,user_id,event_key,kind,scope,subject_ids,payload,fixture_id,post_id,comment_id,actor_id,created_at,expires_at,read_at,cancelled_at FROM user_notifications LIMIT 0; SELECT device_id,user_id,session_token_hash,token_hash,token,platform,locale FROM user_push_devices LIMIT 0; SELECT notification_id,device_id,status,attempts,next_attempt_at,last_error FROM notification_push_deliveries LIMIT 0; SELECT fixture_id,state_id,seen_keys,current_keys,sampled_at FROM notification_fixture_state LIMIT 0"'
 
+# 최초 배포 전에 create_player_indicator_snapshots.sql을 적용해요. 없으면 API 교체 전에 멈춰요.
+docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compose.yaml" exec -T db sh -c \
+  'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --execute="SELECT id,input_sha256,as_of,calculated_at,checked_at,player_count,read_seconds,calculation_seconds FROM player_indicator_refresh LIMIT 0; SELECT player_id,team_id,season_id,payload FROM player_indicator_snapshots LIMIT 0"'
+
 if [[ ! -f "$runtime_directory/.env.production" ]]; then
   # PowerShell은 줄바꿈 전까지 안내를 전달하지 않아, 암호 입력 전에 줄을 마쳐요.
   printf '\nNew API collaboration password:\n' >/dev/tty
@@ -91,7 +95,7 @@ else
 fi
 
 # 기존 compose.yaml과 .env를 유지해 같은 DB 볼륨과 암호를 계속 사용해요.
-for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-match-refresh.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh sync-current-season.sh sync-calendars.sh sync-notifications.sh; do
+for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-match-refresh.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh sync-current-season.sh sync-calendars.sh sync-notifications.sh sync-player-indicators.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
 # 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
@@ -104,6 +108,12 @@ ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm
 # Probability 적재는 별도 명령으로 끝내고, 배포는 실제 저장 자료의 조회만 확인해요.
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m diagnostics.check_probability
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m diagnostics.check_highlights
+# 구버전 예약 작업을 멈추고 첫 결과를 준비한 뒤 API를 바꿔요.
+if systemctl is-active --quiet onetouch-player-indicators-sync.timer; then
+  systemctl stop onetouch-player-indicators-sync.timer onetouch-player-indicators-sync.service
+fi
+ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m one_touch_loader.loaders.player_indicators_loader --apply
+ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m diagnostics.check_player_indicators
 bash backup-db.sh
 install -d -m 755 -o 1001 -g 1001 /opt/1touch/backend/logs
 
@@ -138,7 +148,7 @@ install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.service" /etc
 install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.timer" /etc/systemd/system/onetouch-opta-sync.timer
 install -m 644 "$release_directory/deploy/vultr/onetouch-probability-sync.service" /etc/systemd/system/onetouch-probability-sync.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-probability-sync.timer" /etc/systemd/system/onetouch-probability-sync.timer
-for task in standings understat; do
+for task in standings understat player-indicators; do
   for unit in service timer; do
     install -m 644 "$release_directory/deploy/vultr/onetouch-$task-sync.$unit" "/etc/systemd/system/onetouch-$task-sync.$unit"
   done
@@ -177,7 +187,7 @@ status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}
 curl --fail --silent --show-error --retry 12 --retry-all-errors --retry-delay 5 --max-time 10 \
   'https://1touch.football/' --output "$transfer_directory/served-introduction.html"
 cmp "$runtime_directory/site/index.html" "$transfer_directory/served-introduction.html"
-for task in standings understat opta probability; do
+for task in standings understat opta probability player-indicators; do
   systemctl enable "onetouch-$task-sync.timer"
   systemctl restart "onetouch-$task-sync.timer"
   systemctl is-enabled "onetouch-$task-sync.timer"
@@ -193,4 +203,5 @@ systemctl list-timers onetouch-community-cleanup.timer --no-pager
 systemctl list-timers onetouch-opta-sync.timer --no-pager
 systemctl list-timers onetouch-probability-sync.timer --no-pager
 systemctl list-timers onetouch-highlights-sync.timer --no-pager
+systemctl list-timers onetouch-player-indicators-sync.timer --no-pager
 echo 'Public introduction, HTTPS, protected docs, API/database health and daily SQL backup verified.'
