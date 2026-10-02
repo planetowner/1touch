@@ -29,6 +29,7 @@ void main() {
         MaterialApp(
           theme: app_style.whitetheme,
           home: Profile(
+            loadPointBalance: () async => 1430,
             activityRepository: const StubProfileActivityRepository(),
             followingController: PlayerFollowingController()
               ..loaded = true
@@ -52,7 +53,7 @@ void main() {
           of: find.byKey(const ValueKey('profile-stat-card')),
           matching: find.text('0'),
         ),
-        findsNWidgets(3),
+        findsNWidgets(2),
       );
       expect(
         tester
@@ -163,6 +164,7 @@ void main() {
       MaterialApp(
         theme: app_style.darktheme,
         home: Profile(
+          loadPointBalance: () async => 1430,
           activityRepository: const StubProfileActivityRepository(),
           followingController: PlayerFollowingController()
             ..loaded = true

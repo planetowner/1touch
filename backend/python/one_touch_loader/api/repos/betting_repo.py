@@ -11,7 +11,9 @@ from fastapi import HTTPException
 from ..db import fetch_all_dict, fetch_one_dict, transaction
 from ..services.community_periods import utc_now
 from .users_repo import lock_user
-from ...core.betting import (OPEN_STATE_IDS, SETTLEMENT_RULE, STAKE_UNIT, WELCOME_POINTS, betting_opens_at, prediction_options,
+from .points_repo import (get_wallet, initialize_wallet, initialize_locked_wallet as _initialize,
+                          apply_delta, wallet_response as _wallet)
+from ...core.betting import (OPEN_STATE_IDS, SETTLEMENT_RULE, STAKE_UNIT, betting_opens_at, prediction_options,
                              settlement, total_return)
 from ...core.cup_betting import CUP_COMPETITION_IDS, fixture_context
 from ...core.fixture_states import COMPLETED_STATE_IDS
@@ -42,39 +44,6 @@ def _bet(row):
                   decimal_odds=format(Decimal(1) / probability, '.12f'),
                   potential_profit=row['potential_return'] - row['stake'])
     return {key: _stamp(value) for key, value in result.items()}
-
-
-def _wallet(row):
-    return {'balance': int(row['balance']) if row else 0, 'initialized': row is not None,
-            'welcome_points': WELCOME_POINTS}
-
-
-def get_wallet(user_id):
-    return _wallet(fetch_one_dict('SELECT balance FROM user_point_wallets WHERE user_id=%s', (user_id,)))
-
-
-def _initialize(cur, user_id, now):
-    cur.execute('SELECT balance FROM user_point_wallets WHERE user_id=%s', (user_id,))
-    wallet = cur.fetchone()
-    if wallet is None:
-        cur.execute('INSERT INTO user_point_wallets (user_id,balance,created_at,updated_at) VALUES (%s,%s,%s,%s)',
-                    (user_id, WELCOME_POINTS, now, now))
-        _entry(cur, user_id, None, 'welcome', '0' * 64, 'welcome', WELCOME_POINTS, WELCOME_POINTS, None, now)
-        wallet = {'balance': WELCOME_POINTS}
-    return wallet
-
-
-def initialize_wallet(user_id):
-    with transaction() as conn, conn.cursor(dictionary=True) as cur:
-        lock_user(cur, user_id)
-        return _wallet(_initialize(cur, user_id, utc_now()))
-
-
-def _entry(cur, user_id, bet_id, request_id, request_hash, kind, amount, balance, revision, now):
-    cur.execute('''INSERT INTO user_point_entries
-        (user_id,bet_id,request_id,request_hash,kind,amount,balance_after,bet_revision,created_at)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
-        (user_id, bet_id, request_id, request_hash, kind, amount, balance, revision, now))
 
 
 def _supported(fixture):
@@ -246,9 +215,8 @@ def mutate_bet(user_id, fixture_id, body, *, cancel=False):
                      user_id,fixture_id,status,created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'open',%s)''',
                     (*values, user_id, fixture_id, now))
                 bet_id = cur.lastrowid
-        balance = wallet['balance'] + delta
-        cur.execute('UPDATE user_point_wallets SET balance=%s,updated_at=%s WHERE user_id=%s', (balance, now, user_id))
-        _entry(cur, user_id, bet_id, request_id, digest, kind, delta, balance, revision, now)
+        balance = apply_delta(cur, user_id, wallet, delta, now, kind=kind, request_id=request_id,
+                              request_hash=digest, bet_id=bet_id, revision=revision)
         return {'wallet': _wallet({'balance': balance}),
                 'bet': _bet(_read_one(cur, 'SELECT * FROM fixture_bets WHERE bet_id=%s', (bet_id,)))}
 
@@ -273,21 +241,18 @@ def settle_bet(bet_id, *, apply=False):
             return {'bet_id': bet_id, **result} if result else None
         wallet = _read_one(cur, 'SELECT balance FROM user_point_wallets WHERE user_id=%s', (owner['user_id'],))
         now, revision = utc_now(), bet['revision'] + 1
-        balance = wallet['balance'] + result['payout']
         cur.execute('''UPDATE fixture_bets SET status=%s,payout=%s,settlement_reason=%s,
             settled_home_score=%s,settled_away_score=%s,settled_at=%s,updated_at=%s,revision=%s WHERE bet_id=%s''',
             (result['status'], result['payout'], result['reason'], fixture['home_score'], fixture['away_score'],
              now, now, revision, bet_id))
-        cur.execute('UPDATE user_point_wallets SET balance=%s,updated_at=%s WHERE user_id=%s',
-                    (balance, now, owner['user_id']))
-        _entry(cur, owner['user_id'], bet_id, f'settle:{bet_id}:{revision}', '0' * 64,
-               result['kind'], result['payout'], balance, revision, now)
+        apply_delta(cur, owner['user_id'], wallet, result['payout'], now, kind=result['kind'],
+                    request_id=f'settle:{bet_id}:{revision}', bet_id=bet_id, revision=revision)
         return {'bet_id': bet_id, **result}
 
 
 def list_point_entries(user_id, *, limit=50, before=None):
     suffix, params = (' AND entry_id<%s', (user_id, before)) if before else ('', (user_id,))
-    rows = fetch_all_dict('''SELECT entry_id,bet_id,kind,amount,balance_after,created_at FROM user_point_entries
+    rows = fetch_all_dict('''SELECT entry_id,bet_id,post_id,kind,amount,balance_after,created_at FROM user_point_entries
         WHERE user_id=%s''' + suffix + ' ORDER BY entry_id DESC LIMIT %s', (*params, limit))
     return {'items': [{k: _stamp(v) for k, v in row.items()} for row in rows],
             'next_before': rows[-1]['entry_id'] if len(rows) == limit else None}

@@ -107,6 +107,18 @@ class FixtureStateTests(unittest.TestCase):
 
 
 class FixtureNormalizationTests(unittest.TestCase):
+    def test_normalizes_verified_aggregate_winner_with_shared_bracket_correction(self):
+        fixture = _fixture_payload()
+        fixture['aggregate_id'] = fixture['aggregate']['id'] = 58611
+        fixture['aggregate']['winner_participant_id'] = 8
+        for p in fixture['participants']:
+            p['id'] = {10: 8, 20: 591}[p['id']]
+        for score in fixture['scores']:
+            score['participant_id'] = {10: 8, 20: 591}[score['participant_id']]
+        normalized = _normalize_fixture(fixture, 2001, 8)
+        self.assertEqual(normalized['aggregate'], (58611, 3001, 591))
+        self.assertEqual(fixture['aggregate']['winner_participant_id'], 8)
+
     def test_normalizes_requested_fixture_columns(self) -> None:
         normalized = _normalize_fixture(_fixture_payload(), 2001, 8)
         self.assertIsNotNone(normalized)

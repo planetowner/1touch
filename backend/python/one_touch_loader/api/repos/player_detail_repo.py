@@ -9,8 +9,8 @@ from ..db import get_conn
 from .transfers_repo import get_player_club_history
 from ...core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ...core.player_detail import (
-    MINIMUM_REFERENCE_MINUTES, build_career, current_player_team, dominant_position, match_cards,
-    rank_categories, season_categories, stat_index, summarize,
+    build_career, current_player_team, dominant_position, match_cards,
+    minimum_reference_minutes, rank_categories, season_categories, stat_index, summarize,
 )
 from ...core.player_match_metrics import COVERAGE_COUNT_TYPES, POSITION_GROUPS
 from ...core.football_names import korean_name_ids
@@ -151,6 +151,12 @@ def get_player_detail(player_id: int, season_id: int | None = None) -> dict | No
 
 
 def _analysis(fetch, player_id, season, clubs, roster, now):
+    fixtures = fetch(f"""SELECT f.fixture_id,f.home_team_id,f.away_team_id,f.starting_at
+        FROM fixtures f JOIN stages st ON st.stage_id=f.stage_id
+        WHERE st.season_id=%s AND f.state_id IN ({COMPLETED}) AND f.starting_at<=%s""", (season["season_id"], now))
+    team_count = fetch("SELECT COUNT(*) AS team_count FROM team_seasons WHERE season_id=%s",
+                       (season["season_id"],))[0]["team_count"]
+    minimum_minutes = minimum_reference_minutes(len(fixtures), team_count)
     league = fetch(MATCH_SELECT + f" WHERE s.season_id=%s AND f.state_id IN ({COMPLETED}) AND f.starting_at<=%s AND {APPEARED}", (season["season_id"], now))
     position_rows = fetch("SELECT fl.player_id,fl.match_position_id,fl.minutes_played,f.starting_at,f.state_id " + MATCH_FROM
                           + f" WHERE s.name=%s AND f.state_id IN ({COMPLETED}) AND f.starting_at<=%s AND {APPEARED}", (season["season_name"], now))
@@ -162,7 +168,7 @@ def _analysis(fetch, player_id, season, clubs, roster, now):
     for row in league:
         by_player[row["player_id"]].append(row)
     eligible = {pid for pid, rows in by_player.items()
-                if dominant_position(positions[pid]) == position and summarize(rows)["minutes"] >= MINIMUM_REFERENCE_MINUTES}
+                if dominant_position(positions[pid]) == position and summarize(rows)["minutes"] >= minimum_minutes}
     stat_players = sorted(eligible | {player_id})
     # 전체 리그의 원시 스탯 전송이 느려 실제 순위 비교 대상과 조회 선수만 읽어요.
     stat_rows = fetch("""SELECT ps.fixture_id,ps.team_id,ps.player_id,ps.stat_type_id,ps.stat_value AS value
@@ -173,11 +179,8 @@ def _analysis(fetch, player_id, season, clubs, roster, now):
     own = by_player[player_id]
     categories = season_categories(position, own, stats, recorded_types)
     reference = [season_categories(position, by_player[pid], stats, recorded_types) for pid in sorted(eligible)]
-    top = rank_categories(categories, reference, includes_player=summarize(own)["minutes"] >= MINIMUM_REFERENCE_MINUTES)
+    top = rank_categories(categories, reference, includes_player=player_id in eligible)
     teams = {r["team_id"] for r in own} | {r["team_id"] for r in roster if r["season_id"] == season["season_id"]}
-    fixtures = fetch(f"""SELECT f.fixture_id,f.home_team_id,f.away_team_id,f.starting_at
-        FROM fixtures f JOIN stages st ON st.stage_id=f.stage_id
-        WHERE st.season_id=%s AND f.state_id IN ({COMPLETED}) AND f.starting_at<=%s""", (season["season_id"], now))
     def belongs(row):
         for team_id in teams & {row["home_team_id"], row["away_team_id"]}:
             spells = [c for c in clubs if c["team_id"] == team_id]
@@ -188,7 +191,7 @@ def _analysis(fetch, player_id, season, clubs, roster, now):
     team_matches = sum(belongs(r) for r in fixtures)
     summary = summarize(own)
     return {"position_group": POSITION_GROUPS.get(position), "categories": categories, "top_stats": top,
-            "reference_minimum_minutes": MINIMUM_REFERENCE_MINUTES, "reference_players": len(reference),
+            "reference_minimum_minutes": minimum_minutes, "reference_players": len(reference),
             "appearances": summary["appearances"], "starts": summary["starts"], "team_matches": team_matches,
             "starting_rate": round(summary["starts"] * 100 / team_matches, 1) if team_matches else None,
             "win_rate": summary["win_rate"],

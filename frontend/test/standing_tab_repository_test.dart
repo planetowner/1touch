@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
@@ -14,6 +15,7 @@ import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/standing.dart';
+import 'package:onetouch/models/season.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/standing.dart';
 
@@ -723,6 +725,46 @@ void main() {
       repository.requests,
       contains((competitionId: 2, seasonId: 25580)),
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('opens the 2017 UCL bracket and excludes earlier seasons',
+      (tester) async {
+    final originalSeasons = footballCatalog.seasons.value;
+    addTearDown(() => footballCatalog.seasons.value = originalSeasons);
+    footballCatalog.seasons.value = [
+      ...originalSeasons,
+      const Season(
+          seasonId: 7907,
+          competitionId: 2,
+          name: '2017/2018',
+          isCurrent: false),
+      const Season(
+          seasonId: 1, competitionId: 2, name: '2016/2017', isCurrent: false),
+    ];
+    await tester.pumpWidget(
+        _app(_successfulStandingRepository(), requestedCompetitionId: 2));
+    await tester.pump();
+
+    tester
+        .widget<AppDropdown<int>>(
+            find.byKey(const ValueKey('standing-season-filter-shell')))
+        .onChanged(7907);
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('standing-view-bracket')));
+    await tester.pump();
+    final bracket =
+        tester.widget<ApiKnockoutBracket>(find.byType(ApiKnockoutBracket));
+    expect(bracket.competitionId, 2);
+    expect(bracket.seasonId, 7907);
+
+    tester
+        .widget<AppDropdown<int>>(
+            find.byKey(const ValueKey('standing-season-filter-shell')))
+        .onChanged(1);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('standing-view-bracket')), findsNothing);
+    expect(find.byType(ApiKnockoutBracket), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

@@ -10,6 +10,7 @@ from ..repos.standings_repo import (
 from ..repos.expected_goals_repo import list_xg_standings
 from ...core.understat import UNDERSTAT_LEAGUES
 from ...core.cup_betting import CUP_COMPETITION_IDS
+from ...core.tournament_bracket import BRACKET_START_YEARS
 from ..repos.tournament_bracket_repo import find_bracket_season, get_bracket
 from ..schemas.tournament_bracket import TournamentBracketResponse
 
@@ -27,8 +28,9 @@ def competition_bracket(
     season = find_bracket_season(competition_id, season_id)
     if season is None:
         raise HTTPException(status_code=404, detail='Season not found for competition')
-    if int(season['name'][:4]) < 2024:
-        raise HTTPException(status_code=400, detail='Brackets support seasons from 2024/2025')
+    minimum = BRACKET_START_YEARS[competition_id]
+    if int(season['name'][:4]) < minimum:
+        raise HTTPException(status_code=400, detail=f'Brackets support seasons from {minimum}/{minimum + 1}')
     bracket = get_bracket(season['season_id'])
     if bracket is None:
         # 미수집과 추첨 전의 빈 대진표는 다른 상태예요.
