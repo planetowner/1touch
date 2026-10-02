@@ -263,6 +263,12 @@ const appMessages = <String, MessageTranslations>{
   "LOGIN": (ko: "로그인", ja: "ログイン", zh: "登录"),
   "Username": (ko: "아이디", ja: "ユーザー名", zh: "用户名"),
   "Nickname": (ko: "닉네임", ja: "ニックネーム", zh: "昵称"),
+  "Pick a nickname": (ko: "닉네임 정하기", ja: "ニックネームを決める", zh: "选择昵称"),
+  "Unable to save your profile. Please try again.": (
+    ko: "프로필을 저장하지 못했어요. 다시 시도해 주세요.",
+    ja: "プロフィールを保存できませんでした。もう一度お試しください。",
+    zh: "无法保存个人资料，请重试。"
+  ),
   "Checking availability...": (
     ko: "사용할 수 있는지 확인하고 있어요.",
     ja: "使用できるか確認しています。",

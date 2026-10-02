@@ -16,6 +16,11 @@ import 'package:onetouch/data/session/session_data_synchronizer.dart';
 import 'package:onetouch/data/profile/api/api_current_user_response.dart';
 import 'package:onetouch/data/teams/team_page_eligibility.dart';
 import 'package:onetouch/features/profile_fields.dart';
+import 'package:onetouch/SignComps/social_profile_setup.dart';
+import 'package:onetouch/data/auth/auth_repository_provider.dart'
+    as auth_provider;
+import 'package:onetouch/data/auth/registration_field.dart';
+import 'package:onetouch/data/profile/current_user_repository_provider.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 String? _readyToken;
@@ -23,9 +28,16 @@ bool get isAppSessionReady =>
     _readyToken != null && _readyToken == authSession.accessToken;
 
 class SessionScreen extends StatefulWidget {
-  const SessionScreen({super.key, this.homeRepository});
+  const SessionScreen({
+    super.key,
+    this.homeRepository,
+    this.checkNicknameAvailability,
+    this.logout,
+  });
 
   final HomeSnapshotRepository? homeRepository;
+  final Future<bool> Function(String)? checkNicknameAvailability;
+  final Future<void> Function()? logout;
   @override
   State<SessionScreen> createState() => _SessionScreenState();
 }
@@ -131,9 +143,35 @@ class _SessionScreenState extends State<SessionScreen> {
     context.go(communityDestination ?? notificationDestination ?? '/home');
   }
 
+  Future<void> _leaveSocialSetup() async {
+    await (widget.logout ?? auth_provider.authService.logout)();
+    if (mounted) context.go('/onboarding');
+  }
+
   @override
   Widget build(BuildContext context) {
     final profile = _incompleteProfile;
+    if (profile != null && profile.email == null) {
+      return SocialProfileSetup(
+        initialNickname: profile.displayName,
+        initialFirstName: profile.firstName,
+        initialLastName: profile.lastName,
+        checkNicknameAvailability: widget.checkNicknameAvailability ??
+            (value) => auth_provider.authService.isRegistrationValueAvailable(
+                  field: RegistrationField.displayName,
+                  value: value,
+                ),
+        onContinue: (nickname, firstName, lastName) async {
+          await currentUserRepository.completeSocialProfile(
+            displayName: nickname,
+            firstName: firstName,
+            lastName: lastName,
+          );
+          await _load();
+        },
+        onBack: _leaveSocialSetup,
+      );
+    }
     return Scaffold(
         body: SafeArea(
             child: profile != null

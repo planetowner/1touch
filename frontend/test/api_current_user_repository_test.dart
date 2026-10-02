@@ -125,6 +125,40 @@ void main() {
         lastName: 'Doe');
   });
 
+  test('social completion omits username and caches the generated one',
+      () async {
+    final store = MemoryLocalCacheStore();
+    final repository = ApiCurrentUserRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.method, 'PUT');
+          expect(request.url.path, '/v1/users/me/profile');
+          expect(jsonDecode(request.body), {
+            'display_name': 'Supporter',
+            'first_name': 'First',
+            'last_name': 'Last',
+          });
+          return http.Response(
+              jsonEncode(_profileJson()
+                ..['username'] = 'social-generated-1'
+                ..['display_name'] = 'Supporter'),
+              200);
+        }),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    await repository.completeSocialProfile(
+      displayName: 'Supporter',
+      firstName: 'First',
+      lastName: 'Last',
+    );
+    expect(
+        (await repository.loadCachedAccount())?.username, 'social-generated-1');
+  });
+
   test('reports when the nickname change limit expires', () async {
     final repository = ApiCurrentUserRepository(
       api: ApiClient(

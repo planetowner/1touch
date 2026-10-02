@@ -5,7 +5,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/onboarding.dart';
+import 'package:onetouch/SignComps/other_login_methods.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -45,30 +47,66 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(MaterialApp(
-      home: OnboardingScreen(
-        loadOptions: () async => const LoginOptions(
-          recommended: [LoginProvider.google, LoginProvider.email],
-          other: [
-            LoginProvider.google,
-            LoginProvider.line,
-            LoginProvider.line,
-            LoginProvider.email,
-          ],
+    final router = GoRouter(initialLocation: '/onboarding', routes: [
+      GoRoute(
+        path: '/onboarding',
+        builder: (_, __) => OnboardingScreen(
+          loadOptions: () async => const LoginOptions(
+            recommended: [LoginProvider.google, LoginProvider.email],
+            other: [
+              LoginProvider.google,
+              LoginProvider.line,
+              LoginProvider.line,
+              LoginProvider.email,
+            ],
+          ),
         ),
       ),
-    ));
+      GoRoute(
+        path: '/auth/other-methods',
+        builder: (_, state) => OtherLoginMethodsScreen(
+          initialOptions: state.extra as LoginOptions?,
+        ),
+      ),
+    ]);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
 
     final otherMethods = find.byKey(const ValueKey('other-login-methods'));
     expect(otherMethods, findsOneWidget);
     expect(find.byKey(const ValueKey('line-sign-in-button')), findsNothing);
+    expect(
+      tester.getRect(otherMethods).top -
+          tester
+              .getRect(find.byKey(const ValueKey('google-sign-in-button')))
+              .bottom,
+      16,
+    );
+    expect(
+      tester.getRect(find.byKey(const ValueKey('onboarding-divider'))).top -
+          tester.getRect(otherMethods).bottom,
+      16,
+    );
     await tester.tap(otherMethods);
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('google-sign-in-button')), findsOneWidget);
     expect(find.byKey(const ValueKey('line-sign-in-button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('email-sign-in-button')), findsNothing);
+    final googleButton =
+        tester.getRect(find.byKey(const ValueKey('google-sign-in-button')));
+    final lineButton =
+        tester.getRect(find.byKey(const ValueKey('line-sign-in-button')));
+    final header =
+        tester.getRect(find.byKey(const ValueKey('other-login-header')));
+    expect(googleButton.height, 56);
+    expect(googleButton.top - header.bottom, 24);
+    expect(lineButton.top - googleButton.bottom, 16);
+    await tester.tap(find.byKey(const ValueKey('other-login-back')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('email-sign-in-button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('line-sign-in-button')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
