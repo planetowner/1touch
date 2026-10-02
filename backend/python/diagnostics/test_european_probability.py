@@ -155,6 +155,22 @@ class EuropeanProbabilityTests(unittest.TestCase):
             result=core.simulate_title(**args)
         np.testing.assert_array_equal(orders[0],np.tile(np.arange(35,-1,-1),(200,1)))
         self.assertEqual(result[35]['probability'],1)
+        self.assertEqual(result[35]['resolution'], 'unresolved')
+        self.assertTrue(all(result[t]['resolution'] == 'impossible' for t in range(12)))
+
+    def test_bracket_certainty_uses_confirmed_winners_not_sample_counts(self):
+        from diagnostics.test_tournament_bracket import build, fixture
+        bracket = build([fixture(1001, 1, 2)])
+        args = dict(bracket=bracket, team_ids=[1, 2, 3], elos={1: 1700, 2: 1700, 3: 1700},
+                    model=core.ScoreModel((.3, .2, .8)), penalty_coefficient=0, simulations=1, seed=7)
+        estimates = core.simulate_bracket_title(**args)
+        self.assertEqual({estimates[t]['probability'] for t in (1, 2)}, {0, 1})
+        self.assertTrue(all(estimates[t]['resolution'] == 'unresolved' for t in (1, 2)))
+        self.assertEqual(estimates[3]['resolution'], 'impossible')
+        args['bracket'] = build([fixture(1001, 1, 2, score=(2, 1))])
+        resolved = core.simulate_bracket_title(**args)
+        self.assertEqual(resolved[1]['resolution'], 'certain')
+        self.assertEqual(resolved[2]['resolution'], 'impossible')
 
     def test_missing_schedule_elo_or_unresolved_match_is_not_invented(self):
         for kind in ('schedule','elo','unresolved','score'):
@@ -207,6 +223,8 @@ class EuropeanProbabilityTests(unittest.TestCase):
             self.assertEqual(runs[0]['bracket_input_sha256'], bracket['input_sha256'])
             self.assertEqual(runs[0]['teams']['1']['probability'], 1)
             self.assertEqual(runs[0]['teams']['2']['probability'], 0)
+            self.assertEqual(runs[0]['teams']['1']['resolution'], 'certain')
+            self.assertEqual(runs[0]['teams']['2']['resolution'], 'impossible')
             self.assertEqual(runs[0]['teams']['1']['played'], 9)
             self.assertEqual(runs[0]['teams']['1']['previous_fixture_at'], '2027-04-01T20:00:00+00:00')
             bracket['fetched_at'] = '2027-04-03T00:00:00Z'

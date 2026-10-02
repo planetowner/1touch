@@ -102,6 +102,7 @@ TeamProbabilityCard _cardFromResponse(
     probability: card.probability,
     changePercentagePoints: card.changePp,
     entropy: card.entropy,
+    resolution: ProbabilityResolution.values.byName(card.resolution),
   );
 }
 

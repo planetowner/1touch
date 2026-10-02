@@ -6,6 +6,8 @@ import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/round_chart_window.dart';
+import 'package:onetouch/core/probability_display.dart';
+import 'package:onetouch/features/team/probability/probability_number.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/team_probability/team_probability_repository.dart';
 import 'package:onetouch/data/team_probability/team_probability_repository_provider.dart';
@@ -304,16 +306,8 @@ class _ProbabilityHero extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      '${(card.probability * 100).round()}',
-                      key: const ValueKey('probability-detail-value'),
-                      style: const TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w700,
-                        height: 0.9,
-                      ),
-                    ),
-                    Text('%', style: Heading4.style),
+                    ProbabilityNumber(
+                        card: card, keyPrefix: 'probability-detail'),
                     if (showDelta) ...[
                       const SizedBox(width: 4),
                       Padding(
@@ -349,7 +343,7 @@ class _ProbabilityHero extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.bottomRight,
                     child: Text(
-                      tr(context, _eventTitle(card.event)),
+                      tr(context, probabilityEventTitle(card.event)),
                       key: const ValueKey('probability-event-title'),
                       maxLines:
                           Localizations.localeOf(context).languageCode == 'ko'
@@ -1040,24 +1034,6 @@ IconData _eventIcon(String event) {
     'top_4' || 'top_6' => Icons.leaderboard_outlined,
     'direct_relegation' || 'relegation_playoff' => Icons.trending_down,
     _ => Icons.query_stats,
-  };
-}
-
-String _eventTitle(String event) {
-  return switch (event) {
-    'league_winner' => 'Chances to Win\nLeague Trophy',
-    'ucl_winner' => 'Chances to Win\nUCL Trophy',
-    'uel_winner' => 'Chances to Win\nUEL Trophy',
-    'uecl_winner' => 'Chances to Win\nUECL Trophy',
-    'top_4' => 'Chances to Finish\nTop 4',
-    'top_6' => 'Chances to Finish\nTop 6',
-    'direct_relegation' => 'Chances of\nRelegation',
-    'relegation_playoff' => 'Chances of Relegation\nPlayoff',
-    _ => event
-        .split('_')
-        .where((part) => part.isNotEmpty)
-        .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
-        .join(' '),
   };
 }
 

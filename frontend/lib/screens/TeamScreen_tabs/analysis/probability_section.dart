@@ -141,8 +141,7 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
           else if (_snapshot case final snapshot?)
             LayoutBuilder(
               builder: (context, constraints) {
-                // 345px content width: 165px card + 15px gap + 165px card.
-                const gap = 15.0;
+                const gap = 16.0;
                 final cardWidth = (constraints.maxWidth - gap) / 2;
                 return Wrap(
                   key: const ValueKey('team-probability-cards'),
@@ -205,16 +204,19 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
                   key: ValueKey('team-probability-title-slot-${card.event}'),
                   width: double.infinity,
                   height: 39,
-                  child: Text(
-                    _eventTitle(card.event),
-                    maxLines:
-                        Localizations.localeOf(context).languageCode == 'ko'
-                            ? 1
-                            : 2,
-                    softWrap:
-                        Localizations.localeOf(context).languageCode != 'ko',
-                    overflow: TextOverflow.ellipsis,
-                    style: Body1.style.copyWith(height: 1.3),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.topLeft,
+                    // 좁은 화면에서도 두 번째 줄의 대회·목표 이름이 사라지지 않게 해요.
+                    child: Text(
+                      tr(context, probabilityEventTitle(card.event)),
+                      maxLines:
+                          Localizations.localeOf(context).languageCode == 'ko'
+                              ? 1
+                              : 2,
+                      softWrap: false,
+                      style: Body1.style.copyWith(height: 1.3),
+                    ),
                   ),
                 ),
                 SizedBox(
@@ -225,29 +227,13 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
                     children: [
                       Align(
                         alignment: Alignment.bottomLeft,
-                        child: OverflowBox(
+                        child: FittedBox(
                           alignment: Alignment.bottomLeft,
-                          minWidth: 0,
-                          maxWidth: double.infinity,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                '${(card.probability * 100).round()}',
-                                key: ValueKey(
-                                  'team-probability-value-${card.event}',
-                                ),
-                                style: Heading1.style.copyWith(height: 0.9),
-                              ),
-                              Text(
-                                '%',
-                                key: ValueKey(
-                                  'team-probability-percent-${card.event}',
-                                ),
-                                style: Heading4.style.copyWith(height: 1.2),
-                              ),
-                            ],
+                          fit: BoxFit.scaleDown,
+                          child: ProbabilityNumber(
+                            card: card,
+                            keyPrefix: 'team-probability',
+                            keySuffix: '-${card.event}',
                           ),
                         ),
                       ),
@@ -292,24 +278,6 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
         ),
       ),
     );
-  }
-
-  String _eventTitle(String event) {
-    return switch (event) {
-      'league_winner' => tr(context, 'Chances to win\nLEAGUE Trophy'),
-      'ucl_winner' => tr(context, 'Chances to win\nUCL Trophy'),
-      'uel_winner' => tr(context, 'Chances to win\nUEL Trophy'),
-      'uecl_winner' => tr(context, 'Chances to win\nUECL Trophy'),
-      'top_4' => tr(context, 'Chances to finish\nTOP 4'),
-      'top_6' => tr(context, 'Chances to finish\nTOP 6'),
-      'direct_relegation' => tr(context, 'Chances of\nRELEGATION'),
-      'relegation_playoff' => tr(context, 'Chances of\nRELEGATION PLAYOFF'),
-      _ => event
-          .split('_')
-          .where((part) => part.isNotEmpty)
-          .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
-          .join(' '),
-    };
   }
 
   String _formatDelta(double value) {

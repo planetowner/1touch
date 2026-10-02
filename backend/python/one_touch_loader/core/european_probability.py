@@ -8,6 +8,7 @@ from scipy.special import expit, gammaln
 
 from .cup_betting import EUROPE_COMPETITION_IDS
 from .fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS, UPCOMING_STATE_IDS
+from .probability import position_bounds
 
 
 MODEL_METHOD = 'european_title_poisson_elo_v1'
@@ -148,6 +149,28 @@ def tie_winners(second_home, other, elos, model, penalty_coefficient, rng, *, fi
     return np.where(margin > 0, second_home, other)
 
 
+def bracket_title_resolutions(bracket, team_ids):
+    """추첨된 경로와 확인된 승자만으로 우승·탈락을 판정해요."""
+    possible = {}
+    finalists = None
+    for stage in bracket['stages']:
+        for tie in stage['ties']:
+            if tie['winner_team_id'] is not None:
+                entrants = {tie['winner_team_id']}
+            else:
+                entrants = set()
+                for slot in tie['slots']:
+                    entrants.update(possible[slot['source_tie_id']] if slot['source_tie_id']
+                                    else {slot['team_id']})
+            possible[tie['tie_id']] = entrants
+            if stage['key'] == 'final':
+                finalists = entrants
+    if finalists is None:
+        raise ValueError('The verified final is required')
+    return {team: ('impossible' if team not in finalists else
+                   'certain' if len(finalists) == 1 else 'unresolved') for team in team_ids}
+
+
 def simulate_bracket_title(*, bracket, team_ids, elos, model, penalty_coefficient, simulations, seed):
     """확정된 경로와 종료 경기 결과를 유지하며 남은 UEFA 대진만 계산해요."""
     if bracket['competition_id'] not in EUROPE_COMPETITION_IDS or bracket['path_status'] != 'complete':
@@ -201,7 +224,9 @@ def simulate_bracket_title(*, bracket, team_ids, elos, model, penalty_coefficien
                 champion = winner
     if champion is None:
         raise ValueError('The final is missing')
-    return title_estimates(team_ids, champion, simulations)
+    resolutions = bracket_title_resolutions(bracket, team_ids)
+    return {team: {**estimate, 'resolution': resolutions[team]}
+            for team, estimate in title_estimates(team_ids, champion, simulations).items()}
 
 
 def title_estimates(team_ids, winner, simulations):
@@ -263,6 +288,7 @@ def simulate_title(*, competition_id, team_ids, fixtures, elos, coefficients, di
     points, gf, ga, ag, wins, aw = [np.zeros((simulations, 36), dtype=int) for _ in range(6)]
     dp = np.zeros((simulations, 36), dtype=int)
     strengths = np.array([elos[t] for t in team_ids])
+    observed_points, games_left = dict.fromkeys(team_ids, 0), dict.fromkeys(team_ids, 0)
     for fixture in fixtures:
         h, a = index[fixture['home_team_id']], index[fixture['away_team_id']]
         if fixture['state_id'] == 5:
@@ -271,7 +297,12 @@ def simulate_title(*, competition_id, team_ids, fixtures, elos, coefficients, di
             home, away = np.full(simulations, fixture['home_score']), np.full(simulations, fixture['away_score'])
             observed = discipline[fixture['fixture_id']]
             hp, ap = observed[fixture['home_team_id']], observed[fixture['away_team_id']]
+            hs, aws = fixture['home_score'], fixture['away_score']
+            observed_points[fixture['home_team_id']] += 3 if hs > aws else int(hs == aws)
+            observed_points[fixture['away_team_id']] += 3 if aws > hs else int(hs == aws)
         elif fixture['state_id'] in (*UPCOMING_STATE_IDS, *LIVE_STATE_IDS):
+            games_left[fixture['home_team_id']] += 1
+            games_left[fixture['away_team_id']] += 1
             # 다른 경기의 종료 결과를 반영하되 진행 중 점수는 아직 확정하지 않아요.
             hr, ar = model.rates(strengths[h] - strengths[a])
             home, away = rng.poisson(hr, size=simulations), rng.poisson(ar, size=simulations)
@@ -294,4 +325,9 @@ def simulate_title(*, competition_id, team_ids, fixtures, elos, coefficients, di
         dp[:, a] += ap
     order = league_order(points, gf, ga, ag, wins, aw, dp, opponents, priority)
     winner = simulate_knockout(order, strengths, model, penalty_coefficient, rng)
-    return title_estimates(team_ids, winner, simulations)
+    bounds = position_bounds(observed_points, {t: observed_points[t] + 3 * games_left[t] for t in team_ids})
+    # 리그페이즈가 끝났으면 기존 Article 18 판정의 실제 순위로 탈락을 확인해요.
+    eliminated = ({team_ids[i] for i in order[0, 24:]} if not any(games_left.values()) else
+                  {t for t in team_ids if bounds[t][0] > 24})
+    return {team: {**estimate, 'resolution': 'impossible' if team in eliminated else 'unresolved'}
+            for team, estimate in title_estimates(team_ids, winner, simulations).items()}

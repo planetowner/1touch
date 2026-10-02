@@ -9,7 +9,7 @@ import math
 from .clubelo import rating_before
 from .cup_betting import utc_datetime
 from .fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS, UPCOMING_STATE_IDS
-from .probability import WDLModel, simulate_league
+from .probability import WDLModel, simulate_league, position_bounds
 
 
 # 26/27 정규리그 범위예요. 독일·프랑스의 16위는 최종 강등이 아니라 플레이오프 진입이에요.
@@ -24,7 +24,7 @@ LEAGUE_RULES = {
 }
 
 
-def league_events(competition_id: int, positions: list[dict]) -> list[dict]:
+def league_event_specs(competition_id: int) -> list[tuple]:
     rule = LEAGUE_RULES[competition_id]
     n = rule["teams"]
     specs = [("league_winner", "TITLE", [1]), ("top_4", "LEAGUE_FINISH", list(range(1, 5))),
@@ -32,10 +32,27 @@ def league_events(competition_id: int, positions: list[dict]) -> list[dict]:
              ("direct_relegation", "RELEGATION", list(range(n - rule["direct_relegation"] + 1, n + 1)))]
     if rule["playoff_position"]:
         specs.append(("relegation_playoff", "RELEGATION", [rule["playoff_position"]]))
+    return specs
+
+
+def league_events(competition_id: int, positions: list[dict]) -> list[dict]:
     # Top 4·Top 6를 실제 유럽대항전 진출로 바꾸지 않아요. 컵·배정 규칙 연동은 다음 단계예요.
     return [{"event": name, "competition_id": competition_id, "category": category,
              "probability": min(1.0, max(0.0, math.fsum(p["probability"] for p in positions if p["position"] in ranks)))}
-            for name, category, ranks in specs]
+            for name, category, ranks in league_event_specs(competition_id)]
+
+
+def resolve_league_events(events: list[dict], competition_id: int, bounds: tuple[int, int]) -> list[dict]:
+    """표본의 0·1과 구분할 수 있도록, 증명된 결과만 확정 상태로 표시해요."""
+    possible = set(range(bounds[0], bounds[1] + 1))
+    ranks = {name: set(positions) for name, _, positions in league_event_specs(competition_id)}
+    result = []
+    for event in events:
+        resolution = ('certain' if possible <= ranks[event['event']] else
+                      'impossible' if possible.isdisjoint(ranks[event['event']]) else 'unresolved')
+        probability = 1.0 if resolution == 'certain' else 0.0 if resolution == 'impossible' else event['probability']
+        result.append({**event, 'resolution': resolution, 'probability': probability})
+    return result
 
 
 def with_probability_changes(events: list[dict], previous_events: list[dict]) -> list[dict]:
@@ -49,45 +66,46 @@ def with_probability_changes(events: list[dict], previous_events: list[dict]) ->
     return result
 
 
-EUROPEAN_TITLE_EVENTS = {'ucl_winner', 'uel_winner', 'uecl_winner'}
-LEAGUE_CARD_EVENTS = {
+CARD_EVENTS = {
     'league_winner',
     'top_4',
     'direct_relegation',
     'relegation_playoff',
+    'ucl_winner',
+    'uel_winner',
+    'uecl_winner',
 }
 
 
 def select_cards(events: list[dict], limit: int = 2) -> list[dict]:
-    """Select the two outcomes that are most useful on a team's overview.
-
-    A current European participant always gets its European title card plus
-    the most informative domestic outcome. Other clubs get Top 4 plus the
-    more informative of the title and relegation outcomes.
-    """
+    """엔트로피로 고른 뒤 리그·유럽 순서와 확률 크기에 맞춰 배치해요."""
     candidates = []
     for event in events:
         p = event["probability"]
         if not 0 <= p <= 1 or not math.isfinite(p):
             raise ValueError("Invalid event probability")
-        entropy = (0 if p in (0, 1) else
-                   -p * math.log2(p) - (1 - p) * math.log2(1 - p))
+        if event["event"] not in CARD_EVENTS:
+            continue
+        entropy = 0 if p in (0, 1) else -p * math.log2(p) - (1 - p) * math.log2(1 - p)
         candidates.append({**event, "entropy": entropy})
 
-    def relevant(items):
-        return sorted(items, key=lambda e: (-e["entropy"], e["competition_id"], e["event"]))
-
-    european = relevant(e for e in candidates if e["event"] in EUROPEAN_TITLE_EVENTS)
-    league = relevant(e for e in candidates if e["event"] in LEAGUE_CARD_EVENTS)
-    if european:
-        return ([european[0]] + league[:1])[:limit]
-
-    top_four = next((e for e in league if e["event"] == 'top_4'), None)
-    secondary = relevant(e for e in league if e["event"] in {
-        'league_winner', 'direct_relegation', 'relegation_playoff'})
-    if top_four is not None:
-        return ([top_four] + secondary[:1])[:limit]
-    return league[:limit]
+    candidates.sort(key=lambda e: (-e['entropy'], -e['probability'], e['competition_id'], e['event']))
+    selected = []
+    while candidates and len(selected) < limit:
+        if selected and all(e['probability'] == 0 for e in candidates):
+            # 남은 표본이 전부 0이면 먼저 고른 국내 목표와 순위가 가까운 결과를 짝지어요.
+            def distance(event):
+                competition = event['competition_id']
+                if competition not in LEAGUE_RULES:
+                    return math.inf
+                ranks = {name: positions for name, _, positions in league_event_specs(competition)}
+                anchors = [rank for card in selected if card['competition_id'] == competition
+                           for rank in ranks[card['event']]]
+                return min((abs(a - b) for a in anchors for b in ranks[event['event']]), default=math.inf)
+            candidates.sort(key=distance)
+        selected.append(candidates.pop(0))
+    return sorted(selected, key=lambda e: (e['competition_id'] not in LEAGUE_RULES,
+                                          -e['probability'], e['competition_id'], e['event']))
 
 
 def forecast_day(*, competition_id: int, season_id: int, teams: list[dict], fixtures: list[dict],
@@ -149,6 +167,8 @@ def forecast_day(*, competition_id: int, season_id: int, teams: list[dict], fixt
     kwargs = dict(team_ids=team_ids, current_points=points, remaining_fixtures=remaining,
                   simulations=simulations, seed=seed)
     baseline = simulate_league(**kwargs)
+    maximum_points = {t: points[t] + 3 * (2 * (len(team_ids) - 1) - played[t]) for t in team_ids}
+    bounds = position_bounds(points, maximum_points)
     output_teams = {}
     for team in teams:
         t = team["team_id"]
@@ -157,11 +177,12 @@ def forecast_day(*, competition_id: int, season_id: int, teams: list[dict], fixt
         previous_at = utc_datetime(previous_fixture['starting_at']) if previous_fixture else None
         entry.update({"team_id": t, "team_name": team["name"], "short_code": team.get("short_code"),
                       "elo": ratings[t], "current_points": points[t], "played": played[t],
-                      "maximum_points": points[t] + 3 * (2 * (len(team_ids) - 1) - played[t]),
+                      "maximum_points": maximum_points[t],
                       "previous_fixture_date": previous_at.date().isoformat() if previous_at else None,
                       "previous_fixture_at": previous_at.isoformat().replace('+00:00', 'Z') if previous_at else None})
-        entry["events"] = league_events(competition_id, entry["positions"])
-        entry["cards"] = select_cards(entry["events"]) if remaining else []
+        entry["events"] = resolve_league_events(league_events(competition_id, entry["positions"]),
+                                                competition_id, bounds[t])
+        entry["cards"] = select_cards(entry["events"])
         entry["what_if"] = None
         output_teams[str(t)] = entry
     if include_what_if:

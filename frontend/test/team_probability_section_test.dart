@@ -1,5 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/team_probability/team_probability_repository.dart';
@@ -9,6 +13,128 @@ import 'package:onetouch/models/team_probability.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/analysis.dart';
 
 void main() {
+  setUpAll(() async {
+    await (FontLoader('Archivo')
+          ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
+        .load();
+  });
+
+  for (final size in [
+    const Size(320, 568),
+    const Size(393, 852),
+    const Size(430, 932)
+  ]) {
+    testWidgets(
+        'renders decimal and boundary typography without overflow at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final boundaryKey = GlobalKey();
+      final repository = _StubProbabilityRepository(initial: {
+        83: _snapshot(cards: [
+          _card('league_winner', probability: .16, change: null),
+          _card('ucl_winner', probability: 0, change: null),
+          _card('top_4', probability: 1, change: null),
+          _card('direct_relegation',
+              probability: 1,
+              change: null,
+              resolution: ProbabilityResolution.certain),
+        ]),
+      });
+      await tester.pumpWidget(RepaintBoundary(
+          key: boundaryKey, child: _app(repository: repository)));
+      await tester.pump();
+      expect(find.text('16.0'), findsOneWidget);
+      expect(find.text('0.1'), findsOneWidget);
+      expect(find.text('99.9'), findsOneWidget);
+      expect(find.text('100'), findsOneWidget);
+      for (final (event, prefix) in [('ucl_winner', '<'), ('top_4', '>')]) {
+        final prefixFinder =
+            find.byKey(ValueKey('team-probability-prefix-$event'));
+        final prefixText = tester.widget<Text>(prefixFinder);
+        expect(prefixText.data, prefix);
+        expect(prefixText.style?.fontSize, 24);
+        final number = find.byKey(ValueKey('team-probability-value-$event'));
+        expect(tester.widget<Text>(number).style?.fontSize, 48);
+        final percent = find.byKey(ValueKey('team-probability-percent-$event'));
+        expect(tester.widget<Text>(percent).style?.fontSize, 24);
+        final surface = tester
+            .getRect(find.byKey(ValueKey('team-probability-surface-$event')));
+        expect(tester.getRect(prefixFinder).left,
+            greaterThanOrEqualTo(surface.left + 16));
+        expect(tester.getRect(percent).right,
+            lessThanOrEqualTo(surface.right - 16 + .01));
+      }
+      expect(tester.takeException(), isNull);
+      final boundary = boundaryKey.currentContext!.findRenderObject()!
+          as RenderRepaintBoundary;
+      await tester.runAsync(() async {
+        final picture = await boundary.toImage(pixelRatio: 1);
+        final bytes =
+            (await picture.toByteData(format: ui.ImageByteFormat.png))!
+                .buffer
+                .asUint8List();
+        final file = File('build/probability-cards-${size.width.toInt()}.png');
+        await file.parent.create(recursive: true);
+        await file.writeAsBytes(bytes);
+        picture.dispose();
+      });
+    });
+  }
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    for (final events in [
+      <String>[],
+      ['direct_relegation'],
+      ['top_4', 'ucl_winner'],
+    ]) {
+      testWidgets(
+          'renders ${events.length} selected cards in backend order at $size',
+          (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final repository = _StubProbabilityRepository(
+          initial: {
+            83: _snapshot(cards: [for (final event in events) _card(event)]),
+          },
+        );
+
+        await tester.pumpWidget(_app(repository: repository));
+        await tester.pump();
+
+        final section = find.byKey(const ValueKey('team-probability-section'));
+        final cards = find.byKey(const ValueKey('team-probability-cards'));
+        if (events.isEmpty) {
+          expect(section, findsNothing);
+          expect(cards, findsNothing);
+        } else {
+          expect(section, findsOneWidget);
+          expect(tester.widget<Wrap>(cards).children, hasLength(events.length));
+          Rect? previous;
+          for (final event in events) {
+            final card = find.byKey(ValueKey('team-probability-card-$event'));
+            expect(card, findsOneWidget);
+            final rect = tester.getRect(card);
+            expect(rect.left, greaterThanOrEqualTo(0));
+            expect(rect.right, lessThanOrEqualTo(size.width));
+            expect(rect.top, greaterThanOrEqualTo(0));
+            expect(rect.bottom, lessThanOrEqualTo(size.height));
+            if (previous != null) {
+              expect(rect.left, greaterThan(previous.right));
+              expect(rect.top, previous.top);
+            }
+            previous = rect;
+          }
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
   testWidgets('renders backend cards in the existing two-column design',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
@@ -37,18 +163,18 @@ void main() {
           .padding,
       const EdgeInsets.fromLTRB(24, 32, 24, 0),
     );
-    expect(find.text('Chances to win\nLEAGUE Trophy'), findsOneWidget);
-    expect(find.text('Chances to finish\nTOP 4'), findsOneWidget);
-    expect(find.text('Chances to finish\nTOP 6'), findsOneWidget);
-    expect(find.text('Chances of\nRELEGATION'), findsOneWidget);
+    expect(find.text('Chances to Win\nLeague Trophy'), findsOneWidget);
+    expect(find.text('Chances to Finish\nTop 4'), findsOneWidget);
+    expect(find.text('Chances to Finish\nTop 6'), findsOneWidget);
+    expect(find.text('Chances of\nRelegation'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('team-probability-value-league_winner')),
       findsOneWidget,
     );
-    expect(find.text('77'), findsOneWidget);
-    expect(find.text('100'), findsOneWidget);
-    expect(find.text('42'), findsOneWidget);
-    expect(find.text('4'), findsOneWidget);
+    expect(find.text('77.0'), findsOneWidget);
+    expect(find.text('99.9'), findsOneWidget);
+    expect(find.text('42.0'), findsOneWidget);
+    expect(find.text('3.6'), findsOneWidget);
     expect(
       tester
           .widget<Text>(
@@ -69,7 +195,7 @@ void main() {
           )
           .style
           ?.fontSize,
-      20,
+      24,
     );
     final probabilitySurface = tester.widget<Container>(
       find.byKey(
@@ -82,7 +208,7 @@ void main() {
           const ValueKey('team-probability-surface-league_winner'),
         ),
       ),
-      const Size(165, 165),
+      const Size(164.5, 165),
     );
     expect(
       (probabilitySurface.decoration as BoxDecoration).borderRadius,
@@ -164,7 +290,7 @@ void main() {
     await tester.pumpWidget(_app(repository: repository));
     await tester.pump();
 
-    expect(find.text('Chances to win\nUCL Trophy'), findsOneWidget);
+    expect(find.text('Chances to Win\nUCL Trophy'), findsOneWidget);
     final oneLineTitle = find.byKey(
       const ValueKey('team-probability-title-slot-custom'),
     );
@@ -325,7 +451,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Probability'), findsOneWidget);
-    expect(find.text('32'), findsOneWidget);
+    expect(find.text('32.0'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
@@ -337,6 +463,7 @@ Widget _app({
   Locale locale = const Locale('en'),
 }) {
   return MaterialApp(
+    debugShowCheckedModeBanner: false,
     locale: locale,
     supportedLocales: const [Locale('en'), Locale('ko')],
     localizationsDelegates: appLocalizationDelegates,
@@ -386,6 +513,7 @@ TeamProbabilityCard _card(
   String event, {
   double probability = 0.5,
   double? change = 1,
+  ProbabilityResolution resolution = ProbabilityResolution.unresolved,
 }) {
   return TeamProbabilityCard(
     event: event,
@@ -394,6 +522,7 @@ TeamProbabilityCard _card(
     probability: probability,
     changePercentagePoints: change,
     entropy: null,
+    resolution: resolution,
   );
 }
 
