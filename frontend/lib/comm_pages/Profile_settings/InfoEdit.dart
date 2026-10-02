@@ -3,6 +3,7 @@ import 'package:onetouch/models/profile_change_limit_exception.dart';
 
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:onetouch/core/style.dart';
@@ -454,6 +455,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 controller: displayNameController,
                 fieldKey: const ValueKey('profile-display-name-field'),
                 maxLength: 12,
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r'\s'))
+                ],
               ),
               const SizedBox(height: 8),
               _buildTextField(
@@ -550,6 +554,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     bool readOnly = false,
     TextInputType? keyboardType,
     int? maxLength,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
@@ -576,6 +581,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               showCursor: !readOnly,
               keyboardType: keyboardType,
               maxLength: maxLength,
+              inputFormatters: inputFormatters,
               textAlign: TextAlign.right,
               style: Body1.style.copyWith(color: colors.onSurface),
               cursorColor: colors.onSurface,
