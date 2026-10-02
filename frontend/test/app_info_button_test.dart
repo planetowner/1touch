@@ -36,6 +36,15 @@ void main() {
         const EdgeInsets.symmetric(horizontal: 24, vertical: 24));
     expect(find.byKey(const ValueKey('app-info-close')), findsOneWidget);
     expect(find.text('I understand'), findsNothing);
+    final contentRect = tester.getRect(find.byKey(const ValueKey('app-info-content')));
+    final messageRect = tester.getRect(find.text('Example explanation'));
+    final closeRect = tester.getRect(find.byKey(const ValueKey('app-info-close')));
+    expect(messageRect.left - contentRect.left, 24);
+    expect(closeRect.top - contentRect.top, 24);
+    expect(messageRect.top - closeRect.bottom, 16);
+    expect(messageRect.width, contentRect.width - 48);
+    expect(contentRect.bottom - messageRect.bottom, 24);
+    expect(contentRect.right - closeRect.right, 24);
 
     await tester.tap(find.byKey(const ValueKey('app-info-close')));
     await tester.pumpAndSettle();

@@ -102,6 +102,139 @@ void main() {
     expect(requests, 1);
   });
 
+  test('ones to watch restores from disk without an API request', () async {
+    final store = MemoryLocalCacheStore();
+    await store.write(LocalCacheKeys.onesToWatch, _watchJson());
+    var requests = 0;
+    final repository = ApiPlayerDirectoryRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response('Unexpected request', 500);
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final restored = await repository.restoreCachedWatch();
+    expect(restored?.single.name, 'Watch player');
+    expect(repository.cachedWatch.value, same(restored));
+    expect(await repository.watch(), same(restored));
+    expect(requests, 0);
+  });
+
+  test('stale watch list remains visible during one background refresh',
+      () async {
+    final store = _AgedRankingStore();
+    await store.write(LocalCacheKeys.onesToWatch, _watchJson());
+    final response = Completer<http.Response>();
+    var requests = 0;
+    final repository = ApiPlayerDirectoryRepository(
+      api: ApiClient(
+        client: MockClient((_) {
+          requests++;
+          return response.future;
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final stale = await repository.watch();
+    expect((await repository.watch()), same(stale));
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, 1);
+    expect(repository.cachedWatch.value, same(stale));
+
+    response.complete(http.Response(
+      jsonEncode(_watchJson(name: 'Updated player')),
+      200,
+      headers: {'content-type': 'application/json; charset=utf-8'},
+    ));
+    await repository.refreshWatch();
+    expect(repository.cachedWatch.value?.single.name, 'Updated player');
+  });
+
+  test('manual watch refresh bypasses TTL and repairs damaged cache', () async {
+    final store = MemoryLocalCacheStore();
+    await store.write(LocalCacheKeys.onesToWatch, {'items': 'invalid'});
+    var requests = 0;
+    final repository = ApiPlayerDirectoryRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response(
+            jsonEncode(_watchJson(name: 'Player $requests')),
+            200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          );
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    expect((await repository.watch()).single.name, 'Player 1');
+    expect((await repository.watch()).single.name, 'Player 1');
+    expect(requests, 1);
+    expect((await repository.refreshWatch()).single.name, 'Player 2');
+    expect(requests, 2);
+    expect((await store.read(LocalCacheKeys.onesToWatch))?.payload, isNotNull);
+  });
+
+  test('failed stale watch refresh keeps the restored list', () async {
+    final store = _AgedRankingStore();
+    await store.write(LocalCacheKeys.onesToWatch, _watchJson());
+    var requests = 0;
+    final repository = ApiPlayerDirectoryRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response('Offline', 503);
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final stale = await repository.watch();
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, 1);
+    expect(repository.cachedWatch.value, same(stale));
+  });
+
+  test('concurrent cold watch loads share one API request', () async {
+    final response = Completer<http.Response>();
+    var requests = 0;
+    final repository = ApiPlayerDirectoryRepository(
+      api: ApiClient(
+        client: MockClient((_) {
+          requests++;
+          return response.future;
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: MemoryLocalCacheStore(),
+    );
+
+    final first = repository.watch();
+    final second = repository.watch();
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, 1);
+    response.complete(http.Response(
+      jsonEncode(_watchJson()),
+      200,
+      headers: {'content-type': 'application/json; charset=utf-8'},
+    ));
+    expect(await first, same(await second));
+  });
+
   test('restores a current ranking page after repository recreation', () async {
     final store = MemoryLocalCacheStore();
     var requests = 0;
@@ -119,8 +252,11 @@ void main() {
 
     await repository().ranking();
     final reader = repository();
-    final restored = await reader.ranking();
-    expect(restored.items.single.name, 'Cached player');
+    final restored = await reader.restoreCachedRanking();
+    expect(requests, 1);
+    expect(restored, isNotNull);
+    expect(await reader.ranking(), same(restored));
+    expect(restored!.items.single.name, 'Cached player');
     expect(reader.cachedRanking(), same(restored));
     expect(requests, 1);
 
@@ -348,6 +484,22 @@ Map<String, dynamic> _rankingJson({
           'rated_matches': 8,
         }
       ],
+    };
+
+Map<String, dynamic> _watchJson({String name = 'Watch player'}) => {
+      'items': [
+        {
+          'player_id': 7,
+          'name': name,
+          'image': null,
+          'jersey_number': 17,
+          'team_id': 7980,
+          'team_name': 'Atlético de Madrid',
+          'recent_average': 8.4,
+          'previous_average': 6.2,
+          'change': 2.2,
+        }
+      ]
     };
 
 class _AgedRankingStore implements LocalCacheStore {

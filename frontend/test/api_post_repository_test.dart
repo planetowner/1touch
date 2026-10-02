@@ -113,9 +113,12 @@ void main() {
     await repository().loadPosts(teamId: 83);
     await repository().loadPost(42);
     final reader = repository();
-    final feed = await reader.loadPosts(teamId: 83);
+    final feed = await reader.restoreCachedFeed(teamId: 83);
+    expect(feed, isNotNull);
+    expect(requests, 2);
+    expect(await reader.loadPosts(teamId: 83), same(feed));
     final post = await reader.loadPost(42);
-    expect(feed.single.postId, 42);
+    expect(feed!.single.postId, 42);
     expect(post.postId, 42);
     expect(reader.cachedFeed(teamId: 83), same(feed));
     expect(reader.cachedPost(42), same(post));

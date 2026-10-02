@@ -12,6 +12,9 @@ import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
     as home_provider;
+import 'package:onetouch/data/players/player_directory_repository.dart';
+import 'package:onetouch/data/posts/api/api_post_repository.dart';
+import 'package:onetouch/data/posts/post_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
 import 'package:onetouch/data/session/session_data_synchronizer.dart';
 import 'package:onetouch/data/standings/api/api_standing_repository.dart';
@@ -40,6 +43,16 @@ Future<void> restoreSelectedTeamCaches(int teamId) async {
   final tasks = <Future<void>>[];
   if (overviewRepository is ApiTeamOverviewRepository) {
     tasks.add(overviewRepository.restoreCachedForTeam(teamId).then((_) {}));
+  }
+  final directoryRepository = playerDirectoryRepository;
+  if (directoryRepository is ApiPlayerDirectoryRepository) {
+    tasks.add(directoryRepository.restoreCachedRanking().then((_) {}));
+    tasks.add(directoryRepository.restoreCachedWatch().then((_) {}));
+  }
+  final communityRepository = postRepository;
+  if (communityRepository is ApiPostRepository) {
+    tasks.add(
+        communityRepository.restoreCachedFeed(teamId: teamId).then((_) {}));
   }
   if (standingRepository is ApiStandingRepository) {
     const bigFiveIds = {8, 82, 301, 384, 564};

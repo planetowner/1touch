@@ -82,6 +82,8 @@ abstract final class LocalCacheKeys {
       'current-player-ranking:${league ?? 'all'}:${position ?? 'all'}:'
       '$limit:$offset';
 
+  static const onesToWatch = 'players-ones-to-watch';
+
   static String communityFeed(
     int teamId,
     String? category,
