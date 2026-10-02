@@ -30,6 +30,10 @@ class ApiTeamOverviewRepository implements TeamOverviewRepository {
   @override
   TeamOverview? cachedForTeam(int teamId) => _cachedTeams.value[teamId];
 
+  /// Loads only the local snapshot for startup; never waits for the network.
+  Future<TeamOverview?> restoreCachedForTeam(int teamId) async =>
+      cachedForTeam(teamId) ?? await _restore(teamId);
+
   @override
   Future<TeamOverview> loadForTeam(int teamId) {
     final cached = cachedForTeam(teamId);
@@ -82,6 +86,9 @@ class ApiTeamOverviewRepository implements TeamOverviewRepository {
       return null;
     }
     if (record == null) return null;
+
+    final alreadyCached = cachedForTeam(teamId);
+    if (alreadyCached != null) return alreadyCached;
 
     try {
       final decoded = Map<String, dynamic>.from(record.payload as Map);
