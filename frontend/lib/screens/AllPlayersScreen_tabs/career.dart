@@ -129,7 +129,7 @@ class _CareerTabState extends State<CareerTab> {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  competitionShortNameLabel(
+                  competitionNameLabel(
                       context,
                       competitions[index],
                       honours
@@ -174,7 +174,7 @@ class _CareerTabState extends State<CareerTab> {
     final competitions = <int, String>{};
     for (final season in history) {
       for (final competition in season.competitions) {
-        competitions[competition.id] = competitionShortNameLabel(
+        competitions[competition.id] = competitionNameLabel(
             context, competition.id, competition.name);
       }
     }
@@ -345,7 +345,7 @@ class _CareerTabState extends State<CareerTab> {
                   Expanded(
                     flex: 5,
                     child: Text(
-                      competitionShortNameLabel(
+                      competitionNameLabel(
                           context, competition.id, competition.name),
                       maxLines: 1,
                       softWrap: false,
