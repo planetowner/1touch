@@ -107,6 +107,10 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   void _handleMainTabAction() {
+    // The branch stays mounted while another bottom tab is visible. Reset its
+    // scroll positions before navigation so the old viewport cannot flash on
+    // the first frame when the user returns to Team.
+    _showRootAppBar();
     if (_tabController.index != 0) {
       _tabController.index = 0;
       setState(() => _tabViewEpoch++);
