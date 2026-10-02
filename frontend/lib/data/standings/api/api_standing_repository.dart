@@ -44,6 +44,16 @@ class ApiStandingRepository implements StandingRepository {
         .value[StandingQuery(competitionId: competitionId, seasonId: seasonId)];
   }
 
+  /// Loads only the local snapshot for startup; never waits for the network.
+  Future<List<Standing>?> restoreCachedForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) async =>
+      cachedForCompetition(competitionId, seasonId: seasonId) ??
+      await _restore(
+        StandingQuery(competitionId: competitionId, seasonId: seasonId),
+      );
+
   @override
   Future<List<Standing>> loadForCompetition(
     int competitionId, {
@@ -116,6 +126,12 @@ class ApiStandingRepository implements StandingRepository {
       return null;
     }
     if (record == null) return null;
+
+    final alreadyCached = cachedForCompetition(
+      query.competitionId,
+      seasonId: query.seasonId,
+    );
+    if (alreadyCached != null) return alreadyCached;
 
     try {
       final decoded = Map<String, dynamic>.from(record.payload as Map);

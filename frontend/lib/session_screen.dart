@@ -12,7 +12,12 @@ import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
     as home_provider;
+import 'package:onetouch/data/seasons/season_repository_provider.dart';
 import 'package:onetouch/data/session/session_data_synchronizer.dart';
+import 'package:onetouch/data/standings/api/api_standing_repository.dart';
+import 'package:onetouch/data/standings/api_standing_repository_provider.dart';
+import 'package:onetouch/data/team_overview/api/api_team_overview_repository.dart';
+import 'package:onetouch/data/team_overview/team_overview_repository_provider.dart';
 import 'package:onetouch/data/profile/api/api_current_user_response.dart';
 import 'package:onetouch/data/teams/team_page_eligibility.dart';
 import 'package:onetouch/features/profile_fields.dart';
@@ -26,6 +31,48 @@ import 'package:onetouch/l10n/app_localizations.dart';
 String? _readyToken;
 bool get isAppSessionReady =>
     _readyToken != null && _readyToken == authSession.accessToken;
+
+/// Promote the selected team's disk snapshots before its screens build.
+/// No API call is started here; the screens own TTL revalidation on entry.
+Future<void> restoreSelectedTeamCaches(int teamId) async {
+  final overviewRepository = teamOverviewRepository;
+  final standingRepository = apiStandingRepository;
+  final tasks = <Future<void>>[];
+  if (overviewRepository is ApiTeamOverviewRepository) {
+    tasks.add(overviewRepository.restoreCachedForTeam(teamId).then((_) {}));
+  }
+  if (standingRepository is ApiStandingRepository) {
+    const bigFiveIds = {8, 82, 301, 384, 564};
+    final competitions = footballCatalog.memberships
+        .where((membership) => membership.teamId == teamId)
+        .map((membership) => membership.competitionId)
+        .toSet()
+        .toList()
+      ..sort((a, b) => (bigFiveIds.contains(a) ? 0 : 1)
+          .compareTo(bigFiveIds.contains(b) ? 0 : 1));
+    if (competitions.isNotEmpty) {
+      final competitionId = competitions.first;
+      final seasons = seasonRepository.forCompetition(competitionId);
+      final season = seasonRepository.currentForCompetition(competitionId) ??
+          (seasons.isNotEmpty ? seasons.first : null);
+      if (season != null) {
+        tasks.add(standingRepository
+            .restoreCachedForCompetition(
+              competitionId,
+              seasonId: season.seasonId,
+            )
+            .then((_) {}));
+      }
+    }
+  }
+  await Future.wait(tasks.map((task) async {
+    try {
+      await task;
+    } on Object {
+      // Local cache availability must not prevent navigation.
+    }
+  }));
+}
 
 class SessionScreen extends StatefulWidget {
   const SessionScreen({
@@ -132,6 +179,7 @@ class _SessionScreenState extends State<SessionScreen> {
         // Local storage is optional; an unreadable cache must not block Home.
       }
     }
+    await restoreSelectedTeamCaches(currentUserPreferences.viewedTeamId.value);
     if (!mounted || sessionToken != authSession.accessToken) return;
     _readyToken = sessionToken;
     final communityDestination = communityLinkNavigation.take(

@@ -171,6 +171,29 @@ void main() {
     expect(requested, isFalse);
   });
 
+  test('startup restore reads disk without starting an API request', () async {
+    final store = MemoryLocalCacheStore();
+    await store.write(LocalCacheKeys.standings(8, 25583), _responseJson());
+    var requests = 0;
+    final repository = ApiStandingRepository(
+      api: _api((_) async {
+        requests++;
+        return http.Response('Unexpected request', 500);
+      }),
+      cacheStore: store,
+    );
+
+    expect(
+      (await repository.restoreCachedForCompetition(8, seasonId: 25583))
+          ?.single
+          .teamName,
+      'Manchester City',
+    );
+    expect(repository.cachedForCompetition(8, seasonId: 25583), isNotNull);
+    expect(await repository.restoreCachedForCompetition(9), isNull);
+    expect(requests, 0);
+  });
+
   test('returns a stale table then publishes one background refresh', () async {
     final response = Completer<http.Response>();
     final requested = Completer<void>();
