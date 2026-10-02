@@ -5,6 +5,9 @@ import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/models/betting.dart';
 
 class FakeBettingRepository implements BettingRepository {
+  FakeBettingRepository({this.marketOptions = options});
+
+  final List<BettingOption> marketOptions;
   int stakeUnit = 10;
   DateTime? opensAt;
   String? unavailableReason;
@@ -31,6 +34,18 @@ class FakeBettingRepository implements BettingRepository {
       decimalOdds: 3.333333333333,
     ),
   ];
+  static const decisiveOptions = [
+    BettingOption(
+      outcome: BetOutcome.homeWin,
+      probabilityText: '0.800000000000000000',
+      decimalOdds: 1.25,
+    ),
+    BettingOption(
+      outcome: BetOutcome.awayWin,
+      probabilityText: '0.200000000000000000',
+      decimalOdds: 5,
+    ),
+  ];
 
   @override
   Future<PointWallet> initializeWallet() async =>
@@ -48,7 +63,7 @@ class FakeBettingRepository implements BettingRepository {
         closesAt: DateTime.now().add(const Duration(days: 1)),
         predictionRunId: 'a' * 64,
         predictionAsOf: DateTime.now(),
-        options: options,
+        options: marketOptions,
         wallet: PointWallet(balance: balance, initialized: true),
         bet: bet,
         participantCount: bet?.isOpen == true ? 1 : 0,
@@ -71,7 +86,8 @@ class FakeBettingRepository implements BettingRepository {
     if (submitGate != null) await submitGate!.future;
     if (saveError != null) throw saveError!;
     balance += (bet?.isOpen == true ? bet!.stake : 0) - stake;
-    final option = options[outcome.index];
+    final option =
+        marketOptions.firstWhere((option) => option.outcome == outcome);
     bet = FixtureBet(
       betId: 1,
       fixtureId: fixtureId,
