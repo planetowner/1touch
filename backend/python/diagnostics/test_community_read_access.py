@@ -14,7 +14,7 @@ with patch('mysql.connector.pooling.MySQLConnectionPool'):
 class FollowedCommunityReadTests(unittest.TestCase):
     def setUp(self):
         self.user = {'user_id': 1, 'favorite_team_id': 83, 'username': 'viewer',
-                     'first_name': 'First', 'last_name': 'Last', 'suspended_until': None}
+                     'display_name': 'Viewer', 'suspended_until': None}
         self.post = {'post_id': 91, 'team_id': 9, 'user_id': 2, 'state': 'active',
                      'body': 'Other team post', 'title': 'Title', 'username': 'author',
                      'created_at': datetime(2026, 9, 23)}
@@ -63,7 +63,7 @@ class FollowedCommunityReadTests(unittest.TestCase):
         with self.assertRaises(HTTPException) as raised:
             posts_repo.get_post(1, 91)
         self.assertEqual(raised.exception.status_code, 404)
-        self.user['username'] = None
+        self.user['display_name'] = None
         for operation in self.read_operations():
             with self.subTest(operation=operation), self.assertRaises(HTTPException) as raised:
                 operation()

@@ -143,8 +143,6 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
     required String password,
     required String username,
     required String displayName,
-    required String firstName,
-    required String lastName,
   }) async {
     final uri = _api.baseUri.resolve('auth/email/register');
     final response = await _api.post(
@@ -158,8 +156,6 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
         'password': password,
         'username': username,
         'display_name': displayName,
-        'first_name': firstName,
-        'last_name': lastName,
       }),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {

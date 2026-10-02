@@ -17,7 +17,6 @@ import 'package:onetouch/data/profile/profile_avatar_repository_provider.dart'
     as avatar_provider;
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
-import 'package:onetouch/l10n/user_name_labels.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/data/auth/social_identity_service.dart';
@@ -50,7 +49,6 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  late final TextEditingController nameController;
   late final TextEditingController usernameController;
   late final TextEditingController displayNameController;
   late final TextEditingController emailController;
@@ -78,7 +76,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.initState();
     final profile = widget.profile;
     _socialAccounts = {...?profile?.socialAccounts};
-    nameController = TextEditingController();
     usernameController = TextEditingController(
       text: profile?.username ?? '',
     );
@@ -88,19 +85,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     emailController = TextEditingController(
       text: profile?.email ?? '',
     );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final profile = widget.profile;
-    nameController.text = profile == null
-        ? ''
-        : userNameLabel(
-            locale: Localizations.localeOf(context),
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-          );
   }
 
   Future<XFile?> _pickAvatar() =>
@@ -247,9 +231,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _saveProfile() async {
     if (_isProfileSaving) return;
-    final username = usernameController.text;
+    final username =
+        widget.profile?.email == null ? null : usernameController.text;
     final displayName = displayNameController.text;
-    final message = (username == widget.profile?.username
+    final message = (username == null || username == widget.profile?.username
             ? null
             : usernameValidationMessage(username)) ??
         displayNameValidationMessage(displayName);
@@ -266,8 +251,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       await current_user_provider.currentUserRepository.updateProfile(
         username: username,
         displayName: displayName,
-        firstName: widget.profile?.firstName ?? '',
-        lastName: widget.profile?.lastName ?? '',
       );
       if (!mounted) return;
       Navigator.of(context).pop(true);
@@ -334,7 +317,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   void dispose() {
-    nameController.dispose();
     usernameController.dispose();
     displayNameController.dispose();
     emailController.dispose();
@@ -436,20 +418,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               const SizedBox(height: 16),
 
-              _buildTextField(
-                label: tr(context, 'Name'),
-                controller: nameController,
-                fieldKey: const ValueKey('profile-real-name-field'),
-                readOnly: true,
-              ),
-              const SizedBox(height: 8),
-              _buildTextField(
-                label: tr(context, 'Username'),
-                controller: usernameController,
-                fieldKey: const ValueKey('profile-username-field'),
-                maxLength: 30,
-              ),
-              const SizedBox(height: 8),
+              if (widget.profile?.email != null) ...[
+                _buildTextField(
+                  label: tr(context, 'Username'),
+                  controller: usernameController,
+                  fieldKey: const ValueKey('profile-username-field'),
+                  maxLength: 30,
+                ),
+                const SizedBox(height: 8),
+              ],
               _buildTextField(
                 label: tr(context, 'Nickname'),
                 controller: displayNameController,

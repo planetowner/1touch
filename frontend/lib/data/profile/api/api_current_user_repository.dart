@@ -63,29 +63,12 @@ class ApiCurrentUserRepository implements CurrentUserRepository {
   }
 
   Future<void> updateProfile(
-      {required String username,
-      required String displayName,
-      required String firstName,
-      required String lastName}) async {
+      {String? username, required String displayName}) async {
     await _saveProfile({
-      'username': username,
+      if (username != null) 'username': username,
       'display_name': displayName,
-      'first_name': firstName,
-      'last_name': lastName
     });
   }
-
-  /// The server will generate the login username for a new social account.
-  Future<void> completeSocialProfile({
-    required String displayName,
-    required String firstName,
-    required String lastName,
-  }) =>
-      _saveProfile({
-        'display_name': displayName,
-        'first_name': firstName,
-        'last_name': lastName,
-      });
 
   Future<void> _saveProfile(Map<String, String> fields) async {
     final response = await _api.put(_api.baseUri.resolve('users/me/profile'),

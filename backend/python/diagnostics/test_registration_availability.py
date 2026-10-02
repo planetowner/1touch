@@ -20,7 +20,7 @@ class RegistrationAvailabilityTests(unittest.TestCase):
                 username TEXT COLLATE NOCASE, display_name TEXT COLLATE NOCASE);
             CREATE TABLE user_email_credentials (user_id INTEGER PRIMARY KEY,
                 email TEXT COLLATE NOCASE);
-            INSERT INTO users VALUES (1, 'member', 'Supporter'), (2, 'social_only', '메이플123');
+            INSERT INTO users VALUES (1, 'member', 'Supporter'), (2, NULL, '메이플123');
             INSERT INTO user_email_credentials VALUES (1, 'member@example.com');
         ''')
         self.lookup = self.enterContext(patch.object(auth_repo, 'fetch_one_dict',
@@ -44,8 +44,8 @@ class RegistrationAvailabilityTests(unittest.TestCase):
                 self.assertEqual(self.check(field, existing).json(), {'available': False})
                 self.assertEqual(self.check(field, unused).json(), {'available': True})
 
-    def test_social_accounts_also_reserve_username_and_nickname(self):
-        self.assertEqual(self.check('username', 'social_only').json(), {'available': False})
+    def test_social_accounts_reserve_only_nickname(self):
+        self.assertEqual(self.check('username', 'social_only').json(), {'available': True})
         self.assertEqual(self.check('display_name', '메이플123').json(), {'available': False})
 
     def test_invalid_fields_and_values_are_rejected_without_lookup(self):

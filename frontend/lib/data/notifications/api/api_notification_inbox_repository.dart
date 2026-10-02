@@ -115,7 +115,8 @@ class ApiNotificationInboxRepository implements NotificationInboxRepository {
       commentId: commentId as int?,
       actorId: actorId,
       teamId: teamId,
-      username: _requiredString(json, 'username'),
+      username: json['username'] as String?,
+      displayName: json['display_name'] as String?,
       commentPreview:
           _requiredString(json, 'comment_preview', allowEmpty: true),
       createdAt: createdAt,

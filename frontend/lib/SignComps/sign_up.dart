@@ -11,7 +11,6 @@ import 'package:onetouch/data/auth/registration_field.dart';
 import 'package:onetouch/SignComps/verify_email.dart';
 import 'package:onetouch/SignComps/signup_availability_field.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
-import 'package:onetouch/l10n/user_name_labels.dart';
 
 String? _emailValidationMessage(String value) {
   final email = value.trim();
@@ -33,8 +32,6 @@ class EmailSignUpScreen extends StatefulWidget {
 class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final _firstName = TextEditingController();
-  final _lastName = TextEditingController();
   final _username = TextEditingController();
   final _displayName = TextEditingController();
   final _email = TextEditingController();
@@ -65,8 +62,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
   bool get _validInputs =>
       _agreed &&
-      _firstName.text.trim().isNotEmpty &&
-      _lastName.text.trim().isNotEmpty &&
       usernameValidationMessage(_username.text) == null &&
       displayNameValidationMessage(_displayName.text) == null &&
       _emailValidationMessage(_email.text) == null &&
@@ -96,8 +91,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       final registrationResult = await context.push<String>(
         '/auth/verify',
         extra: EmailRegistrationDraft(
-          firstName: _firstName.text.trim(),
-          lastName: _lastName.text.trim(),
           username: _username.text,
           displayName: _displayName.text,
           email: email,
@@ -147,8 +140,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
   @override
   void dispose() {
-    _firstName.dispose();
-    _lastName.dispose();
     _username.dispose();
     _displayName.dispose();
     _email.dispose();
@@ -192,41 +183,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 12),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          for (final (index, field) in orderedUserNameParts(
-                            locale: Localizations.localeOf(context),
-                            firstName: (_firstName, 'First name', 'John'),
-                            lastName: (_lastName, 'Last name', 'Doe'),
-                          ).indexed) ...[
-                            if (index > 0) const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(tr(context, field.$2),
-                                      style: Eyebrow.style),
-                                  const SizedBox(height: 8),
-                                  TextFormField(
-                                    key: ValueKey(
-                                        'signup-${field.$2.toLowerCase().replaceAll(' ', '-')}-field'),
-                                    controller: field.$1,
-                                    decoration: _dec(context, field.$3),
-                                    validator: (v) => (v == null ||
-                                            v.trim().isEmpty)
-                                        ? tr(context,
-                                            'Enter ${field.$2.toLowerCase()}')
-                                        : null,
-                                    style: Body1.style,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 16),
                       for (final field in [
                         (
                           field: RegistrationField.username,

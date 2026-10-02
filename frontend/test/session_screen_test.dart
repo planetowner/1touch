@@ -40,7 +40,6 @@ void main() {
                 case '/v1/users/me/profile':
                   account
                       .addAll(jsonDecode(request.body) as Map<String, dynamic>);
-                  account['username'] ??= 'social-generated-1';
                   body = account;
                 case '/v1/users/me/following/teams':
                   body = [catalog['teams'][0]];
@@ -62,10 +61,8 @@ void main() {
         .establish('test-session-${DateTime.now().microsecondsSinceEpoch}');
     account = {
       'user_id': 1,
-      'username': 'example',
+      'username': null,
       'display_name': 'Example',
-      'first_name': 'First',
-      'last_name': 'Last',
       'email': null,
       'avatar_url': null,
       'favorite_team_id': 8,
@@ -152,11 +149,12 @@ void main() {
             r.headers['Authorization'] == 'Bearer ${authSession.accessToken}'),
         isTrue);
   });
-  testWidgets('an existing member without a nickname can enter the app',
+  testWidgets('a social member without a nickname must complete the profile',
       (tester) async {
     account['display_name'] = null;
     await pump(tester);
-    expect(find.text('Ready Home'), findsOneWidget);
+    expect(find.text('Ready Home'), findsNothing);
+    expect(find.text('Pick a nickname'), findsOneWidget);
   });
 
   testWidgets('opens a queued notification after session bootstrap',
@@ -202,29 +200,17 @@ void main() {
     expect(find.text('Ready Home'), findsOneWidget);
   });
   for (final locale in appSupportedLocales) {
-    testWidgets(
-        'incomplete social profile preserves name fields with $locale input order',
+    testWidgets('social profile saves only nickname with $locale',
         (tester) async {
       account.addAll({
         'username': null,
         'display_name': null,
-        'first_name': null,
-        'last_name': null,
         'favorite_team_id': null,
         'onboarding_complete': false
       });
       await pump(tester, locale: locale);
       expect(find.text(translateMessage(locale, 'Pick a nickname')),
           findsOneWidget);
-      final first = find.byKey(const ValueKey('social-first-name-field'));
-      final last = find.byKey(const ValueKey('social-last-name-field'));
-      expect(tester.getTopLeft(first).dy, tester.getTopLeft(last).dy);
-      expect(tester.getTopLeft(first).dx < tester.getTopLeft(last).dx,
-          locale.languageCode == 'en');
-      await tester.enterText(
-          find.byKey(const ValueKey('social-first-name-field')), 'First');
-      await tester.enterText(
-          find.byKey(const ValueKey('social-last-name-field')), 'Last');
       await tester.enterText(
           find.byKey(const ValueKey('social-nickname-field')), 'Supporter');
       await tester.pump(const Duration(milliseconds: 300));
@@ -235,9 +221,8 @@ void main() {
       final update = requests.singleWhere((r) => r.method == 'PUT');
       expect(jsonDecode(update.body), {
         'display_name': 'Supporter',
-        'first_name': 'First',
-        'last_name': 'Last'
       });
+      expect(account['username'], isNull);
       expect(isAppSessionReady, isFalse);
     });
   }

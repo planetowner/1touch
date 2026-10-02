@@ -23,7 +23,6 @@ import 'package:onetouch/data/team_overview/api/api_team_overview_repository.dar
 import 'package:onetouch/data/team_overview/team_overview_repository_provider.dart';
 import 'package:onetouch/data/profile/api/api_current_user_response.dart';
 import 'package:onetouch/data/teams/team_page_eligibility.dart';
-import 'package:onetouch/features/profile_fields.dart';
 import 'package:onetouch/SignComps/social_profile_setup.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
@@ -153,8 +152,7 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Future<void> _handle(SessionDataSnapshot snapshot) async {
     final account = snapshot.account;
-    if ([account.username, account.firstName, account.lastName]
-        .any((s) => s == null || s.isEmpty)) {
+    if (account.email == null && !account.profileComplete) {
       setState(() => _incompleteProfile = account);
       return;
     }
@@ -212,21 +210,17 @@ class _SessionScreenState extends State<SessionScreen> {
   @override
   Widget build(BuildContext context) {
     final profile = _incompleteProfile;
-    if (profile != null && profile.email == null) {
+    if (profile != null) {
       return SocialProfileSetup(
         initialNickname: profile.displayName,
-        initialFirstName: profile.firstName,
-        initialLastName: profile.lastName,
         checkNicknameAvailability: widget.checkNicknameAvailability ??
             (value) => auth_provider.authService.isRegistrationValueAvailable(
                   field: RegistrationField.displayName,
                   value: value,
                 ),
-        onContinue: (nickname, firstName, lastName) async {
-          await currentUserRepository.completeSocialProfile(
+        onContinue: (nickname) async {
+          await currentUserRepository.updateProfile(
             displayName: nickname,
-            firstName: firstName,
-            lastName: lastName,
           );
           await _load();
         },
@@ -235,26 +229,15 @@ class _SessionScreenState extends State<SessionScreen> {
     }
     return Scaffold(
         body: SafeArea(
-            child: profile != null
-                ? ListView(padding: const EdgeInsets.all(24), children: [
-                    Text(tr(context, 'Complete your profile')),
-                    const SizedBox(height: 24),
-                    ProfileFields(
-                        username: profile.username,
-                        displayName: profile.displayName,
-                        firstName: profile.firstName,
-                        lastName: profile.lastName,
-                        onSaved: _load),
-                  ])
-                : Center(
-                    child: _error == null
-                        ? const FootballLoadingIndicator()
-                        : Column(mainAxisSize: MainAxisSize.min, children: [
-                            Text(tr(context,
-                                'Unable to load your account. Please try again.')),
-                            TextButton(
-                                onPressed: _load,
-                                child: Text(tr(context, 'Retry'))),
-                          ]))));
+            child: Center(
+                child: _error == null
+                    ? const FootballLoadingIndicator()
+                    : Column(mainAxisSize: MainAxisSize.min, children: [
+                        Text(tr(context,
+                            'Unable to load your account. Please try again.')),
+                        TextButton(
+                            onPressed: _load,
+                            child: Text(tr(context, 'Retry'))),
+                      ]))));
   }
 }

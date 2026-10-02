@@ -24,9 +24,9 @@ class CommunitySuspensionTests(unittest.TestCase):
         self.addCleanup(self.db.close)
         self.db.executescript("""
             CREATE TABLE users (user_id INTEGER PRIMARY KEY, username TEXT,
-                first_name TEXT, last_name TEXT, suspended_until TEXT);
-            INSERT INTO users VALUES (1,'member','First','Last',NULL),
-                (2,'admin','First','Last',NULL);
+                display_name TEXT, suspended_until TEXT);
+            INSERT INTO users VALUES (1,'member','Member',NULL),
+                (2,'admin','Admin',NULL);
         """)
         self.now = datetime(2026, 10, 1)
         self.patch(api_db, "get_conn", side_effect=AssertionError("External DB access is forbidden"))

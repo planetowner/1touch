@@ -446,13 +446,14 @@ class _ProfileState extends State<Profile> {
             profile.profileHeading,
             style: Heading5.style,
           ),
-          Opacity(
-            opacity: 0.5,
-            child: Text(
-              profile.email ?? '@${profile.username}',
-              style: Body2.style,
+          if (profile.email != null)
+            Opacity(
+              opacity: 0.5,
+              child: Text(
+                profile.email!,
+                style: Body2.style,
+              ),
             ),
-          ),
         ],
       ),
     );

@@ -126,7 +126,8 @@ class _StaticNotificationInboxRepository
             postId: 12,
             actorId: 3,
             teamId: 83,
-            username: 'User One',
+            username: null,
+            displayName: 'User One',
             commentPreview: '',
             createdAt:
                 DateTime.now().toUtc().subtract(const Duration(hours: 2)),
@@ -141,6 +142,7 @@ class _StaticNotificationInboxRepository
             actorId: 4,
             teamId: 83,
             username: 'User Two',
+            displayName: 'User Two',
             commentPreview: 'Good point',
             createdAt:
                 DateTime.now().toUtc().subtract(const Duration(hours: 3)),

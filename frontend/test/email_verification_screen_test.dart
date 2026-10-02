@@ -25,17 +25,17 @@ void main() {
     addTearDown(tester.view.resetViewInsets);
     await tester.pumpWidget(const MaterialApp(home: EmailSignUpScreen()));
 
-    final firstName = find.byKey(const ValueKey('signup-first-name-field'));
+    final username = find.byKey(const ValueKey('signup-username-field'));
     final checkbox = find.byType(Checkbox);
     final button = find.byKey(const ValueKey('email-sign-up-button'));
-    final firstNameTop = tester.getTopLeft(firstName).dy;
+    final usernameTop = tester.getTopLeft(username).dy;
     final checkboxTop = tester.getTopLeft(checkbox).dy;
     final buttonTop = tester.getTopLeft(button).dy;
 
     await tester.drag(find.byKey(const ValueKey('signup-fields-scroll')),
         const Offset(0, -300));
     await tester.pumpAndSettle();
-    expect(tester.getTopLeft(firstName).dy, lessThan(firstNameTop));
+    expect(tester.getTopLeft(username).dy, lessThan(usernameTop));
     expect(tester.getTopLeft(checkbox).dy, checkboxTop);
     expect(tester.getTopLeft(button).dy, buttonTop);
 
@@ -147,7 +147,7 @@ void main() {
   });
 
   for (final locale in appSupportedLocales) {
-    testWidgets('signup preserves name meanings with $locale input order',
+    testWidgets('signup requires no personal name with $locale',
         (tester) async {
       tester.view.physicalSize = const Size(393, 852);
       tester.view.devicePixelRatio = 1;
@@ -175,20 +175,17 @@ void main() {
         localizationsDelegates: appLocalizationDelegates,
       ));
       await tester.pumpAndSettle();
-      final first = find.byKey(const ValueKey('signup-first-name-field'));
-      final last = find.byKey(const ValueKey('signup-last-name-field'));
-      expect(tester.getTopLeft(first).dy, tester.getTopLeft(last).dy);
-      expect(tester.getTopLeft(first).dx < tester.getTopLeft(last).dx,
-          locale.languageCode == 'en');
-      await tester.enterText(first, 'Given');
-      await tester.enterText(last, 'Family');
+      expect(
+          find.byKey(const ValueKey('signup-first-name-field')), findsNothing);
+      expect(
+          find.byKey(const ValueKey('signup-last-name-field')), findsNothing);
       final fields = find.byType(TextFormField);
-      await tester.enterText(fields.at(2), 'member');
+      await tester.enterText(fields.at(0), 'member');
       await tester.enterText(
           find.byKey(const ValueKey('signup-display-name-field')), 'Supporter');
-      await tester.enterText(fields.at(4), 'member@example.com');
-      await tester.enterText(fields.at(5), 'Password123');
-      await tester.enterText(fields.at(6), 'Password123');
+      await tester.enterText(fields.at(2), 'member@example.com');
+      await tester.enterText(fields.at(3), 'Password123');
+      await tester.enterText(fields.at(4), 'Password123');
       await tester.ensureVisible(find.byType(Checkbox));
       await tester.tap(find.byType(Checkbox));
       await tester.pump(const Duration(milliseconds: 250));
@@ -200,14 +197,12 @@ void main() {
       await tester.tap(submit);
       await tester.pumpAndSettle();
       expect(find.text('Verification destination'), findsOneWidget);
-      expect(draft!.firstName, 'Given');
-      expect(draft!.lastName, 'Family');
       expect(draft!.displayName, 'Supporter');
       expect(tester.takeException(), isNull);
     });
   }
 
-  testWidgets('signup checks both names before requesting an email code',
+  testWidgets('signup checks ID and nickname before requesting an email code',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1;
@@ -231,13 +226,11 @@ void main() {
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
 
     final fields = find.byType(TextFormField);
-    await tester.enterText(fields.at(0), 'John');
-    await tester.enterText(fields.at(1), 'Doe');
-    await tester.enterText(fields.at(2), '.john');
-    await tester.enterText(fields.at(3), 'June_Kim');
-    await tester.enterText(fields.at(4), 'john@example.com');
-    await tester.enterText(fields.at(5), 'Password123');
-    await tester.enterText(fields.at(6), 'Password123');
+    await tester.enterText(fields.at(0), '.john');
+    await tester.enterText(fields.at(1), 'June_Kim');
+    await tester.enterText(fields.at(2), 'john@example.com');
+    await tester.enterText(fields.at(3), 'Password123');
+    await tester.enterText(fields.at(4), 'Password123');
     await tester.ensureVisible(find.byType(Checkbox));
     await tester.tap(find.byType(Checkbox));
     await tester.pump();
@@ -252,8 +245,8 @@ void main() {
     ScaffoldMessenger.of(tester.element(submit)).removeCurrentSnackBar();
     await tester.pumpAndSettle();
 
-    await tester.enterText(fields.at(2), 'john_doe');
-    await tester.enterText(fields.at(3), '메이플123');
+    await tester.enterText(fields.at(0), 'john_doe');
+    await tester.enterText(fields.at(1), '메이플123');
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pump();
     tester.testTextInput.hide();
@@ -292,8 +285,6 @@ void main() {
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     final fields = find.byType(TextFormField);
     for (final (index, value) in [
-      'John',
-      'Doe',
       'taken',
       'Supporter',
       'member@example.com',
@@ -301,7 +292,7 @@ void main() {
     ].indexed) {
       await tester.enterText(fields.at(index), value);
     }
-    await tester.enterText(fields.at(6), 'Password123');
+    await tester.enterText(fields.at(4), 'Password123');
     await tester.ensureVisible(find.byType(Checkbox));
     await tester.tap(find.byType(Checkbox));
     await tester.pump(const Duration(milliseconds: 250));
@@ -318,14 +309,13 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('verify-email-button')));
     await tester.pumpAndSettle();
 
-    expect(
-        find.byKey(const ValueKey('signup-first-name-field')), findsOneWidget);
+    expect(find.byKey(const ValueKey('signup-username-field')), findsOneWidget);
     expect(find.text('Email, username, or nickname is already registered'),
         findsOneWidget);
     expect(
-        tester.widget<TextFormField>(fields.at(2)).controller!.text, 'taken');
-    await tester.enterText(fields.at(2), 'different');
-    expect(tester.widget<TextFormField>(fields.at(2)).controller!.text,
+        tester.widget<TextFormField>(fields.at(0)).controller!.text, 'taken');
+    await tester.enterText(fields.at(0), 'different');
+    expect(tester.widget<TextFormField>(fields.at(0)).controller!.text,
         'different');
     expect(tester.takeException(), isNull);
   });
@@ -403,13 +393,11 @@ Future<void> _pumpSignup(
 Future<void> _fillSignup(WidgetTester tester) async {
   final fields = find.byType(TextFormField);
   for (final (index, value) in [
-    (0, 'John'),
-    (1, 'Doe'),
-    (2, 'member'),
-    (3, 'Supporter'),
-    (4, 'member@example.com'),
-    (5, 'Password123'),
-    (6, 'Password123'),
+    (0, 'member'),
+    (1, 'Supporter'),
+    (2, 'member@example.com'),
+    (3, 'Password123'),
+    (4, 'Password123'),
   ]) {
     await tester.enterText(fields.at(index), value);
   }
@@ -434,8 +422,6 @@ GoRouter _router(AuthService service) => GoRouter(
             email: 'member@example.com',
             authService: service,
             registrationDraft: const EmailRegistrationDraft(
-              firstName: 'First',
-              lastName: 'Last',
               username: 'member',
               displayName: 'Member',
               email: 'member@example.com',
@@ -509,8 +495,6 @@ class _FakeAuthRepository implements AuthRepository {
     required String password,
     required String username,
     required String displayName,
-    required String firstName,
-    required String lastName,
   }) async {
     registrationChallengeId = challengeId;
     registrationCode = code;

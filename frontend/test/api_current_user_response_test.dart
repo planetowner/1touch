@@ -9,8 +9,6 @@ void main() {
       expect(response.userId, 1001);
       expect(response.username, 'colin');
       expect(response.displayName, 'Planet Owner');
-      expect(response.firstName, 'Colin');
-      expect(response.lastName, 'Sung');
       expect(response.email, 'colin@example.com');
       expect(response.avatarUrl, '/v1/users/1001/avatar');
       expect(response.favoriteTeamId, 8);
@@ -33,8 +31,6 @@ void main() {
         ..._profileJson(),
         'username': null,
         'display_name': null,
-        'first_name': null,
-        'last_name': null,
         'email': null,
         'avatar_url': null,
         'favorite_team_id': null,
@@ -42,8 +38,6 @@ void main() {
       });
 
       expect(response.username, isNull);
-      expect(response.firstName, isNull);
-      expect(response.lastName, isNull);
       expect(response.email, isNull);
       expect(response.avatarUrl, isNull);
       expect(response.favoriteTeamId, isNull);
@@ -66,8 +60,6 @@ void main() {
         'user_id',
         'username',
         'display_name',
-        'first_name',
-        'last_name',
         'email',
         'avatar_url',
         'favorite_team_id',
@@ -106,8 +98,6 @@ Map<String, dynamic> _profileJson() {
     'user_id': 1001,
     'username': 'colin',
     'display_name': 'Planet Owner',
-    'first_name': 'Colin',
-    'last_name': 'Sung',
     'email': 'colin@example.com',
     'avatar_url': '/v1/users/1001/avatar',
     'favorite_team_id': 8,

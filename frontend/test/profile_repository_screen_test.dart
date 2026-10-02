@@ -238,7 +238,7 @@ void main() {
   });
 
   testWidgets(
-      'profile nickname and personal info names stay distinct by locale',
+      'profile and settings show nickname without personal name in every locale',
       (tester) async {
     for (final page in [
       Profile(
@@ -257,16 +257,15 @@ void main() {
           home: page,
         ));
         await tester.pumpAndSettle();
-        final expected =
-            locale.languageCode == 'en' ? 'Planet Owner' : 'OwnerPlanet';
+        expect(find.byKey(const ValueKey('profile-real-name-field')),
+            findsNothing);
         if (page is EditProfileScreen) {
           final field = tester.widget<TextField>(
-            find.byKey(const ValueKey('profile-real-name-field')),
+            find.byKey(const ValueKey('profile-display-name-field')),
           );
-          expect(field.controller!.text, expected);
+          expect(field.controller!.text, '불광동호날두');
         } else {
           expect(find.text('@불광동호날두'), findsOneWidget);
-          expect(find.text(expected), findsNothing);
         }
         expect(tester.takeException(), isNull);
       }
@@ -302,36 +301,22 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets(
-      'existing member can open the nickname editor before choosing one',
+  testWidgets('social settings show only nickname as editable identity',
       (tester) async {
     await _setScreenSize(tester, const Size(393, 852));
-    final repository = _ControlledCurrentUserRepository();
     await tester.pumpWidget(MaterialApp(
       theme: app_style.whitetheme,
-      home: Profile(
-        loadPointBalance: () async => 1430,
-        activityRepository: const StubProfileActivityRepository(),
-        repository: repository,
-        followingTeamsRepository: _StaticFollowingTeamsRepository(),
-      ),
+      home: EditProfileScreen(profile: _profile(username: null, email: null)),
     ));
-    repository.calls.single.complete(_profile(displayName: null));
-    await tester.pump();
-    expect(find.text('@planetowner'), findsOneWidget);
-
-    await tester.pumpWidget(MaterialApp(
-      theme: app_style.whitetheme,
-      home: EditProfileScreen(profile: _profile(displayName: null)),
-    ));
-    final field = tester.widget<TextField>(
-      find.byKey(const ValueKey('profile-display-name-field')),
-    );
-    expect(field.controller!.text, isEmpty);
+    expect(find.byKey(const ValueKey('profile-username-field')), findsNothing);
+    expect(find.byKey(const ValueKey('profile-real-name-field')), findsNothing);
+    expect(find.byKey(const ValueKey('profile-display-name-field')),
+        findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('retries a failed load and falls back to the username',
+  testWidgets(
+      'retries a failed load and displays a social nickname without username',
       (tester) async {
     await _setScreenSize(tester, const Size(430, 932));
     final repository = _ControlledCurrentUserRepository();
@@ -356,10 +341,11 @@ void main() {
     await tester.pump();
     expect(repository.calls, hasLength(2));
 
-    repository.calls.last.complete(_profile(email: null));
+    repository.calls.last.complete(_profile(username: null, email: null));
     await tester.pump();
 
-    expect(find.text('@planetowner'), findsOneWidget);
+    expect(find.text('@불광동호날두'), findsOneWidget);
+    expect(find.text('@null'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -705,15 +691,14 @@ class _ControlledActivityRepository extends StubProfileActivityRepository {
 
 CurrentUserProfile _profile({
   String? email = 'owner@example.com',
-  String? displayName = '불광동호날두',
+  String displayName = '불광동호날두',
+  String? username = 'planetowner',
   Uri? avatarUri,
 }) {
   return CurrentUserProfile(
     userId: 1,
-    username: 'planetowner',
+    username: username,
     displayName: displayName,
-    firstName: 'Planet',
-    lastName: 'Owner',
     email: email,
     avatarUri: avatarUri,
     favoriteTeamId: 83,
