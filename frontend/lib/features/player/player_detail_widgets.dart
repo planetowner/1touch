@@ -1,25 +1,40 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
+import 'package:onetouch/features/player/player_image_cache.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class PlayerRemoteImage extends StatelessWidget {
   const PlayerRemoteImage(this.url, {super.key, this.size = 28});
+
   final String? url;
   final double size;
   @override
-  Widget build(BuildContext context) => SizedBox(
+  Widget build(BuildContext context) {
+    final imageUrl = url?.trim();
+    final cacheWidth = (size * MediaQuery.devicePixelRatioOf(context)).ceil();
+    return SizedBox(
       width: size,
       height: size,
-      child: url == null
+      child: imageUrl == null || imageUrl.isEmpty
           ? const Icon(Icons.person_outline)
-          : Image.network(url!,
+          : CachedNetworkImage(
+              imageUrl: imageUrl,
+              cacheManager: PlayerImageCache.manager,
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const Icon(Icons.person_outline)));
+              memCacheWidth: cacheWidth,
+              placeholder: (_, __) => const Icon(Icons.person_outline),
+              errorWidget: (_, __, ___) => const Icon(Icons.person_outline),
+              fadeInDuration: Duration.zero,
+              fadeOutDuration: Duration.zero,
+            ),
+    );
+  }
 }
 
 class PlayerSection extends StatelessWidget {

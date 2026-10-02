@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -79,9 +80,10 @@ void main() {
             repository: _ImagePlayerDetailRepository(url))));
     await tester.pumpAndSettle();
 
-    final image = tester.widget<Image>(
+    final image = tester.widget<CachedNetworkImage>(
         find.byKey(const ValueKey('comparison-header-network-photo-1')));
-    expect((image.image as NetworkImage).url, url);
+    expect(image.imageUrl, url);
+    expect(image.cacheManager, isNotNull);
   });
 
   testWidgets('failed API image falls back to the comparison placeholder',

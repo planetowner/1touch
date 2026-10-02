@@ -270,12 +270,16 @@ class _PlayerPhoto extends StatelessWidget {
       height: 128,
       child: image == null
           ? _placeholder()
-          : Image.network(
-              image,
+          : CachedNetworkImage(
+              imageUrl: image,
               key: Key('comparison-header-network-photo-$slot'),
+              cacheManager: PlayerImageCache.manager,
               fit: BoxFit.cover,
               alignment: Alignment.topCenter,
-              errorBuilder: (_, __, ___) => _placeholder(),
+              placeholder: (_, __) => _placeholder(),
+              errorWidget: (_, __, ___) => _placeholder(),
+              fadeInDuration: Duration.zero,
+              fadeOutDuration: Duration.zero,
             ),
     );
   }

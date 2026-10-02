@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -13,6 +14,7 @@ import 'package:onetouch/data/seasons/season_repository_provider.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/teams/team_page_eligibility.dart';
 import 'package:onetouch/features/team/squad/squad_player_presentation.dart';
+import 'package:onetouch/features/player/player_image_cache.dart';
 import 'package:onetouch/models/season.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
 import 'package:onetouch/models/team_overview.dart';
@@ -728,15 +730,23 @@ class _PlayerCard extends StatelessWidget {
                         top: 16,
                         bottom: 0,
                         child: player.imageUrl != null
-                            ? Image.network(
-                                player.imageUrl!,
+                            ? CachedNetworkImage(
+                                imageUrl: player.imageUrl!,
+                                cacheManager: PlayerImageCache.manager,
                                 fit: BoxFit.contain,
                                 alignment: Alignment.bottomCenter,
-                                errorBuilder: (_, __, ___) => Image.asset(
+                                placeholder: (_, __) => Image.asset(
                                   'assets/player_comparison/player_placeholder.png',
                                   fit: BoxFit.contain,
                                   alignment: Alignment.bottomCenter,
                                 ),
+                                errorWidget: (_, __, ___) => Image.asset(
+                                  'assets/player_comparison/player_placeholder.png',
+                                  fit: BoxFit.contain,
+                                  alignment: Alignment.bottomCenter,
+                                ),
+                                fadeInDuration: Duration.zero,
+                                fadeOutDuration: Duration.zero,
                               )
                             : Image.asset(
                                 'assets/player_comparison/player_placeholder.png',

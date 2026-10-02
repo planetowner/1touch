@@ -38,6 +38,8 @@ dependencies:
   # 베팅 재시도 시 같은 요청 ID를 사용해 중복 차감을 막아요.
   uuid: ^4.0.0
   http: ^1.6.0
+  cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
   web_socket_channel: ^3.0.3
   xml: ^6.6.1
   url_launcher: ^6.3.2
@@ -80,6 +82,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+  sqflite_common_ffi: ^2.4.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
