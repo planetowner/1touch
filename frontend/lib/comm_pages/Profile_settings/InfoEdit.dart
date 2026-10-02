@@ -297,6 +297,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _connectSocialAccount(LoginProvider provider) async {
+    // 이미 연결됐거나 인증 창이 열린 동안에는 중복 요청을 보내지 않아요.
     if (_connectingProvider != null ||
         _socialAccounts.contains(provider.name)) {
       return;
@@ -305,6 +306,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       final accounts = await _socialAccountService.connect(provider);
       if (!mounted) return;
+      // 공급자 인증만으로는 연결 완료가 아니에요. 서버가 성공한 뒤에만 상태를 바꿔요.
       setState(() => _socialAccounts = accounts);
     } on SocialLoginCancelled {
       // 공급자 인증 창을 닫았으면 연결 상태를 그대로 둬요.
@@ -463,15 +465,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 48),
 
-              // Social Accounts Section
+              // 서버가 알려준 연결 상태를 표시하고, 미연결 계정만 탭할 수 있게 해요.
               Text(tr(context, "SOCIAL ACCOUNTS"), style: Body2_b.style),
               const SizedBox(height: 16),
 
-              // Updated to use SVGs
               _buildSocialRow(
                   iconPath: 'assets/google.svg',
                   provider: LoginProvider.google),
               _divider(),
+              // Apple 로그인은 현재 iOS에서만 제공해 Android에는 항목을 숨겨요.
               if (Theme.of(context).platform == TargetPlatform.iOS) ...[
                 _buildSocialRow(
                     iconPath: 'assets/apple.svg',
@@ -644,13 +646,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               width: 24,
               height: 24,
               alignment: Alignment.center,
-              // Changed to SvgPicture.asset
               child: SvgPicture.asset(
                 iconPath,
                 width: 24,
                 height: 24,
-                // Add color filter if icons are monochromatic and need to match theme
-                // colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
               ),
             ),
             const SizedBox(width: 16),
