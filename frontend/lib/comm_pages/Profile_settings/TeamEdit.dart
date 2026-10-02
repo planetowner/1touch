@@ -519,43 +519,44 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
         final isSelected = _selectedTeam?.teamId == team.teamId;
         final alreadyFollowed =
             _followedTeams.any((entry) => entry.teamId == team.teamId);
-        return ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: SizedBox(
-            width: 52,
-            height: 52,
-            child: team.imagePath != null
-                ? Image.network(
-                    team.imagePath!,
-                    errorBuilder: (_, __, ___) => Icon(
+        return Material(
+          type: MaterialType.transparency,
+          child: ListTile(
+            onTap: alreadyFollowed ? null : () => _onSelectTeam(team),
+            contentPadding: EdgeInsets.zero,
+            leading: SizedBox(
+              width: 52,
+              height: 52,
+              child: team.imagePath != null
+                  ? Image.network(
+                      team.imagePath!,
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.shield,
+                        color: AppColors.of(context).mutedForeground,
+                        size: 40,
+                      ),
+                    )
+                  : Icon(
                       Icons.shield,
                       color: AppColors.of(context).mutedForeground,
                       size: 40,
                     ),
+            ),
+            title: Text(
+              teamNameLabel(context, team.teamId, team.name),
+              style: Heading5.style,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: teamCompetitionLabel(context, team.competition).isNotEmpty
+                ? Text(
+                    teamCompetitionLabel(context, team.competition),
+                    style: Eyebrow.style,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   )
-                : Icon(
-                    Icons.shield,
-                    color: AppColors.of(context).mutedForeground,
-                    size: 40,
-                  ),
-          ),
-          title: Text(
-            teamNameLabel(context, team.teamId, team.name),
-            style: Heading5.style,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: teamCompetitionLabel(context, team.competition).isNotEmpty
-              ? Text(
-                  teamCompetitionLabel(context, team.competition),
-                  style: Eyebrow.style,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                )
-              : null,
-          trailing: GestureDetector(
-            onTap: alreadyFollowed ? null : () => _onSelectTeam(team),
-            child: Icon(
+                : null,
+            trailing: Icon(
               isSelected || alreadyFollowed
                   ? Icons.radio_button_checked
                   : Icons.radio_button_off,
