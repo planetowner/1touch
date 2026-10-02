@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from math import ceil
 
 from .fixture_states import COMPLETED_STATE_IDS
 from .player_match_metrics import (
@@ -9,8 +10,13 @@ from .player_match_metrics import (
     normalize_player_counts,
 )
 
-MINIMUM_REFERENCE_MINUTES = 450
 LOWER_IS_BETTER = frozenset({"goals_conceded", "possession_lost", "dribbled_past", "fouls_committed"})
+
+
+def minimum_reference_minutes(completed_matches: int, team_count: int) -> int:
+    # 시즌 초에는 팀당 평균 경기 시간의 절반을 기준으로 삼고, 45~450분으로 제한해요.
+    # 한 경기에 두 팀이 참여하므로 완료 경기 수 × 90 ÷ 참가 팀 수로 계산해요.
+    return min(450, max(45, ceil(completed_matches * 90 / team_count)))
 
 
 def current_player_team(roster: list[dict], current_matches: list[dict]) -> dict | None:

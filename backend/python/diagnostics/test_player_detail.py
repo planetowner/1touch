@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 
 from one_touch_loader.core.player_detail import (
     build_career, current_player_team, dominant_position, match_cards, rank_categories, season_categories,
-    stat_index, summarize,
+    minimum_reference_minutes, stat_index, summarize,
 )
 from one_touch_loader.core.player_match_metrics import SUMMARY_METRICS
 
@@ -34,6 +34,14 @@ def metrics(categories):
 
 
 class PlayerDetailMathTests(unittest.TestCase):
+    def test_reference_minutes_follow_league_progress_with_floor_rounding_and_cap(self):
+        cases = ((0, 20, 45), (1, 20, 45), (10, 20, 45), (20, 20, 90),
+                 (36, 18, 180), (50, 20, 225), (69, 20, 311), (70, 20, 315),
+                 (99, 20, 446), (100, 20, 450), (380, 20, 450))
+        for completed, teams, expected in cases:
+            with self.subTest(completed=completed, teams=teams):
+                self.assertEqual(minimum_reference_minutes(completed, teams), expected)
+
     def test_current_team_uses_latest_appearance_to_resolve_a_transfer(self):
         roster = [dict(team_id=8, is_current=1, jersey_number=9),
                   dict(team_id=9, is_current=1, jersey_number=17)]
@@ -298,8 +306,8 @@ class PlayerDetailRepositoryTests(unittest.TestCase):
 
     def test_analysis_reference_threshold_and_team_denominator(self):
         own = [match(fixture=i, minutes_played=20) for i in range(1,6)]
-        peer = [match(player=2, fixture=i) for i in range(1,6)]
-        short_peer = [match(player=3, fixture=i, minutes_played=89) for i in range(1,6)]
+        peer = [match(player=2, fixture=i, minutes_played=72) for i in range(1,6)]
+        short_peer = [match(player=3, fixture=i, minutes_played=72 if i < 5 else 71) for i in range(1,6)]
         queries = []
         def fetch(sql, params):
             queries.append((sql, params))
@@ -310,17 +318,54 @@ class PlayerDetailRepositoryTests(unittest.TestCase):
                 return [dict(fixture_id=1, stat_type_id=27271)]
             if sql.startswith(repo.MATCH_SELECT): return own + peer + short_peer
             if sql.startswith('SELECT fl.player_id'): return own + peer + short_peer
+            if 'FROM team_seasons' in sql:
+                self.assertEqual(params, (1,))
+                return [dict(team_count=2)]
             if 'FROM fixture_player_stats' in sql:
                 self.assertEqual(set(params[1:]), {1,2})
                 return [dict(fixture_id=i, team_id=8, player_id=p,stat_type_id=52,value=0) for p in (1,2) for i in range(1,6)]
             if 'SELECT f.fixture_id' in sql: return [match(fixture=i) for i in range(1,9)]
             raise AssertionError(sql)
         data = repo._analysis(fetch, 1, {'season_id':1,'season_name':'2026/2027'}, [], [], datetime(2026,9,21))
+        self.assertEqual(data['reference_minimum_minutes'], 360)
         self.assertEqual(data['reference_players'], 1)
         self.assertEqual(data['team_matches'], 8)
         self.assertEqual(data['starting_rate'], 62.5)
         self.assertEqual(data['top_stats'][0]['reference_count'], 2)
         self.assertEqual(len(data['performance']), 5)
+
+    def test_early_season_top_stats_use_the_same_threshold_for_player_and_peers(self):
+        own = [match(fixture=i, minutes_played=minute)
+               for i, minute in enumerate((90, 90, 90, 25), 1)]
+        peer = [match(player=2, fixture=i, minutes_played=45) for i in range(1,5)]
+        short_peer = [match(player=3, fixture=i, minutes_played=45 if i < 4 else 44) for i in range(1,5)]
+        other_position = [match(player=4, fixture=i, position=26) for i in range(1,5)]
+        rows = own + peer + short_peer + other_position
+        fixtures = [match(fixture=i) for i in range(1,5)]
+        now = datetime(2026,9,21)
+
+        def fetch(sql, params):
+            if sql.startswith('SELECT f.fixture_id'):
+                self.assertEqual(params, (1, now))
+                self.assertIn(f'f.state_id IN ({repo.COMPLETED})', sql)
+                self.assertIn('f.starting_at<=%s', sql)
+                return fixtures
+            if 'FROM team_seasons' in sql: return [dict(team_count=2)]
+            if sql.startswith(repo.MATCH_SELECT) or sql.startswith('SELECT fl.player_id'): return rows
+            if sql.startswith('SELECT DISTINCT fixture_id,stat_type_id'): return []
+            if 'FROM fixture_player_stats' in sql:
+                self.assertEqual(params, (1, 1, 2))
+                return [dict(fixture_id=r['fixture_id'], team_id=8, player_id=r['player_id'],
+                             stat_type_id=120, value=30) for r in own + peer]
+            raise AssertionError(sql)
+
+        for player_id in (1, 2):
+            with self.subTest(player_id=player_id):
+                data = repo._analysis(fetch, player_id, {'season_id':1,'season_name':'2026/2027'}, [], [], now)
+                self.assertEqual(data['reference_minimum_minutes'], 180)
+                self.assertEqual(data['reference_players'], 2)
+                self.assertEqual(len(data['top_stats']), 3)
+                self.assertTrue(all(m['reference_count'] == 2 for m in data['top_stats']))
 
     def test_api_requires_auth_and_validates_season(self):
         from fastapi import FastAPI
