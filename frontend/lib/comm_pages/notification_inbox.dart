@@ -8,6 +8,7 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/notifications/notification_inbox.dart';
 import 'package:onetouch/data/notifications/notification_inbox_repository.dart';
 import 'package:onetouch/data/notifications/notification_inbox_repository_provider.dart';
+import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 
@@ -342,12 +343,18 @@ class _NotificationBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = Theme.of(context).colorScheme.onSurface;
+    final author = communityAuthorLabel(
+      username: notification.username,
+      displayName: notification.displayName,
+      authorDeleted: false,
+      locale: Localizations.localeOf(context),
+    );
     if (notification.kind == CommunityNotificationKind.postReaction) {
       return Text(
         tr(
           context,
           '{user} liked your post.',
-          {'user': notification.username},
+          {'user': author},
         ),
         style: Body1.style.copyWith(color: foreground),
       );
@@ -360,7 +367,7 @@ class _NotificationBody extends StatelessWidget {
             text: tr(
               context,
               '{user} commented on your post: ',
-              {'user': notification.username},
+              {'user': author},
             ),
           ),
           TextSpan(

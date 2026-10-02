@@ -33,7 +33,7 @@ with patch("mysql.connector.pooling.MySQLConnectionPool"):
 
 
 class PasswordContractTests(unittest.TestCase):
-    profile = {"username": "member", "display_name": "Member", "first_name": "First", "last_name": "Last"}
+    profile = {"username": "member", "display_name": "Member"}
     code = {"challenge_id": "c" * 43, "code": "123456"}
 
     def test_same_password_policy_applies_to_signup_reset_and_login(self):
@@ -397,7 +397,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             challenge = auth_repo.request_email_code("new@example.com", "signup")["challenge_id"]
         code = send.call_args.args[1]
         self.assertRegex(code, r"^\d{6}$")
-        profile = {"username": "new", "display_name": "불광동호날두", "first_name": "First", "last_name": "Last"}
+        profile = {"username": "new", "display_name": "불광동호날두"}
         token = auth_repo.register_email(challenge, code, "Password123", profile)["access_token"]
         self.assertEqual(self.request("GET", "/v1/users/me", token).json()["display_name"], "불광동호날두")
         row = self.execute("SELECT password_hash FROM user_email_credentials")[0]
@@ -408,7 +408,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual(len(self.execute("SELECT * FROM user_email_credentials")), 1)
 
     def test_duplicate_nickname_is_rejected_on_signup_and_profile_edit(self):
-        body = {"username": "beta", "display_name": "ALPHA", "first_name": "First", "last_name": "Last"}
+        body = {"username": "beta", "display_name": "ALPHA"}
         changed = self.request("PUT", "/v1/users/me/profile", self.token_b, json=body)
         self.assertEqual(changed.status_code, 409, changed.text)
         self.assertEqual(self.request("GET", "/v1/users/me", self.token_b).json()["display_name"], "beta")
@@ -417,24 +417,25 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             challenge = auth_repo.request_email_code("duplicate@example.com", "signup")["challenge_id"]
         registered = self.request("POST", "/v1/auth/email/register", json={
             "challenge_id": challenge, "code": send.call_args.args[1], "password": "Abcdefg1",
-            "username": "newmember", "display_name": "alpha", "first_name": "F", "last_name": "L"})
+            "username": "newmember", "display_name": "alpha"})
         self.assertEqual(registered.status_code, 409, registered.text)
         self.assertEqual(self.execute("SELECT COUNT(*) AS total FROM users")[0]["total"], 3)
 
     def test_existing_member_sets_a_first_nickname_without_changing_a_legacy_id(self):
+        self.execute("INSERT INTO user_email_credentials VALUES (%s,%s,%s)",
+                     (self.a, "alpha@example.com", auth_security.PASSWORDS.hash("Password123")))
         self.execute("UPDATE users SET username=%s,display_name=NULL WHERE user_id=%s",
                      ("old.member@example.com", self.a))
         before = self.request("GET", "/v1/users/me").json()
         self.assertIsNone(before["display_name"])
-        self.assertTrue(before["onboarding_complete"])
+        self.assertFalse(before["onboarding_complete"])
         response = self.request("PUT", "/v1/users/me/profile", json={
-            "username": "old.member@example.com", "display_name": "메시",
-            "first_name": "First", "last_name": "Last"})
+            "username": "old.member@example.com", "display_name": "메시"})
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(response.json()["display_name"], "메시")
         self.assertEqual(self.execute("SELECT COUNT(*) AS total FROM user_profile_changes WHERE user_id=%s", (self.a,))[0]["total"], 0)
         rejected = self.request("PUT", "/v1/users/me/profile", json={
-            "username": "old..member", "display_name": "메시", "first_name": "First", "last_name": "Last"})
+            "username": "old..member", "display_name": "메시"})
         self.assertEqual(rejected.status_code, 422, rejected.text)
 
     def test_signup_logout_and_login_with_username(self):
@@ -442,7 +443,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             challenge = auth_repo.request_email_code("signup@example.com", "signup")["challenge_id"]
         registered = self.request("POST", "/v1/auth/email/register", json={
             "challenge_id": challenge, "code": send.call_args.args[1], "password": "Abcdefg1",
-            "username": "newmember", "display_name": "NewMember", "first_name": "F", "last_name": "L"})
+            "username": "newmember", "display_name": "NewMember"})
         self.assertEqual(registered.status_code, 201, registered.text)
         token = registered.json()["access_token"]
         user_id = auth_repo.session_user(token)["user_id"]
@@ -468,7 +469,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.execute("INSERT INTO user_email_credentials VALUES (%s,%s,%s)",
                      (self.a, "alpha@example.com", auth_security.PASSWORDS.hash("Password123")))
         response = self.request("PUT", "/v1/users/me/profile", json={
-            "username": "renamed", "display_name": "alpha", "first_name": "F", "last_name": "L"})
+            "username": "renamed", "display_name": "alpha"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(auth_repo.session_user(auth_repo.login_password("renamed", "Password123")["access_token"])["user_id"], self.a)
         with self.assertRaises(HTTPException):
@@ -484,7 +485,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             challenge = auth_repo.request_email_code("attempts@example.com", "signup")["challenge_id"]
         code = send.call_args.args[1]
         wrong = "000000" if code != "000000" else "111111"
-        profile = {"username": "new", "display_name": "NewMember", "first_name": "F", "last_name": "L"}
+        profile = {"username": "new", "display_name": "NewMember"}
         for _ in range(5):
             with self.assertRaises(HTTPException):
                 auth_repo.register_email(challenge, wrong, "Password123", profile)
@@ -530,7 +531,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertCountEqual(results, ["ok", "blocked"])
 
     def test_display_name_and_favorite_team_have_independent_limits(self):
-        body = {"username": "alpha", "first_name": "First", "last_name": "Last"}
+        body = {"username": "alpha"}
         for name in ("불광동호날두", "planetowner"):
             response = self.request("PUT", "/v1/users/me/profile", json={**body, "display_name": name})
             self.assertEqual(response.status_code, 200, response.text)

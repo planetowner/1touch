@@ -35,7 +35,7 @@ void main() {
       find.byKey(const ValueKey('profile-username-field')),
     );
     final fieldFinders = [
-      find.byKey(const ValueKey('profile-real-name-field')),
+      find.byKey(const ValueKey('profile-display-name-field')),
       find.byKey(const ValueKey('profile-username-field')),
       find.byKey(const ValueKey('profile-email-field')),
     ];
@@ -49,7 +49,6 @@ void main() {
       hasLength(1),
     );
     expect(find.text('UPDATE INFO'), findsOneWidget);
-    expect(find.text('Save profile'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -280,8 +279,6 @@ CurrentUserProfile _profile({Uri? avatarUri}) => CurrentUserProfile(
       userId: 1,
       username: 'planetowner',
       displayName: 'PlanetOwner',
-      firstName: 'Planet',
-      lastName: 'Owner',
       email: 'owner@example.com',
       avatarUri: avatarUri,
       favoriteTeamId: 83,

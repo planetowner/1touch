@@ -11,8 +11,6 @@ void main() {
     userId: 1,
     username: 'owner',
     displayName: 'Owner',
-    firstName: 'John',
-    lastName: 'Doe',
     email: 'john@example.com',
     avatarUri: null,
     favoriteTeamId: 83,

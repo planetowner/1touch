@@ -31,8 +31,6 @@ void main() {
                   'user_id': 7,
                   'username': 'member',
                   'display_name': 'Member',
-                  'first_name': 'First',
-                  'last_name': 'Last',
                   'email': null,
                   'avatar_url': null,
                   'favorite_team_id': 8,

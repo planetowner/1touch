@@ -213,8 +213,6 @@ void main() {
               'password': 'Password123',
               'username': 'member',
               'display_name': 'Member',
-              'first_name': 'First',
-              'last_name': 'Last',
             });
             return http.Response(
               jsonEncode({
@@ -234,8 +232,6 @@ void main() {
       password: 'Password123',
       username: 'member',
       displayName: 'Member',
-      firstName: 'First',
-      lastName: 'Last',
     );
 
     expect(accessToken, 'email-session-token');
@@ -263,8 +259,6 @@ void main() {
         password: 'Password123',
         username: 'member',
         displayName: 'Member',
-        firstName: 'First',
-        lastName: 'Last',
       ),
       throwsA(
         isA<AuthRequestException>().having(

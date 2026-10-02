@@ -219,8 +219,6 @@ class _FakeAuthRepository implements AuthRepository {
     required String password,
     required String username,
     required String displayName,
-    required String firstName,
-    required String lastName,
   }) =>
       throw UnimplementedError();
 }

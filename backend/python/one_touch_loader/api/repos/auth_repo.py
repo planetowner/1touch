@@ -117,10 +117,9 @@ def register_email(challenge: str, code: str, password: str, profile: dict) -> d
         with transaction() as conn, conn.cursor(dictionary=True) as cur:
             email = _consume_code(cur, challenge, code, "signup")
             if email is not None:
-                cur.execute("""INSERT INTO users (username,display_name,first_name,last_name,created_at)
-                    VALUES (%s,%s,%s,%s,%s)""",
-                    (profile["username"], profile["display_name"],
-                     profile["first_name"], profile["last_name"], utc_now()))
+                cur.execute("""INSERT INTO users (username,display_name,created_at)
+                    VALUES (%s,%s,%s)""",
+                    (profile["username"], profile["display_name"], utc_now()))
                 user_id = cur.lastrowid
                 cur.execute("INSERT INTO user_email_credentials VALUES (%s,%s,%s)", (user_id, email, hashed))
                 result = _create_session(cur, user_id)

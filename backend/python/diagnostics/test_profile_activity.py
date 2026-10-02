@@ -227,7 +227,7 @@ class ProfileActivityTests(unittest.TestCase):
             self.assertEqual(self.get(f"/v1/users/me/{kind}", limit=100).status_code, 200)
 
     def test_profile_suspension_and_missing_favorite_keep_existing_restrictions(self):
-        cases = (("username", None), ("favorite_team_id", None),
+        cases = (("display_name", None), ("favorite_team_id", None),
                  ("suspended_until", (datetime.now() + timedelta(days=1)).isoformat()))
         for field, value in cases:
             previous = self.db.execute(f"SELECT {field} FROM users WHERE user_id=1").fetchone()[0]

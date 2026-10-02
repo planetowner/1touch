@@ -29,8 +29,13 @@ def lock_user(cur, user_id: int) -> dict:
     return row
 
 
+def profile_complete(user: dict) -> bool:
+    # 로그인 수단과 관계없이 닉네임을 정하면 프로필 입력이 끝나요.
+    return bool(user["display_name"])
+
+
 def require_profile(user: dict) -> None:
-    if not all(user[key] for key in ("username", "first_name", "last_name")):
+    if not profile_complete(user):
         raise HTTPException(403, "Complete your profile first")
     # 이용 정지는 커뮤니티·채팅 활동에 적용해요. 내 정보 확인과 탈퇴는 계속 가능해요.
     if user["suspended_until"] is not None and user["suspended_until"] > utc_now():
@@ -41,9 +46,12 @@ def update_profile(user_id: int, profile: dict) -> None:
     try:
         with transaction() as conn, conn.cursor(dictionary=True) as cur:
             user = lock_user(cur, user_id)
-            if profile["username"] != user["username"]:
+            cur.execute("SELECT user_id FROM user_email_credentials WHERE user_id=%s", (user_id,))
+            # 아이디는 이메일 로그인에만 사용해요. 소셜 회원은 NULL로 유지해요.
+            username = (profile.get("username") or user["username"]) if cur.fetchone() is not None else None
+            if username is not None and username != user["username"]:
                 try:
-                    validate_username(profile["username"])
+                    validate_username(username)
                 except ValueError as exc:
                     raise HTTPException(422, str(exc)) from exc
             display_name = profile["display_name"]
@@ -51,8 +59,8 @@ def update_profile(user_id: int, profile: dict) -> None:
             now = utc_now()
             if changed:
                 check_change_limit(cur, user_id, "display_name", now)
-            cur.execute("UPDATE users SET username=%s,display_name=%s,first_name=%s,last_name=%s WHERE user_id=%s",
-                        (profile["username"], display_name, profile["first_name"], profile["last_name"], user_id))
+            cur.execute("UPDATE users SET username=%s,display_name=%s WHERE user_id=%s",
+                        (username, display_name, user_id))
             if changed:
                 record_change(cur, user_id, "display_name", now)
     except IntegrityError as exc:

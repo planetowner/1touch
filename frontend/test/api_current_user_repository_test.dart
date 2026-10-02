@@ -32,9 +32,7 @@ void main() {
 
   test('profile mutation replaces the cached account', () async {
     final store = MemoryLocalCacheStore();
-    final updated = _profileJson()
-      ..['username'] = 'updated'
-      ..['first_name'] = 'New';
+    final updated = _profileJson()..['username'] = 'updated';
     final repository = ApiCurrentUserRepository(
       api: ApiClient(
         client: MockClient((request) async {
@@ -50,12 +48,10 @@ void main() {
     await repository.updateProfile(
       username: 'updated',
       displayName: 'Planet Owner',
-      firstName: 'New',
-      lastName: 'Owner',
     );
 
     final cached = await repository.loadCachedAccount();
-    expect((cached?.username, cached?.firstName), ('updated', 'New'));
+    expect(cached?.username, 'updated');
   });
 
   test('requests and maps the authenticated current user', () async {
@@ -80,7 +76,6 @@ void main() {
     expect(profile.userId, 1);
     expect(profile.username, 'planetowner');
     expect(profile.displayName, 'Planet Owner');
-    expect((profile.firstName, profile.lastName), ('Planet', 'Owner'));
     expect(profile.favoriteTeamId, 83);
     expect(
       profile.avatarUri,
@@ -109,8 +104,6 @@ void main() {
           expect(jsonDecode(request.body), {
             'username': 'john_doe',
             'display_name': 'Planet Owner',
-            'first_name': 'John',
-            'last_name': 'Doe',
           });
           return http.Response(jsonEncode(_profileJson()), 200);
         }),
@@ -119,13 +112,12 @@ void main() {
       ),
     );
     await repository.updateProfile(
-        username: 'john_doe',
-        displayName: 'Planet Owner',
-        firstName: 'John',
-        lastName: 'Doe');
+      username: 'john_doe',
+      displayName: 'Planet Owner',
+    );
   });
 
-  test('social completion omits username and caches the generated one',
+  test('social completion sends only nickname and keeps username null',
       () async {
     final store = MemoryLocalCacheStore();
     final repository = ApiCurrentUserRepository(
@@ -135,12 +127,10 @@ void main() {
           expect(request.url.path, '/v1/users/me/profile');
           expect(jsonDecode(request.body), {
             'display_name': 'Supporter',
-            'first_name': 'First',
-            'last_name': 'Last',
           });
           return http.Response(
               jsonEncode(_profileJson()
-                ..['username'] = 'social-generated-1'
+                ..['username'] = null
                 ..['display_name'] = 'Supporter'),
               200);
         }),
@@ -150,13 +140,10 @@ void main() {
       cacheStore: store,
     );
 
-    await repository.completeSocialProfile(
+    await repository.updateProfile(
       displayName: 'Supporter',
-      firstName: 'First',
-      lastName: 'Last',
     );
-    expect(
-        (await repository.loadCachedAccount())?.username, 'social-generated-1');
+    expect((await repository.loadCachedAccount())?.username, isNull);
   });
 
   test('reports when the nickname change limit expires', () async {
@@ -178,10 +165,9 @@ void main() {
     );
     await expectLater(
         repository.updateProfile(
-            username: 'john_doe',
-            displayName: 'Next',
-            firstName: 'John',
-            lastName: 'Doe'),
+          username: 'john_doe',
+          displayName: 'Next',
+        ),
         throwsA(isA<ProfileChangeLimitException>()
             .having((error) => error.maxChanges, 'maxChanges', 3)
             .having((error) => error.windowDays, 'windowDays', 7)));
@@ -199,10 +185,9 @@ void main() {
     );
     await expectLater(
         repository.updateProfile(
-            username: 'john_doe',
-            displayName: 'Maple',
-            firstName: 'John',
-            lastName: 'Doe'),
+          username: 'john_doe',
+          displayName: 'Maple',
+        ),
         throwsA(isA<ProfileNameConflictException>()));
   });
 
@@ -240,8 +225,6 @@ Map<String, dynamic> _profileJson() {
     'user_id': 1,
     'username': 'planetowner',
     'display_name': 'Planet Owner',
-    'first_name': 'Planet',
-    'last_name': 'Owner',
     'email': 'owner@example.com',
     'avatar_url': '/v1/users/1/avatar',
     'favorite_team_id': 83,

@@ -13,8 +13,7 @@ from one_touch_loader.core.fixture_states import LIVE_STATE_IDS, PAST_STATE_IDS,
 
 class ChatLifecycleTests(unittest.TestCase):
     def setUp(self):
-        self.user = {"user_id": 928371, "username": "member", "first_name": "First",
-                     "last_name": "Last", "suspended_until": None, "favorite_team_id": 6}
+        self.user = {"user_id": 928371, "username": "member", "display_name": "Member", "suspended_until": None, "favorite_team_id": 6}
         self.fixtures = {42: {"home_team_id": 6, "away_team_id": 14, "state_id": 2},
                          43: {"home_team_id": 6, "away_team_id": 14, "state_id": 2}}
         for target, name, options in [

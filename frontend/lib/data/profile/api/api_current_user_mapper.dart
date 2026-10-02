@@ -5,7 +5,7 @@ CurrentUserProfile currentUserProfileFromApiResponse(
   ApiCurrentUserResponse response, {
   required Uri apiBaseUri,
 }) {
-  if (!response.onboardingComplete) {
+  if (!response.profileComplete || !response.onboardingComplete) {
     throw StateError('Current user has not completed onboarding.');
   }
 
@@ -18,10 +18,8 @@ CurrentUserProfile currentUserProfileFromApiResponse(
 
   return CurrentUserProfile(
     userId: response.userId,
-    username: _requiredCompletedField(response.username, 'username'),
-    displayName: response.displayName,
-    firstName: _requiredCompletedField(response.firstName, 'first_name'),
-    lastName: _requiredCompletedField(response.lastName, 'last_name'),
+    username: response.username,
+    displayName: response.displayName!,
     email: response.email,
     avatarUri: _avatarUri(response.avatarUrl, apiBaseUri),
     favoriteTeamId: _requiredCompletedField(

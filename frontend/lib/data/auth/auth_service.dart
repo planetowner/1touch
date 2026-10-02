@@ -99,8 +99,6 @@ class AuthService {
     required String password,
     required String username,
     required String displayName,
-    required String firstName,
-    required String lastName,
   }) async {
     final accessToken = await _repository.registerWithEmail(
       challengeId: challengeId,
@@ -108,8 +106,6 @@ class AuthService {
       password: password,
       username: username,
       displayName: displayName,
-      firstName: firstName,
-      lastName: lastName,
     );
     await _establish(accessToken);
   }

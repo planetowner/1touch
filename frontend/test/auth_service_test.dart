@@ -113,8 +113,6 @@ void main() {
       password: 'Password123',
       username: 'member',
       displayName: 'Member',
-      firstName: 'First',
-      lastName: 'Last',
     );
 
     expect(session.requestHeaders, {
@@ -295,8 +293,6 @@ class _FakeAuthRepository implements AuthRepository, LogoutAuthRepository {
     required String password,
     required String username,
     required String displayName,
-    required String firstName,
-    required String lastName,
   }) =>
       _registerWithEmail?.call() ?? Future.error(UnimplementedError());
 }

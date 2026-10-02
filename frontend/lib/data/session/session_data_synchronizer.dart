@@ -23,11 +23,7 @@ class SessionDataSnapshot {
   final List<Team>? followingTeams;
   final List<FollowingPlayer>? followingPlayers;
 
-  bool get profileComplete => [
-        account.username,
-        account.firstName,
-        account.lastName
-      ].every((value) => value != null && value.isNotEmpty);
+  bool get profileComplete => account.profileComplete;
 
   bool get canOpenHome {
     final favoriteTeamId = account.favoriteTeamId;
@@ -112,9 +108,7 @@ class SessionDataSynchronizer {
     }
 
     final account = await currentUserRepository.loadAccount();
-    if (![account.username, account.firstName, account.lastName]
-            .every((value) => value != null && value.isNotEmpty) ||
-        !account.onboardingComplete) {
+    if (!account.profileComplete || !account.onboardingComplete) {
       return SessionDataSnapshot(account: account);
     }
 

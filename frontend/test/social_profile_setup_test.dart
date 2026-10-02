@@ -5,20 +5,20 @@ import 'package:onetouch/l10n/app_localizations.dart';
 
 void main() {
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
-    testWidgets('social profile accepts three fields at $size', (tester) async {
+    testWidgets('social profile accepts only a nickname at $size',
+        (tester) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      (String, String, String)? submitted;
+      String? submitted;
       await tester.pumpWidget(MaterialApp(
         supportedLocales: appSupportedLocales,
         localizationsDelegates: appLocalizationDelegates,
         home: SocialProfileSetup(
           checkNicknameAvailability: (_) async => true,
-          onContinue: (nickname, firstName, lastName) async =>
-              submitted = (nickname, firstName, lastName),
+          onContinue: (nickname) async => submitted = nickname,
           onBack: () async {},
         ),
       ));
@@ -28,17 +28,16 @@ void main() {
       expect(find.text('CONTINUE'), findsOneWidget);
       await tester.enterText(
           find.byKey(const ValueKey('social-nickname-field')), 'Supporter');
-      await tester.enterText(
-          find.byKey(const ValueKey('social-first-name-field')), 'First');
-      await tester.enterText(
-          find.byKey(const ValueKey('social-last-name-field')), 'Last');
       await tester.pumpAndSettle();
       tester.testTextInput.hide();
       await tester.pumpAndSettle();
       await tester.tap(find.text('CONTINUE'));
       await tester.pumpAndSettle();
 
-      expect(submitted, ('Supporter', 'First', 'Last'));
+      expect(submitted, 'Supporter');
+      expect(find.byType(TextFormField), findsOneWidget);
+      expect(find.text('First name'), findsNothing);
+      expect(find.text('Last name'), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }
@@ -50,7 +49,7 @@ void main() {
       localizationsDelegates: appLocalizationDelegates,
       home: SocialProfileSetup(
         checkNicknameAvailability: (_) async => false,
-        onContinue: (_, __, ___) async => submitted = true,
+        onContinue: (_) async => submitted = true,
         onBack: () async {},
       ),
     ));

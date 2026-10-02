@@ -33,6 +33,8 @@ void main() {
     expect(page.items.last.kind, CommunityNotificationKind.postComment);
     expect(page.items.last.commentId, 40);
     expect(page.items.first.createdAt.isUtc, isTrue);
+    expect(page.items.first.username, isNull);
+    expect(page.items.first.displayName, 'User One');
   });
 
   test('marks notifications read through the supplied ID', () async {
@@ -80,7 +82,8 @@ Map<String, dynamic> _page() => {
           'created_at': '2026-09-29T15:00:00Z',
           'read_at': null,
           'team_id': 83,
-          'username': 'User One',
+          'username': null,
+          'display_name': 'User One',
           'comment_preview': '',
           'destination': '/notifications/post/12',
         },
@@ -94,6 +97,7 @@ Map<String, dynamic> _page() => {
           'read_at': '2026-09-29T14:30:00Z',
           'team_id': 83,
           'username': 'User Two',
+          'display_name': 'SecondUser',
           'comment_preview': 'Good point',
           'destination': '/notifications/post/12',
         },

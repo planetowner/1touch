@@ -27,7 +27,7 @@ class CommunityPointRepositoryTests(unittest.TestCase):
         self.raw.execute('PRAGMA foreign_keys=ON')
         self.raw.executescript('''
             CREATE TABLE users (user_id INTEGER PRIMARY KEY, username TEXT DEFAULT 'User',
-                first_name TEXT DEFAULT 'First', last_name TEXT DEFAULT 'Last',
+                display_name TEXT DEFAULT 'User',
                 favorite_team_id INTEGER DEFAULT 6, suspended_until TEXT);
             CREATE TABLE user_blocks (user_id INTEGER, blocked_user_id INTEGER);
             CREATE TABLE posts (post_id INTEGER PRIMARY KEY AUTOINCREMENT,

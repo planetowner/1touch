@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from ..db import fetch_all_dict, transaction
 from ..deps import get_user_id
-from ..repos.users_repo import get_user, lock_user, update_profile
+from ..repos.users_repo import get_user, lock_user, profile_complete, update_profile
 from ..repos.player_directory_repo import get_following_players
 from ..repos import posts_repo, users_repo
 from ..schemas.users import DeleteAccountBody, UserProfileUpdateBody
@@ -37,8 +37,7 @@ def my_profile(user_id: int = Depends(get_user_id)):
     user["email"] = credentials[0]["email"] if credentials else None
     user["avatar_url"] = f"/v1/users/{user_id}/avatar" if fetch_all_dict(
         "SELECT 1 FROM user_avatars WHERE user_id=%s", (user_id,)) else None
-    return {**public_row(user), "onboarding_complete": all(
-        user[key] for key in ("username", "first_name", "last_name", "favorite_team_id"))}
+    return {**public_row(user), "onboarding_complete": profile_complete(user) and bool(user["favorite_team_id"])}
 
 
 @router.put("/users/me/profile")

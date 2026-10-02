@@ -219,8 +219,6 @@ final _profile = CurrentUserProfile(
   userId: 1,
   username: 'planetowner',
   displayName: 'Planet Owner',
-  firstName: 'Planet',
-  lastName: 'Owner',
   email: 'owner@example.com',
   avatarUri: null,
   favoriteTeamId: 83,

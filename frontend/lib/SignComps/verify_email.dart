@@ -15,8 +15,6 @@ import 'package:onetouch/l10n/app_localizations.dart';
 
 class EmailRegistrationDraft {
   const EmailRegistrationDraft({
-    required this.firstName,
-    required this.lastName,
     required this.username,
     required this.displayName,
     required this.email,
@@ -25,8 +23,6 @@ class EmailRegistrationDraft {
     required this.expiresInSeconds,
   });
 
-  final String firstName;
-  final String lastName;
   final String username;
   final String displayName;
   final String email;
@@ -39,8 +35,6 @@ class EmailRegistrationDraft {
     required int expiresInSeconds,
   }) =>
       EmailRegistrationDraft(
-        firstName: firstName,
-        lastName: lastName,
         username: username,
         displayName: displayName,
         email: email,
@@ -187,8 +181,6 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
           password: draft.password,
           username: draft.username,
           displayName: draft.displayName,
-          firstName: draft.firstName,
-          lastName: draft.lastName,
         );
         if (mounted) context.go('/session');
       }

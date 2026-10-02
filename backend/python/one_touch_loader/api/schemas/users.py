@@ -2,8 +2,6 @@ from typing import Annotated, Literal
 import re
 from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints, TypeAdapter, model_validator
 
-Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
-
 
 def validate_username(value: str) -> str:
     if not re.fullmatch(r"(?!\.)(?!.*\.\.)(?!.*\.$)[A-Za-z0-9._]{1,30}", value):
@@ -42,13 +40,11 @@ Password = Annotated[str, StringConstraints(min_length=8, max_length=128), After
 class UserProfileBody(BaseModel):
     username: Username
     display_name: DisplayName
-    first_name: Name
-    last_name: Name
 
 
 class UserProfileUpdateBody(UserProfileBody):
     # 예전 규칙으로 만든 아이디는 닉네임을 처음 설정할 때 그대로 둘 수 있어요.
-    username: LegacyUsername
+    username: LegacyUsername | None = None
 
 
 class EmailCodeBody(BaseModel):

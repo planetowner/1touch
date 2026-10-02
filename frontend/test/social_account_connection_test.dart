@@ -39,8 +39,6 @@ void main() {
           userId: 1,
           username: 'email-user',
           displayName: 'Email User',
-          firstName: 'Email',
-          lastName: 'User',
           email: 'email@example.com',
           avatarUri: null,
           favoriteTeamId: 1,
@@ -62,7 +60,8 @@ void main() {
     expect(requests, 1);
   });
 
-  testWidgets('already linked Google is shown as connected and cannot be tapped',
+  testWidgets(
+      'already linked Google is shown as connected and cannot be tapped',
       (tester) async {
     var requests = 0;
     final service = SocialAccountService(
@@ -83,8 +82,6 @@ void main() {
           userId: 1,
           username: 'email-user',
           displayName: 'Email User',
-          firstName: 'Email',
-          lastName: 'User',
           email: 'email@example.com',
           avatarUri: null,
           favoriteTeamId: 1,

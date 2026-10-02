@@ -13,8 +13,6 @@ void main() {
       expect(profile.userId, 1);
       expect(profile.username, 'planetowner');
       expect(profile.displayName, 'Planet Owner');
-      expect(profile.firstName, 'Planet');
-      expect(profile.lastName, 'Owner');
       expect(profile.email, 'owner@example.com');
       expect(
         profile.avatarUri,
@@ -43,14 +41,13 @@ void main() {
       expect(profileWithoutAvatar.avatarUri, isNull);
     });
 
-    test('keeps an existing member without a nickname available for editing',
-        () {
+    test('maps a social member without a login username', () {
       final profile = currentUserProfileFromApiResponse(
-        _response(displayName: null),
+        _response(username: null, email: null),
         apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
       );
-      expect(profile.displayName, isNull);
-      expect(profile.profileHeading, '@planetowner');
+      expect(profile.username, isNull);
+      expect(profile.profileHeading, '@Planet Owner');
     });
 
     test('rejects a user who has not completed onboarding', () {
@@ -65,9 +62,8 @@ void main() {
 
     test('requires completed-profile identity and favorite-team fields', () {
       for (final response in [
-        _response(username: null),
-        _response(firstName: null),
-        _response(lastName: null),
+        _response(displayName: null),
+        _response(displayName: ''),
         _response(favoriteTeamId: null),
       ]) {
         expect(
@@ -103,8 +99,6 @@ ApiCurrentUserResponse _response({
   bool onboardingComplete = true,
   String? username = 'planetowner',
   String? displayName = 'Planet Owner',
-  String? firstName = 'Planet',
-  String? lastName = 'Owner',
   String? email = 'owner@example.com',
   String? avatarUrl = '/v1/users/1/avatar',
   int? favoriteTeamId = 83,
@@ -114,8 +108,6 @@ ApiCurrentUserResponse _response({
     userId: 1,
     username: username,
     displayName: displayName,
-    firstName: firstName,
-    lastName: lastName,
     email: email,
     avatarUrl: avatarUrl,
     favoriteTeamId: favoriteTeamId,

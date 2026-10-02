@@ -5,7 +5,6 @@ import 'package:onetouch/core/identity_name_rules.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
-import 'package:onetouch/l10n/user_name_labels.dart';
 
 class SocialProfileSetup extends StatefulWidget {
   const SocialProfileSetup({
@@ -14,17 +13,12 @@ class SocialProfileSetup extends StatefulWidget {
     required this.onContinue,
     required this.onBack,
     this.initialNickname,
-    this.initialFirstName,
-    this.initialLastName,
   });
 
   final Future<bool> Function(String) checkNicknameAvailability;
-  final Future<void> Function(
-      String nickname, String firstName, String lastName) onContinue;
+  final Future<void> Function(String nickname) onContinue;
   final Future<void> Function() onBack;
   final String? initialNickname;
-  final String? initialFirstName;
-  final String? initialLastName;
 
   @override
   State<SocialProfileSetup> createState() => _SocialProfileSetupState();
@@ -33,16 +27,12 @@ class SocialProfileSetup extends StatefulWidget {
 class _SocialProfileSetupState extends State<SocialProfileSetup> {
   final _formKey = GlobalKey<FormState>();
   late final _nickname = TextEditingController(text: widget.initialNickname);
-  late final _firstName = TextEditingController(text: widget.initialFirstName);
-  late final _lastName = TextEditingController(text: widget.initialLastName);
   bool _nicknameAvailable = false;
   bool _saving = false;
 
   @override
   void dispose() {
     _nickname.dispose();
-    _firstName.dispose();
-    _lastName.dispose();
     super.dispose();
   }
 
@@ -69,8 +59,6 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
     try {
       await widget.onContinue(
         _nickname.text.trim(),
-        _firstName.text.trim(),
-        _lastName.text.trim(),
       );
     } on Object {
       if (!mounted) return;
@@ -124,43 +112,6 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
                           setState(() => _nicknameAvailable = available);
                         }
                       },
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (final (index, field) in orderedUserNameParts(
-                          locale: Localizations.localeOf(context),
-                          firstName: (_firstName, 'First name'),
-                          lastName: (_lastName, 'Last name'),
-                        ).indexed) ...[
-                          if (index > 0) const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(tr(context, field.$2),
-                                    style: Eyebrow.style),
-                                const SizedBox(height: 8),
-                                TextFormField(
-                                  key: ValueKey(
-                                    'social-${field.$2.toLowerCase().replaceAll(' ', '-')}-field',
-                                  ),
-                                  controller: field.$1,
-                                  enabled: !_saving,
-                                  style: Body1.style,
-                                  decoration: _dec(context, field.$2),
-                                  validator: (value) =>
-                                      value == null || value.trim().isEmpty
-                                          ? tr(context,
-                                              'Enter ${field.$2.toLowerCase()}')
-                                          : null,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
                     ),
                   ],
                 ),

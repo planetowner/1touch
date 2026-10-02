@@ -401,12 +401,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "コードを確認できませんでした。接続を確認して再度お試しください。",
     zh: "无法验证验证码，请检查网络连接后重试。"
   ),
-  "Complete your profile": (
-    ko: "프로필을 완성해 주세요",
-    ja: "プロフィールを完成させましょう",
-    zh: "完善个人资料"
-  ),
-  "Save profile": (ko: "프로필 저장", ja: "プロフィールを保存", zh: "保存个人资料"),
   "Saving…": (ko: "저장 중…", ja: "保存中…", zh: "保存中…"),
   "Unable to save profile. Check your username and try again.": (
     ko: "프로필을 저장하지 못했어요. 유저네임을 확인하고 다시 시도해 주세요.",
