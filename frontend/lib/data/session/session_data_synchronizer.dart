@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
+import 'package:onetouch/data/betting/betting_repository_provider.dart';
 import 'package:onetouch/data/players/following_players_repository_provider.dart';
 import 'package:onetouch/data/profile/api/api_current_user_response.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart';
@@ -71,6 +72,8 @@ class SessionDataSynchronizer {
       _synchronize(trigger);
 
   Future<SessionDataSnapshot> _synchronize(CacheSyncTrigger trigger) async {
+    // 작성자가 접속하지 않은 동안 받은 반응도 마지막으로 확인한 지역의 하루에 적립해요.
+    await bettingRepository.initializeWallet();
     await footballCatalog.initialize();
     if (AppCachePolicy.shouldRefresh(
       tier: CacheTier.staticData,

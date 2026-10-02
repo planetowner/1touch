@@ -9,6 +9,31 @@ import 'package:onetouch/data/betting/betting_repository.dart';
 import 'package:onetouch/models/betting.dart';
 
 void main() {
+  test('wallet sends the current region and preserves an unknown region',
+      () async {
+    String? country = 'kr';
+    final bodies = <String>[];
+    final repository = ApiBettingRepository(
+      countryCode: () async => country,
+      api: ApiClient(
+        client: MockClient((request) async {
+          bodies.add(request.body);
+          return http.Response(jsonEncode(_wallet), 200);
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => {},
+      ),
+    );
+    await repository.initializeWallet();
+    country = 'JP';
+    await repository.initializeWallet();
+    country = null;
+    await repository.initializeWallet();
+    expect(jsonDecode(bodies[0]), {'country_code': 'KR'});
+    expect(jsonDecode(bodies[1]), {'country_code': 'JP'});
+    expect(bodies[2], isEmpty);
+  });
+
   test('reads current auth headers, wallet and decimal model probabilities',
       () async {
     var token = 'first-session';

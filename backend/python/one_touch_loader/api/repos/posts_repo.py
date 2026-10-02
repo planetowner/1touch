@@ -10,6 +10,7 @@ from .teams_repo import list_following_team_ids
 from .media_repo import remove_attachments
 from ..services.content_visibility import blocked_sql, public_author, require_visible_author
 from .notifications_repo import notify_post
+from .community_points_repo import reward_publication, reward_interaction
 
 MAX_ATTACHMENTS = 10
 
@@ -182,6 +183,25 @@ def _require_author(user_id: int, content: dict) -> None:
         raise HTTPException(403, "Only the author can change this content")
 
 
+def _interaction_owner(post_id: int) -> int | None:
+    # 잠금 대상만 미리 읽어요. 게시 상태·작성자·권한은 트랜잭션 안에서 다시 확인해요.
+    row = fetch_one_dict("SELECT user_id FROM posts WHERE post_id=%s", (post_id,))
+    return row['user_id'] if row else None
+
+
+def _lock_interaction_users(cur, actor_id: int, owner_id: int | None) -> dict:
+    # 서로의 글에 동시에 반응해도 교착하지 않도록 회원 ID 순서로 잠근 뒤 글을 잠가요.
+    # 베팅도 같은 회원 잠금을 사용하므로 적립과 베팅이 잔액을 덮어쓰지 않아요.
+    for user_id in sorted({actor_id} | ({owner_id} if owner_id is not None else set())):
+        if user_id == actor_id:
+            actor = lock_user(cur, user_id)
+        else:
+            # 작성자가 방금 탈퇴했다면 글은 익명으로 남고 적립만 생략해요.
+            cur.execute("SELECT user_id FROM users WHERE user_id=%s FOR UPDATE", (user_id,))
+            cur.fetchone()
+    return actor
+
+
 def create_post(user_id: int, team_id: int, category: str, title: str, body: str, attachment_ids: list[int], *, draft: bool = False) -> int:
     if len(attachment_ids) != len(set(attachment_ids)):
         raise HTTPException(400, "Repeated attachment ID")
@@ -192,6 +212,8 @@ def create_post(user_id: int, team_id: int, category: str, title: str, body: str
                     (team_id, user_id, category, title, body, now, "draft" if draft else "active", now if draft else None))
         post_id = cur.lastrowid
         _set_attachments(cur, user_id, post_id, attachment_ids)
+        if not draft:
+            reward_publication(cur, {'post_id': post_id, 'user_id': user_id, 'created_at': now}, now)
     return post_id
 
 
@@ -250,7 +272,9 @@ def publish_draft(user_id: int, post_id: int) -> int:
         if not post["title"]:
             raise HTTPException(400, "A title is required to publish")
         # 게시·댓글·첨부는 같은 ID를 써요. 최신순은 초안 작성일이 아닌 실제 게시일로 정해요.
-        cur.execute("UPDATE posts SET state='active',created_at=%s,edited_at=NULL WHERE post_id=%s", (utc_now(), post_id))
+        now = utc_now()
+        cur.execute("UPDATE posts SET state='active',created_at=%s,edited_at=NULL WHERE post_id=%s", (now, post_id))
+        reward_publication(cur, {**post, 'created_at': now}, now)
     return post_id
 
 
@@ -288,8 +312,9 @@ def _public_comment(row: dict) -> dict:
 
 
 def create_comment(user_id: int, post_id: int, body: str, reply_to_id: int | None) -> int:
+    owner_id = _interaction_owner(post_id)
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
-        user = lock_user(cur, user_id)
+        user = _lock_interaction_users(cur, user_id, owner_id)
         post = _lock_post(cur, user, post_id)
         if reply_to_id is not None:
             cur.execute("SELECT post_id,user_id,state FROM post_comments WHERE comment_id=%s FOR UPDATE", (reply_to_id,))
@@ -297,10 +322,12 @@ def create_comment(user_id: int, post_id: int, body: str, reply_to_id: int | Non
             if parent is None or parent["post_id"] != post_id or parent["state"] != "active":
                 raise HTTPException(400, "Reply target must belong to this post")
             require_visible_author(user_id, parent["user_id"])
+        now = utc_now()
         cur.execute("INSERT INTO post_comments (post_id,user_id,reply_to_id,body,created_at) VALUES (%s,%s,%s,%s,%s)",
-                    (post_id, user_id, reply_to_id, body, utc_now()))
+                    (post_id, user_id, reply_to_id, body, now))
         comment_id = cur.lastrowid
         notify_post(cur, post, user_id, comment_id=comment_id)
+        reward_interaction(cur, post, user_id, 'community_comment', now)
         return comment_id
 
 
@@ -334,13 +361,15 @@ def set_like(user_id: int, target: str, target_id: int, liked: bool) -> None:
         "post": ("post_likes", "post_id", _lock_post),
         "comment": ("comment_likes", "comment_id", _lock_comment),
     }[target]
+    owner_id = _interaction_owner(target_id) if target == 'post' else None
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
-        user = lock_user(cur, user_id)
+        user = _lock_interaction_users(cur, user_id, owner_id)
         content = lookup(cur, user, target_id)
         if liked:
             cur.execute(f"INSERT INTO {table} ({key},user_id) VALUES (%s,%s) ON DUPLICATE KEY UPDATE user_id=VALUES(user_id)", (target_id, user_id))
             if target == 'post' and cur.rowcount == 1:
                 notify_post(cur, content, user_id)
+                reward_interaction(cur, content, user_id, 'community_like', utc_now())
         else:
             cur.execute(f"DELETE FROM {table} WHERE {key}=%s AND user_id=%s", (target_id, user_id))
 

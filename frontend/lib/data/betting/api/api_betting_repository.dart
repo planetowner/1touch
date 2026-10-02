@@ -7,9 +7,14 @@ import 'package:onetouch/data/betting/betting_repository.dart';
 import 'package:onetouch/models/betting.dart';
 
 class ApiBettingRepository implements BettingRepository {
-  ApiBettingRepository({required ApiClient api}) : _api = api;
+  ApiBettingRepository({
+    required ApiClient api,
+    Future<String?> Function()? countryCode,
+  })  : _api = api,
+        _countryCode = countryCode;
 
   final ApiClient _api;
+  final Future<String?> Function()? _countryCode;
 
   Future<Map<String, dynamic>> _request(
     String method,
@@ -44,8 +49,11 @@ class ApiBettingRepository implements BettingRepository {
   }
 
   @override
-  Future<PointWallet> initializeWallet() async =>
-      walletFromJson(await _request('POST', 'users/me/points/initialize'));
+  Future<PointWallet> initializeWallet() async {
+    final country = await _countryCode?.call();
+    return walletFromJson(await _request('POST', 'users/me/points/initialize',
+        country == null ? null : {'country_code': country.toUpperCase()}));
+  }
 
   @override
   Future<BettingMarket> loadMarket(int fixtureId) async {
