@@ -597,6 +597,7 @@ void main() {
 
   testWidgets('profile setting rows open their routes', (tester) async {
     await _setScreenSize(tester, const Size(393, 852));
+    final repository = _StaticCurrentUserRepository();
     final destinations = <String, String>{
       'profile-setting-personal-info': '/profile/edit',
       'profile-setting-notification': '/profile/notification',
@@ -612,7 +613,7 @@ void main() {
           builder: (_, __) => Profile(
             loadPointBalance: () async => 1430,
             activityRepository: const StubProfileActivityRepository(),
-            repository: _StaticCurrentUserRepository(),
+            repository: repository,
             followingTeamsRepository: _StaticFollowingTeamsRepository(),
           ),
         ),
@@ -654,8 +655,13 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('route:${entry.value}'), findsOneWidget);
+      final loadsBeforeReturn = repository.loadCalls;
       router.pop();
       await tester.pumpAndSettle();
+      if (entry.value == '/profile/edit') {
+        expect(repository.loadCalls, loadsBeforeReturn + 1,
+            reason: 'Social connections are saved before leaving the editor.');
+      }
     }
     expect(tester.takeException(), isNull);
   });
@@ -718,8 +724,13 @@ class _ControlledCurrentUserRepository implements CurrentUserRepository {
 }
 
 class _StaticCurrentUserRepository implements CurrentUserRepository {
+  int loadCalls = 0;
+
   @override
-  Future<CurrentUserProfile> load() async => _profile();
+  Future<CurrentUserProfile> load() async {
+    loadCalls++;
+    return _profile();
+  }
 }
 
 class _StaticFollowingTeamsRepository implements FollowingTeamsRepository {

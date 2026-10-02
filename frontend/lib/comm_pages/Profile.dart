@@ -190,11 +190,12 @@ class _ProfileState extends State<Profile> {
   }
 
   Future<void> _openProfileEditor(CurrentUserProfile profile) async {
-    final avatarChanged = await context.push<bool>(
+    await context.push<bool>(
       '/profile/edit',
       extra: profile,
     );
-    if (!mounted || avatarChanged != true) return;
+    if (!mounted) return;
+    // 소셜 연결은 저장 버튼 없이 즉시 반영되므로 뒤로 돌아올 때도 프로필을 갱신해요.
     await _loadProfile();
   }
 

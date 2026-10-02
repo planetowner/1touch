@@ -1,4 +1,4 @@
-"""Apple에서 연결 해제·계정 삭제가 확인되면 기존 탈퇴 규칙을 적용해요."""
+"""Apple 연결을 해제하고 다른 로그인 수단이 없을 때만 회원을 삭제해요."""
 from fastapi import APIRouter, Response
 from pydantic import BaseModel, Field
 
@@ -19,5 +19,5 @@ def receive_event(body: AppleEventBody):
     event = social_login.apple_account_event(body.payload)
     if event is not None:
         users_repo.delete_social_account("apple", *event)
-    # DB 실패를 수신 성공으로 표시하지 않아요. 익명화와 중복 수신 처리는 카카오와 공유해요.
+    # DB 실패를 수신 성공으로 표시하지 않아요. 계정 보존·탈퇴와 중복 수신 처리는 카카오와 공유해요.
     return Response(status_code=200)
