@@ -342,7 +342,7 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                       final viewportSize = constraints.biggest;
                       final chartSize = Size(
                         roundWindow.contentWidth(viewportSize.width),
-                        viewportSize.height,
+                        viewportSize.height - RoundChartSelectionHandle.height,
                       );
                       final axisLabel = tr(context, 'PERFORMANCE');
                       final axisLabelStyle = Body2_b.style;
@@ -372,6 +372,7 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                       return Stack(
                         children: [
                           Positioned.fill(
+                            bottom: RoundChartSelectionHandle.height,
                             child: CustomPaint(
                               key: const ValueKey('player-performance-grid'),
                               painter: _PlayerPerformanceGridPainter(
@@ -386,6 +387,13 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                             key: const ValueKey('player-performance-viewport'),
                             roundWindow: roundWindow,
                             viewportSize: viewportSize,
+                            selectedRound: selectedPoint?.round,
+                            onPointerMove: (x) => _selectRound(
+                              x,
+                              chartSize.width,
+                              roundWindow,
+                              valid,
+                            ),
                             builder: (context, _) => GestureDetector(
                               key: const ValueKey('player-performance-chart'),
                               behavior: HitTestBehavior.opaque,
@@ -702,10 +710,11 @@ class _PlayerPerformanceSelectionPainter extends CustomPainter {
       ..strokeWidth = 1;
     const dashHeight = 8.0;
     const dashGap = 7.0;
-    for (var y = 0.0; y < size.height; y += dashHeight + dashGap) {
+    final guideBottom = size.height;
+    for (var y = 0.0; y < guideBottom; y += dashHeight + dashGap) {
       canvas.drawLine(
         Offset(x, y),
-        Offset(x, math.min(y + dashHeight, size.height)),
+        Offset(x, math.min(y + dashHeight, guideBottom)),
         guidePaint,
       );
     }

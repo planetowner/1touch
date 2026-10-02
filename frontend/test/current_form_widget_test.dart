@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
@@ -115,7 +116,7 @@ void main() {
               .getBottomLeft(
                   find.byKey(const ValueKey('analysis-current-form-grid')))
               .dy,
-      12,
+      12 + RoundChartSelectionHandle.height,
     );
     final filter = find.byKey(const ValueKey('analysis-form-filter'));
     expect(filter, findsOneWidget);
@@ -489,6 +490,16 @@ void main() {
         final selectedPointX = chartRect.left + chartRect.width / 6;
         await tester.tapAt(Offset(selectedPointX, chartRect.center.dy));
         await tester.pump();
+
+        final formHandle = find.descendant(
+          of: viewport,
+          matching: find.byKey(const ValueKey('round-chart-selection-handle')),
+        );
+        expect(
+            tester.getRect(formHandle).left +
+                RoundChartSelectionHandle.tipInset,
+            closeTo(selectedPointX, 0.1));
+        expect(tester.getRect(formHandle).top, chartRect.bottom);
 
         final expectedBoxColor = isDark ? AppPalette.black : AppPalette.white;
         for (final key in const [

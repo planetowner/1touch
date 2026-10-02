@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/locale_controller.dart';
+import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
@@ -274,7 +275,7 @@ void main() {
                   find.byKey(const ValueKey('player-match-stat-value-Touches')))
               .dx -
           tester.getTopRight(find.text('Touch')).dx,
-      8,
+      4,
     );
     expect(
       tester
@@ -288,7 +289,7 @@ void main() {
     );
   });
 
-  testWidgets('Korean player match stats use minimal padding before wrapping',
+  testWidgets('Korean player match stats stay on one line with compact gaps',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -329,7 +330,7 @@ void main() {
     );
     for (final label in ['골', '도움', '슈팅']) {
       final text = tester.widget<Text>(find.text(label));
-      expect(text.maxLines, 2);
+      expect(text.maxLines, 1);
       expect(tester.getSize(find.text(label)).height, lessThan(30));
     }
     final goalPair = tester.getRect(
@@ -351,12 +352,57 @@ void main() {
       find.byKey(const ValueKey('player-match-rating')),
     );
     expect(goalPair.left - bottomRect.left, 16);
-    expect(assistPair.left - goalPair.right, 16);
-    expect(shotPair.left - assistPair.right, 16);
+    expect(assistPair.left - goalPair.right, 8);
+    expect(shotPair.left - assistPair.right, 8);
     expect(ratingGap.width, 8);
     expect(bottomRect.right - ratingRect.right, 16);
     expect(tester.takeException(), isNull);
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('long player match stat scrolls on one line at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: const Scaffold(
+          body: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: PlayerMatchCard(
+              result: 'WIN',
+              score: '3 - 0',
+              competition: 'LA LIGA',
+              stats: [
+                (label: 'Expected goals from outside the box', value: '1'),
+                (label: 'Assists', value: '2'),
+                (label: 'Shots', value: '4'),
+              ],
+              rating: '8.4',
+            ),
+          ),
+        ),
+      ));
+
+      final label = find.byKey(const ValueKey(
+          'player-match-stat-label-Expected goals from outside the box'));
+      final text = tester.widget<Text>(
+        find.descendant(of: label, matching: find.byType(Text)),
+      );
+      final scrollable = tester.state<ScrollableState>(
+        find.descendant(of: label, matching: find.byType(Scrollable)),
+      );
+      expect(text.maxLines, 1);
+      expect(scrollable.position.maxScrollExtent, greaterThan(0));
+      await tester.pump(const Duration(milliseconds: 800));
+      await tester.pump(const Duration(milliseconds: 800));
+      expect(scrollable.position.pixels, greaterThan(0));
+      await tester.pump(const Duration(seconds: 6));
+      expect(scrollable.position.pixels,
+          closeTo(scrollable.position.maxScrollExtent, 0.1));
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('overview jersey number removes top leading beside player image',
       (tester) async {
@@ -875,6 +921,82 @@ void main() {
     expect(ratingText.style?.color, app_style.AppPalette.white);
     expect(tester.takeException(), isNull);
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    for (final locale in [const Locale('en'), const Locale('ko')]) {
+      testWidgets(
+          'competition stat headers align with values at $size in $locale',
+          (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        appLocaleController.value = locale;
+        addTearDown(() => appLocaleController.value = const Locale('en'));
+
+        await tester.pumpWidget(MaterialApp(
+          theme: app_style.darktheme,
+          home: PlayerCard(
+            player: player,
+            detailRepository: FakePlayerDetailRepository(),
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        final headerTexts = find.descendant(
+          of: find.byKey(const ValueKey('player-competition-header-surface')),
+          matching: find.byType(Text),
+        );
+        final valueTexts = find.descendant(
+          of: find.byKey(const ValueKey('player-competition-row-2')),
+          matching: find.byType(Text),
+        );
+        expect(headerTexts, findsNWidgets(4));
+        expect(valueTexts, findsNWidgets(4));
+        for (var column = 1; column < 4; column++) {
+          final headerX = tester.getCenter(headerTexts.at(column)).dx;
+          final valueX = tester.getCenter(valueTexts.at(column)).dx;
+          expect(headerX, closeTo(valueX, 0.1));
+        }
+        for (final name in ['mp', 'wr', 'rating']) {
+          final header = tester.getRect(
+            find.byKey(ValueKey('player-competition-header-$name')),
+          );
+          final value = tester.getRect(
+            find.byKey(ValueKey('player-competition-row-2-$name')),
+          );
+          expect(header.center.dx, closeTo(value.center.dx, 0.1));
+        }
+        final mp = tester.getRect(
+          find.byKey(const ValueKey('player-competition-header-mp')),
+        );
+        final wr = tester.getRect(
+          find.byKey(const ValueKey('player-competition-header-wr')),
+        );
+        final rating = tester.getRect(
+          find.byKey(const ValueKey('player-competition-header-rating')),
+        );
+        expect(wr.left - mp.right, closeTo(rating.left - wr.right, 0.1));
+        final card = tester.getRect(
+          find.byKey(const ValueKey('player-competition-stats-card')),
+        );
+        final row = tester.getRect(
+          find.byKey(const ValueKey('player-competition-row-2')),
+        );
+        final ratingColumn = tester.getRect(
+          find.byKey(const ValueKey('player-competition-row-2-rating')),
+        );
+        final ratingBox = tester.getRect(
+          find.byKey(const ValueKey('player-competition-rating-2')),
+        );
+        expect(card.right - row.right, closeTo(16, 0.1));
+        expect(card.right - ratingColumn.right, closeTo(16, 0.1));
+        expect(ratingBox.width, lessThan(ratingColumn.width));
+        expect(ratingBox.center.dx, closeTo(ratingColumn.center.dx, 0.1));
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
   for (final size in [
     const Size(320, 568),
     const Size(393, 852),
@@ -1080,7 +1202,7 @@ void main() {
               .getBottomLeft(
                   find.byKey(const ValueKey('player-performance-grid')))
               .dy,
-      12,
+      12 + RoundChartSelectionHandle.height,
     );
     expect(axisLabel.quarterTurns, 1);
 
@@ -1095,6 +1217,20 @@ void main() {
     expect(
       find.byKey(const ValueKey('player-performance-tooltip')),
       findsOneWidget,
+    );
+    final performanceHandle = find.descendant(
+      of: find.byKey(const ValueKey('player-performance-viewport')),
+      matching: find.byKey(const ValueKey('round-chart-selection-handle')),
+    );
+    expect(
+        tester.getRect(performanceHandle).left +
+            RoundChartSelectionHandle.tipInset,
+        closeTo(chartRect.center.dx, 0.1));
+    expect(
+      tester.getRect(performanceHandle).top,
+      tester
+          .getRect(find.byKey(const ValueKey('player-performance-grid')))
+          .bottom,
     );
     expect(find.text('Round 4'), findsOneWidget);
     expect(find.text('Rating 6.87'), findsOneWidget);

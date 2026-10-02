@@ -464,7 +464,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                 );
                 final chartSize = Size(
                   roundWindow.contentWidth(viewportSize.width),
-                  viewportSize.height,
+                  viewportSize.height - RoundChartSelectionHandle.height,
                 );
                 final pointsAxisLabel = tr(context, 'POINTS');
                 final pointsAxisLabelStyle = Body2_b.style;
@@ -544,6 +544,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                 return Stack(
                   children: [
                     Positioned.fill(
+                      bottom: RoundChartSelectionHandle.height,
                       child: CustomPaint(
                         key: const ValueKey('analysis-current-form-grid'),
                         painter: _CurrentFormGridPainter(
@@ -558,6 +559,13 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                       key: const ValueKey('analysis-current-form-viewport'),
                       roundWindow: roundWindow,
                       viewportSize: viewportSize,
+                      selectedRound: selectedRound,
+                      onPointerMove: (x) => _selectFormRound(
+                        x,
+                        chartSize.width,
+                        roundWindow,
+                        current,
+                      ),
                       builder: (context, _) => GestureDetector(
                         key: const ValueKey('analysis-current-form-chart'),
                         behavior: HitTestBehavior.opaque,

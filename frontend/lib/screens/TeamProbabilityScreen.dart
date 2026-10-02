@@ -467,6 +467,7 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
                 return Stack(
                   children: [
                     Positioned.fill(
+                      bottom: RoundChartSelectionHandle.height,
                       child: CustomPaint(
                         key: const ValueKey('probability-history-grid'),
                         painter: _ProbabilityHistoryGridPainter(
@@ -483,6 +484,13 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
                         key: const ValueKey('probability-history-viewport'),
                         roundWindow: roundWindow,
                         viewportSize: plotViewportSize,
+                        selectedRound: selectedPoint?.played,
+                        onPointerMove: (x) => _selectRound(
+                          x,
+                          roundWindow.contentWidth(plotViewportSize.width),
+                          roundWindow,
+                          visiblePoints,
+                        ),
                         builder: (context, contentSize) => GestureDetector(
                           key: const ValueKey('probability-history-chart'),
                           behavior: HitTestBehavior.opaque,
@@ -748,10 +756,11 @@ class _ProbabilityHistorySelectionPainter extends CustomPainter {
       ..strokeWidth = 1;
     const dashHeight = 8.0;
     const dashGap = 7.0;
-    for (var y = 0.0; y < size.height; y += dashHeight + dashGap) {
+    final guideBottom = size.height;
+    for (var y = 0.0; y < guideBottom; y += dashHeight + dashGap) {
       canvas.drawLine(
         Offset(x, y),
-        Offset(x, (y + dashHeight).clamp(0.0, size.height)),
+        Offset(x, (y + dashHeight).clamp(0.0, guideBottom)),
         guidePaint,
       );
     }
