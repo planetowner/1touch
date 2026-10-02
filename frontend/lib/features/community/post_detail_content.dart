@@ -77,7 +77,7 @@ class PostDetailContent extends StatelessWidget {
     final params = ShareParams(
       title: '1touch',
       subject: post.title,
-      text: communityPostShareText(post),
+      uri: communityPostShareUri(post.postId),
       sharePositionOrigin: shareOrigin,
     );
 

@@ -240,8 +240,9 @@ void main() {
 
     expect(sharedParams?.title, '1touch');
     expect(sharedParams?.subject, post.title);
-    expect(sharedParams?.text,
-        'Match reaction\n\nhttps://1touch.football/community/12');
+    expect(
+        sharedParams?.uri, Uri.parse('https://1touch.football/community/12'));
+    expect(sharedParams?.text, isNull);
     expect(sharedParams?.sharePositionOrigin, isNotNull);
     expect(sharedParams!.sharePositionOrigin!.isEmpty, isFalse);
     expect(tester.takeException(), isNull);
