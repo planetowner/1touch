@@ -468,6 +468,7 @@ final GoRouter _router = GoRouter(
     ),
     GoRoute(
       path: '/compare',
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => PlayerComparisonScreen(
         initialPlayerId: state.extra as String?,
       ),

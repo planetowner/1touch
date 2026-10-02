@@ -381,7 +381,6 @@ class _FollowingPlayersEditorSheetState
             key: ValueKey('following-editor-${player.playerId}'),
             player: player,
             detail: _details[player.playerId],
-            primary: index == 0,
             divider: divider,
             dragHandle: ReorderableDragStartListener(
               index: index,
@@ -475,13 +474,11 @@ class _FollowingPlayerRow extends StatelessWidget {
       {super.key,
       required this.player,
       required this.detail,
-      required this.primary,
       required this.divider,
       required this.dragHandle,
       required this.onRemove});
   final FollowingPlayer player;
   final Future<PlayerDetail?>? detail;
-  final bool primary;
   final Color divider;
   final Widget dragHandle;
   final VoidCallback onRemove;
@@ -517,7 +514,6 @@ class _FollowingPlayerRow extends StatelessWidget {
                       : teamNameLabel(context, value?.profile.teamId,
                           value!.profile.teamName!),
                   number: value?.profile.jerseyNumber,
-                  primary: primary,
                 )),
                 dragHandle,
               ]),
@@ -574,12 +570,10 @@ class _PlayerIdentity extends StatelessWidget {
       {required this.name,
       this.team,
       this.number,
-      this.primary = false,
       this.rankingStyle = false});
   final String name;
   final String? team;
   final int? number;
-  final bool primary;
   final bool rankingStyle;
   @override
   Widget build(BuildContext context) => Column(
@@ -594,10 +588,6 @@ class _PlayerIdentity extends StatelessWidget {
                     style: rankingStyle
                         ? Heading5.style.copyWith(height: 1.1)
                         : Heading5.style)),
-            if (primary)
-              const Padding(
-                  padding: EdgeInsets.only(left: 6),
-                  child: Icon(Icons.star_border, size: 18)),
           ]),
           if (team != null) ...[
             SizedBox(height: rankingStyle ? 4 : 2),

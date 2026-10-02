@@ -187,13 +187,10 @@ void main() {
           path: '/match/:matchId',
           builder: (context, state) => Scaffold(
             body: TextButton(
-              onPressed: () => showModalBottomSheet<void>(
-                context: context,
-                isScrollControlled: true,
-                builder: (_) => PlayerMatchStatSheet(
-                  player: player,
-                  followingController: controller,
-                ),
+              onPressed: () => showPlayerMatchStatSheet(
+                context,
+                player,
+                followingController: controller,
               ),
               child: Text('Match ${state.pathParameters['matchId']}'),
             ),
@@ -203,6 +200,12 @@ void main() {
           path: '/match-player/:playerId',
           builder: (_, state) => Scaffold(
             body: Text('Player ${state.pathParameters['playerId']}'),
+          ),
+        ),
+        GoRoute(
+          path: '/compare',
+          builder: (_, state) => Scaffold(
+            body: Text('Compare ${state.extra}'),
           ),
         ),
       ],
@@ -240,9 +243,97 @@ void main() {
     await tester.tap(find.byIcon(Icons.close_rounded));
     await tester.pumpAndSettle();
     expect(find.text('Match 55'), findsOneWidget);
+    await tester.tap(find.text('Match 55'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.safety_divider));
+    await tester.pumpAndSettle();
+    expect(find.text('Compare 2'), findsOneWidget);
+    expect(find.byKey(const ValueKey('player-match-stat-sheet')), findsNothing);
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(
+        find.byKey(const ValueKey('player-match-stat-sheet')), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
+    expect(find.text('Match 55'), findsOneWidget);
     router.pop();
     await tester.pumpAndSettle();
     expect(find.text('Open match'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('comparison stays above match stat popup with app navigators',
+      (tester) async {
+    final rootNavigatorKey = GlobalKey<NavigatorState>();
+    final controller = PlayerFollowingController(
+      repository: FakeFollowingPlayersRepository(),
+    );
+    addTearDown(controller.dispose);
+    final router = GoRouter(
+      initialLocation: '/home',
+      navigatorKey: rootNavigatorKey,
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) => navigationShell,
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/home',
+                  builder: (context, _) => Scaffold(
+                    body: TextButton(
+                      onPressed: () => context.push('/match/55'),
+                      child: const Text('Open match'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/match/:matchId',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, _) => Scaffold(
+            body: TextButton(
+              onPressed: () => showPlayerMatchStatSheet(
+                context,
+                player,
+                followingController: controller,
+              ),
+              child: const Text('Open stats'),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/compare',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, state) => Scaffold(
+            body: TextButton(
+              onPressed: () {},
+              child: Text('Compare ${state.extra}'),
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.tap(find.text('Open match'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open stats'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.safety_divider));
+    await tester.pumpAndSettle();
+    expect(find.text('Compare 2'), findsOneWidget);
+    await tester.tap(find.text('Compare 2'));
+    await tester.pumpAndSettle();
+    expect(find.text('Compare 2'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(
+        find.byKey(const ValueKey('player-match-stat-sheet')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
