@@ -110,6 +110,79 @@ void main() {
         fixtureId: 42, requestId: requestId, expectedRevision: 1);
   });
 
+  for (final drawAllowed in [true, false]) {
+    test('loads an unopened market with drawAllowed=$drawAllowed', () async {
+      final response = {
+        ..._market(drawAllowed: drawAllowed),
+        'can_bet': false,
+        'unavailable_reason': 'betting_not_open',
+      };
+      final market = await _repository(response).loadMarket(42);
+      expect(market.options.map((option) => option.outcome), [
+        BetOutcome.homeWin,
+        if (drawAllowed) BetOutcome.draw,
+        BetOutcome.awayWin,
+      ]);
+      expect(market.available, isTrue);
+      expect(market.canBet, isFalse);
+      expect(market.unavailableReason, 'betting_not_open');
+      expect(market.opensAt, DateTime.utc(2026, 9, 20, 6));
+    });
+  }
+
+  test('preserves an unavailable prediction with no options', () async {
+    final market = await _repository({
+      ..._market(),
+      'available': false,
+      'can_bet': false,
+      'unavailable_reason': 'prediction_unavailable',
+      'prediction_run_id': null,
+      'prediction_as_of': null,
+      'options': [],
+    }).loadMarket(42);
+    expect(market.options, isEmpty);
+    expect(market.available, isFalse);
+    expect(market.unavailableReason, 'prediction_unavailable');
+  });
+
+  test('rejects incomplete, duplicate and out-of-order outcomes', () async {
+    final options = _market()['options'] as List;
+    for (final indexes in [
+      [0],
+      [0, 1],
+      [1, 2],
+      [2, 0],
+      [0, 0],
+      [0, 2, 1],
+      [0, 0, 2],
+      [0, 1, 2, 2],
+    ]) {
+      await expectLater(
+        _repository({
+          ..._market(),
+          'options': indexes.map((index) => options[index]).toList(),
+        }).loadMarket(42),
+        throwsFormatException,
+        reason: 'outcome indexes: $indexes',
+      );
+    }
+  });
+
+  for (final drawAllowed in [true, false]) {
+    test('rejects invalid probabilities with drawAllowed=$drawAllowed',
+        () async {
+      for (final probability in ['0', '-0.1', '1.1', 'NaN', 'Infinity']) {
+        final response = _market(drawAllowed: drawAllowed);
+        (response['options'] as List).last['probability'] = probability;
+        await expectLater(
+          _repository(response).loadMarket(42),
+          throwsFormatException,
+          reason: 'probability: $probability',
+        );
+      }
+    });
+  }
+
   test('surfaces authentication and stale quotes and rejects wrong fixtures',
       () async {
     final responses = [
@@ -140,6 +213,15 @@ void main() {
   });
 }
 
+ApiBettingRepository _repository(Map<String, dynamic> market) =>
+    ApiBettingRepository(
+      api: ApiClient(
+        client: MockClient((_) async => http.Response(jsonEncode(market), 200)),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => {},
+      ),
+    );
+
 const _wallet = {'balance': 1000, 'initialized': true, 'welcome_points': 1000};
 const _bet = {
   'bet_id': 1,
@@ -154,7 +236,7 @@ const _bet = {
   'payout': 0,
 };
 
-Map<String, dynamic> _market() => {
+Map<String, dynamic> _market({bool drawAllowed = true}) => {
       'fixture_id': 42,
       'available': true,
       'can_bet': true,
@@ -168,18 +250,21 @@ Map<String, dynamic> _market() => {
       'options': [
         {
           'outcome': 'home_win',
-          'probability': '0.600000000000000000',
-          'decimal_odds': '1.666666666667'
+          'probability':
+              drawAllowed ? '0.600000000000000000' : '0.800000000000000000',
+          'decimal_odds': drawAllowed ? '1.666666666667' : '1.250000000000'
         },
-        {
-          'outcome': 'draw',
-          'probability': '0.100000000000000000',
-          'decimal_odds': '10.000000000000'
-        },
+        if (drawAllowed)
+          {
+            'outcome': 'draw',
+            'probability': '0.100000000000000000',
+            'decimal_odds': '10.000000000000'
+          },
         {
           'outcome': 'away_win',
-          'probability': '0.300000000000000000',
-          'decimal_odds': '3.333333333333'
+          'probability':
+              drawAllowed ? '0.300000000000000000' : '0.200000000000000000',
+          'decimal_odds': drawAllowed ? '3.333333333333' : '5.000000000000'
         },
       ],
       'wallet': _wallet,
