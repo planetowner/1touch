@@ -160,6 +160,127 @@ void main() {
     expect(find.text('25/26 BETA'), findsOneWidget);
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('reselecting a team unchecks it until update at $size',
+        (tester) async {
+      useScreen(tester, size);
+      final queries = <CurrentFormComparisonQuery>[];
+      final repository = _TestCurrentFormRepository(
+        optionsLoader: (_) async => _optionsForTeam(1),
+        comparisonLoader: (query) async {
+          queries.add(query);
+          return _comparisonFor(
+            query,
+            comparisonShortCode: query.compareTeamId == 2 ? 'BETA' : 'PREV',
+          );
+        },
+      );
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+      await tester.pumpAndSettle();
+      await _chooseCurrentForm(tester, seasonId: 200, teamId: 2);
+      expect(tester.widget<LineChart>(find.byType(LineChart))
+          .data.lineBarsData, hasLength(2));
+
+      await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
+      await tester.pumpAndSettle();
+      final sheet =
+          find.byKey(const ValueKey('analysis-comparison-filter-sheet'));
+      final appliedTeam =
+          find.byKey(const ValueKey('analysis-form-option-2-200'));
+      await tester.ensureVisible(appliedTeam);
+      expect(find.descendant(
+        of: appliedTeam,
+        matching: find.byIcon(Icons.check),
+      ), findsOneWidget);
+      await tester.tap(appliedTeam);
+      await tester.pumpAndSettle();
+
+      expect(sheet, findsOneWidget);
+      expect(find.descendant(
+        of: appliedTeam,
+        matching: find.byIcon(Icons.check),
+      ), findsNothing);
+      expect(tester.widget<LineChart>(find.byType(LineChart))
+          .data.lineBarsData, hasLength(2));
+      await tester.tap(find.byKey(const ValueKey('analysis-filter-update')));
+      await tester.pumpAndSettle();
+
+      expect(sheet, findsNothing);
+      expect(find.descendant(
+        of: find.byKey(const ValueKey('analysis-form-filter')),
+        matching: find.text('SEASON'),
+      ), findsOneWidget);
+      expect(tester.widget<LineChart>(find.byType(LineChart))
+          .data.lineBarsData, hasLength(1));
+      expect(find.text('25/26 BETA'), findsNothing);
+      expect(queries, hasLength(2));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('Current Form has no checked team until one is tapped',
+      (tester) async {
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (_) async => _optionsForTeam(1),
+      comparisonLoader: (query) async =>
+          _comparisonFor(query, comparisonShortCode: 'PREV'),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
+    await tester.pumpAndSettle();
+
+    final sheet =
+        find.byKey(const ValueKey('analysis-comparison-filter-sheet'));
+    expect(find.descendant(of: sheet, matching: find.byIcon(Icons.check)),
+        findsNothing);
+    expect(tester.widget<ElevatedButton>(
+      find.byKey(const ValueKey('analysis-filter-update')),
+    ).onPressed, isNull);
+
+    final team = find.byKey(const ValueKey('analysis-form-option-2-200'));
+    await tester.ensureVisible(team);
+    await tester.tap(team);
+    await tester.pump();
+    expect(find.descendant(of: team, matching: find.byIcon(Icons.check)),
+        findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('closing the Current Form filter keeps the applied team',
+      (tester) async {
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (_) async => _optionsForTeam(1),
+      comparisonLoader: (query) async => _comparisonFor(
+        query,
+        comparisonShortCode: query.compareTeamId == 2 ? 'BETA' : 'PREV',
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+    await tester.pumpAndSettle();
+    await _chooseCurrentForm(tester, seasonId: 200, teamId: 2);
+    await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
+    await tester.pumpAndSettle();
+    final appliedTeam =
+        find.byKey(const ValueKey('analysis-form-option-2-200'));
+    await tester.ensureVisible(appliedTeam);
+    await tester.tap(appliedTeam);
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analysis-filter-close')));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<LineChart>(find.byType(LineChart))
+        .data.lineBarsData, hasLength(2));
+    expect(find.text('25/26 BETA'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('groups Big Five teams by season name across league season IDs',
       (tester) async {
     final queries = <CurrentFormComparisonQuery>[];
