@@ -36,6 +36,7 @@ abstract interface class LocalCacheStore {
 
 abstract final class LocalCacheScopes {
   static const global = 'global';
+  static const communityPosts = 'community-posts';
 
   /// A device has one active authenticated account at a time. This entire
   /// scope is cleared before a new sign-in and during local logout.
@@ -80,6 +81,20 @@ abstract final class LocalCacheKeys {
   ) =>
       'current-player-ranking:${league ?? 'all'}:${position ?? 'all'}:'
       '$limit:$offset';
+
+  static String communityFeed(
+    int teamId,
+    String? category,
+    String sort,
+    String period,
+    String? timezone,
+    int limit,
+    int offset,
+  ) =>
+      'community-feed:$teamId:${category ?? 'all'}:$sort:$period:'
+      '${Uri.encodeComponent(timezone ?? 'all')}:$limit:$offset';
+
+  static String communityPost(int postId) => 'community-post:$postId';
 
   static String home(int teamId, DateTime month, String viewerCountry) =>
       'home:$teamId:${month.year}-${month.month.toString().padLeft(2, '0')}:'

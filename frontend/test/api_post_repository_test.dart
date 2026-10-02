@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +7,7 @@ import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/posts/api/api_post_repository.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/models/post.dart';
 
 void main() {
@@ -86,6 +88,186 @@ void main() {
 
     expect(post.postId, 42);
     expect(post.title, 'Pressing structure');
+  });
+
+  test('restores feed and post detail after repository recreation', () async {
+    final store = MemoryLocalCacheStore();
+    var requests = 0;
+    ApiPostRepository repository() => ApiPostRepository(
+          api: ApiClient(
+            client: MockClient((request) async {
+              requests++;
+              return http.Response(
+                jsonEncode(request.url.path.endsWith('/42')
+                    ? _postJson()
+                    : _feedJson()),
+                200,
+              );
+            }),
+            baseUri: Uri.parse('https://example.test/v1/'),
+            requestHeaders: () => const {},
+          ),
+          cacheStore: store,
+        );
+
+    await repository().loadPosts(teamId: 83);
+    await repository().loadPost(42);
+    final reader = repository();
+    final feed = await reader.loadPosts(teamId: 83);
+    final post = await reader.loadPost(42);
+    expect(feed.single.postId, 42);
+    expect(post.postId, 42);
+    expect(reader.cachedFeed(teamId: 83), same(feed));
+    expect(reader.cachedPost(42), same(post));
+    expect(requests, 2);
+  });
+
+  test('keeps an expired feed visible during one background refresh', () async {
+    final store = _AgedPostStore();
+    await store.write(
+      LocalCacheKeys.communityFeed(83, null, 'newest', 'all_time', null, 50, 0),
+      _feedJson(),
+      scope: LocalCacheScopes.communityPosts,
+    );
+    final response = Completer<http.Response>();
+    var requests = 0;
+    final repository = ApiPostRepository(
+      api: ApiClient(
+        client: MockClient((_) {
+          requests++;
+          return response.future;
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final stale = await repository.loadPosts(teamId: 83);
+    final duplicate = await repository.loadPosts(teamId: 83);
+    await Future<void>.delayed(Duration.zero);
+    expect(stale.single.title, 'Pressing structure');
+    expect(duplicate, same(stale));
+    expect(requests, 1);
+
+    final updated = Completer<void>();
+    repository.cachedFeeds.addListener(() {
+      if (repository.cachedFeed(teamId: 83)?.single.title == 'New title' &&
+          !updated.isCompleted) {
+        updated.complete();
+      }
+    });
+    response.complete(http.Response(
+      jsonEncode(_feedJson(items: [
+        {..._postJson(), 'title': 'New title'}
+      ])),
+      200,
+    ));
+    await updated.future;
+    expect(repository.cachedFeed(teamId: 83)?.single.title, 'New title');
+  });
+
+  test('keeps cached post detail when its refresh fails', () async {
+    final store = _AgedPostStore();
+    await store.write(LocalCacheKeys.communityPost(42), _postJson(),
+        scope: LocalCacheScopes.communityPosts);
+    var requests = 0;
+    final repository = ApiPostRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response('Offline', 503);
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final stale = await repository.loadPost(42);
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, 1);
+    expect(repository.cachedPost(42), same(stale));
+  });
+
+  test('repairs malformed feed cache without deleting another entry', () async {
+    final store = MemoryLocalCacheStore();
+    final key = LocalCacheKeys.communityFeed(
+        83, null, 'newest', 'all_time', null, 50, 0);
+    await store.write(key, {'items': 'broken'},
+        scope: LocalCacheScopes.communityPosts);
+    await store.write(LocalCacheKeys.communityPost(42), _postJson(),
+        scope: LocalCacheScopes.communityPosts);
+    var requests = 0;
+    final repository = ApiPostRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response(jsonEncode(_feedJson()), 200);
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    expect((await repository.loadPosts(teamId: 83)).single.postId, 42);
+    expect(requests, 1);
+    expect(await store.read(key, scope: LocalCacheScopes.communityPosts),
+        isNotNull);
+    expect(
+        await store.read(LocalCacheKeys.communityPost(42),
+            scope: LocalCacheScopes.communityPosts),
+        isNotNull);
+  });
+
+  test('deduplicates simultaneous cold feed requests', () async {
+    final response = Completer<http.Response>();
+    var requests = 0;
+    final repository = ApiPostRepository(
+      api: ApiClient(
+        client: MockClient((_) {
+          requests++;
+          return response.future;
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: MemoryLocalCacheStore(),
+    );
+
+    final first = repository.loadPosts(teamId: 83);
+    final second = repository.loadPosts(teamId: 83);
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, 1);
+    response.complete(http.Response(jsonEncode(_feedJson()), 200));
+    expect(await first, same(await second));
+  });
+
+  test('like mutation clears only community cache scope', () async {
+    final store = MemoryLocalCacheStore();
+    await store.write('unrelated', {'value': true});
+    final repository = ApiPostRepository(
+      api: ApiClient(
+        client: MockClient((request) async => request.method == 'PUT'
+            ? http.Response('{"ok":true}', 200)
+            : http.Response(jsonEncode(_feedJson()), 200)),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    await repository.loadPosts(teamId: 83);
+    final key = LocalCacheKeys.communityFeed(
+        83, null, 'newest', 'all_time', null, 50, 0);
+    expect(await store.read(key, scope: LocalCacheScopes.communityPosts),
+        isNotNull);
+    await repository.setPostLiked(postId: 42, liked: true);
+    expect(repository.cachedFeed(teamId: 83), isNull);
+    expect(
+        await store.read(key, scope: LocalCacheScopes.communityPosts), isNull);
+    expect(await store.read('unrelated'), isNotNull);
   });
 
   test('fan-art feed and creation use the same API category', () async {
@@ -641,3 +823,32 @@ Map<String, dynamic> _postJson() => {
         },
       ],
     };
+
+class _AgedPostStore implements LocalCacheStore {
+  final MemoryLocalCacheStore _delegate = MemoryLocalCacheStore();
+
+  @override
+  Future<LocalCacheRecord?> read(String key,
+      {String scope = LocalCacheScopes.global, int schemaVersion = 1}) async {
+    final record =
+        await _delegate.read(key, scope: scope, schemaVersion: schemaVersion);
+    if (record == null) return null;
+    return LocalCacheRecord(
+      payload: record.payload,
+      savedAt: DateTime.now().toUtc().subtract(const Duration(minutes: 10)),
+      schemaVersion: record.schemaVersion,
+    );
+  }
+
+  @override
+  Future<void> write(String key, Object payload,
+          {String scope = LocalCacheScopes.global, int schemaVersion = 1}) =>
+      _delegate.write(key, payload, scope: scope, schemaVersion: schemaVersion);
+
+  @override
+  Future<void> delete(String key, {String scope = LocalCacheScopes.global}) =>
+      _delegate.delete(key, scope: scope);
+
+  @override
+  Future<void> clearScope(String scope) => _delegate.clearScope(scope);
+}

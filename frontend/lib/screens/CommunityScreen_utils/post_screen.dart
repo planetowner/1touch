@@ -80,7 +80,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _post = widget.post;
+    final repository = _postRepository;
+    if (repository is CachedPostRepository) {
+      repository.cachedPostDetails.addListener(_handleCachedPost);
+    }
+    _post = repository is CachedPostRepository
+        ? repository.cachedPost(widget.post.postId) ?? widget.post
+        : widget.post;
     _syncEngagementFromPost();
     _currentUserId = widget.currentUserId;
     if (_currentUserId == null && authSession.isAuthenticated) {
@@ -98,6 +104,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   void didUpdateWidget(PostDetailScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final oldRepository =
+        oldWidget.postRepository ?? post_providers.postRepository;
+    if (!identical(oldRepository, _postRepository)) {
+      if (oldRepository is CachedPostRepository) {
+        oldRepository.cachedPostDetails.removeListener(_handleCachedPost);
+      }
+      if (_postRepository case CachedPostRepository cached) {
+        cached.cachedPostDetails.addListener(_handleCachedPost);
+      }
+    }
     if (widget.post != oldWidget.post) _post = widget.post;
     if (widget.post.postId != oldWidget.post.postId) {
       _syncEngagementFromPost();
@@ -116,9 +132,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   void _syncEngagementFromPost() {
-    _liked = widget.post.liked;
-    _likeCount = widget.post.likeCount;
-    _commentCount = widget.post.commentCount;
+    _liked = _post.liked;
+    _likeCount = _post.likeCount;
+    _commentCount = _post.commentCount;
+  }
+
+  void _handleCachedPost() {
+    if (_isEditingPost || _isRefreshingPost || _isUpdatingLike) return;
+    final repository = _postRepository;
+    if (repository is! CachedPostRepository) return;
+    final cached = repository.cachedPost(_post.postId);
+    if (cached == null || identical(cached, _post)) return;
+    setState(() {
+      _post = cached;
+      _syncEngagementFromPost();
+    });
   }
 
   Future<void> _loadCurrentUserId() async {
@@ -220,8 +248,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       final repository = _postRepository;
       final Post updatedPost;
       if (repository is PostDetailRepository) {
-        updatedPost =
-            await (repository as PostDetailRepository).loadPost(_post.postId);
+        updatedPost = repository is CachedPostRepository
+            ? await repository.refreshPost(_post.postId)
+            : await (repository as PostDetailRepository).loadPost(_post.postId);
       } else {
         updatedPost = (await repository.loadPosts(teamId: _post.teamId))
             .firstWhere((post) => post.postId == _post.postId);
@@ -398,6 +427,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   @override
   void dispose() {
+    if (_postRepository case CachedPostRepository cached) {
+      cached.cachedPostDetails.removeListener(_handleCachedPost);
+    }
     _commentsRequestGeneration++;
     _scrollController.dispose();
     super.dispose();
