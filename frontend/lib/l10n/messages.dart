@@ -517,6 +517,12 @@ const appMessages = <String, MessageTranslations>{
   "SOCIAL ACCOUNTS": (ko: "소셜 계정", ja: "ソーシャルアカウント", zh: "社交账号"),
   "Connected": (ko: "연결됨", ja: "連携済み", zh: "已关联"),
   "Not Connected": (ko: "연결 안 됨", ja: "未連携", zh: "未关联"),
+  "Unable to connect {provider}. It may already be linked to another account.":
+      (
+    ko: "{provider} 계정을 연결할 수 없어요. 다른 계정에 이미 연결됐을 수 있어요.",
+    ja: "{provider}を連携できません。別のアカウントに連携済みの可能性があります。",
+    zh: "无法关联{provider}，该账号可能已关联其他账户。",
+  ),
   "DELETE ACCOUNT": (ko: "계정 삭제하기", ja: "アカウントを削除", zh: "删除账号"),
   "Privacy Policy": (ko: "개인정보 처리방침", ja: "プライバシーポリシー", zh: "隐私政策"),
   "Terms of Service": (ko: "이용약관", ja: "利用規約", zh: "服务条款"),
