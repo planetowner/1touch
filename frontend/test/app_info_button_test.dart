@@ -34,9 +34,10 @@ void main() {
     expect(dialog.backgroundColor, AppPalette.lightModeDarkGrey);
     expect(dialog.insetPadding,
         const EdgeInsets.symmetric(horizontal: 24, vertical: 24));
-    expect(find.byKey(const ValueKey('app-info-understand')), findsOneWidget);
+    expect(find.byKey(const ValueKey('app-info-close')), findsOneWidget);
+    expect(find.text('I understand'), findsNothing);
 
-    await tester.tap(find.byKey(const ValueKey('app-info-understand')));
+    await tester.tap(find.byKey(const ValueKey('app-info-close')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('app-info-popup')), findsNothing);
 

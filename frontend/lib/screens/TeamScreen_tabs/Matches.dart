@@ -26,12 +26,14 @@ class MatchesTab extends StatefulWidget {
   final TeamOverview? team;
   final FixtureRepository? fixtureRepository;
   final VoidCallback? onTopOverscroll;
+  final int refreshRequestId;
 
   const MatchesTab({
     super.key,
     required this.team,
     this.fixtureRepository,
     this.onTopOverscroll,
+    this.refreshRequestId = 0,
   });
 
   @override
@@ -69,25 +71,91 @@ class _MatchesTabState extends State<MatchesTab> {
   bool _hasEarlierMatches = false;
   double _trailingScrollExtent = 24;
   bool _isLoading = true;
+  bool _isLiveVerifying = false;
   Object? _loadError;
   int _requestId = 0;
 
   List<Fixture> pastMatches = const [];
   List<Fixture> liveMatches = const [];
   List<Fixture> upcomingMatches = const [];
+  List<Fixture>? _displayedPastPage;
+  List<Fixture>? _displayedLivePage;
+  List<Fixture>? _displayedUpcomingPage;
 
   FixtureRepository get _fixtureRepository =>
       widget.fixtureRepository ?? fixture_providers.fixtureDetailRepository;
+
+  FixtureRepository _repositoryFor(MatchesTab configuration) =>
+      configuration.fixtureRepository ??
+      fixture_providers.fixtureDetailRepository;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_syncHeaderStack);
+    _fixtureRepository.cachedTeamMatches.addListener(_handleCachedMatches);
+    _applyCachedMatches();
     unawaited(_loadFixtures());
+  }
+
+  void _handleCachedMatches() {
+    if (_applyCachedMatches()) setState(() {});
+  }
+
+  bool _applyCachedMatches() {
+    final teamId = widget.team?.id;
+    if (teamId == null) return false;
+    final repository = _fixtureRepository;
+    final past = repository.cachedForTeamMatches(
+      teamId,
+      status: FixtureStatus.past,
+      limit: 200,
+    );
+    final live = repository.cachedForTeamMatches(
+      teamId,
+      status: FixtureStatus.live,
+      limit: 200,
+    );
+    final upcoming = repository.cachedForTeamMatches(
+      teamId,
+      status: FixtureStatus.upcoming,
+      limit: 200,
+    );
+    if (past == null && live == null && upcoming == null) return false;
+    final nextPast = past == null
+        ? pastMatches
+        : _sortFixturesByKickoff(past, nullsFirst: true);
+    final nextLive = live == null ? liveMatches : _sortFixturesByKickoff(live);
+    final nextUpcoming =
+        upcoming == null ? upcomingMatches : _sortFixturesByKickoff(upcoming);
+    if (identical(past, _displayedPastPage) &&
+        identical(live, _displayedLivePage) &&
+        identical(upcoming, _displayedUpcomingPage)) {
+      return false;
+    }
+    _displayedPastPage = past;
+    if (live != null && !identical(live, _displayedLivePage)) {
+      _isLiveVerifying = true;
+    }
+    _displayedLivePage = live;
+    _displayedUpcomingPage = upcoming;
+    pastMatches = nextPast;
+    liveMatches = nextLive;
+    upcomingMatches = nextUpcoming;
+    if (nextPast.isNotEmpty ||
+        nextLive.isNotEmpty ||
+        nextUpcoming.isNotEmpty ||
+        (past != null && live != null && upcoming != null)) {
+      _isLoading = false;
+    }
+    _loadError = null;
+    _schedulePostLoadLayout();
+    return true;
   }
 
   @override
   void dispose() {
+    _fixtureRepository.cachedTeamMatches.removeListener(_handleCachedMatches);
     _scrollController
       ..removeListener(_syncHeaderStack)
       ..dispose();
@@ -97,19 +165,27 @@ class _MatchesTabState extends State<MatchesTab> {
   @override
   void didUpdateWidget(MatchesTab oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final oldRepository = _repositoryFor(oldWidget);
+    final repositoryChanged = !identical(oldRepository, _fixtureRepository);
+    if (repositoryChanged) {
+      oldRepository.cachedTeamMatches.removeListener(_handleCachedMatches);
+      _fixtureRepository.cachedTeamMatches.addListener(_handleCachedMatches);
+    }
     // This tab's State is reused across team switches (the Team-tab branch
     // stays alive in the bottom-nav shell), so reload instead of only
     // loading once in initState.
-    if (widget.team?.id != oldWidget.team?.id ||
-        widget.fixtureRepository != oldWidget.fixtureRepository) {
+    if (widget.team?.id != oldWidget.team?.id || repositoryChanged) {
       setState(() {
         _resetForLoad();
+        _applyCachedMatches();
       });
       unawaited(_loadFixtures());
+    } else if (widget.refreshRequestId != oldWidget.refreshRequestId) {
+      unawaited(_loadFixtures(forceRefresh: true));
     }
   }
 
-  Future<void> _loadFixtures() async {
+  Future<void> _loadFixtures({bool forceRefresh = false}) async {
     final requestId = ++_requestId;
     final teamId = widget.team?.id;
     if (teamId == null) {
@@ -120,18 +196,37 @@ class _MatchesTabState extends State<MatchesTab> {
 
     try {
       final repository = _fixtureRepository;
+      final load =
+          forceRefresh ? repository.refreshForTeam : repository.loadForTeam;
+      Future<List<Fixture>> loadLive() async {
+        var live = await load(
+          teamId,
+          status: FixtureStatus.live,
+          limit: 200,
+        );
+        if (!forceRefresh &&
+            repository.isRefreshingForTeam(
+              teamId,
+              status: FixtureStatus.live,
+              limit: 200,
+            )) {
+          live = await repository.refreshForTeam(
+            teamId,
+            status: FixtureStatus.live,
+            limit: 200,
+          );
+        }
+        return live;
+      }
+
       final results = await Future.wait([
-        repository.loadForTeam(
+        load(
           teamId,
           status: FixtureStatus.past,
           limit: 200,
         ),
-        repository.loadForTeam(
-          teamId,
-          status: FixtureStatus.live,
-          limit: 200,
-        ),
-        repository.loadForTeam(
+        loadLive(),
+        load(
           teamId,
           status: FixtureStatus.upcoming,
           limit: 200,
@@ -151,6 +246,7 @@ class _MatchesTabState extends State<MatchesTab> {
         _visibleHeaderCount = centerNoLiveBoundary ? 1 : _entrySectionIndex + 1;
         _hasEarlierMatches = centerNoLiveBoundary;
         _isLoading = false;
+        _isLiveVerifying = false;
         _loadError = null;
       });
       _schedulePostLoadLayout();
@@ -159,11 +255,15 @@ class _MatchesTabState extends State<MatchesTab> {
         return;
       }
       setState(() {
-        pastMatches = const [];
-        liveMatches = const [];
-        upcomingMatches = const [];
         _isLoading = false;
-        _loadError = error;
+        if (_displayedPastPage == null &&
+            _displayedLivePage == null &&
+            _displayedUpcomingPage == null &&
+            pastMatches.isEmpty &&
+            liveMatches.isEmpty &&
+            upcomingMatches.isEmpty) {
+          _loadError = error;
+        }
       });
     }
   }
@@ -174,10 +274,14 @@ class _MatchesTabState extends State<MatchesTab> {
   }
 
   void _resetForLoad() {
+    _displayedPastPage = null;
+    _displayedLivePage = null;
+    _displayedUpcomingPage = null;
     pastMatches = const [];
     liveMatches = const [];
     upcomingMatches = const [];
     _isLoading = true;
+    _isLiveVerifying = false;
     _loadError = null;
     _sectionOffsets.clear();
     _visibleHeaderCount = 1;
@@ -334,6 +438,11 @@ class _MatchesTabState extends State<MatchesTab> {
     return Column(
       key: const ValueKey('matches-tab-layout'),
       children: [
+        if (_isLiveVerifying && liveMatches.isNotEmpty)
+          const LinearProgressIndicator(
+            key: ValueKey('matches-live-verifying'),
+            minHeight: 2,
+          ),
         Column(
           key: const ValueKey('matches-header-stack'),
           children: [

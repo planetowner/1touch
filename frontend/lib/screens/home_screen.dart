@@ -573,6 +573,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     const SizedBox(height: 32),
                     Row(
                       key: const ValueKey('home-calendar-title-row'),
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         SectionHeader(title: tr(context, "CALENDAR")),
                         const Spacer(),

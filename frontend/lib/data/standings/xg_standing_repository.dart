@@ -39,6 +39,11 @@ abstract interface class XgStandingRepository {
     int? seasonId,
   });
 
+  Future<List<XgStanding>> refreshForCompetition(
+    int competitionId, {
+    int? seasonId,
+  });
+
   List<XgStanding> forCompetition(
     int competitionId, {
     int? seasonId,

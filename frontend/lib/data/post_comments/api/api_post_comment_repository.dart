@@ -7,9 +7,14 @@ import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/models/post_comment.dart';
 
 class ApiPostCommentRepository implements PostCommentRepository {
-  ApiPostCommentRepository({required ApiClient api}) : _api = api;
+  ApiPostCommentRepository({
+    required ApiClient api,
+    Future<void> Function()? onMutation,
+  })  : _api = api,
+        _onMutation = onMutation;
 
   final ApiClient _api;
+  final Future<void> Function()? _onMutation;
 
   @override
   Future<int> createComment({
@@ -58,6 +63,7 @@ class ApiPostCommentRepository implements PostCommentRepository {
         'Expected the created comment ID to be positive.',
       );
     }
+    await _onMutation?.call();
     return commentId;
   }
 
@@ -74,6 +80,7 @@ class ApiPostCommentRepository implements PostCommentRepository {
         'Expected comment deletion to return ok=true.',
       );
     }
+    await _onMutation?.call();
   }
 
   @override
@@ -97,6 +104,7 @@ class ApiPostCommentRepository implements PostCommentRepository {
     if (decoded['ok'] != true) {
       throw const FormatException('Expected comment update to return ok=true.');
     }
+    await _onMutation?.call();
   }
 
   @override

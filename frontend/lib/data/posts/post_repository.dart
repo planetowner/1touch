@@ -1,4 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:onetouch/models/post.dart';
+
+typedef PostFeedQuery = ({
+  int teamId,
+  PostCategory? category,
+  PostSort sort,
+  PostPeriod period,
+  String? timezone,
+  int limit,
+  int offset,
+});
 
 enum PostSort { newest, popular, best }
 
@@ -82,4 +93,36 @@ abstract interface class PostRepository {
 /// Loads one post for notification and deep-link destinations.
 abstract interface class PostDetailRepository {
   Future<Post> loadPost(int postId);
+}
+
+/// Optional cache-facing API used by screens without depending on HTTP/SQLite.
+abstract interface class CachedPostRepository
+    implements PostRepository, PostDetailRepository {
+  ValueListenable<Map<PostFeedQuery, List<Post>>> get cachedFeeds;
+  ValueListenable<Map<int, Post>> get cachedPostDetails;
+
+  List<Post>? cachedFeed({
+    required int teamId,
+    PostCategory? category,
+    PostSort sort = PostSort.newest,
+    PostPeriod period = PostPeriod.allTime,
+    String? timezone,
+    int limit = 50,
+    int offset = 0,
+  });
+
+  Post? cachedPost(int postId);
+
+  Future<List<Post>> refreshPosts({
+    required int teamId,
+    PostCategory? category,
+    PostSort sort = PostSort.newest,
+    PostPeriod period = PostPeriod.allTime,
+    String? timezone,
+    int limit = 50,
+    int offset = 0,
+  });
+
+  Future<Post> refreshPost(int postId);
+  Future<void> invalidatePostCaches();
 }

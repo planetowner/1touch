@@ -1,22 +1,24 @@
 import 'package:flutter/foundation.dart';
 
-enum PlayerRankingMethod { fixedHistoricalPercentile }
+enum PlayerRankingMethod { cumulativeAllLeaguesPercentile }
 
 @immutable
 class PlayerRatingReference {
-  const PlayerRatingReference({
+  PlayerRatingReference({
     required this.startSeasonName,
     required this.endSeasonName,
     required this.minimumRatedMatches,
+    required List<int> competitionIds,
     required this.sampleCount,
-    required this.frozenAt,
-  });
+    required this.updatedAt,
+  }) : competitionIds = List.unmodifiable(competitionIds);
 
   final String startSeasonName;
   final String endSeasonName;
   final int minimumRatedMatches;
+  final List<int> competitionIds;
   final int sampleCount;
-  final DateTime frozenAt;
+  final DateTime updatedAt;
 }
 
 @immutable

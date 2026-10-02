@@ -534,34 +534,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('calendar starts 16px below its title row', (tester) async {
-    await _setScreenSize(tester, const Size(393, 852));
-    final repository = _ControlledHomeRepository();
+  testWidgets('calendar starts 16px below its heading text', (tester) async {
+    for (final size in [const Size(320, 568), const Size(393, 852)]) {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _setScreenSize(tester, size);
+      final repository = _ControlledHomeRepository();
 
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: HomeScreen(
-          repository: repository,
-          newsRepository: _RecordingNewsRepository(),
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: app_style.whitetheme,
+          home: HomeScreen(
+            repository: repository,
+            newsRepository: _RecordingNewsRepository(),
+          ),
         ),
-      ),
-    );
-    repository.calls.single.completer.complete(_homeData());
-    await tester.pumpAndSettle();
+      );
+      repository.calls.single.completer.complete(_homeData());
+      await tester.pumpAndSettle();
 
-    final titleRow = find.byKey(
-      const ValueKey('home-calendar-title-row'),
-    );
-    final calendarCard = find.byKey(
-      const ValueKey('fixture-calendar-card'),
-    );
+      final heading = find.descendant(
+        of: find.byKey(const ValueKey('home-calendar-title-row')),
+        matching: find.text('CALENDAR'),
+      );
+      final calendarCard = find.byKey(
+        const ValueKey('fixture-calendar-card'),
+      );
 
-    expect(
-      tester.getTopLeft(calendarCard).dy - tester.getBottomLeft(titleRow).dy,
-      16,
-    );
-    expect(tester.takeException(), isNull);
+      expect(
+        tester.getTopLeft(calendarCard).dy - tester.getBottomLeft(heading).dy,
+        16,
+      );
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('reloads calendar months and ignores a stale response',

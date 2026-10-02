@@ -146,6 +146,24 @@ void main() {
     expect(find.byIcon(Icons.lock_outline), findsNWidgets(2));
   });
 
+  testWidgets('nickname entry rejects typed and pasted whitespace',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: const EditProfileScreen(),
+      ),
+    );
+
+    final nickname = find.byKey(const ValueKey('profile-display-name-field'));
+    await tester.enterText(nickname, 'June Kim');
+    expect(tester.widget<TextField>(nickname).controller!.text, 'JuneKim');
+
+    await tester.enterText(nickname, 'June\t Kim\n');
+    expect(tester.widget<TextField>(nickname).controller!.text, 'JuneKim');
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('personal info values have an 8px gap before right actions',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);

@@ -67,6 +67,13 @@ class MockStandingRepository implements StandingRepository {
   }
 
   @override
+  Future<List<Standing>> refreshForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) =>
+      loadForCompetition(competitionId, seasonId: seasonId);
+
+  @override
   List<Standing> forCompetition(
     int competitionId, {
     int? seasonId,

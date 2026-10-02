@@ -57,21 +57,21 @@ class _MomentumChartState extends State<MomentumChart>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _startIfVisible());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncVisibility());
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     for (final position in _scrollPositions) {
-      position.removeListener(_startIfVisible);
+      position.removeListener(_syncVisibility);
     }
     _scrollPositions.clear();
     context.visitAncestorElements((element) {
       if (element is StatefulElement && element.state is ScrollableState) {
         final position = (element.state as ScrollableState).position;
         _scrollPositions.add(position);
-        position.addListener(_startIfVisible);
+        position.addListener(_syncVisibility);
       }
       return true;
     });
@@ -79,7 +79,7 @@ class _MomentumChartState extends State<MomentumChart>
       _started = true;
       _reveal.value = 1;
     } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _startIfVisible());
+      WidgetsBinding.instance.addPostFrameCallback((_) => _syncVisibility());
     }
   }
 
@@ -92,25 +92,35 @@ class _MomentumChartState extends State<MomentumChart>
     } else if (!oldWidget.animate) {
       _started = false;
       _reveal.value = 0;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _startIfVisible());
+      WidgetsBinding.instance.addPostFrameCallback((_) => _syncVisibility());
     }
   }
 
-  void _startIfVisible() {
-    if (!mounted || _started || !widget.animate) return;
+  void _syncVisibility() {
+    if (!mounted || !widget.animate || MediaQuery.disableAnimationsOf(context)) {
+      return;
+    }
     final box = context.findRenderObject();
     if (box is! RenderBox || !box.hasSize) return;
     final top = box.localToGlobal(Offset.zero).dy;
     final height = MediaQuery.sizeOf(context).height;
-    if (top >= height || top + box.size.height <= 0) return;
+    if (top >= height || top + box.size.height <= 0) {
+      if (_started) {
+        _started = false;
+        _reveal.stop();
+        _reveal.value = 0;
+      }
+      return;
+    }
+    if (_started) return;
     _started = true;
-    _reveal.forward();
+    _reveal.forward(from: 0);
   }
 
   @override
   void dispose() {
     for (final position in _scrollPositions) {
-      position.removeListener(_startIfVisible);
+      position.removeListener(_syncVisibility);
     }
     _reveal.dispose();
     super.dispose();

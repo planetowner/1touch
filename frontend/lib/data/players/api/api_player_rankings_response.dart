@@ -47,15 +47,17 @@ class ApiPlayerRatingReferenceResponse {
     required this.startSeasonName,
     required this.endSeasonName,
     required this.minimumRatedMatches,
+    required this.competitionIds,
     required this.sampleCount,
-    required this.frozenAt,
+    required this.updatedAt,
   });
 
   final String startSeasonName;
   final String endSeasonName;
   final int minimumRatedMatches;
+  final List<int> competitionIds;
   final int sampleCount;
-  final String frozenAt;
+  final String updatedAt;
 
   factory ApiPlayerRatingReferenceResponse.fromJson(
     Map<String, dynamic> json,
@@ -64,8 +66,9 @@ class ApiPlayerRatingReferenceResponse {
       startSeasonName: _requiredString(json, 'start_season_name'),
       endSeasonName: _requiredString(json, 'end_season_name'),
       minimumRatedMatches: _requiredInt(json, 'minimum_rated_matches'),
+      competitionIds: _requiredIntList(json, 'competition_ids'),
       sampleCount: _requiredInt(json, 'sample_count'),
-      frozenAt: _requiredString(json, 'frozen_at'),
+      updatedAt: _requiredString(json, 'updated_at'),
     );
   }
 }
@@ -159,4 +162,12 @@ List<T> _requiredObjectList<T>(
     }
     return parse(item);
   }));
+}
+
+List<int> _requiredIntList(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value is! List || value.any((item) => item is! int)) {
+    throw FormatException('Expected integer list field "$key".');
+  }
+  return List<int>.unmodifiable(value);
 }

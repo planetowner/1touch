@@ -5,7 +5,33 @@ import 'package:onetouch/models/following_player.dart';
 
 class FakePlayerDirectoryRepository implements PlayerDirectoryRepository {
   final calls = <({int? league, String? position, int offset})>[];
+  final ValueNotifier<Map<PlayerDirectoryRankingQuery, PlayerRankingPage>>
+      _cachedRankings = ValueNotifier(const {});
   bool fail = false;
+
+  @override
+  ValueListenable<Map<PlayerDirectoryRankingQuery, PlayerRankingPage>>
+      get cachedRankings => _cachedRankings;
+
+  @override
+  PlayerRankingPage? cachedRanking(
+          {int? league, String? position, int offset = 0}) =>
+      _cachedRankings
+          .value[(league: league, position: position, offset: offset)];
+
+  void seedRanking(PlayerRankingPage page,
+      {int? league, String? position, int offset = 0}) {
+    _cachedRankings.value = Map.unmodifiable({
+      ..._cachedRankings.value,
+      (league: league, position: position, offset: offset): page,
+    });
+  }
+
+  @override
+  Future<PlayerRankingPage> refreshRanking(
+          {int? league, String? position, int offset = 0}) =>
+      ranking(league: league, position: position, offset: offset);
+
   @override
   Future<PlayerRankingPage> ranking(
       {int? league, String? position, int offset = 0}) async {
