@@ -36,6 +36,10 @@ class TestTeamOverviewRepository implements TeamOverviewRepository {
     _cached.value = Map.unmodifiable({..._cached.value, teamId: overview});
     return overview;
   }
+
+  void publish(TeamOverview overview) {
+    _cached.value = Map.unmodifiable({..._cached.value, overview.id: overview});
+  }
 }
 
 TeamOverview testTeamOverview({

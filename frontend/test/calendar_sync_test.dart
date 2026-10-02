@@ -207,7 +207,7 @@ void main() {
     expect(calls, 1);
     pending.complete(jsonResponse({'connected': true, 'subscribed': true}));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Connected to the 1Touch calendar'),
+    expect(find.textContaining('Connected to the 1touch calendar'),
         findsOneWidget);
     expect(calls, 2);
   }, variant: TargetPlatformVariant.only(TargetPlatform.android));
@@ -246,6 +246,6 @@ void main() {
     await tester.tap(find.text('네, 동기화할게요'));
     await tester.pumpAndSettle();
     expect(find.textContaining('캘린더 앱에서 구독을 완료'), findsOneWidget);
-    expect(find.textContaining('Google의 1Touch'), findsNothing);
+    expect(find.textContaining('Google의 1touch'), findsNothing);
   }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 }

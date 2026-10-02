@@ -676,7 +676,7 @@ class _PlayerBioCell extends StatelessWidget {
                     child: AppInfoButton(
                       key: const ValueKey('player-cost-effectiveness-info'),
                       message:
-                          'Measured by comparing actual salary against 1Touch’s predicted market value based on performance and playtime.',
+                          'Measured by comparing actual salary against 1touch’s predicted market value based on performance and playtime.',
                       layoutSize: 16,
                     ),
                   ),

@@ -5,7 +5,7 @@
     "display": "standalone",
     "background_color": "#0A0A0A",
     "theme_color": "#0A0A0A",
-    "description": "1Touch football app.",
+    "description": "1touch football app.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

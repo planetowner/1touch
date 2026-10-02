@@ -68,13 +68,13 @@ class _SyncDialogState extends State<SyncDialog> {
       if (mounted) {
         setState(() => _error = switch (error.code) {
               'calendar_account_mismatch' =>
-                'Choose the Google account already connected to 1Touch.',
+                'Choose the Google account already connected to 1touch.',
               'calendar_permission_required' =>
-                'Allow 1Touch to manage its calendar, then try again.',
+                'Allow 1touch to manage its calendar, then try again.',
               'calendar_reconnect_required' =>
                 'Google calendar access expired. Please connect again.',
               'calendar_missing' =>
-                'The 1Touch calendar was removed. Connect again to create it.',
+                'The 1touch calendar was removed. Connect again to create it.',
               'calendar_feed_unavailable' =>
                 'Could not load the calendar subscription. Please try again.',
               'calendar_open_failed' =>
@@ -119,7 +119,7 @@ class _SyncDialogState extends State<SyncDialog> {
     final connected = _outcome == _CalendarSyncOutcome.googleConnected;
     final message = switch (_outcome) {
       _CalendarSyncOutcome.googleConnected =>
-        'Connected to the 1Touch calendar in Google. Match changes will update even when this app is closed.',
+        'Connected to the 1touch calendar in Google. Match changes will update even when this app is closed.',
       _CalendarSyncOutcome.appleOpened =>
         'Finish subscribing in Calendar and enable event alerts. Apple controls when subscription changes appear.',
       _CalendarSyncOutcome.stopped =>
@@ -195,7 +195,7 @@ class _SyncDialogState extends State<SyncDialog> {
                   ),
                   Text(
                       tr(context,
-                          'Upcoming events for this team will be removed from the 1Touch calendar.'),
+                          'Upcoming events for this team will be removed from the 1touch calendar.'),
                       style: Body2.style),
                   TextButton(
                       onPressed: _busy ? null : _disconnect,

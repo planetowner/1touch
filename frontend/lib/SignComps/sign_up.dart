@@ -367,8 +367,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             tr(
                                     context,
                                     "By clicking sign up, I hereby agree and consent to\n"
-                                    "1Touch’s Terms & Conditions; I confirm that I have\n"
-                                    "read 1Touch’s Privacy Policy.")
+                                    "1touch’s Terms & Conditions; I confirm that I have\n"
+                                    "read 1touch’s Privacy Policy.")
                                 .replaceAll('\n', ' '),
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,

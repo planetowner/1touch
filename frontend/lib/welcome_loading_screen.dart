@@ -156,7 +156,7 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                   child: Column(
                     children: [
                       Text(
-                        tr(context, "Welcome to 1Touch!"),
+                        tr(context, "Welcome to 1touch!"),
                         textAlign: TextAlign.center,
                         style:
                             Heading3.style.copyWith(color: appColors.onBrand),

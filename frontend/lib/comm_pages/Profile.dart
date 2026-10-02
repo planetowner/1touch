@@ -681,7 +681,7 @@ class _SettingsListState extends State<SettingsList> {
         actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
         title: Text(tr(dialogContext, 'Log out?')),
         content: Text(
-          tr(dialogContext, 'You will need to sign in again to use 1Touch.'),
+          tr(dialogContext, 'You will need to sign in again to use 1touch.'),
         ),
         actions: [
           TextButton(

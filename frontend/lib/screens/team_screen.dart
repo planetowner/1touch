@@ -74,6 +74,10 @@ class _TeamScreenState extends State<TeamScreen>
       widget.teamOverviewRepository ??
       team_overview_providers.teamOverviewRepository;
 
+  TeamOverviewRepository _repositoryFor(TeamScreen configuration) =>
+      configuration.teamOverviewRepository ??
+      team_overview_providers.teamOverviewRepository;
+
   @override
   void initState() {
     super.initState();
@@ -82,8 +86,19 @@ class _TeamScreenState extends State<TeamScreen>
     _tabController = TabController(length: 5, vsync: this)
       ..addListener(_handleTabChange);
     mainTabActions.addListener(_handleMainTabAction);
+    _teamOverviewRepository.cachedTeams.addListener(_handleOverviewCache);
 
     _startOverviewLoad(updateState: false);
+  }
+
+  void _handleOverviewCache() {
+    final cached = _teamOverviewRepository.cachedForTeam(widget.teamId);
+    if (cached == null || identical(team, cached)) return;
+    setState(() {
+      team = cached;
+      isLoading = false;
+      _loadError = null;
+    });
   }
 
   void _handleTabChange() {
@@ -128,12 +143,20 @@ class _TeamScreenState extends State<TeamScreen>
   @override
   void didUpdateWidget(TeamScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final oldRepository = _repositoryFor(oldWidget);
+    final repositoryChanged = !identical(
+      oldRepository,
+      _teamOverviewRepository,
+    );
+    if (repositoryChanged) {
+      oldRepository.cachedTeams.removeListener(_handleOverviewCache);
+      _teamOverviewRepository.cachedTeams.addListener(_handleOverviewCache);
+    }
     // This screen's State is reused across team switches (the Team-tab
     // branch stays alive in the bottom-nav shell), so reload instead of
     // only loading once in initState — otherwise it keeps showing whichever
     // team was loaded first, forever.
-    if (widget.teamId != oldWidget.teamId ||
-        widget.teamOverviewRepository != oldWidget.teamOverviewRepository) {
+    if (widget.teamId != oldWidget.teamId || repositoryChanged) {
       _startOverviewLoad();
     }
   }
@@ -212,6 +235,7 @@ class _TeamScreenState extends State<TeamScreen>
 
   @override
   void dispose() {
+    _teamOverviewRepository.cachedTeams.removeListener(_handleOverviewCache);
     mainTabActions.removeListener(_handleMainTabAction);
     _scrollController.dispose();
     _tabController
