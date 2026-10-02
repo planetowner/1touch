@@ -12,6 +12,7 @@ import 'package:onetouch/models/following_player.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/player/player_directory_widgets.dart';
+import 'package:onetouch/features/player/player_directory_sheets.dart';
 import 'package:onetouch/features/player/player_picker_sheet.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -270,6 +271,59 @@ void main() {
           tester.getRect(fullSecondRow).top -
               tester.getRect(fullFirstRow).bottom,
           16);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('expanded ranking keeps rank 100 on one aligned line at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: Scaffold(
+          body: PlayerFullRankingSheet(
+            players: [
+              for (final rank in [99, 100])
+                (
+                  id: rank,
+                  name: 'Player $rank',
+                  image: null,
+                  position: 'FW',
+                  rank: rank,
+                  score: 99.0,
+                  rating: 99.0,
+                  appearances: 10,
+                ),
+            ],
+            followingController: null,
+            detailRepository: FakePlayerDetailRepository(),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final ranks = [
+        for (final rank in [99, 100])
+          find.descendant(
+            of: find.byKey(ValueKey('full-ranking-player-$rank')),
+            matching: find.text('$rank'),
+          ),
+      ];
+      final first = tester.widget<Text>(ranks.first);
+      final second = tester.widget<Text>(ranks.last);
+      expect(first.maxLines, 1);
+      expect(second.maxLines, 1);
+      expect(second.softWrap, isFalse);
+      expect(tester.getRect(ranks.first).left, tester.getRect(ranks.last).left);
+      expect(tester.getRect(ranks.first).height,
+          tester.getRect(ranks.last).height);
+      for (final rank in [99, 100]) {
+        final row = find.byKey(ValueKey('full-ranking-player-$rank'));
+        final label = find.descendant(of: row, matching: find.text('$rank'));
+        expect(tester.getCenter(label).dy, tester.getCenter(row).dy);
+      }
       expect(tester.takeException(), isNull);
     });
   }
