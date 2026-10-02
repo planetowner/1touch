@@ -24,6 +24,7 @@ class _AnalysisComparisonFilterSheet<T> extends StatefulWidget {
     this.seasonNames,
     this.initialSeasonName,
     this.loadSeasonOptions,
+    this.onClearSelection,
   });
 
   final List<_AnalysisFilterOption<T>> options;
@@ -33,6 +34,7 @@ class _AnalysisComparisonFilterSheet<T> extends StatefulWidget {
   final String? initialSeasonName;
   final Future<List<_AnalysisFilterOption<T>>> Function(String seasonName)?
       loadSeasonOptions;
+  final VoidCallback? onClearSelection;
 
   @override
   State<_AnalysisComparisonFilterSheet<T>> createState() =>
@@ -48,6 +50,7 @@ class _AnalysisComparisonFilterSheetState<T>
   late List<_AnalysisFilterOption<T>> _options;
   bool _isLoading = false;
   bool _loadFailed = false;
+  bool _clearRequested = false;
   int _loadRequestId = 0;
 
   @override
@@ -62,10 +65,12 @@ class _AnalysisComparisonFilterSheetState<T>
         widget.seasonNames?.firstOrNull ??
         widget.options.firstOrNull?.seasonName;
     _teamId = initial?.teamId ??
-        widget.options
-            .where((option) => option.seasonName == _seasonName)
-            .firstOrNull
-            ?.teamId;
+        (widget.onClearSelection == null
+            ? widget.options
+                .where((option) => option.seasonName == _seasonName)
+                .firstOrNull
+                ?.teamId
+            : null);
     _search.addListener(_refresh);
     if (widget.loadSeasonOptions != null && _seasonName != null) {
       unawaited(_loadSeason(_seasonName!));
@@ -79,6 +84,7 @@ class _AnalysisComparisonFilterSheetState<T>
     if (_seasonName == seasonName) return;
     setState(() {
       _seasonName = seasonName;
+      _clearRequested = false;
       if (widget.loadSeasonOptions == null) _selectAvailableTeam();
     });
     if (widget.loadSeasonOptions != null) {
@@ -89,7 +95,9 @@ class _AnalysisComparisonFilterSheetState<T>
   void _selectAvailableTeam() {
     final teams = _options.where((option) => option.seasonName == _seasonName);
     if (!teams.any((option) => option.teamId == _teamId)) {
-      _teamId = teams.firstOrNull?.teamId;
+      _teamId = widget.onClearSelection == null
+          ? teams.firstOrNull?.teamId
+          : null;
     }
   }
 
@@ -168,22 +176,10 @@ class _AnalysisComparisonFilterSheetState<T>
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Center(
-                        child:
-                            Text(tr(context, 'Filter'), style: Heading5.style)),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        key: const ValueKey('analysis-filter-close'),
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.close,
-                            color: scheme.onSurface, size: 24),
-                      ),
-                    ),
-                  ],
+                child: AppCloseHeader(
+                  title: tr(context, 'Filter'),
+                  closeKey: const ValueKey('analysis-filter-close'),
+                  onClose: () => Navigator.pop(context),
                 ),
               ),
               Expanded(
@@ -284,8 +280,18 @@ class _AnalysisComparisonFilterSheetState<T>
                         children: [
                           InkWell(
                             key: ValueKey(widget.optionKey(option.value)),
-                            onTap: () =>
-                                setState(() => _teamId = option.teamId),
+                            onTap: () {
+                              setState(() {
+                                if (widget.onClearSelection != null &&
+                                    _teamId == option.teamId) {
+                                  _teamId = null;
+                                  _clearRequested = true;
+                                } else {
+                                  _teamId = option.teamId;
+                                  _clearRequested = false;
+                                }
+                              });
+                            },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               child: Row(
@@ -317,9 +323,17 @@ class _AnalysisComparisonFilterSheetState<T>
                   width: double.infinity,
                   child: ElevatedButton(
                     key: const ValueKey('analysis-filter-update'),
-                    onPressed: selected == null
-                        ? null
-                        : () => Navigator.pop<T>(context, selected.value),
+                    onPressed: selected != null
+                        ? () => Navigator.pop<T>(context, selected.value)
+                        : _clearRequested &&
+                                widget.initialValue != null &&
+                                !_isLoading &&
+                                !_loadFailed
+                            ? () {
+                                Navigator.pop(context);
+                                widget.onClearSelection!();
+                              }
+                            : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: scheme.onSurface,
                       foregroundColor: background,

@@ -336,6 +336,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         },
         optionKey: (option) =>
             'analysis-form-option-${option.teamId}-${option.seasonId}',
+        onClearSelection: () => setState(_startDefaultLoad),
       ),
     );
     if (mounted &&
