@@ -193,37 +193,12 @@ class _InjuryStatusState extends State<InjuryStatus>
   }
 
   Widget _buildInjuryTile(InjuredTeamPlayer player, DateTime today) {
-    final appColors = AppColors.of(context);
     final content = Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          CircleAvatar(
-            radius: 37,
-            backgroundColor: appColors.subtleBackground,
-            child: ClipOval(
-              child: player.playerImage == null || player.playerImage!.isEmpty
-                  ? Image.asset(
-                      'assets/messi.png',
-                      width: 74,
-                      height: 74,
-                      fit: BoxFit.cover,
-                    )
-                  : Image.network(
-                      player.playerImage!,
-                      width: 74,
-                      height: 74,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Image.asset(
-                        'assets/messi.png',
-                        width: 74,
-                        height: 74,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-            ),
-          ),
+          _TeamPlayerAvatar(player.playerImage, radius: 37, size: 74),
           const SizedBox(width: 16),
           // Player Info
           Expanded(
