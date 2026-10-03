@@ -11,6 +11,7 @@ import 'package:onetouch/services/device_notification_service.dart';
 import 'package:onetouch/services/firebase_push_messaging_service.dart';
 import 'package:onetouch/services/firebase_push_notification_handler.dart';
 import 'package:onetouch/services/push_device_registration_service_provider.dart';
+import 'package:onetouch/data/notifications/notification_unread_controller_provider.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
@@ -61,6 +62,7 @@ Future<void> main() async {
   await runOneTouchApp();
   await firebasePushNotificationHandler.start(
     onDestination: _openNotificationPayload,
+    onCommunityNotification: () => notificationUnreadController.refresh(),
   );
   final pushDestination =
       firebasePushNotificationHandler.takeInitialDestination();

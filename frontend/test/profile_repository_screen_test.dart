@@ -24,6 +24,38 @@ import 'support/stub_profile_activity_repository.dart';
 
 void main() {
   setUpAppCatalog();
+  testWidgets('profile back button returns to the previous page',
+      (tester) async {
+    final router = GoRouter(initialLocation: '/home', routes: [
+      GoRoute(
+        path: '/home',
+        builder: (context, _) => Scaffold(
+          body: TextButton(
+            onPressed: () => context.push('/profile'),
+            child: const Text('Open profile'),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (_, __) => Profile(
+          loadPointBalance: () async => 1430,
+          repository: _StaticCurrentUserRepository(),
+          followingTeamsRepository: _StaticFollowingTeamsRepository(),
+          activityRepository: const StubProfileActivityRepository(),
+        ),
+      ),
+    ]);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.tap(find.text('Open profile'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('profile-back-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('Open profile'), findsOneWidget);
+  });
+
   testWidgets('point balance loads independently and failure is not zero',
       (tester) async {
     final points = Completer<int>();

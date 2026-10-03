@@ -5,6 +5,7 @@ import 'package:onetouch/session_screen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/data/session/session_data_synchronizer.dart';
+import 'package:onetouch/data/notifications/notification_unread_controller_provider.dart';
 
 class SessionSyncLifecycle extends StatefulWidget {
   const SessionSyncLifecycle({super.key, required this.child});
@@ -31,6 +32,7 @@ class _SessionSyncLifecycleState extends State<SessionSyncLifecycle>
       return;
     }
     unawaited(_synchronize());
+    unawaited(notificationUnreadController.refresh());
   }
 
   Future<void> _synchronize() async {

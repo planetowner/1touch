@@ -104,15 +104,8 @@ void main() {
       expect(notifications.color, foreground);
       expect(
           activity.colorFilter, ColorFilter.mode(foreground, BlendMode.srcIn));
-      expect(
-        (tester
-                .widget<Container>(
-                  find.byKey(const ValueKey('community-notification-badge')),
-                )
-                .decoration as BoxDecoration)
-            .color,
-        const Color(0xFFD82457),
-      );
+      expect(find.byKey(const ValueKey('community-notification-badge')),
+          findsNothing);
       expect(
         _effectiveTextColor(
           tester,
@@ -233,6 +226,7 @@ void main() {
                 CommunitySliverAppBar(
                   pageBackground: Colors.black,
                   opacityFactor: 1,
+                  hasUnreadNotifications: false,
                   onSearch: () => context.push('/search'),
                   onNotifications: () => context.push('/notifications'),
                   onActivity: () => context.push('/profile/activity?tab=posts'),
