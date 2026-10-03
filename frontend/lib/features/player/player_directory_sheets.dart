@@ -70,7 +70,7 @@ class _PlayerRankingFilterSheetState extends State<PlayerRankingFilterSheet> {
                   iconSize: 28,
                   onClose: () => Navigator.pop(context)),
               const SizedBox(height: 48),
-              Text(tr(context, 'LEAGUE'), style: Body2_b.style),
+              Text(trUpper(context, 'League'), style: Body2_b.style),
               const SizedBox(height: 16),
               _FilterChoice(
                   label: tr(context, 'All leagues'),
@@ -85,12 +85,12 @@ class _PlayerRankingFilterSheetState extends State<PlayerRankingFilterSheet> {
                     divider: divider,
                     onTap: () => setState(() => _league = league.id)),
               const SizedBox(height: 48),
-              Text(tr(context, 'SEASON'), style: Body2_b.style),
+              Text(trUpper(context, 'Season'), style: Body2_b.style),
               const SizedBox(height: 16),
               _FixedSeasonRow(
                   season: widget.season ?? 'Current season', divider: divider),
               const SizedBox(height: 48),
-              Text(tr(context, 'POSITION'), style: Body2_b.style),
+              Text(trUpper(context, 'Position'), style: Body2_b.style),
               const SizedBox(height: 16),
               for (final position in positions)
                 _FilterChoice(
@@ -666,7 +666,7 @@ class _PlayerFullRankingSheetState extends State<PlayerFullRankingSheet> {
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(children: [
             AppCloseHeader(
-                title: tr(context, '1touch Ranking'),
+                title: tr(context, '1TOUCH RANKING'),
                 onClose: () => Navigator.pop(context),
                 buttonSize: 24,
                 titleStyle: Heading5.style.copyWith(height: 1.1)),

@@ -190,7 +190,7 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: Text(tr(context, "CONTINUE"),
+                    child: Text(trUpper(context, "Continue"),
                         style: Body2_b.style.copyWith(color: colors.surface)),
                   ),
                 ),

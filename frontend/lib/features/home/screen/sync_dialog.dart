@@ -102,7 +102,7 @@ class _SyncDialogState extends State<SyncDialog> {
               actions: [
                 TextButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: Text(tr(context, 'CANCEL'))),
+                    child: Text(trUpper(context, 'Cancel'))),
                 TextButton(
                     onPressed: () => Navigator.pop(context, true),
                     child: Text(tr(context, 'Disconnect'))),
@@ -206,7 +206,8 @@ class _SyncDialogState extends State<SyncDialog> {
                   Center(
                       child: TextButton(
                     onPressed: _busy ? null : () => Navigator.pop(context),
-                    child: Text(tr(context, 'CANCEL'), style: Body2_b.style),
+                    child:
+                        Text(trUpper(context, 'Cancel'), style: Body2_b.style),
                   )),
                 ],
               ]),

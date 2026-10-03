@@ -157,7 +157,8 @@ class _TransferState extends State<Transfer> {
                       style: Body2.style),
                 ),
                 TextButton(
-                    onPressed: _retryLoad, child: Text(tr(context, 'RETRY'))),
+                    onPressed: _retryLoad,
+                    child: Text(trUpper(context, 'Retry'))),
               ],
             ),
           )

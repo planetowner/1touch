@@ -42,7 +42,7 @@ class _MatchesTabState extends State<MatchesTab> {
             const SizedBox(height: 32),
             if (detail.matches.any((m) => m.live)) ...[
               PlayerSection(
-                  title: tr(context, 'LIVE'),
+                  title: trUpper(context, 'Live'),
                   titleAccessory: const LivePulseDot(),
                   child: Column(children: [
                     for (final match in detail.matches.where((m) => m.live))

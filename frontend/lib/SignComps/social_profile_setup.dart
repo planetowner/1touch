@@ -121,7 +121,7 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             child: AuthPrimaryButton(
-              label: tr(context, 'CONTINUE'),
+              label: trUpper(context, 'Continue'),
               loading: _saving,
               onPressed: _saving || !_nicknameAvailable ? null : _submit,
             ),

@@ -274,7 +274,7 @@ class _TeamScreenState extends State<TeamScreen>
               ElevatedButton(
                 key: const ValueKey('team-retry'),
                 onPressed: _loadError == null ? null : _retryOverviewLoad,
-                child: Text(tr(context, 'RETRY')),
+                child: Text(trUpper(context, 'Retry')),
               ),
             ],
           ),

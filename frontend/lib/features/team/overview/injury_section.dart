@@ -172,7 +172,7 @@ class _InjuryStatusState extends State<InjuryStatus>
                     ),
                     TextButton(
                       onPressed: _retryLoad,
-                      child: Text(tr(context, 'RETRY')),
+                      child: Text(trUpper(context, 'Retry')),
                     ),
                   ],
                 )

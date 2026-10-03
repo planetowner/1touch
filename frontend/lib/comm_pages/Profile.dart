@@ -339,7 +339,7 @@ class _ProfileState extends State<Profile> {
                       children: [
                         Expanded(
                           child: Text(
-                            tr(context, "FOLLOWING TEAMS"),
+                            trUpper(context, "Following Teams"),
                             style: Body2_b.style,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -387,7 +387,7 @@ class _ProfileState extends State<Profile> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: PlayerFavorites(
-                      title: 'FOLLOWING PLAYERS',
+                      title: 'Following Players',
                       controller: widget.followingController ??
                           playerFollowingController,
                       searchRepository: null,
@@ -508,7 +508,7 @@ class _ProfileState extends State<Profile> {
                     _verticalDivider('posts-comments'),
                     const SizedBox(width: dividerGap),
                     _buildStat(_activityCounts?.commentCount.toString(),
-                        tr(context, "COMMENTS"),
+                        trUpper(context, "Comments"),
                         statKey: 'comments',
                         width: statWidth,
                         tab: 'comments',

@@ -159,7 +159,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog>
                               TextButton(
                                 key: const ValueKey('community-rules-retry'),
                                 onPressed: _retry,
-                                child: Text(tr(context, 'RETRY')),
+                                child: Text(trUpper(context, 'Retry')),
                               ),
                             ],
                           ),

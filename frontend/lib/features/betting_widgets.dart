@@ -120,7 +120,7 @@ class MatchBettingSection extends StatelessWidget {
                       textAlign: TextAlign.center),
                   TextButton(
                     onPressed: controller.load,
-                    child: Text(tr(context, 'RETRY')),
+                    child: Text(trUpper(context, 'Retry')),
                   ),
                 ],
                 if (controller.canBet) ...[
@@ -285,7 +285,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                       ),
                       const SizedBox(height: 24),
                       _BetButton(
-                        text: tr(context, 'DONE'),
+                        text: trUpper(context, 'Done'),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ] else ...[
@@ -432,7 +432,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                             ? tr(context, 'SUBMITTING…')
                             : _choosingAmount
                                 ? tr(context, 'CONFIRM BET')
-                                : tr(context, 'CONTINUE'),
+                                : trUpper(context, 'Continue'),
                         onPressed: _selected == null ||
                                 !controller.canBet ||
                                 _amount > controller.spendingLimit
@@ -660,7 +660,7 @@ class BettingParticipationCard extends StatelessWidget {
                     if (controller.error != null)
                       TextButton(
                         onPressed: controller.load,
-                        child: Text(tr(context, 'RETRY')),
+                        child: Text(trUpper(context, 'Retry')),
                       ),
                   ],
                 ),
