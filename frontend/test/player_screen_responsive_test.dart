@@ -8,6 +8,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/round_chart_window.dart';
+import 'package:onetouch/core/round_chart_visuals.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
@@ -1142,8 +1143,8 @@ void main() {
       find.byKey(const ValueKey('player-performance-axis-label')),
     );
     expect(tester.getSize(card).height, 346);
-    expect(lineChart.data.minX, 1);
-    expect(lineChart.data.maxX, 7);
+    expect(lineChart.data.minX, -2);
+    expect(lineChart.data.maxX, 10);
     expect(lineChart.data.minY, 6);
     expect(lineChart.data.maxY, 9.5);
     expect(lineChart.data.lineBarsData.single.dotData.show, isFalse);
@@ -1151,6 +1152,12 @@ void main() {
       find.byKey(const ValueKey('player-performance-grid')),
       findsOneWidget,
     );
+    final gridPainter = tester
+        .widget<CustomPaint>(
+          find.byKey(const ValueKey('player-performance-grid')),
+        )
+        .painter! as RoundChartGridPainter;
+    expect(gridPainter.divisionCount + 1, 12);
     expect(
       tester
               .getTopLeft(
@@ -1167,11 +1174,6 @@ void main() {
     final chartRect = tester.getRect(
       find.byKey(const ValueKey('player-performance-viewport')),
     );
-    await tester.tapAt(Offset(
-      chartRect.center.dx,
-      chartRect.center.dy,
-    ));
-    await tester.pump();
     expect(
       find.byKey(const ValueKey('player-performance-tooltip')),
       findsOneWidget,
@@ -1190,12 +1192,35 @@ void main() {
           .getRect(find.byKey(const ValueKey('player-performance-grid')))
           .bottom,
     );
-    expect(find.text('Round 4'), findsOneWidget);
-    expect(find.text('Rating 6.87'), findsOneWidget);
+    expect(find.text('Round 7'), findsOneWidget);
+    expect(find.text('Rating 6.94'), findsOneWidget);
+    await tester.tapAt(chartRect.center);
+    await tester.pump();
+    expect(find.text('Round 7'), findsOneWidget);
+    final drag = await tester.startGesture(tester.getCenter(performanceHandle));
+    await drag.moveBy(Offset(-chartRect.width / 6, 0));
+    await drag.up();
+    await tester.pumpAndSettle();
+    expect(find.text('Round 6'), findsOneWidget);
+    final dynamic selectionPainter = tester
+        .widget<CustomPaint>(
+          find.byKey(const ValueKey('player-performance-selector-line')),
+        )
+        .painter;
+    expect(selectionPainter.round, 6);
+    final tooltipRect = tester.getRect(
+      find.byKey(const ValueKey('player-performance-tooltip')),
+    );
+    expect(tooltipRect.left, greaterThanOrEqualTo(chartRect.left));
+    expect(tooltipRect.right, lessThanOrEqualTo(chartRect.right));
+    expect(
+        tester.getRect(performanceHandle).left +
+            RoundChartSelectionHandle.tipInset,
+        closeTo(chartRect.center.dx, 0.1));
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('performance uses the latest 13 rounds with seven visible',
+  testWidgets('performance can select earlier rounds by its handle',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
@@ -1209,18 +1234,25 @@ void main() {
     ));
 
     final chart = tester.widget<LineChart>(find.byType(LineChart));
-    expect((chart.data.minX, chart.data.maxX), (8, 20));
-    expect(chart.data.lineBarsData.single.spots.length, 13);
+    expect((chart.data.minX, chart.data.maxX), (-2, 23));
+    expect(chart.data.lineBarsData.single.spots.length, 20);
     final viewport = find.byKey(const ValueKey('player-performance-viewport'));
     final scroll = tester.widget<SingleChildScrollView>(
       find.descendant(
           of: viewport, matching: find.byType(SingleChildScrollView)),
     );
     expect(scroll.controller!.offset,
-        closeTo(tester.getSize(viewport).width, 0.1));
-    await tester.tapAt(tester.getCenter(viewport));
-    await tester.pump();
+        closeTo(tester.getSize(viewport).width * 16 / 6, 0.1));
     expect(find.text('Round 17'), findsOneWidget);
+    final handle = find.descendant(
+      of: viewport,
+      matching: find.byKey(const ValueKey('round-chart-selection-handle')),
+    );
+    final drag = await tester.startGesture(tester.getCenter(handle));
+    await drag.moveBy(Offset(-tester.getSize(viewport).width / 6, 0));
+    await drag.up();
+    await tester.pumpAndSettle();
+    expect(find.text('Round 16'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('performance shows all four completed rounds before round eight',
@@ -1237,7 +1269,7 @@ void main() {
     ));
 
     final chart = tester.widget<LineChart>(find.byType(LineChart));
-    expect((chart.data.minX, chart.data.maxX), (1, 7));
+    expect((chart.data.minX, chart.data.maxX), (-2, 10));
     expect(chart.data.lineBarsData.single.spots.map((spot) => spot.x),
         [1, 2, 3, 4]);
     final viewport = find.byKey(const ValueKey('player-performance-viewport'));
@@ -1247,7 +1279,9 @@ void main() {
         matching: find.byType(SingleChildScrollView),
       ),
     );
-    expect(scroll.controller!.offset, 0);
+    expect(scroll.controller!.offset,
+        closeTo(tester.getSize(viewport).width / 2, 0.1));
+    expect(find.text('Round 4'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('failed detail has retry without mock competitions',

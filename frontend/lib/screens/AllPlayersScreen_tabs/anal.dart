@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/round_chart_window.dart';
+import 'package:onetouch/core/round_chart_visuals.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
@@ -290,13 +291,9 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final valid = widget.points.where((point) => point.rating != null).toList()
       ..sort((a, b) => a.round.compareTo(b.round));
-    final roundWindow = RoundChartWindow.endingAt(
-      valid.isEmpty ? 1 : valid.last.round,
-    );
-    final visibleRatings = valid
-        .where((point) => roundWindow.contains(point.round))
-        .map((point) => point.rating!)
-        .toList();
+    final latestRound = valid.isEmpty ? 1 : valid.last.round;
+    final roundWindow = RoundChartWindow.centeredThrough(latestRound);
+    final visibleRatings = valid.map((point) => point.rating!).toList();
     final lowestRating =
         visibleRatings.isEmpty ? 0.0 : visibleRatings.reduce(math.min);
     final highestRating =
@@ -310,26 +307,24 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
       10.0,
       ((highestRating + 0.5) / ratingStep).ceil() * ratingStep,
     );
-    final horizontalGridLineCount =
-        ((maxRating - minRating) / ratingStep).round() + 1;
     final gridColor = colorScheme.onSurface.withValues(
       alpha: isDark ? 0.32 : 0.18,
     );
-    final selectedPoint = _selectedRound == null
-        ? null
-        : valid
-            .where((point) =>
-                point.round == _selectedRound &&
-                roundWindow.contains(point.round))
-            .firstOrNull;
+    final targetRound = latestRound <= 7 ? latestRound : latestRound - 3;
+    final initialPoint =
+        valid.where((point) => point.round <= targetRound).lastOrNull ??
+            valid.firstOrNull;
+    final selectedPoint =
+        valid.where((point) => point.round == _selectedRound).firstOrNull ??
+            initialPoint;
 
     return Container(
       key: const ValueKey('player-performance-card'),
-      height: 346,
+      height: RoundChartVisuals.cardHeight,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
         color: appColors.cardBackground,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(RoundChartVisuals.cardRadius),
         boxShadow: appCardShadows(context),
       ),
       child: valid.isEmpty
@@ -346,28 +341,11 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                       );
                       final axisLabel = tr(context, 'PERFORMANCE');
                       final axisLabelStyle = Body2_b.style;
-                      final axisLabelPainter = TextPainter(
-                        text: TextSpan(
-                          text: axisLabel,
-                          style: axisLabelStyle,
-                        ),
-                        textDirection: Directionality.of(context),
-                        textScaler: MediaQuery.textScalerOf(context),
-                        maxLines: 1,
-                      )..layout();
-                      final gridCellHeight =
-                          chartSize.height / (horizontalGridLineCount - 1);
-                      final isKorean =
-                          Localizations.localeOf(context).languageCode == 'ko';
-                      final occupiedGridCells = isKorean
-                          ? 1
-                          : math.max(
-                              1,
-                              (axisLabelPainter.width / gridCellHeight).ceil(),
-                            );
-                      final insetLineCount = math.min(
-                        horizontalGridLineCount,
-                        occupiedGridCells + 1,
+                      final insetLineCount = roundChartInsetLineCount(
+                        context,
+                        chartSize,
+                        axisLabel,
+                        axisLabelStyle,
                       );
                       return Stack(
                         children: [
@@ -375,10 +353,8 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                             bottom: RoundChartSelectionHandle.height,
                             child: CustomPaint(
                               key: const ValueKey('player-performance-grid'),
-                              painter: _PlayerPerformanceGridPainter(
+                              painter: RoundChartGridPainter(
                                 color: gridColor,
-                                topLineInset: 34,
-                                divisionCount: horizontalGridLineCount - 1,
                                 insetLineCount: insetLineCount,
                               ),
                             ),
@@ -388,111 +364,100 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                             roundWindow: roundWindow,
                             viewportSize: viewportSize,
                             selectedRound: selectedPoint?.round,
-                            onPointerMove: (x) => _selectRound(
-                              x,
-                              chartSize.width,
-                              roundWindow,
-                              valid,
-                            ),
-                            builder: (context, _) => GestureDetector(
+                            selectableRounds: [
+                              for (final point in valid) point.round
+                            ],
+                            onRoundChanged: (round) =>
+                                setState(() => _selectedRound = round),
+                            builder: (context, _) => Stack(
                               key: const ValueKey('player-performance-chart'),
-                              behavior: HitTestBehavior.opaque,
-                              onTapDown: (details) => _selectRound(
-                                details.localPosition.dx,
-                                chartSize.width,
-                                roundWindow,
-                                valid,
-                              ),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
+                              clipBehavior: Clip.none,
+                              children: [
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    child: LineChart(
+                                      LineChartData(
+                                        minX: roundWindow.firstRound.toDouble(),
+                                        maxX: roundWindow.lastRound.toDouble(),
+                                        minY: minRating,
+                                        maxY: maxRating,
+                                        gridData: const FlGridData(show: false),
+                                        borderData: FlBorderData(show: false),
+                                        titlesData: const FlTitlesData(
+                                          leftTitles: AxisTitles(
+                                            sideTitles:
+                                                SideTitles(showTitles: false),
+                                          ),
+                                          rightTitles: AxisTitles(
+                                            sideTitles:
+                                                SideTitles(showTitles: false),
+                                          ),
+                                          topTitles: AxisTitles(
+                                            sideTitles:
+                                                SideTitles(showTitles: false),
+                                          ),
+                                          bottomTitles: AxisTitles(
+                                            sideTitles:
+                                                SideTitles(showTitles: false),
+                                          ),
+                                        ),
+                                        lineTouchData:
+                                            const LineTouchData(enabled: false),
+                                        lineBarsData: [
+                                          LineChartBarData(
+                                            spots: [
+                                              for (final point
+                                                  in widget.points.where(
+                                                (point) => roundWindow
+                                                    .contains(point.round),
+                                              ))
+                                                point.rating == null
+                                                    ? FlSpot.nullSpot
+                                                    : FlSpot(
+                                                        point.round.toDouble(),
+                                                        point.rating!,
+                                                      ),
+                                            ],
+                                            color: _lineColor,
+                                            barWidth: 2,
+                                            isCurved: false,
+                                            dotData:
+                                                const FlDotData(show: false),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if (selectedPoint != null)
                                   Positioned.fill(
                                     child: IgnorePointer(
-                                      child: LineChart(
-                                        LineChartData(
-                                          minX:
-                                              roundWindow.firstRound.toDouble(),
-                                          maxX:
-                                              roundWindow.lastRound.toDouble(),
-                                          minY: minRating,
-                                          maxY: maxRating,
-                                          gridData:
-                                              const FlGridData(show: false),
-                                          borderData: FlBorderData(show: false),
-                                          titlesData: const FlTitlesData(
-                                            leftTitles: AxisTitles(
-                                              sideTitles:
-                                                  SideTitles(showTitles: false),
-                                            ),
-                                            rightTitles: AxisTitles(
-                                              sideTitles:
-                                                  SideTitles(showTitles: false),
-                                            ),
-                                            topTitles: AxisTitles(
-                                              sideTitles:
-                                                  SideTitles(showTitles: false),
-                                            ),
-                                            bottomTitles: AxisTitles(
-                                              sideTitles:
-                                                  SideTitles(showTitles: false),
-                                            ),
-                                          ),
-                                          lineTouchData: const LineTouchData(
-                                              enabled: false),
-                                          lineBarsData: [
-                                            LineChartBarData(
-                                              spots: [
-                                                for (final point
-                                                    in widget.points.where(
-                                                  (point) => roundWindow
-                                                      .contains(point.round),
-                                                ))
-                                                  point.rating == null
-                                                      ? FlSpot.nullSpot
-                                                      : FlSpot(
-                                                          point.round
-                                                              .toDouble(),
-                                                          point.rating!,
-                                                        ),
-                                              ],
-                                              color: _lineColor,
-                                              barWidth: 2,
-                                              isCurved: false,
-                                              dotData:
-                                                  const FlDotData(show: false),
-                                            ),
-                                          ],
+                                      child: CustomPaint(
+                                        key: const ValueKey(
+                                            'player-performance-selector-line'),
+                                        painter:
+                                            _PlayerPerformanceSelectionPainter(
+                                          round: selectedPoint.round,
+                                          roundWindow: roundWindow,
+                                          rating: selectedPoint.rating!,
+                                          minRating: minRating,
+                                          maxRating: maxRating,
+                                          color: _lineColor,
                                         ),
                                       ),
                                     ),
                                   ),
-                                  if (selectedPoint != null)
-                                    Positioned.fill(
-                                      child: IgnorePointer(
-                                        child: CustomPaint(
-                                          painter:
-                                              _PlayerPerformanceSelectionPainter(
-                                            round: selectedPoint.round,
-                                            roundWindow: roundWindow,
-                                            rating: selectedPoint.rating!,
-                                            minRating: minRating,
-                                            maxRating: maxRating,
-                                            color: _lineColor,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  if (selectedPoint != null)
-                                    _tooltip(
-                                      chartSize,
-                                      selectedPoint,
-                                      roundWindow,
-                                      isDark,
-                                      minRating,
-                                      maxRating,
-                                    ),
-                                ],
-                              ),
+                                if (selectedPoint != null)
+                                  _tooltip(
+                                    chartSize,
+                                    viewportSize.width,
+                                    selectedPoint,
+                                    roundWindow,
+                                    isDark,
+                                    minRating,
+                                    maxRating,
+                                  ),
+                              ],
                             ),
                           ),
                           Positioned(
@@ -524,29 +489,9 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
     );
   }
 
-  void _selectRound(
-    double localX,
-    double chartWidth,
-    RoundChartWindow roundWindow,
-    List<PlayerPerformancePoint> points,
-  ) {
-    final visiblePoints =
-        points.where((point) => roundWindow.contains(point.round)).toList();
-    if (chartWidth <= 0 || visiblePoints.isEmpty) return;
-    final targetRound = roundWindow.roundAt(localX, chartWidth);
-    var nearest = visiblePoints.first;
-    for (final point in visiblePoints.skip(1)) {
-      if ((point.round - targetRound).abs() <
-          (nearest.round - targetRound).abs()) {
-        nearest = point;
-      }
-    }
-    if (_selectedRound == nearest.round) return;
-    setState(() => _selectedRound = nearest.round);
-  }
-
   Widget _tooltip(
     Size chartSize,
+    double viewportWidth,
     PlayerPerformancePoint point,
     RoundChartWindow roundWindow,
     bool isDark,
@@ -578,7 +523,7 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
       maxLines: 1,
     )..layout();
     final tooltipWidth = math.min(
-      chartSize.width,
+      viewportWidth,
       roundPainter.width +
           ratingPainter.width +
           contentGap +
@@ -588,13 +533,16 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
     final tooltipHeight = math.max(roundPainter.height, ratingPainter.height) +
         tooltipPadding * 2 +
         2;
-    final anchorX = chartSize.width * roundWindow.fractionOf(point.round);
     final anchorY = chartSize.height *
         (1 - (point.rating! - minRating) / (maxRating - minRating));
-    final fitsRight = anchorX + anchorGap + tooltipWidth <= chartSize.width;
-    final left = fitsRight
-        ? anchorX + anchorGap
-        : math.max(0.0, anchorX - anchorGap - tooltipWidth);
+    final left = roundChartTooltipLeft(
+      roundWindow: roundWindow,
+      round: point.round,
+      viewportWidth: viewportWidth,
+      tooltipWidth: tooltipWidth,
+      gap: anchorGap,
+      preferLeft: false,
+    );
     final top = (anchorY - tooltipHeight / 2)
         .clamp(0.0, math.max(0.0, chartSize.height - tooltipHeight))
         .toDouble();
@@ -623,66 +571,29 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
         ),
         child: Row(
           children: [
-            Flexible(
-              child: Text(
-                roundLabel,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
-                style: textStyle.copyWith(
-                  color: foreground.withValues(alpha: 0.55),
-                ),
+            Text(
+              roundLabel,
+              maxLines: 1,
+              softWrap: false,
+              style: textStyle.copyWith(
+                color: foreground.withValues(alpha: 0.55),
               ),
             ),
             const SizedBox(width: contentGap),
-            Text(
-              ratingLabel,
-              maxLines: 1,
-              softWrap: false,
-              style: textStyle.copyWith(color: foreground),
+            Flexible(
+              child: Text(
+                ratingLabel,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+                style: textStyle.copyWith(color: foreground),
+              ),
             ),
           ],
         ),
       ),
     );
   }
-}
-
-class _PlayerPerformanceGridPainter extends CustomPainter {
-  const _PlayerPerformanceGridPainter({
-    required this.color,
-    required this.topLineInset,
-    required this.divisionCount,
-    required this.insetLineCount,
-  });
-
-  final Color color;
-  final double topLineInset;
-  final int divisionCount;
-  final int insetLineCount;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1;
-    final effectiveInsetLineCount = insetLineCount.clamp(
-      0,
-      divisionCount + 1,
-    );
-    for (var index = 0; index <= divisionCount; index++) {
-      final y = size.height * index / divisionCount;
-      final startX = index < effectiveInsetLineCount ? topLineInset : 0.0;
-      canvas.drawLine(Offset(startX, y), Offset(size.width, y), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_PlayerPerformanceGridPainter oldDelegate) =>
-      oldDelegate.color != color ||
-      oldDelegate.topLineInset != topLineInset ||
-      oldDelegate.divisionCount != divisionCount ||
-      oldDelegate.insetLineCount != insetLineCount;
 }
 
 class _PlayerPerformanceSelectionPainter extends CustomPainter {

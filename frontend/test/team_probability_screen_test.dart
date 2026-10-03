@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/round_chart_window.dart';
+import 'package:onetouch/core/round_chart_visuals.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
@@ -10,6 +11,50 @@ import 'package:onetouch/models/team_probability.dart';
 import 'package:onetouch/screens/TeamProbabilityScreen.dart';
 
 void main() {
+  for (final size in [const Size(393, 852), const Size(430, 932)]) {
+    testWidgets('history chart fits the shared design at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: TeamProbabilityScreen(
+          teamId: 83,
+          event: 'league_winner',
+          initialSnapshot: _snapshot(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      final card = find.byKey(const ValueKey('probability-history-card'));
+      await tester.scrollUntilVisible(
+        card,
+        200,
+        scrollable: find.byWidgetPredicate(
+          (widget) =>
+              widget is Scrollable &&
+              widget.axisDirection == AxisDirection.down,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.getSize(card).height, RoundChartVisuals.cardHeight);
+      final viewport = tester.getRect(
+        find.byKey(const ValueKey('probability-history-viewport')),
+      );
+      await tester.tapAt(viewport.center);
+      await tester.pump();
+      final tooltip = tester.getRect(
+        find.byKey(const ValueKey('probability-history-tooltip')),
+      );
+      expect(tooltip.left, greaterThanOrEqualTo(viewport.left));
+      expect(tooltip.right, lessThanOrEqualTo(viewport.right));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('renders the probability detail with the shared header gradient',
       (tester) async {
     const teamPrimaryColor = Color(0xFF123456);
@@ -97,23 +142,44 @@ void main() {
     );
     expect(historyGrid.left - historyCard.left, 16);
     expect(historyCard.right - historyGrid.right, 16);
-    expect(historyViewport.left - historyGrid.left, 32);
+    expect(historyViewport.left, historyGrid.left);
     expect(historyViewport.right, historyGrid.right);
-    expect(historyLineChart.width, historyViewport.width);
+    expect(historyLineChart.width, historyViewport.width * 2);
     final historyData = tester
         .widget<LineChart>(
           find.byKey(const ValueKey('probability-history-line-chart')),
         )
         .data;
-    expect((historyData.minX, historyData.maxX), (1, 7));
+    expect((historyData.minX, historyData.maxX), (-2, 10));
     expect(historyData.lineBarsData.single.spots.map((spot) => spot.x), [4, 5]);
     expect((historyData.minY, historyData.maxY), (20, 40));
     final historyCardFinder =
         find.byKey(const ValueKey('probability-history-card'));
-    expect(find.descendant(of: historyCardFinder, matching: find.text('40%')),
-        findsOneWidget);
-    expect(find.descendant(of: historyCardFinder, matching: find.text('30%')),
-        findsOneWidget);
+    expect(
+      find.descendant(
+        of: historyCardFinder,
+        matching: find.byKey(const ValueKey('probability-history-axis-label')),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: historyCardFinder,
+        matching: find.byKey(const ValueKey('probability-history-round-label')),
+      ),
+      findsOneWidget,
+    );
+    expect(
+        (tester.widget<Container>(historyCardFinder).decoration!
+                as BoxDecoration)
+            .borderRadius,
+        BorderRadius.circular(RoundChartVisuals.cardRadius));
+    final gridPainter = tester
+        .widget<CustomPaint>(
+          find.byKey(const ValueKey('probability-history-grid')),
+        )
+        .painter! as RoundChartGridPainter;
+    expect(gridPainter.divisionCount + 1, 12);
     expect(
       tester
           .widget<LineChart>(find.byType(LineChart))
@@ -127,9 +193,10 @@ void main() {
     final historyChart = tester.getRect(
       find.byKey(const ValueKey('probability-history-chart')),
     );
-    final roundFourX = historyViewport.left + 1;
-    await tester.tapAt(Offset(roundFourX, historyChart.center.dy));
+    expect(find.text('Round 5'), findsOneWidget);
+    await tester.tapAt(historyViewport.center);
     await tester.pump();
+    expect(find.text('Round 5'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('probability-history-selector-line')),
       findsOneWidget,
@@ -144,10 +211,29 @@ void main() {
     );
     expect(
         tester.getRect(historyHandle).left + RoundChartSelectionHandle.tipInset,
-        closeTo(historyChart.left + historyChart.width / 2, 0.1));
-    expect(tester.getRect(historyHandle).top, historyChart.bottom);
+        closeTo(historyViewport.center.dx, 0.1));
+    expect(tester.getRect(historyHandle).top,
+        historyViewport.bottom - RoundChartSelectionHandle.height);
+    final drag = await tester.startGesture(tester.getCenter(historyHandle));
+    await drag.moveBy(Offset(-historyViewport.width / 6, 0));
+    await drag.up();
+    await tester.pumpAndSettle();
     expect(find.text('Round 4'), findsOneWidget);
     expect(find.text('26%'), findsOneWidget);
+    final dynamic selectionPainter = tester
+        .widget<CustomPaint>(
+          find.byKey(const ValueKey('probability-history-selector-line')),
+        )
+        .painter;
+    expect(selectionPainter.round, 4);
+    final tooltipRect = tester.getRect(
+      find.byKey(const ValueKey('probability-history-tooltip')),
+    );
+    expect(tooltipRect.left, greaterThanOrEqualTo(historyViewport.left));
+    expect(tooltipRect.right, lessThanOrEqualTo(historyViewport.right));
+    expect(
+        tester.getRect(historyHandle).left + RoundChartSelectionHandle.tipInset,
+        closeTo(historyViewport.center.dx, 0.1));
     expect(
       tester
           .getRect(find.byKey(const ValueKey('probability-history-tooltip')))
@@ -155,16 +241,14 @@ void main() {
           .dy,
       closeTo(historyChart.top + historyChart.height * 0.7, 1),
     );
-    final drag = await tester.startGesture(
-      Offset(historyChart.center.dx, historyChart.center.dy),
-    );
-    await drag.moveBy(Offset(historyChart.width / 6, 0));
-    await tester.pump();
+    final nextDrag = await tester.startGesture(tester.getCenter(historyHandle));
+    await nextDrag.moveBy(Offset(historyViewport.width / 6, 0));
+    await nextDrag.up();
+    await tester.pumpAndSettle();
     expect(find.text('Round 5'), findsOneWidget);
     expect(
         tester.getRect(historyHandle).left + RoundChartSelectionHandle.tipInset,
-        closeTo(historyChart.left + historyChart.width * 4 / 6, 0.1));
-    await drag.up();
+        closeTo(historyViewport.center.dx, 0.1));
     expect(find.text('PROJECTED FINAL POSITION'), findsOneWidget);
     expect(
       tester
