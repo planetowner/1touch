@@ -12,6 +12,7 @@ import 'package:onetouch/features/player/player_stat_value.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
 
 class AnalysisTab extends StatefulWidget {
   const AnalysisTab({super.key, this.player, this.playerId});
@@ -504,7 +505,8 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
     const contentGap = 8.0;
     const tooltipPadding = 8.0;
     final textStyle = Eyebrow.style.copyWith(fontWeight: FontWeight.w700);
-    final roundLabel = tr(context, 'Round {round}', {'round': point.round});
+    final roundLabel = formatRoundLabel(
+        roundName: '${point.round}', locale: Localizations.localeOf(context))!;
     final ratingLabel = tr(context, 'Rating {rating}', {
       'rating': playerNumber(point.rating, decimals: 2),
     });
