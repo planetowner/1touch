@@ -15,6 +15,10 @@ class RoundChartWindow {
     );
   }
 
+  /// Adds three empty round slots at either end so any round can be centered.
+  factory RoundChartWindow.centeredThrough(int latestRound) =>
+      RoundChartWindow._(-2, math.max(7, latestRound) + 3);
+
   final int firstRound;
   final int lastRound;
 
@@ -28,6 +32,10 @@ class RoundChartWindow {
 
   double initialScrollOffset(double viewportWidth) =>
       contentWidth(viewportWidth) - viewportWidth;
+
+  double centeredScrollOffset(int round, double viewportWidth) =>
+      (contentWidth(viewportWidth) * fractionOf(round) - viewportWidth / 2)
+          .clamp(0.0, contentWidth(viewportWidth) - viewportWidth);
 
   bool contains(int round) => round >= firstRound && round <= lastRound;
 
@@ -43,15 +51,17 @@ class RoundChartViewport extends StatefulWidget {
     required this.roundWindow,
     required this.viewportSize,
     required this.builder,
-    this.selectedRound,
-    this.onPointerMove,
+    required this.selectedRound,
+    required this.selectableRounds,
+    required this.onRoundChanged,
   });
 
   final RoundChartWindow roundWindow;
   final Size viewportSize;
   final Widget Function(BuildContext context, Size contentSize) builder;
   final int? selectedRound;
-  final ValueChanged<double>? onPointerMove;
+  final List<int> selectableRounds;
+  final ValueChanged<int> onRoundChanged;
 
   @override
   State<RoundChartViewport> createState() => _RoundChartViewportState();
@@ -62,6 +72,30 @@ class _RoundChartViewportState extends State<RoundChartViewport> {
   double? _initialWidth;
   int? _initialFirstRound;
   int? _initialLastRound;
+  int? _centeredRound;
+  double? _dragStartX;
+  int? _dragStartRound;
+
+  void _moveHandle(double globalX) {
+    if (_dragStartX == null ||
+        _dragStartRound == null ||
+        widget.selectableRounds.isEmpty) {
+      return;
+    }
+    final rounds = widget.selectableRounds;
+    final draggedRound = (_dragStartRound! +
+            (globalX - _dragStartX!) / (widget.viewportSize.width / 6))
+        .clamp(rounds.first.toDouble(), rounds.last.toDouble());
+    var nearest = rounds.first;
+    for (final round in rounds.skip(1)) {
+      if ((round - draggedRound).abs() < (nearest - draggedRound).abs()) {
+        nearest = round;
+      }
+    }
+    if (nearest != widget.selectedRound) {
+      widget.onRoundChanged(nearest);
+    }
+  }
 
   @override
   void dispose() {
@@ -76,20 +110,29 @@ class _RoundChartViewportState extends State<RoundChartViewport> {
       _initialWidth = viewportWidth;
       _initialFirstRound = widget.roundWindow.firstRound;
       _initialLastRound = widget.roundWindow.lastRound;
+      _centeredRound = widget.selectedRound;
       _controller = ScrollController(
-        initialScrollOffset:
-            widget.roundWindow.initialScrollOffset(viewportWidth),
+        initialScrollOffset: widget.selectedRound == null
+            ? 0
+            : widget.roundWindow
+                .centeredScrollOffset(widget.selectedRound!, viewportWidth),
       );
     } else if (_initialWidth != viewportWidth ||
         _initialFirstRound != widget.roundWindow.firstRound ||
-        _initialLastRound != widget.roundWindow.lastRound) {
+        _initialLastRound != widget.roundWindow.lastRound ||
+        _centeredRound != widget.selectedRound) {
       _initialWidth = viewportWidth;
       _initialFirstRound = widget.roundWindow.firstRound;
       _initialLastRound = widget.roundWindow.lastRound;
+      _centeredRound = widget.selectedRound;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _controller!.hasClients) {
-          _controller!
-              .jumpTo(widget.roundWindow.initialScrollOffset(viewportWidth));
+          _controller!.jumpTo(
+            widget.selectedRound == null
+                ? 0
+                : widget.roundWindow
+                    .centeredScrollOffset(widget.selectedRound!, viewportWidth),
+          );
         }
       });
     }
@@ -104,30 +147,25 @@ class _RoundChartViewportState extends State<RoundChartViewport> {
     return SingleChildScrollView(
       controller: _controller,
       scrollDirection: Axis.horizontal,
-      physics: const ClampingScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       child: SizedBox.fromSize(
         size: contentSize,
         child: Stack(
           children: [
             Positioned.fill(
               bottom: RoundChartSelectionHandle.height,
-              child: Listener(
-                behavior: HitTestBehavior.opaque,
-                onPointerMove: widget.onPointerMove == null
-                    ? null
-                    : (event) {
-                        if (event.delta.dx.abs() >= event.delta.dy.abs()) {
-                          widget.onPointerMove!(event.localPosition.dx);
-                        }
-                      },
-                child: widget.builder(context, plotSize),
-              ),
+              child: widget.builder(context, plotSize),
             ),
             if (widget.selectedRound != null)
               RoundChartSelectionHandle(
                 x: contentSize.width *
                     widget.roundWindow.fractionOf(widget.selectedRound!),
                 color: Theme.of(context).colorScheme.onSurface,
+                onDragDown: (globalX) {
+                  _dragStartX = globalX;
+                  _dragStartRound = widget.selectedRound;
+                },
+                onDrag: _moveHandle,
               ),
           ],
         ),
@@ -141,6 +179,8 @@ class RoundChartSelectionHandle extends StatelessWidget {
     super.key,
     required this.x,
     required this.color,
+    this.onDragDown,
+    this.onDrag,
   });
 
   static const double width = 11;
@@ -149,21 +189,43 @@ class RoundChartSelectionHandle extends StatelessWidget {
 
   final double x;
   final Color color;
+  final ValueChanged<double>? onDragDown;
+  final ValueChanged<double>? onDrag;
 
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      left: x - tipInset,
+      left: x - (onDrag == null ? tipInset : 22),
       bottom: 0,
-      width: width,
-      height: height,
-      child: IgnorePointer(
-        child: SvgPicture.asset(
-          'assets/round_chart_selection_handle.svg',
-          key: const ValueKey('round-chart-selection-handle'),
-          width: width,
-          height: height,
-          colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      width: onDrag == null ? width : 44,
+      height: onDrag == null ? height : 44,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragDown: onDrag == null
+            ? null
+            : (details) => onDragDown?.call(details.globalPosition.dx),
+        onHorizontalDragStart: onDrag == null
+            ? null
+            : (details) => onDrag!(details.globalPosition.dx),
+        onHorizontalDragUpdate: onDrag == null
+            ? null
+            : (details) => onDrag!(details.globalPosition.dx),
+        child: Stack(
+          children: [
+            Positioned(
+              left: onDrag == null ? 0 : 22 - tipInset,
+              bottom: 0,
+              width: width,
+              height: height,
+              child: SvgPicture.asset(
+                'assets/round_chart_selection_handle.svg',
+                key: const ValueKey('round-chart-selection-handle'),
+                width: width,
+                height: height,
+                colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+              ),
+            ),
+          ],
         ),
       ),
     );

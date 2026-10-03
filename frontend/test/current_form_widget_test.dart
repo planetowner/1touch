@@ -572,6 +572,11 @@ void main() {
       expect(find.text('Round 13'), findsOneWidget);
       expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
           closeTo(viewportRect.center.dx, 0.1));
+      final tooltipRect = tester.getRect(find.byKey(
+        const ValueKey('analysis-current-form-current-tooltip'),
+      ));
+      expect(tooltipRect.left, greaterThanOrEqualTo(viewportRect.left));
+      expect(tooltipRect.right, lessThanOrEqualTo(viewportRect.right));
       expect(tester.takeException(), isNull);
     });
   }
@@ -730,11 +735,14 @@ void main() {
             const ValueKey('analysis-current-form-current-tooltip'),
           ),
         );
-        bool isHorizontallyAdjacent(Rect rect) =>
-            (rect.left - (selectedPointX + 8)).abs() < 0.01 ||
-            (rect.right - (selectedPointX - 8)).abs() < 0.01;
-        expect(isHorizontallyAdjacent(comparisonTooltipRect), isTrue);
-        expect(isHorizontallyAdjacent(currentTooltipRect), isTrue);
+        final viewportRect = tester.getRect(viewport);
+        for (final box in [
+          comparisonTooltipRect,
+          currentTooltipRect,
+        ]) {
+          expect(box.left, greaterThanOrEqualTo(viewportRect.left));
+          expect(box.right, lessThanOrEqualTo(viewportRect.right));
+        }
         expect(comparisonTooltipRect.center.dy,
             lessThan(currentTooltipRect.center.dy));
         expect(
@@ -743,6 +751,17 @@ void main() {
         );
         expect(find.text('Round 2'), findsNWidgets(2));
         expect(find.text('4 Pts'), findsNWidgets(2));
+        for (final key in const [
+          ValueKey('analysis-current-form-current-tooltip'),
+          ValueKey('analysis-current-form-comparison-tooltip'),
+        ]) {
+          final box = find.byKey(key);
+          final round =
+              find.descendant(of: box, matching: find.text('Round 2'));
+          final points = find.descendant(of: box, matching: find.text('4 Pts'));
+          expect(tester.getRect(points).left - tester.getRect(round).right,
+              closeTo(8, 0.01));
+        }
         for (final label in ['Round 2', '4 Pts']) {
           for (final element in find.text(label).evaluate()) {
             final paragraph = element.renderObject! as RenderParagraph;
