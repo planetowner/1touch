@@ -428,6 +428,12 @@ void main() {
     await tester
         .tap(find.byKey(const ValueKey('analysis-filter-season-2024/2025')));
     await tester.pump();
+    final searchSurface = tester.widget<Container>(
+      find.byKey(const ValueKey('analysis-filter-team-search-surface')),
+    );
+    expect((searchSurface.decoration as BoxDecoration).borderRadius,
+        BorderRadius.circular(8));
+    expect(searchSurface.clipBehavior, Clip.antiAlias);
     await tester.enterText(
         find.byKey(const ValueKey('analysis-filter-team-search')), 'Leeds');
     await tester.pump();
