@@ -1,5 +1,28 @@
 part of 'team_screen_features.dart';
 
+class _TeamPlayerAvatar extends StatelessWidget {
+  const _TeamPlayerAvatar(this.url, {required this.radius, required this.size});
+
+  final String? url;
+  final double radius;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => CircleAvatar(
+        radius: radius,
+        backgroundColor: AppColors.of(context).subtleBackground,
+        child: ClipOval(
+          // 부상·이적 목록도 선수 화면의 디스크 캐시를 함께 써요.
+          child: PlayerRemoteImage(
+            url,
+            size: size,
+            fit: BoxFit.cover,
+            placeholder: Image.asset('assets/messi.png', fit: BoxFit.cover),
+          ),
+        ),
+      );
+}
+
 class TransferTile extends StatelessWidget {
   final TransferEntry transfer;
 
@@ -13,39 +36,13 @@ class TransferTile extends StatelessWidget {
     final playerImage = transfer.playerImage;
     final transferValue = _transferValue(context, transfer);
     final playerName = _playerName(context, transfer);
-    final appColors = AppColors.of(context);
 
     final content = Container(
       margin: const EdgeInsets.only(left: 24, right: 24, bottom: 16, top: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Player photo
-          CircleAvatar(
-            radius: 36,
-            backgroundColor: appColors.subtleBackground,
-            child: ClipOval(
-              child: playerImage == null || playerImage.isEmpty
-                  ? Image.asset(
-                      'assets/messi.png',
-                      width: 68,
-                      height: 68,
-                      fit: BoxFit.cover,
-                    )
-                  : Image.network(
-                      playerImage,
-                      width: 68,
-                      height: 68,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Image.asset(
-                        'assets/messi.png',
-                        width: 68,
-                        height: 68,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-            ),
-          ),
+          _TeamPlayerAvatar(playerImage, radius: 36, size: 68),
           const SizedBox(width: 16),
 
           // Info

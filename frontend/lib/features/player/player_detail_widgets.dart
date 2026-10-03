@@ -10,10 +10,18 @@ import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class PlayerRemoteImage extends StatelessWidget {
-  const PlayerRemoteImage(this.url, {super.key, this.size = 28});
+  const PlayerRemoteImage(
+    this.url, {
+    super.key,
+    this.size = 28,
+    this.fit = BoxFit.contain,
+    this.placeholder = const Icon(Icons.person_outline),
+  });
 
   final String? url;
   final double size;
+  final BoxFit fit;
+  final Widget placeholder;
   @override
   Widget build(BuildContext context) {
     final imageUrl = url?.trim();
@@ -22,14 +30,14 @@ class PlayerRemoteImage extends StatelessWidget {
       width: size,
       height: size,
       child: imageUrl == null || imageUrl.isEmpty
-          ? const Icon(Icons.person_outline)
+          ? placeholder
           : CachedNetworkImage(
               imageUrl: imageUrl,
               cacheManager: PlayerImageCache.manager,
-              fit: BoxFit.contain,
+              fit: fit,
               memCacheWidth: cacheWidth,
-              placeholder: (_, __) => const Icon(Icons.person_outline),
-              errorWidget: (_, __, ___) => const Icon(Icons.person_outline),
+              placeholder: (_, __) => placeholder,
+              errorWidget: (_, __, ___) => placeholder,
               fadeInDuration: Duration.zero,
               fadeOutDuration: Duration.zero,
             ),
