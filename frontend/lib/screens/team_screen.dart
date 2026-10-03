@@ -453,7 +453,7 @@ class _TeamScreenState extends State<TeamScreen>
                                           key: const ValueKey(
                                             'team-rank-change-value',
                                           ),
-                                          style: Eyebrow.style.copyWith(
+                                          style: Body2.style.copyWith(
                                             color: delta > 0
                                                 ? Colors.green
                                                 : Colors.red,

@@ -96,6 +96,13 @@ void main() {
       expect(tester.getSize(icon), const Size(24, 24));
       expect(find.descendant(of: movement, matching: find.text('3')),
           findsOneWidget);
+      final standing = tester.widget<Text>(
+        find.byKey(const ValueKey('home-team-standing')),
+      );
+      final delta = tester.widget<Text>(
+        find.descendant(of: movement, matching: find.text('3')),
+      );
+      expect(delta.style?.fontSize, standing.style?.fontSize);
 
       for (final label in [
         '프리미어리그 6R',

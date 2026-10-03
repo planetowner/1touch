@@ -224,6 +224,9 @@ void main() {
 
       controller.jumpTo(controller.position.maxScrollExtent);
       await tester.pumpAndSettle();
+      // Sticky headers grow after the jump, changing the viewport extent.
+      controller.jumpTo(controller.position.maxScrollExtent);
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('team-fixture-card-401')).hitTestable(),
           findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -258,6 +261,22 @@ void main() {
         expect(find.byKey(ValueKey('team-fixture-card-$id')).hitTestable(),
             findsOneWidget);
       }
+      final controller = tester.widget<CustomScrollView>(scroll).controller!;
+      controller.jumpTo(controller.position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      final pastLabel = find.descendant(
+        of: find.byKey(const ValueKey('matches-past-header')),
+        matching: find.text('PAST'),
+      );
+      final upcomingLabel = find.descendant(
+        of: find.byKey(const ValueKey('matches-upcoming-header')),
+        matching: find.text('UPCOMING'),
+      );
+      expect(
+        tester.getTopLeft(upcomingLabel).dy -
+            tester.getBottomLeft(pastLabel).dy,
+        closeTo(24, 0.1),
+      );
       expect(tester.takeException(), isNull);
     });
   }
@@ -566,6 +585,20 @@ void main() {
 
     await tester.pump(const Duration(milliseconds: 220));
     expect(tester.widget<FadeTransition>(upcomingFade()).opacity.value, 1);
+    Finder headerLabel(String section, String label) => find.descendant(
+          of: find.byKey(ValueKey('matches-$section-header')),
+          matching: find.text(label),
+        );
+    expect(
+      tester.getTopLeft(headerLabel('live', 'LIVE')).dy -
+          tester.getBottomLeft(headerLabel('past', 'PAST')).dy,
+      closeTo(24, 0.1),
+    );
+    expect(
+      tester.getTopLeft(headerLabel('upcoming', 'UPCOMING')).dy -
+          tester.getBottomLeft(headerLabel('live', 'LIVE')).dy,
+      closeTo(24, 0.1),
+    );
 
     controller.jumpTo(0);
     await tester.pump();
