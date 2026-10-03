@@ -310,6 +310,16 @@ void main() {
       find.byKey(const ValueKey('what-if-scenario-chart')),
       findsOneWidget,
     );
+    for (final outcome in ['win', 'draw', 'loss']) {
+      final option = find.byKey(ValueKey('what-if-outcome-$outcome'));
+      final label = find.descendant(of: option, matching: find.byType(Text));
+      expect(label, findsOneWidget);
+      expect(tester.getRect(label).center.dy,
+          closeTo(tester.getRect(option).center.dy, 0.1));
+    }
+    expect(find.text('(55%)'), findsNothing);
+    expect(find.text('(25%)'), findsNothing);
+    expect(find.text('(20%)'), findsNothing);
     await tester.tap(find.byKey(const ValueKey('what-if-outcome-win')));
     await tester.pump();
 

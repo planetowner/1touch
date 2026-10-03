@@ -231,8 +231,6 @@ class _OutcomeCard extends StatelessWidget {
                       fixture: fixture,
                       homeTeam: homeTeam,
                       awayTeam: awayTeam,
-                      probability:
-                          _teamOutcomeProbability(fixture, teamId, index),
                       onTap: onSelected,
                     ),
                     if (index < 2) Divider(height: 1, color: colors.divider),
@@ -311,7 +309,6 @@ class _OutcomeOption extends StatelessWidget {
     required this.fixture,
     required this.homeTeam,
     required this.awayTeam,
-    required this.probability,
     required this.onTap,
   });
 
@@ -320,7 +317,6 @@ class _OutcomeOption extends StatelessWidget {
   final TeamProbabilityWhatIfFixture fixture;
   final Team? homeTeam;
   final Team? awayTeam;
-  final double probability;
   final ValueChanged<String> onTap;
 
   @override
@@ -349,17 +345,11 @@ class _OutcomeOption extends StatelessWidget {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Heading5.style),
-                  const SizedBox(height: 4),
-                  Text('(${(probability * 100).round()}%)', style: Body1.style),
-                ],
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Heading5.style,
               ),
             ),
             Radio<String>(value: outcome),
@@ -606,16 +596,6 @@ TeamProbabilityCard? _findEvent(
     if (item.event == event) return item;
   }
   return null;
-}
-
-double _teamOutcomeProbability(
-  TeamProbabilityWhatIfFixture fixture,
-  int teamId,
-  int outcomeIndex,
-) {
-  final indices =
-      fixture.homeTeamId == teamId ? const [0, 1, 2] : const [2, 1, 0];
-  return fixture.probabilities[indices[outcomeIndex]];
 }
 
 String _roundLabel(BuildContext context, String? raw) {
