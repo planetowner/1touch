@@ -77,7 +77,7 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
               children: [
                 Expanded(
                   child: Text(
-                    tr(context, widget.title),
+                    trUpper(context, widget.title),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Body2_b.style,
@@ -403,7 +403,7 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final leagueLabel = _league == null
-        ? tr(context, 'ALL LEAGUES')
+        ? trUpper(context, 'All leagues')
         : _page?.leagues
                 .where((item) => item.id == _league)
                 .firstOrNull
@@ -455,7 +455,7 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
                 if (_position != null)
                   _ActiveDirectoryFilterChip(
                     key: const ValueKey('active-ranking-position-filter'),
-                    label: _positionLabel(_position!),
+                    label: _positionLabel(context, _position!),
                     onRemove: _loading ? null : _clearPosition,
                   ),
               ],
@@ -534,13 +534,16 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
   }
 }
 
-String _positionLabel(String position) => switch (position) {
-      'GK' => 'GOALKEEPER',
-      'DF' => 'DEFENDER',
-      'MF' => 'MIDFIELDER',
-      'FW' => 'FORWARD',
-      _ => position.toUpperCase(),
-    };
+String _positionLabel(BuildContext context, String position) => trUpper(
+      context,
+      switch (position) {
+        'GK' => 'Goalkeeper',
+        'DF' => 'Defender',
+        'MF' => 'Midfielder',
+        'FW' => 'Forward',
+        _ => position.toUpperCase(),
+      },
+    );
 
 class _ActiveDirectoryFilterChip extends StatelessWidget {
   const _ActiveDirectoryFilterChip({
@@ -564,7 +567,7 @@ class _ActiveDirectoryFilterChip extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(tr(context, label), style: Body2_b.style),
+                Text(label, style: Body2_b.style),
                 const SizedBox(width: 4),
                 const Icon(Icons.close, size: AppDropdownTokens.iconSize),
               ],

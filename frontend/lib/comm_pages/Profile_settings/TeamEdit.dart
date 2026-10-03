@@ -219,7 +219,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(profileChangeLimitMessage(context,
-                item: tr(context, 'Favorite team'), limit: error))),
+                item: tr(context, 'Primary team'), limit: error))),
       );
     } on Object {
       if (!mounted) return;

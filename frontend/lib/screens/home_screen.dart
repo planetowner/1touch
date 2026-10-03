@@ -410,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ElevatedButton(
                 key: const ValueKey('home-retry-button'),
                 onPressed: () => _loadHome(refreshContent: true),
-                child: Text(tr(context, 'RETRY')),
+                child: Text(trUpper(context, 'Retry')),
               ),
             ],
           ),
@@ -618,7 +618,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     const SizedBox(height: 32),
                     SectionHeader(
                       key: const ValueKey('home-news-title'),
-                      title: tr(context, "NEWS"),
+                      title: trUpper(context, "News"),
                     ),
                     MyNews(
                       news: _news,

@@ -117,7 +117,7 @@ class _TeamProbabilityScreenState extends State<TeamProbabilityScreen> {
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
-            child: Text(tr(context, 'WHAT IF?'), style: Body2_b.style),
+            child: Text(trUpper(context, 'What if?'), style: Body2_b.style),
           ),
         ),
       ),

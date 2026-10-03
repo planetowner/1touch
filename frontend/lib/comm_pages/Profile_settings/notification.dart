@@ -132,7 +132,8 @@ class _NotificationListPageState extends State<NotificationListPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Following Teams
-                    Text(tr(context, "FOLLOWING TEAMS"), style: Body2_b.style),
+                    Text(trUpper(context, "Following Teams"),
+                        style: Body2_b.style),
                     const SizedBox(height: 16),
                     ...teamIds.asMap().entries.map((entry) {
                       final i = entry.key;
@@ -157,7 +158,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
 
                       // Following Players
                       Text(
-                        tr(context, "FOLLOWING PLAYERS"),
+                        trUpper(context, "Following Players"),
                         style: Body2_b.style,
                       ),
                       const SizedBox(height: 16),

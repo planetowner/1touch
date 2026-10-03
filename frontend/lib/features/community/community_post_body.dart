@@ -60,7 +60,7 @@ class CommunityPostBody extends StatelessWidget {
               TextButton(
                 key: const ValueKey('community-posts-retry'),
                 onPressed: onRetry,
-                child: Text(tr(context, 'RETRY')),
+                child: Text(trUpper(context, 'Retry')),
               ),
             ],
           ),

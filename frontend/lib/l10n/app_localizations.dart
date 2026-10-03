@@ -45,6 +45,14 @@ String tr(BuildContext context, String message,
         [Map<String, Object> arguments = const {}]) =>
     translateMessage(Localizations.localeOf(context), message, arguments);
 
+// 대소문자 때문에 번역 키를 나누지 않고 영어 표시만 바꿔요.
+String trUpper(BuildContext context, String message) {
+  final localized = tr(context, message);
+  return Localizations.localeOf(context).languageCode == 'en'
+      ? localized.toUpperCase()
+      : localized;
+}
+
 String profileChangeLimitMessage(
   BuildContext context, {
   required String item,
@@ -91,7 +99,7 @@ String translateMessage(Locale locale, String message,
 String playerCategoryLabel(BuildContext context, String label) =>
     tr(context, label == 'Save' ? 'Shot stopping' : label);
 
-String appStatLabel(BuildContext context, String label) {
+String trTitle(BuildContext context, String label) {
   final localized = tr(context, label);
   if (Localizations.localeOf(context).languageCode != 'en') return localized;
   const minorWords = {
@@ -123,6 +131,9 @@ String appStatLabel(BuildContext context, String label) {
     return '${lower[0].toUpperCase()}${lower.substring(1)}';
   });
 }
+
+String appStatLabel(BuildContext context, String label) =>
+    trTitle(context, label);
 
 String playerMetricLabel(BuildContext context, String label) =>
     appStatLabel(context, label);

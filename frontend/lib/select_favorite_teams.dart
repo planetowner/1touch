@@ -534,7 +534,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                 disabledBackgroundColor:
                                     appColors.subtleBackground,
                               ),
-                              child: Text(tr(context, "CONTINUE"),
+                              child: Text(trUpper(context, "Continue"),
                                   style: Body2_b.style
                                       .copyWith(color: colors.surface)),
                             ),

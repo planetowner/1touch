@@ -119,7 +119,7 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(tr(context, 'PROBABILITY'), style: Body2_b.style),
+          Text(trUpper(context, 'Probability'), style: Body2_b.style),
           const SizedBox(height: 16),
           if (_isLoading && _snapshot == null)
             const Center(

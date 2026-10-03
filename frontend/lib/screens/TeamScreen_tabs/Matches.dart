@@ -362,7 +362,7 @@ class _MatchesTabState extends State<MatchesTab> {
         if (liveMatches.isNotEmpty)
           _MatchSectionData(
             type: _MatchSection.live,
-            title: tr(context, 'LIVE'),
+            title: trUpper(context, 'Live'),
             matches: liveMatches,
             key: _liveSectionKey,
           ),

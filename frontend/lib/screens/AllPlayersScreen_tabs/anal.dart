@@ -514,7 +514,7 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    tr(context, 'ROUND'),
+                    trUpper(context, 'Round'),
                     key: const ValueKey('player-performance-round-label'),
                     style: Body2_b.style,
                   ),

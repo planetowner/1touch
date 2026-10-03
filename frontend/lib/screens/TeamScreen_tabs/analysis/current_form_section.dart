@@ -269,7 +269,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                   ),
                 ),
                 TextButton(
-                    onPressed: _retryLoad, child: Text(tr(context, 'RETRY'))),
+                    onPressed: _retryLoad,
+                    child: Text(trUpper(context, 'Retry'))),
               ],
             )
           else if (_comparison == null || _comparison!.current.points.isEmpty)
@@ -351,7 +352,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final colors = Theme.of(context).colorScheme;
     final selectedOption = _selectedOption;
     final label = selectedOption == null
-        ? tr(context, 'SEASON')
+        ? trUpper(context, 'Season')
         : compactSeasonLabel(selectedOption.seasonName);
 
     return InkWell(
@@ -696,7 +697,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           Align(
             alignment: Alignment.centerRight,
             child: Text(
-              tr(context, 'ROUND'),
+              trUpper(context, 'Round'),
               key: const ValueKey('analysis-current-form-round-label'),
               style: Body2_b.style,
             ),

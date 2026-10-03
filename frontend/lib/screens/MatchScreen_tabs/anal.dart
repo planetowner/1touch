@@ -390,7 +390,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       // 키패스는 Opta 전술 분석과 별개인 Sportmonks 팀 통계를 사용해요.
       if (keyPasses != null)
         _buildStatRow(
-          tr(context, 'Key Passes'),
+          trTitle(context, 'Key passes'),
           keyPasses.home,
           keyPasses.away,
         ),
@@ -410,7 +410,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(tr(context, 'ATTACK'), style: Body2_b.style),
+              Text(trUpper(context, 'Attack'), style: Body2_b.style),
               const SizedBox(width: 4),
               const AppInfoButton(
                 key: ValueKey('match-analysis-attack-info'),
@@ -474,7 +474,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(tr(context, "POSSESSION"), style: Body2_b.style),
+          Text(trUpper(context, "Possession"), style: Body2_b.style),
           const SizedBox(height: 16),
           Container(
             key: const ValueKey('match-analysis-possession-card'),
@@ -868,7 +868,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       (code: 'tackles-won', label: tr(context, 'Tackles Won')),
       (code: 'interceptions', label: tr(context, 'Interceptions')),
       (code: 'blocked-shots', label: tr(context, 'Blocks')),
-      (code: 'duels-won', label: tr(context, 'Duels Won')),
+      (code: 'duels-won', label: trTitle(context, 'Duels won')),
       (code: 'clearances', label: tr(context, 'Clearances')),
     ];
     return [

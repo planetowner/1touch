@@ -360,7 +360,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     }
 
     final label = selectedSeason == null
-        ? tr(context, 'SEASON')
+        ? trUpper(context, 'Season')
         : compactSeasonLabel(selectedSeason.seasonName);
 
     return InkWell(

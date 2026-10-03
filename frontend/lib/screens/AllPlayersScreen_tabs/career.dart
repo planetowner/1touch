@@ -185,7 +185,7 @@ class _CareerTabState extends State<CareerTab> {
                 .any((competition) => competition.id == _competition))
         .toList();
     final label = _competition == null
-        ? tr(context, 'ALL LEAGUES')
+        ? trUpper(context, 'All leagues')
         : competitions[_competition] ?? 'COMPETITION';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -399,7 +399,7 @@ class _CareerTabState extends State<CareerTab> {
           children: [
             ListTile(
               title: Text(
-                tr(context, 'ALL LEAGUES'),
+                trUpper(context, 'All leagues'),
                 style: Body2_b.style,
               ),
               trailing: _competition == null ? const Icon(Icons.check) : null,

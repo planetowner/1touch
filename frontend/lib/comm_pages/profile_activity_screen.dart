@@ -135,7 +135,7 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
                     ),
                     AppSegmentedToggleOption(
                       value: ProfileActivityTab.comments,
-                      label: tr(context, 'COMMENTS'),
+                      label: trUpper(context, 'Comments'),
                       contentKey:
                           const ValueKey('profile-activity-tab-comments'),
                     ),
