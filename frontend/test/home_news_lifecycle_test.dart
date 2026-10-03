@@ -14,6 +14,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/screens/home_screen.dart';
 import 'package:onetouch/features/home/screen/home_screen_features.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
+import 'package:onetouch/features/home/home_content_image.dart';
 
 void main() {
   setUpAppCatalog();
@@ -24,7 +25,8 @@ void main() {
       final homeReady = Completer<void>();
       final home = _HomeRepository(ready: homeReady.future);
       final content = _ContentRepository();
-      const provider = NetworkImage('https://example.com/early-news.jpg');
+      final provider =
+          homeContentImageProvider('https://example.com/early-news.jpg');
       final imageReady = Completer<ImageInfo>();
       final imageStream = _RecordingImageStream(imageReady.future);
       final cache = PaintingBinding.instance.imageCache;

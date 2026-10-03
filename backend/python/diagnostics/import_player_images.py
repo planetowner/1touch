@@ -11,11 +11,10 @@ import json
 from pathlib import Path
 import re
 
-from botocore.exceptions import ClientError
 from PIL import Image
 import requests
 
-from one_touch_loader.core.player_images import IMAGE_CACHE_CONTROL, image_object_key, image_url
+from one_touch_loader.core.public_images import PLAYER_IMAGE, upload_public_image
 
 
 def scan_images(folders):
@@ -68,7 +67,7 @@ def build_plan(images, players, base_url):
             continue
         matched.append({**image, "player_id": player["player_id"], "display_name": player["display_name"],
                         "previous_image_path": player["image_path"],
-                        "image_path": image_url(base_url, image["sha256"])})
+                        "image_path": PLAYER_IMAGE.url(base_url, image["sha256"])})
     unique = {item["sha256"]: item for item in matched}
     return {"summary": {"db_players": len(players), "image_ids": len(images), "matched_players": len(matched),
                         "unmatched_files": len(unmatched), "db_players_without_file": len(players) - len(matched),
@@ -80,20 +79,8 @@ def upload_image(client, bucket, item):
     data = Path(item["path"]).read_bytes()
     if hashlib.sha256(data).hexdigest() != item["sha256"]:
         raise ValueError(f"Image changed after inspection: {item['path']}")
-    key = image_object_key(item["sha256"])
-    try:
-        stored = client.head_object(Bucket=bucket, Key=key)
-    except ClientError as exc:
-        if exc.response.get("Error", {}).get("Code") not in {"404", "NoSuchKey", "NotFound"}:
-            raise
-    else:
-        if (stored["ContentLength"] != len(data) or stored.get("ContentType") != "image/png"
-                or stored.get("Metadata", {}).get("sha256") != item["sha256"]):
-            raise ValueError(f"Stored image differs from its content key: {key}")
-        return False
-    client.put_object(Bucket=bucket, Key=key, Body=data, ContentType="image/png",
-                      CacheControl=IMAGE_CACHE_CONTROL, Metadata={"sha256": item["sha256"]})
-    return True
+    _, uploaded = upload_public_image(client, bucket, PLAYER_IMAGE, data)
+    return uploaded
 
 
 def verify_public_image(item):
@@ -161,7 +148,7 @@ def main():
     parser.add_argument("--output", type=Path)
     parser.add_argument("--apply", action="store_true")
     args = parser.parse_args()
-    image_url(args.base_url, "0" * 64)
+    PLAYER_IMAGE.url(args.base_url, "0" * 64)
     images = scan_images(args.folders)
     from one_touch_loader.core.db import get_conn, transaction
     with closing(get_conn()) as connection, connection.cursor(dictionary=True) as cursor:

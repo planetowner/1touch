@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/features/home/screen/home_screen_features.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
+import 'package:onetouch/features/home/home_content_image.dart';
 import 'package:onetouch/models/home_content_item.dart';
 
 void main() {
@@ -51,6 +54,12 @@ void main() {
 
   testWidgets('image failure keeps article title and destination enabled',
       (tester) async {
+    final provider = homeContentImageProvider('https://example.com/broken.jpg');
+    final ready = Completer<ImageInfo>();
+    final cache = PaintingBinding.instance.imageCache;
+    cache.putIfAbsent(
+        provider, () => OneFrameImageStreamCompleter(ready.future));
+    addTearDown(() => cache.evict(provider));
     await tester.pumpWidget(MaterialApp(
         locale: const Locale('ko'),
         supportedLocales: appSupportedLocales,
@@ -64,6 +73,7 @@ void main() {
               imageUrl: 'https://example.com/broken.jpg',
               destinationUrl: 'https://example.com/story'),
         ]))));
+    ready.completeError(StateError('image offline'));
     await tester.pumpAndSettle();
     expect(find.text('실제 기사'), findsOneWidget);
     expect(find.byIcon(Icons.article_outlined), findsOneWidget);

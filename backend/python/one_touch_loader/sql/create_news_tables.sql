@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS news_articles (
     url TEXT NOT NULL,
     url_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
     image_url TEXT NULL,
+    thumbnail_digest CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL,
     published_at DATETIME(6) NOT NULL,
     collected_at DATETIME(6) NOT NULL,
     UNIQUE KEY uq_news_url (url_hash),
