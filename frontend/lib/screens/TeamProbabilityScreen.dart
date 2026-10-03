@@ -14,6 +14,7 @@ import 'package:onetouch/data/team_probability/team_probability_repository.dart'
 import 'package:onetouch/data/team_probability/team_probability_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
 import 'package:onetouch/models/team_probability.dart';
 import 'package:onetouch/screens/team_probability_what_if_screen.dart';
 
@@ -584,7 +585,7 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
           Align(
             alignment: Alignment.centerRight,
             child: Text(
-              tr(context, 'ROUND'),
+              trUpper(context, 'Round'),
               key: const ValueKey('probability-history-round-label'),
               style: Body2_b.style,
             ),
@@ -607,7 +608,8 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
     const contentGap = 8.0;
     const tooltipPadding = 8.0;
     final textStyle = Eyebrow.style.copyWith(fontWeight: FontWeight.w700);
-    final roundLabel = tr(context, 'Round {round}', {'round': point.played});
+    final roundLabel = formatRoundLabel(
+        roundName: '${point.played}', locale: Localizations.localeOf(context))!;
     final valueLabel = '${(point.probability * 100).round()}%';
     final roundPainter = TextPainter(
       text: TextSpan(text: roundLabel, style: textStyle),
@@ -836,6 +838,8 @@ class _ProjectedPointsCard extends StatelessWidget {
     final upper =
         (projectedPoints.likelyRange.upper / maxPoints).clamp(0.0, 1.0);
     final delta = projectedPoints.changePoints;
+    final rangeParts =
+        tr(context, 'Likely range of {range} pts').split('{range}');
 
     return Container(
       key: const ValueKey('projected-points-card'),
@@ -943,14 +947,15 @@ class _ProjectedPointsCard extends StatelessWidget {
             TextSpan(
               children: [
                 TextSpan(
-                  text: '${tr(context, 'Likely range of')} ',
+                  text: rangeParts[0],
                   style: Body1.style,
                 ),
                 TextSpan(
                   text:
-                      '${projectedPoints.likelyRange.lower}–${projectedPoints.likelyRange.upper} pts',
+                      '${projectedPoints.likelyRange.lower}–${projectedPoints.likelyRange.upper}',
                   style: Body1_b.style,
                 ),
+                TextSpan(text: rangeParts[1], style: Body1.style),
               ],
             ),
           ),
