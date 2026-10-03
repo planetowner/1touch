@@ -9,7 +9,7 @@ from fastapi import HTTPException
 from fastapi.responses import Response, StreamingResponse
 from PIL import Image, UnidentifiedImageError
 from .auth_security import new_token, required_setting
-from ...core.player_images import IMAGE_CACHE_CONTROL, image_object_key
+from ...core.public_images import IMAGE_CACHE_CONTROL, PublicImage
 
 IMAGE_LIMIT = 10_000_000
 VIDEO_LIMIT = 100_000_000
@@ -60,23 +60,23 @@ def object_operation(operation: str, **kwargs):
         raise HTTPException(502, "Attachment storage unavailable") from exc
 
 
-def player_image_content(digest: str):
+def public_image_content(image: PublicImage, digest: str):
     try:
-        # 공개 경로는 선수 사진 전용 접두사만 읽고 회원 첨부파일에는 접근하지 않아요.
-        response = r2_client().get_object(Bucket=required_setting("R2_BUCKET"), Key=image_object_key(digest))
+        # 라우트에서 정한 공개 이미지 접두사만 읽고 회원 첨부파일에는 접근하지 않아요.
+        response = r2_client().get_object(Bucket=required_setting("R2_BUCKET"), Key=image.object_key(digest))
     except ClientError as exc:
         if exc.response.get("Error", {}).get("Code") in {"NoSuchKey", "404"}:
-            raise HTTPException(404, "Player image not found") from exc
-        raise HTTPException(502, "Player image storage unavailable") from exc
+            raise HTTPException(404, "Image not found") from exc
+        raise HTTPException(502, "Image storage unavailable") from exc
     except BotoCoreError as exc:
-        raise HTTPException(502, "Player image storage unavailable") from exc
-    # 150px PNG는 작아서 한 번에 읽어요. 영상의 범위 요청·비공개 캐시 정책은 유지해요.
+        raise HTTPException(502, "Image storage unavailable") from exc
+    # 미리 줄여 둔 공개 이미지는 한 번에 읽어요. 비공개 영상은 별도 범위 응답을 써요.
     stream = response["Body"]
     try:
         content = stream.read()
     finally:
         stream.close()
-    return Response(content, media_type="image/png", headers={
+    return Response(content, media_type=image.content_type, headers={
         "Cache-Control": IMAGE_CACHE_CONTROL, "X-Content-Type-Options": "nosniff",
         "ETag": f'"{digest}"',
     })

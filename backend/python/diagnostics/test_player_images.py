@@ -20,7 +20,7 @@ with patch("mysql.connector.pooling.MySQLConnectionPool"):
     from diagnostics.test_fixture_details import _SqliteCursor
     from one_touch_loader.api.routes.players import router
     from one_touch_loader.api.services import media_storage
-    from one_touch_loader.core.player_images import IMAGE_CACHE_CONTROL, image_url
+    from one_touch_loader.core.public_images import IMAGE_CACHE_CONTROL, PLAYER_IMAGE
     from one_touch_loader.loaders import players_loader
 
 
@@ -181,7 +181,7 @@ class ImageDatabaseTests(unittest.TestCase):
         self.sql.execute("INSERT INTO players(player_id,display_name,image_path) VALUES(1,'Name','old')")
         self.sql.execute("INSERT INTO players(player_id,display_name,image_path) VALUES(2,'Untouched','keep')")
         self.sql.execute("INSERT INTO player_external_ids VALUES(1,'sportmonks','101')")
-        items = [{"player_id": 1, "sportmonks_id": 101, "image_path": image_url("https://api.test", "a" * 64)}]
+        items = [{"player_id": 1, "sportmonks_id": 101, "image_path": PLAYER_IMAGE.url("https://api.test", "a" * 64)}]
         with TemporaryDirectory() as folder:
             backup = Path(folder) / "before.json"
             importer.update_image_rows(connection, items, backup)

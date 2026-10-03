@@ -168,8 +168,8 @@ class _HomeContentCard extends StatelessWidget {
   Widget _buildImage() {
     final imageUrl = item.imageUrl;
     if (imageUrl != null && imageUrl.isNotEmpty) {
-      return Image.network(
-        imageUrl,
+      return Image(
+        image: homeContentImageProvider(imageUrl),
         width: 119,
         height: 68,
         fit: BoxFit.cover,

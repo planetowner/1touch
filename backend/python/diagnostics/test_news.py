@@ -241,6 +241,11 @@ class TeamMatchingRegressionTests(unittest.TestCase):
 
 
 class LoaderTests(unittest.TestCase):
+    def setUp(self):
+        thumbnails = patch.object(loader, 'refresh_news_images', return_value={'prepared': 0, 'errors': []})
+        self.thumbnails = thumbnails.start()
+        self.addCleanup(thumbnails.stop)
+
     def test_missing_feed_images_use_article_metadata_without_replacing_feed_fields(self):
         feeds = {
             'rss': '''<rss><channel><item><title>바르셀로나 경기 소식</title>
@@ -355,8 +360,17 @@ class LoaderTests(unittest.TestCase):
                                     teams=[], session=session, now=NOW)
             sources.assert_not_called()
             save.assert_not_called()
+            self.thumbnails.assert_not_called()
         self.assertIsNotNone(report['sources'][0]['error'])
         self.assertIsNone(report['sources'][1]['error'])
+
+    def test_apply_prepares_saved_images_even_when_a_feed_fails(self):
+        with patch.object(loader, 'read_source', side_effect=loader.requests.Timeout()), \
+                patch.object(loader, 'save_sources'), patch.object(loader, 'save_articles'):
+            session = Mock()
+            report = loader.refresh(apply=True, sources=[SOURCE], teams=[], session=session, now=NOW)
+        self.thumbnails.assert_called_once_with(session, NOW)
+        self.assertEqual(report['thumbnails'], {'prepared': 0, 'errors': []})
 
     def test_source_catalog_preserves_all_candidates_without_enabling_unknown_urls(self):
         sources = load_sources()
