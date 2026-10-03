@@ -168,10 +168,6 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
     TeamProbabilitySnapshot snapshot,
     TeamProbabilityCard card,
   ) {
-    final delta = card.changePercentagePoints;
-    final showDelta = delta != null && delta != 0;
-    final isUp = delta != null && delta > 0;
-
     return Container(
       key: ValueKey('team-probability-surface-${card.event}'),
       decoration: BoxDecoration(
@@ -223,53 +219,17 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
                   key: ValueKey('team-probability-footer-${card.event}'),
                   width: double.infinity,
                   height: 71,
-                  child: Stack(
-                    children: [
-                      Align(
-                        alignment: Alignment.bottomLeft,
-                        child: FittedBox(
-                          alignment: Alignment.bottomLeft,
-                          fit: BoxFit.scaleDown,
-                          child: ProbabilityNumber(
-                            card: card,
-                            keyPrefix: 'team-probability',
-                            keySuffix: '-${card.event}',
-                          ),
-                        ),
+                  child: Align(
+                    alignment: Alignment.bottomLeft,
+                    child: FittedBox(
+                      alignment: Alignment.bottomLeft,
+                      fit: BoxFit.scaleDown,
+                      child: ProbabilityNumber(
+                        card: card,
+                        keyPrefix: 'team-probability',
+                        keySuffix: '-${card.event}',
                       ),
-                      if (showDelta)
-                        Align(
-                          alignment: Alignment.topLeft,
-                          child: Row(
-                            key: ValueKey(
-                              'team-probability-delta-row-${card.event}',
-                            ),
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(
-                                isUp
-                                    ? Icons.arrow_drop_up
-                                    : Icons.arrow_drop_down,
-                                key: ValueKey(
-                                  'team-probability-delta-icon-${card.event}',
-                                ),
-                                color: isUp
-                                    ? const Color(0xFF36CC7A)
-                                    : const Color(0xFFFF5C5C),
-                                size: 24,
-                              ),
-                              Text(
-                                '${_formatDelta(delta.abs())}%',
-                                key: ValueKey(
-                                  'team-probability-delta-${card.event}',
-                                ),
-                                style: Heading5.style.copyWith(height: 1.1),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                    ),
                   ),
                 ),
               ],
@@ -278,10 +238,5 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
         ),
       ),
     );
-  }
-
-  String _formatDelta(double value) {
-    final fixed = value.toStringAsFixed(2);
-    return fixed.replaceFirst(RegExp(r'\.?0+$'), '');
   }
 }

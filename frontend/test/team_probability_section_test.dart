@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/team_probability/team_probability_repository.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
+import 'package:onetouch/features/team/probability/probability_number.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_probability.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/analysis.dart';
@@ -219,55 +220,22 @@ void main() {
       app_style.lightModeCardShadows,
     );
 
-    final upIcon = tester.widget<Icon>(
-      find.byKey(
-        const ValueKey('team-probability-delta-icon-league_winner'),
-      ),
-    );
-    expect(upIcon.icon, Icons.arrow_drop_up);
-    expect(upIcon.color, const Color(0xFF36CC7A));
-    expect(find.text('1.25%'), findsOneWidget);
-
-    final downIcon = tester.widget<Icon>(
-      find.byKey(
-        const ValueKey('team-probability-delta-icon-direct_relegation'),
-      ),
-    );
-    expect(downIcon.icon, Icons.arrow_drop_down);
-    expect(downIcon.color, const Color(0xFFFF5C5C));
-    expect(find.text('2.5%'), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('team-probability-delta-icon-top_4')),
-      findsNothing,
-    );
-    expect(
-      find.byKey(const ValueKey('team-probability-delta-icon-top_6')),
-      findsNothing,
-    );
-    final probabilityTop = tester.getTopLeft(
-      find.byKey(
-        const ValueKey('team-probability-value-league_winner'),
-      ),
-    );
-    final deltaBottom = tester.getBottomLeft(
-      find.byKey(
-        const ValueKey('team-probability-delta-row-league_winner'),
-      ),
-    );
-    expect(probabilityTop.dy - deltaBottom.dy, closeTo(4, 1));
-    expect(
-      tester
-          .getTopLeft(
-            find.byKey(
-                const ValueKey('team-probability-delta-row-league_winner')),
-          )
-          .dx,
-      tester
-          .getTopLeft(
-            find.byKey(const ValueKey('team-probability-value-league_winner')),
-          )
-          .dx,
-    );
+    for (final event in [
+      'league_winner',
+      'top_4',
+      'top_6',
+      'direct_relegation',
+    ]) {
+      expect(find.byKey(ValueKey('team-probability-delta-row-$event')),
+          findsNothing);
+      final footer = find.byKey(ValueKey('team-probability-footer-$event'));
+      final number = find.descendant(
+        of: footer,
+        matching: find.byType(ProbabilityNumber),
+      );
+      expect(tester.getBottomLeft(number).dy,
+          closeTo(tester.getBottomLeft(footer).dy, 0.1));
+    }
     expect(tester.takeException(), isNull);
   });
 
