@@ -173,7 +173,7 @@ class _StandingMovement extends StatelessWidget {
             height: 24,
           ),
         ),
-        Text('${delta.abs()}', style: Eyebrow.style.copyWith(height: 1.3)),
+        Text('${delta.abs()}', style: Body2.style.copyWith(height: 1.3)),
       ],
     );
   }

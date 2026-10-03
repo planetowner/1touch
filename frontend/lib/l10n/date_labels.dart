@@ -76,12 +76,12 @@ String relativeDateLabel(DateTime? date,
   }
   if (days == 1) return translateMessage(locale, 'Yesterday');
   if (days < 7) {
-    return translateMessage(locale, '{count} days ago', {'count': days});
+    return translateMessage(locale, '{count} Days Ago', {'count': days});
   }
   // 경기·뉴스·하이라이트는 7일마다 주 수를 늘리고 월·년 단위로 바꾸지 않아요.
   final weeks = days ~/ 7;
-  if (weeks == 1) return translateMessage(locale, 'Last week');
-  return translateMessage(locale, '{count} weeks ago', {'count': weeks});
+  if (weeks == 1) return translateMessage(locale, 'Last Week');
+  return translateMessage(locale, '{count} Weeks Ago', {'count': weeks});
 }
 
 String _fixtureDayLabel(DateTime local, Locale locale) =>

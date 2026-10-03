@@ -797,6 +797,7 @@ class _MatchSectionHeader extends StatelessWidget {
 
   static const double sectionHeight = 34;
   static const double cardSpacing = 8;
+  static const double stickySpacing = 8;
 
   @override
   Widget build(BuildContext context) {
@@ -860,10 +861,15 @@ class _AnimatedStickyHeaderSlot extends StatelessWidget {
       child: visible
           ? SizedBox(
               key: ValueKey('matches-${section.type.name}-header'),
-              height: _MatchSectionHeader.sectionHeight,
-              child: _MatchSectionHeader(
-                title: section.title,
-                live: section.type == _MatchSection.live,
+              height: _MatchSectionHeader.sectionHeight +
+                  _MatchSectionHeader.stickySpacing,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    top: _MatchSectionHeader.stickySpacing),
+                child: _MatchSectionHeader(
+                  title: section.title,
+                  live: section.type == _MatchSection.live,
+                ),
               ),
             )
           : SizedBox(

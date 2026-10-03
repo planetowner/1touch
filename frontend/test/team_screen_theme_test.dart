@@ -1285,6 +1285,15 @@ void main() {
         expect(icon.color, scenario.color);
         expect(value.data, scenario.value);
         expect(value.style?.color, scenario.color);
+        final position = tester.widget<Text>(
+          find
+              .descendant(
+                of: find.byKey(const ValueKey('team-context-label')),
+                matching: find.byType(Text),
+              )
+              .first,
+        );
+        expect(value.style?.fontSize, position.style?.fontSize);
       }
       expect(tester.takeException(), isNull);
     });
