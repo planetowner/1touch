@@ -8,14 +8,18 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/notifications/notification_inbox.dart';
 import 'package:onetouch/data/notifications/notification_inbox_repository.dart';
 import 'package:onetouch/data/notifications/notification_inbox_repository_provider.dart';
+import 'package:onetouch/data/notifications/notification_unread_controller.dart';
+import 'package:onetouch/data/notifications/notification_unread_controller_provider.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 
 class NotificationInboxPage extends StatefulWidget {
-  const NotificationInboxPage({super.key, this.repository});
+  const NotificationInboxPage(
+      {super.key, this.repository, this.unreadController});
 
   final NotificationInboxRepository? repository;
+  final NotificationUnreadController? unreadController;
 
   @override
   State<NotificationInboxPage> createState() => _NotificationInboxPageState();
@@ -106,6 +110,10 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
   Future<void> _markRead(int notificationId) async {
     try {
       await _repository.markReadThrough(notificationId);
+      if (widget.repository == null || widget.unreadController != null) {
+        await (widget.unreadController ?? notificationUnreadController)
+            .refresh();
+      }
     } on Object catch (error) {
       debugPrint('Unable to mark notifications as read: $error');
     }

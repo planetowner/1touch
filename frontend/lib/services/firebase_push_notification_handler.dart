@@ -7,6 +7,7 @@ import 'package:onetouch/services/device_notification_service.dart';
 import 'package:onetouch/services/notification_message_templates.dart';
 
 typedef PushDestinationHandler = void Function(String destination);
+typedef CommunityNotificationHandler = void Function();
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -77,6 +78,7 @@ class FirebasePushNotificationHandler {
   final DeviceNotificationService _deviceNotifications;
   StreamSubscription<RemoteMessage>? _foregroundSubscription;
   PushDestinationHandler? _onDestination;
+  CommunityNotificationHandler? _onCommunityNotification;
   String? _initialDestination;
 
   bool get _isSupported =>
@@ -84,8 +86,12 @@ class FirebasePushNotificationHandler {
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS);
 
-  Future<void> start({required PushDestinationHandler onDestination}) async {
+  Future<void> start({
+    required PushDestinationHandler onDestination,
+    CommunityNotificationHandler? onCommunityNotification,
+  }) async {
     _onDestination = onDestination;
+    _onCommunityNotification = onCommunityNotification;
     if (!_isSupported || _foregroundSubscription != null) return;
 
     await _messaging.setForegroundNotificationPresentationOptions(
@@ -110,6 +116,9 @@ class FirebasePushNotificationHandler {
   Future<void> _showForegroundMessage(RemoteMessage message) async {
     try {
       final payload = _payload(message);
+      if (payload?.kind.startsWith('post_') ?? false) {
+        _onCommunityNotification?.call();
+      }
       final notification = message.notification;
       final title = notification?.title?.trim();
       final body = notification?.body?.trim();

@@ -4,6 +4,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/features/match_info/live_match_motion.dart';
+import 'package:onetouch/features/notifications/unread_notification_bell_icon.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -16,6 +17,7 @@ class CommunitySliverAppBar extends StatelessWidget {
     required this.onSearch,
     required this.onNotifications,
     required this.onActivity,
+    required this.hasUnreadNotifications,
   });
 
   final Color pageBackground;
@@ -23,6 +25,7 @@ class CommunitySliverAppBar extends StatelessWidget {
   final VoidCallback onSearch;
   final VoidCallback onNotifications;
   final VoidCallback onActivity;
+  final bool hasUnreadNotifications;
 
   @override
   Widget build(BuildContext context) {
@@ -88,28 +91,10 @@ class CommunitySliverAppBar extends StatelessWidget {
                 style: IconButton.styleFrom(
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                icon: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Icon(
-                      Icons.notifications_none_rounded,
-                      size: 32,
-                      color: foreground,
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Container(
-                        key: const ValueKey('community-notification-badge'),
-                        width: 9,
-                        height: 9,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFD82457),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ],
+                icon: UnreadNotificationBellIcon(
+                  color: foreground,
+                  hasUnread: hasUnreadNotifications,
+                  badgeKey: const ValueKey('community-notification-badge'),
                 ),
               ),
               const SizedBox(width: 16),

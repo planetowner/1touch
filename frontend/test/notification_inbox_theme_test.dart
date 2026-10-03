@@ -6,6 +6,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/notifications/notification_inbox.dart';
 import 'package:onetouch/data/notifications/notification_inbox_repository.dart';
+import 'package:onetouch/data/notifications/notification_unread_controller.dart';
 
 void main() {
   Future<void> pumpInbox(
@@ -13,6 +14,7 @@ void main() {
     required ThemeData theme,
     required Size size,
     NotificationInboxRepository? repository,
+    NotificationUnreadController? unreadController,
   }) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -21,6 +23,7 @@ void main() {
         theme: theme,
         home: NotificationInboxPage(
           repository: repository ?? _StaticNotificationInboxRepository(),
+          unreadController: unreadController,
         ),
       ),
     );
@@ -30,11 +33,17 @@ void main() {
   testWidgets('notification inbox follows the compact light design',
       (tester) async {
     final repository = _StaticNotificationInboxRepository();
+    final unreadController =
+        NotificationUnreadController(repository: repository);
+    addTearDown(unreadController.dispose);
+    await unreadController.refresh();
+    expect(unreadController.hasUnread, isTrue);
     await pumpInbox(
       tester,
       theme: app_style.whitetheme,
       size: const Size(320, 568),
       repository: repository,
+      unreadController: unreadController,
     );
 
     final scaffold = tester.widget<Scaffold>(
@@ -55,6 +64,7 @@ void main() {
     expect(find.text('Comment'), findsOneWidget);
     expect(find.text('TEAM'), findsNothing);
     expect(repository.markedThroughId, 8);
+    expect(unreadController.hasUnread, isFalse);
     expect(tester.takeException(), isNull);
   });
 
@@ -111,6 +121,7 @@ void main() {
 class _StaticNotificationInboxRepository
     implements NotificationInboxRepository {
   int? markedThroughId;
+  int unreadCount = 2;
 
   @override
   Future<NotificationInboxPageData> load({
@@ -150,12 +161,13 @@ class _StaticNotificationInboxRepository
             destination: '/notifications/post/12',
           ),
         ],
-        unreadCount: 2,
+        unreadCount: unreadCount,
         nextBeforeId: null,
       );
 
   @override
   Future<void> markReadThrough(int notificationId) async {
     markedThroughId = notificationId;
+    unreadCount = 0;
   }
 }

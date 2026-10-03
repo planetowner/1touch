@@ -44,6 +44,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(find.byKey(const ValueKey('profile-back-button')), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+      expect(find.byKey(const ValueKey('profile-notification-badge')),
+          findsNothing);
+
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
       final statCard = tester.widget<Container>(
         find.byKey(const ValueKey('profile-stat-card')),

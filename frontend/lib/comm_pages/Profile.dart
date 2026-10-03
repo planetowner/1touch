@@ -1,9 +1,11 @@
 // ignore_for_file: file_names
 
+import 'dart:async';
+
 import "package:flutter/material.dart";
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -28,6 +30,8 @@ import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/profile_activity_counts.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/data/betting/betting_repository_provider.dart';
+import 'package:onetouch/data/notifications/notification_unread_controller_provider.dart';
+import 'package:onetouch/features/notifications/unread_notification_bell_icon.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class Profile extends StatefulWidget {
@@ -93,6 +97,9 @@ class _ProfileState extends State<Profile> {
       });
 
     _loadProfile();
+    if (authSession.isAuthenticated) {
+      unawaited(notificationUnreadController.refresh());
+    }
   }
 
   Future<void> _loadProfile() async {
@@ -267,13 +274,24 @@ class _ProfileState extends State<Profile> {
                 clipBehavior: Clip.antiAlias,
                 title: Padding(
                   padding: const EdgeInsets.only(left: 24),
-                  child: SvgPicture.asset(
-                    'assets/app_logo.svg',
-                    height: 23,
-                    width: 120,
-                    clipBehavior: Clip.antiAlias,
-                    colorFilter:
-                        ColorFilter.mode(appBarForeground, BlendMode.srcIn),
+                  child: SizedBox(
+                    width: 32,
+                    height: 24,
+                    child: IconButton(
+                      key: const ValueKey('profile-back-button'),
+                      tooltip: tr(context, 'Back'),
+                      padding: EdgeInsets.zero,
+                      iconSize: 20,
+                      onPressed: () {
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.go('/home');
+                        }
+                      },
+                      icon: Icon(Icons.arrow_back_ios_new,
+                          color: appBarForeground),
+                    ),
                   ),
                 ),
                 actions: [
@@ -281,28 +299,18 @@ class _ProfileState extends State<Profile> {
                     padding: const EdgeInsets.only(right: 8),
                     child: Row(
                       children: [
-                        // Bell icon with unread badge
-                        Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            IconButton(
-                              onPressed: () => context.push('/notifications'),
-                              icon: Icon(Icons.notifications_none_rounded,
-                                  size: 32, color: appBarForeground),
+                        ListenableBuilder(
+                          listenable: notificationUnreadController,
+                          builder: (context, _) => IconButton(
+                            key: const ValueKey('profile-notifications-button'),
+                            onPressed: () => context.push('/notifications'),
+                            icon: UnreadNotificationBellIcon(
+                              color: appBarForeground,
+                              hasUnread: notificationUnreadController.hasUnread,
+                              badgeKey:
+                                  const ValueKey('profile-notification-badge'),
                             ),
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: Container(
-                                width: 9,
-                                height: 9,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFD82457),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                         IconButton(
                           onPressed: () => context.push('/search'),

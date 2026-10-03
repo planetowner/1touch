@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
+import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/community/community_repository_provider.dart'
@@ -18,6 +19,7 @@ import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/data/notifications/notification_unread_controller_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/community_ban.dart';
 import 'package:onetouch/models/post.dart';
@@ -92,6 +94,9 @@ class _CommunityState extends State<Community>
     _loadTeam();
     _loadLiveStatus();
     _loadFollowerCount();
+    if (authSession.isAuthenticated) {
+      notificationUnreadController.refresh();
+    }
 
     final tabCount = CommunityPostTabHeader.categories.length;
     _postsByTab = List.generate(tabCount, (_) => const <Post>[]);
@@ -183,6 +188,9 @@ class _CommunityState extends State<Community>
       _rulesVisitGeneration++;
       _checkedRulesThisVisit = false;
       if (active) {
+        if (authSession.isAuthenticated) {
+          notificationUnreadController.refresh();
+        }
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _showFirstVisitRules();
         });
@@ -213,6 +221,7 @@ class _CommunityState extends State<Community>
   Future<void> _refreshCommunity() async {
     _checkedRulesThisVisit = false;
     await Future.wait<void>([
+      if (authSession.isAuthenticated) notificationUnreadController.refresh(),
       _loadLiveStatus(),
       _loadFollowerCount(),
       _loadPosts(preserveCurrentPosts: true, forceRefresh: true),
@@ -500,13 +509,18 @@ class _CommunityState extends State<Community>
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                  CommunitySliverAppBar(
-                    pageBackground: pageBackground,
-                    opacityFactor: opacityFactor,
-                    onSearch: () => context.push('/search'),
-                    onNotifications: () => context.push('/notifications'),
-                    onActivity: () =>
-                        context.push('/profile/activity?tab=posts'),
+                  ListenableBuilder(
+                    listenable: notificationUnreadController,
+                    builder: (context, _) => CommunitySliverAppBar(
+                      pageBackground: pageBackground,
+                      opacityFactor: opacityFactor,
+                      hasUnreadNotifications:
+                          notificationUnreadController.hasUnread,
+                      onSearch: () => context.push('/search'),
+                      onNotifications: () => context.push('/notifications'),
+                      onActivity: () =>
+                          context.push('/profile/activity?tab=posts'),
+                    ),
                   ),
                   CommunityTeamHeader(
                     team: team,
