@@ -341,7 +341,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: _loadLatestHeadToHead,
-                  child: Text(tr(context, 'RETRY')),
+                  child: Text(trUpper(context, 'Retry')),
                 ),
               ],
             ),
@@ -424,7 +424,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(tr(context, 'STANDING'), style: Body2_b.style),
+          Text(trUpper(context, 'Standing'), style: Body2_b.style),
           const SizedBox(height: 16),
           if (_standingsLoading)
             const Center(child: FootballLoadingIndicator())
@@ -477,7 +477,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(tr(context, "STANDING"), style: Body2_b.style),
+        Text(trUpper(context, "Standing"), style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
           decoration: BoxDecoration(

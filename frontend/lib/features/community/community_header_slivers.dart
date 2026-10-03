@@ -207,7 +207,7 @@ class CommunityTeamHeader extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                tr(context, 'LIVE'),
+                                trUpper(context, 'Live'),
                                 style: Body2_b.style.copyWith(
                                   color: isLight
                                       ? AppPalette.black

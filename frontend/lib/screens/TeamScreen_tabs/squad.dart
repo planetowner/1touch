@@ -272,7 +272,7 @@ class _SquadTabState extends State<SquadTab> {
   String _positionLabel(Position? pos) {
     switch (pos) {
       case Position.gk:
-        return tr(context, 'GOALKEEPER');
+        return trUpper(context, 'Goalkeeper');
       case Position.df:
         return tr(context, 'DEFENDERS');
       case Position.mf:

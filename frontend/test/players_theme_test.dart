@@ -769,7 +769,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('full-ranking-sheet')), findsOneWidget);
-    expect(find.text('1touch Ranking'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('full-ranking-sheet')),
+        matching: find.text('1TOUCH RANKING'),
+      ),
+      findsOneWidget,
+    );
     expect(find.widgetWithText(TextField, 'Look for players'), findsOneWidget);
     final search = tester.widget<Container>(
       find.byKey(const ValueKey('full-ranking-search')),

@@ -63,7 +63,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
   bool _isLiveVerifying = false;
 
   List<String> _tabsFor(String status) => switch (status) {
-        'past' => ['MATCH INFO', 'HEAD TO HEAD', 'ANALYSIS'],
+        'past' => ['MATCH INFO', 'HEAD TO HEAD', 'Analysis'],
         'live' => ['MATCH INFO', 'HEAD TO HEAD', 'LIVE CHAT'],
         _ => ['MATCH PREVIEW', 'HEAD TO HEAD'],
       };
@@ -278,7 +278,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
                       if (index > 0) const SizedBox(width: 8),
                       _MatchPillTab(
                         surfaceKey: ValueKey('match-tab-$index'),
-                        label: tr(context, tabs[index]),
+                        label: trUpper(context, tabs[index]),
                         selected: selectedIndex == index,
                         onTap: () => setState(() => selectedIndex = index),
                       ),
@@ -373,7 +373,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
           fixtureRepository: _repository,
           bettingController: _betting!,
         );
-      case 'ANALYSIS':
+      case 'Analysis':
         return AnalysisTab(
           fixture: fixture!,
           detail: _fixtureDetail,

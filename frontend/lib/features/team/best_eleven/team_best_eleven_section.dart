@@ -187,7 +187,7 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
                   style: Body2.style),
             ),
             TextButton(
-                onPressed: _retryLoad, child: Text(tr(context, 'RETRY'))),
+                onPressed: _retryLoad, child: Text(trUpper(context, 'Retry'))),
           ],
         ),
       );
@@ -258,7 +258,8 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
                   ),
                 ),
                 TextButton(
-                    onPressed: _retryLoad, child: Text(tr(context, 'RETRY'))),
+                    onPressed: _retryLoad,
+                    child: Text(trUpper(context, 'Retry'))),
               ],
             )
           else if (_lineup == null || _lineup!.players.isEmpty)

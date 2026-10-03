@@ -168,7 +168,7 @@ class _H2HTabState extends State<H2HTab> {
                     const SizedBox(height: 12),
                     TextButton(
                       onPressed: _loadHeadToHead,
-                      child: Text(tr(context, 'RETRY')),
+                      child: Text(trUpper(context, 'Retry')),
                     ),
                   ],
                 ),
@@ -390,7 +390,7 @@ class _H2HTabState extends State<H2HTab> {
       children: [
         Row(
           children: [
-            Text(tr(context, 'BETS'), style: Body2_b.style),
+            Text(trUpper(context, 'Bets'), style: Body2_b.style),
             const SizedBox(width: 4),
             const AppInfoButton(
               key: ValueKey('match-h2h-bets-info'),

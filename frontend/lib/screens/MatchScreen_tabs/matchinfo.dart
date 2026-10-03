@@ -54,7 +54,10 @@ class MatchInfoTab extends StatelessWidget {
       for (final category in playerStatistic.categories)
         if (category.metrics.map(_metricValue).whereType<String>().isNotEmpty)
           PlayerMatchStatSection(
-            category: category.label.toUpperCase(),
+            // 공격 항목은 다른 화면과 공통 키를 쓰고, 나머지는 기존 키를 유지해요.
+            category: category.code == 'attack'
+                ? 'Attack'
+                : category.label.toUpperCase(),
             rows: [
               for (final metric in category.metrics)
                 if (_metricValue(metric) case final value?)

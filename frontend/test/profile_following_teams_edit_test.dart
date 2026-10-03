@@ -109,7 +109,7 @@ void main() {
 
     expect(
         find.byKey(const ValueKey('profile-team-edit-sheet')), findsOneWidget);
-    expect(find.textContaining('Favorite team up to 3 times in 7 days'),
+    expect(find.textContaining('Primary team up to 3 times in 7 days'),
         findsOneWidget);
     expect(tester.takeException(), isNull);
   });

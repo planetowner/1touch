@@ -95,7 +95,7 @@ class _PlayerRankingBoxState extends State<PlayerRankingBox> {
                 ),
               );
             },
-            child: Text(tr(context, "See All"), style: Body2.style),
+            child: Text(trTitle(context, "See all"), style: Body2.style),
           ),
         ],
       ),
@@ -125,7 +125,7 @@ class FullRankingPopup extends StatelessWidget {
                   const SizedBox(width: 48),
                   Expanded(
                     child: Text(
-                      tr(context, "1touch Ranking"),
+                      tr(context, "1TOUCH RANKING"),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
