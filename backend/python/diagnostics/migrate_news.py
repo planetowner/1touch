@@ -1,4 +1,4 @@
-"""뉴스 전용 테이블 3개만 추가해요. 기본 실행은 읽기 전용 점검이에요."""
+"""뉴스 테이블과 썸네일 컬럼을 준비해요. 기본 실행은 읽기 전용 점검이에요."""
 import argparse
 from pathlib import Path
 
@@ -15,6 +15,11 @@ def main():
             for statement in path.read_text(encoding="utf-8").split(";"):
                 if statement.strip():
                     cur.execute(statement)
+        columns = fetch_all("""SELECT column_name FROM information_schema.columns
+            WHERE table_schema=DATABASE() AND table_name='news_articles' AND column_name='thumbnail_digest'""")
+        if not columns:
+            with transaction() as conn, conn.cursor() as cur:
+                cur.execute(path.with_name("migrate_news_thumbnails.sql").read_text(encoding="utf-8"))
     for name in names:
         columns = fetch_all("""SELECT column_name,column_type FROM information_schema.columns
             WHERE table_schema=DATABASE() AND table_name=%s ORDER BY ordinal_position""", (name,))

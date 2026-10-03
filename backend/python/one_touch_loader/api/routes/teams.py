@@ -3,7 +3,8 @@ from __future__ import annotations
 from datetime import date
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from ..deps import get_user_id
@@ -20,6 +21,8 @@ from ..schemas.highlights import TeamHighlightsResponse
 from ..repos.highlights_repo import get_team_highlights
 from ..schemas.news import TeamNewsResponse
 from ..repos.news_repo import get_team_news
+from ..services.media_storage import public_image_content
+from ...core.public_images import NEWS_IMAGE
 from ..repos.points_pace_repo import (
     build_current_form_comparison,
     get_points_pace_series,
@@ -48,12 +51,23 @@ router = APIRouter()
 @router.get("/teams/{team_id}/news", response_model=TeamNewsResponse)
 def team_news(
     team_id: int,
+    request: Request,
     language: str = Query(default="en", min_length=2, max_length=35, description="사용자 언어예요. ko는 한국어 공급자, 그 외는 영어 공급자를 사용해요."),
     user_id: int = Depends(get_user_id),
 ):
     if get_team(team_id) is None:
         raise HTTPException(404, "Team not found")
-    return get_team_news(team_id, language)
+    result = get_team_news(team_id, language)
+    for item in result["items"]:
+        if digest := item.get("thumbnail_digest"):
+            # 기존 앱도 같은 image_url 필드로 준비된 썸네일을 받아요.
+            item["image_url"] = str(request.url_for("news_image", digest=digest))
+    return result
+
+
+@router.get(NEWS_IMAGE.route, response_class=Response)
+def news_image(digest: str = Path(pattern=r"^[0-9a-f]{64}$")):
+    return public_image_content(NEWS_IMAGE, digest)
 
 
 @router.get("/teams/{team_id}/highlights", response_model=TeamHighlightsResponse)

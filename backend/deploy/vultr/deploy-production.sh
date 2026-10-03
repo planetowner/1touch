@@ -56,9 +56,9 @@ docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compo
 docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compose.yaml" exec -T db sh -c \
   'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --execute="SELECT user_id,scope,subject_id,preferences FROM user_notification_preferences LIMIT 0; SELECT notification_id,user_id,event_key,kind,scope,subject_ids,payload,fixture_id,post_id,comment_id,actor_id,created_at,expires_at,read_at,cancelled_at FROM user_notifications LIMIT 0; SELECT device_id,user_id,session_token_hash,token_hash,token,platform,locale FROM user_push_devices LIMIT 0; SELECT notification_id,device_id,status,attempts,next_attempt_at,last_error FROM notification_push_deliveries LIMIT 0; SELECT fixture_id,state_id,seen_keys,current_keys,sampled_at FROM notification_fixture_state LIMIT 0"'
 
-# 최초 배포 전에 지표·시즌 포지션 테이블을 만들어요. 없으면 API 교체 전에 멈춰요.
+# 지표·시즌 포지션 테이블과 뉴스 썸네일 컬럼이 없으면 API 교체 전에 멈춰요.
 docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compose.yaml" exec -T db sh -c \
-  'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --execute="SELECT id,input_sha256,as_of,calculated_at,checked_at,player_count,read_seconds,calculation_seconds FROM player_indicator_refresh LIMIT 0; SELECT player_id,team_id,season_id,payload FROM player_indicator_snapshots LIMIT 0; SELECT season_name,player_id,position_group_id FROM player_season_positions LIMIT 0"'
+  'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --execute="SELECT id,input_sha256,as_of,calculated_at,checked_at,player_count,read_seconds,calculation_seconds FROM player_indicator_refresh LIMIT 0; SELECT player_id,team_id,season_id,payload FROM player_indicator_snapshots LIMIT 0; SELECT season_name,player_id,position_group_id FROM player_season_positions LIMIT 0; SELECT article_id,image_url,thumbnail_digest FROM news_articles LIMIT 0"'
 
 if [[ ! -f "$runtime_directory/.env.production" ]]; then
   # PowerShell은 줄바꿈 전까지 안내를 전달하지 않아, 암호 입력 전에 줄을 마쳐요.

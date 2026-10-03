@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/features/home/calendar_sync_service.dart';
+import 'package:onetouch/features/home/home_content_image.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:go_router/go_router.dart';

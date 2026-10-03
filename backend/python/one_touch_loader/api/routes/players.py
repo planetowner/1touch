@@ -12,8 +12,8 @@ from ..repos.player_rankings_repo import get_player_rankings
 from ..schemas.player_rankings import PlayerRankingsResponse
 from ..repos.player_indicators_repo import IndicatorsNotReadyError, get_current_player_indicators
 from ..schemas.player_indicators import PlayerIndicatorsResponse
-from ..services.media_storage import player_image_content
-from ...core.player_images import IMAGE_ROUTE
+from ..services.media_storage import public_image_content
+from ...core.public_images import PLAYER_IMAGE
 from ..repos.player_detail_repo import get_player_detail, get_player_comparison_candidates
 from ..repos.player_directory_repo import get_current_ranking, get_ones_to_watch
 from typing import Literal
@@ -73,10 +73,10 @@ def player_indicators(player_id: int = Path(gt=0), user_id: int = Depends(get_us
     return result
 
 
-@router.get(f"{IMAGE_ROUTE}/{{digest}}.png", response_class=Response)
+@router.get(PLAYER_IMAGE.route, response_class=Response)
 def player_image(digest: str = Path(pattern=r"^[0-9a-f]{64}$")):
     """공개 선수 사진만 반환해요. 회원 사진·첨부파일의 접근 권한은 바꾸지 않아요."""
-    return player_image_content(digest)
+    return public_image_content(PLAYER_IMAGE, digest)
 
 
 @router.get("/players/rankings", response_model=PlayerRankingsResponse)
