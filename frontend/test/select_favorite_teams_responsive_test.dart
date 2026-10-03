@@ -201,7 +201,14 @@ void main() {
 
     final teams = mockTeams.take(5).toList();
 
-    Future<(double, double)> pumpAtHeight(double height) async {
+    Future<
+        ({
+          double gap,
+          double fontSize,
+          double gradientBottom,
+          double thirdTop,
+          double fourthTop
+        })> pumpAtHeight(double height) async {
       tester.view.physicalSize = Size(393, height);
       await tester.pumpWidget(
         MaterialApp(
@@ -223,16 +230,87 @@ void main() {
       expect(tester.getSize(card).height, 72);
       expect(tester.getSize(logo).height, greaterThan(72));
       expect(tester.takeException(), isNull);
-      return (margin.bottom, teamName.style!.fontSize!);
+      return (
+        gap: margin.bottom,
+        fontSize: teamName.style!.fontSize!,
+        gradientBottom: tester
+            .getBottomLeft(
+              find.byKey(const ValueKey('rank-favorites-top-gradient')),
+            )
+            .dy,
+        thirdTop: tester
+            .getTopLeft(
+              find.byKey(ValueKey('rank-team-card-${teams[2].teamId}')),
+            )
+            .dy,
+        fourthTop: tester
+            .getTopLeft(
+              find.byKey(ValueKey('rank-team-card-${teams[3].teamId}')),
+            )
+            .dy,
+      );
     }
 
     final compact = await pumpAtHeight(568);
     final tall = await pumpAtHeight(852);
 
-    expect(compact.$1, 4);
-    expect(tall.$1, 20);
-    expect(tall.$1, greaterThan(compact.$1));
-    expect(tall.$2, compact.$2);
+    expect(compact.gap, 4);
+    expect(tall.gap, 20);
+    expect(tall.gap, greaterThan(compact.gap));
+    expect(tall.fontSize, compact.fontSize);
+    for (final layout in [compact, tall]) {
+      expect(layout.gradientBottom, greaterThan(layout.thirdTop));
+      expect(layout.gradientBottom, lessThan(layout.fourthTop));
+    }
+  });
+
+  testWidgets('first ranked team can move down and another team can move up',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final teams = mockTeams.take(3).toList();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: RankFavoriteTeamsScreen(selectedTeams: teams),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Finder card(int index) =>
+        find.byKey(ValueKey('rank-team-card-${teams[index].teamId}'));
+    Finder handle(int index) =>
+        find.byKey(ValueKey('rank-team-drag-handle-${teams[index].teamId}'));
+    Finder star(int index) => find.descendant(
+          of: find.byKey(ValueKey(teams[index].teamId)),
+          matching: find.byIcon(Icons.star),
+        );
+
+    Future<void> moveTeam(int source, int target) async {
+      final start = tester.getCenter(handle(source));
+      final end = Offset(start.dx, tester.getCenter(card(target)).dy);
+      final drag = await tester.startGesture(start);
+      await tester.pump(const Duration(milliseconds: 200));
+      await drag.moveTo(end);
+      await tester.pump(const Duration(milliseconds: 300));
+      await drag.up();
+      await tester.pumpAndSettle();
+    }
+
+    await moveTeam(0, 2);
+    expect(
+        tester.getTopLeft(card(1)).dy, lessThan(tester.getTopLeft(card(0)).dy));
+    expect(star(1), findsOneWidget);
+    expect(star(0), findsNothing);
+
+    await moveTeam(2, 1);
+    expect(
+        tester.getTopLeft(card(2)).dy, lessThan(tester.getTopLeft(card(1)).dy));
+    expect(star(2), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   for (final testCase in <({ThemeData theme, Color background})>[
@@ -280,7 +358,7 @@ void main() {
               find.byKey(const ValueKey('rank-favorites-top-gradient')),
             )
             .height,
-        550,
+        319,
       );
       expect(find.byKey(const ValueKey('gradient-header-logo')), findsNothing);
       expect(toggleIcon.color, app_style.AppPalette.white);
