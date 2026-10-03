@@ -95,9 +95,8 @@ class _AnalysisComparisonFilterSheetState<T>
   void _selectAvailableTeam() {
     final teams = _options.where((option) => option.seasonName == _seasonName);
     if (!teams.any((option) => option.teamId == _teamId)) {
-      _teamId = widget.onClearSelection == null
-          ? teams.firstOrNull?.teamId
-          : null;
+      _teamId =
+          widget.onClearSelection == null ? teams.firstOrNull?.teamId : null;
     }
   }
 
@@ -232,20 +231,25 @@ class _AnalysisComparisonFilterSheetState<T>
                     Text(tr(context, 'TEAM'), style: Body2_b.style),
                     const SizedBox(height: 16),
                     Container(
+                      key:
+                          const ValueKey('analysis-filter-team-search-surface'),
+                      clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         color: fieldColor,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius:
+                            BorderRadius.circular(AppSearchFieldTokens.radius),
                       ),
                       child: TextField(
                         key: const ValueKey('analysis-filter-team-search'),
                         controller: _search,
-                        style: Body1.style,
+                        maxLines: 1,
+                        style: Body1.style.copyWith(color: scheme.onSurface),
                         decoration: InputDecoration(
                           hintText: tr(context, 'Search a team!'),
                           hintStyle: Body1.style
                               .copyWith(color: appColors.mutedForeground),
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
+                              horizontal: 16, vertical: 16),
                           suffixIcon: Icon(Icons.search,
                               color: scheme.onSurface, size: 24),
                           border: InputBorder.none,

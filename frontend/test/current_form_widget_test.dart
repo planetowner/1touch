@@ -180,8 +180,8 @@ void main() {
       await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
       await tester.pumpAndSettle();
       await _chooseCurrentForm(tester, seasonId: 200, teamId: 2);
-      expect(tester.widget<LineChart>(find.byType(LineChart))
-          .data.lineBarsData, hasLength(2));
+      expect(tester.widget<LineChart>(find.byType(LineChart)).data.lineBarsData,
+          hasLength(2));
 
       await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
       await tester.pumpAndSettle();
@@ -190,30 +190,36 @@ void main() {
       final appliedTeam =
           find.byKey(const ValueKey('analysis-form-option-2-200'));
       await tester.ensureVisible(appliedTeam);
-      expect(find.descendant(
-        of: appliedTeam,
-        matching: find.byIcon(Icons.check),
-      ), findsOneWidget);
+      expect(
+          find.descendant(
+            of: appliedTeam,
+            matching: find.byIcon(Icons.check),
+          ),
+          findsOneWidget);
       await tester.tap(appliedTeam);
       await tester.pumpAndSettle();
 
       expect(sheet, findsOneWidget);
-      expect(find.descendant(
-        of: appliedTeam,
-        matching: find.byIcon(Icons.check),
-      ), findsNothing);
-      expect(tester.widget<LineChart>(find.byType(LineChart))
-          .data.lineBarsData, hasLength(2));
+      expect(
+          find.descendant(
+            of: appliedTeam,
+            matching: find.byIcon(Icons.check),
+          ),
+          findsNothing);
+      expect(tester.widget<LineChart>(find.byType(LineChart)).data.lineBarsData,
+          hasLength(2));
       await tester.tap(find.byKey(const ValueKey('analysis-filter-update')));
       await tester.pumpAndSettle();
 
       expect(sheet, findsNothing);
-      expect(find.descendant(
-        of: find.byKey(const ValueKey('analysis-form-filter')),
-        matching: find.text('SEASON'),
-      ), findsOneWidget);
-      expect(tester.widget<LineChart>(find.byType(LineChart))
-          .data.lineBarsData, hasLength(1));
+      expect(
+          find.descendant(
+            of: find.byKey(const ValueKey('analysis-form-filter')),
+            matching: find.text('SEASON'),
+          ),
+          findsOneWidget);
+      expect(tester.widget<LineChart>(find.byType(LineChart)).data.lineBarsData,
+          hasLength(1));
       expect(find.text('25/26 BETA'), findsNothing);
       expect(queries, hasLength(2));
       expect(tester.takeException(), isNull);
@@ -238,9 +244,13 @@ void main() {
         find.byKey(const ValueKey('analysis-comparison-filter-sheet'));
     expect(find.descendant(of: sheet, matching: find.byIcon(Icons.check)),
         findsNothing);
-    expect(tester.widget<ElevatedButton>(
-      find.byKey(const ValueKey('analysis-filter-update')),
-    ).onPressed, isNull);
+    expect(
+        tester
+            .widget<ElevatedButton>(
+              find.byKey(const ValueKey('analysis-filter-update')),
+            )
+            .onPressed,
+        isNull);
 
     final team = find.byKey(const ValueKey('analysis-form-option-2-200'));
     await tester.ensureVisible(team);
@@ -275,8 +285,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('analysis-filter-close')));
     await tester.pumpAndSettle();
 
-    expect(tester.widget<LineChart>(find.byType(LineChart))
-        .data.lineBarsData, hasLength(2));
+    expect(tester.widget<LineChart>(find.byType(LineChart)).data.lineBarsData,
+        hasLength(2));
     expect(find.text('25/26 BETA'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -480,6 +490,92 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets(
+        'keeps round seven centered and advances only by the handle at $size',
+        (tester) async {
+      useScreen(tester, size);
+      final points = [
+        for (var round = 0; round <= 13; round++)
+          CurrentFormPoint(roundNo: round, cumulativePoints: round * 2),
+      ];
+      final repository = _TestCurrentFormRepository(
+        optionsLoader: (_) async => _optionsForTeam(1),
+        comparisonLoader: (query) async => _comparisonFor(
+          query,
+          comparisonShortCode: 'PREV',
+          points: points,
+        ),
+      );
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+      await tester.pumpAndSettle();
+
+      final viewport = find.byKey(
+        const ValueKey('analysis-current-form-viewport'),
+      );
+      final handle = find.byKey(
+        const ValueKey('round-chart-selection-handle'),
+      );
+      final chart = find.byKey(
+        const ValueKey('analysis-current-form-chart'),
+      );
+      final viewportRect = tester.getRect(viewport);
+      final scroll = tester.widget<SingleChildScrollView>(
+        find.descendant(
+            of: viewport, matching: find.byType(SingleChildScrollView)),
+      );
+      final roundWidth = viewportRect.width / 6;
+      expect(scroll.controller!.offset, closeTo(roundWidth * 6, 0.1));
+      expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
+          closeTo(viewportRect.center.dx, 0.1));
+      expect(find.text('Round 7'), findsOneWidget);
+      expect(
+          find.byKey(const ValueKey('analysis-current-form-selection-guide')),
+          findsOneWidget);
+      expect(
+          find.byKey(const ValueKey('analysis-current-form-current-tooltip')),
+          findsOneWidget);
+      final grid = tester.widget<CustomPaint>(
+        find.byKey(const ValueKey('analysis-current-form-grid')),
+      );
+      final dynamic painter = grid.painter;
+      expect(painter.divisionCount, 11);
+      final line = tester.widget<LineChart>(find.byType(LineChart));
+      expect((line.data.minX, line.data.maxX), (-2, 16));
+
+      await tester.tapAt(tester.getRect(chart).center);
+      await tester.pump();
+      expect(find.text('Round 7'), findsOneWidget);
+      final chartDrag = await tester.startGesture(
+        Offset(viewportRect.center.dx, viewportRect.top + 48),
+      );
+      await chartDrag.moveBy(Offset(roundWidth, 0));
+      await chartDrag.up();
+      await tester.pumpAndSettle();
+      expect(find.text('Round 7'), findsOneWidget);
+
+      final gesture = await tester.startGesture(tester.getCenter(handle));
+      await gesture.moveBy(Offset(roundWidth, 0));
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(find.text('Round 8'), findsOneWidget);
+      expect(scroll.controller!.offset, closeTo(roundWidth * 7, 0.1));
+      expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
+          closeTo(viewportRect.center.dx, 0.1));
+
+      final toLast = await tester.startGesture(tester.getCenter(handle));
+      await toLast.moveBy(Offset(roundWidth * 5, 0));
+      await toLast.up();
+      await tester.pumpAndSettle();
+      expect(find.text('Round 13'), findsOneWidget);
+      expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
+          closeTo(viewportRect.center.dx, 0.1));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('uses one grid cell for the Korean points axis label',
       (tester) async {
     useScreen(tester, const Size(393, 852));
@@ -516,11 +612,11 @@ void main() {
       find.byKey(const ValueKey('analysis-current-form-grid')),
     );
     final dynamic painter = grid.painter;
-    expect(painter.divisionCount, 3);
+    expect(painter.divisionCount, 11);
     expect(painter.insetLineCount, 2);
     final lineChart = tester.widget<LineChart>(find.byType(LineChart));
     expect((lineChart.data.minY, lineChart.data.maxY), (0, 9));
-    expect(lineChart.data.lineBarsData.first.spots.first.y, 3);
+    expect(lineChart.data.lineBarsData.first.spots.first.y, 0);
     expect(tester.takeException(), isNull);
   });
 
@@ -593,24 +689,13 @@ void main() {
 
         await _chooseCurrentForm(tester, seasonId: 100, teamId: 1);
 
-        final chart = find.byKey(
-          const ValueKey('analysis-current-form-chart'),
-        );
         final viewport = find.byKey(
           const ValueKey('analysis-current-form-viewport'),
         );
-        final horizontalScroll = tester.widget<SingleChildScrollView>(
-          find.descendant(
-            of: viewport,
-            matching: find.byType(SingleChildScrollView),
-          ),
+        final chartRect = tester.getRect(
+          find.byKey(const ValueKey('analysis-current-form-chart')),
         );
-        horizontalScroll.controller!.jumpTo(0);
-        await tester.pump();
-        final chartRect = tester.getRect(chart);
-        final selectedPointX = chartRect.left + chartRect.width / 6;
-        await tester.tapAt(Offset(selectedPointX, chartRect.center.dy));
-        await tester.pump();
+        final selectedPointX = tester.getRect(viewport).center.dx;
 
         final formHandle = find.descendant(
           of: viewport,
@@ -631,8 +716,8 @@ void main() {
           expect((box.decoration! as BoxDecoration).color, expectedBoxColor);
         }
         final lineChart = tester.widget<LineChart>(find.byType(LineChart));
-        expect(lineChart.data.minX, 1);
-        expect(lineChart.data.maxX, 7);
+        expect(lineChart.data.minX, -2);
+        expect(lineChart.data.maxX, 10);
         expect(lineChart.data.minY, 0);
         expect(lineChart.data.maxY, 9);
         final comparisonTooltipRect = tester.getRect(
@@ -815,6 +900,12 @@ void main() {
                     .byKey(const ValueKey('analysis-comparison-filter-sheet')),
                 matching: find.byType(Scrollable))
             .first);
+    final searchSurface = tester.widget<Container>(
+      find.byKey(const ValueKey('analysis-filter-team-search-surface')),
+    );
+    expect((searchSurface.decoration as BoxDecoration).borderRadius,
+        BorderRadius.circular(8));
+    expect(searchSurface.clipBehavior, Clip.antiAlias);
     await tester.enterText(search, 'Barcelona');
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('analysis-form-option-83-23621')),
@@ -980,6 +1071,7 @@ CurrentFormComparison _comparisonFor(
   required String comparisonShortCode,
   String? currentTeamName,
   String? comparisonTeamName,
+  List<CurrentFormPoint>? points,
 }) {
   return CurrentFormComparison(
     current: _series(
@@ -989,6 +1081,7 @@ CurrentFormComparison _comparisonFor(
       shortCode: 'CURRENT',
       teamName: currentTeamName,
       isCurrent: true,
+      points: points,
     ),
     comparison: _series(
       teamId: query.compareTeamId,
@@ -997,9 +1090,10 @@ CurrentFormComparison _comparisonFor(
       shortCode: comparisonShortCode,
       teamName: comparisonTeamName,
       isCurrent: false,
+      points: points,
     ),
-    maxRound: 2,
-    maxPoints: 4,
+    maxRound: points?.last.roundNo ?? 2,
+    maxPoints: points?.last.cumulativePoints ?? 4,
   );
 }
 
@@ -1010,6 +1104,7 @@ CurrentFormSeries _series({
   required String shortCode,
   String? teamName,
   required bool isCurrent,
+  List<CurrentFormPoint>? points,
 }) {
   return CurrentFormSeries(
     teamId: teamId,
@@ -1019,11 +1114,12 @@ CurrentFormSeries _series({
     seasonId: seasonId,
     seasonName: seasonName,
     isCurrent: isCurrent,
-    points: const [
-      CurrentFormPoint(roundNo: 0, cumulativePoints: 0),
-      CurrentFormPoint(roundNo: 1, cumulativePoints: 3),
-      CurrentFormPoint(roundNo: 2, cumulativePoints: 4),
-    ],
+    points: points ??
+        const [
+          CurrentFormPoint(roundNo: 0, cumulativePoints: 0),
+          CurrentFormPoint(roundNo: 1, cumulativePoints: 3),
+          CurrentFormPoint(roundNo: 2, cumulativePoints: 4),
+        ],
   );
 }
 
