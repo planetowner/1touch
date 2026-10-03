@@ -33,7 +33,7 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
 
   void _onReorder(int oldIndex, int newIndex) {
     setState(() {
-      if (oldIndex < newIndex) newIndex -= 1;
+      // onReorderItem already adjusts the destination after removal.
       final team = _myTeams.removeAt(oldIndex);
       _myTeams.insert(newIndex, team);
     });
@@ -64,7 +64,9 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final pageBackground = AppColors.of(context).pageBackground;
-    final gradientHeight = responsiveBrandGradientHeight(context);
+    // Let the background fade finish around the third ranked card.
+    final gradientHeight = MediaQuery.paddingOf(context).top +
+        responsiveBrandGradientHeight(context) * 0.58;
 
     return Stack(
       children: [
@@ -259,13 +261,15 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                           color: Colors.white.withValues(alpha: 0.35),
                           width: 1.5)
                       : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryColor.withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  boxShadow: index == _myTeams.length - 1
+                      ? null
+                      : [
+                          BoxShadow(
+                            color: primaryColor.withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
