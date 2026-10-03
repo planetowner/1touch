@@ -582,7 +582,7 @@ class _StatSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          tr(context, section.category),
+          trUpper(context, section.category),
           style: Body2_b.style,
         ),
         const SizedBox(height: 10),
@@ -652,7 +652,7 @@ final mockRashfordStats = PlayerMatchStatData(
     PlayerMatchStatSection(
       category: 'PLAY-MAKING',
       rows: [
-        PlayerMatchStatRow(label: 'Key Passes', value: '4'),
+        PlayerMatchStatRow(label: 'Key passes', value: '4'),
         PlayerMatchStatRow(label: 'Passes into Pen. Area', value: '5'),
       ],
     ),

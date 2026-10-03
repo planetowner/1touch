@@ -212,7 +212,7 @@ class PlayerOverviewTab extends StatelessWidget {
                   )),
               const SizedBox(height: 48),
               PlayerSection(
-                  title: tr(context, 'MATCHES'),
+                  title: trUpper(context, 'Matches'),
                   trailing: SizedBox.square(
                     dimension: 24,
                     child: IconButton(

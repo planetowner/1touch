@@ -5,7 +5,6 @@ typedef MessageTranslations = ({String ko, String ja, String zh});
 const teamScreenKoreanMessages = <String, String>{
   'Overview': '팀 정보',
   'Matches': '일정',
-  'STANDING': '리그 순위',
 };
 
 const appMessages = <String, MessageTranslations>{
@@ -258,8 +257,6 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Sign in": (ko: "로그인", ja: "ログイン", zh: "登录"),
   "Sign up": (ko: "회원가입", ja: "新規登録", zh: "注册"),
-  "SIGN IN": (ko: "로그인", ja: "ログイン", zh: "登录"),
-  "SIGN UP": (ko: "회원가입", ja: "新規登録", zh: "注册"),
   "LOGIN": (ko: "로그인", ja: "ログイン", zh: "登录"),
   "Username": (ko: "아이디", ja: "ユーザー名", zh: "用户名"),
   "Nickname": (ko: "닉네임", ja: "ニックネーム", zh: "昵称"),
@@ -285,7 +282,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "使用できるか確認できませんでした。もう一度お試しください。",
     zh: "无法检查是否可用，请重试。"
   ),
-  "Favorite team": (ko: "최애팀", ja: "お気に入りのチーム", zh: "最喜欢的球队"),
+  "Primary team": (ko: "최애팀", ja: "お気に入りのチーム", zh: "最喜欢的球队"),
   "Enter nickname": (ko: "닉네임을 입력해 주세요", ja: "ニックネームを入力してください", zh: "请输入昵称"),
   "Use 1–30 English letters, numbers, underscores, or dots. Dots cannot be first, last, or consecutive.":
       (
@@ -450,21 +447,15 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Back to team selection": (ko: "팀 선택으로 돌아가기", ja: "チーム選択に戻る", zh: "返回球队选择"),
   "Continue": (ko: "계속하기", ja: "続ける", zh: "继续"),
-  "CONTINUE": (ko: "계속하기", ja: "続ける", zh: "继续"),
   "FINISH": (ko: "완료", ja: "完了", zh: "完成"),
   "Home": (ko: "홈", ja: "ホーム", zh: "首页"),
   "Players": (ko: "선수", ja: "選手", zh: "球员"),
   "Community": (ko: "커뮤니티", ja: "コミュニティ", zh: "社区"),
   "MY TEAM": (ko: "현재 팀", ja: "マイチーム", zh: "我的球队"),
-  "PLAYER": (ko: "선수", ja: "選手", zh: "球员"),
-  "PLAYERS": (ko: "선수", ja: "選手", zh: "球员"),
-  "TEAM": (ko: "팀", ja: "チーム", zh: "球队"),
   "TEAMS": (ko: "팀", ja: "チーム", zh: "球队"),
   "POSTS": (ko: "게시글", ja: "投稿", zh: "帖子"),
   "POST": (ko: "게시하기", ja: "投稿", zh: "发布"),
   "POST TO": (ko: "게시할 곳", ja: "投稿先", zh: "发布到"),
-  "COMMENTS": (ko: "댓글", ja: "コメント", zh: "评论"),
-  "BETS": (ko: "베팅", ja: "予想", zh: "竞猜"),
   "Bets": (ko: "베팅", ja: "予想", zh: "竞猜"),
   "BET": (ko: "베팅", ja: "予想", zh: "竞猜"),
   "BETTING": (ko: "베팅", ja: "予想", zh: "竞猜"),
@@ -481,7 +472,6 @@ const appMessages = <String, MessageTranslations>{
   "Notifications": (ko: "알림", ja: "通知", zh: "通知"),
   "All Notifications": (ko: "모든 알림", ja: "すべての通知", zh: "所有通知"),
   "Language": (ko: "언어", ja: "言語", zh: "语言"),
-  "LANGUAGE": (ko: "언어", ja: "言語", zh: "语言"),
   "Device language": (ko: "기기 언어", ja: "端末の言語", zh: "设备语言"),
   "Follows your device language": (
     ko: "기기의 언어 설정을 따라요",
@@ -489,9 +479,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "跟随设备语言设置"
   ),
   "Unit": (ko: "단위", ja: "単位", zh: "单位"),
-  "UNIT": (ko: "단위", ja: "単位", zh: "单位"),
   "Currency": (ko: "통화", ja: "通貨", zh: "货币"),
-  "CURRENCY": (ko: "통화", ja: "通貨", zh: "货币"),
   "English": (ko: "영어", ja: "英語", zh: "英语"),
   "Korean": (ko: "한국어", ja: "韓国語", zh: "韩语"),
   "Japanese": (ko: "일본어", ja: "日本語", zh: "日语"),
@@ -545,7 +533,6 @@ const appMessages = <String, MessageTranslations>{
     zh: "无法加载帖子和评论数量。"
   ),
   "Retry": (ko: "다시 시도", ja: "再試行", zh: "重试"),
-  "RETRY": (ko: "다시 시도", ja: "再試行", zh: "重试"),
   "Cancel": (ko: "취소", ja: "キャンセル", zh: "取消"),
   "Log out?": (ko: "로그아웃할까요?", ja: "ログアウトしますか？", zh: "要退出登录吗？"),
   "You will need to sign in again to use 1touch.": (
@@ -555,13 +542,10 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Log out": (ko: "로그아웃", ja: "ログアウト", zh: "退出登录"),
   "Logging out...": (ko: "로그아웃 중...", ja: "ログアウト中...", zh: "正在退出..."),
-  "CANCEL": (ko: "취소", ja: "キャンセル", zh: "取消"),
   "Back": (ko: "뒤로", ja: "戻る", zh: "返回"),
-  "DONE": (ko: "완료", ja: "完了", zh: "完成"),
   "UPDATE": (ko: "저장하기", ja: "保存", zh: "保存"),
   "Accept": (ko: "동의", ja: "同意する", zh: "同意"),
   "See all": (ko: "모두 보기", ja: "すべて見る", zh: "查看全部"),
-  "See All": (ko: "모두 보기", ja: "すべて見る", zh: "查看全部"),
   "Loading": (ko: "불러오는 중", ja: "読み込み中", zh: "加载中"),
   "Loading…": (ko: "불러오는 중…", ja: "読み込み中…", zh: "加载中…"),
   "Unavailable": (ko: "정보 없음", ja: "データなし", zh: "暂无数据"),
@@ -595,18 +579,13 @@ const appMessages = <String, MessageTranslations>{
   "Look for players": (ko: "선수를 찾아보세요", ja: "選手を探す", zh: "查找球员"),
   "Search a team!": (ko: "팀 검색", ja: "チームを検索", zh: "搜索球队"),
   "Filter": (ko: "필터", ja: "フィルター", zh: "筛选"),
-  "FILTER": (ko: "필터", ja: "フィルター", zh: "筛选"),
   "Ranking filters": (ko: "순위 필터", ja: "ランキングの絞り込み", zh: "排名筛选"),
   "UPDATE FILTER": (ko: "필터 적용", ja: "絞り込みを適用", zh: "应用筛选"),
-  "ALL": (ko: "전체", ja: "すべて", zh: "全部"),
   "All": (ko: "전체", ja: "すべて", zh: "全部"),
-  "ALL LEAGUES": (ko: "모든 리그", ja: "すべてのリーグ", zh: "所有联赛"),
   "All leagues": (ko: "모든 리그", ja: "すべてのリーグ", zh: "所有联赛"),
   "All matches": (ko: "모든 경기", ja: "すべての試合", zh: "所有比赛"),
   "All positions": (ko: "모든 포지션", ja: "すべてのポジション", zh: "所有位置"),
   "EVENTS": (ko: "경기", ja: "試合", zh: "比赛"),
-  "FOLLOWING TEAMS": (ko: "팔로우한 팀", ja: "フォロー中のチーム", zh: "关注的球队"),
-  "FOLLOWING PLAYERS": (ko: "팔로우한 선수", ja: "フォロー中の選手", zh: "关注的球员"),
   "Following Teams": (ko: "팔로우한 팀", ja: "フォロー中のチーム", zh: "关注的球队"),
   "Following Players": (ko: "팔로우한 선수", ja: "フォロー中の選手", zh: "关注的球员"),
   "FAVORITE TEAM": (ko: "좋아하는 팀", ja: "お気に入りのチーム", zh: "最喜欢的球队"),
@@ -699,14 +678,10 @@ const appMessages = <String, MessageTranslations>{
   "No teams found": (ko: "팀을 찾지 못했어요", ja: "チームが見つかりません", zh: "未找到球队"),
   "Overview": (ko: "개요", ja: "概要", zh: "概览"),
   "Matches": (ko: "경기", ja: "試合", zh: "比赛"),
-  "MATCHES": (ko: "경기", ja: "試合", zh: "比赛"),
   "Squad": (ko: "스쿼드", ja: "選手一覧", zh: "阵容"),
   "Standing": (ko: "순위", ja: "順位表", zh: "积分榜"),
-  "STANDING": (ko: "순위표", ja: "順位表", zh: "积分榜"),
   "Analysis": (ko: "분석", ja: "分析", zh: "分析"),
-  "ANALYSIS": (ko: "분석", ja: "分析", zh: "分析"),
   "News": (ko: "뉴스", ja: "ニュース", zh: "新闻"),
-  "NEWS": (ko: "뉴스", ja: "ニュース", zh: "新闻"),
   "News & Insights": (ko: "뉴스·정보", ja: "ニュースとインサイト", zh: "新闻与洞察"),
   "Fan Art": (ko: "팬아트", ja: "ファンアート", zh: "同人创作"),
   "HIGHLIGHTS": (ko: "하이라이트", ja: "ハイライト", zh: "集锦"),
@@ -754,10 +729,8 @@ const appMessages = <String, MessageTranslations>{
     ja: "チームを読み込めませんでした",
     zh: "无法加载球队"
   ),
-  "NEXT MATCH": (ko: "다음 경기", ja: "次の試合", zh: "下一场比赛"),
   "LAST MATCH": (ko: "지난 경기", ja: "前の試合", zh: "上一场比赛"),
   "LIVE MATCH": (ko: "진행 중인 경기", ja: "ライブ中の試合", zh: "进行中的比赛"),
-  "LIVE": (ko: "라이브", ja: "ライブ", zh: "直播"),
   "Live": (ko: "라이브", ja: "ライブ", zh: "直播"),
   "• LIVE": (ko: "● 진행 중인 경기", ja: "• ライブ", zh: "• 直播"),
   "FIXTURE": (ko: "경기 일정", ja: "試合日程", zh: "赛程"),
@@ -767,12 +740,9 @@ const appMessages = <String, MessageTranslations>{
   "PAST": (ko: "지난 경기", ja: "過去の試合", zh: "已结束"),
   "UPCOMING": (ko: "다가오는 경기", ja: "今後の試合", zh: "即将开始"),
   "Date TBD": (ko: "날짜 미정", ja: "日程未定", zh: "日期待定"),
-  "DATE TBD": (ko: "날짜 미정", ja: "日程未定", zh: "日期待定"),
   "Time TBD": (ko: "시간 미정", ja: "時間未定", zh: "时间待定"),
   "Round TBD": (ko: "라운드 미정", ja: "ラウンド未定", zh: "轮次待定"),
   "TBD": (ko: "미정", ja: "未定", zh: "待定"),
-  "ROUND": (ko: "라운드", ja: "ラウンド", zh: "轮次"),
-  "SEASON": (ko: "시즌", ja: "シーズン", zh: "赛季"),
   "Season": (ko: "시즌", ja: "シーズン", zh: "赛季"),
   "Current season": (ko: "현재 시즌", ja: "今シーズン", zh: "当前赛季"),
   "Current season only.": (
@@ -786,29 +756,28 @@ const appMessages = <String, MessageTranslations>{
     ja: "リーグ出場記録のあるシーズンを選択してください",
     zh: "请选择有联赛出场记录的赛季"
   ),
-  "LEAGUE": (ko: "리그", ja: "リーグ", zh: "联赛"),
   "League": (ko: "리그", ja: "リーグ", zh: "联赛"),
   "Cup": (ko: "컵 대회", ja: "カップ戦", zh: "杯赛"),
   "COMPETITION": (ko: "대회", ja: "大会", zh: "赛事"),
   "BRACKET": (ko: "대진표", ja: "トーナメント表", zh: "对阵图"),
-  "XG TABLE": (ko: "xG 순위표", ja: "xG順位表", zh: "xG积分榜"),
-  "No standings available": (ko: "순위표가 없어요", ja: "順位表がありません", zh: "暂无积分榜"),
+  "XG TABLE": (ko: "xG 순위", ja: "xG順位表", zh: "xG积分榜"),
+  "No standings available": (ko: "순위가 없어요", ja: "順位表がありません", zh: "暂无积分榜"),
   "No xG standings available": (
-    ko: "xG 순위표가 없어요",
+    ko: "xG 순위가 없어요",
     ja: "xG順位表がありません",
     zh: "暂无xG积分榜"
   ),
   "Unable to load standings": (
-    ko: "순위표를 불러오지 못했어요",
+    ko: "순위를 불러오지 못했어요",
     ja: "順位表を読み込めませんでした",
     zh: "无法加载积分榜"
   ),
   "Unable to load xG standings": (
-    ko: "xG 순위표를 불러오지 못했어요",
+    ko: "xG 순위를 불러오지 못했어요",
     ja: "xG順位表を読み込めませんでした",
     zh: "无法加载xG积分榜"
   ),
-  "Retry standings": (ko: "순위표 다시 불러오기", ja: "順位表を再読み込み", zh: "重新加载积分榜"),
+  "Retry standings": (ko: "순위 다시 불러오기", ja: "順位表を再読み込み", zh: "重新加载积分榜"),
   "Unable to load bracket.": (
     ko: "대진표를 불러오지 못했어요.",
     ja: "トーナメント表を読み込めませんでした。",
@@ -819,7 +788,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "トーナメント表はまだ公開されていません。",
     zh: "对阵图尚未公布。"
   ),
-  "FINAL": (ko: "결승", ja: "決勝", zh: "决赛"),
   "Final": (ko: "결승", ja: "決勝", zh: "决赛"),
   "SEMIFINAL": (ko: "준결승", ja: "準決勝", zh: "半决赛"),
   "SEMIFINALS": (ko: "준결승", ja: "準決勝", zh: "半决赛"),
@@ -848,15 +816,10 @@ const appMessages = <String, MessageTranslations>{
     ja: "クラブ名を正式名称で表示",
     zh: "显示球队全称"
   ),
-  "POSITION": (ko: "포지션", ja: "ポジション", zh: "位置"),
   "Position": (ko: "포지션", ja: "ポジション", zh: "位置"),
   "POSITION UNAVAILABLE": (ko: "포지션 정보 없음", ja: "ポジション情報なし", zh: "暂无位置信息"),
-  "GOALKEEPER": (ko: "골키퍼", ja: "ゴールキーパー", zh: "守门员"),
-  "DEFENDER": (ko: "수비수", ja: "ディフェンダー", zh: "后卫"),
   "DEFENDERS": (ko: "수비수", ja: "ディフェンダー", zh: "后卫"),
-  "MIDFIELDER": (ko: "미드필더", ja: "ミッドフィルダー", zh: "中场"),
   "MIDFIELDERS": (ko: "미드필더", ja: "ミッドフィルダー", zh: "中场"),
-  "FORWARD": (ko: "공격수", ja: "フォワード", zh: "前锋"),
   "ATTACKERS": (ko: "공격수", ja: "フォワード", zh: "前锋"),
   "Goalkeeper": (ko: "골키퍼", ja: "ゴールキーパー", zh: "守门员"),
   "Defender": (ko: "수비수", ja: "ディフェンダー", zh: "后卫"),
@@ -899,7 +862,6 @@ const appMessages = <String, MessageTranslations>{
     zh: "无法加载最佳阵容"
   ),
   "ATTRIBUTES": (ko: "능력치", ja: "能力", zh: "能力值"),
-  "ATTACK": (ko: "공격", ja: "攻撃", zh: "进攻"),
   "Attack": (ko: "공격", ja: "攻撃", zh: "进攻"),
   "DEFENSE": (ko: "수비", ja: "守備", zh: "防守"),
   "Defending": (ko: "수비력", ja: "守備力", zh: "防守"),
@@ -907,7 +869,6 @@ const appMessages = <String, MessageTranslations>{
   "Attacking Threat": (ko: "공격 위협", ja: "攻撃の脅威", zh: "进攻威胁"),
   "Chance Creation": (ko: "기회 창출", ja: "チャンス創出", zh: "机会创造"),
   "Shooting & Finishing": (ko: "슈팅·마무리", ja: "シュート・フィニッシュ", zh: "射门与终结"),
-  "POSSESSION": (ko: "점유", ja: "ポゼッション", zh: "控球"),
   "Possession": (ko: "점유", ja: "ポゼッション", zh: "控球"),
   "PROGRESSION": (ko: "전진", ja: "前進", zh: "推进"),
   "LINK-UP": (ko: "연계", ja: "連携", zh: "串联"),
@@ -929,13 +890,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "直近の調子を読み込めませんでした",
     zh: "无法加载近期状态"
   ),
-  "PROBABILITY": (ko: "예상 확률", ja: "予測確率", zh: "预测概率"),
   "Probability": (ko: "예상 확률", ja: "予測確率", zh: "预测概率"),
   "PROBABILITY HISTORY": (ko: "예상 확률 변화", ja: "予測確率の推移", zh: "预测概率走势"),
   "PROJECTED FINAL POSITION": (ko: "예상 최종 순위", ja: "予想最終順位", zh: "预计最终排名"),
   "PROJECTED POINTS": (ko: "예상 승점", ja: "予想勝点", zh: "预计积分"),
   "Likely range of": (ko: "예상 범위", ja: "予想範囲", zh: "预计范围"),
-  "WHAT IF?": (ko: "만약에?", ja: "もしも？", zh: "如果？"),
   "What if?": (ko: "만약에?", ja: "もしも？", zh: "如果？"),
   "IF {team}'S NEXT MATCH ENDS WITH": (
     ko: "{team}의 다음 경기 결과가",
@@ -1014,42 +973,6 @@ const appMessages = <String, MessageTranslations>{
     zh: "暂无本场比赛的预测数据。"
   ),
   "Retry probability": (ko: "예상 확률 다시 불러오기", ja: "予測確率を再読み込み", zh: "重新加载预测概率"),
-  "Chances to win\nLEAGUE Trophy": (
-    ko: "리그 우승 확률",
-    ja: "リーグ\n優勝確率",
-    zh: "联赛\n夺冠概率"
-  ),
-  "Chances to win\nUCL Trophy": (
-    ko: "UCL 우승 확률",
-    ja: "UCL\n優勝確率",
-    zh: "UCL\n夺冠概率"
-  ),
-  "Chances to win\nUEL Trophy": (
-    ko: "UEL 우승 확률",
-    ja: "UEL\n優勝確率",
-    zh: "UEL\n夺冠概率"
-  ),
-  "Chances to win\nUECL Trophy": (
-    ko: "UECL 우승 확률",
-    ja: "UECL\n優勝確率",
-    zh: "UECL\n夺冠概率"
-  ),
-  "Chances to finish\nTOP 4": (
-    ko: "4위 이내 진입 확률",
-    ja: "4位以内の\n確率",
-    zh: "进入前四的\n概率"
-  ),
-  "Chances to finish\nTOP 6": (
-    ko: "6위 이내 진입 확률",
-    ja: "6位以内の\n確率",
-    zh: "进入前六的\n概率"
-  ),
-  "Chances of\nRELEGATION": (ko: "강등 확률", ja: "降格の\n確率", zh: "降级的\n概率"),
-  "Chances of\nRELEGATION PLAYOFF": (
-    ko: "강등 PO 확률",
-    ja: "降格プレーオフの\n確率",
-    zh: "参加保级附加赛的\n概率"
-  ),
   "INJURY STATUS": (ko: "다친 선수", ja: "負傷状況", zh: "伤病情况"),
   "No current injuries": (ko: "현재 부상 선수가 없어요", ja: "現在、負傷者はいません", zh: "目前没有伤员"),
   "Unable to load injuries": (
@@ -1143,8 +1066,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Player data unavailable": (ko: "선수 정보가 없어요", ja: "選手情報がありません", zh: "暂无球员信息"),
   "Player": (ko: "선수", ja: "選手", zh: "球员"),
-  "1TOUCH RANKING": (ko: "1TOUCH 순위", ja: "1TOUCHランキング", zh: "1TOUCH排名"),
-  "1touch Ranking": (ko: "1touch 순위", ja: "1touchランキング", zh: "1touch排名"),
+  "1TOUCH RANKING": (ko: "1TOUCH 랭킹", ja: "1TOUCHランキング", zh: "1TOUCH排名"),
   "No ranking data for these filters": (
     ko: "이 필터에 맞는 순위 정보가 없어요",
     ja: "この条件に合うランキングがありません",
@@ -1236,10 +1158,8 @@ const appMessages = <String, MessageTranslations>{
     zh: "传入进攻三区"
   ),
   "Passes into Pen. Area": (ko: "페널티 지역 진입 패스", ja: "ペナルティエリアへのパス", zh: "传入禁区"),
-  "Key Passes": (ko: "키 패스", ja: "キーパス", zh: "关键传球"),
   "Recoveries": (ko: "볼 회수", ja: "ボール回収", zh: "球权夺回"),
   "Tackles Won": (ko: "태클 성공", ja: "タックル成功", zh: "成功抢断"),
-  "Duels Won": (ko: "경합 승리", ja: "デュエル勝利", zh: "对抗成功"),
   "Interceptions": (ko: "가로채기", ja: "インターセプト", zh: "拦截"),
   "Clearances": (ko: "걷어내기", ja: "クリア", zh: "解围"),
   "Blocks": (ko: "블록", ja: "ブロック", zh: "封堵"),
@@ -1904,7 +1824,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "无法加载能力值，请重试"
   ),
   "Unable to load standings. Retry": (
-    ko: "순위표를 불러오지 못했어요. 다시 시도",
+    ko: "순위를 불러오지 못했어요. 다시 시도",
     ja: "順位表を読み込めませんでした。再試行",
     zh: "无法加载积分榜，请重试"
   ),
@@ -2003,7 +1923,6 @@ const appMessages = <String, MessageTranslations>{
     zh: "请告诉我们举报此{target}的原因。"
   ),
   "post": (ko: "게시글", ja: "投稿", zh: "帖子"),
-  "comment": (ko: "댓글", ja: "コメント", zh: "评论"),
   "Recovery comparison incomplete ({count} missing)": (
     ko: "볼 회수 비교 정보가 부족해요 ({count}명 누락)",
     ja: "ボール回収の比較情報が不足しています（{count}人分なし）",
@@ -2048,15 +1967,10 @@ const appMessages = <String, MessageTranslations>{
   "Good": (ko: "좋음", ja: "良い", zh: "良好"),
   "Very Good": (ko: "매우 좋음", ja: "とても良い", zh: "很好"),
   "Excellent": (ko: "뛰어남", ja: "優秀", zh: "出色"),
-  "crucial": (ko: "핵심 선수", ja: "中心選手", zh: "核心球员"),
   "Crucial": (ko: "핵심 선수", ja: "中心選手", zh: "核心球员"),
-  "important": (ko: "주요 선수", ja: "主力選手", zh: "重要球员"),
   "Important": (ko: "주요 선수", ja: "主力選手", zh: "重要球员"),
-  "rotation": (ko: "로테이션", ja: "ローテーション", zh: "轮换球员"),
   "Rotation": (ko: "로테이션", ja: "ローテーション", zh: "轮换球员"),
-  "sporadic": (ko: "제한적 출전", ja: "出場機会が少ない", zh: "偶尔出场"),
   "Sporadic": (ko: "제한적 출전", ja: "出場機会が少ない", zh: "偶尔出场"),
-  "prospect": (ko: "유망주", ja: "有望な若手", zh: "潜力新星"),
   "Prospect": (ko: "유망주", ja: "有望な若手", zh: "潜力新星"),
   "Build Up": (ko: "빌드업", ja: "ビルドアップ", zh: "组织进攻"),
   "Defensive Actions": (ko: "수비 행동", ja: "守備アクション", zh: "防守动作"),

@@ -280,7 +280,8 @@ class PlayerDetailMatchCard extends StatelessWidget {
               '/match/${match.id}?status=${match.live ? 'live' : 'past'}'),
           child: PlayerMatchCard(
               live: match.live,
-              result: match.live ? tr(context, 'LIVE') : match.result ?? '—',
+              result:
+                  match.live ? trUpper(context, 'Live') : match.result ?? '—',
               score: '${match.homeScore ?? '—'} - ${match.awayScore ?? '—'}',
               competition:
                   '${competitionNameLabel(context, match.competitionId, match.competition)}${match.round == null ? '' : ' / ${match.round}'}',

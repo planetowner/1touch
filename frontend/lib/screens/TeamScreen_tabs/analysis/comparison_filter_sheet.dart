@@ -187,7 +187,7 @@ class _AnalysisComparisonFilterSheetState<T>
                   controller: controller,
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
                   children: [
-                    Text(tr(context, 'SEASON'), style: Body2_b.style),
+                    Text(trUpper(context, 'Season'), style: Body2_b.style),
                     const SizedBox(height: 16),
                     Material(
                       color: fieldColor,
@@ -229,7 +229,7 @@ class _AnalysisComparisonFilterSheetState<T>
                           onTap: () => _selectSeason(season.key),
                         ),
                     const SizedBox(height: 24),
-                    Text(tr(context, 'TEAM'), style: Body2_b.style),
+                    Text(trUpper(context, 'Team'), style: Body2_b.style),
                     const SizedBox(height: 16),
                     Container(
                       decoration: BoxDecoration(
@@ -269,7 +269,7 @@ class _AnalysisComparisonFilterSheetState<T>
                               child: Text(tr(context, 'Unable to load team'))),
                           TextButton(
                             onPressed: () => _loadSeason(_seasonName!),
-                            child: Text(tr(context, 'RETRY')),
+                            child: Text(trUpper(context, 'Retry')),
                           ),
                         ],
                       )

@@ -655,7 +655,7 @@ class _PostComments extends StatelessWidget {
               TextButton(
                 key: const ValueKey('community-comments-retry'),
                 onPressed: onRetry,
-                child: Text(tr(context, 'RETRY')),
+                child: Text(trUpper(context, 'Retry')),
               ),
             ],
           ),

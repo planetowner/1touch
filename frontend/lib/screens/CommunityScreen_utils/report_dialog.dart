@@ -258,7 +258,7 @@ void showThanksDialog(BuildContext context) {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        tr(context, "DONE"),
+                        trUpper(context, "Done"),
                         style: Body2_b.style.copyWith(color: colors.onPrimary),
                       ),
                     ),

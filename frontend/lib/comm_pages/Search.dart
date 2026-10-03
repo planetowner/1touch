@@ -73,7 +73,7 @@ class _SearchContentState extends State<SearchContent> {
       search: widget.repository.search);
   int _selectedIndex = 0;
 
-  static const _tabs = ['ALL', 'PLAYERS', 'TEAMS', 'EVENTS'];
+  static const _tabs = ['All', 'Players', 'TEAMS', 'EVENTS'];
   bool get _hasQuery => _search.query.isNotEmpty;
   TeamPageEligibility get _teamPageEligibility =>
       TeamPageEligibility(widget.competitionContextResolver);
@@ -283,7 +283,7 @@ class _SearchContentState extends State<SearchContent> {
               : null,
         ),
         child: Text(
-          tr(context, _tabs[index]),
+          trUpper(context, _tabs[index]),
           style: Body1_b.style.copyWith(color: colors.onSurface),
         ),
       ),

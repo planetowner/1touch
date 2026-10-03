@@ -170,7 +170,7 @@ class MatchCard extends StatelessWidget {
               ],
             )
           else
-            Text(tr(context, 'NEXT MATCH'), style: Body1_b.style),
+            Text(trUpper(context, 'Next match'), style: Body1_b.style),
           const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {

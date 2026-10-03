@@ -357,7 +357,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                               height: 22,
                               width: 22,
                               child: CircularProgressIndicator(strokeWidth: 2))
-                          : Text(tr(context, 'SIGN UP'),
+                          : Text(trUpper(context, 'Sign up'),
                               style: Body2_b.style
                                   .copyWith(color: colors.surface)),
                     ),

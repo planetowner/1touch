@@ -638,5 +638,5 @@ String _eventSectionTitle(BuildContext context, String event) =>
       'direct_relegation' ||
       'relegation_playoff' =>
         tr(context, 'RELEGATION PROBABILITY'),
-      _ => tr(context, 'PROBABILITY'),
+      _ => trUpper(context, 'Probability'),
     };

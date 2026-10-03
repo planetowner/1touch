@@ -6,7 +6,7 @@ extension StandingViewLabel on StandingView {
   String get label {
     switch (this) {
       case StandingView.standing:
-        return 'STANDING';
+        return 'Standing';
       case StandingView.xgTable:
         return 'XG TABLE';
       case StandingView.bracket:
@@ -44,7 +44,9 @@ class StandingViewToggle extends StatelessWidget {
         for (final view in displayedViews)
           AppSegmentedToggleOption(
             value: view,
-            label: tr(context, view.label),
+            label: view == StandingView.standing
+                ? trUpper(context, view.label)
+                : tr(context, view.label),
             enabled: availableViews.contains(view),
             surfaceKey: ValueKey(
               'standing-view-${_segmentName(view)}-surface',

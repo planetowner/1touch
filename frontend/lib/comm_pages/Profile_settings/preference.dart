@@ -98,7 +98,7 @@ class _PreferencePageState extends State<PreferencePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     children: [
                       _buildPreferenceSection(
-                        tr(context, "LANGUAGE"),
+                        trUpper(context, "Language"),
                         _language,
                         onTap: () => _navigateAndSelect(
                           tr(context, "Language"),
@@ -114,7 +114,7 @@ class _PreferencePageState extends State<PreferencePage> {
                       const SizedBox(
                         height: 12,
                       ),
-                      _buildPreferenceSection(tr(context, "UNIT"), _unit,
+                      _buildPreferenceSection(trUpper(context, "Unit"), _unit,
                           onTap: () => _navigateAndSelect(tr(context, "Unit"),
                               _unitOptions, _unit, (val) => _unit = val)),
                       _buildDivider(),
@@ -122,7 +122,7 @@ class _PreferencePageState extends State<PreferencePage> {
                         height: 12,
                       ),
                       _buildPreferenceSection(
-                          tr(context, "CURRENCY"), _currency,
+                          trUpper(context, "Currency"), _currency,
                           onTap: () => _navigateAndSelect(
                               tr(context, "Currency"),
                               _currencyOptions,

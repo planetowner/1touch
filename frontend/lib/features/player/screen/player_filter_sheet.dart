@@ -60,7 +60,7 @@ class _FilterSheetState extends State<FilterSheet> {
                     const SizedBox(width: 48),
                     Expanded(
                       child: Text(
-                        tr(context, "FILTER"),
+                        trUpper(context, "Filter"),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
@@ -76,7 +76,7 @@ class _FilterSheetState extends State<FilterSheet> {
                 const SizedBox(height: 48),
 
                 // LEAGUE
-                Text(tr(context, "LEAGUE"), style: Body2_b.style),
+                Text(trUpper(context, "League"), style: Body2_b.style),
                 const SizedBox(height: 16),
                 ...List.generate(widget.leagues.length, (index) {
                   final league = widget.leagues[index];
@@ -103,7 +103,7 @@ class _FilterSheetState extends State<FilterSheet> {
                 const SizedBox(height: 48),
 
                 // SEASON
-                Text(tr(context, "SEASON"), style: Body2_b.style),
+                Text(trUpper(context, "Season"), style: Body2_b.style),
                 const SizedBox(height: 16),
                 GestureDetector(
                   onTap: () {},
@@ -129,7 +129,7 @@ class _FilterSheetState extends State<FilterSheet> {
 
                 // POSITION
                 const SizedBox(height: 48),
-                Text(tr(context, "POSITION"), style: Body2_b.style),
+                Text(trUpper(context, "Position"), style: Body2_b.style),
                 const SizedBox(height: 16),
                 ...List.generate(widget.positions.length, (index) {
                   final position = widget.positions[index];

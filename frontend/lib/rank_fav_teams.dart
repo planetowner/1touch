@@ -196,7 +196,7 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                                   color: colors.surface,
                                 ),
                               )
-                            : Text(tr(context, "CONTINUE"),
+                            : Text(trUpper(context, "Continue"),
                                 style: Body2_b.style
                                     .copyWith(color: colors.surface)),
                       ),

@@ -398,8 +398,9 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                                 child:
                                     CircularProgressIndicator(strokeWidth: 2))
                             : Text(
-                                tr(context,
-                                    _isReset ? 'Reset password' : 'CONTINUE'),
+                                _isReset
+                                    ? tr(context, 'Reset password')
+                                    : trUpper(context, 'Continue'),
                                 style: Body1_b.style
                                     .copyWith(color: colors.surface)),
                       ),
