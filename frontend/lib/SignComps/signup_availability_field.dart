@@ -70,6 +70,15 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
             : _availability.result == true
                 ? 'Available.'
                 : null;
+    final statusInset = widget.decoration.contentPadding
+            ?.resolve(Directionality.of(context))
+            .left ??
+        0;
+    Widget alignStatus(String message, {TextStyle? style}) =>
+        Transform.translate(
+          offset: Offset(-statusInset, 0),
+          child: Text(message, style: style),
+        );
     return TextFormField(
       controller: widget.controller,
       enabled: widget.enabled,
@@ -77,7 +86,14 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
       keyboardType: widget.keyboardType,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: widget.decoration.copyWith(
-        helperText: helper == null ? null : tr(context, helper),
+        helper: helper == null
+            ? null
+            : alignStatus(
+                tr(context, helper),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
         helperMaxLines: 2,
         suffixIcon: _availability.error == null
             ? null
@@ -92,6 +108,7 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
             (_availability.result == false ? 'Already in use.' : null);
         return message == null ? null : tr(context, message);
       },
+      errorBuilder: (context, message) => alignStatus(message),
       style: Body1.style,
     );
   }

@@ -25,6 +25,18 @@ void main() {
     await tester.pump();
     expect(requests, ['second']);
     expect(find.text('Available.'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('Available.')).dx,
+      closeTo(tester.getTopLeft(find.byKey(const ValueKey('field-header'))).dx,
+          0.1),
+    );
+    expect(
+      tester
+          .widget<TextField>(find.byType(TextField))
+          .decoration
+          ?.contentPadding,
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    );
 
     await tester.enterText(find.byType(TextFormField), '.invalid');
     await tester.pump(const Duration(milliseconds: 250));
@@ -66,6 +78,11 @@ void main() {
             .errorText,
         'Already in use.');
     expect(find.text('Already in use.'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('Already in use.')).dx,
+      closeTo(tester.getTopLeft(find.byKey(const ValueKey('field-header'))).dx,
+          0.1),
+    );
   });
 
   testWidgets('a response after leaving the screen does not update the field',
@@ -89,12 +106,24 @@ Future<void> _pumpField(WidgetTester tester, TextEditingController controller,
     tester.pumpWidget(MaterialApp(
       home: Scaffold(
         body: Form(
-          child: SignupAvailabilityField(
-            controller: controller,
-            decoration: const InputDecoration(labelText: 'Username'),
-            validator: usernameValidationMessage,
-            checkAvailability: check,
-            onAvailabilityChanged: onChanged ?? (_) {},
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Username', key: ValueKey('field-header')),
+                SignupAvailabilityField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  ),
+                  validator: usernameValidationMessage,
+                  checkAvailability: check,
+                  onAvailabilityChanged: onChanged ?? (_) {},
+                ),
+              ],
+            ),
           ),
         ),
       ),
