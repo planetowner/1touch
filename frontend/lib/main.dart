@@ -21,6 +21,7 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/keyboard_dismiss.dart';
+import 'package:onetouch/core/full_screen_back_gesture.dart';
 import 'package:onetouch/core/notification_navigation.dart';
 import 'package:onetouch/core/community_link_navigation.dart';
 import 'package:onetouch/core/session_sync_lifecycle.dart';
@@ -236,7 +237,7 @@ final GoRouter _router = GoRouter(
                     redirectUnsupportedTeamPath(state.pathParameters['id']),
                 pageBuilder: (context, state) {
                   final teamId = int.parse(state.pathParameters['id']!);
-                  return NoTransitionPage<void>(
+                  return MaterialPage<void>(
                     key: state.pageKey,
                     child: TeamScreen(teamId: teamId),
                   );
@@ -259,7 +260,7 @@ final GoRouter _router = GoRouter(
                 },
                 pageBuilder: (context, state) {
                   final playerId = state.pathParameters['id']!;
-                  return NoTransitionPage<void>(
+                  return MaterialPage<void>(
                     key: state.pageKey,
                     child: PlayerCard(playerId: int.tryParse(playerId)),
                   );
@@ -702,7 +703,11 @@ class MyApp extends StatelessWidget {
                       builder: (context, _) => FootballNamesLoader(
                         repository: _footballNames,
                         enabled: authSession.isAuthenticated,
-                        child: child!,
+                        child: FullScreenBackGesture(
+                          canGoBack: _router.canPop,
+                          goBack: _router.routerDelegate.popRoute,
+                          child: child!,
+                        ),
                       ),
                     ),
                   ),
