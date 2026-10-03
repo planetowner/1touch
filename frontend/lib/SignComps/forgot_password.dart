@@ -393,7 +393,7 @@ class _NewPasswordScreenState extends State<_NewPasswordScreen> {
                     Text(
                       tr(context,
                           'Choose a password that is 8 or more characters long.'),
-                      style: Body1.style,
+                      style: Eyebrow.style,
                     ),
                     const SizedBox(height: 24),
                     Text(tr(context, 'Retype Password'), style: Body1.style),

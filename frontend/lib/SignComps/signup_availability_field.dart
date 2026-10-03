@@ -70,10 +70,14 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
             : _availability.result == true
                 ? 'Available.'
                 : null;
-    final statusInset = widget.decoration.contentPadding
-            ?.resolve(Directionality.of(context))
-            .left ??
-        0;
+    final border = widget.decoration.border;
+    final statusInset = (widget.decoration.contentPadding
+                ?.resolve(Directionality.of(context))
+                .left ??
+            0) +
+        (Theme.of(context).useMaterial3 && border is OutlineInputBorder
+            ? border.gapPadding
+            : 0);
     Widget alignStatus(String message, {TextStyle? style}) =>
         Transform.translate(
           offset: Offset(-statusInset, 0),

@@ -115,8 +115,10 @@ Future<void> _pumpField(WidgetTester tester, TextEditingController controller,
                 SignupAvailabilityField(
                   controller: controller,
                   decoration: const InputDecoration(
+                    filled: true,
                     contentPadding:
                         EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    border: OutlineInputBorder(borderSide: BorderSide.none),
                   ),
                   validator: usernameValidationMessage,
                   checkAvailability: check,
