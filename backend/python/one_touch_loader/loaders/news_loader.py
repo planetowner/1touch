@@ -11,6 +11,7 @@ from one_touch_loader.core.news import (
     ALIASES_PATH, NEWS_MAX_AGE, TeamNewsMatcher, article_links, load_sources,
     parse_article_image, parse_article_page, parse_feed,
 )
+from one_touch_loader.loaders.news_images import refresh_news_images
 
 
 def _get_content(session, url: str) -> bytes:
@@ -60,10 +61,14 @@ def save_articles(source: dict, articles: list[dict], checked_at: datetime, erro
     with transaction() as conn, conn.cursor() as cur:
         for article in articles:
             # 원문 이미지 조회가 실패해도 이미 저장된 대표 이미지는 유지해요.
+            # MySQL은 대입을 순서대로 적용하므로 원본 주소를 덮어쓰기 전에 썸네일을 무효화해요.
             cur.execute("""INSERT INTO news_articles
                 (source_key,language,title,url,url_hash,image_url,published_at,collected_at)
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE
                 article_id=LAST_INSERT_ID(article_id), title=VALUES(title),
+                thumbnail_digest=CASE
+                    WHEN VALUES(image_url) IS NOT NULL AND NOT (image_url <=> VALUES(image_url)) THEN NULL
+                    ELSE thumbnail_digest END,
                 image_url=COALESCE(VALUES(image_url), image_url),
                 published_at=VALUES(published_at), collected_at=VALUES(collected_at)
                 """, (source["key"], source["language"], article["title"], article["url"],
@@ -118,6 +123,8 @@ def refresh(*, apply: bool, sources=None, teams=None, session=None, now=None) ->
             report["sources"].append({"name": source["name"], "language": source["language"],
                                       "articles": len(articles), "matched": sum(bool(a["team_ids"]) for a in articles),
                                       "team_ids": sorted({t for a in articles for t in a["team_ids"]}), "error": error})
+        if apply:
+            report["thumbnails"] = refresh_news_images(session, now)
     finally:
         if own_session:
             session.close()
@@ -133,7 +140,7 @@ def run_cli(argv=None):
     args = parser.parse_args(argv)
     report = refresh(apply=args.apply)
     print(json.dumps(report, ensure_ascii=False, indent=2))
-    if any(s["error"] for s in report["sources"]):
+    if any(s["error"] for s in report["sources"]) or report.get("thumbnails", {}).get("errors"):
         raise SystemExit(1)
 
 

@@ -19,6 +19,7 @@ import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_provider;
 import 'package:onetouch/features/home/screen/live_match_ball_button.dart';
+import 'package:onetouch/features/home/home_content_image.dart';
 import 'package:onetouch/models/fixture.dart';
 import '../core/style.dart';
 import '../core/stylesheet.dart';
@@ -353,7 +354,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         final imageUrl = item.imageUrl;
         if (imageUrl == null || imageUrl.isEmpty) continue;
         unawaited(precacheImage(
-          NetworkImage(imageUrl),
+          homeContentImageProvider(imageUrl),
           context,
           // 이미지 실패 표시는 공통 카드에서 처리하고 기사는 계속 보여줘요.
           onError: (_, __) {},
