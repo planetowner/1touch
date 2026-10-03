@@ -135,6 +135,22 @@ class HighlightSelectionTests(unittest.TestCase):
 
 
 class CollectionTests(unittest.TestCase):
+    def test_playlist_stops_when_empty_last_page_repeats_its_token(self):
+        video = {"contentDetails": {"videoPublishedAt": "2026-09-10T00:00:00Z", "videoId": "new"}}
+        # 운영 맨유 재생목록은 빈 마지막 페이지에서도 요청한 토큰을 그대로 돌려줬어요.
+        token = "EAAaBlBUOkNCcw"
+        for uploads in (False, True):
+            with self.subTest(uploads=uploads):
+                client = loader.YouTubeClient.__new__(loader.YouTubeClient)
+                client.get = Mock(side_effect=[
+                    {"items": [video], "nextPageToken": token},
+                    {"items": [], "nextPageToken": token},
+                ])
+                self.assertEqual(client.playlist("playlist", "2026-07-01", uploads=uploads), [video])
+                self.assertEqual(client.get.call_count, 2)
+                self.assertNotIn("pageToken", client.get.call_args_list[0].kwargs)
+                self.assertEqual(client.get.call_args_list[1].kwargs["pageToken"], token)
+
     def test_curated_playlist_paginates_past_old_first_page(self):
         client = loader.YouTubeClient.__new__(loader.YouTubeClient)
         old = {"contentDetails": {"videoPublishedAt": "2025-01-01T00:00:00Z", "videoId": "old"}}

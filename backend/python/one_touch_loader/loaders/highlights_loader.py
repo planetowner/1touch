@@ -38,9 +38,11 @@ class YouTubeClient:
                             maxResults=50, **({"pageToken": token} if token else {}))
             items = page["items"]
             result.extend(i for i in items if i["contentDetails"].get("videoPublishedAt", "") >= since)
-            token = page.get("nextPageToken")
-            if not token:
+            next_token = page.get("nextPageToken")
+            # 빈 마지막 페이지에 같은 토큰을 주는 경우가 있어요. 반복 요청으로 할당량을 소진하지 않게 끝내요.
+            if not next_token or next_token == token:
                 return result
+            token = next_token
             # 업로드 목록은 최신순이에요. 구단이 정렬하는 일반 재생목록은 끝까지 읽어요.
             if uploads and items and all(i["contentDetails"].get("videoPublishedAt", "9999") < since for i in items):
                 return result
