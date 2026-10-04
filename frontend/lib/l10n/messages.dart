@@ -10,6 +10,38 @@ const teamScreenKoreanMessages = <String, String>{
 };
 
 const appMessages = <String, MessageTranslations>{
+  // 인증 메일도 이 문구를 원본으로 삼고 서버용 JSON을 생성해요.
+  "Email Verification Code": (ko: "이메일 인증번호", ja: "メール認証コード", zh: "邮箱验证码"),
+  "Your 1touch code is": (
+    ko: "1touch 인증번호예요",
+    ja: "1touchの認証コードです",
+    zh: "这是你的1touch验证码"
+  ),
+  "To continue signing up, enter this code within {minutes} minutes.": (
+    ko: "회원가입을 계속하려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+    ja: "新規登録を続けるには、{minutes}分以内にこのコードを入力してください。",
+    zh: "要继续注册，请在{minutes}分钟内输入此验证码。"
+  ),
+  "To reset your password, enter this code within {minutes} minutes.": (
+    ko: "비밀번호를 다시 설정하려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+    ja: "パスワードを再設定するには、{minutes}分以内にこのコードを入力してください。",
+    zh: "要重置密码，请在{minutes}分钟内输入此验证码。"
+  ),
+  "To find your username, enter this code within {minutes} minutes.": (
+    ko: "아이디를 찾으려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+    ja: "ユーザー名を確認するには、{minutes}分以内にこのコードを入力してください。",
+    zh: "要找回用户名，请在{minutes}分钟内输入此验证码。"
+  ),
+  "To change your email address, enter this code within {minutes} minutes.": (
+    ko: "이메일 주소를 바꾸려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+    ja: "メールアドレスを変更するには、{minutes}分以内にこのコードを入力してください。",
+    zh: "要更改邮箱地址，请在{minutes}分钟内输入此验证码。"
+  ),
+  "If you didn't request this verification code, you can ignore this email.": (
+    ko: "이 인증번호를 요청한 적이 없다면 이 이메일은 무시해도 돼요.",
+    ja: "この認証コードに心当たりがない場合は、このメールを無視してかまいません。",
+    zh: "如果你没有申请此验证码，可以忽略这封邮件。"
+  ),
   "Team updates": (ko: "팀 소식", ja: "チーム情報", zh: "球队动态"),
   "Match and score updates for followed teams.": (
     ko: "팔로우한 팀의 경기와 점수 소식이에요.",
