@@ -1,4 +1,4 @@
-"""운영 DB에서 구조와 공개 국가·포지션 사전만 읽어요. 회원 데이터는 복사하지 않아요."""
+"""운영 DB에서 구조와 공개 국가·포지션·경기 단계 사전만 읽어요. 회원 데이터는 복사하지 않아요."""
 import re
 from one_touch_loader.core.db import get_conn
 
@@ -18,7 +18,8 @@ def export():
             ddl = re.sub(r'DEFINER=`[^`]+`@`[^`]+` ', '', ddl)
             statements.append(ddl)
         print(';\n'.join(statements) + ';')
-        for table in ('countries', 'positions'):
+        # 경기 수집기는 stage_types를 만들지 않으므로 stages의 외래키 사전도 옮겨요.
+        for table in ('countries', 'positions', 'stage_types'):
             cur.execute(f'SELECT * FROM `{table}`')
             columns = ','.join('`' + field[0] + '`' for field in cur.description)
             for row in cur.fetchall():
