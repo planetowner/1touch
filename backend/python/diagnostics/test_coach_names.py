@@ -5,9 +5,10 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 
+from diagnostics.name_test_support import NameMigrationDatabase
+
 with patch('mysql.connector.pooling.MySQLConnectionPool'):
     from diagnostics import migrate_coach_names as migration
-    from diagnostics import test_football_names as name_tests
 
 
 class CoachNamesTests(unittest.TestCase):
@@ -70,8 +71,7 @@ class CoachNamesTests(unittest.TestCase):
         self.assertEqual(sum(row['zh'] is not None for row in rows), 540)
 
     def test_migration_preserves_original_korean_and_unmatched_rows(self):
-        fixture = name_tests.MigrationTests()
-        fixture.setUp()
+        fixture = NameMigrationDatabase()
         try:
             fixture.db.execute('CREATE TABLE coaches (coach_id INTEGER PRIMARY KEY, name TEXT, '
                                'name_ko TEXT, name_ja TEXT, name_zh TEXT)')
@@ -90,7 +90,7 @@ class CoachNamesTests(unittest.TestCase):
                     migration.migrate_data(fixture.connection, 'ja-zh')
                 self.assertEqual(fixture.db.execute('SELECT * FROM coaches ORDER BY coach_id').fetchall(), after)
         finally:
-            fixture.tearDown()
+            fixture.close()
 
 
 if __name__ == '__main__':

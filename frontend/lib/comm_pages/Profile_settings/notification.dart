@@ -211,7 +211,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     const SizedBox(height: 48),
 
                     // Betting
-                    Text(tr(context, "BETTING"), style: Body2_b.style),
+                    Text(trUpper(context, "Bets"), style: Body2_b.style),
                     const SizedBox(height: 16),
                     _switchRow(
                       context,

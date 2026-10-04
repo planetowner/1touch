@@ -1,4 +1,5 @@
 import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/data/auth/api/api_google_auth_repository.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
@@ -17,6 +18,7 @@ final GoogleIdentityService _googleIdentityService =
     GoogleSignInIdentityService();
 final AuthRepository _authRepository = ApiGoogleAuthRepository(
   api: apiClient,
+  locale: () => appLocaleController.value.languageCode,
 );
 
 final AuthService authService = AuthService(

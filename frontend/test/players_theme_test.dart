@@ -772,7 +772,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('full-ranking-sheet')),
-        matching: find.text('1TOUCH RANKING'),
+        matching: find.text('1touch Ranking'),
       ),
       findsOneWidget,
     );

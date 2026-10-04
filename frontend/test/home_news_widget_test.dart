@@ -95,7 +95,7 @@ void main() {
         ),
     ];
     final labels = {
-      'en': ['Just now', 'Yesterday', '5 Weeks Ago'],
+      'en': ['Just now', 'Yesterday', '5 weeks ago'],
       'ko': ['방금 전', '어제', '5주 전'],
       'ja': ['たった今', '昨日', '5週間前'],
       'zh': ['刚刚', '昨天', '5周前'],

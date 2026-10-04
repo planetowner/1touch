@@ -22,6 +22,7 @@ def validate_display_name(value: str) -> str:
 Username = Annotated[str, StringConstraints(min_length=1, max_length=30), AfterValidator(validate_username)]
 DisplayName = Annotated[str, StringConstraints(min_length=2, max_length=12), AfterValidator(validate_display_name)]
 LegacyUsername = Annotated[str, StringConstraints(min_length=1, max_length=50)]
+EmailLanguage = Literal["ko", "en", "ja", "zh"]
 
 
 def validate_password_characters(value: str) -> str:
@@ -50,6 +51,8 @@ class UserProfileUpdateBody(UserProfileBody):
 class EmailCodeBody(BaseModel):
     email: EmailStr
     purpose: Literal["signup", "password_reset", "username_recovery"] = "signup"
+    # 언어를 보내지 않는 기존 앱은 이전처럼 영어 메일을 받아요.
+    language: EmailLanguage = "en"
 
 
 class RegistrationAvailabilityBody(BaseModel):
@@ -86,6 +89,7 @@ class ResetPasswordBody(CodeBody):
 class EmailChangeRequestBody(BaseModel):
     email: EmailStr
     password: Password
+    language: EmailLanguage = "en"
 
 
 class EmailChangeConfirmBody(BaseModel):

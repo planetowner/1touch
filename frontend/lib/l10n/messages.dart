@@ -10,6 +10,38 @@ const teamScreenKoreanMessages = <String, String>{
 };
 
 const appMessages = <String, MessageTranslations>{
+  // 인증 메일도 이 문구를 원본으로 삼고 서버용 JSON을 생성해요.
+  "Email Verification Code": (ko: "이메일 인증번호", ja: "メール認証コード", zh: "邮箱验证码"),
+  "Your 1touch code is": (
+    ko: "1touch 인증번호예요",
+    ja: "1touchの認証コードです",
+    zh: "这是你的1touch验证码"
+  ),
+  "To continue signing up, enter this code within {minutes} minutes.": (
+    ko: "회원가입을 계속하려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+    ja: "新規登録を続けるには、{minutes}分以内にこのコードを入力してください。",
+    zh: "要继续注册，请在{minutes}分钟内输入此验证码。"
+  ),
+  "To reset your password, enter this code within {minutes} minutes.": (
+    ko: "비밀번호를 다시 설정하려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+    ja: "パスワードを再設定するには、{minutes}分以内にこのコードを入力してください。",
+    zh: "要重置密码，请在{minutes}分钟内输入此验证码。"
+  ),
+  "To find your username, enter this code within {minutes} minutes.": (
+    ko: "아이디를 찾으려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+    ja: "ユーザー名を確認するには、{minutes}分以内にこのコードを入力してください。",
+    zh: "要找回用户名，请在{minutes}分钟内输入此验证码。"
+  ),
+  "To change your email address, enter this code within {minutes} minutes.": (
+    ko: "이메일 주소를 바꾸려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+    ja: "メールアドレスを変更するには、{minutes}分以内にこのコードを入力してください。",
+    zh: "要更改邮箱地址，请在{minutes}分钟内输入此验证码。"
+  ),
+  "If you didn't request this verification code, you can ignore this email.": (
+    ko: "이 인증번호를 요청한 적이 없다면 이 이메일은 무시해도 돼요.",
+    ja: "この認証コードに心当たりがない場合は、このメールを無視してかまいません。",
+    zh: "如果你没有申请此验证码，可以忽略这封邮件。"
+  ),
   "Team updates": (ko: "팀 소식", ja: "チーム情報", zh: "球队动态"),
   "Match and score updates for followed teams.": (
     ko: "팔로우한 팀의 경기와 점수 소식이에요.",
@@ -458,9 +490,7 @@ const appMessages = <String, MessageTranslations>{
   "POSTS": (ko: "게시글", ja: "投稿", zh: "帖子"),
   "POST": (ko: "게시하기", ja: "投稿", zh: "发布"),
   "POST TO": (ko: "게시할 곳", ja: "投稿先", zh: "发布到"),
-  "Bets": (ko: "베팅", ja: "予想", zh: "竞猜"),
-  "BET": (ko: "베팅", ja: "予想", zh: "竞猜"),
-  "BETTING": (ko: "베팅", ja: "予想", zh: "竞猜"),
+  "Bets": (ko: "승부 예측", ja: "予想", zh: "竞猜"),
   "POINTS": (ko: "승점", ja: "ポイント", zh: "积分"),
   "SETTINGS": (ko: "설정", ja: "設定", zh: "设置"),
   "About": (ko: "앱 정보", ja: "アプリについて", zh: "关于"),
@@ -1088,7 +1118,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Player data unavailable": (ko: "선수 정보가 없어요", ja: "選手情報がありません", zh: "暂无球员信息"),
   "Player": (ko: "선수", ja: "選手", zh: "球员"),
-  "1TOUCH RANKING": (ko: "1TOUCH 랭킹", ja: "1TOUCHランキング", zh: "1TOUCH排名"),
+  "1touch Ranking": (ko: "1TOUCH 랭킹", ja: "1TOUCHランキング", zh: "1TOUCH排名"),
   "No ranking data for these filters": (
     ko: "이 필터에 맞는 순위 정보가 없어요",
     ja: "この条件に合うランキングがありません",
@@ -1157,7 +1187,7 @@ const appMessages = <String, MessageTranslations>{
   "Home Win": (ko: "홈 승", ja: "ホーム勝利", zh: "主胜"),
   "Away Win": (ko: "원정 승", ja: "アウェイ勝利", zh: "客胜"),
   "AGAINST": (ko: "상대로", ja: "対戦相手", zh: "对手"),
-  "LINEUP": (ko: "선발 명단", ja: "スターティングメンバー", zh: "首发阵容"),
+  "LINEUP": (ko: "라인업", ja: "スターティングメンバー", zh: "首发阵容"),
   "COACH": (ko: "감독", ja: "監督", zh: "主教练"),
   "SUBSTITUTES": (ko: "교체 선수", ja: "控え選手", zh: "替补球员"),
   "PLAYER OF THE MATCH": (ko: "경기 최우수 선수", ja: "プレイヤー・オブ・ザ・マッチ", zh: "全场最佳球员"),
@@ -1166,6 +1196,7 @@ const appMessages = <String, MessageTranslations>{
   "Ball Possession": (ko: "점유율", ja: "ボール支配率", zh: "控球率"),
   "Shots": (ko: "슈팅", ja: "シュート", zh: "射门"),
   "Shots on Target": (ko: "유효 슈팅", ja: "枠内シュート", zh: "射正"),
+  "Passes": (ko: "패스", ja: "パス", zh: "传球"),
   "Completed Passes": (ko: "패스 성공", ja: "パス成功", zh: "成功传球"),
   "Pass Accuracy": (ko: "패스 성공률", ja: "パス成功率", zh: "传球成功率"),
   "Passes (Succ. / Attempts)": (
@@ -1193,6 +1224,7 @@ const appMessages = <String, MessageTranslations>{
   "Fouls": (ko: "파울", ja: "ファウル", zh: "犯规"),
   "Yellow Cards": (ko: "경고", ja: "イエローカード", zh: "黄牌"),
   "Yellow Card": (ko: "경고", ja: "イエローカード", zh: "黄牌"),
+  "Red Cards": (ko: "퇴장", ja: "レッドカード", zh: "红牌"),
   "Red Card": (ko: "퇴장", ja: "レッドカード", zh: "红牌"),
   "Substitution": (ko: "선수 교체", ja: "選手交代", zh: "换人"),
   "Distance Covered": (ko: "이동 거리", ja: "走行距離", zh: "跑动距离"),
@@ -1545,13 +1577,11 @@ const appMessages = <String, MessageTranslations>{
   "{count}m ago": (ko: "{count}분 전", ja: "{count}分前", zh: "{count}分钟前"),
   "{count}h ago": (ko: "{count}시간 전", ja: "{count}時間前", zh: "{count}小时前"),
   "{count}d ago": (ko: "{count}일 전", ja: "{count}日前", zh: "{count}天前"),
-  "{count} minutes ago": (ko: "{count}분 전", ja: "{count}分前", zh: "{count}分钟前"),
-  "{count} hours ago": (ko: "{count}시간 전", ja: "{count}時間前", zh: "{count}小时前"),
-  "{count} Days Ago": (ko: "{count}일 전", ja: "{count}日前", zh: "{count}天前"),
+  "{count} days ago": (ko: "{count}일 전", ja: "{count}日前", zh: "{count}天前"),
   "Today": (ko: "오늘", ja: "今日", zh: "今天"),
   "Yesterday": (ko: "어제", ja: "昨日", zh: "昨天"),
-  "Last Week": (ko: "지난주", ja: "先週", zh: "上周"),
-  "{count} Weeks Ago": (ko: "{count}주 전", ja: "{count}週間前", zh: "{count}周前"),
+  "Last week": (ko: "지난주", ja: "先週", zh: "上周"),
+  "{count} weeks ago": (ko: "{count}주 전", ja: "{count}週間前", zh: "{count}周前"),
   "Reactions": (ko: "반응", ja: "リアクション", zh: "互动"),
   "Match Reminder": (ko: "경기 알림", ja: "試合リマインダー", zh: "比赛提醒"),
   "Kickoff, Half Time, Full Time": (
