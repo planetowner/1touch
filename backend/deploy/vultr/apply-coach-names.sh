@@ -5,20 +5,29 @@ repository=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../.." && pwd)
 server=ubuntu@3.39.136.116
 runtime=/opt/1touch/backend/deploy/vultr
 ssh_options=(-i "$HOME/.ssh/onetouch-lightsail-seoul.pem" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UpdateHostKeys=no)
-if [[ $# -gt 1 || ( $# -eq 1 && $1 != --apply ) ]]; then
-  echo 'Usage: bash apply-coach-names.sh [--apply]' >&2
-  exit 1
-fi
+locale_group=ko
+apply=false
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --locale-group)
+      locale_group=${2:-}
+      [[ "$locale_group" == ko || "$locale_group" == ja-zh ]] || { echo 'Expected ko or ja-zh' >&2; exit 1; }
+      shift 2 ;;
+    --apply) apply=true; shift ;;
+    *) echo 'Usage: bash apply-coach-names.sh [--locale-group ko|ja-zh] [--apply]' >&2; exit 1 ;;
+  esac
+done
 
 # 기존 API 이미지에서도 검토한 파일을 임시 경로에서 실행할 수 있게 전달해요.
 payload() {
-  python3 - "$repository/backend/python" <<'PY'
+  python3 - "$repository/backend/python" "$locale_group" <<'PY'
 import json, pathlib, sys
 root = pathlib.Path(sys.argv[1])
+group = sys.argv[2]
 paths = (
-    "diagnostics/migrate_coach_names_ko.py",
-    "diagnostics/coach_names.ko.json",
-    "one_touch_loader/sql/migrate_coach_names_ko.sql",
+    "diagnostics/migrate_coach_names.py",
+    f"diagnostics/coach_names.{group}.json",
+    f"one_touch_loader/sql/migrate_coach_names_{group.replace('-', '_')}.sql",
 )
 print(json.dumps({path: (root / path).read_text(encoding="utf-8") for path in paths}))
 PY
@@ -36,15 +45,16 @@ with tempfile.TemporaryDirectory(prefix="coach-names-") as folder:
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
-    migration = runpy.run_path(str(root / "diagnostics/migrate_coach_names_ko.py"))
-    options = dict(entities=migration["reviewed_rows"](), specs=migration["SPECS"], locales=migration["LOCALES"])
+    migration = runpy.run_path(str(root / "diagnostics/migrate_coach_names.py"))
+    config = migration["configuration"](sys.argv[2])
+    options = dict(entities=migration["reviewed_rows"](sys.argv[2]), specs=config["specs"], locales=config["locales"])
     ready, summary = shared.preview(**options)
     print(json.dumps(dict(schema_ready=ready, tables=summary), ensure_ascii=False), flush=True)
     if sys.argv[1] == "apply" and any(row["updates"] for row in summary.values()):
         with closing(get_conn()) as conn:
             if not ready:
                 with conn.cursor() as cursor:
-                    cursor.execute(migration["SQL_PATH"].read_text(encoding="utf-8"))
+                    cursor.execute(config["sql_path"].read_text(encoding="utf-8"))
                 conn.commit()
             shared.migrate_data(conn, **options)
         shared.verify_schema(before=False, specs=options["specs"], locales=options["locales"])
@@ -57,11 +67,11 @@ PY
 
 run_names() {
   payload | ssh "${ssh_options[@]}" "$server" \
-    "cd $runtime && sudo -n bash compose-production.sh exec -T api python -B -c '$remote_code' $1"
+    "cd $runtime && sudo -n bash compose-production.sh exec -T api python -B -c '$remote_code' $1 $locale_group"
 }
 
 run_names preview
-if [[ ${1:-} == --apply ]]; then
+if [[ $apply == true ]]; then
   # API 컨테이너에는 mysqldump가 없어 기존 서버 백업 명령으로 먼저 백업해요.
   ssh "${ssh_options[@]}" "$server" "sudo -n bash $runtime/backup-db.sh"
   run_names apply

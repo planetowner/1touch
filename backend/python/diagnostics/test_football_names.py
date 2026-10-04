@@ -14,16 +14,16 @@ with patch("mysql.connector.pooling.MySQLConnectionPool") as pool:
     from diagnostics import migrate_team_short_names as english_migration
     from diagnostics import correct_serie_a_names_ko as correction
     from diagnostics import migrate_sportmonks_names as multilingual
-    from diagnostics import migrate_coach_names_ko as coach_migration
+    from diagnostics import migrate_coach_names as coach_migration
 
 
 class FootballNamesTests(unittest.TestCase):
-    def test_coach_catalog_omits_missing_translations_and_unavailable_languages(self):
+    def test_coach_catalog_omits_missing_translations_in_each_language(self):
         with sqlite3.connect(':memory:') as db:
-            db.execute('CREATE TABLE coaches (coach_id INTEGER, name TEXT, name_ko TEXT)')
-            db.executemany('INSERT INTO coaches VALUES (?, ?, ?)', [
-                (455384, 'Antonio Conte', '안토니오 콘테'),
-                (455353, 'Jürgen Klopp', None),
+            db.execute('CREATE TABLE coaches (coach_id INTEGER, name TEXT, name_ko TEXT, name_ja TEXT, name_zh TEXT)')
+            db.executemany('INSERT INTO coaches VALUES (?, ?, ?, ?, ?)', [
+                (455384, 'Antonio Conte', '안토니오 콘테', 'アントニオ・コンテ', '安东尼奥·孔特'),
+                (455353, 'Jürgen Klopp', None, None, None),
             ])
             def fetch(sql):
                 return db.execute(sql).fetchall() if 'FROM coaches' in sql else []
@@ -32,8 +32,8 @@ class FootballNamesTests(unittest.TestCase):
                 self.assertEqual(names_repo.localized_names('ko')['coaches'], {'455384': '안토니오 콘테'})
                 self.assertEqual(names_repo.localized_names('en')['coaches'],
                                  {'455353': 'Jürgen Klopp', '455384': 'Antonio Conte'})
-                for locale in ('ja', 'zh'):
-                    self.assertEqual(names_repo.localized_names(locale)['coaches'], {})
+                self.assertEqual(names_repo.localized_names('ja')['coaches'], {'455384': 'アントニオ・コンテ'})
+                self.assertEqual(names_repo.localized_names('zh')['coaches'], {'455384': '安东尼奥·孔特'})
 
     def test_country_catalog_uses_available_translations_and_preserves_ids(self):
         with sqlite3.connect(':memory:') as db:
@@ -189,8 +189,9 @@ class MigrationTests(unittest.TestCase):
         self.db.close()
 
     def test_coach_seed_preserves_attachment_spelling_and_distinguishes_namesakes(self):
-        seed = json.loads(coach_migration.SEED_PATH.read_text(encoding='utf-8'))
-        source_bytes = coach_migration.SEED_PATH.with_name('fixtures').joinpath(
+        seed_path = coach_migration.configuration()['seed_path']
+        seed = json.loads(seed_path.read_text(encoding='utf-8'))
+        source_bytes = seed_path.with_name('fixtures').joinpath(
             'fc_online_managers_402.json').read_bytes()
         self.assertEqual(hashlib.sha256(source_bytes).hexdigest(), seed['source']['sha256'])
         source = json.loads(source_bytes)
@@ -229,7 +230,7 @@ class MigrationTests(unittest.TestCase):
         with patch.object(multilingual, 'verify_schema', return_value=False), \
                 patch.object(multilingual, 'fetch_all', return_value=[(455384, 'Another coach', None)]), \
                 self.assertRaisesRegex(ValueError, 'identity changed'):
-            multilingual.preview(entities=rows, specs=coach_migration.SPECS, locales=coach_migration.LOCALES)
+            multilingual.preview(entities=rows, specs=coach_migration.SPECS, locales=('ko',))
 
     def test_migration_changes_only_localized_columns_and_is_repeatable(self):
         reviewed = {"teams": {8: "리버풀"}, "players": {997: "해리 케인"}}
