@@ -12,7 +12,6 @@ class MatchScoreHeader extends StatelessWidget {
   final Widget status;
   // 공통 표시 함수에서 번역한 문구를 그대로 받아요.
   final String? roundLabel;
-  final String? venueLabel;
 
   const MatchScoreHeader({
     super.key,
@@ -26,7 +25,6 @@ class MatchScoreHeader extends StatelessWidget {
     required this.awayScore,
     required this.status,
     required this.roundLabel,
-    this.venueLabel,
   });
 
   @override
@@ -43,7 +41,7 @@ class MatchScoreHeader extends StatelessWidget {
     const homeWidth = 81.0;
     const awayWidth = 76.0;
     return LayoutBuilder(
-      builder: (context, constraints) => Stack(
+      builder: (context, _) => Stack(
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,30 +93,6 @@ class MatchScoreHeader extends StatelessWidget {
                       textAlign: TextAlign.center,
                       child: status,
                     ),
-                    if (venueLabel?.trim().isNotEmpty ?? false) ...[
-                      const SizedBox(height: 6),
-                      Transform.translate(
-                        offset: const Offset((awayWidth - homeWidth) / 2, 0),
-                        child: SizedBox(
-                          height: 16,
-                          child: OverflowBox(
-                            minWidth: constraints.maxWidth,
-                            maxWidth: constraints.maxWidth,
-                            minHeight: 16,
-                            maxHeight: 16,
-                            child: Text(
-                              venueLabel!.trim(),
-                              key: const ValueKey('match-venue-name'),
-                              style: Eyebrow.style,
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              softWrap: false,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),

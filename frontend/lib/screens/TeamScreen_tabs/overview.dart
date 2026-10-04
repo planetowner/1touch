@@ -130,7 +130,6 @@ class _OverviewTabState extends State<OverviewTab> {
                   key: ValueKey('team-overview-banner-ad'),
                 ),
               ),
-              const SizedBox(height: 50),
             ],
           ),
         ),

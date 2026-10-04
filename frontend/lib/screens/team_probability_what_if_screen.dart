@@ -72,7 +72,7 @@ class _TeamProbabilityWhatIfScreenState
       key: const ValueKey('team-probability-what-if-screen'),
       backgroundColor: mainPageBackground(context),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(24, contentTop, 24, 48),
+        padding: EdgeInsets.fromLTRB(24, contentTop, 24, 24),
         children: [
           _WhatIfAppBar(onBack: () => Navigator.of(context).pop()),
           const SizedBox(height: 24),

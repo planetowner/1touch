@@ -92,7 +92,7 @@ class PlayerOverviewTab extends StatelessWidget {
         return SingleChildScrollView(
             key: const ValueKey('player-overview-scroll'),
             physics: const ClampingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 144),
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               _PlayerOverviewProfileMeasure(
