@@ -51,6 +51,7 @@ void main() {
             'player_short_names': {},
             'competitions': {},
             'countries': {},
+            'coaches': {},
           };
         } else if (path == '/v1/users/me') {
           body = {
