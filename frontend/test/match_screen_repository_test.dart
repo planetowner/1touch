@@ -12,6 +12,7 @@ import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_clock.dart';
 import 'package:onetouch/models/fixture_detail.dart';
@@ -401,11 +402,8 @@ void main() {
       find.byType(MomentumChart),
     );
     final lineup = tester.widget<LineupPitch>(find.byType(LineupPitch));
-    final expectedGoals = statistics.bars.singleWhere(
-      (bar) => bar.category == 'Expected Goals',
-    );
     final possession = statistics.bars.singleWhere(
-      (bar) => bar.category == 'Possession',
+      (bar) => bar.category == 'Ball Possession',
     );
     final yellowCards = statistics.bars.singleWhere(
       (bar) => bar.category == 'Yellow Cards',
@@ -440,16 +438,11 @@ void main() {
       ),
       isTrue,
     );
-    expect(expectedGoals.homePercent, 0.518846);
-    expect(expectedGoals.awayPercent, 4.76916);
-    expect(expectedGoals.isPercent, isFalse);
-    expect(expectedGoals.fractionDigits, 2);
     expect(possession.homePercent, 63.6);
     expect(possession.awayPercent, 36.4);
     expect(possession.isPercent, isTrue);
     expect(statistics.bars.map((bar) => bar.category), [
-      'Possession',
-      'Expected Goals',
+      'Ball Possession',
       'Shots',
       'Yellow Cards',
     ]);
@@ -464,7 +457,7 @@ void main() {
       tester
           .widget<Container>(
             find.byKey(
-              const ValueKey('match-info-stat-Possession-home-fill'),
+              const ValueKey('match-info-stat-Ball Possession-home-fill'),
             ),
           )
           .color,
@@ -474,7 +467,7 @@ void main() {
       tester
           .widget<Container>(
             find.byKey(
-              const ValueKey('match-info-stat-Possession-away-fill'),
+              const ValueKey('match-info-stat-Ball Possession-away-fill'),
             ),
           )
           .color,
@@ -518,8 +511,8 @@ void main() {
     expect(coaches.subsB.single.minute, 75);
     expect(find.byKey(const ValueKey('match-player-of-the-match-card')),
         findsNothing);
-    expect(find.text('0.52'), findsOneWidget);
-    expect(find.text('4.77'), findsOneWidget);
+    expect(find.text('0.52'), findsNothing);
+    expect(find.text('4.77'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -725,6 +718,128 @@ void main() {
     expect(find.text('Accurate Passes'), findsOneWidget);
     expect(find.text('12 / 15'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps all live statistics in order when zero or omitted',
+      (tester) async {
+    await _setScreenSize(tester, const Size(430, 932));
+    final repository = _ControlledFixtureRepository();
+    const labels = [
+      '점유율',
+      '슈팅',
+      '유효 슈팅',
+      '코너킥',
+      '오프사이드',
+      '패스',
+      '패스 성공률',
+      '파울',
+      '경고',
+      '퇴장',
+      '선방',
+    ];
+
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('ko'),
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
+      home: MatchScreen(
+        matchId: '${_fixture.fixtureId}',
+        matchStatus: 'live',
+        repository: repository,
+      ),
+    ));
+    expect(find.byType(StatBarsSection), findsNothing);
+
+    repository.calls.single.complete(_detail(status: FixtureStatus.live));
+    await tester.pump();
+    await tester.pump();
+
+    void expectOrderedRows() {
+      final rows = find.byType(StatComparisonBar);
+      expect(rows, findsNWidgets(labels.length));
+      for (var index = 0; index < labels.length; index++) {
+        expect(
+          find.descendant(
+              of: rows.at(index), matching: find.text(labels[index])),
+          findsOneWidget,
+        );
+      }
+    }
+
+    expectOrderedRows();
+    for (final row in tester.widgetList<StatComparisonBar>(
+      find.byType(StatComparisonBar),
+    )) {
+      expect(row.data.homePercent, 0);
+      expect(row.data.awayPercent, 0);
+      expect(
+        find.descendant(
+          of: find.byWidget(row),
+          matching: find.text(row.data.isPercent ? '0%' : '0'),
+        ),
+        findsNWidgets(2),
+      );
+    }
+
+    await tester.pump(const Duration(seconds: 15));
+    repository.calls.last.complete(_detail(
+      status: FixtureStatus.live,
+      statistics: [
+        FixtureStatistic(
+          teamId: _fixture.awayTeamId,
+          statTypeId: 80,
+          statCode: 'passes',
+          statName: 'Passes',
+          value: 232,
+        ),
+        FixtureStatistic(
+          teamId: _fixture.homeTeamId,
+          statTypeId: 84,
+          statCode: 'yellowcards',
+          statName: 'Yellow Cards',
+          value: 1,
+        ),
+        FixtureStatistic(
+          teamId: _fixture.homeTeamId,
+          statTypeId: 80,
+          statCode: 'passes',
+          statName: 'Passes',
+          value: 224,
+        ),
+        FixtureStatistic(
+          teamId: _fixture.homeTeamId,
+          statTypeId: 83,
+          statCode: 'redcards',
+          statName: 'Redcards',
+          value: 0,
+        ),
+        FixtureStatistic(
+          teamId: _fixture.awayTeamId,
+          statTypeId: 83,
+          statCode: 'redcards',
+          statName: 'Redcards',
+          value: 0,
+        ),
+      ],
+    ));
+    await tester.pump();
+    await tester.pump();
+    expectOrderedRows();
+    final bars =
+        tester.widget<StatBarsSection>(find.byType(StatBarsSection)).bars;
+    final passes = bars.singleWhere((bar) => bar.category == 'Passes');
+    expect(passes.homePercent, 224);
+    expect(passes.awayPercent, 232);
+    expect(passes.isPercent, isFalse);
+    final yellowCards =
+        bars.singleWhere((bar) => bar.category == 'Yellow Cards');
+    expect(yellowCards.homePercent, 1);
+    expect(yellowCards.awayPercent, 0);
+    final redCards = bars.singleWhere((bar) => bar.category == 'Red Cards');
+    expect(redCards.homePercent, 0);
+    expect(redCards.awayPercent, 0);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets('uses neutral labels and omits incomplete detail statistics',

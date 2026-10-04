@@ -1198,6 +1198,7 @@ const appMessages = <String, MessageTranslations>{
   "Ball Possession": (ko: "점유율", ja: "ボール支配率", zh: "控球率"),
   "Shots": (ko: "슈팅", ja: "シュート", zh: "射门"),
   "Shots on Target": (ko: "유효 슈팅", ja: "枠内シュート", zh: "射正"),
+  "Passes": (ko: "패스", ja: "パス", zh: "传球"),
   "Completed Passes": (ko: "패스 성공", ja: "パス成功", zh: "成功传球"),
   "Pass Accuracy": (ko: "패스 성공률", ja: "パス成功率", zh: "传球成功率"),
   "Passes (Succ. / Attempts)": (
@@ -1225,6 +1226,7 @@ const appMessages = <String, MessageTranslations>{
   "Fouls": (ko: "파울", ja: "ファウル", zh: "犯规"),
   "Yellow Cards": (ko: "경고", ja: "イエローカード", zh: "黄牌"),
   "Yellow Card": (ko: "경고", ja: "イエローカード", zh: "黄牌"),
+  "Red Cards": (ko: "퇴장", ja: "レッドカード", zh: "红牌"),
   "Red Card": (ko: "퇴장", ja: "レッドカード", zh: "红牌"),
   "Substitution": (ko: "선수 교체", ja: "選手交代", zh: "换人"),
   "Distance Covered": (ko: "이동 거리", ja: "走行距離", zh: "跑动距离"),
