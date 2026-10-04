@@ -1,0 +1,1559 @@
+{
+  "source": {
+    "file": "fixtures/fc_online_managers_402.json",
+    "sha256": "d39508751e7a2973f2b0b61b5bd1bc8c8b6163a9ee23043ec26aaff34e99ef5c",
+    "row_count": 402
+  },
+  "review": {
+    "database_coaches": 779,
+    "matched": 162,
+    "unmatched_database_coaches": 617,
+    "unmatched_source_entries": 240
+  },
+  "entities": {
+    "coaches": [
+      {
+        "coach_id": 1553200,
+        "identity": {
+          "name": "Andrea Sottil"
+        },
+        "ko": "안드레아 소틸",
+        "source_index": 1,
+        "source_team_ko": "모데나"
+      },
+      {
+        "coach_id": 455384,
+        "identity": {
+          "name": "Antonio Conte"
+        },
+        "ko": "안토니오 콘테",
+        "source_index": 2,
+        "source_team_ko": "SSC 나폴리"
+      },
+      {
+        "coach_id": 458783,
+        "identity": {
+          "name": "Eusebio Di Francesco"
+        },
+        "ko": "에우제비오 디프란체스코",
+        "source_index": 3,
+        "source_team_ko": "레체"
+      },
+      {
+        "coach_id": 452946,
+        "identity": {
+          "name": "D. Simeone"
+        },
+        "ko": "디에고 시메오네",
+        "source_index": 8,
+        "source_team_ko": "아틀레티코 마드리드",
+        "provider_identity": {
+          "name": "Diego Pablo Simeone",
+          "date_of_birth": "1970-04-28"
+        }
+      },
+      {
+        "coach_id": 467464,
+        "identity": {
+          "name": "Gustavo Poyet Domínguez"
+        },
+        "ko": "구스 포예트",
+        "source_index": 9,
+        "source_team_ko": "알 칼리즈",
+        "provider_identity": {
+          "name": "Gustavo Augusto Poyet Domínguez",
+          "date_of_birth": "1967-11-15"
+        }
+      },
+      {
+        "coach_id": 128160,
+        "identity": {
+          "name": "Simone Inzaghi"
+        },
+        "ko": "시모네 인자기",
+        "source_index": 10,
+        "source_team_ko": "알힐랄"
+      },
+      {
+        "coach_id": 459203,
+        "identity": {
+          "name": "Mauricio Pellegrino"
+        },
+        "ko": "마우리시오 펠레그리노",
+        "source_index": 12,
+        "source_team_ko": "CA 라누스"
+      },
+      {
+        "coach_id": 60303,
+        "identity": {
+          "name": "Ivan Leko"
+        },
+        "ko": "이반 레코",
+        "source_index": 13,
+        "source_team_ko": "클럽 브루게"
+      },
+      {
+        "coach_id": 460311,
+        "identity": {
+          "name": "Jocelyn Gourvennec"
+        },
+        "ko": "조셀린 구르베네크",
+        "source_index": 14,
+        "source_team_ko": "세르베트 FC"
+      },
+      {
+        "coach_id": 468615,
+        "identity": {
+          "name": "Mauro Lustrinelli"
+        },
+        "ko": "마우로 루스트리넬리",
+        "source_index": 16,
+        "source_team_ko": "FC 툰"
+      },
+      {
+        "coach_id": 15062004,
+        "identity": {
+          "name": "Dietmar Kühbauer"
+        },
+        "ko": "디에트마르 퀴흐바우어",
+        "source_index": 17,
+        "source_team_ko": "LASK"
+      },
+      {
+        "coach_id": 896462,
+        "identity": {
+          "name": "Derek McInnes"
+        },
+        "ko": "데릭 매키니스",
+        "source_index": 18,
+        "source_team_ko": "하트 오브 미들로디언"
+      },
+      {
+        "coach_id": 191684,
+        "identity": {
+          "name": "Fredrik Holmberg"
+        },
+        "ko": "프레드릭 홀름베리",
+        "source_index": 20,
+        "source_team_ko": "GAIS"
+      },
+      {
+        "coach_id": 23685,
+        "identity": {
+          "name": "Jakob Poulsen"
+        },
+        "ko": "야콥 포울센",
+        "source_index": 22,
+        "source_team_ko": "오르후스 GF"
+      },
+      {
+        "coach_id": 185780,
+        "identity": {
+          "name": "Iñigo Pérez"
+        },
+        "ko": "이니고 페레스",
+        "source_index": 23,
+        "source_team_ko": "라요 바예카노"
+      },
+      {
+        "coach_id": 527103,
+        "identity": {
+          "name": "José González Álvarez"
+        },
+        "ko": "마놀로 곤살레스",
+        "source_index": 25,
+        "source_team_ko": "RCD 에스파뇰",
+        "provider_identity": {
+          "name": "José Manuel González Álvarez",
+          "date_of_birth": "1979-01-14"
+        },
+        "identity_source": "https://www.rcdespanyol.com/es/equipos/rcd-espanyol/manolo-gonzalez/3568"
+      },
+      {
+        "coach_id": 379788,
+        "identity": {
+          "name": "Claudio Giráldez"
+        },
+        "ko": "클라우디오 히랄데스",
+        "source_index": 26,
+        "source_team_ko": "셀타 비고"
+      },
+      {
+        "coach_id": 37598242,
+        "identity": {
+          "name": "Dawid Kroczek"
+        },
+        "ko": "다비트 크로체크",
+        "source_index": 30,
+        "source_team_ko": "라쿠프 쳉스토호바"
+      },
+      {
+        "coach_id": 462257,
+        "identity": {
+          "name": "Qurban Qurbanov"
+        },
+        "ko": "쿠르반 쿠르바노프",
+        "source_index": 34,
+        "source_team_ko": "카라바흐 FK"
+      },
+      {
+        "coach_id": 20355643,
+        "identity": {
+          "name": "Rafał Górak"
+        },
+        "ko": "라파우 구라크",
+        "source_index": 35,
+        "source_team_ko": "GKS 카토비체"
+      },
+      {
+        "coach_id": 457589,
+        "identity": {
+          "name": "Jens Olsen"
+        },
+        "ko": "옌스 푄스코우 올센",
+        "source_index": 37,
+        "source_team_ko": "FC 노르셸란",
+        "provider_identity": {
+          "name": "Jens Fønsskov Olsen",
+          "date_of_birth": "1975-05-19"
+        },
+        "identity_source": "https://fcn.dk/nyheder/2024/juni/jens-fonsskov-olsen-er-ny-cheftraener-i-fc-nordsjaelland"
+      },
+      {
+        "coach_id": 37293365,
+        "identity": {
+          "name": "Luís Ferreira de Castro"
+        },
+        "ko": "루이스 카스트루",
+        "source_index": 38,
+        "source_team_ko": "레반테 UD",
+        "provider_identity": {
+          "name": "Luís Manuel Ferreira de Castro",
+          "date_of_birth": "1980-05-07"
+        }
+      },
+      {
+        "coach_id": 896251,
+        "identity": {
+          "name": "Stanimir Stoilov"
+        },
+        "ko": "스타니미르 스토일로프",
+        "source_index": 40,
+        "source_team_ko": "괴즈테페"
+      },
+      {
+        "coach_id": 60390,
+        "identity": {
+          "name": "David Hubert"
+        },
+        "ko": "다비드 위베르",
+        "source_index": 42,
+        "source_team_ko": "루아얄 위니옹 SG"
+      },
+      {
+        "coach_id": 350699,
+        "identity": {
+          "name": "Fabio Ingolitsch"
+        },
+        "ko": "파비오 잉골리치",
+        "source_index": 43,
+        "source_team_ko": "슈투름 그라츠"
+      },
+      {
+        "coach_id": 347590,
+        "identity": {
+          "name": "Stephan Helm"
+        },
+        "ko": "슈테판 헬름",
+        "source_index": 45,
+        "source_team_ko": "아우스트리아 빈"
+      },
+      {
+        "coach_id": 11675677,
+        "identity": {
+          "name": "Tiernan Lynch"
+        },
+        "ko": "티어넌 린치",
+        "source_index": 47,
+        "source_team_ko": "데리 시티"
+      },
+      {
+        "coach_id": 37909808,
+        "identity": {
+          "name": "Hugo Filipe Carvalho Oliveira"
+        },
+        "ko": "오구 올리베이라",
+        "source_index": 56,
+        "source_team_ko": "FC 파말리캉"
+      },
+      {
+        "coach_id": 33835,
+        "identity": {
+          "name": "Mike Tullberg"
+        },
+        "ko": "마이크 툴베르",
+        "source_index": 60,
+        "source_team_ko": "FC 미트윌란"
+      },
+      {
+        "coach_id": 37547542,
+        "identity": {
+          "name": "Carlos Vicens"
+        },
+        "ko": "카를로스 비센스",
+        "source_index": 66,
+        "source_team_ko": "SC 브라가"
+      },
+      {
+        "coach_id": 78952,
+        "identity": {
+          "name": "Michal Gašparík"
+        },
+        "ko": "미할 가슈파리크",
+        "source_index": 69,
+        "source_team_ko": "구르니크 자브제"
+      },
+      {
+        "coach_id": 4916304,
+        "identity": {
+          "name": "Mario Kovačević"
+        },
+        "ko": "마리오 코바체비치",
+        "source_index": 73,
+        "source_team_ko": "디나모 자그레브"
+      },
+      {
+        "coach_id": 128076,
+        "identity": {
+          "name": "Ignazio Abate"
+        },
+        "ko": "이냐치오 아바테",
+        "source_index": 74,
+        "source_team_ko": "S.S. 유베 스타비아"
+      },
+      {
+        "coach_id": 1552945,
+        "identity": {
+          "name": "Carlos Antón Cuesta"
+        },
+        "ko": "카를로스 쿠에스타",
+        "source_index": 75,
+        "source_team_ko": "파르마"
+      },
+      {
+        "coach_id": 130041,
+        "identity": {
+          "name": "Fabio Pisacane"
+        },
+        "ko": "파비오 피사카네",
+        "source_index": 78,
+        "source_team_ko": "칼리아리"
+      },
+      {
+        "coach_id": 255,
+        "identity": {
+          "name": "Keith Andrews"
+        },
+        "ko": "키스 앤드루스",
+        "source_index": 80,
+        "source_team_ko": "브렌트퍼드"
+      },
+      {
+        "coach_id": 455745,
+        "identity": {
+          "name": "Jorge Almada Álves"
+        },
+        "ko": "기예르모 알마다 알베스",
+        "source_index": 84,
+        "source_team_ko": "레알 오비에도",
+        "provider_identity": {
+          "name": "Jorge Guillermo Almada Álves",
+          "date_of_birth": "1969-06-18"
+        },
+        "identity_source": "https://www.realoviedo.es/videos/rueda-de-prensa-guillermo-almada-jhcbwukln-4"
+      },
+      {
+        "coach_id": 185033,
+        "identity": {
+          "name": "Ion Ansotegi"
+        },
+        "ko": "욘 안소테기",
+        "source_index": 87,
+        "source_team_ko": "레알 소시에다드 B"
+      },
+      {
+        "coach_id": 37953841,
+        "identity": {
+          "name": "K. Aksum"
+        },
+        "ko": "칼 마리우스 악숨",
+        "source_index": 94,
+        "source_team_ko": "미엘뷔 AIF",
+        "provider_identity": {
+          "name": "Karl Marius Aksum",
+          "date_of_birth": "1990-02-18"
+        }
+      },
+      {
+        "coach_id": 498593,
+        "identity": {
+          "name": "Joonas Rantanen"
+        },
+        "ko": "요나스 란타넨",
+        "source_index": 95,
+        "source_team_ko": "HJK 헬싱키"
+      },
+      {
+        "coach_id": 35441,
+        "identity": {
+          "name": "Martin Hysky"
+        },
+        "ko": "마르틴 히스키",
+        "source_index": 99,
+        "source_team_ko": "빅토리아 플젠"
+      },
+      {
+        "coach_id": 37710356,
+        "identity": {
+          "name": "Calum McFarlane"
+        },
+        "ko": "캘럼 맥팔레인",
+        "source_index": 104,
+        "source_team_ko": "첼시"
+      },
+      {
+        "coach_id": 515,
+        "identity": {
+          "name": "Arbeloa"
+        },
+        "ko": "알바로 아르벨로아",
+        "source_index": 108,
+        "source_team_ko": "레알 마드리드",
+        "provider_identity": {
+          "name": "Álvaro Arbeloa Coca",
+          "date_of_birth": "1983-01-17"
+        }
+      },
+      {
+        "coach_id": 37336795,
+        "identity": {
+          "name": "Ihor Kostyuk"
+        },
+        "ko": "이호르 코스튜크",
+        "source_index": 110,
+        "source_team_ko": "디나모 키이우"
+      },
+      {
+        "coach_id": 128026,
+        "identity": {
+          "name": "Paolo Sammarco"
+        },
+        "ko": "파올로 삼마르코",
+        "source_index": 113,
+        "source_team_ko": "엘라스 베로나"
+      },
+      {
+        "coach_id": 562,
+        "identity": {
+          "name": "Rob Edwards"
+        },
+        "ko": "롭 에드워즈",
+        "source_index": 129,
+        "source_team_ko": "울버햄프턴 원더러스"
+      },
+      {
+        "coach_id": 1553204,
+        "identity": {
+          "name": "Giovanni Stroppa"
+        },
+        "ko": "조반니 스트로파",
+        "source_index": 130,
+        "source_team_ko": "베네치아"
+      },
+      {
+        "coach_id": 10966287,
+        "identity": {
+          "name": "Gerardo Seoane"
+        },
+        "ko": "헤라르도 세오아네",
+        "source_index": 137,
+        "source_team_ko": "BSC 영보이스"
+      },
+      {
+        "coach_id": 251872,
+        "identity": {
+          "name": "Eduardo Coudet"
+        },
+        "ko": "에두아르도 코데트",
+        "source_index": 138,
+        "source_team_ko": "리버 플레이트"
+      },
+      {
+        "coach_id": 201088,
+        "identity": {
+          "name": "Fatih Tekke"
+        },
+        "ko": "파티흐 테케",
+        "source_index": 141,
+        "source_team_ko": "트라브존스포르"
+      },
+      {
+        "coach_id": 186018,
+        "identity": {
+          "name": "Míchel"
+        },
+        "ko": "미첼",
+        "source_index": 142,
+        "source_team_ko": "지로나 FC",
+        "provider_identity": {
+          "name": "Miguel Ángel Sánchez Muñoz",
+          "date_of_birth": "1975-10-30"
+        }
+      },
+      {
+        "coach_id": 978850,
+        "identity": {
+          "name": "Alan Reynolds"
+        },
+        "ko": "앨런 레이놀즈",
+        "source_index": 143,
+        "source_team_ko": "보헤미안"
+      },
+      {
+        "coach_id": 51518,
+        "identity": {
+          "name": "Oliver Glasner"
+        },
+        "ko": "올리버 글라스너",
+        "source_index": 144,
+        "source_team_ko": "크리스털 팰리스"
+      },
+      {
+        "coach_id": 462195,
+        "identity": {
+          "name": "Moreno Longo"
+        },
+        "ko": "모레노 롱고",
+        "source_index": 145,
+        "source_team_ko": "바리"
+      },
+      {
+        "coach_id": 452683,
+        "identity": {
+          "name": "Graham Potter"
+        },
+        "ko": "그레이엄 포터",
+        "source_index": 147,
+        "source_team_ko": "스웨덴"
+      },
+      {
+        "coach_id": 467859,
+        "identity": {
+          "name": "Jorge Almirón Quintana"
+        },
+        "ko": "호르헤 알미론",
+        "source_index": 148,
+        "source_team_ko": "로사리오 센트랄"
+      },
+      {
+        "coach_id": 127889,
+        "identity": {
+          "name": "Roberto De Zerbi"
+        },
+        "ko": "로베르토 데체르비",
+        "source_index": 149,
+        "source_team_ko": "토트넘 홋스퍼"
+      },
+      {
+        "coach_id": 131252,
+        "identity": {
+          "name": "Roberto D'Aversa"
+        },
+        "ko": "로베르토 다베르사",
+        "source_index": 151,
+        "source_team_ko": "토리노"
+      },
+      {
+        "coach_id": 523898,
+        "identity": {
+          "name": "Manuel Pellegrini Ripamonti"
+        },
+        "ko": "마누엘 펠레그리니",
+        "source_index": 152,
+        "source_team_ko": "레알 베티스"
+      },
+      {
+        "coach_id": 120775,
+        "identity": {
+          "name": "Stephen Bradley"
+        },
+        "ko": "스티븐 브래들리",
+        "source_index": 153,
+        "source_team_ko": "섐록 로버스"
+      },
+      {
+        "coach_id": 455361,
+        "identity": {
+          "name": "Pep Guardiola"
+        },
+        "ko": "펩 과르디올라",
+        "source_index": 154,
+        "source_team_ko": "맨체스터 시티"
+      },
+      {
+        "coach_id": 455424,
+        "identity": {
+          "name": "Marco Da Silva"
+        },
+        "ko": "마르쿠 실바",
+        "source_index": 155,
+        "source_team_ko": "풀럼",
+        "provider_identity": {
+          "name": "Marco Alexandre Saraiva Da Silva",
+          "date_of_birth": "1977-07-12"
+        }
+      },
+      {
+        "coach_id": 896798,
+        "identity": {
+          "name": "Javier Aguirre Onaindía"
+        },
+        "ko": "하비에르 아기레",
+        "source_index": 157,
+        "source_team_ko": "멕시코"
+      },
+      {
+        "coach_id": 455821,
+        "identity": {
+          "name": "Enrique Sánchez Flores"
+        },
+        "ko": "키케 플로레스",
+        "source_index": 161,
+        "source_team_ko": "데포르티보 알라베스",
+        "provider_identity": {
+          "name": "Enrique Sánchez Flores",
+          "date_of_birth": "1965-02-05"
+        }
+      },
+      {
+        "coach_id": 455375,
+        "identity": {
+          "name": "José Mourinho"
+        },
+        "ko": "주제 무리뉴",
+        "source_index": 162,
+        "source_team_ko": "SL 벤피카"
+      },
+      {
+        "coach_id": 455387,
+        "identity": {
+          "name": "Rafael Benítez Maudes"
+        },
+        "ko": "라파 베니테스",
+        "source_index": 163,
+        "source_team_ko": "파나티나이코스"
+      },
+      {
+        "coach_id": 455355,
+        "identity": {
+          "name": "David Moyes"
+        },
+        "ko": "데이비드 모예스",
+        "source_index": 164,
+        "source_team_ko": "에버턴"
+      },
+      {
+        "coach_id": 455907,
+        "identity": {
+          "name": "Unai Emery"
+        },
+        "ko": "우나이 에메리",
+        "source_index": 165,
+        "source_team_ko": "애스턴 빌라"
+      },
+      {
+        "coach_id": 523931,
+        "identity": {
+          "name": "Mendilibar"
+        },
+        "ko": "멘딜리바르",
+        "source_index": 166,
+        "source_team_ko": "올림피아코스"
+      },
+      {
+        "coach_id": 1467953,
+        "identity": {
+          "name": "Marcelino"
+        },
+        "ko": "마르셀리노",
+        "source_index": 167,
+        "source_team_ko": "비야레알 CF"
+      },
+      {
+        "coach_id": 474728,
+        "identity": {
+          "name": "Julen Lopetegui Argote"
+        },
+        "ko": "훌렌 로페테기",
+        "source_index": 168,
+        "source_team_ko": "카타르"
+      },
+      {
+        "coach_id": 2511171,
+        "identity": {
+          "name": "Antonio Calabro"
+        },
+        "ko": "안토니오 칼라브로",
+        "source_index": 172,
+        "source_team_ko": "카라레세 칼초"
+      },
+      {
+        "coach_id": 527267,
+        "identity": {
+          "name": "Beñat San José Gil"
+        },
+        "ko": "베냐트 산호세",
+        "source_index": 174,
+        "source_team_ko": "SD 에이바르"
+      },
+      {
+        "coach_id": 153005,
+        "identity": {
+          "name": "Bjarte Lunde Aarsheim"
+        },
+        "ko": "비야르테 룬데 오르스헤임",
+        "source_index": 176,
+        "source_team_ko": "바이킹 FK"
+      },
+      {
+        "coach_id": 896460,
+        "identity": {
+          "name": "Brendan Rodgers"
+        },
+        "ko": "브렌던 로저스",
+        "source_index": 177,
+        "source_team_ko": "알카드시아"
+      },
+      {
+        "coach_id": 524011,
+        "identity": {
+          "name": "Christophe Galtier"
+        },
+        "ko": "크리스토프 갈티에",
+        "source_index": 178,
+        "source_team_ko": "네옴 SC"
+      },
+      {
+        "coach_id": 460535,
+        "identity": {
+          "name": "Daniel Farke"
+        },
+        "ko": "다니엘 파르케",
+        "source_index": 181,
+        "source_team_ko": "리즈 유나이티드"
+      },
+      {
+        "coach_id": 7387314,
+        "identity": {
+          "name": "Davide Ballardini"
+        },
+        "ko": "다비데 발라르디니",
+        "source_index": 182,
+        "source_team_ko": "아벨리노"
+      },
+      {
+        "coach_id": 15084021,
+        "identity": {
+          "name": "Didier Tholot"
+        },
+        "ko": "디디에 톨로",
+        "source_index": 184,
+        "source_team_ko": "FC 시옹"
+      },
+      {
+        "coach_id": 470943,
+        "identity": {
+          "name": "Ernesto Valverde Tejedor"
+        },
+        "ko": "에르네스토 발베르데",
+        "source_index": 188,
+        "source_team_ko": "아틀레틱 빌바오"
+      },
+      {
+        "coach_id": 94575,
+        "identity": {
+          "name": "Fabio Grosso"
+        },
+        "ko": "파비오 그로소",
+        "source_index": 189,
+        "source_team_ko": "사수올로"
+      },
+      {
+        "coach_id": 468798,
+        "identity": {
+          "name": "Fabrizio Castori"
+        },
+        "ko": "파브리치오 카스토리",
+        "source_index": 191,
+        "source_team_ko": "수드티롤"
+      },
+      {
+        "coach_id": 460096,
+        "identity": {
+          "name": "Francisco Escriba Segura"
+        },
+        "ko": "프란 에스크리바",
+        "source_index": 194,
+        "source_team_ko": "레알 바야돌리드"
+      },
+      {
+        "coach_id": 22986,
+        "identity": {
+          "name": "Gonzalo García"
+        },
+        "ko": "곤살로 가르시아",
+        "source_index": 197,
+        "source_team_ko": "하이두크 스플리트"
+      },
+      {
+        "coach_id": 16845924,
+        "identity": {
+          "name": "Jens Askou"
+        },
+        "ko": "옌스 베르텔 아스코우",
+        "source_index": 206,
+        "source_team_ko": "머더웰",
+        "provider_identity": {
+          "name": "Jens Berthel Askou",
+          "date_of_birth": "1982-08-19"
+        }
+      },
+      {
+        "coach_id": 455705,
+        "identity": {
+          "name": "Jindřich Trpišovský"
+        },
+        "ko": "인드르지흐 트르피쇼프스키",
+        "source_index": 208,
+        "source_team_ko": "슬라비아 프라하"
+      },
+      {
+        "coach_id": 524461,
+        "identity": {
+          "name": "Joan Ferrer Sicilia"
+        },
+        "ko": "루비",
+        "source_index": 209,
+        "source_team_ko": "UD 알메리아",
+        "provider_identity": {
+          "name": "Joan Francesc Ferrer Sicilia",
+          "date_of_birth": "1970-02-05"
+        },
+        "identity_source": "https://www.udalmeriasad.com/noticias/rubi-se-convierte-en-el-nuevo-entrenador-de-la-ud-almeria"
+      },
+      {
+        "coach_id": 524009,
+        "identity": {
+          "name": "José Bordalás Jiménez"
+        },
+        "ko": "호세 보르달라스",
+        "source_index": 213,
+        "source_team_ko": "헤타페 CF"
+      },
+      {
+        "coach_id": 9950240,
+        "identity": {
+          "name": "José López Menéndez"
+        },
+        "ko": "호세 알베르토",
+        "source_index": 214,
+        "source_team_ko": "라싱 산탄데르",
+        "provider_identity": {
+          "name": "José Alberto López Menéndez",
+          "date_of_birth": "1982-05-21"
+        }
+      },
+      {
+        "coach_id": 1068543,
+        "identity": {
+          "name": "Juan Rojo Martín"
+        },
+        "ko": "파체타",
+        "source_index": 218,
+        "source_team_ko": "그라나다 CF",
+        "provider_identity": {
+          "name": "Juan José Rojo Martín",
+          "date_of_birth": "1968-03-23"
+        }
+      },
+      {
+        "coach_id": 458813,
+        "identity": {
+          "name": "Julian Nagelsmann"
+        },
+        "ko": "율리안 나겔스만",
+        "source_index": 219,
+        "source_team_ko": "독일"
+      },
+      {
+        "coach_id": 452732,
+        "identity": {
+          "name": "Kjetil Knutsen"
+        },
+        "ko": "셰틸 크누첸",
+        "source_index": 223,
+        "source_team_ko": "FK 보되/글림트"
+      },
+      {
+        "coach_id": 896549,
+        "identity": {
+          "name": "Kosta Runjaic"
+        },
+        "ko": "코스타 루냐이치",
+        "source_index": 224,
+        "source_team_ko": "우디네세"
+      },
+      {
+        "coach_id": 523897,
+        "identity": {
+          "name": "Luciano Spalletti"
+        },
+        "ko": "루치아노 스팔레티",
+        "source_index": 229,
+        "source_team_ko": "유벤투스"
+      },
+      {
+        "coach_id": 16111977,
+        "identity": {
+          "name": "Luis García Plaza"
+        },
+        "ko": "루이스 가르시아",
+        "source_index": 230,
+        "source_team_ko": "세비야 FC",
+        "provider_identity": {
+          "name": "Luis García Plaza",
+          "date_of_birth": "1972-12-01"
+        },
+        "identity_source": "https://www.luisgarciaplaza.es/luis/"
+      },
+      {
+        "coach_id": 523959,
+        "identity": {
+          "name": "Luis Enrique"
+        },
+        "ko": "루이스 엔리케",
+        "source_index": 231,
+        "source_team_ko": "파리 생제르맹"
+      },
+      {
+        "coach_id": 455944,
+        "identity": {
+          "name": "Luis Ramis Monfort"
+        },
+        "ko": "루이스 라미스",
+        "source_index": 232,
+        "source_team_ko": "부르고스 CF"
+      },
+      {
+        "coach_id": 455819,
+        "identity": {
+          "name": "Marco Giampaolo"
+        },
+        "ko": "마르코 잠파올로",
+        "source_index": 234,
+        "source_team_ko": "크레모네세"
+      },
+      {
+        "coach_id": 896306,
+        "identity": {
+          "name": "Martin O'Neill"
+        },
+        "ko": "마틴 오닐",
+        "source_index": 238,
+        "source_team_ko": "셀틱"
+      },
+      {
+        "coach_id": 456450,
+        "identity": {
+          "name": "Michael Köllner"
+        },
+        "ko": "미하엘 쾰너",
+        "source_index": 240,
+        "source_team_ko": "블라우-바이스 린츠"
+      },
+      {
+        "coach_id": 27440217,
+        "identity": {
+          "name": "Nico Willig"
+        },
+        "ko": "니코 빌리히",
+        "source_index": 244,
+        "source_team_ko": "VfB 슈투트가르트 II"
+      },
+      {
+        "coach_id": 896137,
+        "identity": {
+          "name": "Niels Frederiksen"
+        },
+        "ko": "닐스 프레데릭센",
+        "source_index": 245,
+        "source_team_ko": "레흐 포즈난"
+      },
+      {
+        "coach_id": 455991,
+        "identity": {
+          "name": "Nuno Espírito Santo"
+        },
+        "ko": "누누 에스피리투 산투",
+        "source_index": 247,
+        "source_team_ko": "웨스트 햄 유나이티드"
+      },
+      {
+        "coach_id": 199988,
+        "identity": {
+          "name": "Okan Buruk"
+        },
+        "ko": "오칸 부루크",
+        "source_index": 248,
+        "source_team_ko": "갈라타사라이"
+      },
+      {
+        "coach_id": 455701,
+        "identity": {
+          "name": "Peter Zeidler"
+        },
+        "ko": "페터 차이들러",
+        "source_index": 253,
+        "source_team_ko": "로잔 스포르"
+      },
+      {
+        "coach_id": 523928,
+        "identity": {
+          "name": "Sérgio Marceneiro Conceição"
+        },
+        "ko": "세르지우 콘세이상",
+        "source_index": 261,
+        "source_team_ko": "알이티하드"
+      },
+      {
+        "coach_id": 523962,
+        "identity": {
+          "name": "Ståle Solbakken"
+        },
+        "ko": "스톨레 솔바켄",
+        "source_index": 263,
+        "source_team_ko": "노르웨이"
+      },
+      {
+        "coach_id": 10626699,
+        "identity": {
+          "name": "Stefan Billborn"
+        },
+        "ko": "스테판 빌보른",
+        "source_index": 264,
+        "source_team_ko": "IFK 예테보리"
+      },
+      {
+        "coach_id": 536978,
+        "identity": {
+          "name": "Stephen Kenny"
+        },
+        "ko": "스티븐 케니",
+        "source_index": 265,
+        "source_team_ko": "세인트 패트릭스 애슬레틱"
+      },
+      {
+        "coach_id": 523937,
+        "identity": {
+          "name": "Thomas Tuchel"
+        },
+        "ko": "토마스 투헬",
+        "source_index": 272,
+        "source_team_ko": "잉글랜드"
+      },
+      {
+        "coach_id": 9938631,
+        "identity": {
+          "name": "Vítor de Oliveira Lopes Pereira"
+        },
+        "ko": "비토르 페레이라",
+        "source_index": 275,
+        "source_team_ko": "노팅엄 포리스트"
+      },
+      {
+        "coach_id": 23180,
+        "identity": {
+          "name": "Arne Slot"
+        },
+        "ko": "아르네 슬롯",
+        "source_index": 279,
+        "source_team_ko": "리버풀"
+      },
+      {
+        "coach_id": 260206,
+        "identity": {
+          "name": "Alexander Medina Reobasco"
+        },
+        "ko": "알렉산데르 메디나",
+        "source_index": 283,
+        "source_team_ko": "에스투디안테스 데라플라타"
+      },
+      {
+        "coach_id": 37250724,
+        "identity": {
+          "name": "Steve Cooper"
+        },
+        "ko": "스티브 쿠퍼",
+        "source_index": 284,
+        "source_team_ko": "브뢴뷔 IF"
+      },
+      {
+        "coach_id": 128261,
+        "identity": {
+          "name": "Vincenzo Italiano"
+        },
+        "ko": "빈첸초 이탈리아노",
+        "source_index": 285,
+        "source_team_ko": "볼로냐"
+      },
+      {
+        "coach_id": 236,
+        "identity": {
+          "name": "Vincent Kompany"
+        },
+        "ko": "빈센트 콤파니",
+        "source_index": 286,
+        "source_team_ko": "바이에른 뮌헨"
+      },
+      {
+        "coach_id": 60442,
+        "identity": {
+          "name": "Wouter Vrancken"
+        },
+        "ko": "바우터르 브라컨",
+        "source_index": 287,
+        "source_team_ko": "신트-트라위던"
+      },
+      {
+        "coach_id": 19960388,
+        "identity": {
+          "name": "Andoni Iraola"
+        },
+        "ko": "안도니 이라올라",
+        "source_index": 291,
+        "source_team_ko": "AFC 본머스"
+      },
+      {
+        "coach_id": 82974,
+        "identity": {
+          "name": "Brian Priske Pedersen"
+        },
+        "ko": "브리안 프리스케",
+        "source_index": 296,
+        "source_team_ko": "스파르타 프라하"
+      },
+      {
+        "coach_id": 37352367,
+        "identity": {
+          "name": "Hans-Dieter Flick"
+        },
+        "ko": "한스-디터 플릭",
+        "source_index": 298,
+        "source_team_ko": "FC 바르셀로나"
+      },
+      {
+        "coach_id": 307,
+        "identity": {
+          "name": "Mikel Arteta"
+        },
+        "ko": "미켈 아르테타",
+        "source_index": 305,
+        "source_team_ko": "아스널"
+      },
+      {
+        "coach_id": 45305,
+        "identity": {
+          "name": "Pellegrino Matarazzo"
+        },
+        "ko": "펠레그리노 마타라초",
+        "source_index": 306,
+        "source_team_ko": "레알 소시에다드"
+      },
+      {
+        "coach_id": 1068613,
+        "identity": {
+          "name": "Marko Nikolić"
+        },
+        "ko": "마르코 니콜리치",
+        "source_index": 313,
+        "source_team_ko": "AEK 아테네"
+      },
+      {
+        "coach_id": 31151,
+        "identity": {
+          "name": "Timo Schultz"
+        },
+        "ko": "티모 슐츠",
+        "source_index": 315,
+        "source_team_ko": "Vfl 오스나브뤼크"
+      },
+      {
+        "coach_id": 37647611,
+        "identity": {
+          "name": "Michael James Jackson"
+        },
+        "ko": "마이크 잭슨",
+        "source_index": 316,
+        "source_team_ko": "번리",
+        "provider_identity": {
+          "name": "Michael James Jackson",
+          "date_of_birth": "1973-12-04"
+        },
+        "identity_source": "https://www.burnleyfootballclub.com/media-article/jacksons-pre-match-points-arsenal-a"
+      },
+      {
+        "coach_id": 526440,
+        "identity": {
+          "name": "Borja Jiménez Sáez"
+        },
+        "ko": "보르하 히메네스",
+        "source_index": 317,
+        "source_team_ko": "스포르팅 히혼"
+      },
+      {
+        "coach_id": 456360,
+        "identity": {
+          "name": "Carlos Corberán Vallet"
+        },
+        "ko": "카를로스 코르베란",
+        "source_index": 319,
+        "source_team_ko": "발렌시아 CF"
+      },
+      {
+        "coach_id": 186111,
+        "identity": {
+          "name": "Antonio Hidalgo"
+        },
+        "ko": "안토니오 이달고",
+        "source_index": 320,
+        "source_team_ko": "RC 데포르티보"
+      },
+      {
+        "coach_id": 1631,
+        "identity": {
+          "name": "Patrick Kisnorbo"
+        },
+        "ko": "패트릭 키스노보",
+        "source_index": 324,
+        "source_team_ko": "시드니 FC"
+      },
+      {
+        "coach_id": 94328,
+        "identity": {
+          "name": "César Peixoto"
+        },
+        "ko": "세자르 페이쇼투",
+        "source_index": 326,
+        "source_team_ko": "질 비센트 FC"
+      },
+      {
+        "coach_id": 29535,
+        "identity": {
+          "name": "Bo Svensson"
+        },
+        "ko": "보 스벤손",
+        "source_index": 327,
+        "source_team_ko": "FC 코펜하겐"
+      },
+      {
+        "coach_id": 127495,
+        "identity": {
+          "name": "Filippo Inzaghi"
+        },
+        "ko": "필리포 인자기",
+        "source_index": 332,
+        "source_team_ko": "팔레르모"
+      },
+      {
+        "coach_id": 38927,
+        "identity": {
+          "name": "Enrico Maaßen"
+        },
+        "ko": "엔리코 마센",
+        "source_index": 337,
+        "source_team_ko": "장크트갈렌"
+      },
+      {
+        "coach_id": 30314,
+        "identity": {
+          "name": "Matthias Jaissle"
+        },
+        "ko": "마티아스 야이슬레",
+        "source_index": 340,
+        "source_team_ko": "알아흘리"
+      },
+      {
+        "coach_id": 37566248,
+        "identity": {
+          "name": "Francesco Farioli"
+        },
+        "ko": "프란체스코 파리올리",
+        "source_index": 341,
+        "source_team_ko": "FC 포르투"
+      },
+      {
+        "coach_id": 127582,
+        "identity": {
+          "name": "Francesco Modesto"
+        },
+        "ko": "프란체스코 모데스토",
+        "source_index": 343,
+        "source_team_ko": "만토바"
+      },
+      {
+        "coach_id": 198883,
+        "identity": {
+          "name": "Mattia Croci-Torti"
+        },
+        "ko": "마티아 크로치-토르티",
+        "source_index": 345,
+        "source_team_ko": "FC 루가노"
+      },
+      {
+        "coach_id": 370847,
+        "identity": {
+          "name": "Rui Borges"
+        },
+        "ko": "후이 보르지스",
+        "source_index": 346,
+        "source_team_ko": "스포르팅 CP"
+      },
+      {
+        "coach_id": 4115,
+        "identity": {
+          "name": "Nuri Şahin"
+        },
+        "ko": "누리 샤힌",
+        "source_index": 348,
+        "source_team_ko": "바샥셰히르"
+      },
+      {
+        "coach_id": 645,
+        "identity": {
+          "name": "Michael Carrick"
+        },
+        "ko": "마이클 캐릭",
+        "source_index": 349,
+        "source_team_ko": "맨체스터 유나이티드"
+      },
+      {
+        "coach_id": 37553756,
+        "identity": {
+          "name": "Alessio Lisci"
+        },
+        "ko": "알레시오 리시",
+        "source_index": 350,
+        "source_team_ko": "오사수나"
+      },
+      {
+        "coach_id": 37610194,
+        "identity": {
+          "name": "Paolo Vanoli"
+        },
+        "ko": "파올로 바놀리",
+        "source_index": 353,
+        "source_team_ko": "피오렌티나"
+      },
+      {
+        "coach_id": 33587721,
+        "identity": {
+          "name": "Juan Funes Arjona"
+        },
+        "ko": "푸네스",
+        "source_index": 355,
+        "source_team_ko": "말라가 CF",
+        "provider_identity": {
+          "name": "Juan Francisco Funes Arjona",
+          "date_of_birth": "1983-06-25"
+        },
+        "identity_source": "https://www.malagacf.com/jugadores/funes"
+      },
+      {
+        "coach_id": 1553203,
+        "identity": {
+          "name": "Massimiliano Alvini"
+        },
+        "ko": "마시밀리아노 알비니",
+        "source_index": 358,
+        "source_team_ko": "프로시노네"
+      },
+      {
+        "coach_id": 5125,
+        "identity": {
+          "name": "David Gray"
+        },
+        "ko": "데이비드 그레이",
+        "source_index": 359,
+        "source_team_ko": "히버니언"
+      },
+      {
+        "coach_id": 120469,
+        "identity": {
+          "name": "John Russell"
+        },
+        "ko": "존 러셀",
+        "source_index": 362,
+        "source_team_ko": "슬라이고 로버스"
+      },
+      {
+        "coach_id": 10293491,
+        "identity": {
+          "name": "Eder Sarabia Armesto"
+        },
+        "ko": "에데르 사라비아",
+        "source_index": 365,
+        "source_team_ko": "엘체 CF"
+      },
+      {
+        "coach_id": 529482,
+        "identity": {
+          "name": "Régis Le Bris"
+        },
+        "ko": "레지스 르브리스",
+        "source_index": 368,
+        "source_team_ko": "선덜랜드"
+      },
+      {
+        "coach_id": 127483,
+        "identity": {
+          "name": "Daniele De Rossi"
+        },
+        "ko": "다니엘레 데로시",
+        "source_index": 372,
+        "source_team_ko": "제노아"
+      },
+      {
+        "coach_id": 1398,
+        "identity": {
+          "name": "Martín Demichelis"
+        },
+        "ko": "마르틴 데미첼리스",
+        "source_index": 373,
+        "source_team_ko": "RCD 마요르카"
+      },
+      {
+        "coach_id": 37680707,
+        "identity": {
+          "name": "Johannes Hoff Thorup"
+        },
+        "ko": "요하네스 호프 토루프",
+        "source_index": 379,
+        "source_team_ko": "SK 라피드"
+      },
+      {
+        "coach_id": 37679,
+        "identity": {
+          "name": "Fabian Hürzeler"
+        },
+        "ko": "파비안 휘르첼러",
+        "source_index": 381,
+        "source_team_ko": "브라이턴 호브 앨비언"
+      },
+      {
+        "coach_id": 37337215,
+        "identity": {
+          "name": "Rik Demil"
+        },
+        "ko": "릭 더밀",
+        "source_index": 382,
+        "source_team_ko": "KAA 겐트"
+      },
+      {
+        "coach_id": 25008,
+        "identity": {
+          "name": "Oscar Hiljemark"
+        },
+        "ko": "오스카르 힐리에마르크",
+        "source_index": 384,
+        "source_team_ko": "피사"
+      },
+      {
+        "coach_id": 62986,
+        "identity": {
+          "name": "Luis García"
+        },
+        "ko": "루이스 가르시아",
+        "source_index": 385,
+        "source_team_ko": "UD 라스팔마스",
+        "provider_identity": {
+          "name": "Luis García Fernández",
+          "date_of_birth": "1981-02-06"
+        },
+        "identity_source": "https://www.udlaspalmas.es/noticias/luis-garcia-vengo-con-mucha-ilusion-con-ganas-de-conocer-a-los-jugadores-y-a-los-chicos-de-la-cantera"
+      },
+      {
+        "coach_id": 37691812,
+        "identity": {
+          "name": "Adrian Siemieniec"
+        },
+        "ko": "아드리안 시에미에니에츠",
+        "source_index": 386,
+        "source_team_ko": "야기엘로니아 비야위스토크"
+      },
+      {
+        "coach_id": 127755,
+        "identity": {
+          "name": "Paolo Bianco"
+        },
+        "ko": "파올로 비앙코",
+        "source_index": 389,
+        "source_team_ko": "AC 몬차"
+      },
+      {
+        "coach_id": 727,
+        "identity": {
+          "name": "Alberto Aquilani"
+        },
+        "ko": "알베르토 아퀼라니",
+        "source_index": 390,
+        "source_team_ko": "카탄차로"
+      },
+      {
+        "coach_id": 459829,
+        "identity": {
+          "name": "Toni Korkeakunnas"
+        },
+        "ko": "토니 코르케아쿠나스",
+        "source_index": 391,
+        "source_team_ko": "FK 헤우게순"
+      },
+      {
+        "coach_id": 37726653,
+        "identity": {
+          "name": "Danny Röhl"
+        },
+        "ko": "대니 뢸",
+        "source_index": 396,
+        "source_team_ko": "레인저스"
+      },
+      {
+        "coach_id": 510,
+        "identity": {
+          "name": "Cesc Fàbregas"
+        },
+        "ko": "세스크 파브레가스",
+        "source_index": 398,
+        "source_team_ko": "코모 1907"
+      },
+      {
+        "coach_id": 153106,
+        "identity": {
+          "name": "Jørgen Vik"
+        },
+        "ko": "예르겐 비크",
+        "source_index": 401,
+        "source_team_ko": "트롬쇠 IL"
+      }
+    ]
+  }
+}
