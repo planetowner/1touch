@@ -6,27 +6,29 @@ NAME_COLUMNS = {
     "players": ("player_id", "display_name_ko"),
 }
 LOCALE_COLUMNS = {
-    'en': ('name', 'display_name', 'short_name', 'short_name', 'name'),
-    'ko': ('name_ko', 'display_name_ko', 'short_name_ko', 'short_name_ko', 'name_ko'),
-    'ja': ('name_ja', 'display_name_ja', None, 'short_name_ja', 'name_ja'),
-    'zh': ('name_zh', 'display_name_zh', None, 'short_name_zh', 'name_zh'),
+    'en': ('name', 'display_name', 'short_name', 'short_name', 'name', 'name'),
+    'ko': ('name_ko', 'display_name_ko', 'short_name_ko', 'short_name_ko', 'name_ko', 'name_ko'),
+    'ja': ('name_ja', 'display_name_ja', None, 'short_name_ja', 'name_ja', 'name_ja'),
+    'zh': ('name_zh', 'display_name_zh', None, 'short_name_zh', 'name_zh', 'name_zh'),
 }
 
 
 def korean_names() -> dict[str, dict[str, str]]:
     catalogs = {kind: (kind, *columns) for kind, columns in NAME_COLUMNS.items()}
     catalogs["team_short_names"] = ("teams", "team_id", "short_name_ko")
+    catalogs["coaches"] = ("coaches", "coach_id", "name_ko")
     return _read_catalogs(catalogs)
 
 
 def localized_names(locale: str) -> dict[str, dict[str, str]]:
-    team, player, team_short, player_short, country = LOCALE_COLUMNS[locale]
-    # 일본어·중국어 팀 짧은 이름은 아직 번역이 없어 빈 목록으로 응답해요.
+    team, player, team_short, player_short, country, coach = LOCALE_COLUMNS[locale]
+    # 번역이 없는 언어는 빈 목록을 보내 화면에서 원문 이름을 쓰게 해요.
     catalogs = {'teams': ('teams', 'team_id', team), 'players': ('players', 'player_id', player),
                 'team_short_names': ('teams', 'team_id', team_short),
                 'player_short_names': ('players', 'player_id', player_short),
                 'competitions': ('competitions', 'competition_id', team),
-                'countries': ('countries', 'country_id', country)}
+                'countries': ('countries', 'country_id', country),
+                'coaches': ('coaches', 'coach_id', coach)}
     return _read_catalogs(catalogs)
 
 
