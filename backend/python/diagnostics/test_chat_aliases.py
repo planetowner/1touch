@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from mysql.connector import IntegrityError
 
 with patch("mysql.connector.pooling.MySQLConnectionPool"):
+    from diagnostics import migrate_fixture_chat_aliases as migration
     from one_touch_loader.api.repos import chat_repo
     from one_touch_loader.api.routes import chat
     from one_touch_loader.api.services import chat_aliases
@@ -15,6 +16,7 @@ with patch("mysql.connector.pooling.MySQLConnectionPool"):
 
 NICKNAME = {"nickname_en": "Cruyff_A8Q4", "nickname_ko": "크루이프_A8Q4"}
 OTHER_NICKNAME = {"nickname_en": "Rooney_X7K2", "nickname_ko": "루니_X7K2"}
+PLAYERS = [{"short_en": "Cruyff", "short_ko": "크루이프"}, {"short_en": "Rooney", "short_ko": "루니"}]
 
 
 def stored_message(**changes):
@@ -23,20 +25,10 @@ def stored_message(**changes):
 
 
 class ChatNicknameTests(unittest.TestCase):
-    def test_all_145_players_have_short_english_and_korean_names(self):
-        players = chat_aliases.PLAYER_NAMES
-        self.assertEqual(len(players), 145)
-        self.assertEqual(len({p["english_name"] for p in players}), 145)
-        by_name = {p["english_name"]: p for p in players}
-        for full, english, korean in [("Johan Cruyff", "Cruyff", "크루이프"),
-                                      ("Wayne Rooney", "Rooney", "루니"),
-                                      ("Zinedine Zidane", "Zidane", "지단")]:
-            self.assertEqual((by_name[full]["short_en"], by_name[full]["short_ko"]), (english, korean))
-        for player in players:
-            self.assertRegex(player["short_en"], r"^[A-Za-z]+$")
-            self.assertRegex(player["short_ko"], r"^[가-힣]+$")
+    def test_both_languages_use_one_player_and_suffix_from_the_given_catalog(self):
+        for player in PLAYERS:
             with patch.object(chat_aliases.secrets, "choice", side_effect=[player, "A", "8", "Q", "4"]):
-                names = chat_aliases.new_nickname()
+                names = chat_aliases.new_nickname(PLAYERS)
             self.assertEqual(names, {f"nickname_{lang}": f"{player[f'short_{lang}']}_A8Q4" for lang in ("en", "ko")})
 
     def test_an_assigned_name_is_reused_without_generating_another(self):
@@ -46,16 +38,32 @@ class ChatNicknameTests(unittest.TestCase):
             self.assertEqual(chat_repo.get_or_create_alias(cursor, 928371, 42), NICKNAME)
         generate.assert_not_called()
         self.assertEqual(cursor.execute.call_count, 1)
+        cursor.fetchall.assert_not_called()
+
+    def test_new_assignments_read_the_current_database_catalog(self):
+        cursor = Mock()
+        cursor.fetchone.return_value = None
+        cursor.fetchall.side_effect = [[PLAYERS[0]], [PLAYERS[1]]]
+        first = chat_repo.get_or_create_alias(cursor, 928371, 42)
+        second = chat_repo.get_or_create_alias(cursor, 5, 42)
+        self.assertTrue(first["nickname_en"].startswith("Cruyff_"))
+        self.assertTrue(second["nickname_en"].startswith("Rooney_"))
+        self.assertEqual(cursor.fetchall.call_count, 2)
+        self.assertEqual(cursor.execute.call_args_list[1].args[0],
+                         "SELECT short_en,short_ko FROM chat_alias_players ORDER BY english_name")
 
     def test_duplicate_nickname_is_replaced_but_other_database_errors_propagate(self):
         cursor = Mock()
         cursor.fetchone.return_value = None
-        cursor.execute.side_effect = [None, IntegrityError(errno=1062), None]
-        with patch.object(chat_repo, "new_nickname", side_effect=[NICKNAME, OTHER_NICKNAME]):
+        cursor.fetchall.return_value = PLAYERS
+        cursor.execute.side_effect = [None, None, IntegrityError(errno=1062), None]
+        with patch.object(chat_repo, "new_nickname", side_effect=[NICKNAME, OTHER_NICKNAME]) as generate:
             self.assertEqual(chat_repo.get_or_create_alias(cursor, 928371, 42), OTHER_NICKNAME)
+        self.assertEqual([call.args for call in generate.call_args_list], [(PLAYERS,), (PLAYERS,)])
+        cursor.fetchall.assert_called_once()
         self.assertEqual(cursor.execute.call_args.args[1], (42, 928371, "Rooney_X7K2", "루니_X7K2"))
 
-        cursor.execute.side_effect = [None, IntegrityError(errno=1452)]
+        cursor.execute.side_effect = [None, None, IntegrityError(errno=1452)]
         with self.assertRaises(IntegrityError), patch.object(chat_repo, "new_nickname", return_value=NICKNAME):
             chat_repo.get_or_create_alias(cursor, 928371, 42)
 
@@ -89,6 +97,44 @@ class ChatNicknameTests(unittest.TestCase):
         self.assertEqual(fetch.call_args.args[1], (42, 5, 20, 2))
         self.assertEqual([m["message_id"] for m in history], [11, 12])
         self.assertEqual(history[0], chat_aliases.public_chat_message(stored_message(), 5))
+
+
+class ChatAliasMigrationTests(unittest.TestCase):
+    def test_preview_does_not_create_tables_or_assign_names(self):
+        with patch("sys.argv", ["migrate_fixture_chat_aliases"]), patch("builtins.print") as output, \
+                patch.object(migration, "fetch_one_dict", return_value=None), \
+                patch.object(migration, "transaction") as transaction, \
+                patch.object(migration, "pending_authors", return_value=[{}]) as pending, \
+                patch.object(migration, "backfill_aliases") as backfill:
+            migration.main()
+        transaction.assert_not_called()
+        backfill.assert_not_called()
+        pending.assert_called_once_with(False)
+        self.assertIn("Player catalog present: False; players: 0", output.call_args.args[0])
+
+    def test_apply_prepares_only_missing_tables_before_backfill(self):
+        for catalog_exists, aliases_exist in [(False, False), (False, True), (True, True)]:
+            with self.subTest(catalog_exists=catalog_exists, aliases_exist=aliases_exist), \
+                    patch("sys.argv", ["migrate_fixture_chat_aliases", "--apply"]), patch("builtins.print"), \
+                    patch.object(migration, "fetch_one_dict", side_effect=[
+                        {"present": 1} if catalog_exists else None,
+                        {"present": 1} if aliases_exist else None, {"count": 145}]), \
+                    patch.object(migration, "transaction") as transaction, \
+                    patch.object(migration, "pending_authors", return_value=[]):
+                cursor = transaction.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+
+                def backfill():
+                    statements = [call.args[0] for call in cursor.execute.call_args_list]
+                    expected = [table for table, exists in zip(migration.TABLES, (catalog_exists, aliases_exist)) if not exists]
+                    self.assertEqual(statements, [(migration.SQL_DIRECTORY / f"migrate_{table}.sql").read_text(encoding="utf-8")
+                                                  for table in expected])
+                    return 0
+
+                with patch.object(migration, "backfill_aliases", side_effect=backfill) as assign:
+                    migration.main()
+                assign.assert_called_once_with()
+                if catalog_exists and aliases_exist:
+                    transaction.assert_not_called()
 
 
 class ChatAnonymousSocketTests(unittest.TestCase):
