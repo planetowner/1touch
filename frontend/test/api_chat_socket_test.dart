@@ -46,11 +46,11 @@ void main() {
 
     final message = await nextMessage;
     expect(message.messageId, 11);
-    expect(message.displayAuthor('en'), 'Cruyff_A8Q4');
+    expect(message.displayAuthor('en'), 'cruyff_a8q4');
     expect(message.isMine, isTrue);
     expect(
       message.displayAuthor('ko'),
-      '크루이프_A8Q4',
+      '크루이프_a8q4',
     );
     await session.close();
     expect(connection.closedCode, 1000);

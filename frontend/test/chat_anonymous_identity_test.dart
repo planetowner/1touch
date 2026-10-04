@@ -6,8 +6,8 @@ void main() {
   final anonymousMessage = <String, Object?>{
     'message_id': 12,
     'fixture_id': 42,
-    'nickname_en': 'Cruyff_A8Q4',
-    'nickname_ko': '크루이프_A8Q4',
+    'nickname_en': 'ChaBumKun_WUE8',
+    'nickname_ko': '차범근_WUE8',
     'is_mine': false,
     'author_deleted': false,
     'text': 'Hello',
@@ -22,9 +22,9 @@ void main() {
       'display_name': 'Real Name',
       'avatar_url': '/v1/users/928371/avatar',
     }));
-    expect(message.displayAuthor('ko'), '크루이프_A8Q4');
+    expect(message.displayAuthor('ko'), '차범근_wue8');
     for (final language in ['en', 'ja', 'zh']) {
-      expect(message.displayAuthor(language), 'Cruyff_A8Q4');
+      expect(message.displayAuthor(language), 'chaBumKun_wue8');
     }
     expect(message.isMine, isFalse);
   });
