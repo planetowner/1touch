@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/formation_layout.dart';
+import 'package:onetouch/core/formation_player_positions.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -11,7 +13,6 @@ import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
-import 'package:onetouch/features/team/best_eleven/best_eleven_formation_layouts.dart';
 
 import 'package:onetouch/l10n/app_localizations.dart';
 part 'best_eleven_formation_filter.dart';

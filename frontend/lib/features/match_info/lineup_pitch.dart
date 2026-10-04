@@ -9,8 +9,6 @@ class LineupPitch extends StatelessWidget {
 
   /// Called when the user taps a player dot.
   final void Function(BuildContext context, LineupPlayer player)? onPlayerTap;
-  final String? homeFormation;
-  final String? awayFormation;
   final Color homeColor;
   final Color awayColor;
 
@@ -19,8 +17,6 @@ class LineupPitch extends StatelessWidget {
     required this.awayRows,
     required this.homeRows,
     this.onPlayerTap,
-    this.homeFormation,
-    this.awayFormation,
     required this.homeColor,
     required this.awayColor,
   });
@@ -29,28 +25,6 @@ class LineupPitch extends StatelessWidget {
   static const double _basePitchHeight = 820;
   static const double _verticalPadding = 20;
 
-  double _pitchHeight(BuildContext context) {
-    const playerCircleHeight = 32.0;
-    const playerNameGap = 9.0;
-    const playerNameLines = 2;
-    final nameStyle = Eyebrow.style;
-    final scaledFontSize = MediaQuery.textScalerOf(context).scale(
-      nameStyle.fontSize ?? 12,
-    );
-    final playerRowHeight = playerCircleHeight +
-        playerNameGap +
-        scaledFontSize * (nameStyle.height ?? 1) * playerNameLines;
-    final rowCount =
-        homeRows.length > awayRows.length ? homeRows.length : awayRows.length;
-    const baseHalfHeight =
-        (_basePitchHeight - _verticalPadding * 2 - _centerGap) / 2;
-    final contentHalfHeight = playerRowHeight * rowCount;
-    final requiredHalfHeight =
-        contentHalfHeight > baseHalfHeight ? contentHalfHeight : baseHalfHeight;
-    return (_verticalPadding * 2 + _centerGap + requiredHalfHeight * 2)
-        .ceilToDouble();
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -58,27 +32,12 @@ class LineupPitch extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(tr(context, "LINEUP"), style: Body2_b.style),
-            const Spacer(),
-            Flexible(
-              child: Text(
-                tr(context, 'HOME {home}  •  AWAY {away}', {
-                  'home': homeFormation ?? '—',
-                  'away': awayFormation ?? '—'
-                }),
-                style: Eyebrow.style,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
+        Text(tr(context, "LINEUP"), style: Body2_b.style),
         const SizedBox(height: 12),
         Container(
           key: const ValueKey('match-lineup-card'),
-          height: _pitchHeight(context),
+          // 포메이션과 이름 길이가 바뀌어도 경기장 크기는 유지해요.
+          height: _basePitchHeight,
           decoration: BoxDecoration(
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(20),
@@ -101,41 +60,26 @@ class LineupPitch extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    // Away: GK pinned to the top edge, attackers pinned to
-                    // the halfway line — whatever rows fall in between
-                    // spread out evenly across this half automatically.
                     Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          for (final row in awayRows)
-                            _PlayerRow(
-                              players: row,
-                              playerCircleColor: awayColor,
-                              onTap: onPlayerTap == null
-                                  ? null
-                                  : (p) => onPlayerTap!(context, p),
-                            ),
-                        ],
+                      child: _LineupHalf(
+                        rows: awayRows,
+                        reverseVertical: true,
+                        playerCircleColor: awayColor,
+                        onTap: onPlayerTap == null
+                            ? null
+                            : (p) => onPlayerTap!(context, p),
                       ),
                     ),
                     // Gap that the center circle overlaps
                     const SizedBox(height: _centerGap),
-                    // Home: attackers pinned to the halfway line, GK
-                    // pinned to the bottom edge, same even spread.
                     Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          for (final row in homeRows)
-                            _PlayerRow(
-                              players: row,
-                              playerCircleColor: homeColor,
-                              onTap: onPlayerTap == null
-                                  ? null
-                                  : (p) => onPlayerTap!(context, p),
-                            ),
-                        ],
+                      child: _LineupHalf(
+                        rows: homeRows,
+                        reverseVertical: false,
+                        playerCircleColor: homeColor,
+                        onTap: onPlayerTap == null
+                            ? null
+                            : (p) => onPlayerTap!(context, p),
                       ),
                     ),
                   ],
@@ -144,6 +88,53 @@ class LineupPitch extends StatelessWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _LineupHalf extends StatelessWidget {
+  const _LineupHalf({
+    required this.rows,
+    required this.reverseVertical,
+    required this.playerCircleColor,
+    required this.onTap,
+  });
+
+  final List<List<LineupPlayer>> rows;
+  final bool reverseVertical;
+  final Color playerCircleColor;
+  final void Function(LineupPlayer)? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final players = rows.expand((row) => row).toList();
+    if (players.isNotEmpty &&
+        players.every((player) => player.formationPosition != null)) {
+      return FormationPlayerPositions<LineupPlayer>(
+        players: players,
+        positionOf: (player) => player.formationPosition,
+        playerWidth: 64,
+        reverseVertical: reverseVertical,
+        playerBuilder: (player) => _PlayerDot(
+          player: player,
+          width: 64,
+          playerCircleColor: playerCircleColor,
+          onTap: onTap == null ? null : () => onTap!(player),
+        ),
+      );
+    }
+
+    // 포메이션이 없거나 선수 자리와 다르면 기존의 행 배치를 유지해요.
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        for (final row in rows)
+          _PlayerRow(
+            players: row,
+            playerCircleColor: playerCircleColor,
+            onTap: onTap,
+          ),
       ],
     );
   }
@@ -278,7 +269,7 @@ class _PlayerDot extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 9),
+          const SizedBox(height: 6),
           SizedBox(
             width: width,
             child: Text(
@@ -286,7 +277,7 @@ class _PlayerDot extends StatelessWidget {
                   short: true),
               style: Eyebrow.style,
               textAlign: TextAlign.center,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
