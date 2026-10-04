@@ -1,0 +1,64 @@
+"""출처와 ID를 대조한 감독 이름을 언어별로 같은 이름 카탈로그에 저장해요."""
+import argparse
+from pathlib import Path
+
+from diagnostics import migrate_sportmonks_names as shared
+
+LOCALE_GROUPS = {'ko': ('ko',), 'ja-zh': ('ja', 'zh')}
+SPECS = {'coaches': {
+    'id': 'coach_id', 'prefix': 'name', 'limit': 255, 'identity': {'name': 'name'},
+}}
+
+
+def configuration(locale_group='ko'):
+    suffix = locale_group.replace('-', '_')
+    return {
+        'name': f'coach_names_{suffix}',
+        'seed_path': Path(__file__).with_name(f'coach_names.{locale_group}.json'),
+        'sql_path': Path(__file__).resolve().parents[1] / f'one_touch_loader/sql/migrate_coach_names_{suffix}.sql',
+        'specs': SPECS,
+        'locales': LOCALE_GROUPS[locale_group],
+    }
+
+
+def reviewed_rows(locale_group='ko'):
+    config = configuration(locale_group)
+    return shared.reviewed_rows(seed_path=config['seed_path'], specs=SPECS, locales=config['locales'])
+
+
+def migrate_data(conn, locale_group='ko'):
+    shared.migrate_data(conn, entities=reviewed_rows(locale_group), specs=SPECS, locales=LOCALE_GROUPS[locale_group])
+
+
+def reviewed_player_translation(current, profiles):
+    english = profiles['en']
+    if any(profile.get('id') != current['coach_id'] for profile in profiles.values()):
+        return None, ['provider_id']
+    if shared.identity_value(current['name']) != shared.identity_value(english.get('display_name')):
+        return None, ['name']
+    player_id = english.get('player_id')
+    if player_id is None or any(profile.get('player_id') != player_id or not profile.get('player')
+                                for profile in profiles.values()):
+        return None, ['player_link']
+    # 감독 최상위 이름은 번역되지 않아요. 연결된 선수도 기존 선수 이름과 같은 신원 검증을 거쳐요.
+    player_identity = {'player_id': player_id, 'display_name': english.get('display_name'),
+                       'full_name': english.get('name'), 'date_of_birth': english.get('date_of_birth'),
+                       'nationality_id': english.get('nationality_id')}
+    translated, conflicts = shared.reviewed_translation(
+        'players', player_identity, {locale: profile['player'] for locale, profile in profiles.items()})
+    if conflicts:
+        return None, conflicts
+    return {'coach_id': current['coach_id'], 'identity': {'name': current['name']},
+            **{locale: translated[locale] for locale in shared.LOCALES},
+            'player_identity': player_identity}, []
+
+
+def main():
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--locale-group', choices=LOCALE_GROUPS, default='ko')
+    args, remaining = parser.parse_known_args()
+    shared.run_name_migration(**configuration(args.locale_group), argv=remaining)
+
+
+if __name__ == '__main__':
+    main()

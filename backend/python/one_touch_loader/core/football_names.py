@@ -8,8 +8,8 @@ NAME_COLUMNS = {
 LOCALE_COLUMNS = {
     'en': ('name', 'display_name', 'short_name', 'short_name', 'name', 'name'),
     'ko': ('name_ko', 'display_name_ko', 'short_name_ko', 'short_name_ko', 'name_ko', 'name_ko'),
-    'ja': ('name_ja', 'display_name_ja', None, 'short_name_ja', 'name_ja', None),
-    'zh': ('name_zh', 'display_name_zh', None, 'short_name_zh', 'name_zh', None),
+    'ja': ('name_ja', 'display_name_ja', None, 'short_name_ja', 'name_ja', 'name_ja'),
+    'zh': ('name_zh', 'display_name_zh', None, 'short_name_zh', 'name_zh', 'name_zh'),
 }
 
 

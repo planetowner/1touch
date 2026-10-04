@@ -140,11 +140,11 @@ def main():
                        specs=SPECS, locales=LOCALES)
 
 
-def run_name_migration(*, name, seed_path, sql_path, specs, locales):
+def run_name_migration(*, name, seed_path, sql_path, specs, locales, argv=None):
     # 일반 이름과 짧은 이름은 입력·컬럼만 다르고 검증·백업·저장 순서는 같아요.
     parser = argparse.ArgumentParser(description='Preview names; use --apply to back up and save.')
     parser.add_argument('--apply', action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     entities = reviewed_rows(seed_path=seed_path, specs=specs, locales=locales)
     ready, summary = preview(entities=entities, specs=specs, locales=locales)
     print(json.dumps({'schema_ready': ready, 'tables': summary}, ensure_ascii=False), flush=True)

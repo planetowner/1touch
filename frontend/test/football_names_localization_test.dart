@@ -36,6 +36,13 @@ const _translations = {
   'zh': ['巴塞罗那足球俱乐部', '巴塞罗那足球俱乐部', '赫塔费', '西甲联赛', 'L·梅西', '韩国'],
 };
 
+const _coachTranslations = {
+  'en': 'Antonio Conte',
+  'ko': '안토니오 콘테',
+  'ja': 'アントニオ・コンテ',
+  'zh': '安东尼奥·孔特',
+};
+
 http.Response _response(String locale) {
   final values = _translations[locale]!;
   return http.Response(
@@ -46,7 +53,7 @@ http.Response _response(String locale) {
         'player_short_names': {'184798': values[4]},
         'competitions': {'564': values[3]},
         'countries': {'712': values[5]},
-        'coaches': locale == 'ko' ? {'455384': '안토니오 콘테'} : {},
+        'coaches': {'455384': _coachTranslations[locale]},
       }),
       200,
       headers: {'content-type': 'application/json; charset=utf-8'});
@@ -107,10 +114,11 @@ void main() {
         home: Scaffold(body: MatchInfoTab(fixture: fixture, detail: detail)),
       ));
       await tester.pumpAndSettle();
-      expect(find.text(language == 'ko' ? '안토니오 콘테' : 'Antonio Conte'),
-          findsOneWidget);
-      expect(find.text(language == 'ko' ? 'Antonio Conte' : '안토니오 콘테'),
-          findsNothing);
+      expect(find.text(_coachTranslations[language]!), findsOneWidget);
+      for (final other
+          in _coachTranslations.keys.where((key) => key != language)) {
+        expect(find.text(_coachTranslations[other]!), findsNothing);
+      }
       expect(find.text('Jürgen Klopp'), findsOneWidget);
       expect(detail.coaches.first.name, 'Antonio Conte');
       expect(tester.takeException(), isNull);
