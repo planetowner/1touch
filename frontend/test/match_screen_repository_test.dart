@@ -6,16 +6,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/formation_player_positions.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
+import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_clock.dart';
 import 'package:onetouch/models/fixture_detail.dart';
+import 'package:onetouch/models/team_best_eleven.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/anal.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/matchinfo.dart';
@@ -473,8 +476,6 @@ void main() {
     );
     expect(momentum.values[10], 0.7);
     expect(momentum.values[20], -0.4);
-    expect(lineup.homeFormation, '4-3-3');
-    expect(lineup.awayFormation, '4-2-3-1');
     expect(lineup.homeColor, const Color(0xFFD92455));
     expect(lineup.awayColor, const Color(0xFF18539F));
     _expectLineupPlayerColors(
@@ -514,8 +515,11 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final size in [const Size(320, 568), const Size(430, 932)]) {
-    testWidgets('orients both lineups toward midfield at $size',
+  for (final (size, formation) in [
+    for (final size in [const Size(320, 568), const Size(430, 932)])
+      for (final formation in [null, '4-3-3']) (size, formation),
+  ]) {
+    testWidgets('orients both lineups toward midfield at $size ($formation)',
         (tester) async {
       await _setScreenSize(tester, size);
       // 공급자 좌표는 홈이 오른쪽부터, 원정이 왼쪽부터 시작해요.
@@ -534,6 +538,11 @@ void main() {
         (name: 'Left Winger', row: 4, homeSlot: 3, awaySlot: 1),
       ];
       final detail = _detail(
+        formations: [
+          if (formation != null)
+            for (final teamId in [_fixture.homeTeamId, _fixture.awayTeamId])
+              FixtureFormation(teamId: teamId, formation: formation),
+        ],
         lineups: [
           for (final teamId in [_fixture.homeTeamId, _fixture.awayTeamId])
             for (final (index, position) in positions.indexed)
@@ -555,6 +564,11 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
+      final lineup = tester.widget<LineupPitch>(find.byType(LineupPitch));
+      expect(lineup.homeRows.map((row) => row.length),
+          formation == '4-3-3' ? [3, 2, 1, 4, 1] : [3, 3, 4, 1]);
+      expect(lineup.awayRows.map((row) => row.length),
+          formation == '4-3-3' ? [1, 4, 1, 2, 3] : [1, 4, 3, 3]);
       final pitch = tester.getRect(
         find.byKey(const ValueKey('match-lineup-card')),
       );
@@ -575,6 +589,33 @@ void main() {
         }
         // 골키퍼가 아래인 홈은 왼쪽 선수가 화면 왼쪽, 위인 원정은 반대예요.
         final isHome = teamId == _fixture.homeTeamId;
+        if (formation == '4-3-3') {
+          // 중앙 공격수는 윙어보다 앞에, 풀백은 센터백보다 앞에 있어야 해요.
+          for (final (front, back) in [(9, 8), (9, 10), (1, 2), (4, 3)]) {
+            expect(
+                players[front].top,
+                isHome
+                    ? lessThan(players[back].top)
+                    : greaterThan(players[back].top));
+          }
+          for (var i = 0; i < players.length; i++) {
+            for (var j = i + 1; j < players.length; j++) {
+              expect(players[i].overlaps(players[j]), isFalse,
+                  reason: 'players $i and $j must fit their names');
+            }
+          }
+          // 중앙 미드필더만 골키퍼 쪽으로 내려가고, 양옆 선수는 같은 줄에 있어야 해요.
+          expect(players[5].top, players[7].top);
+          expect(players[6].center.dx, closeTo(players[0].center.dx, 0.001));
+          expect(
+              players[6].top,
+              isHome
+                  ? greaterThan(players[5].bottom)
+                  : lessThan(players[5].top));
+        } else {
+          expect(players[5].top, players[6].top);
+          expect(players[6].top, players[7].top);
+        }
         for (final (right, left) in [(1, 4), (5, 7), (8, 10)]) {
           expect(
             players[left].center.dx,
@@ -595,6 +636,119 @@ void main() {
       expect(rows.last[9].bottom, lessThan(rows.first[9].top));
       expect(tester.takeException(), isNull);
     });
+  }
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    for (final formation in ['4-3-3', '4-1-2-3', '4-2-3-1', '3-4-3']) {
+      testWidgets('shares all Best Eleven coordinates in $formation at $size',
+          (tester) async {
+        await _setScreenSize(tester, size);
+        final rowWidths = [1, ...formation.split('-').map(int.parse)];
+        final slots = [
+          for (var row = 0; row < rowWidths.length; row++)
+            for (var column = 1; column <= rowWidths[row]; column++)
+              '${row + 1}:$column',
+        ];
+        String reverseSlot(String slot) {
+          final parts = slot.split(':').map(int.parse).toList();
+          return '${parts[0]}:${rowWidths[parts[0] - 1] + 1 - parts[1]}';
+        }
+
+        Offset relativeCenter(Finder finder, Rect area) {
+          final center = tester.getCenter(finder) - area.topLeft;
+          return Offset(center.dx / area.width, center.dy / area.height);
+        }
+
+        await tester.pumpWidget(MaterialApp(
+          theme: app_style.darktheme,
+          home: Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: BestElevenPitch(
+                teamId: _fixture.homeTeamId,
+                formation: formation,
+                players: [
+                  for (final (index, slot) in slots.indexed)
+                    BestElevenEntry(
+                      slotKey: slot,
+                      slotIndex: index,
+                      playerId: index + 1,
+                      playerName: 'Player $index',
+                      starts: 1,
+                      jerseyNumber: index + 1,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ));
+        await tester.pumpAndSettle();
+        final bestPitch = tester.getRect(
+          find.byKey(const ValueKey('team-best-eleven-card')),
+        );
+        final bestPositions = {
+          for (final slot in slots)
+            slot: relativeCenter(
+              find.byKey(ValueKey('best-eleven-player-dot-$slot')),
+              bestPitch,
+            ),
+        };
+        expect(tester.takeException(), isNull);
+
+        final detail = _detail(
+          formations: [
+            for (final teamId in [_fixture.homeTeamId, _fixture.awayTeamId])
+              FixtureFormation(teamId: teamId, formation: formation),
+          ],
+          lineups: [
+            for (final teamId in [_fixture.homeTeamId, _fixture.awayTeamId])
+              for (final (index, slot) in slots.indexed)
+                _lineupEntry(
+                  teamId: teamId,
+                  playerId: index + 1,
+                  playerName: 'Player $index',
+                  formationField:
+                      teamId == _fixture.homeTeamId ? reverseSlot(slot) : slot,
+                  jerseyNumber: index + 1,
+                ),
+          ],
+        );
+        await tester.pumpWidget(MaterialApp(
+          theme: app_style.darktheme,
+          home: Scaffold(
+            body: MatchInfoTab(fixture: detail.fixture, detail: detail),
+          ),
+        ));
+        await tester.pumpAndSettle();
+        final halves = find.byType(FormationPlayerPositions<LineupPlayer>);
+        expect(halves, findsNWidgets(2));
+        expect(
+          tester
+              .getSize(find.byKey(const ValueKey('match-lineup-card')))
+              .height,
+          820,
+        );
+        for (final isHome in [true, false]) {
+          final teamId = isHome ? _fixture.homeTeamId : _fixture.awayTeamId;
+          final half = tester.getRect(isHome ? halves.last : halves.first);
+          for (final (index, slot) in slots.indexed) {
+            final circle = find.descendant(
+              of: find
+                  .byKey(ValueKey('match-lineup-player-$teamId-${index + 1}')),
+              matching: find.byKey(const ValueKey('lineup-player-circle')),
+            );
+            final actual = relativeCenter(circle, half);
+            final expected = bestPositions[isHome ? slot : reverseSlot(slot)]!;
+            expect(actual.dx, closeTo(expected.dx, 0.000001),
+                reason: '$teamId $slot x');
+            expect(actual.dy,
+                closeTo(isHome ? expected.dy : 1 - expected.dy, 0.000001),
+                reason: '$teamId $slot y');
+          }
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
   }
 
   testWidgets('opens player match statistics from a past-match lineup',

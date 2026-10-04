@@ -1950,11 +1950,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "払い戻し · {points}ポイント返還",
     zh: "已退款 · 返还{points}积分"
   ),
-  "HOME {home}  •  AWAY {away}": (
-    ko: "홈 {home}  •  원정 {away}",
-    ja: "ホーム {home}  •  アウェイ {away}",
-    zh: "主队 {home}  •  客队 {away}"
-  ),
   "Match {number}": (ko: "{number}차전", ja: "第{number}戦", zh: "第{number}场"),
   "Replying to {name}": (
     ko: "{name}님에게 답글 남기는 중",

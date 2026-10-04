@@ -37,9 +37,7 @@ class BestElevenPitch extends StatelessWidget {
       playerCircleColor,
     );
 
-    final layoutFormation = bestElevenLayoutFormation(formation);
-    final layout = bestElevenFormationLayouts[layoutFormation] ??
-        buildFallbackBestElevenLayout(layoutFormation);
+    final layout = FormationLayout.forFormation(formation);
 
     return Container(
       key: const ValueKey('team-best-eleven-card'),
@@ -55,45 +53,27 @@ class BestElevenPitch extends StatelessWidget {
         child: SizedBox(
           width: double.infinity,
           child: AspectRatio(
-            aspectRatio: BestElevenFormationLayout.designSize.width /
-                BestElevenFormationLayout.designSize.height,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final scaleX = constraints.maxWidth /
-                    BestElevenFormationLayout.designSize.width;
-                final scaleY = constraints.maxHeight /
-                    BestElevenFormationLayout.designSize.height;
-                return CustomPaint(
-                  painter: _HalfCirclePainter(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.15),
-                  ),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      for (final player in _players)
-                        if (layout.positionForSlot(
-                          bestElevenLayoutSlotKey(
-                            formation,
-                            player.slotKey,
-                          ),
-                        )
-                            case final position?)
-                          Positioned(
-                            left: position.dx * scaleX - 31,
-                            top: position.dy * scaleY - 16,
-                            child: _BestElevenPlayerDot(
-                              player: player,
-                              circleColor: playerCircleColor,
-                              jerseyNumberColor: jerseyNumberColor,
-                            ),
-                          ),
-                    ],
-                  ),
-                );
-              },
+            aspectRatio: FormationLayout.designSize.width /
+                FormationLayout.designSize.height,
+            child: CustomPaint(
+              painter: _HalfCirclePainter(
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.15),
+              ),
+              child: FormationPlayerPositions<_BestElevenPitchPlayer>(
+                players: _players,
+                positionOf: (player) => layout.positionForSlot(
+                  formationLayoutSlotKey(formation, player.slotKey),
+                ),
+                playerWidth: 62,
+                playerBuilder: (player) => _BestElevenPlayerDot(
+                  player: player,
+                  circleColor: playerCircleColor,
+                  jerseyNumberColor: jerseyNumberColor,
+                ),
+              ),
             ),
           ),
         ),
