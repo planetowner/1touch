@@ -726,16 +726,16 @@ void main() {
     final repository = _ControlledFixtureRepository();
     const labels = [
       '점유율',
+      '패스',
+      '패스 성공률',
       '슈팅',
       '유효 슈팅',
       '코너킥',
       '오프사이드',
-      '패스',
-      '패스 성공률',
+      '선방',
       '파울',
       '경고',
       '퇴장',
-      '선방',
     ];
 
     await tester.pumpWidget(MaterialApp(

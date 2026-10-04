@@ -111,20 +111,20 @@ class MatchInfoTab extends StatelessWidget {
   static const _statDefinitions =
       <({String code, String label, bool isPercent})>[
     (code: 'ball-possession', label: 'Ball Possession', isPercent: true),
-    (code: 'shots-total', label: 'Shots', isPercent: false),
-    (code: 'shots-on-target', label: 'Shots on Target', isPercent: false),
-    (code: 'corners', label: 'Corners', isPercent: false),
-    (code: 'offsides', label: 'Offsides', isPercent: false),
     (code: 'passes', label: 'Passes', isPercent: false),
     (
       code: 'successful-passes-percentage',
       label: 'Pass Accuracy',
       isPercent: true,
     ),
+    (code: 'shots-total', label: 'Shots', isPercent: false),
+    (code: 'shots-on-target', label: 'Shots on Target', isPercent: false),
+    (code: 'corners', label: 'Corners', isPercent: false),
+    (code: 'offsides', label: 'Offsides', isPercent: false),
+    (code: 'saves', label: 'Saves', isPercent: false),
     (code: 'fouls', label: 'Fouls', isPercent: false),
     (code: 'yellowcards', label: 'Yellow Cards', isPercent: false),
     (code: 'redcards', label: 'Red Cards', isPercent: false),
-    (code: 'saves', label: 'Saves', isPercent: false),
   ];
 
   List<StatBarData> _statBars() {
