@@ -354,7 +354,7 @@ class MatchInfoTab extends StatelessWidget {
     final awayScore = fixture.awayScore?.toString() ?? '#';
     final coachNamesByTeam = {
       for (final coach in detail?.coaches ?? const <FixtureCoach>[])
-        coach.teamId: coach.name,
+        coach.teamId: coachNameLabel(context, coach.coachId, coach.name),
     };
     final matchEvents = fixtureSummaryEventRows(
       events: detail?.events ?? const <FixtureEvent>[],

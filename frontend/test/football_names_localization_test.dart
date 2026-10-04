@@ -15,7 +15,9 @@ import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/football_names_loader.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/team_overview.dart';
+import 'package:onetouch/screens/MatchScreen_tabs/matchinfo.dart';
 import 'package:onetouch/screens/all_players_screen.dart';
 import 'support/app_catalog.dart';
 import 'support/player_detail_fixture.dart';
@@ -44,6 +46,7 @@ http.Response _response(String locale) {
         'player_short_names': {'184798': values[4]},
         'competitions': {'564': values[3]},
         'countries': {'712': values[5]},
+        'coaches': locale == 'ko' ? {'455384': '안토니오 콘테'} : {},
       }),
       200,
       headers: {'content-type': 'application/json; charset=utf-8'});
@@ -57,6 +60,62 @@ ApiClient _client(Future<http.Response> Function(http.Request) handler) =>
 
 void main() {
   setUpAppCatalog();
+
+  testWidgets('match coaches follow language and keep untranslated originals',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(430, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final api =
+        _client((request) async => _response(request.url.pathSegments[2]));
+    addTearDown(api.close);
+    final repository = FootballNamesRepository(api);
+    const fixture = Fixture(
+      fixtureId: 1,
+      seasonId: 1,
+      competitionId: 564,
+      competitionType: CompetitionType.league,
+      homeTeamId: 83,
+      awayTeamId: 106,
+      status: FixtureStatus.upcoming,
+      roundName: '8',
+      startingAt: null,
+    );
+    final detail = FixtureDetail(
+      fixture: fixture,
+      venueName: null,
+      expectedGoals: null,
+      playerExpectedGoals: [],
+      shots: [],
+      events: [],
+      statistics: [],
+      playerStatistics: [],
+      lineups: [],
+      formations: [],
+      coaches: const [
+        FixtureCoach(teamId: 83, coachId: 455384, name: 'Antonio Conte'),
+        FixtureCoach(teamId: 106, coachId: 455353, name: 'Jürgen Klopp'),
+      ],
+      pressure: [],
+    );
+    for (final language in ['ko', 'en', 'ja', 'zh', 'ko']) {
+      await tester.pumpWidget(MaterialApp(
+        locale: Locale(language),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        builder: (context, child) => FootballNamesLoader(
+            repository: repository, enabled: true, child: child!),
+        home: Scaffold(body: MatchInfoTab(fixture: fixture, detail: detail)),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text(language == 'ko' ? '안토니오 콘테' : 'Antonio Conte'),
+          findsOneWidget);
+      expect(find.text(language == 'ko' ? 'Antonio Conte' : '안토니오 콘테'),
+          findsNothing);
+      expect(find.text('Jürgen Klopp'), findsOneWidget);
+      expect(detail.coaches.first.name, 'Antonio Conte');
+      expect(tester.takeException(), isNull);
+    }
+  });
 
   testWidgets(
       'profile and match sheet countries follow the shared language catalog',

@@ -116,6 +116,8 @@ class PlayerShortNamesTests(unittest.TestCase):
             values.append([(184798, 'Short player')])
             values.append([(564, 'League')])
             values.append([(712, 'Country')])
+            if locale in ('en', 'ko'):
+                values.append([(455384, 'Coach')])
             with patch.object(football_names, 'fetch_all', side_effect=values) as fetch:
                 result = football_names.localized_names(locale)
             self.assertEqual(result['players'], {'184798': 'Full'})

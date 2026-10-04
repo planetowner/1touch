@@ -1,6 +1,8 @@
 """한국어 이름 검색이 기존 선수·팀 범위와 읽기 전용 계약을 유지하는지 확인해요."""
 import unittest
 import sqlite3
+import hashlib
+import json
 from unittest.mock import MagicMock, patch
 
 with patch("mysql.connector.pooling.MySQLConnectionPool") as pool:
@@ -12,9 +14,27 @@ with patch("mysql.connector.pooling.MySQLConnectionPool") as pool:
     from diagnostics import migrate_team_short_names as english_migration
     from diagnostics import correct_serie_a_names_ko as correction
     from diagnostics import migrate_sportmonks_names as multilingual
+    from diagnostics import migrate_coach_names_ko as coach_migration
 
 
 class FootballNamesTests(unittest.TestCase):
+    def test_coach_catalog_omits_missing_translations_and_unavailable_languages(self):
+        with sqlite3.connect(':memory:') as db:
+            db.execute('CREATE TABLE coaches (coach_id INTEGER, name TEXT, name_ko TEXT)')
+            db.executemany('INSERT INTO coaches VALUES (?, ?, ?)', [
+                (455384, 'Antonio Conte', '안토니오 콘테'),
+                (455353, 'Jürgen Klopp', None),
+            ])
+            def fetch(sql):
+                return db.execute(sql).fetchall() if 'FROM coaches' in sql else []
+
+            with patch.object(names_repo, 'fetch_all', side_effect=fetch):
+                self.assertEqual(names_repo.localized_names('ko')['coaches'], {'455384': '안토니오 콘테'})
+                self.assertEqual(names_repo.localized_names('en')['coaches'],
+                                 {'455353': 'Jürgen Klopp', '455384': 'Antonio Conte'})
+                for locale in ('ja', 'zh'):
+                    self.assertEqual(names_repo.localized_names(locale)['coaches'], {})
+
     def test_country_catalog_uses_available_translations_and_preserves_ids(self):
         with sqlite3.connect(':memory:') as db:
             db.execute('CREATE TABLE countries (country_id INTEGER, name TEXT, name_ko TEXT, name_ja TEXT, name_zh TEXT)')
@@ -87,13 +107,13 @@ class FootballNamesTests(unittest.TestCase):
 
     def test_catalog_reads_changed_db_values_without_file_or_restart(self):
         with patch.object(names_repo, "fetch_all", side_effect=[[(8, "리버풀")], [(997, "해리 케인")],
-                                                               [(9, "맨시티")], [(8, "새 이름")], [], [(9, "새 짧은 이름")]]):
+                                                               [(9, "맨시티")], [(455384, "안토니오 콘테")], [(8, "새 이름")], [], [(9, "새 짧은 이름")], []]):
             first = names_repo.korean_names()
             second = names_repo.korean_names()
         self.assertEqual(first, {"teams": {"8": "리버풀"}, "players": {"997": "해리 케인"},
-                                 "team_short_names": {"9": "맨시티"}})
+                                 "team_short_names": {"9": "맨시티"}, "coaches": {"455384": "안토니오 콘테"}})
         self.assertEqual(second, {"teams": {"8": "새 이름"}, "players": {},
-                                  "team_short_names": {"9": "새 짧은 이름"}})
+                                  "team_short_names": {"9": "새 짧은 이름"}, "coaches": {}})
 
     def test_team_search_checks_full_and_short_names_with_bound_parameters(self):
         with patch.object(names_repo, "fetch_all", return_value=[(9,)]) as fetch:
@@ -115,11 +135,11 @@ class FootballNamesTests(unittest.TestCase):
         client = TestClient(app)
         self.assertEqual(client.get("/v1/football-names/ko").status_code, 401)
         app.dependency_overrides[get_user_id] = lambda: 1
-        with patch.object(names_repo, "fetch_all", side_effect=[[(8, "리버풀")], [(997, "해리 케인")], [(9, "맨시티")]]):
+        with patch.object(names_repo, "fetch_all", side_effect=[[(8, "리버풀")], [(997, "해리 케인")], [(9, "맨시티")], [(455384, "안토니오 콘테")]]):
             response = client.get("/v1/football-names/ko")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"teams": {"8": "리버풀"}, "players": {"997": "해리 케인"},
-                                           "team_short_names": {"9": "맨시티"}})
+                                           "team_short_names": {"9": "맨시티"}, "coaches": {"455384": "안토니오 콘테"}})
 
 
 class MigrationTests(unittest.TestCase):
@@ -167,6 +187,49 @@ class MigrationTests(unittest.TestCase):
 
     def tearDown(self):
         self.db.close()
+
+    def test_coach_seed_preserves_attachment_spelling_and_distinguishes_namesakes(self):
+        seed = json.loads(coach_migration.SEED_PATH.read_text(encoding='utf-8'))
+        source_bytes = coach_migration.SEED_PATH.with_name('fixtures').joinpath(
+            'fc_online_managers_402.json').read_bytes()
+        self.assertEqual(hashlib.sha256(source_bytes).hexdigest(), seed['source']['sha256'])
+        source = json.loads(source_bytes)
+        rows = coach_migration.reviewed_rows()['coaches']
+        self.assertEqual((len(source), len(rows)), (402, 162))
+        self.assertEqual(len({row['source_index'] for row in rows}), len(rows))
+        for row in rows:
+            self.assertEqual(source[row['source_index']],
+                             {'name_ko': row['ko'], 'team_ko': row['source_team_ko']})
+        by_id = {row['coach_id']: row for row in rows}
+        self.assertEqual(by_id[62986]['source_team_ko'], 'UD 라스팔마스')
+        self.assertEqual(by_id[16111977]['source_team_ko'], '세비야 FC')
+        self.assertEqual(by_id[62986]['ko'], by_id[16111977]['ko'])
+        self.assertNotEqual(by_id[62986]['provider_identity'], by_id[16111977]['provider_identity'])
+
+    def test_coach_migration_only_fills_reviewed_names_and_is_repeatable(self):
+        self.db.execute('CREATE TABLE coaches (coach_id INTEGER PRIMARY KEY, name TEXT, name_ko TEXT)')
+        self.db.executemany('INSERT INTO coaches VALUES (?, ?, ?)', [
+            (455384, 'Antonio Conte', None), (455353, 'Jürgen Klopp', None),
+        ])
+        self.db.commit()
+        reviewed = {'coaches': [{'coach_id': 455384, 'ko': '안토니오 콘테'}]}
+        with patch.object(coach_migration, 'reviewed_rows', return_value=reviewed):
+            coach_migration.migrate_data(self.connection)
+            coach_migration.migrate_data(self.connection)
+        self.assertEqual(self.db.execute('SELECT * FROM coaches ORDER BY coach_id').fetchall(),
+                         [(455353, 'Jürgen Klopp', None), (455384, 'Antonio Conte', '안토니오 콘테')])
+        self.db.execute("UPDATE coaches SET name_ko='별도 수정' WHERE coach_id=455384")
+        self.db.commit()
+        with patch.object(coach_migration, 'reviewed_rows', return_value=reviewed), self.assertRaises(ValueError):
+            coach_migration.migrate_data(self.connection)
+        self.assertEqual(self.db.execute('SELECT name_ko FROM coaches WHERE coach_id=455384').fetchone(), ('별도 수정',))
+
+    def test_coach_preview_rejects_changed_identity(self):
+        rows = {'coaches': [{'coach_id': 455384, 'identity': {'name': 'Antonio Conte'}, 'ko': '안토니오 콘테'}]}
+        with patch.object(multilingual, 'verify_schema', return_value=False), \
+                patch.object(multilingual, 'fetch_all', return_value=[(455384, 'Another coach', None)]), \
+                self.assertRaisesRegex(ValueError, 'identity changed'):
+            multilingual.preview(entities=rows, specs=coach_migration.SPECS, locales=coach_migration.LOCALES)
 
     def test_migration_changes_only_localized_columns_and_is_repeatable(self):
         reviewed = {"teams": {8: "리버풀"}, "players": {997: "해리 케인"}}
@@ -226,9 +289,11 @@ class MigrationTests(unittest.TestCase):
     def test_provider_refresh_leaves_localized_columns_untouched(self):
         from one_touch_loader.loaders.teams_loader import SQL_UPSERT_TEAM
         from one_touch_loader.loaders.players_loader import SQL_UPSERT_PLAYER
+        from one_touch_loader.loaders.fixture_details_loader import SQL_UPSERT_COACH
         self.assertNotIn("name_ko", SQL_UPSERT_TEAM)
         self.assertNotIn("short_name_ko", SQL_UPSERT_TEAM)
         self.assertNotIn("display_name_ko", SQL_UPSERT_PLAYER)
+        self.assertNotIn("name_ko", SQL_UPSERT_COACH)
 
     def test_short_name_migration_preserves_all_other_values_and_is_repeatable(self):
         self.db.execute("ALTER TABLE teams ADD COLUMN short_name_ko TEXT")
