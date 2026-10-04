@@ -416,7 +416,7 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
         Row(
           key: const ValueKey('players-ranking-title-row'),
           children: [
-            Text(tr(context, '1TOUCH RANKING'), style: Body2_b.style),
+            Text(trUpper(context, '1touch Ranking'), style: Body2_b.style),
             const SizedBox(width: 4),
             const AppInfoButton(
               key: ValueKey('players-ranking-info'),

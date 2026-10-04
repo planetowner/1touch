@@ -189,7 +189,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 0),
             child: Text(
-              tr(context, "BET"),
+              trUpper(context, "Bets"),
               style: Body2_b.style,
             ),
           ),

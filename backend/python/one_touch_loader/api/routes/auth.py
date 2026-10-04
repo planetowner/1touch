@@ -43,7 +43,7 @@ def providers(platform: Literal["ios", "android"], country_code: str | None = Qu
 
 @router.post("/auth/email/code", dependencies=[Depends(auth_request_limit)])
 def email_code(body: EmailCodeBody):
-    return auth_repo.request_email_code(str(body.email), body.purpose)
+    return auth_repo.request_email_code(str(body.email), body.purpose, body.language)
 
 
 @router.post("/auth/email/register", dependencies=[Depends(auth_request_limit)], status_code=201)
@@ -70,7 +70,7 @@ def find_username(body: CodeBody):
 
 @router.post("/users/me/email/code", dependencies=[Depends(auth_request_limit)])
 def email_change_code(body: EmailChangeRequestBody, user_id: int = Depends(get_user_id)):
-    return auth_repo.request_email_change(user_id, str(body.email), body.password)
+    return auth_repo.request_email_change(user_id, str(body.email), body.password, body.language)
 
 
 @router.put("/users/me/email", dependencies=[Depends(auth_request_limit)])

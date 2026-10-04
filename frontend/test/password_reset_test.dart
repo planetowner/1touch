@@ -163,8 +163,11 @@ void main() {
       requests.add((request.url.path, data));
       if (request.url.path == '/v1/auth/email/code') {
         codeCount++;
-        expect(
-            data, {'email': 'member@example.com', 'purpose': 'password_reset'});
+        expect(data, {
+          'email': 'member@example.com',
+          'purpose': 'password_reset',
+          'language': 'en',
+        });
         return http.Response(
             jsonEncode(
                 {'challenge_id': 'challenge-$codeCount', 'expires_in': 600}),

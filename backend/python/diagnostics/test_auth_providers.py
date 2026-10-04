@@ -171,8 +171,8 @@ class ProviderTests(unittest.TestCase):
     def test_ses_uses_starttls_before_credentials_and_sends_code(self):
         settings = {"SES_SMTP_HOST": "smtp.test", "SES_SMTP_USERNAME": "test-user", "SES_SMTP_PASSWORD": "test-password",
                     "SES_FROM_EMAIL": "noreply@example.com", "SES_FEEDBACK_EMAIL": "operator@example.com"}
-        actions = {"signup": "create your account", "password_reset": "reset your password",
-                   "username_recovery": "find your 1Touch username", "email_change": "change your account email address"}
+        actions = {"signup": "continue signing up", "password_reset": "reset your password",
+                   "username_recovery": "find your username", "email_change": "change your email address"}
         for purpose, action in actions.items():
             with self.subTest(purpose=purpose), patch.dict(os.environ, settings), patch.object(email_sender.smtplib, "SMTP") as smtp:
                 email_sender.send_verification_code("receiver@example.com", "012345", purpose)
@@ -182,8 +182,8 @@ class ProviderTests(unittest.TestCase):
                 self.assertEqual(message["To"], "receiver@example.com")
                 self.assertEqual(message["From"], "noreply@example.com")
                 self.assertEqual(message["Return-Path"], "operator@example.com")
-                self.assertIn("012345", message.get_content())
-                self.assertIn(action, message.get_content())
+                self.assertIn("012345", message.get_body(preferencelist=("plain",)).get_content())
+                self.assertIn(action, message.get_body(preferencelist=("html",)).get_content())
 
 
 if __name__ == '__main__':

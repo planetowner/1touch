@@ -161,7 +161,7 @@ class _ResetCodeSheetState extends State<_ResetCodeSheet> {
             Stack(alignment: Alignment.center, children: [
               SizedBox(
                 width: double.infinity,
-                child: Text(tr(context, 'Reset password'),
+                child: Text(trTitle(context, 'Reset password'),
                     textAlign: TextAlign.center, style: Body2_b.style),
               ),
               Align(

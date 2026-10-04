@@ -1,18 +1,15 @@
 """과거 대화와 실시간 메시지에 같은 익명 표시 규칙을 적용해요."""
-import json
-from pathlib import Path
 import secrets
 import string
 
 from .community_periods import public_row
 
 
-PLAYER_NAMES = tuple(json.loads(Path(__file__).with_name("chat_alias_players.json").read_text(encoding="utf-8")))
 SUFFIX_ALPHABET = string.ascii_uppercase + string.digits
 
 
-def new_nickname() -> dict[str, str]:
-    player = secrets.choice(PLAYER_NAMES)
+def new_nickname(players: list[dict[str, str]]) -> dict[str, str]:
+    player = secrets.choice(players)
     suffix = "".join(secrets.choice(SUFFIX_ALPHABET) for _ in range(4))
     return {f"nickname_{language}": f"{player[f'short_{language}']}_{suffix}" for language in ("en", "ko")}
 

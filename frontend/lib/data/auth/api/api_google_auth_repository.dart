@@ -10,9 +10,12 @@ import 'package:onetouch/data/auth/registration_field.dart';
 
 /// 소셜·비밀번호 인증과 이메일 인증번호 요청을 같은 API로 처리해요.
 class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
-  ApiGoogleAuthRepository({required ApiClient api}) : _api = api;
+  ApiGoogleAuthRepository({required ApiClient api, String Function()? locale})
+      : _api = api,
+        _locale = locale;
 
   final ApiClient _api;
+  final String Function()? _locale;
 
   @override
   Future<bool> isRegistrationValueAvailable({
@@ -94,6 +97,8 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
       body: jsonEncode({
         'email': normalizedEmail,
         'purpose': purpose.apiValue,
+        // 최초 발송과 재전송 모두 현재 앱 언어를 사용해요.
+        'language': _locale?.call() ?? 'en',
       }),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {

@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/auth/api/api_google_auth_repository.dart';
 import 'package:onetouch/data/auth/auth_request_exception.dart';
+import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/registration_field.dart';
 
 void main() {
@@ -123,6 +124,7 @@ void main() {
             expect(jsonDecode(request.body), {
               'email': 'member@example.com',
               'purpose': 'signup',
+              'language': 'en',
             });
             return http.Response(
               jsonEncode({
@@ -142,6 +144,35 @@ void main() {
 
     expect(challenge.challengeId, 'c' * 40);
     expect(challenge.expiresInSeconds, 600);
+  });
+
+  test('email codes follow the current app language on every request',
+      () async {
+    var locale = 'ko';
+    final requests = <Map<String, dynamic>>[];
+    final api = ApiClient(
+      client: MockClient((request) async {
+        requests.add(jsonDecode(request.body) as Map<String, dynamic>);
+        return http.Response(
+            jsonEncode({'challenge_id': 'c' * 40, 'expires_in': 600}), 200);
+      }),
+      baseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: () => const {},
+    );
+    addTearDown(api.close);
+    final repository = ApiGoogleAuthRepository(api: api, locale: () => locale);
+    for (final language in ['ko', 'en', 'ja', 'zh', 'ko']) {
+      locale = language;
+      for (final purpose in EmailCodePurpose.values) {
+        await repository.requestEmailCode(
+            email: 'member@example.com', purpose: purpose);
+        expect(requests.last, {
+          'email': 'member@example.com',
+          'purpose': purpose.apiValue,
+          'language': language,
+        });
+      }
+    }
   });
 
   test('preserves the backend detail when an email-code request fails',
