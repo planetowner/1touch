@@ -1,14 +1,19 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/round_chart_visuals.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/date_labels.dart';
+import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/team_probability.dart';
 import 'package:onetouch/screens/TeamProbabilityScreen.dart';
+import 'package:onetouch/screens/team_probability_what_if_screen.dart';
 
 void main() {
   for (final size in [const Size(393, 852), const Size(430, 932)]) {
@@ -310,16 +315,19 @@ void main() {
       find.byKey(const ValueKey('what-if-scenario-chart')),
       findsOneWidget,
     );
-    for (final outcome in ['win', 'draw', 'loss']) {
+    for (final (index, outcome) in ['win', 'draw', 'loss'].indexed) {
       final option = find.byKey(ValueKey('what-if-outcome-$outcome'));
-      final label = find.descendant(of: option, matching: find.byType(Text));
-      expect(label, findsOneWidget);
-      expect(tester.getRect(label).center.dy,
+      final labels = find.descendant(of: option, matching: find.byType(Text));
+      expect(labels, findsNWidgets(2));
+      final first = tester.getRect(labels.first);
+      final last = tester.getRect(labels.last);
+      expect((first.top + last.bottom) / 2,
           closeTo(tester.getRect(option).center.dy, 0.1));
+      expect(
+          find.descendant(
+              of: option, matching: find.text('(${[55, 25, 20][index]}%)')),
+          findsOneWidget);
     }
-    expect(find.text('(55%)'), findsNothing);
-    expect(find.text('(25%)'), findsNothing);
-    expect(find.text('(20%)'), findsNothing);
     await tester.tap(find.byKey(const ValueKey('what-if-outcome-win')));
     await tester.pump();
 
@@ -450,11 +458,132 @@ void main() {
         .dy;
     expect(titleBottom, closeTo(valueBottom, 0.1));
     expect(find.text('리그 우승 확률'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('projected-points-card')),
+      200,
+      scrollable: find.byWidgetPredicate((widget) =>
+          widget is Scrollable && widget.axisDirection == AxisDirection.down),
+    );
+    expect(find.text('예상 승점은 75–90점이에요', findRichText: true), findsOneWidget);
+    expect(find.text('5R'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final testCase in [
+    (
+      event: 'league_winner',
+      teamId: 83,
+      unchanged: false,
+      expected: '바르셀로나가 이기면 우승 확률이 5.6%p 올라요. 지면 11.4%p 내려가요.'
+    ),
+    (
+      event: 'league_winner',
+      teamId: 90,
+      unchanged: false,
+      expected: '헤타페가 이기면 우승 확률이 5.6%p 올라요. 지면 11.4%p 내려가요.'
+    ),
+    (
+      event: 'direct_relegation',
+      teamId: 83,
+      unchanged: false,
+      expected: '바르셀로나가 이기면 강등 확률이 4.0%p 내려가요. 지면 5.0%p 올라요.'
+    ),
+    (
+      event: 'league_winner',
+      teamId: 83,
+      unchanged: true,
+      expected: '바르셀로나가 이기면 우승 확률이 그대로예요. 지면 그대로예요.'
+    ),
+  ]) {
+    testWidgets('Korean what-if uses localized fixture labels: $testCase',
+        (tester) async {
+      tester.view.physicalSize = const Size(320, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final previousLocale = appLocaleController.value;
+      appLocaleController.value = const Locale('ko');
+      addTearDown(() => appLocaleController.value = previousLocale);
+      final snapshot = _snapshot(
+          teamId: testCase.teamId,
+          winProbability: testCase.unchanged ? 0.324 : 0.38,
+          lossProbability: testCase.unchanged ? 0.324 : 0.21);
+      await tester.pumpWidget(MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        theme: app_style.darkThemeForLocale(const Locale('ko')),
+        home: FootballNamesScope(
+          names: const FootballNames(
+            teams: {83: 'FC 바르셀로나', 90: '헤타페 CF'},
+            teamShortNames: {83: '바르셀로나', 90: '헤타페'},
+            competitions: {564: '라리가'},
+          ),
+          child: TeamProbabilityWhatIfScreen(
+            snapshot: snapshot,
+            event: testCase.event,
+            teamPrimaryColor: const Color(0xFFA50044),
+            homeTeam: const Team(
+                teamId: 83,
+                name: 'FC Barcelona',
+                shortName: 'Barcelona',
+                shortCode: 'BAR'),
+            awayTeam: const Team(teamId: 90, name: 'Getafe', shortCode: 'GET'),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final team = testCase.teamId == 83 ? '바르셀로나' : '헤타페';
+      expect(find.text('$team의 다음 경기 결과를 골라봐요'), findsOneWidget);
+      expect(find.text('라리가 6R'), findsOneWidget);
+      expect(
+          find.text(fixtureDateLabel(snapshot.whatIf!.fixture.startingAt,
+              locale: const Locale('ko'))),
+          findsOneWidget);
+      final titleRect = tester.getRect(find.text('다음 경기가 이렇게 끝나면?'));
+      expect(
+          titleRect.left,
+          greaterThanOrEqualTo(tester
+              .getRect(find.byKey(const ValueKey('what-if-back-button')))
+              .right));
+      expect(
+          titleRect.right,
+          lessThanOrEqualTo(tester
+              .getRect(find.byKey(const ValueKey('what-if-search-button')))
+              .left));
+      expect(find.text('바르셀로나 승'), findsOneWidget);
+      expect(find.text('헤타페 승'), findsOneWidget);
+      expect(find.text('무승부'), findsOneWidget);
+      for (final label in ['바르셀로나 승', '헤타페 승', '무승부']) {
+        final paragraph = tester.renderObject<RenderParagraph>(find.descendant(
+            of: find.text(label), matching: find.byType(RichText)));
+        expect(paragraph.didExceedMaxLines, isFalse);
+      }
+      final winOption = find.byKey(const ValueKey('what-if-outcome-win'));
+      expect(find.descendant(of: winOption, matching: find.text('$team 승')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: winOption,
+              matching: find.text(testCase.teamId == 83 ? '(55%)' : '(20%)')),
+          findsOneWidget);
+      await tester.tap(winOption);
+      await tester.pump();
+      await tester.scrollUntilVisible(find.text(testCase.expected), 200);
+      expect(find.text(testCase.expected), findsOneWidget);
+      for (final label in ['이기면', '비기면', '지면']) {
+        expect(find.text(label), findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
 
-TeamProbabilitySnapshot _snapshot() {
+TeamProbabilitySnapshot _snapshot(
+    {int teamId = 83,
+    double winProbability = 0.38,
+    double lossProbability = 0.21}) {
   const currentCard = TeamProbabilityCard(
     event: 'league_winner',
     competitionId: 564,
@@ -472,8 +601,8 @@ TeamProbabilitySnapshot _snapshot() {
     entropy: 0.4,
   );
   return TeamProbabilitySnapshot(
-    teamId: 83,
-    teamName: 'FC Barcelona',
+    teamId: teamId,
+    teamName: teamId == 83 ? 'FC Barcelona' : 'Getafe',
     competitionId: 564,
     seasonId: 27965,
     seasonName: '2026/2027',
@@ -535,9 +664,9 @@ TeamProbabilitySnapshot _snapshot() {
         probabilities: const [0.55, 0.25, 0.2],
       ),
       scenarios: [
-        _scenario('win', 0.38),
+        _scenario('win', winProbability),
         _scenario('draw', 0.29),
-        _scenario('loss', 0.21),
+        _scenario('loss', lossProbability),
       ],
     ),
   );
@@ -552,6 +681,18 @@ TeamProbabilityWhatIfScenario _scenario(String outcome, double probability) {
         competitionId: 564,
         category: 'TITLE',
         probability: probability,
+        changePercentagePoints: null,
+        entropy: null,
+      ),
+      TeamProbabilityCard(
+        event: 'direct_relegation',
+        competitionId: 564,
+        category: 'RELEGATION',
+        probability: switch (outcome) {
+          'win' => 0.04,
+          'draw' => 0.08,
+          _ => 0.13
+        },
         changePercentagePoints: null,
         entropy: null,
       ),

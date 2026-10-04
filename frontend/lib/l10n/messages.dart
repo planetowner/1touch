@@ -5,6 +5,8 @@ typedef MessageTranslations = ({String ko, String ja, String zh});
 const teamScreenKoreanMessages = <String, String>{
   'Overview': '팀 정보',
   'Matches': '일정',
+  'ATTRIBUTES': '팀 특성',
+  'Draw': '무승부',
 };
 
 const appMessages = <String, MessageTranslations>{
@@ -875,18 +877,18 @@ const appMessages = <String, MessageTranslations>{
   "DRIBBLE": (ko: "드리블", ja: "ドリブル", zh: "盘带"),
   "PLAY-MAKING": (ko: "플레이메이킹", ja: "チャンスメイク", zh: "组织进攻"),
   "No attribute data available": (
-    ko: "능력치 정보가 없어요",
+    ko: "팀 특성 정보가 없어요",
     ja: "能力データがありません",
     zh: "暂无能力数据"
   ),
-  "CURRENT FORM": (ko: "최근 경기력", ja: "直近の調子", zh: "近期状态"),
+  "CURRENT FORM": (ko: "라운드별 승점", ja: "直近の調子", zh: "近期状态"),
   "Current form data is not available yet": (
-    ko: "아직 최근 경기력 정보가 없어요",
+    ko: "아직 라운드별 승점 정보가 없어요",
     ja: "直近の調子のデータはまだありません",
     zh: "暂无近期状态数据"
   ),
   "Unable to load current form": (
-    ko: "최근 경기력을 불러오지 못했어요",
+    ko: "라운드별 승점을 불러오지 못했어요",
     ja: "直近の調子を読み込めませんでした",
     zh: "无法加载近期状态"
   ),
@@ -894,10 +896,14 @@ const appMessages = <String, MessageTranslations>{
   "PROBABILITY HISTORY": (ko: "예상 확률 변화", ja: "予測確率の推移", zh: "预测概率走势"),
   "PROJECTED FINAL POSITION": (ko: "예상 최종 순위", ja: "予想最終順位", zh: "预计最终排名"),
   "PROJECTED POINTS": (ko: "예상 승점", ja: "予想勝点", zh: "预计积分"),
-  "Likely range of": (ko: "예상 범위", ja: "予想範囲", zh: "预计范围"),
-  "What if?": (ko: "만약에?", ja: "もしも？", zh: "如果？"),
+  "Likely range of {range} pts": (
+    ko: "예상 승점은 {range}점이에요",
+    ja: "予想勝点は{range}点です",
+    zh: "预计积分为{range}分"
+  ),
+  "What if?": (ko: "다음 경기가 이렇게 끝나면?", ja: "もしも？", zh: "如果？"),
   "IF {team}'S NEXT MATCH ENDS WITH": (
-    ko: "{team}의 다음 경기 결과가",
+    ko: "{team}의 다음 경기 결과를 골라봐요",
     ja: "{team}の次の試合結果が",
     zh: "如果{team}下一场比赛结果是"
   ),
@@ -907,9 +913,9 @@ const appMessages = <String, MessageTranslations>{
   "LEAGUE WINNER PROBABILITY": (ko: "리그 우승 확률", ja: "リーグ優勝確率", zh: "联赛夺冠概率"),
   "TOP 4 PROBABILITY": (ko: "TOP 4 확률", ja: "トップ4確率", zh: "前四概率"),
   "RELEGATION PROBABILITY": (ko: "강등 확률", ja: "降格確率", zh: "降级概率"),
-  "If win": (ko: "승리 시", ja: "勝利時", zh: "获胜时"),
-  "If draw": (ko: "무승부 시", ja: "引き分け時", zh: "平局时"),
-  "If loss": (ko: "패배 시", ja: "敗戦時", zh: "失利时"),
+  "If win": (ko: "이기면", ja: "勝利時", zh: "获胜时"),
+  "If draw": (ko: "비기면", ja: "引き分け時", zh: "平局时"),
+  "If loss": (ko: "지면", ja: "敗戦時", zh: "失利时"),
   "What-if data is unavailable.": (
     ko: "What if 데이터를 이용할 수 없어요.",
     ja: "What ifデータを利用できません。",
@@ -920,12 +926,28 @@ const appMessages = <String, MessageTranslations>{
     ja: "この結果のWhat ifデータを利用できません。",
     zh: "此结果的 What if 数据不可用。"
   ),
-  "A win could change {team}'s probability by {win} percentage points, while a loss could change it by {loss} points.":
-      (
-    ko: "승리하면 {team}의 확률이 {win}%p, 패배하면 {loss}%p 변할 수 있어요.",
-    ja: "勝利すると{team}の確率が{win}ポイント、敗戦すると{loss}ポイント変化する可能性があります。",
-    zh: "获胜可能使{team}的概率变化{win}个百分点，失利则可能变化{loss}个百分点。"
+  "If {team} wins, {probability} {winChange}. If they lose, it {lossChange}.": (
+    ko: "{team} 이기면 {probability}이 {winChange}. 지면 {lossChange}.",
+    ja: "{team}が勝つと{probability}が{winChange}。負けると{lossChange}。",
+    zh: "如果{team}获胜，{probability}{winChange}。如果失利，则{lossChange}。"
   ),
+  "title probability": (ko: "우승 확률", ja: "優勝確率", zh: "夺冠概率"),
+  "relegation playoff probability": (
+    ko: "강등 PO 확률",
+    ja: "降格プレーオフ確率",
+    zh: "降级附加赛概率"
+  ),
+  "increases by {points} percentage points": (
+    ko: "{points}%p 올라요",
+    ja: "{points}ポイント上がります",
+    zh: "上升{points}个百分点"
+  ),
+  "decreases by {points} percentage points": (
+    ko: "{points}%p 내려가요",
+    ja: "{points}ポイント下がります",
+    zh: "下降{points}个百分点"
+  ),
+  "stays the same": (ko: "그대로예요", ja: "変わりません", zh: "保持不变"),
   "Chances to Win\nLeague Trophy": (
     ko: "리그 우승 확률",
     ja: "リーグ\n優勝確率",
@@ -1819,7 +1841,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "点击注册即表示同意1touch服务条款，\n并确认已阅读隐私政策。"
   ),
   "Unable to load attributes. Retry": (
-    ko: "능력치를 불러오지 못했어요. 다시 시도",
+    ko: "팀 특성을 불러오지 못했어요. 다시 시도",
     ja: "能力を読み込めませんでした。再試行",
     zh: "无法加载能力值，请重试"
   ),

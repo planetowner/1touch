@@ -709,7 +709,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final tooltipTextStyle = Eyebrow.style.copyWith(
       fontWeight: FontWeight.w700,
     );
-    final roundLabel = tr(context, 'Round {round}', {'round': round});
+    final roundLabel = formatRoundLabel(
+        roundName: '$round', locale: Localizations.localeOf(context))!;
     final pointsLabel = tr(context, '{points} Pts', {'points': points});
     final textScaler = MediaQuery.textScalerOf(context);
     final textDirection = Directionality.of(context);

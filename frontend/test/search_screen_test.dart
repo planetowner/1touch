@@ -9,6 +9,8 @@ import 'package:onetouch/data/search/search_repository.dart';
 import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class _Context implements TeamCompetitionContextResolver {
   @override
@@ -43,7 +45,9 @@ const _results = SearchResults(
     players: [(id: 123, name: '선수 Example', image: null)], teams: [_team]);
 
 Future<void> _pump(WidgetTester tester, _Search repository,
-    {bool dark = false, GoRouter? router}) async {
+    {bool dark = false,
+    GoRouter? router,
+    Locale locale = const Locale('en')}) async {
   final preferences = CurrentUserPreferences(
       repository: _Preferences(),
       teamRepository: MockTeamRepository(teams: [_team]),
@@ -63,6 +67,9 @@ Future<void> _pump(WidgetTester tester, _Search repository,
       ]);
   addTearDown(routing.dispose);
   await tester.pumpWidget(MaterialApp.router(
+      locale: locale,
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
       theme: dark ? app_style.darktheme : app_style.whitetheme,
       routerConfig: routing));
   await tester.pump();
@@ -75,6 +82,29 @@ Future<void> _query(WidgetTester tester, String text) async {
 }
 
 void main() {
+  testWidgets('Korean search fixtures use the shared match date format',
+      (tester) async {
+    final repo = _Search();
+    await _pump(tester, repo, locale: const Locale('ko'));
+    await _query(tester, 'Example');
+    repo.pending.single.complete(SearchResults(fixtures: [
+      Fixture(
+          fixtureId: 100,
+          seasonId: 1,
+          competitionId: 564,
+          homeTeamId: 83,
+          awayTeamId: 90,
+          competitionType: CompetitionType.league,
+          status: FixtureStatus.upcoming,
+          roundName: '8',
+          startingAt: DateTime(2026, 10, 10, 16, 30).toIso8601String()),
+    ]));
+    await tester.pumpAndSettle();
+    expect(find.text('10월 10일 (토)'), findsOneWidget);
+    expect(find.text('4:30 PM'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
       'empty input shows a prompt without fabricated recents or a request',
       (tester) async {
