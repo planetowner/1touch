@@ -52,9 +52,9 @@ void main() {
     expect(messages.first.createdAt.isUtc, isTrue);
     expect(
       messages.first.displayAuthor('en'),
-      'Cruyff_A8Q4',
+      'cruyff_a8q4',
     );
-    expect(messages.first.displayAuthor('ko'), '크루이프_A8Q4');
+    expect(messages.first.displayAuthor('ko'), '크루이프_a8q4');
     expect(messages.first.isMine, isTrue);
     expect(messages.last.displayAuthor('en'), 'Deleted user');
     expect(repository.cachedHistoryForFixture(42), orderedEquals(messages));
