@@ -1,11 +1,18 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/SignComps/verify_email.dart';
 import 'package:onetouch/SignComps/sign_up.dart';
+import 'package:onetouch/core/locale_controller.dart';
+import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
 import 'package:onetouch/data/auth/auth_request_exception.dart';
@@ -16,6 +23,195 @@ import 'package:onetouch/data/auth/google_identity_service.dart';
 import 'package:onetouch/data/auth/registration_field.dart';
 
 void main() {
+  setUpAll(() async {
+    await (FontLoader('Archivo')
+          ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
+        .load();
+    await (FontLoader('Pretendard')
+          ..addFont(rootBundle.load('assets/fonts/Pretendard-Regular.otf')))
+        .load();
+    await (FontLoader('MaterialIcons')
+          ..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf')))
+        .load();
+  });
+
+  for (final locale in [const Locale('en'), const Locale('ko')]) {
+    for (final brightness in Brightness.values) {
+      testWidgets('signup geometry matches Figma with $locale $brightness',
+          (tester) async {
+        tester.view.physicalSize = const Size(393, 852);
+        tester.view.devicePixelRatio = 1;
+        tester.view.padding = const FakeViewPadding(top: 59, bottom: 34);
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.view.resetPadding);
+        final previousLocale = appLocaleController.value;
+        appLocaleController.value = locale;
+        addTearDown(() => appLocaleController.value = previousLocale);
+        var failLookup = true;
+        final boundaryKey = GlobalKey();
+        await tester.pumpWidget(RepaintBoundary(
+          key: boundaryKey,
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: (brightness == Brightness.dark
+                    ? app_style.darkThemeForLocale(locale)
+                    : app_style.lightThemeForLocale(locale))
+                .copyWith(platform: TargetPlatform.iOS),
+            locale: locale,
+            supportedLocales: appSupportedLocales,
+            localizationsDelegates: appLocalizationDelegates,
+            home: EmailSignUpScreen(
+              authService: _service(
+                _FakeAuthRepository(availability: (_, __) async {
+                  if (failLookup) throw StateError('Connection failed');
+                  return true;
+                }),
+                AuthSession(),
+              ),
+            ),
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        Rect inputRect(Finder field) {
+          final editable =
+              find.descendant(of: field, matching: find.byType(EditableText));
+          final box = InputDecorator.containerOf(tester.element(editable))!;
+          return box.localToGlobal(Offset.zero) & box.size;
+        }
+
+        void expectInputGeometry() {
+          final fields = find.byType(TextFormField);
+          expect(fields, findsNWidgets(5));
+          for (var index = 0; index < 5; index++) {
+            // Figma 1529:17955의 입력칸 실측값으로 확인해요.
+            expect(inputRect(fields.at(index)).size, const Size(345, 40));
+            final decorator = tester.widget<InputDecorator>(find.descendant(
+                of: fields.at(index), matching: find.byType(InputDecorator)));
+            expect(
+                (decorator.decoration.border! as OutlineInputBorder)
+                    .borderRadius,
+                BorderRadius.circular(8));
+          }
+          expect(tester.takeException(), isNull);
+        }
+
+        expectInputGeometry();
+        Rect textRect(String text) =>
+            tester.getRect(find.text(translateMessage(locale, text)));
+        final headerTitle = find.descendant(
+            of: find.byType(AppBar), matching: find.byType(Text));
+        expect(tester.getRect(headerTitle).center, const Offset(196.5, 71));
+        expect(textRect('Username').top, 131);
+        expect(
+            tester.getRect(find.byKey(const ValueKey('email-sign-up-button'))),
+            const Rect.fromLTWH(24, 724, 345, 56));
+        final backIcon = find.byWidgetPredicate((widget) =>
+            widget is SvgPicture &&
+            (widget.bytesLoader as SvgAssetLoader).assetName ==
+                'assets/auth/back.svg');
+        expect(tester.getRect(backIcon), const Rect.fromLTWH(24, 59, 32, 24));
+        final fields = find.byType(TextFormField);
+        final labels = [
+          'Username',
+          'Nickname',
+          'Email',
+          'Password',
+          'Retype Password'
+        ];
+        for (var i = 0; i < 5; i++) {
+          expect(inputRect(fields.at(i)).top - textRect(labels[i]).bottom, 8);
+          final editable = tester.widget<EditableText>(find.descendant(
+              of: fields.at(i), matching: find.byType(EditableText)));
+          expect(editable.style.letterSpacing, 0);
+          expect(
+              editable.style.height, locale.languageCode == 'ko' ? 1.6 : 1.3);
+          if (i < 3) {
+            expect(textRect(labels[i + 1]).top - inputRect(fields.at(i)).bottom,
+                16);
+          }
+        }
+        final help =
+            textRect('Choose a password that is 8 or more characters long.');
+        expect(help.top - inputRect(fields.at(3)).bottom, 8);
+        expect(textRect('Retype Password').top - help.bottom, 16);
+        expect(find.text('••••••••'), findsNWidgets(2));
+        if (brightness == Brightness.dark) {
+          final buttonText = tester.widget<Text>(find.descendant(
+              of: find.byKey(const ValueKey('email-sign-up-button')),
+              matching: find.byType(Text)));
+          expect(buttonText.style!.color, const Color(0xFF0A0A0A));
+          expect(tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
+              const Color(0xFF0A0A0A));
+        }
+        final eyeIcons = tester
+            .widgetList<SvgPicture>(find.byType(SvgPicture))
+            .where((icon) =>
+                (icon.bytesLoader as SvgAssetLoader).assetName ==
+                'assets/auth/visibility_off.svg');
+        expect(eyeIcons, hasLength(2));
+        for (final (index, icon) in eyeIcons.indexed) {
+          expect((icon.bytesLoader as SvgAssetLoader).assetName,
+              'assets/auth/visibility_off.svg');
+          expect(Size(icon.width!, icon.height!), const Size(24, 24));
+          expect(
+              tester.getRect(find.byWidget(icon)),
+              Rect.fromLTWH(
+                  337, inputRect(fields.at(index + 3)).top + 8, 24, 24));
+        }
+        final boundary = boundaryKey.currentContext!.findRenderObject()!
+            as RenderRepaintBoundary;
+        await tester.runAsync(() async {
+          final picture = await boundary.toImage(pixelRatio: 1);
+          final bytes =
+              (await picture.toByteData(format: ui.ImageByteFormat.png))!
+                  .buffer
+                  .asUint8List();
+          final file = File(
+              'build/signup-${locale.languageCode}-${brightness.name}.png');
+          await file.parent.create(recursive: true);
+          await file.writeAsBytes(bytes);
+          picture.dispose();
+        });
+
+        final username = find.byKey(const ValueKey('signup-username-field'));
+        await tester.enterText(username, 'member');
+        await tester.pumpAndSettle();
+        expectInputGeometry();
+        failLookup = false;
+        await tester.tap(find.byTooltip(translateMessage(locale, 'Try again')));
+        await tester.pumpAndSettle();
+        expect(
+            find.text(translateMessage(locale, 'Available.')), findsOneWidget);
+        expect(textRect('Available.').top - inputRect(username).bottom, 8);
+        expect(textRect('Nickname').top - textRect('Available.').bottom, 16);
+        expectInputGeometry();
+
+        final password = find.byKey(const ValueKey('signup-password-field'));
+        await tester.tap(
+            find.descendant(of: password, matching: find.byType(IconButton)));
+        await tester.pumpAndSettle();
+        expect(
+            tester
+                .widget<EditableText>(find.descendant(
+                    of: password, matching: find.byType(EditableText)))
+                .obscureText,
+            isFalse);
+        final confirm =
+            find.byKey(const ValueKey('signup-confirm-password-field'));
+        await tester.enterText(confirm, 'different');
+        await tester.pumpAndSettle();
+        final error =
+            find.text(translateMessage(locale, 'Passwords do not match.'));
+        expect(error, findsOneWidget);
+        expect(tester.getRect(error).top,
+            greaterThanOrEqualTo(inputRect(confirm).bottom));
+        expectInputGeometry();
+      });
+    }
+  }
+
   testWidgets('signup terms and button stay fixed while fields scroll',
       (tester) async {
     tester.view.physicalSize = const Size(393, 650);
