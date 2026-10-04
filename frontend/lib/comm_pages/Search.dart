@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/debounced_search_controller.dart';
 import 'package:onetouch/core/player_navigation.dart';
@@ -21,6 +20,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/date_labels.dart';
 
 class Search extends StatelessWidget {
   const Search({
@@ -456,13 +456,8 @@ class _SearchContentState extends State<SearchContent> {
         shortName: fixture.awayTeamShortName,
         imagePath: fixture.awayTeamLogo);
     final colors = Theme.of(context).colorScheme;
-    final kickoff = fixture.kickoff?.toLocal();
-    final date = kickoff == null
-        ? tr(context, 'Date TBD')
-        : DateFormat('EEE, MMM d').format(kickoff);
-    final time = kickoff == null
-        ? tr(context, 'Time TBD')
-        : DateFormat('h:mm a').format(kickoff);
+    final kickoff = matchKickoffLabels(fixture.kickoff,
+        locale: Localizations.localeOf(context));
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -487,7 +482,7 @@ class _SearchContentState extends State<SearchContent> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      date,
+                      kickoff.date,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
@@ -495,7 +490,7 @@ class _SearchContentState extends State<SearchContent> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      time,
+                      kickoff.time,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,

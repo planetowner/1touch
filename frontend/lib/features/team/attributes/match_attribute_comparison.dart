@@ -88,7 +88,7 @@ class _MatchAttributeComparisonState extends State<MatchAttributeComparison> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(tr(context, 'ATTRIBUTES'), style: Body2_b.style),
+        Text(teamScreenLabel(context, 'ATTRIBUTES'), style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
           width: double.infinity,

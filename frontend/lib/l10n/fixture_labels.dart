@@ -12,11 +12,29 @@ String? fixtureCompetitionLabel(BuildContext context, Fixture? fixture,
   if (fixture == null || !{'en', 'ko'}.contains(locale.languageCode)) {
     return null;
   }
-  final competition = competitionRepository.findById(fixture.competitionId);
-  return formatFixtureCompetitionLabel(
-    fixture,
-    locale: locale,
-    competitionName: competitionNameLabel(context, fixture.competitionId,
+  return competitionRoundLabel(context,
+      competitionId: fixture.competitionId,
+      competitionName: competitionName,
+      roundName: fixture.roundName,
+      stageName: fixture.stageName,
+      leg: fixture.leg);
+}
+
+// 확률 예측의 다음 경기도 일반 경기와 같은 대회·라운드 표기를 써요.
+String competitionRoundLabel(BuildContext context,
+    {required int competitionId,
+    String? competitionName,
+    String? roundName,
+    String? stageName,
+    String? leg}) {
+  final competition = competitionRepository.findById(competitionId);
+  return _formatCompetitionRoundLabel(
+    competitionId: competitionId,
+    roundName: roundName,
+    stageName: stageName,
+    leg: leg,
+    locale: Localizations.localeOf(context),
+    competitionName: competitionNameLabel(context, competitionId,
         competition?.name ?? competitionName ?? 'Unknown'),
     competitionShortCode: competition?.shortCode,
   );
@@ -27,24 +45,54 @@ String formatFixtureCompetitionLabel(
   required Locale locale,
   required String competitionName,
   String? competitionShortCode,
+}) =>
+    _formatCompetitionRoundLabel(
+      competitionId: fixture.competitionId,
+      roundName: fixture.roundName,
+      stageName: fixture.stageName,
+      leg: fixture.leg,
+      locale: locale,
+      competitionName: competitionName,
+      competitionShortCode: competitionShortCode,
+    );
+
+String _formatCompetitionRoundLabel({
+  required int competitionId,
+  String? roundName,
+  String? stageName,
+  String? leg,
+  required Locale locale,
+  required String competitionName,
+  String? competitionShortCode,
 }) {
   var name = normalizeCompetitionDisplayLabel(competitionName);
   if (locale.languageCode == 'en' &&
-      _abbreviatedCompetitionIds.contains(fixture.competitionId)) {
+      _abbreviatedCompetitionIds.contains(competitionId)) {
     if (competitionShortCode == null || competitionShortCode.trim().isEmpty) {
-      throw StateError(
-          'Competition ${fixture.competitionId} requires short_code.');
+      throw StateError('Competition $competitionId requires short_code.');
     }
     name = normalizeCompetitionDisplayLabel(competitionShortCode);
   }
-  final round = fixtureRoundLabel(fixture, locale: locale);
+  final round = formatRoundLabel(
+      roundName: roundName, stageName: stageName, leg: leg, locale: locale);
   return [name, if (round != null) round].join(_separator(locale));
 }
 
 // 경기 단계와 차전은 모든 화면에서 같은 규칙으로 표시해요.
-String? fixtureRoundLabel(Fixture? fixture, {required Locale locale}) {
-  final round = fixture?.roundName?.trim();
-  final stage = fixture?.stageName?.trim();
+String? fixtureRoundLabel(Fixture? fixture, {required Locale locale}) =>
+    formatRoundLabel(
+        roundName: fixture?.roundName,
+        stageName: fixture?.stageName,
+        leg: fixture?.leg,
+        locale: locale);
+
+String? formatRoundLabel(
+    {String? roundName,
+    String? stageName,
+    String? leg,
+    required Locale locale}) {
+  final round = roundName?.trim();
+  final stage = stageName?.trim();
   final hasRound = round != null && round.isNotEmpty;
   final phase = hasRound ? round : stage;
   if (phase == null || phase.isEmpty) return null;
@@ -55,7 +103,7 @@ String? fixtureRoundLabel(Fixture? fixture, {required Locale locale}) {
       : hasRound && int.tryParse(round) != null
           ? translateMessage(locale, 'Round {round}', {'round': round})
           : phase;
-  final legLabel = _fixtureLegLabel(fixture?.leg, locale);
+  final legLabel = _fixtureLegLabel(leg, locale);
   return [phaseLabel, if (legLabel != null) legLabel].join(_separator(locale));
 }
 

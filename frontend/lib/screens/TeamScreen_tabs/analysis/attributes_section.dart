@@ -222,7 +222,7 @@ class _AttributesSectionState extends State<AttributesSection> {
         children: [
           //   Header: title + comparison picker
           _AnalysisSectionHeader(
-            title: tr(context, 'ATTRIBUTES'),
+            title: teamScreenLabel(context, 'ATTRIBUTES'),
             trailing:
                 _comparisonOptions.isNotEmpty ? _buildComparisonPill() : null,
           ),

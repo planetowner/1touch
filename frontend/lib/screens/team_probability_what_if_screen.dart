@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:onetouch/core/probability_display.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/date_labels.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/team_probability.dart';
 
@@ -52,7 +54,9 @@ class _TeamProbabilityWhatIfScreenState
     final focusTeam = whatIf.fixture.homeTeamId == widget.snapshot.teamId
         ? widget.homeTeam
         : widget.awayTeam;
-    final focusTeamName = focusTeam?.displayName ?? widget.snapshot.teamName;
+    final focusTeamName = teamNameLabel(context, widget.snapshot.teamId,
+        focusTeam?.displayName ?? widget.snapshot.teamName,
+        short: true);
     final scenarios = <_ScenarioViewData>[
       for (final outcome in const ['win', 'draw', 'loss'])
         if (_findScenario(whatIf.scenarios, outcome) case final scenario?)
@@ -76,7 +80,11 @@ class _TeamProbabilityWhatIfScreenState
             tr(
               context,
               "IF {team}'S NEXT MATCH ENDS WITH",
-              {'team': focusTeamName.toUpperCase()},
+              {
+                'team': Localizations.localeOf(context).languageCode == 'en'
+                    ? focusTeamName.toUpperCase()
+                    : focusTeamName
+              },
             ),
             style: Body2_b.style,
           ),
@@ -84,6 +92,7 @@ class _TeamProbabilityWhatIfScreenState
           _OutcomeCard(
             whatIf: whatIf,
             teamId: widget.snapshot.teamId,
+            competitionId: widget.snapshot.competitionId,
             homeTeam: widget.homeTeam,
             awayTeam: widget.awayTeam,
             selectedOutcome: _selectedOutcome,
@@ -101,6 +110,7 @@ class _TeamProbabilityWhatIfScreenState
             const SizedBox(height: 16),
             _ScenarioExplanation(
               teamName: focusTeamName,
+              event: widget.event,
               scenarios: scenarios,
             ),
           ] else
@@ -129,8 +139,8 @@ class _WhatIfAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 32,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -144,7 +154,11 @@ class _WhatIfAppBar extends StatelessWidget {
               icon: const Icon(Icons.arrow_back_ios_new, size: 24),
             ),
           ),
-          Text(tr(context, 'What if?'), style: Body1.style),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 56),
+            child: Text(tr(context, 'What if?'),
+                textAlign: TextAlign.center, style: Body1.style),
+          ),
           Align(
             alignment: Alignment.centerRight,
             child: IconButton(
@@ -165,6 +179,7 @@ class _OutcomeCard extends StatelessWidget {
   const _OutcomeCard({
     required this.whatIf,
     required this.teamId,
+    required this.competitionId,
     required this.homeTeam,
     required this.awayTeam,
     required this.selectedOutcome,
@@ -173,6 +188,7 @@ class _OutcomeCard extends StatelessWidget {
 
   final TeamProbabilityWhatIf whatIf;
   final int teamId;
+  final int competitionId;
   final Team? homeTeam;
   final Team? awayTeam;
   final String? selectedOutcome;
@@ -201,6 +217,7 @@ class _OutcomeCard extends StatelessWidget {
               SizedBox(
                 width: 112,
                 child: _FixtureTime(
+                  competitionId: competitionId,
                   roundName: fixture.roundName,
                   startingAt: fixture.startingAt,
                 ),
@@ -231,6 +248,8 @@ class _OutcomeCard extends StatelessWidget {
                       fixture: fixture,
                       homeTeam: homeTeam,
                       awayTeam: awayTeam,
+                      probability:
+                          _teamOutcomeProbability(fixture, teamId, index),
                       onTap: onSelected,
                     ),
                     if (index < 2) Divider(height: 1, color: colors.divider),
@@ -258,7 +277,8 @@ class _TeamIdentity extends StatelessWidget {
         _TeamLogo(url: team?.imagePath, size: 72),
         const SizedBox(height: 8),
         Text(
-          team?.displayName ?? 'Team $id',
+          teamNameLabel(context, id, team?.displayName ?? 'Team $id',
+              short: true),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
@@ -270,19 +290,23 @@ class _TeamIdentity extends StatelessWidget {
 }
 
 class _FixtureTime extends StatelessWidget {
-  const _FixtureTime({required this.roundName, required this.startingAt});
+  const _FixtureTime(
+      {required this.competitionId,
+      required this.roundName,
+      required this.startingAt});
 
+  final int competitionId;
   final String? roundName;
   final DateTime startingAt;
 
   @override
   Widget build(BuildContext context) {
-    final local = startingAt.toLocal();
-    final locale = Localizations.localeOf(context).toLanguageTag();
+    final locale = Localizations.localeOf(context);
     return Column(
       children: [
         Text(
-          _roundLabel(context, roundName),
+          competitionRoundLabel(context,
+              competitionId: competitionId, roundName: roundName),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
@@ -293,7 +317,7 @@ class _FixtureTime extends StatelessWidget {
             width: 48, child: Divider(color: AppColors.of(context).divider)),
         const SizedBox(height: 8),
         Text(
-          '${DateFormat('EEE, MMM d', locale).format(local)}\n${DateFormat('h:mm a', locale).format(local)}',
+          fixtureDateLabel(startingAt, locale: locale),
           textAlign: TextAlign.center,
           style: Body1.style,
         ),
@@ -309,6 +333,7 @@ class _OutcomeOption extends StatelessWidget {
     required this.fixture,
     required this.homeTeam,
     required this.awayTeam,
+    required this.probability,
     required this.onTap,
   });
 
@@ -317,6 +342,7 @@ class _OutcomeOption extends StatelessWidget {
   final TeamProbabilityWhatIfFixture fixture;
   final Team? homeTeam;
   final Team? awayTeam;
+  final double probability;
   final ValueChanged<String> onTap;
 
   @override
@@ -327,9 +353,12 @@ class _OutcomeOption extends StatelessWidget {
         : outcome == 'loss'
             ? (isHomeTeam ? awayTeam : homeTeam)
             : null;
+    final selectedTeamId = (outcome == 'win') == isHomeTeam
+        ? fixture.homeTeamId
+        : fixture.awayTeamId;
     final label = outcome == 'draw'
-        ? tr(context, 'Draw')
-        : '${selectedTeam?.shortCode ?? selectedTeam?.shortName ?? selectedTeam?.name ?? tr(context, 'Team')} ${tr(context, 'Win')}';
+        ? teamScreenLabel(context, 'Draw')
+        : '${teamNameLabel(context, selectedTeamId, selectedTeam?.displayName ?? tr(context, 'Team'), short: true)} ${tr(context, 'Win')}';
     return InkWell(
       key: ValueKey('what-if-outcome-$outcome'),
       onTap: () => onTap(outcome),
@@ -345,11 +374,17 @@ class _OutcomeOption extends StatelessWidget {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Heading5.style,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Heading5.style),
+                  const SizedBox(height: 4),
+                  Text('(${(probability * 100).round()}%)', style: Body1.style),
+                ],
               ),
             ),
             Radio<String>(value: outcome),
@@ -525,17 +560,21 @@ class _ScenarioBar extends StatelessWidget {
         Text(tr(context, _outcomeLabelKey(data.outcome)),
             textAlign: TextAlign.center, style: Body2_b.style),
         const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              positive ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-              size: 24,
-              color:
-                  positive ? const Color(0xFF3DDC97) : const Color(0xFFFF5964),
-            ),
-            Text('${(data.delta.abs() * 100).round()}%', style: Body2.style),
-          ],
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                positive ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                size: 24,
+                color: positive
+                    ? const Color(0xFF3DDC97)
+                    : const Color(0xFFFF5964),
+              ),
+              Text('${(data.delta.abs() * 100).round()}%', style: Body2.style),
+            ],
+          ),
         ),
       ],
     );
@@ -543,15 +582,35 @@ class _ScenarioBar extends StatelessWidget {
 }
 
 class _ScenarioExplanation extends StatelessWidget {
-  const _ScenarioExplanation({required this.teamName, required this.scenarios});
+  const _ScenarioExplanation(
+      {required this.teamName, required this.event, required this.scenarios});
 
   final String teamName;
+  final String event;
   final List<_ScenarioViewData> scenarios;
 
   @override
   Widget build(BuildContext context) {
     final win = scenarios.firstWhere((item) => item.outcome == 'win');
     final loss = scenarios.firstWhere((item) => item.outcome == 'loss');
+    final locale = Localizations.localeOf(context);
+    var subject = teamName;
+    if (locale.languageCode == 'ko') {
+      // 한글 마지막 음절의 받침에 맞춰 팀 이름에 '이·가'를 붙여요.
+      final last = teamName.runes.last;
+      final hasFinalConsonant =
+          last >= 0xAC00 && last <= 0xD7A3 && (last - 0xAC00) % 28 != 0;
+      subject += hasFinalConsonant ? '이' : '가';
+    }
+    final probabilityKey = switch (event) {
+      'league_winner' => 'title probability',
+      'top_4' || 'top_four' => 'TOP 4 PROBABILITY',
+      'direct_relegation' => 'RELEGATION PROBABILITY',
+      'relegation_playoff' => 'relegation playoff probability',
+      _ => probabilityEventTitle(event),
+    };
+    var probability = tr(context, probabilityKey).replaceAll('\n', ' ');
+    if (locale.languageCode == 'en') probability = probability.toLowerCase();
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -562,11 +621,12 @@ class _ScenarioExplanation extends StatelessWidget {
           child: Text(
             tr(
               context,
-              "A win could change {team}'s probability by {win} percentage points, while a loss could change it by {loss} points.",
+              'If {team} wins, {probability} {winChange}. If they lose, it {lossChange}.',
               {
-                'team': teamName,
-                'win': (win.delta * 100).toStringAsFixed(1),
-                'loss': (loss.delta * 100).toStringAsFixed(1),
+                'team': subject,
+                'probability': probability,
+                'winChange': _probabilityChangeLabel(context, win.delta),
+                'lossChange': _probabilityChangeLabel(context, loss.delta),
               },
             ),
             style: Body1.style
@@ -598,11 +658,26 @@ TeamProbabilityCard? _findEvent(
   return null;
 }
 
-String _roundLabel(BuildContext context, String? raw) {
-  final value = raw?.trim();
-  if (value == null || value.isEmpty) return tr(context, 'Next match');
-  final number = int.tryParse(value);
-  return number == null ? value : '${tr(context, 'Round')} $number';
+double _teamOutcomeProbability(
+  TeamProbabilityWhatIfFixture fixture,
+  int teamId,
+  int outcomeIndex,
+) {
+  final indices =
+      fixture.homeTeamId == teamId ? const [0, 1, 2] : const [2, 1, 0];
+  return fixture.probabilities[indices[outcomeIndex]];
+}
+
+String _probabilityChangeLabel(BuildContext context, double delta) {
+  // 강등 확률은 승리하면 내려가므로 결과가 아닌 실제 증감으로 표현해요.
+  final tenths = (delta * 1000).round();
+  if (tenths == 0) return tr(context, 'stays the same');
+  return tr(
+      context,
+      tenths > 0
+          ? 'increases by {points} percentage points'
+          : 'decreases by {points} percentage points',
+      {'points': (tenths.abs() / 10).toStringAsFixed(1)});
 }
 
 String _outcomeLabelKey(String outcome) => switch (outcome) {
