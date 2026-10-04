@@ -276,7 +276,7 @@ void main() {
             ),
           ),
         );
-        expect(find.text('1touch'), findsOneWidget);
+        expect(find.text('1TOUCH'), findsOneWidget);
         expect(find.text('EXPERT'), findsNothing);
         expect(find.text('Draw'), drawAllowed ? findsOneWidget : findsNothing);
         expect(find.text('D'), drawAllowed ? findsOneWidget : findsNothing);

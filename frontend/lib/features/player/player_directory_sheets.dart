@@ -666,7 +666,7 @@ class _PlayerFullRankingSheetState extends State<PlayerFullRankingSheet> {
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(children: [
             AppCloseHeader(
-                title: tr(context, '1TOUCH RANKING'),
+                title: tr(context, '1touch Ranking'),
                 onClose: () => Navigator.pop(context),
                 buttonSize: 24,
                 titleStyle: Heading5.style.copyWith(height: 1.1)),
