@@ -1,0 +1,81 @@
+name: onetouch-live-test
+
+x-runtime: &runtime
+  image: onetouch-live-test:local
+  build:
+    context: ../..
+    dockerfile: deploy/vultr/Dockerfile
+  restart: unless-stopped
+  init: true
+  user: "1001:1001"
+  env_file: .env.live-test
+  environment:
+    DB_HOST: live-test-db
+    DB_PORT: "3306"
+    DB_NAME: onetouch_live_test
+    DB_USER: onetouch_live_test
+    DB_PASSWORD: ${LIVE_TEST_MYSQL_PASSWORD:?Run start.sh first}
+    PYTHONPATH: /app/python
+    TZ: America/New_York
+  depends_on:
+    live-test-db:
+      condition: service_healthy
+  volumes:
+    - ../../logs:/app/logs
+  logging:
+    driver: local
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  live-test-db:
+    image: mysql:8.0.43
+    restart: unless-stopped
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci", "--lower-case-table-names=1"]
+    environment:
+      MYSQL_DATABASE: onetouch_live_test
+      MYSQL_USER: onetouch_live_test
+      MYSQL_PASSWORD: ${LIVE_TEST_MYSQL_PASSWORD:?Run start.sh first}
+      MYSQL_ROOT_PASSWORD: ${LIVE_TEST_MYSQL_ROOT_PASSWORD:?Run start.sh first}
+      TZ: America/New_York
+    volumes:
+      - live_test_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --user=\"$$MYSQL_USER\" --database=\"$$MYSQL_DATABASE\" --execute='SELECT 1' --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  api:
+    <<: *runtime
+    command: ["uvicorn", "live_test.api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips=*", "--no-server-header", "--ws-max-size", "16384", "--ws-max-queue", "16"]
+    networks:
+      default:
+      production_proxy:
+        aliases: [onetouch-live-test-api]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/ready', timeout=5).read()"]
+      interval: 10s
+      timeout: 30s
+      retries: 15
+      start_period: 120s
+
+  live:
+    <<: *runtime
+    command: ["python", "-m", "live_test.worker", "live", "--apply", "--loop"]
+  notifications:
+    <<: *runtime
+    command: ["python", "-m", "live_test.worker", "notifications", "--apply", "--loop"]
+  refresh:
+    <<: *runtime
+    command: ["python", "-m", "live_test.worker", "refresh", "--apply", "--loop"]
+
+volumes:
+  live_test_mysql:
+
+networks:
+  production_proxy:
+    external: true
+    name: onetouch-dev_default

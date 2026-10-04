@@ -27,9 +27,9 @@ class SecureAuthTokenStore implements AuthTokenStore {
     FlutterSecureStorage storage = const FlutterSecureStorage(),
   }) : _storage = storage;
 
-  static const _accessTokenKey = 'onetouch_access_token';
-  static const _profileCompleteKey = 'onetouch_profile_complete';
-  static const _onboardingCompleteKey = 'onetouch_onboarding_complete';
+  static const _accessTokenKey = 'onetouch_live_test_access_token';
+  static const _profileCompleteKey = 'onetouch_live_test_profile_complete';
+  static const _onboardingCompleteKey = 'onetouch_live_test_onboarding_complete';
   final FlutterSecureStorage _storage;
 
   @override

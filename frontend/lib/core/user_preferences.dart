@@ -24,8 +24,8 @@ abstract interface class UserPreferencesRepository {
 }
 
 class LocalUserPreferencesRepository implements UserPreferencesRepository {
-  static const _favoriteTeamKey = 'current_user.favorite_team_id';
-  static const _followedTeamsKey = 'current_user.followed_team_ids';
+  static const _favoriteTeamKey = 'live_test.favorite_team_id';
+  static const _followedTeamsKey = 'live_test.followed_team_ids';
 
   @override
   Future<UserTeamPreferences?> load() async {

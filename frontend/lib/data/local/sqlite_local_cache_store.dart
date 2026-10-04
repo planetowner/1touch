@@ -14,7 +14,7 @@ class SqliteLocalCacheStore implements LocalCacheStore {
   SqliteLocalCacheStore({Future<Database> Function()? openDatabase})
       : _openDatabaseOverride = openDatabase;
 
-  static const _databaseName = 'onetouch_cache.db';
+  static const _databaseName = 'onetouch_live_test_cache.db';
   static const _databaseVersion = 1;
   static const _table = 'cache_entries';
 

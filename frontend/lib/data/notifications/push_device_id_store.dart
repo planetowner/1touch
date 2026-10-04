@@ -13,7 +13,7 @@ class SharedPreferencesPushDeviceIdStore implements PushDeviceIdStore {
   })  : _preferences = preferences,
         _uuid = uuid;
 
-  static const storageKey = 'notifications.push_device_id.v1';
+  static const storageKey = 'notifications.live_test.push_device_id.v1';
 
   SharedPreferences? _preferences;
   final Uuid _uuid;

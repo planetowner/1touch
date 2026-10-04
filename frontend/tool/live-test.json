@@ -1,0 +1,6 @@
+{
+  "API_VIEWER_COUNTRY": "US",
+  "API_SKIP_ONBOARDING": false,
+  "API_BASE_URI": "https://api.1touch.football/live-test/v1/",
+  "APP_LOCALE": "system"
+}

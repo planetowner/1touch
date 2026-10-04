@@ -1,0 +1,315 @@
+{
+  "model_id": "fa7ab177eac178b1bc1ca86fe41c5d4906712feb1f7b37d528e2091e45ec70cc",
+  "method": "multinomial_logistic_elo_difference_v1",
+  "forecast_model": {
+    "coefficients": [
+      0.4297000666549036,
+      1.671888205878307,
+      0.042249755465058554,
+      -1.5452206606491772
+    ],
+    "training_seasons": [
+      "2023/2024",
+      "2024/2025",
+      "2025/2026"
+    ],
+    "training_fixtures": 5069,
+    "predict_from_season": "2026/2027",
+    "last_training_fixture_at": "2026-05-24 19:45:00"
+  },
+  "validation": {
+    "model": {
+      "coefficients": [
+        0.4018583471131192,
+        1.7135852827855642,
+        0.032510874247620586,
+        -1.6771684142383256
+      ]
+    },
+    "season": "2025/2026",
+    "metrics": {
+      "fixtures": 1713,
+      "log_loss": 0.999730071343532,
+      "brier_score": 0.5957540259115401
+    },
+    "by_league": [
+      {
+        "global_model": {
+          "fixtures": 380,
+          "log_loss": 1.0434155893241148,
+          "brier_score": 0.628280203490126
+        },
+        "league_model": {
+          "fixtures": 380,
+          "log_loss": 1.045971394347885,
+          "brier_score": 0.6305383401901945
+        },
+        "competition_id": 8,
+        "frequency_baseline": {
+          "fixtures": 380,
+          "log_loss": 1.085174234704821,
+          "brier_score": 0.6565616343490305
+        }
+      },
+      {
+        "global_model": {
+          "fixtures": 306,
+          "log_loss": 0.9583538056819229,
+          "brier_score": 0.5673726877688435
+        },
+        "league_model": {
+          "fixtures": 306,
+          "log_loss": 0.9600042124330476,
+          "brier_score": 0.5688383798470437
+        },
+        "competition_id": 82,
+        "frequency_baseline": {
+          "fixtures": 306,
+          "log_loss": 1.071767870004002,
+          "brier_score": 0.6486524686135903
+        }
+      },
+      {
+        "global_model": {
+          "fixtures": 305,
+          "log_loss": 0.9932248508629568,
+          "brier_score": 0.5931386380522251
+        },
+        "league_model": {
+          "fixtures": 305,
+          "log_loss": 0.9932311921352048,
+          "brier_score": 0.5936035318919957
+        },
+        "competition_id": 301,
+        "frequency_baseline": {
+          "fixtures": 305,
+          "log_loss": 1.0643371543025713,
+          "brier_score": 0.6430255178219706
+        }
+      },
+      {
+        "global_model": {
+          "fixtures": 342,
+          "log_loss": 1.0103321014254576,
+          "brier_score": 0.6023600792988579
+        },
+        "league_model": {
+          "fixtures": 342,
+          "log_loss": 1.018135339866287,
+          "brier_score": 0.6037556514253998
+        },
+        "competition_id": 384,
+        "frequency_baseline": {
+          "fixtures": 342,
+          "log_loss": 1.0907463128892132,
+          "brier_score": 0.6614015534377783
+        }
+      },
+      {
+        "global_model": {
+          "fixtures": 380,
+          "log_loss": 0.9850428040234994,
+          "brier_score": 0.5822360391495165
+        },
+        "league_model": {
+          "fixtures": 380,
+          "log_loss": 0.9808605271987773,
+          "brier_score": 0.5768531098816804
+        },
+        "competition_id": 564,
+        "frequency_baseline": {
+          "fixtures": 380,
+          "log_loss": 1.0508862823270697,
+          "brier_score": 0.6332409972299169
+        }
+      }
+    ],
+    "calibration": [
+      {
+        "to": 0.1,
+        "from": 0.0,
+        "outcome": "home_win",
+        "fixtures": 50,
+        "predicted_mean": 0.07771020862567281,
+        "observed_fraction": 0.1
+      },
+      {
+        "to": 0.2,
+        "from": 0.1,
+        "outcome": "home_win",
+        "fixtures": 173,
+        "predicted_mean": 0.15661259553501303,
+        "observed_fraction": 0.2023121387283237
+      },
+      {
+        "to": 0.3,
+        "from": 0.2,
+        "outcome": "home_win",
+        "fixtures": 237,
+        "predicted_mean": 0.2541719454276803,
+        "observed_fraction": 0.2869198312236287
+      },
+      {
+        "to": 0.4,
+        "from": 0.3,
+        "outcome": "home_win",
+        "fixtures": 310,
+        "predicted_mean": 0.3506639199805699,
+        "observed_fraction": 0.38064516129032255
+      },
+      {
+        "to": 0.5,
+        "from": 0.4,
+        "outcome": "home_win",
+        "fixtures": 329,
+        "predicted_mean": 0.4461639295710278,
+        "observed_fraction": 0.4620060790273556
+      },
+      {
+        "to": 0.6,
+        "from": 0.5,
+        "outcome": "home_win",
+        "fixtures": 277,
+        "predicted_mean": 0.5450219871277031,
+        "observed_fraction": 0.5054151624548736
+      },
+      {
+        "to": 0.7,
+        "from": 0.6,
+        "outcome": "home_win",
+        "fixtures": 193,
+        "predicted_mean": 0.648923482094545,
+        "observed_fraction": 0.6735751295336787
+      },
+      {
+        "to": 0.8,
+        "from": 0.7,
+        "outcome": "home_win",
+        "fixtures": 114,
+        "predicted_mean": 0.7451719383675246,
+        "observed_fraction": 0.7456140350877193
+      },
+      {
+        "to": 0.9,
+        "from": 0.8,
+        "outcome": "home_win",
+        "fixtures": 30,
+        "predicted_mean": 0.833087974409591,
+        "observed_fraction": 0.8333333333333334
+      },
+      {
+        "to": 0.1,
+        "from": 0.0,
+        "outcome": "draw",
+        "fixtures": 1,
+        "predicted_mean": 0.0962333460599365,
+        "observed_fraction": 1.0
+      },
+      {
+        "to": 0.2,
+        "from": 0.1,
+        "outcome": "draw",
+        "fixtures": 156,
+        "predicted_mean": 0.1714988824814815,
+        "observed_fraction": 0.14102564102564102
+      },
+      {
+        "to": 0.3,
+        "from": 0.2,
+        "outcome": "draw",
+        "fixtures": 1556,
+        "predicted_mean": 0.2653868429729973,
+        "observed_fraction": 0.2634961439588689
+      },
+      {
+        "to": 0.1,
+        "from": 0.0,
+        "outcome": "away_win",
+        "fixtures": 159,
+        "predicted_mean": 0.06711749342338097,
+        "observed_fraction": 0.10062893081761008
+      },
+      {
+        "to": 0.2,
+        "from": 0.1,
+        "outcome": "away_win",
+        "fixtures": 327,
+        "predicted_mean": 0.14991964935347085,
+        "observed_fraction": 0.16819571865443425
+      },
+      {
+        "to": 0.3,
+        "from": 0.2,
+        "outcome": "away_win",
+        "fixtures": 395,
+        "predicted_mean": 0.24930651047975497,
+        "observed_fraction": 0.2607594936708861
+      },
+      {
+        "to": 0.4,
+        "from": 0.3,
+        "outcome": "away_win",
+        "fixtures": 331,
+        "predicted_mean": 0.3466472056067326,
+        "observed_fraction": 0.29003021148036257
+      },
+      {
+        "to": 0.5,
+        "from": 0.4,
+        "outcome": "away_win",
+        "fixtures": 214,
+        "predicted_mean": 0.4419924926488468,
+        "observed_fraction": 0.4158878504672897
+      },
+      {
+        "to": 0.6,
+        "from": 0.5,
+        "outcome": "away_win",
+        "fixtures": 164,
+        "predicted_mean": 0.5481496065480287,
+        "observed_fraction": 0.5182926829268293
+      },
+      {
+        "to": 0.7,
+        "from": 0.6,
+        "outcome": "away_win",
+        "fixtures": 86,
+        "predicted_mean": 0.6449840135816437,
+        "observed_fraction": 0.6046511627906976
+      },
+      {
+        "to": 0.8,
+        "from": 0.7,
+        "outcome": "away_win",
+        "fixtures": 36,
+        "predicted_mean": 0.7409761891509188,
+        "observed_fraction": 0.6944444444444444
+      },
+      {
+        "to": 0.9,
+        "from": 0.8,
+        "outcome": "away_win",
+        "fixtures": 1,
+        "predicted_mean": 0.8020617215741433,
+        "observed_fraction": 1.0
+      }
+    ],
+    "training_seasons": [
+      "2023/2024",
+      "2024/2025"
+    ],
+    "training_fixtures": 3356,
+    "frequency_baseline": {
+      "fixtures": 1713,
+      "log_loss": 1.0709541894534984,
+      "brier_score": 0.6477599374055096
+    },
+    "separate_leagues_log_loss": 1.0012231284458564
+  },
+  "limitations": [
+    "Excluded historical fixtures can bias coverage",
+    "Historical Elo was retrieved retrospectively",
+    "Future Elo is fixed during each simulation",
+    "Points ties use uniform random order"
+  ]
+}

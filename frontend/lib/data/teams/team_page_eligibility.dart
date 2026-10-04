@@ -14,6 +14,8 @@ class TeamPageEligibility {
     301,
     384,
     564,
+    // 이 작업 폴더는 별도 DB를 쓰는 스페인 2부 라이브 테스트용이에요.
+    567,
   };
 
   final TeamCompetitionContextResolver _contextResolver;

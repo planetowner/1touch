@@ -16,6 +16,10 @@ class ApiConfig {
   factory ApiConfig.fromEnvironment() {
     const baseUri = String.fromEnvironment('API_BASE_URI');
     const sessionToken = String.fromEnvironment('API_SESSION_TOKEN');
+    // 테스트 작업 폴더를 운영 주소로 실행해 계정·푸시 기기를 섞지 않아요.
+    if (baseUri != 'https://api.1touch.football/live-test/v1/') {
+      throw StateError('Run this checkout with tool/run-live-test.sh.');
+    }
     return ApiConfig.fromValues(
       baseUri: baseUri,
       sessionToken: sessionToken,

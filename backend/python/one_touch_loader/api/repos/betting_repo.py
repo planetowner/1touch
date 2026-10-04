@@ -20,6 +20,7 @@ from ...core.fixture_states import COMPLETED_STATE_IDS
 from ...core.db_json import decoded
 from ...core.probability import OUTCOMES
 from ...core.probability_forecast import LEAGUE_RULES
+from live_test import COMPETITION_ID as LIVE_TEST_COMPETITION_ID
 
 FIXTURE_SQL = '''SELECT f.fixture_id,f.home_team_id,f.away_team_id,f.starting_at,
     f.state_id,fs.state_code,f.home_score,f.away_score,f.home_penalty_score,f.away_penalty_score,
@@ -50,6 +51,8 @@ def _supported(fixture):
     current = fixture['season_name'] == '2026/2027'
     if fixture['competition_id'] in CUP_COMPETITION_IDS:
         return current
+    if fixture['competition_id'] == LIVE_TEST_COMPETITION_ID:
+        return current and fixture['stage_type_id'] == 223
     return (fixture['competition_id'] in LEAGUE_RULES and fixture['stage_type_id'] == 223 and
             (current or (fixture['season_name'] == '2025/2026' and fixture['state_id'] in COMPLETED_STATE_IDS)))
 
@@ -64,15 +67,17 @@ def _prediction(read_one, fixture, now):
         return None
     # 실제 경기 전 예측을 우선해 이미 참여한 경기의 표시값을 유지해요.
     cutoff = min(now, fixture['starting_at'])
-    cup = fixture['competition_id'] in CUP_COMPETITION_IDS
-    scope = ("AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.market_kind'))=%s" if cup else
+    # 테스트 리그도 컵과 같은 경기별 예측 저장·검증 경로를 사용해요.
+    stored_market = (fixture['competition_id'] in CUP_COMPETITION_IDS or
+                     fixture['competition_id'] == LIVE_TEST_COMPETITION_ID)
+    scope = ("AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.market_kind'))=%s" if stored_market else
              "AND JSON_EXTRACT(payload,'$.market_kind') IS NULL")
     selected = read_one('''SELECT run_id FROM probability_runs
         WHERE season_id=%s AND as_of<=%s AND as_of<%s
           AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.history_kind'))='observed_calculation'
         ''' + scope + ''' ORDER BY as_of DESC,created_at DESC,run_id DESC LIMIT 1''',
-        (fixture['season_id'], cutoff, fixture['starting_at'], *((SETTLEMENT_RULE,) if cup else ())))
-    if selected is None and not cup and fixture['state_id'] in COMPLETED_STATE_IDS:
+        (fixture['season_id'], cutoff, fixture['starting_at'], *((SETTLEMENT_RULE,) if stored_market else ())))
+    if selected is None and not stored_market and fixture['state_id'] in COMPLETED_STATE_IDS:
         # 복원값은 종료된 리그 경기 표시에만 써요. 다른 시즌으로 학습한 모델은 섞지 않아요.
         selected = read_one('''SELECT r.run_id FROM probability_runs r
             JOIN probability_models m ON m.model_id=r.model_id
@@ -85,7 +90,7 @@ def _prediction(read_one, fixture, now):
             (fixture['season_id'], cutoff, SETTLEMENT_RULE, fixture['season_name']))
     if selected is None:
         return None
-    if cup:
+    if stored_market:
         row = read_one('SELECT run_id,as_of,payload FROM probability_runs WHERE run_id=%s', (selected['run_id'],))
         quote = decoded(row['payload'])['fixture_markets'].get(str(fixture['fixture_id']))
         if quote is None or quote['fixture'] != fixture_context(fixture):

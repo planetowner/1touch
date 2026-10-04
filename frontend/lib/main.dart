@@ -708,7 +708,11 @@ class MyApp extends StatelessWidget {
                         child: FullScreenBackGesture(
                           canGoBack: _router.canPop,
                           goBack: _router.routerDelegate.popRoute,
-                          child: child!,
+                          child: Banner(
+                            message: 'LIVE TEST',
+                            location: BannerLocation.topEnd,
+                            child: child!,
+                          ),
                         ),
                       ),
                     ),
