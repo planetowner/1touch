@@ -192,7 +192,7 @@ class _MostComparedUnavailableSection extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 31, 24, 48),
+      padding: const EdgeInsets.fromLTRB(24, 31, 24, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

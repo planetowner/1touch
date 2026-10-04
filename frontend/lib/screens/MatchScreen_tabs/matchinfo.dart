@@ -371,7 +371,7 @@ class MatchInfoTab extends StatelessWidget {
     final awaySubstitutes = _substitutes(fixture.awayTeamId);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 12, bottom: 48),
+      padding: const EdgeInsets.only(top: 12, bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -392,7 +392,6 @@ class MatchInfoTab extends StatelessWidget {
             roundLabel: fixtureCompetitionLabel(context, fixture) ??
                 fixtureRoundLabel(fixture,
                     locale: Localizations.localeOf(context)),
-            venueLabel: detail?.venueName,
           ),
           if (matchEvents.isNotEmpty) MatchEventsSection(events: matchEvents),
           if (!isLive) ...[
@@ -444,7 +443,6 @@ class MatchInfoTab extends StatelessWidget {
                 ? null
                 : _openSubstituteMatchStats,
           ),
-          const SizedBox(height: 100),
         ],
       ),
     );

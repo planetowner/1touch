@@ -216,7 +216,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           _buildLatestH2H(),
           const SizedBox(height: 48),
           _buildStandingTable(),
-          const SizedBox(height: 120),
+          const SizedBox(height: 24),
         ],
       ),
     );

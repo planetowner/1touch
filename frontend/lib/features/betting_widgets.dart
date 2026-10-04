@@ -545,21 +545,11 @@ class MatchStatsHeader extends StatelessWidget {
           BettingProbabilityBar(
             values: bettingProbabilitiesByOutcome(options),
             colors: barColors,
+            outcomeLabels: [
+              for (final outcome in BetOutcome.values)
+                _label(context, outcome, homeTeam, awayTeam),
+            ],
           ),
-        const SizedBox(height: 8),
-        Row(
-          children: options
-              .map(
-                (option) => Expanded(
-                  child: Text(
-                    _label(context, option.outcome, homeTeam, awayTeam),
-                    textAlign: TextAlign.center,
-                    style: Body2.style,
-                  ),
-                ),
-              )
-              .toList(),
-        ),
       ],
     );
   }
@@ -754,11 +744,14 @@ class BettingProbabilityBar extends StatelessWidget {
     required this.values,
     this.selected,
     this.colors,
-  }) : assert(colors == null || colors.length == 3);
+    this.outcomeLabels,
+  })  : assert(colors == null || colors.length == 3),
+        assert(outcomeLabels == null || outcomeLabels.length == 3);
 
   final List<double> values;
   final BetOutcome? selected;
   final List<Color>? colors;
+  final List<String>? outcomeLabels;
 
   @override
   Widget build(BuildContext context) {
@@ -768,111 +761,134 @@ class BettingProbabilityBar extends StatelessWidget {
           Color(0xFFFFAAAA),
           AppPalette.lightGreyBox,
         ];
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(6),
-      child: SizedBox(
-        height: 40,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            const horizontalPadding = 8.0;
-            final active = [
-              for (var i = 0; i < 3; i++)
-                if (values[i] > 0) i
-            ];
-            final labels = [
-              for (var i = 0; i < 3; i++)
-                '${(values[i] * 100).toStringAsFixed(1)}%'
-            ];
-            final minimums = <int, double>{};
-            for (final index in active) {
-              final painter = TextPainter(
-                text: TextSpan(text: labels[index], style: Heading5.style),
-                textDirection: Directionality.of(context),
-                textScaler: MediaQuery.textScalerOf(context),
-                maxLines: 1,
-              )..layout();
-              minimums[index] = painter.width.ceilToDouble() +
-                  horizontalPadding * 2 +
-                  3 +
-                  (selected?.index == index ? 14 : 0);
-              painter.dispose();
-            }
-            final minimumWidth =
-                minimums.values.fold<double>(0, (a, b) => a + b);
-            final contentWidth = math.max(constraints.maxWidth, minimumWidth);
-            final widths = <int, double>{};
-            final flexible = active.toSet();
-            var remainingWidth = contentWidth;
-            var remainingWeight =
-                active.fold<double>(0, (sum, i) => sum + values[i]);
-            while (flexible.isNotEmpty) {
-              final constrained = flexible.where((index) =>
-                  remainingWidth * values[index] / remainingWeight <
-                  minimums[index]!);
-              if (constrained.isEmpty) break;
-              for (final index in constrained.toList()) {
-                widths[index] = minimums[index]!;
-                remainingWidth -= widths[index]!;
-                remainingWeight -= values[index];
-                flexible.remove(index);
-              }
-            }
-            for (final index in flexible) {
-              widths[index] = remainingWidth * values[index] / remainingWeight;
-            }
-            final segments = Row(
-              children: [
-                for (final index in active)
-                  SizedBox(
-                    width: widths[index],
-                    child: Container(
-                      color: segmentColors[index],
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: horizontalPadding,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const horizontalPadding = 8.0;
+        final active = [
+          for (var i = 0; i < 3; i++)
+            if (values[i] > 0) i
+        ];
+        final labels = [
+          for (var i = 0; i < 3; i++) '${(values[i] * 100).toStringAsFixed(1)}%'
+        ];
+        final minimums = <int, double>{};
+        for (final index in active) {
+          final painter = TextPainter(
+            text: TextSpan(text: labels[index], style: Heading5.style),
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+            maxLines: 1,
+          )..layout();
+          minimums[index] = painter.width.ceilToDouble() +
+              horizontalPadding * 2 +
+              3 +
+              (selected?.index == index ? 14 : 0);
+          painter.dispose();
+        }
+        final minimumWidth = minimums.values.fold<double>(0, (a, b) => a + b);
+        final contentWidth = math.max(constraints.maxWidth, minimumWidth);
+        final widths = <int, double>{};
+        final flexible = active.toSet();
+        var remainingWidth = contentWidth;
+        var remainingWeight =
+            active.fold<double>(0, (sum, i) => sum + values[i]);
+        while (flexible.isNotEmpty) {
+          final constrained = flexible.where((index) =>
+              remainingWidth * values[index] / remainingWeight <
+              minimums[index]!);
+          if (constrained.isEmpty) break;
+          for (final index in constrained.toList()) {
+            widths[index] = minimums[index]!;
+            remainingWidth -= widths[index]!;
+            remainingWeight -= values[index];
+            flexible.remove(index);
+          }
+        }
+        for (final index in flexible) {
+          widths[index] = remainingWidth * values[index] / remainingWeight;
+        }
+        final segments = Row(
+          children: [
+            for (final index in active)
+              SizedBox(
+                width: widths[index],
+                child: Container(
+                  color: segmentColors[index],
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                  ),
+                  alignment: index == 0
+                      ? Alignment.centerLeft
+                      : index == 2
+                          ? Alignment.centerRight
+                          : Alignment.center,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (selected?.index == index && index == 2)
+                        Icon(
+                          Icons.check_circle,
+                          size: 14,
+                          color: _foregroundFor(segmentColors[index]),
+                        ),
+                      Text(
+                        labels[index],
+                        maxLines: 1,
+                        softWrap: false,
+                        style: Heading5.style.copyWith(
+                          color: _foregroundFor(segmentColors[index]),
+                        ),
                       ),
-                      alignment: index == 0
-                          ? Alignment.centerLeft
-                          : index == 2
-                              ? Alignment.centerRight
-                              : Alignment.center,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (selected?.index == index && index == 2)
-                            Icon(
-                              Icons.check_circle,
-                              size: 14,
-                              color: _foregroundFor(segmentColors[index]),
-                            ),
-                          Text(
-                            labels[index],
-                            maxLines: 1,
-                            softWrap: false,
-                            style: Heading5.style.copyWith(
-                              color: _foregroundFor(segmentColors[index]),
-                            ),
-                          ),
-                          if (selected?.index == index && index != 2)
-                            Icon(
-                              Icons.check_circle,
-                              size: 14,
-                              color: _foregroundFor(segmentColors[index]),
-                            ),
-                        ],
+                      if (selected?.index == index && index != 2)
+                        Icon(
+                          Icons.check_circle,
+                          size: 14,
+                          color: _foregroundFor(segmentColors[index]),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        );
+        final content = Column(
+          children: [
+            ClipRRect(
+              key: const ValueKey('betting-probability-bar-surface'),
+              borderRadius: BorderRadius.circular(6),
+              child: SizedBox(height: 40, child: segments),
+            ),
+            if (outcomeLabels != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  for (final index in active)
+                    SizedBox(
+                      width: widths[index],
+                      child: Text(
+                        outcomeLabels![index],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: switch (index) {
+                          0 => TextAlign.left,
+                          2 => TextAlign.right,
+                          _ => TextAlign.center,
+                        },
+                        style: Body2.style,
                       ),
                     ),
-                  ),
-              ],
-            );
-            if (minimumWidth <= constraints.maxWidth) return segments;
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(width: contentWidth, child: segments),
-            );
-          },
-        ),
-      ),
+                ],
+              ),
+            ],
+          ],
+        );
+        if (minimumWidth <= constraints.maxWidth) return content;
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(width: contentWidth, child: content),
+        );
+      },
     );
   }
 }

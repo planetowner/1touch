@@ -142,31 +142,6 @@ void main() {
         app_style.AppPalette.black.withValues(alpha: 0.5));
   });
 
-  testWidgets('keeps the venue name on one line', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(393, 852));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    await _pumpHeader(
-      tester,
-      'Round of 16',
-      venue: 'Estadio Santiago Bernabeu',
-    );
-
-    final venue = tester.widget<Text>(
-      find.byKey(const ValueKey('match-venue-name')),
-    );
-    expect(venue.maxLines, 1);
-    expect(venue.softWrap, isFalse);
-    expect(venue.overflow, TextOverflow.ellipsis);
-    final venueRect = tester.getRect(
-      find.byKey(const ValueKey('match-venue-name')),
-    );
-    expect(venueRect.left, 24);
-    expect(venueRect.right, 393 - 24);
-    expect(venueRect.height, 16);
-    expect(tester.takeException(), isNull);
-  });
-
   for (final width in [320.0, 393.0, 420.0, 430.0]) {
     testWidgets('keeps teams and scores fixed when title changes at $width',
         (tester) async {
@@ -271,7 +246,6 @@ Future<void> _pumpHeader(
   String? title, {
   String home = '레알 마드리드',
   String away = '맨체스터 시티',
-  String? venue,
 }) async {
   await tester.pumpWidget(MaterialApp(
     theme: app_style.darktheme,
@@ -289,7 +263,6 @@ Future<void> _pumpHeader(
           awayScore: '0',
           status: const Text('Full Time'),
           roundLabel: title,
-          venueLabel: venue,
         ),
       ),
     ),

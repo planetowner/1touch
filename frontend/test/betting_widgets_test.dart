@@ -65,6 +65,35 @@ void main() {
     });
   }
 
+  testWidgets('outcome labels follow their bar segments at narrow width',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: SizedBox(
+            width: 110,
+            child: BettingProbabilityBar(
+              values: [0.8, 0.15, 0.05],
+              outcomeLabels: ['Home Win', 'Draw', 'Away Win'],
+            ),
+          ),
+        ),
+      ),
+    ));
+
+    final drawSegment = tester.getRect(find
+        .ancestor(
+          of: find.text('15.0%'),
+          matching: find.byType(Container),
+        )
+        .first);
+    final drawLabel = tester.getRect(find.text('Draw'));
+    expect(drawLabel.center.dx, closeTo(drawSegment.center.dx, 0.1));
+    expect(drawLabel.top, closeTo(drawSegment.bottom + 8, 0.1));
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('uses the server stake unit for minimum and amount buttons',
       (tester) async {
     final repository = FakeBettingRepository()
@@ -283,6 +312,48 @@ void main() {
         for (final bar in tester.widgetList<BettingProbabilityBar>(
             find.byType(BettingProbabilityBar))) {
           expect(bar.values, drawAllowed ? [0.6, 0.1, 0.3] : [0.8, 0, 0.2]);
+        }
+        final statsHeader = find.byType(MatchStatsHeader);
+        final headerBar = tester.getRect(find.descendant(
+          of: statsHeader,
+          matching: find.byKey(
+            const ValueKey('betting-probability-bar-surface'),
+          ),
+        ));
+        final homeLabel = find.descendant(
+          of: statsHeader,
+          matching: find.text('TOT Win'),
+        );
+        final awayLabel = find.descendant(
+          of: statsHeader,
+          matching: find.text('MUN Win'),
+        );
+        final homeRect = tester.getRect(homeLabel);
+        final awayRect = tester.getRect(awayLabel);
+        expect(tester.widget<Text>(homeLabel).textAlign, TextAlign.left);
+        expect(tester.widget<Text>(awayLabel).textAlign, TextAlign.right);
+        expect(homeRect.left, closeTo(headerBar.left, 0.1));
+        expect(awayRect.right, closeTo(headerBar.right, 0.1));
+        expect(homeRect.top, closeTo(headerBar.bottom + 8, 0.1));
+        expect(awayRect.top, closeTo(homeRect.top, 0.1));
+        if (drawAllowed) {
+          final drawLabel = find.descendant(
+            of: statsHeader,
+            matching: find.text('Draw'),
+          );
+          final drawRect = tester.getRect(drawLabel);
+          final drawSegment = tester.getRect(find
+              .ancestor(
+                of: find.descendant(
+                  of: statsHeader,
+                  matching: find.text('10.0%'),
+                ),
+                matching: find.byType(Container),
+              )
+              .first);
+          expect(tester.widget<Text>(drawLabel).textAlign, TextAlign.center);
+          expect(drawRect.center.dx, closeTo(drawSegment.center.dx, 0.1));
+          expect(drawRect.top, closeTo(homeRect.top, 0.1));
         }
         if (!drawAllowed) {
           for (final label in find.text('20.0%').evaluate()) {

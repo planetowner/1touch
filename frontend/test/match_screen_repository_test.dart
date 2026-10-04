@@ -391,9 +391,7 @@ void main() {
     final statistics = tester.widget<StatBarsSection>(
       find.byType(StatBarsSection),
     );
-    final scoreHeader = tester.widget<MatchScoreHeader>(
-      find.byType(MatchScoreHeader),
-    );
+    expect(find.byType(MatchScoreHeader), findsOneWidget);
     final events = tester.widget<MatchEventsSection>(
       find.byType(MatchEventsSection),
     );
@@ -418,7 +416,7 @@ void main() {
     );
     expect(coaches.coachA, 'Home Coach');
     expect(coaches.coachB, 'Away Coach');
-    expect(scoreHeader.venueLabel, 'Test Stadium');
+    expect(find.text('Test Stadium'), findsNothing);
     expect(find.text('Full Time'), findsOneWidget);
     expect(
       events.events.any(
