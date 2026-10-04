@@ -107,19 +107,23 @@ class MatchInfoTab extends StatelessWidget {
     if (stats != null) showPlayerMatchStatSheet(context, stats);
   }
 
+  // 경기 정보의 통계 순서는 라이브·종료 경기에서 같은 목록을 사용해요.
   static const _statDefinitions =
       <({String code, String label, bool isPercent})>[
+    (code: 'ball-possession', label: 'Ball Possession', isPercent: true),
     (code: 'shots-total', label: 'Shots', isPercent: false),
     (code: 'shots-on-target', label: 'Shots on Target', isPercent: false),
+    (code: 'corners', label: 'Corners', isPercent: false),
+    (code: 'offsides', label: 'Offsides', isPercent: false),
+    (code: 'passes', label: 'Passes', isPercent: false),
     (
       code: 'successful-passes-percentage',
       label: 'Pass Accuracy',
       isPercent: true,
     ),
     (code: 'fouls', label: 'Fouls', isPercent: false),
-    (code: 'corners', label: 'Corners', isPercent: false),
-    (code: 'offsides', label: 'Offsides', isPercent: false),
     (code: 'yellowcards', label: 'Yellow Cards', isPercent: false),
+    (code: 'redcards', label: 'Red Cards', isPercent: false),
     (code: 'saves', label: 'Saves', isPercent: false),
   ];
 
@@ -131,55 +135,26 @@ class MatchInfoTab extends StatelessWidget {
           statistic.value;
     }
 
-    StatBarData? pairedStatistic({
-      required String code,
-      required String label,
-      required bool isPercent,
-    }) {
-      final values = valuesByCode[code];
-      if (values == null || values.isEmpty) return null;
-      final homeValue = values[fixture.homeTeamId];
-      final awayValue = values[fixture.awayTeamId];
-      // Sportmonks omits zero-valued count statistics. If this statistic is
-      // present for one team, a missing opponent count therefore displays 0;
-      // percentages still require both sides to avoid inventing a ratio.
-      if (isPercent && (homeValue == null || awayValue == null)) return null;
-      return StatBarData(
-        category: label,
+    // 라이브 응답에서 생략된 0도 표시해 경기 중 통계 항목이 사라지지 않게 해요.
+    // 상세 응답을 받기 전에는 아직 확인하지 못한 값을 0으로 표시하지 않아요.
+    final showLiveZeros = isLive && detail != null;
+    final result = <StatBarData>[];
+    for (final definition in _statDefinitions) {
+      final values = valuesByCode[definition.code];
+      final homeValue = values?[fixture.homeTeamId];
+      final awayValue = values?[fixture.awayTeamId];
+      if (!showLiveZeros) {
+        if (homeValue == null && awayValue == null) continue;
+        if (definition.isPercent && (homeValue == null || awayValue == null)) {
+          continue;
+        }
+      }
+      result.add(StatBarData(
+        category: definition.label,
         homePercent: homeValue ?? 0,
         awayPercent: awayValue ?? 0,
-        isPercent: isPercent,
-      );
-    }
-
-    final result = <StatBarData>[];
-    final possession = pairedStatistic(
-      code: 'ball-possession',
-      label: 'Possession',
-      isPercent: true,
-    );
-    if (possession != null) result.add(possession);
-
-    final expectedGoals = detail?.expectedGoals;
-    if (expectedGoals != null) {
-      result.add(
-        StatBarData(
-          category: 'Expected Goals',
-          homePercent: expectedGoals.homeXg,
-          awayPercent: expectedGoals.awayXg,
-          isPercent: false,
-          fractionDigits: 2,
-        ),
-      );
-    }
-
-    for (final definition in _statDefinitions) {
-      final bar = pairedStatistic(
-        code: definition.code,
-        label: definition.label,
         isPercent: definition.isPercent,
-      );
-      if (bar != null) result.add(bar);
+      ));
     }
     return result;
   }
