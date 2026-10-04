@@ -1,0 +1,44 @@
+{
+  "_source": "frontend/lib/l10n/messages.dart",
+  "_generate": "cd frontend && dart run tool/export_verification_email_messages.dart",
+  "messages": {
+    "verification": {
+      "en": {
+        "title": "Email Verification Code",
+        "code_label": "Your 1touch code is",
+        "signup": "To continue signing up, enter this code within {minutes} minutes.",
+        "password_reset": "To reset your password, enter this code within {minutes} minutes.",
+        "username_recovery": "To find your username, enter this code within {minutes} minutes.",
+        "email_change": "To change your email address, enter this code within {minutes} minutes.",
+        "ignore": "If you didn't request this verification code, you can ignore this email."
+      },
+      "ko": {
+        "title": "이메일 인증번호",
+        "code_label": "1touch 인증번호예요",
+        "signup": "회원가입을 계속하려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+        "password_reset": "비밀번호를 다시 설정하려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+        "username_recovery": "아이디를 찾으려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+        "email_change": "이메일 주소를 바꾸려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+        "ignore": "이 인증번호를 요청한 적이 없다면 이 이메일은 무시해도 돼요."
+      },
+      "ja": {
+        "title": "メール認証コード",
+        "code_label": "1touchの認証コードです",
+        "signup": "新規登録を続けるには、{minutes}分以内にこのコードを入力してください。",
+        "password_reset": "パスワードを再設定するには、{minutes}分以内にこのコードを入力してください。",
+        "username_recovery": "ユーザー名を確認するには、{minutes}分以内にこのコードを入力してください。",
+        "email_change": "メールアドレスを変更するには、{minutes}分以内にこのコードを入力してください。",
+        "ignore": "この認証コードに心当たりがない場合は、このメールを無視してかまいません。"
+      },
+      "zh": {
+        "title": "邮箱验证码",
+        "code_label": "这是你的1touch验证码",
+        "signup": "要继续注册，请在{minutes}分钟内输入此验证码。",
+        "password_reset": "要重置密码，请在{minutes}分钟内输入此验证码。",
+        "username_recovery": "要找回用户名，请在{minutes}分钟内输入此验证码。",
+        "email_change": "要更改邮箱地址，请在{minutes}分钟内输入此验证码。",
+        "ignore": "如果你没有申请此验证码，可以忽略这封邮件。"
+      }
+    }
+  }
+}

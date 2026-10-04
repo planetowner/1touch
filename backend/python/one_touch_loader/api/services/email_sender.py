@@ -5,10 +5,11 @@ from email.message import EmailMessage
 
 from fastapi import HTTPException
 
-from .auth_security import CODE_LIFETIME_MINUTES, required_setting
+from .auth_security import required_setting
+from .verification_email import TEMPLATE_DIRECTORY, render_verification_email
 
 
-def send_verification_code(email: str, code: str, purpose: str) -> None:
+def send_verification_code(email: str, code: str, purpose: str, language: str = "en") -> None:
     host = required_setting("SES_SMTP_HOST")
     username = required_setting("SES_SMTP_USERNAME")
     password = required_setting("SES_SMTP_PASSWORD")
@@ -20,17 +21,18 @@ def send_verification_code(email: str, code: str, purpose: str) -> None:
     # SES는 SMTP DATA의 Return-Path로 반송·신고를 전달해요. 수신 메일함이 없는 발신 주소와 구분해요.
     # https://docs.aws.amazon.com/ses/latest/dg/monitor-sending-activity-using-notifications-email.html
     message["Return-Path"] = feedback
-    message["Subject"] = "1Touch verification code"
-    # 인증번호 발송 규칙은 공유하고, 사용자가 요청한 작업 안내만 구분해요.
-    action = {
-        "signup": "create your account", "password_reset": "reset your password",
-        "username_recovery": "find your 1Touch username", "email_change": "change your account email address",
-    }[purpose]
-    message.set_content(
-        f"Your 1Touch code is {code}.\n\nUse it to {action}. "
-        f"It expires in {CODE_LIFETIME_MINUTES} minutes.\n"
-        "If you did not request this code, you can ignore this email.\n"
-    )
+    subject, plain, html = render_verification_email(code, purpose, language)
+    message["Subject"] = subject
+    # HTML과 일반 텍스트에 같은 문구·인증번호를 넣어요.
+    message.set_content(plain)
+    message.add_alternative(html, subtype="html")
+    # 임시 Figma URL에 의존하지 않도록 디자인 이미지를 메일 본문에 함께 첨부해요.
+    html_part = message.get_payload()[-1]
+    for name in ("logo", "google-play", "app-store"):
+        html_part.add_related(
+            (TEMPLATE_DIRECTORY / f"{name}.png").read_bytes(), maintype="image", subtype="png",
+            cid=f"<verification-{name}>", disposition="inline",
+        )
     # Vultr의 외부 25번 포트 차단을 피하고 SES가 요구하는 TLS를 사용해요.
     # 전송 실패는 성공으로 표시하거나 로그에 인증번호를 대신 출력하지 않아요.
     try:

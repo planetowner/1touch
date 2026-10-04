@@ -60,7 +60,7 @@ def _limit_email_code(email: str) -> None:
     rate_limit(f"email-code-hour:{email.casefold()}", 5, 3600)
 
 
-def _issue_email_code(cur, email: str, purpose: str) -> dict:
+def _issue_email_code(cur, email: str, purpose: str, language: str) -> dict:
     challenge, code = new_token(), f"{secrets.randbelow(1_000_000):06d}"
     digest = code_hash(challenge, code)
     cur.execute("""INSERT INTO email_verification_codes
@@ -69,14 +69,14 @@ def _issue_email_code(cur, email: str, purpose: str) -> dict:
         expires_at=VALUES(expires_at),attempts=0""",
         (token_hash(challenge), email, purpose, digest, utc_now() + timedelta(minutes=CODE_LIFETIME_MINUTES)))
     # SES 접수가 실패하면 새 코드 저장도 취소해요. 메일 도착 여부는 공급자 접수와 별개예요.
-    send_verification_code(email, code, purpose)
+    send_verification_code(email, code, purpose, language)
     return {"challenge_id": challenge, "expires_in": CODE_LIFETIME_MINUTES * 60}
 
 
-def request_email_code(email: str, purpose: str) -> dict:
+def request_email_code(email: str, purpose: str, language: str = "en") -> dict:
     _limit_email_code(email)
     with transaction() as conn, conn.cursor() as cur:
-        return _issue_email_code(cur, email, purpose)
+        return _issue_email_code(cur, email, purpose, language)
 
 
 def registration_value_available(field: str, value: str) -> bool:
@@ -201,7 +201,7 @@ def _lock_email_account(cur, user_id: int, password: str) -> dict:
     return account
 
 
-def request_email_change(user_id: int, email: str, password: str) -> dict:
+def request_email_change(user_id: int, email: str, password: str, language: str = "en") -> dict:
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
         account = _lock_email_account(cur, user_id, password)
         current = account["email"]
@@ -210,8 +210,8 @@ def request_email_change(user_id: int, email: str, password: str) -> dict:
         _limit_email_code(current)
         _limit_email_code(email)
         # 기존·새 주소 모두 인증할 때까지 현재 주소를 유지해요. 두 코드도 같은 저장 규칙을 써요.
-        return {"current_email": _issue_email_code(cur, current, "email_change"),
-                "new_email": _issue_email_code(cur, email, "email_change")}
+        return {"current_email": _issue_email_code(cur, current, "email_change", language),
+                "new_email": _issue_email_code(cur, email, "email_change", language)}
 
 
 def change_email(user_id: int, password: str, current_email: dict, new_email: dict) -> None:

@@ -7,6 +7,7 @@ cd "$project_root"
 
 dart format --output=none --set-exit-if-changed lib test
 dart run tool/export_notification_messages.dart --check
+dart run tool/export_verification_email_messages.dart --check
 flutter analyze
 
 if (($# > 0)); then
