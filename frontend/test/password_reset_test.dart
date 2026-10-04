@@ -24,17 +24,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: EmailSignUpScreen()));
     expect(find.text('Choose a password that is 8 or more characters long.'),
         findsOneWidget);
-    final fields = find.byType(TextFormField);
-    for (final (index, value) in [
-      'First',
-      'Last',
-      'member',
-      'Member',
-      'member@example.com',
-      'password123'
-    ].indexed) {
-      await tester.enterText(fields.at(index), value);
-    }
+    await _fillSignup(tester, password: 'password123');
     await tester.ensureVisible(find.byType(Checkbox));
     await tester.tap(find.byType(Checkbox));
     await tester.pump();
@@ -47,7 +37,8 @@ void main() {
         find.text(
             'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
         findsOneWidget);
-    await tester.enterText(fields.at(5), 'Password123');
+    await tester.enterText(
+        find.byKey(const ValueKey('signup-password-field')), 'Password123');
     await tester.pump();
     expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
     await tester.enterText(
@@ -61,7 +52,8 @@ void main() {
         find.byKey(const ValueKey('signup-confirm-password-field')),
         'Password123');
     await tester.pump();
-    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    // 입력이 유효해져도 중복 확인이 끝나기 전에는 가입을 기다려요.
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
     expect(tester.takeException(), isNull);
   });
 
@@ -71,18 +63,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(const MaterialApp(home: EmailSignUpScreen()));
-    final fields = find.byType(TextFormField);
-    for (final (index, value) in [
-      'First',
-      'Last',
-      'member',
-      'Member',
-      'member@example.com',
-      'Password123',
-      'Password123'
-    ].indexed) {
-      await tester.enterText(fields.at(index), value);
-    }
+    await _fillSignup(tester, password: 'Password123', confirm: 'Password123');
     await tester.tap(find.byKey(const ValueKey('email-sign-up-button')));
     await tester.pump();
     expect(find.text('Please agree to the Terms and Privacy Policy.'),
@@ -252,6 +233,19 @@ void main() {
     expect(requests.length, 4);
     expect(tester.takeException(), isNull);
   });
+}
+
+Future<void> _fillSignup(WidgetTester tester,
+    {required String password, String? confirm}) async {
+  for (final (key, value) in [
+    ('signup-username-field', 'member'),
+    ('signup-display-name-field', 'Member'),
+    ('signup-email-field', 'member@example.com'),
+    ('signup-password-field', password),
+    if (confirm != null) ('signup-confirm-password-field', confirm),
+  ]) {
+    await tester.enterText(find.byKey(ValueKey(key)), value);
+  }
 }
 
 MaterialApp _app(GoRouter router) => MaterialApp.router(
