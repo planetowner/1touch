@@ -3,10 +3,11 @@ from copy import deepcopy
 import unittest
 from unittest.mock import patch
 
+from diagnostics.name_test_support import NameMigrationDatabase
+
 with patch('mysql.connector.pooling.MySQLConnectionPool'):
     from diagnostics.player_short_names import english_short, short_names
     from diagnostics import migrate_player_short_names as migration
-    from diagnostics import test_football_names as name_tests
     from one_touch_loader.core import football_names
 
 
@@ -149,8 +150,7 @@ class PlayerShortNamesTests(unittest.TestCase):
         self.assertEqual(result.json()['coaches'], {'455384': 'アントニオ・コンテ'})
 
     def test_migration_preserves_existing_names_and_rolls_back_all_languages(self):
-        fixture = name_tests.MigrationTests()
-        fixture.setUp()
+        fixture = NameMigrationDatabase()
         try:
             for column in migration.SPECS['players']['columns'].values():
                 fixture.db.execute(f'ALTER TABLE players ADD COLUMN {column} TEXT')
@@ -171,7 +171,7 @@ class PlayerShortNamesTests(unittest.TestCase):
                 migration.migrate_data(fixture.connection)
             self.assertEqual(fixture.db.execute('SELECT * FROM players ORDER BY player_id').fetchall(), first)
         finally:
-            fixture.tearDown()
+            fixture.close()
 
 
 if __name__ == '__main__':

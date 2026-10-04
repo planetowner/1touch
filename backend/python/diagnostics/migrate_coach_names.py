@@ -4,13 +4,14 @@ from pathlib import Path
 
 from diagnostics import migrate_sportmonks_names as shared
 
-LOCALE_GROUPS = {'ko': ('ko',), 'ja-zh': ('ja', 'zh')}
+# 한국어 입력 파일은 DB 반영을 마쳐 삭제했고, 남은 일본어·중국어 입력만 사용해요.
+LOCALE_GROUPS = {'ja-zh': ('ja', 'zh')}
 SPECS = {'coaches': {
     'id': 'coach_id', 'prefix': 'name', 'limit': 255, 'identity': {'name': 'name'},
 }}
 
 
-def configuration(locale_group='ko'):
+def configuration(locale_group='ja-zh'):
     suffix = locale_group.replace('-', '_')
     return {
         'name': f'coach_names_{suffix}',
@@ -21,12 +22,12 @@ def configuration(locale_group='ko'):
     }
 
 
-def reviewed_rows(locale_group='ko'):
+def reviewed_rows(locale_group='ja-zh'):
     config = configuration(locale_group)
     return shared.reviewed_rows(seed_path=config['seed_path'], specs=SPECS, locales=config['locales'])
 
 
-def migrate_data(conn, locale_group='ko'):
+def migrate_data(conn, locale_group='ja-zh'):
     shared.migrate_data(conn, entities=reviewed_rows(locale_group), specs=SPECS, locales=LOCALE_GROUPS[locale_group])
 
 
@@ -55,7 +56,7 @@ def reviewed_player_translation(current, profiles):
 
 def main():
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--locale-group', choices=LOCALE_GROUPS, default='ko')
+    parser.add_argument('--locale-group', choices=LOCALE_GROUPS, default='ja-zh')
     args, remaining = parser.parse_known_args()
     shared.run_name_migration(**configuration(args.locale_group), argv=remaining)
 
