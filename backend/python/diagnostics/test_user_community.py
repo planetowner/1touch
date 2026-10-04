@@ -30,6 +30,7 @@ with patch("mysql.connector.pooling.MySQLConnectionPool"):
     from diagnostics.verify_community_management import verify_schema
     from diagnostics.verify_social_webhook_receipts import verify_schema as verify_social_schema
     from diagnostics.verify_account_management import verify_schema as verify_account_schema
+    from diagnostics import migrate_fixture_chat_aliases
 
 
 class PasswordContractTests(unittest.TestCase):
@@ -279,8 +280,9 @@ class CommunityDatabaseCase(unittest.TestCase):
             return rows
 
     def apply_chat_alias_schema(self):
-        sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_fixture_chat_aliases.sql"
-        self.execute(sql.read_text(encoding="utf-8"))
+        for table in migrate_fixture_chat_aliases.TABLES:
+            sql = migrate_fixture_chat_aliases.SQL_DIRECTORY / f"migrate_{table}.sql"
+            self.execute(sql.read_text(encoding="utf-8"))
 
     def apply_management_schema(self):
         sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_community_management.sql"

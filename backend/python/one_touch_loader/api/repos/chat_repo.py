@@ -60,8 +60,11 @@ def get_or_create_alias(cur, user_id: int, fixture_id: int) -> dict:
     existing = cur.fetchone()
     if existing is not None:
         return existing
+    # 처음 배정할 때 DB 후보를 읽어 목록 수정이 서버 재시작 없이 반영되게 해요.
+    cur.execute("SELECT short_en,short_ko FROM chat_alias_players ORDER BY english_name")
+    players = cur.fetchall()
     while True:
-        nickname = new_nickname()
+        nickname = new_nickname(players)
         try:
             cur.execute("""INSERT INTO fixture_chat_aliases (fixture_id,user_id,nickname_en,nickname_ko)
                 VALUES (%s,%s,%s,%s)""", (fixture_id, user_id, nickname["nickname_en"], nickname["nickname_ko"]))
