@@ -753,83 +753,91 @@ void main() {
     }
   }
 
-  testWidgets('opens player match statistics from a past-match lineup',
-      (tester) async {
-    await _setScreenSize(tester, const Size(430, 932));
-    final detail = _detail(
-      lineups: _lineups,
-      playerStatistics: [_homeStarterStatistics],
-    );
+  for (final locale in [const Locale('en'), const Locale('ko')]) {
+    testWidgets(
+        'opens localized player match statistics from a lineup: $locale',
+        (tester) async {
+      await _setScreenSize(tester, const Size(430, 932));
+      final detail = _detail(
+        lineups: _lineups,
+        playerStatistics: [_homeStarterStatistics],
+      );
 
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.darktheme,
-        home: Scaffold(
-          body: MatchInfoTab(
-            fixture: detail.fixture,
-            detail: detail,
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: locale,
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
+          theme: app_style.darktheme,
+          home: Scaffold(
+            body: MatchInfoTab(
+              fixture: detail.fixture,
+              detail: detail,
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pump();
-
-    final player = find.byKey(
-      ValueKey(
-        'match-lineup-player-${_fixture.homeTeamId}-101',
-      ),
-    );
-    await tester.ensureVisible(player);
-    await tester.pumpAndSettle();
-    await tester.tap(player);
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(const ValueKey('player-match-stat-sheet')),
-      findsOneWidget,
-    );
-    final statHeader = tester.widget<Container>(
-      find.byKey(const ValueKey('player-match-stat-header')),
-    );
-    final headerGradient =
-        (statHeader.decoration as BoxDecoration).gradient as LinearGradient;
-    const teamPrimary = Color(0xFFD92455);
-    expect(headerGradient.colors, [
-      teamPrimary,
-      Color.alphaBlend(
-        Colors.black.withValues(alpha: 0.28),
-        teamPrimary,
-      ),
-      Color.alphaBlend(
-        Colors.black.withValues(alpha: 0.62),
-        teamPrimary,
-      ),
-    ]);
-    for (final color in headerGradient.colors) {
-      expect(
-        ColorUtils.getContrastRatio(color, Colors.white),
-        greaterThanOrEqualTo(4.5),
       );
-    }
-    expect(find.text('Home Starter'), findsWidgets);
-    expect(find.text('FINISH'), findsOneWidget);
-    expect(find.text('Goals'), findsOneWidget);
-    expect(find.text('1'), findsWidgets);
-    expect(find.text('xG'), findsOneWidget);
-    expect(find.text('0.52'), findsOneWidget);
-    expect(find.text('Unavailable metric'), findsNothing);
-    expect(
-      tester
-          .widget<GestureDetector>(
-            find.byKey(
-              const ValueKey('player-match-stat-profile-link'),
-            ),
-          )
-          .onTap,
-      isNotNull,
-    );
-    expect(tester.takeException(), isNull);
-  });
+      await tester.pump();
+
+      final player = find.byKey(
+        ValueKey(
+          'match-lineup-player-${_fixture.homeTeamId}-101',
+        ),
+      );
+      await tester.ensureVisible(player);
+      await tester.pumpAndSettle();
+      await tester.tap(player);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('player-match-stat-sheet')),
+        findsOneWidget,
+      );
+      final statHeader = tester.widget<Container>(
+        find.byKey(const ValueKey('player-match-stat-header')),
+      );
+      final headerGradient =
+          (statHeader.decoration as BoxDecoration).gradient as LinearGradient;
+      const teamPrimary = Color(0xFFD92455);
+      expect(headerGradient.colors, [
+        teamPrimary,
+        Color.alphaBlend(
+          Colors.black.withValues(alpha: 0.28),
+          teamPrimary,
+        ),
+        Color.alphaBlend(
+          Colors.black.withValues(alpha: 0.62),
+          teamPrimary,
+        ),
+      ]);
+      for (final color in headerGradient.colors) {
+        expect(
+          ColorUtils.getContrastRatio(color, Colors.white),
+          greaterThanOrEqualTo(4.5),
+        );
+      }
+      expect(find.text('Home Starter'), findsWidgets);
+      expect(find.text(locale.languageCode == 'ko' ? '마무리' : 'FINISH'),
+          findsOneWidget);
+      expect(find.text('완료'), findsNothing);
+      expect(find.text(translateMessage(locale, 'Goals')), findsOneWidget);
+      expect(find.text('1'), findsWidgets);
+      expect(find.text('xG'), findsOneWidget);
+      expect(find.text('0.52'), findsOneWidget);
+      expect(find.text('Unavailable metric'), findsNothing);
+      expect(
+        tester
+            .widget<GestureDetector>(
+              find.byKey(
+                const ValueKey('player-match-stat-profile-link'),
+              ),
+            )
+            .onTap,
+        isNotNull,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('opens player match statistics from a substitute row',
       (tester) async {

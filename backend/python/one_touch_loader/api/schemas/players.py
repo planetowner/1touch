@@ -92,6 +92,8 @@ class PlayerMatch(BaseModel):
     fixture_id: int
     starting_at: datetime
     state_id: int
+    # 대회 이름은 앱에서 이 ID로 언어별 명칭을 찾아 표시해요.
+    competition_id: int
     competition_name: str
     round_name: str | None
     opponent_name: str | None
