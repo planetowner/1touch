@@ -207,12 +207,13 @@ def list_player_comparison_candidates(query: str, *, limit: int | None = 100) ->
         conn.start_transaction(readonly=True)
         try:
             with conn.cursor(dictionary=True) as cur:
+                # 하이픈을 생략해도 찾을 수 있도록 이름과 검색어 양쪽에서 하이픈을 빼고 비교해요.
                 sql = f"""SELECT DISTINCT p.player_id,p.display_name AS name,p.image_path AS image
                     FROM players p JOIN team_squad_members sm ON sm.player_id=p.player_id
                     JOIN seasons s ON s.season_id=sm.season_id
-                    WHERE s.is_current=1 AND (p.display_name LIKE %s{korean_condition})
+                    WHERE s.is_current=1 AND (REPLACE(p.display_name, '-', '') LIKE %s{korean_condition})
                     ORDER BY p.display_name,p.player_id"""
-                params = (f"%{query.strip()}%", *player_ids)
+                params = (f"%{query.strip().replace('-', '')}%", *player_ids)
                 if limit is not None:
                     sql += " LIMIT %s"
                     params += (limit,)

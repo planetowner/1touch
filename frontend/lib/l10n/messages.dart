@@ -273,7 +273,11 @@ const appMessages = <String, MessageTranslations>{
   "Continue with Kakao": (ko: "카카오로 계속하기", ja: "Kakaoで続ける", zh: "使用 Kakao 继续"),
   "Continue with LINE": (ko: "LINE으로 계속하기", ja: "LINEで続ける", zh: "使用 LINE 继续"),
   "Continue with email": (ko: "이메일로 계속하기", ja: "メールで続ける", zh: "使用邮箱继续"),
-  "Other login methods": (ko: "다른 로그인 방법", ja: "その他のログイン方法", zh: "其他登录方式"),
+  "Other ways to sign in": (
+    ko: "다른 방식으로 로그인하기",
+    ja: "その他の方法でログイン",
+    zh: "使用其他方式登录"
+  ),
   "Unable to load login methods. Please try again.": (
     ko: "로그인 방법을 불러오지 못했어요. 다시 시도해 주세요.",
     ja: "ログイン方法を読み込めませんでした。もう一度お試しください。",
@@ -490,9 +494,7 @@ const appMessages = <String, MessageTranslations>{
   "POSTS": (ko: "게시글", ja: "投稿", zh: "帖子"),
   "POST": (ko: "게시하기", ja: "投稿", zh: "发布"),
   "POST TO": (ko: "게시할 곳", ja: "投稿先", zh: "发布到"),
-  "Bets": (ko: "베팅", ja: "予想", zh: "竞猜"),
-  "BET": (ko: "베팅", ja: "予想", zh: "竞猜"),
-  "BETTING": (ko: "베팅", ja: "予想", zh: "竞猜"),
+  "Bets": (ko: "승부 예측", ja: "予想", zh: "竞猜"),
   "POINTS": (ko: "승점", ja: "ポイント", zh: "积分"),
   "SETTINGS": (ko: "설정", ja: "設定", zh: "设置"),
   "About": (ko: "앱 정보", ja: "アプリについて", zh: "关于"),
@@ -1120,7 +1122,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Player data unavailable": (ko: "선수 정보가 없어요", ja: "選手情報がありません", zh: "暂无球员信息"),
   "Player": (ko: "선수", ja: "選手", zh: "球员"),
-  "1TOUCH RANKING": (ko: "1TOUCH 랭킹", ja: "1TOUCHランキング", zh: "1TOUCH排名"),
+  "1touch Ranking": (ko: "1TOUCH 랭킹", ja: "1TOUCHランキング", zh: "1TOUCH排名"),
   "No ranking data for these filters": (
     ko: "이 필터에 맞는 순위 정보가 없어요",
     ja: "この条件に合うランキングがありません",
@@ -1189,7 +1191,7 @@ const appMessages = <String, MessageTranslations>{
   "Home Win": (ko: "홈 승", ja: "ホーム勝利", zh: "主胜"),
   "Away Win": (ko: "원정 승", ja: "アウェイ勝利", zh: "客胜"),
   "AGAINST": (ko: "상대로", ja: "対戦相手", zh: "对手"),
-  "LINEUP": (ko: "선발 명단", ja: "スターティングメンバー", zh: "首发阵容"),
+  "LINEUP": (ko: "라인업", ja: "スターティングメンバー", zh: "首发阵容"),
   "COACH": (ko: "감독", ja: "監督", zh: "主教练"),
   "SUBSTITUTES": (ko: "교체 선수", ja: "控え選手", zh: "替补球员"),
   "PLAYER OF THE MATCH": (ko: "경기 최우수 선수", ja: "プレイヤー・オブ・ザ・マッチ", zh: "全场最佳球员"),
@@ -1579,13 +1581,11 @@ const appMessages = <String, MessageTranslations>{
   "{count}m ago": (ko: "{count}분 전", ja: "{count}分前", zh: "{count}分钟前"),
   "{count}h ago": (ko: "{count}시간 전", ja: "{count}時間前", zh: "{count}小时前"),
   "{count}d ago": (ko: "{count}일 전", ja: "{count}日前", zh: "{count}天前"),
-  "{count} minutes ago": (ko: "{count}분 전", ja: "{count}分前", zh: "{count}分钟前"),
-  "{count} hours ago": (ko: "{count}시간 전", ja: "{count}時間前", zh: "{count}小时前"),
-  "{count} Days Ago": (ko: "{count}일 전", ja: "{count}日前", zh: "{count}天前"),
+  "{count} days ago": (ko: "{count}일 전", ja: "{count}日前", zh: "{count}天前"),
   "Today": (ko: "오늘", ja: "今日", zh: "今天"),
   "Yesterday": (ko: "어제", ja: "昨日", zh: "昨天"),
-  "Last Week": (ko: "지난주", ja: "先週", zh: "上周"),
-  "{count} Weeks Ago": (ko: "{count}주 전", ja: "{count}週間前", zh: "{count}周前"),
+  "Last week": (ko: "지난주", ja: "先週", zh: "上周"),
+  "{count} weeks ago": (ko: "{count}주 전", ja: "{count}週間前", zh: "{count}周前"),
   "Reactions": (ko: "반응", ja: "リアクション", zh: "互动"),
   "Match Reminder": (ko: "경기 알림", ja: "試合リマインダー", zh: "比赛提醒"),
   "Kickoff, Half Time, Full Time": (
@@ -1953,11 +1953,6 @@ const appMessages = <String, MessageTranslations>{
     ko: "환불 · {points}포인트 반환",
     ja: "払い戻し · {points}ポイント返還",
     zh: "已退款 · 返还{points}积分"
-  ),
-  "HOME {home}  •  AWAY {away}": (
-    ko: "홈 {home}  •  원정 {away}",
-    ja: "ホーム {home}  •  アウェイ {away}",
-    zh: "主队 {home}  •  客队 {away}"
   ),
   "Match {number}": (ko: "{number}차전", ja: "第{number}戦", zh: "第{number}场"),
   "Replying to {name}": (

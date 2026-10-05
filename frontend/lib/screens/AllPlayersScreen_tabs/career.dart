@@ -42,7 +42,7 @@ class _CareerTabState extends State<CareerTab> {
         builder: (context, detail) => SingleChildScrollView(
           key: const ValueKey('player-career-scroll'),
           physics: const ClampingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 144),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

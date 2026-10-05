@@ -117,12 +117,72 @@ void main() {
       (searchBar.decoration as BoxDecoration).borderRadius,
       BorderRadius.circular(8),
     );
+    expect((searchBar.decoration as BoxDecoration).color,
+        app_style.AppPalette.lightGreyBox);
     expect(searchBar.clipBehavior, Clip.antiAlias);
     expect(find.byKey(const ValueKey('search-prompt')), findsOneWidget);
     expect(find.text('RECENTS'), findsNothing);
     expect(repo.calls, isEmpty);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('dark search bar keeps its card background', (tester) async {
+    await _pump(tester, _Search(), dark: true);
+    final searchBar = tester.widget<Container>(
+      find.byKey(const ValueKey('global-search-bar')),
+    );
+    expect((searchBar.decoration as BoxDecoration).color,
+        app_style.AppPalette.darkGrey);
+  });
+
+  testWidgets('search bar fits compact and tall screens', (tester) async {
+    await _pump(tester, _Search());
+    for (final size in [const Size(320, 568), const Size(430, 932)]) {
+      await tester.binding.setSurfaceSize(size);
+      await tester.pumpAndSettle();
+      expect(
+          tester.getRect(find.byKey(const ValueKey('global-search-bar'))).right,
+          lessThanOrEqualTo(size.width));
+      expect(tester.takeException(), isNull);
+    }
+    await tester.binding.setSurfaceSize(null);
+  });
+
+  testWidgets('search category tabs use the 42px compact design',
+      (tester) async {
+    final repo = _Search();
+    await _pump(tester, repo);
+    await _query(tester, 'Example');
+    repo.pending.single.complete(_results);
+    await tester.pumpAndSettle();
+
+    final allTab = find.byKey(const ValueKey('search-tab-all'));
+    final tabContainer = find.descendant(
+      of: allTab,
+      matching: find.byType(AnimatedContainer),
+    );
+    final tab = tester.widget<AnimatedContainer>(tabContainer);
+    expect(tester.getSize(tabContainer).height, 42);
+    expect(tab.padding, const EdgeInsets.symmetric(horizontal: 16));
+    expect((tab.decoration as BoxDecoration).borderRadius,
+        BorderRadius.circular(16));
+    expect(
+        tester
+            .widget<Text>(
+                find.descendant(of: allTab, matching: find.text('ALL')))
+            .style!
+            .fontSize,
+        14);
+
+    for (final size in [const Size(320, 568), const Size(430, 932)]) {
+      await tester.binding.setSurfaceSize(size);
+      await tester.pumpAndSettle();
+      expect(tester.getSize(allTab).height, 42);
+      expect(tester.takeException(), isNull);
+    }
+    await tester.binding.setSurfaceSize(null);
+  });
+
   testWidgets(
       'API results retain card styling, category tabs and numeric player navigation',
       (tester) async {

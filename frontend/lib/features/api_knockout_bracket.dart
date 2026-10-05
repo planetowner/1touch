@@ -110,117 +110,127 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
   static const double _cardHeight = 92;
   static const double _connectorWidth = 20;
   static const double _baseStep = 116;
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
+  final ScrollController _roundController = ScrollController();
+  int? _dragStartPage;
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _roundController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewportHeight =
-        _contentHeightForWindow(_currentPage) + _shadowInset * 2;
-
     return Padding(
       key: const ValueKey('tournament-bracket'),
       padding: const EdgeInsets.symmetric(horizontal: 24 - _shadowInset),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        height: viewportHeight,
-        width: double.infinity,
-        child: _BracketGestureGuard(
-          onInteractionChanged: widget.onInteractionChanged,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final pairWidth = constraints.maxWidth - _shadowInset * 2;
-              final cardWidth = widget.stages.length == 1
-                  ? math.min(_maximumCardWidth, pairWidth)
-                  : math.min(
-                      _maximumCardWidth,
-                      (pairWidth - _connectorWidth) / 2,
-                    );
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final pairWidth = constraints.maxWidth - _shadowInset * 2;
+          final cardWidth = widget.stages.length == 1
+              ? math.min(_maximumCardWidth, pairWidth)
+              : math.min(
+                  _maximumCardWidth,
+                  (pairWidth - _connectorWidth) / 2,
+                );
+          final roundWidth = cardWidth + _connectorWidth;
 
-              return PageView.builder(
-                key: const ValueKey('tournament-bracket-pages'),
-                controller: _pageController,
-                itemCount: math.max(1, widget.stages.length - 1),
-                onPageChanged: (page) {
-                  if (_currentPage == page) return;
-                  setState(() => _currentPage = page);
-                },
-                itemBuilder: (context, pageIndex) =>
-                    _buildRoundWindow(context, pageIndex, cardWidth),
+          return AnimatedBuilder(
+            animation: _roundController,
+            builder: (context, _) {
+              final maxPage = math.max(0, widget.stages.length - 2);
+              final page = (_roundController.hasClients
+                      ? _roundController.offset / roundWidth
+                      : 0.0)
+                  .clamp(0.0, maxPage.toDouble());
+              final (verticalOffset, contentHeight) = _contentMetrics(page);
+
+              return SizedBox(
+                height: contentHeight + _shadowInset * 2,
+                child: _BracketGestureGuard(
+                  onInteractionChanged: widget.onInteractionChanged,
+                  child: Padding(
+                    key: const ValueKey('tournament-bracket-pages'),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: _shadowInset),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onHorizontalDragStart: (_) {
+                        _dragStartPage = (_roundController.offset / roundWidth)
+                            .round()
+                            .clamp(0, maxPage);
+                      },
+                      onHorizontalDragUpdate: (details) {
+                        final startPage = _dragStartPage;
+                        if (startPage == null) return;
+                        final minimum = math.max(0, startPage - 1) * roundWidth;
+                        final maximum =
+                            math.min(maxPage, startPage + 1) * roundWidth;
+                        _roundController.jumpTo(
+                          (_roundController.offset - details.delta.dx)
+                              .clamp(minimum, maximum),
+                        );
+                      },
+                      onHorizontalDragEnd: (details) => _finishRoundDrag(
+                          roundWidth, maxPage,
+                          velocity: details.primaryVelocity ?? 0),
+                      onHorizontalDragCancel: () =>
+                          _finishRoundDrag(roundWidth, maxPage),
+                      child: SingleChildScrollView(
+                        controller: _roundController,
+                        scrollDirection: Axis.horizontal,
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: _shadowInset,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (var index = 0;
+                                  index < widget.stages.length;
+                                  index++)
+                                _buildStage(
+                                  context,
+                                  index,
+                                  contentHeight,
+                                  cardWidth,
+                                  roundWidth,
+                                  verticalOffset,
+                                  layoutStageIndex: index - page,
+                                  hasNextStage:
+                                      index < widget.stages.length - 1,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               );
             },
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildRoundWindow(
-    BuildContext context,
-    int stageIndex,
-    double cardWidth,
-  ) {
-    final hasNextStage = stageIndex < widget.stages.length - 1;
-    final visibleIndexes = <int>[
-      stageIndex,
-      if (hasNextStage) stageIndex + 1,
-    ];
-    final populatedIndexes = visibleIndexes
-        .where((index) => widget.stages[index].ties.isNotEmpty)
-        .toList(growable: false);
-    final verticalOffset = populatedIndexes.isEmpty
-        ? 0.0
-        : populatedIndexes
-            .map((index) => _cardTop(index - stageIndex, 0))
-            .reduce(math.min);
-    final contentHeight = _contentHeightForWindow(stageIndex);
-    final roundWidth = cardWidth + _connectorWidth;
-
-    return Padding(
-      key: ValueKey('bracket-round-window-$stageIndex'),
-      padding: const EdgeInsets.fromLTRB(
-        _shadowInset,
-        _shadowInset,
-        _shadowInset,
-        _shadowInset,
-      ),
-      child: SizedBox(
-        width: hasNextStage ? cardWidth * 2 + _connectorWidth : cardWidth,
-        height: contentHeight,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStage(
-              context,
-              stageIndex,
-              contentHeight,
-              cardWidth,
-              roundWidth,
-              verticalOffset,
-              layoutStageIndex: 0,
-              hasNextStage: hasNextStage,
-            ),
-            if (hasNextStage)
-              _buildStage(
-                context,
-                stageIndex + 1,
-                contentHeight,
-                cardWidth,
-                roundWidth,
-                verticalOffset,
-                layoutStageIndex: 1,
-                hasNextStage: false,
-              ),
-          ],
-        ),
-      ),
+  void _finishRoundDrag(double roundWidth, int maxPage, {double velocity = 0}) {
+    final startPage = _dragStartPage;
+    if (startPage == null) return;
+    _dragStartPage = null;
+    final distance = _roundController.offset - startPage * roundWidth;
+    final direction = velocity.abs() > 200
+        ? (velocity < 0 ? 1 : -1)
+        : distance.abs() > roundWidth / 3
+            ? (distance > 0 ? 1 : -1)
+            : 0;
+    final target = (startPage + direction).clamp(0, maxPage) * roundWidth;
+    _roundController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
     );
   }
 
@@ -231,7 +241,7 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
     double cardWidth,
     double roundWidth,
     double verticalOffset, {
-    required int layoutStageIndex,
+    required double layoutStageIndex,
     required bool hasNextStage,
   }) {
     final stage = widget.stages[stageIndex];
@@ -275,30 +285,36 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
     );
   }
 
-  double _cardTop(int stageIndex, int tieIndex) {
+  double _cardTop(double stageIndex, int tieIndex) {
     final multiplier = math.pow(2, stageIndex).toDouble();
     final center = _baseStep * (multiplier * tieIndex + multiplier / 2);
     return center - _cardHeight / 2;
   }
 
-  double _contentHeightForWindow(int stageIndex) {
-    final visibleIndexes = <int>[
-      stageIndex,
-      if (stageIndex < widget.stages.length - 1) stageIndex + 1,
+  (double, double) _contentMetrics(double page) {
+    final firstIndex = page.floor();
+    final visibleIndexes = [
+      for (var index = firstIndex;
+          index < widget.stages.length && index <= firstIndex + 2;
+          index++)
+        index,
     ];
     final populatedIndexes = visibleIndexes
         .where((index) => widget.stages[index].ties.isNotEmpty)
         .toList(growable: false);
-    if (populatedIndexes.isEmpty) return _cardHeight;
+    if (populatedIndexes.isEmpty) return (0, _cardHeight);
 
     final verticalOffset = populatedIndexes
-        .map((index) => _cardTop(index - stageIndex, 0))
+        .map((index) => _cardTop(index - page, 0))
         .reduce(math.min);
     final contentBottom = populatedIndexes.map((index) {
       final ties = widget.stages[index].ties;
-      return _cardTop(index - stageIndex, ties.length - 1) + _cardHeight;
+      return _cardTop(index - page, ties.length - 1) + _cardHeight;
     }).reduce(math.max);
-    return math.max(_cardHeight, contentBottom - verticalOffset);
+    return (
+      verticalOffset,
+      math.max(_cardHeight, contentBottom - verticalOffset)
+    );
   }
 }
 
@@ -539,7 +555,7 @@ class _TournamentConnectorPainter extends CustomPainter {
   final Color color;
   final int sourceCount;
   final int destinationCount;
-  final int stageIndex;
+  final double stageIndex;
   final double cardWidth;
   final double roundWidth;
   final double baseStep;
@@ -585,7 +601,7 @@ class _TournamentConnectorPainter extends CustomPainter {
     }
   }
 
-  double _centerFor(int index, int tieIndex) {
+  double _centerFor(double index, int tieIndex) {
     final multiplier = math.pow(2, index).toDouble();
     return baseStep * (multiplier * tieIndex + multiplier / 2);
   }

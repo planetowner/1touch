@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/formation_layout.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
@@ -215,11 +216,16 @@ class MatchInfoTab extends StatelessWidget {
     required bool reverse,
   }) {
     final eventsByPlayer = _lineupEventsByPlayer();
+    final formation = _formation(teamId);
+    final layout =
+        formation == null ? null : FormationLayout.forFormation(formation);
     final positioned = <({FixtureLineupEntry entry, int row, int slot})>[];
     for (final entry in detail?.lineups ?? const <FixtureLineupEntry>[]) {
       if (entry.teamId != teamId) continue;
-      final parts = entry.formationField?.split(':');
-      if (parts == null || parts.length < 2) continue;
+      final field = entry.formationField;
+      if (field == null) continue;
+      final parts = formationLayoutSlotKey(formation, field).split(':');
+      if (parts.length < 2) continue;
       final row = int.tryParse(parts[0]);
       final slot = int.tryParse(parts[1]);
       if (row == null || slot == null) continue;
@@ -253,6 +259,10 @@ class MatchInfoTab extends StatelessWidget {
               number: item.entry.jerseyNumber,
               name: item.entry.playerName,
               events: eventsByPlayer[item.entry.playerId] ?? const [],
+              formationPosition: layout?.positionForSlot(
+                '$rowNumber:${item.slot}',
+                reverseColumns: true,
+              ),
             ),
         ],
     ];
@@ -329,7 +339,7 @@ class MatchInfoTab extends StatelessWidget {
     final awayScore = fixture.awayScore?.toString() ?? '#';
     final coachNamesByTeam = {
       for (final coach in detail?.coaches ?? const <FixtureCoach>[])
-        coach.teamId: coach.name,
+        coach.teamId: coachNameLabel(context, coach.coachId, coach.name),
     };
     final matchEvents = fixtureSummaryEventRows(
       events: detail?.events ?? const <FixtureEvent>[],
@@ -346,7 +356,7 @@ class MatchInfoTab extends StatelessWidget {
     final awaySubstitutes = _substitutes(fixture.awayTeamId);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 12, bottom: 48),
+      padding: const EdgeInsets.only(top: 12, bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -367,7 +377,6 @@ class MatchInfoTab extends StatelessWidget {
             roundLabel: fixtureCompetitionLabel(context, fixture) ??
                 fixtureRoundLabel(fixture,
                     locale: Localizations.localeOf(context)),
-            venueLabel: detail?.venueName,
           ),
           if (matchEvents.isNotEmpty) MatchEventsSection(events: matchEvents),
           if (!isLive) ...[
@@ -400,13 +409,13 @@ class MatchInfoTab extends StatelessWidget {
             LineupPitch(
               awayRows: awayLineupRows,
               homeRows: homeLineupRows,
+              homeFormation: _formation(fixture.homeTeamId),
+              awayFormation: _formation(fixture.awayTeamId),
               homeColor: comparisonColors.anchor,
               awayColor: comparisonColors.opponent,
               onPlayerTap: detail?.playerStatistics.isEmpty ?? true
                   ? null
                   : _openPlayerMatchStats,
-              homeFormation: _formation(fixture.homeTeamId),
-              awayFormation: _formation(fixture.awayTeamId),
             ),
           ],
           const SizedBox(height: 48),
@@ -419,7 +428,6 @@ class MatchInfoTab extends StatelessWidget {
                 ? null
                 : _openSubstituteMatchStats,
           ),
-          const SizedBox(height: 100),
         ],
       ),
     );

@@ -3,10 +3,11 @@ from copy import deepcopy
 import unittest
 from unittest.mock import patch
 
+from diagnostics.name_test_support import NameMigrationDatabase
+
 with patch('mysql.connector.pooling.MySQLConnectionPool'):
     from diagnostics.player_short_names import english_short, short_names
     from diagnostics import migrate_player_short_names as migration
-    from diagnostics import test_football_names as name_tests
     from one_touch_loader.core import football_names
 
 
@@ -116,6 +117,7 @@ class PlayerShortNamesTests(unittest.TestCase):
             values.append([(184798, 'Short player')])
             values.append([(564, 'League')])
             values.append([(712, 'Country')])
+            values.append([(455384, 'Coach')])
             with patch.object(football_names, 'fetch_all', side_effect=values) as fetch:
                 result = football_names.localized_names(locale)
             self.assertEqual(result['players'], {'184798': 'Full'})
@@ -125,6 +127,7 @@ class PlayerShortNamesTests(unittest.TestCase):
             fetch.assert_any_call(f'SELECT competition_id,{column} FROM competitions '
                                   f'WHERE {column} IS NOT NULL ORDER BY competition_id')
             self.assertEqual(result['countries'], {'712': 'Country'})
+            self.assertEqual(result['coaches'], {'455384': 'Coach'})
             if locale in ('ja', 'zh'):
                 self.assertEqual(result['team_short_names'], {})
 
@@ -139,15 +142,15 @@ class PlayerShortNamesTests(unittest.TestCase):
         self.assertEqual(client.get('/v1/football-names/ja/display').status_code, 401)
         app.dependency_overrides[get_user_id] = lambda: 1
         self.assertEqual(client.get('/v1/football-names/invalid/display').status_code, 422)
-        with patch.object(football_names, 'fetch_all', side_effect=[[], [(184798, 'リオネル・メッシ')], [(184798, 'L・メッシ')], [(564, 'ラ・リーガ')], [(712, '韓国')]]):
+        with patch.object(football_names, 'fetch_all', side_effect=[[], [(184798, 'リオネル・メッシ')], [(184798, 'L・メッシ')], [(564, 'ラ・リーガ')], [(712, '韓国')], [(455384, 'アントニオ・コンテ')]]):
             result = client.get('/v1/football-names/ja/display')
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json()['player_short_names'], {'184798': 'L・メッシ'})
         self.assertEqual(result.json()['competitions'], {'564': 'ラ・リーガ'})
+        self.assertEqual(result.json()['coaches'], {'455384': 'アントニオ・コンテ'})
 
     def test_migration_preserves_existing_names_and_rolls_back_all_languages(self):
-        fixture = name_tests.MigrationTests()
-        fixture.setUp()
+        fixture = NameMigrationDatabase()
         try:
             for column in migration.SPECS['players']['columns'].values():
                 fixture.db.execute(f'ALTER TABLE players ADD COLUMN {column} TEXT')
@@ -168,7 +171,7 @@ class PlayerShortNamesTests(unittest.TestCase):
                 migration.migrate_data(fixture.connection)
             self.assertEqual(fixture.db.execute('SELECT * FROM players ORDER BY player_id').fetchall(), first)
         finally:
-            fixture.tearDown()
+            fixture.close()
 
 
 if __name__ == '__main__':

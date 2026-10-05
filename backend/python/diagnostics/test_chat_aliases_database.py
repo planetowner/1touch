@@ -5,14 +5,51 @@ from unittest.mock import patch
 from fastapi import HTTPException
 
 from diagnostics.test_user_community import CommunityDatabaseCase
+from diagnostics import migrate_fixture_chat_aliases as migration
 from diagnostics.migrate_fixture_chat_aliases import backfill_aliases
 from one_touch_loader.api.repos import chat_repo
+from one_touch_loader.api.services import chat_aliases
 
 
 class ChatAliasDatabaseTests(CommunityDatabaseCase):
     def setUp(self):
         super().setUp()
         self.apply_chat_alias_schema()
+
+    def test_catalog_migration_preserves_all_145_players(self):
+        players = self.execute("SELECT * FROM chat_alias_players ORDER BY english_name")
+        self.assertEqual(len(players), 145)
+        self.assertEqual(len({p["english_name"] for p in players}), 145)
+        by_name = {p["english_name"]: p for p in players}
+        for full, english, korean in [("Johan Cruyff", "Cruyff", "크루이프"),
+                                      ("Wayne Rooney", "Rooney", "루니"),
+                                      ("Zinedine Zidane", "Zidane", "지단")]:
+            self.assertEqual((by_name[full]["short_en"], by_name[full]["short_ko"]), (english, korean))
+        self.assertIn("Samuel Eto'o", by_name)
+        for player in players:
+            self.assertRegex(player["short_en"], r"^[A-Za-z]+$")
+            self.assertRegex(player["short_ko"], r"^[가-힣]+$")
+            with patch.object(chat_aliases.secrets, "choice", side_effect=[player, "A", "8", "Q", "4"]):
+                names = chat_aliases.new_nickname(players)
+            self.assertEqual(names, {f"nickname_{lang}": f"{player[f'short_{lang}']}_A8Q4" for lang in ("en", "ko")})
+
+    def test_catalog_edits_apply_to_new_authors_and_survive_migration(self):
+        first = chat_repo.create_message(self.a, 10, "Before catalog change")
+        self.execute("DELETE FROM chat_alias_players")
+        self.execute("""INSERT INTO chat_alias_players (english_name,korean_name,short_en,short_ko)
+            VALUES ('Park Ji-sung','박지성','ParkJiSung','박지성')""")
+        catalog = self.execute("SELECT * FROM chat_alias_players")
+        # 같은 배포를 다시 적용해도 운영 중 편집한 후보를 초기 목록으로 되돌리지 않아요.
+        self.execute((migration.SQL_DIRECTORY / "migrate_chat_alias_players.sql").read_text(encoding="utf-8"))
+        with patch("sys.argv", ["migrate_fixture_chat_aliases", "--apply"]), patch("builtins.print"):
+            migration.main()
+        self.assertEqual(self.execute("SELECT * FROM chat_alias_players"), catalog)
+        repeated = chat_repo.create_message(self.a, 10, "After catalog change")
+        self.assertEqual((repeated["nickname_en"], repeated["nickname_ko"]),
+                         (first["nickname_en"], first["nickname_ko"]))
+        new_author = chat_repo.create_message(self.b, 10, "New author")
+        self.assertTrue(new_author["nickname_en"].startswith("ParkJiSung_"))
+        self.assertTrue(new_author["nickname_ko"].startswith("박지성_"))
 
     def test_name_survives_profile_changes_and_differs_between_matches(self):
         with patch.object(chat_repo, "new_nickname", return_value={"nickname_en": "Cruyff_A8Q4", "nickname_ko": "크루이프_A8Q4"}):

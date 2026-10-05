@@ -18,12 +18,14 @@ class SocialSignInButtons extends StatefulWidget {
     this.authService,
     this.enabled = true,
     this.onBusyChanged,
+    this.iconOnly = false,
   });
 
   final List<LoginProvider> providers;
   final AuthService? authService;
   final bool enabled;
   final ValueChanged<bool>? onBusyChanged;
+  final bool iconOnly;
 
   @override
   State<SocialSignInButtons> createState() => _SocialSignInButtonsState();
@@ -80,7 +82,7 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
       LoginProvider.email => const SizedBox.shrink(),
     };
     return SizedBox(
-      width: double.infinity,
+      width: widget.iconOnly ? 56 : double.infinity,
       height: 56,
       child: ElevatedButton(
         key: ValueKey('${provider.name}-sign-in-button'),
@@ -97,7 +99,9 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
           elevation: 0,
           shadowColor: Colors.transparent,
           surfaceTintColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: widget.iconOnly
+              ? EdgeInsets.zero
+              : const EdgeInsets.symmetric(horizontal: 16),
         ),
         child: _signingIn == provider
             ? SizedBox.square(
@@ -106,26 +110,38 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
                     key: ValueKey('${provider.name}-sign-in-progress'),
                     strokeWidth: 2,
                     color: AppPalette.white))
-            : Stack(alignment: Alignment.center, children: [
-                Align(alignment: Alignment.centerLeft, child: icon),
-                Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(tr(context, provider.label),
-                        textAlign: TextAlign.center,
-                        style:
-                            AuthStyles.body.copyWith(color: AppPalette.white))),
-              ]),
+            : widget.iconOnly
+                ? Tooltip(message: tr(context, provider.label), child: icon)
+                : Stack(alignment: Alignment.center, children: [
+                    Align(alignment: Alignment.centerLeft, child: icon),
+                    Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(tr(context, provider.label),
+                            textAlign: TextAlign.center,
+                            style: AuthStyles.body
+                                .copyWith(color: AppPalette.white))),
+                  ]),
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          for (var i = 0; i < widget.providers.length; i++) ...[
-            if (i > 0) const SizedBox(height: 16),
-            _providerButton(widget.providers[i]),
+  Widget build(BuildContext context) => widget.iconOnly
+      ? Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var i = 0; i < widget.providers.length; i++) ...[
+              if (i > 0) const SizedBox(width: 16),
+              _providerButton(widget.providers[i]),
+            ],
           ],
-        ],
-      );
+        )
+      : Column(
+          children: [
+            for (var i = 0; i < widget.providers.length; i++) ...[
+              if (i > 0) const SizedBox(height: 16),
+              _providerButton(widget.providers[i]),
+            ],
+          ],
+        );
 }

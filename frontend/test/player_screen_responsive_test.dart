@@ -451,7 +451,7 @@ void main() {
       find.byKey(const ValueKey('player-overview-position')),
     );
 
-    expect(scroll.padding, const EdgeInsets.fromLTRB(24, 24, 24, 144));
+    expect(scroll.padding, const EdgeInsets.fromLTRB(24, 24, 24, 24));
     expect(position.top - jersey.bottom, 24);
     expect(
       tester.getSize(find.byKey(const ValueKey('player-overview-image'))),

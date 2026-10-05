@@ -161,7 +161,6 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
                   onTap1: _loading ? null : () => _pickPlayer(0),
                   onTap2: _loading ? null : () => _pickPlayer(1),
                 ),
-                if (_loading) const LinearProgressIndicator(minHeight: 2),
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
@@ -192,7 +191,7 @@ class _MostComparedUnavailableSection extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 31, 24, 48),
+      padding: const EdgeInsets.fromLTRB(24, 31, 24, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

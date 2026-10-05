@@ -25,8 +25,8 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      final ownName = language == 'ko' ? '크루이프_A8Q4' : 'Cruyff_A8Q4';
-      final otherName = language == 'ko' ? '루니_X7K2' : 'Rooney_X7K2';
+      final ownName = language == 'ko' ? '크루이프_a8q4' : 'cruyff_a8q4';
+      final otherName = language == 'ko' ? '루니_x7k2' : 'rooney_x7k2';
       expect(find.text(ownName), findsOneWidget);
       expect(find.text(otherName), findsOneWidget);
       expect(find.text('supporter'), findsNothing);
@@ -75,7 +75,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Cruyff_A8Q4'), findsOneWidget);
+    expect(find.text('cruyff_a8q4'), findsOneWidget);
     expect(find.text('History message 10'), findsOneWidget);
     expect(find.text('Be the first to chat!'), findsNothing);
 

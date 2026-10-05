@@ -876,7 +876,7 @@ class _LeadershipBadge extends StatelessWidget {
         softWrap: false,
         textAlign: TextAlign.center,
         overflow: TextOverflow.visible,
-        style: Body2_b.style.copyWith(color: color, height: 1.3),
+        style: Body2_b.style.copyWith(color: color, height: 1),
       ),
     );
   }

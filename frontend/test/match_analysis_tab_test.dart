@@ -1,6 +1,7 @@
 import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'support/test_match_analysis_repository.dart';
@@ -13,6 +14,68 @@ import 'package:onetouch/screens/MatchScreen_tabs/anal.dart';
 
 void main() {
   setUpAppCatalog();
+  testWidgets('xG uses comparison colors for Atlético against Real Madrid',
+      (tester) async {
+    const fixture = Fixture(
+      fixtureId: 900001,
+      seasonId: 25659,
+      competitionId: 564,
+      homeTeamId: 7980,
+      awayTeamId: 3468,
+      competitionType: CompetitionType.league,
+      roundName: 'RO 1',
+      status: FixtureStatus.past,
+      startingAt: '2026-02-22 21:00:00',
+    );
+    final detail = _detailWithStatistics(fixture, const [],
+        expectedGoals: const FixtureExpectedGoals(
+          homeXg: 1.2,
+          awayXg: 0.8,
+          homeXga: 0.8,
+          awayXga: 1.2,
+          provider: 'understat',
+        ));
+    final repository = TestMatchAnalysisRepository(
+      const MatchTacticalAnalysis(
+        fixtureId: 900001,
+        available: false,
+        home: null,
+        away: null,
+      ),
+      MatchShotMap(
+        fixtureId: 900001,
+        available: false,
+        homeCount: null,
+        awayCount: null,
+        shots: [],
+      ),
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: Scaffold(
+        body: AnalysisTab(
+          fixture: fixture,
+          detail: detail,
+          repository: repository,
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final homeBox = tester.widget<Container>(
+      find.byKey(const ValueKey('match-analysis-home-xg-box')),
+    );
+    final awayBox = tester.widget<Container>(
+      find.byKey(const ValueKey('match-analysis-away-xg-box')),
+    );
+    expect((homeBox.decoration! as ShapeDecoration).color,
+        const Color(0xFFE7151D));
+    expect((awayBox.decoration! as ShapeDecoration).color,
+        const Color(0xFF1877CD));
+    expect(tester.takeException(), isNull);
+  });
+
   test('shot-map dots lead lines, and arrows stagger by 420ms', () {
     expect(matchShotTimelineMs, 503);
     expect(matchShotTimelineDurationMs(1), 503);
@@ -479,26 +542,57 @@ void main() {
       awayPossessionFill.color,
       const Color(0xFFEF2C34),
     );
+    (Color?, Color?) statValueColors(String section) {
+      final firstRow = find
+          .descendant(
+            of: find.byKey(ValueKey('match-analysis-$section-stat-rows')),
+            matching: find.byType(Row),
+          )
+          .first;
+      final values = tester
+          .widgetList<Text>(find.descendant(
+            of: firstRow,
+            matching: find.byType(Text),
+          ))
+          .toList();
+      return (values.first.style?.color, values.last.style?.color);
+    }
+
+    final homeAttackValues = statValueColors('attack');
+    final homeProgressionValues = statValueColors('progression');
+    final homeDefenseValues = statValueColors('defense');
 
     await tester.tap(
       find.byKey(const ValueKey('match-analysis-away-toggle')).first,
     );
     await tester.pump();
+    bool selectedHomeIn(String card) => tester
+        .widget<AppSegmentedToggle<bool>>(find.descendant(
+          of: find.byKey(ValueKey(card)),
+          matching: find.byType(AppSegmentedToggle<bool>),
+        ))
+        .value;
+    expect(selectedHomeIn('match-analysis-attack-card'), isFalse);
+    expect(selectedHomeIn('match-analysis-progression-card'), isTrue);
+    expect(selectedHomeIn('match-analysis-defense-card'), isTrue);
+    expect(statValueColors('attack'), isNot(homeAttackValues));
+    expect(statValueColors('progression'), homeProgressionValues);
+    expect(statValueColors('defense'), homeDefenseValues);
     expect(
       tester.widget<ShotMapDiagram>(find.byType(ShotMapDiagram)).color,
       const Color(0xFFEF2C34),
     );
-    final awayProgression =
+    final homeProgression =
         tester.widget<ProgressionDiagram>(find.byType(ProgressionDiagram));
-    expect(awayProgression.color, const Color(0xFFEF2C34));
-    expect(awayProgression.rightToLeft, isTrue);
+    expect(homeProgression.color, const Color(0xFF5FAFF1));
+    expect(homeProgression.rightToLeft, isFalse);
     expect(
       tester
           .widget<DefenseTerritoryDiagram>(
             find.byType(DefenseTerritoryDiagram),
           )
           .zoneDeltas,
-      [-25, 25, 0],
+      [25, -25, 0],
     );
     expect(
       tester
@@ -506,7 +600,7 @@ void main() {
             find.byType(DefenseTerritoryDiagram),
           )
           .selectedTeamColor,
-      awayProgression.color,
+      homeProgression.color,
     );
     expect(
       tester
@@ -514,8 +608,61 @@ void main() {
             find.byType(DefenseTerritoryDiagram),
           )
           .rightToLeft,
-      isTrue,
+      isFalse,
     );
+
+    final progressionAway = find.descendant(
+      of: find.byKey(const ValueKey('match-analysis-progression-card')),
+      matching: find.byKey(const ValueKey('match-analysis-away-toggle')),
+    );
+    await tester.ensureVisible(progressionAway);
+    await tester.tap(progressionAway);
+    await tester.pump();
+    expect(selectedHomeIn('match-analysis-attack-card'), isFalse);
+    expect(selectedHomeIn('match-analysis-progression-card'), isFalse);
+    expect(selectedHomeIn('match-analysis-defense-card'), isTrue);
+    expect(statValueColors('attack'), isNot(homeAttackValues));
+    expect(statValueColors('progression'), isNot(homeProgressionValues));
+    expect(statValueColors('defense'), homeDefenseValues);
+    expect(tester.widget<ShotMapDiagram>(find.byType(ShotMapDiagram)).color,
+        const Color(0xFFEF2C34));
+    final awayProgression =
+        tester.widget<ProgressionDiagram>(find.byType(ProgressionDiagram));
+    expect(awayProgression.color, const Color(0xFFEF2C34));
+    expect(awayProgression.rightToLeft, isTrue);
+    expect(
+        tester
+            .widget<DefenseTerritoryDiagram>(
+                find.byType(DefenseTerritoryDiagram))
+            .zoneDeltas,
+        [25, -25, 0]);
+
+    final defenseAway = find.descendant(
+      of: find.byKey(const ValueKey('match-analysis-defense-card')),
+      matching: find.byKey(const ValueKey('match-analysis-away-toggle')),
+    );
+    await tester.ensureVisible(defenseAway);
+    await tester.tap(defenseAway);
+    await tester.pump();
+    expect(selectedHomeIn('match-analysis-attack-card'), isFalse);
+    expect(selectedHomeIn('match-analysis-progression-card'), isFalse);
+    expect(selectedHomeIn('match-analysis-defense-card'), isFalse);
+    expect(statValueColors('attack'), isNot(homeAttackValues));
+    expect(statValueColors('progression'), isNot(homeProgressionValues));
+    expect(statValueColors('defense'), isNot(homeDefenseValues));
+    expect(tester.widget<ShotMapDiagram>(find.byType(ShotMapDiagram)).color,
+        const Color(0xFFEF2C34));
+    expect(
+        tester
+            .widget<ProgressionDiagram>(find.byType(ProgressionDiagram))
+            .color,
+        const Color(0xFFEF2C34));
+    expect(
+        tester
+            .widget<DefenseTerritoryDiagram>(
+                find.byType(DefenseTerritoryDiagram))
+            .zoneDeltas,
+        [-25, 25, 0]);
     expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(
@@ -918,12 +1065,13 @@ double _diagramProgress(WidgetTester tester, Finder diagram) {
 
 FixtureDetail _detailWithStatistics(
   Fixture fixture,
-  List<FixtureStatistic> statistics,
-) =>
+  List<FixtureStatistic> statistics, {
+  FixtureExpectedGoals? expectedGoals,
+}) =>
     FixtureDetail(
       fixture: fixture,
       venueName: null,
-      expectedGoals: null,
+      expectedGoals: expectedGoals,
       playerExpectedGoals: const [],
       shots: const [],
       events: const [],

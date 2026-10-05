@@ -178,7 +178,7 @@ class _PlayersState extends State<Players> {
                         repository:
                             widget.repository ?? playerDirectoryRepository,
                       ),
-                      const SizedBox(height: 144),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),

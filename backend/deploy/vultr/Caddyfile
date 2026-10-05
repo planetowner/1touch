@@ -15,7 +15,8 @@
 	basic_auth @protected {
 		{$COLLAB_USER} {$COLLAB_PASSWORD_HASH}
 	}
-	reverse_proxy api:8000
+	# 테스트 서버도 api 별칭을 쓰므로 운영 컨테이너 이름으로 연결해요.
+	reverse_proxy onetouch-dev-api-1:8000
 }
 
 # 서비스 소개는 회원 로그인 없이 읽고, API 문서의 접근 제한은 위 호스트에 유지해요.
@@ -24,7 +25,7 @@
 	# 공유 페이지·이미지·앱 연결 정보만 API로 보내고, 회원 API는 기존 호스트에 유지해요.
 	@sharing path /community/* /.well-known/apple-app-site-association /.well-known/assetlinks.json
 	handle @sharing {
-		reverse_proxy api:8000
+		reverse_proxy onetouch-dev-api-1:8000
 	}
 	handle {
 		root * /srv/1touch

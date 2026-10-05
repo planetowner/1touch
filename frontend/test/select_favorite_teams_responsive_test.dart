@@ -65,7 +65,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.keyboard_arrow_down));
       await tester.pump();
 
-      expect(find.byIcon(Icons.keyboard_arrow_up), findsWidgets);
+      expect(find.byIcon(Icons.keyboard_arrow_up), findsOneWidget);
       expect(find.byKey(const ValueKey('favorite-league-menu-blur')),
           findsOneWidget);
       expect(find.text('LA LIGA'), findsOneWidget);

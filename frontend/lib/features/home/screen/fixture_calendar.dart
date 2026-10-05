@@ -200,7 +200,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
       children: [
         // Calendar container
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
           child: Container(
             key: const ValueKey('fixture-calendar-card'),
             decoration: BoxDecoration(

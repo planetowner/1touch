@@ -10,6 +10,7 @@ import 'package:onetouch/SignComps/other_login_methods.dart';
 import 'package:onetouch/SignComps/sign_in.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/device_region.dart';
+import 'package:onetouch/core/probability_display.dart';
 import 'package:onetouch/data/auth/api/api_login_options_repository.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/features/community/community_identity.dart';
@@ -102,8 +103,13 @@ void main() {
       'Chances to Finish\nTop 4': '4위 이내 진입 확률',
       'Chances to Finish\nTop 6': '6위 이내 진입 확률',
       'Chances of\nRelegation': '강등 확률',
-      'Chances of Relegation\nPlayoff': '강등 PO 확률',
+      'Chances to\nRelegation Playoff': '강등 플레이오프 확률',
     };
+    expect(probabilityEventTitle('relegation_playoff'),
+        'Chances to\nRelegation Playoff');
+    expect(
+        translateMessage(const Locale('ko'), 'RELEGATION PLAYOFF PROBABILITY'),
+        '강등 플레이오프 확률');
     for (final entry in expected.entries) {
       final translated = translateMessage(const Locale('ko'), entry.key);
       expect(translated, entry.value);
@@ -154,13 +160,13 @@ void main() {
     final cases = <int, List<String>>{
       0: ['Today', '오늘', '今日', '今天'],
       1: ['Yesterday', '어제', '昨日', '昨天'],
-      2: ['2 Days Ago', '2일 전', '2日前', '2天前'],
-      6: ['6 Days Ago', '6일 전', '6日前', '6天前'],
-      7: ['Last Week', '지난주', '先週', '上周'],
-      13: ['Last Week', '지난주', '先週', '上周'],
-      14: ['2 Weeks Ago', '2주 전', '2週間前', '2周前'],
-      35: ['5 Weeks Ago', '5주 전', '5週間前', '5周前'],
-      365: ['52 Weeks Ago', '52주 전', '52週間前', '52周前'],
+      2: ['2 days ago', '2일 전', '2日前', '2天前'],
+      6: ['6 days ago', '6일 전', '6日前', '6天前'],
+      7: ['Last week', '지난주', '先週', '上周'],
+      13: ['Last week', '지난주', '先週', '上周'],
+      14: ['2 weeks ago', '2주 전', '2週間前', '2周前'],
+      35: ['5 weeks ago', '5주 전', '5週間前', '5周前'],
+      365: ['52 weeks ago', '52주 전', '52週間前', '52周前'],
     };
     for (final entry in cases.entries) {
       final kickoff = DateTime(now.year, now.month, now.day - entry.key, 9);
@@ -182,9 +188,9 @@ void main() {
       DateTime(2026, 9, 24, 11): ['1h ago', '1시간 전', '1時間前', '1小时前'],
       DateTime(2026, 9, 24, 10): ['2h ago', '2시간 전', '2時間前', '2小时前'],
       DateTime(2026, 9, 23, 23, 59): ['Yesterday', '어제', '昨日', '昨天'],
-      DateTime(2026, 9, 22): ['2 Days Ago', '2일 전', '2日前', '2天前'],
-      DateTime(2026, 9, 17): ['Last Week', '지난주', '先週', '上周'],
-      DateTime(2026, 8, 20): ['5 Weeks Ago', '5주 전', '5週間前', '5周前'],
+      DateTime(2026, 9, 22): ['2 days ago', '2일 전', '2日前', '2天前'],
+      DateTime(2026, 9, 17): ['Last week', '지난주', '先週', '上周'],
+      DateTime(2026, 8, 20): ['5 weeks ago', '5주 전', '5週間前', '5周前'],
     };
     for (final entry in cases.entries) {
       expect(
@@ -279,8 +285,8 @@ void main() {
         localizationsDelegates: appLocalizationDelegates,
       ));
       await tester.pumpAndSettle();
-      expect(find.text(translateMessage(locale, 'Continue with Kakao')),
-          findsOneWidget);
+      expect(
+          find.byKey(const ValueKey('kakao-sign-in-button')), findsOneWidget);
       expect(find.byKey(const ValueKey('line-sign-in-button')), findsNothing);
       final otherMethods = find.byKey(const ValueKey('other-login-methods'));
       expect(otherMethods, findsOneWidget);
@@ -355,7 +361,8 @@ void main() {
       ));
       await tester.pumpAndSettle();
       final provider = LoginProvider.values.byName(first);
-      expect(find.text(provider.label), findsOneWidget);
+      expect(find.byKey(ValueKey('${provider.name}-sign-in-button')),
+          findsOneWidget);
       for (final name in other) {
         expect(find.byKey(ValueKey('$name-sign-in-button')), findsNothing);
       }

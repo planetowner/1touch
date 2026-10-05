@@ -44,7 +44,9 @@ class AnalysisTab extends StatefulWidget {
 }
 
 class _AnalysisTabState extends State<AnalysisTab> {
-  bool showHome = true;
+  bool _showHomeAttack = true;
+  bool _showHomeProgression = true;
+  bool _showHomeDefense = true;
   MatchTacticalAnalysis? _analysis;
   MatchShotMap? _shotMap;
   bool _isLoading = false;
@@ -56,8 +58,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   MatchTeamTacticalAnalysis? get _homeAnalysis => _analysis?.home;
   MatchTeamTacticalAnalysis? get _awayAnalysis => _analysis?.away;
-  MatchTeamTacticalAnalysis? get _selectedAnalysis =>
-      showHome ? _homeAnalysis : _awayAnalysis;
 
   @override
   void initState() {
@@ -70,7 +70,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.fixture.fixtureId != widget.fixture.fixtureId ||
         oldWidget.repository != widget.repository) {
-      showHome = true;
+      _showHomeAttack = true;
+      _showHomeProgression = true;
+      _showHomeDefense = true;
       _startLoad();
     }
   }
@@ -245,16 +247,12 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildXGSection(FixtureExpectedGoals expectedGoals) {
-    final home = fixtureHomeTeam(widget.fixture, teamRepository);
-    final away = fixtureAwayTeam(widget.fixture, teamRepository);
-    final homeColor = TeamComparisonColorResolver.paletteFor(
-      teamName: home.name,
-      primaryFallback: Color(home.primaryColor),
-    ).primary;
-    final awayColor = TeamComparisonColorResolver.paletteFor(
-      teamName: away.name,
-      primaryFallback: Color(away.primaryColor),
-    ).primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = _comparisonColors(
+      isDark ? AppPalette.darkGrey : AppPalette.white,
+    );
+    final homeColor = colors.anchor;
+    final awayColor = colors.opponent;
     return SizedBox(
       key: const ValueKey('match-analysis-xg'),
       width: double.infinity,
@@ -335,7 +333,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         .where(
           (entry) =>
               entry.value.teamId ==
-              (showHome
+              (_showHomeAttack
                   ? widget.fixture.homeTeamId
                   : widget.fixture.awayTeamId),
         )
@@ -353,8 +351,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
   List<ShotMapPlot> get _selectedShotPlots => [
         for (final shot in _selectedShots)
           ShotMapPlot(
-            start: _halfPitchPoint(shot.start, isHome: showHome),
-            end: _halfPitchPoint(shot.end, isHome: showHome),
+            start: _halfPitchPoint(shot.start, isHome: _showHomeAttack),
+            end: _halfPitchPoint(shot.end, isHome: _showHomeAttack),
             isGoal: shot.result.toLowerCase() == 'goal',
           ),
       ];
@@ -373,18 +371,20 @@ class _AnalysisTabState extends State<AnalysisTab> {
     final cardBackground = isDark ? AppPalette.darkGrey : AppPalette.white;
     final comparisonColors = _comparisonColors(cardBackground);
     final selectedTeamColor =
-        showHome ? comparisonColors.anchor : comparisonColors.opponent;
+        _showHomeAttack ? comparisonColors.anchor : comparisonColors.opponent;
     final homeShots = _shotMap?.homeCount;
     final awayShots = _shotMap?.awayCount;
     final homeGoals = _goalCount(widget.fixture.homeTeamId);
     final awayGoals = _goalCount(widget.fixture.awayTeamId);
     final statRows = <Widget>[
       if (_shotMap?.available == true) ...[
-        _buildStatRow(tr(context, 'Goals'), homeGoals, awayGoals),
+        _buildStatRow(tr(context, 'Goals'), homeGoals, awayGoals,
+            showHome: _showHomeAttack),
         _buildStatRow(
           tr(context, 'Shots on Target'),
           homeShots,
           awayShots,
+          showHome: _showHomeAttack,
         ),
       ],
       // 키패스는 Opta 전술 분석과 별개인 Sportmonks 팀 통계를 사용해요.
@@ -393,12 +393,14 @@ class _AnalysisTabState extends State<AnalysisTab> {
           trTitle(context, 'Key passes'),
           keyPasses.home,
           keyPasses.away,
+          showHome: _showHomeAttack,
         ),
       if (_analysis?.available == true)
         _buildStatRow(
           tr(context, 'Passes into Final Third'),
           _homeAnalysis?.attack.completedPassesIntoFinalThird,
           _awayAnalysis?.attack.completedPassesIntoFinalThird,
+          showHome: _showHomeAttack,
         ),
     ];
 
@@ -432,11 +434,14 @@ class _AnalysisTabState extends State<AnalysisTab> {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                _buildTeamToggle(),
+                _buildTeamToggle(
+                  showHome: _showHomeAttack,
+                  onChanged: (value) => setState(() => _showHomeAttack = value),
+                ),
                 const SizedBox(height: 24),
                 if (_shotMap?.available == true) ...[
                   ShotMapDiagram(
-                    key: ValueKey('match-attack-shot-map-$showHome'),
+                    key: ValueKey('match-attack-shot-map-$_showHomeAttack'),
                     shots: _selectedShotPlots,
                     color: selectedTeamColor,
                     lineColor: foreground.withValues(alpha: 0.30),
@@ -568,15 +573,18 @@ class _AnalysisTabState extends State<AnalysisTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBackground = isDark ? AppPalette.darkGrey : AppPalette.white;
     final comparisonColors = _comparisonColors(cardBackground);
-    final selectedTeamColor =
-        showHome ? comparisonColors.anchor : comparisonColors.opponent;
-    final selected = _selectedAnalysis?.progression;
+    final selectedTeamColor = _showHomeProgression
+        ? comparisonColors.anchor
+        : comparisonColors.opponent;
+    final selected =
+        (_showHomeProgression ? _homeAnalysis : _awayAnalysis)?.progression;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(tr(context, "PROGRESSION"), style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
+          key: const ValueKey('match-analysis-progression-card'),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: cardBackground,
@@ -585,11 +593,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
           ),
           child: Column(
             children: [
-              _buildTeamToggle(),
+              _buildTeamToggle(
+                showHome: _showHomeProgression,
+                onChanged: (value) =>
+                    setState(() => _showHomeProgression = value),
+              ),
               const SizedBox(height: 24),
               ProgressionDiagram(
                 lanePercents: _channelPercentages(selected),
-                rightToLeft: !showHome,
+                rightToLeft: !_showHomeProgression,
                 color: selectedTeamColor,
                 labelColor: _readableTextColor(selectedTeamColor),
               ),
@@ -599,16 +611,19 @@ class _AnalysisTabState extends State<AnalysisTab> {
                   tr(context, 'Completed Passes'),
                   _homeAnalysis?.progression.completedPasses,
                   _awayAnalysis?.progression.completedPasses,
+                  showHome: _showHomeProgression,
                 ),
                 _buildStatRow(
                   tr(context, 'Progressive Passes'),
                   _homeAnalysis?.progression.progressivePasses,
                   _awayAnalysis?.progression.progressivePasses,
+                  showHome: _showHomeProgression,
                 ),
                 _buildStatRow(
                   tr(context, 'Passes into Final Third'),
                   _homeAnalysis?.attack.completedPassesIntoFinalThird,
                   _awayAnalysis?.attack.completedPassesIntoFinalThird,
+                  showHome: _showHomeProgression,
                 ),
               ]),
             ],
@@ -630,7 +645,10 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  Widget _buildTeamToggle() {
+  Widget _buildTeamToggle({
+    required bool showHome,
+    required ValueChanged<bool> onChanged,
+  }) {
     return AppSegmentedToggle<bool>(
       containerKey: const ValueKey('match-analysis-team-toggle'),
       indicatorSurfaceKey:
@@ -649,7 +667,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           contentKey: const ValueKey('match-analysis-away-toggle'),
         ),
       ],
-      onChanged: (value) => setState(() => showHome = value),
+      onChanged: onChanged,
     );
   }
 
@@ -658,6 +676,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     num? home,
     num? away, {
     String suffix = '',
+    bool showHome = true,
   }) {
     final foreground = Theme.of(context).colorScheme.onSurface;
     final mutedForeground = AppColors.of(context).mutedForeground;
@@ -705,7 +724,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     final cardBackground = isDark ? AppPalette.darkGrey : AppPalette.white;
     final comparisonColors = _comparisonColors(cardBackground);
     final selectedTeamColor =
-        showHome ? comparisonColors.anchor : comparisonColors.opponent;
+        _showHomeDefense ? comparisonColors.anchor : comparisonColors.opponent;
     final rows = _defenseRows();
     final zoneDeltas = _defenseZoneDeltas();
     final missingPositionCount = [
@@ -748,7 +767,11 @@ class _AnalysisTabState extends State<AnalysisTab> {
             ),
             child: Column(
               children: [
-                _buildTeamToggle(),
+                _buildTeamToggle(
+                  showHome: _showHomeDefense,
+                  onChanged: (value) =>
+                      setState(() => _showHomeDefense = value),
+                ),
                 if (zoneDeltas != null) ...[
                   const SizedBox(height: 24),
                   DefenseTerritoryDiagram(
@@ -757,7 +780,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                     lineColor: Theme.of(
                       context,
                     ).colorScheme.onSurface.withValues(alpha: 0.55),
-                    rightToLeft: !showHome,
+                    rightToLeft: !_showHomeDefense,
                   ),
                 ],
                 if (zoneDeltas == null && missingPositionCount > 0) ...[
@@ -776,7 +799,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
                   const SizedBox(height: 24),
                   _buildStatRows('defense', [
                     for (final row in rows)
-                      _buildStatRow(row.label, row.home, row.away),
+                      _buildStatRow(row.label, row.home, row.away,
+                          showHome: _showHomeDefense),
                   ]),
                 ],
               ],
@@ -791,8 +815,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
     final home = _defenseZonePercentages(_homeAnalysis?.defensiveActivity);
     final away = _defenseZonePercentages(_awayAnalysis?.defensiveActivity);
     if (home == null || away == null) return null;
-    final selected = showHome ? home : away;
-    final opponent = showHome ? away : home;
+    final selected = _showHomeDefense ? home : away;
+    final opponent = _showHomeDefense ? away : home;
     return List.generate(
       3,
       (index) => selected[index] - opponent[index],

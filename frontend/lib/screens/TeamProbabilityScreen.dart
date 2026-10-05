@@ -245,7 +245,7 @@ class _TeamProbabilityScreenState extends State<TeamProbabilityScreen> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -332,7 +332,7 @@ class _ProbabilityHero extends StatelessWidget {
           ),
           const SizedBox(width: 24),
           SizedBox(
-            width: 138,
+            width: 160,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -340,7 +340,7 @@ class _ProbabilityHero extends StatelessWidget {
                 Icon(_eventIcon(card.event), size: 56),
                 const SizedBox(height: 4),
                 SizedBox(
-                  width: 138,
+                  width: 160,
                   height: 39,
                   child: Align(
                     alignment: Alignment.bottomRight,
@@ -351,9 +351,7 @@ class _ProbabilityHero extends StatelessWidget {
                           Localizations.localeOf(context).languageCode == 'ko'
                               ? 1
                               : 2,
-                      softWrap:
-                          Localizations.localeOf(context).languageCode != 'ko',
-                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
                       textAlign: TextAlign.right,
                       style: Body1.style,
                     ),

@@ -416,7 +416,7 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
         Row(
           key: const ValueKey('players-ranking-title-row'),
           children: [
-            Text(tr(context, '1TOUCH RANKING'), style: Body2_b.style),
+            Text(trUpper(context, '1touch Ranking'), style: Body2_b.style),
             const SizedBox(width: 4),
             const AppInfoButton(
               key: ValueKey('players-ranking-info'),
@@ -433,7 +433,10 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
                 width: 24,
                 height: 24,
               ),
-              icon: Icon(Icons.tune, color: colors.onSurface),
+              icon: Transform.translate(
+                offset: const Offset(0, -2),
+                child: Icon(Icons.tune, color: colors.onSurface),
+              ),
             ),
           ],
         ),
@@ -462,7 +465,6 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
             ),
           ),
         ],
-        const SizedBox(height: 16),
         if (_failed)
           TextButton(
             onPressed: () => _load(forceRefresh: _items.isNotEmpty),

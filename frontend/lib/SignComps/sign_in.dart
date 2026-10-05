@@ -26,10 +26,15 @@ class EmailSignInScreen extends StatelessWidget {
 
 class PasswordSignInForm extends StatefulWidget {
   const PasswordSignInForm(
-      {super.key, this.authService, this.enabled = true, this.onBusyChanged});
+      {super.key,
+      this.authService,
+      this.enabled = true,
+      this.onBusyChanged,
+      this.onboardingLayout = false});
   final AuthService? authService;
   final bool enabled;
   final ValueChanged<bool>? onBusyChanged;
+  final bool onboardingLayout;
 
   @override
   State<PasswordSignInForm> createState() => _PasswordSignInFormState();
@@ -39,6 +44,7 @@ class _PasswordSignInFormState extends State<PasswordSignInForm> {
   final _identifier = TextEditingController();
   final _password = TextEditingController();
   bool _submitting = false;
+  bool _passwordObscured = true;
   AuthService get _service => widget.authService ?? auth_provider.authService;
   bool get _enabled => widget.enabled && !_submitting;
 
@@ -91,7 +97,10 @@ class _PasswordSignInFormState extends State<PasswordSignInForm> {
           label: tr(context, 'Email or username'),
           controller: _identifier,
           fieldKey: const ValueKey('sign-in-username'),
-          contentPadding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+          fieldHeight: widget.onboardingLayout ? 44 : AuthStyles.inputHeight,
+          contentPadding: widget.onboardingLayout
+              ? const EdgeInsets.fromLTRB(16, 10, 8, 10)
+              : const EdgeInsets.fromLTRB(16, 8, 8, 8),
           enabled: _enabled,
           textInputAction: TextInputAction.next,
           autofillHints: const [AutofillHints.username, AutofillHints.email]),
@@ -100,9 +109,20 @@ class _PasswordSignInFormState extends State<PasswordSignInForm> {
           label: tr(context, 'Password'),
           controller: _password,
           fieldKey: const ValueKey('sign-in-password'),
-          contentPadding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+          fieldHeight: widget.onboardingLayout ? 44 : AuthStyles.inputHeight,
+          contentPadding: widget.onboardingLayout
+              ? const EdgeInsets.fromLTRB(16, 10, 8, 10)
+              : const EdgeInsets.fromLTRB(16, 8, 8, 8),
           enabled: _enabled,
-          obscureText: true,
+          obscureText: _passwordObscured,
+          suffixIcon: AuthPasswordVisibilityButton(
+            key: const ValueKey('sign-in-password-visibility'),
+            obscureText: _passwordObscured,
+            onPressed: _enabled
+                ? () => setState(() => _passwordObscured = !_passwordObscured)
+                : null,
+            compact: true,
+          ),
           textInputAction: TextInputAction.done,
           autofillHints: const [AutofillHints.password],
           onSubmitted: (_) => _submit()),
@@ -124,7 +144,7 @@ class _PasswordSignInFormState extends State<PasswordSignInForm> {
                           decorationColor: colors.onSurface)),
                 )),
           )),
-      const SizedBox(height: 24),
+      SizedBox(height: widget.onboardingLayout ? 32 : 24),
       AuthPrimaryButton(
           key: const ValueKey('email-sign-in-button'),
           label: tr(context, 'Sign in'),

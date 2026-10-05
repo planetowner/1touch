@@ -65,6 +65,35 @@ void main() {
     });
   }
 
+  testWidgets('outcome labels follow their bar segments at narrow width',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: SizedBox(
+            width: 110,
+            child: BettingProbabilityBar(
+              values: [0.8, 0.15, 0.05],
+              outcomeLabels: ['Home Win', 'Draw', 'Away Win'],
+            ),
+          ),
+        ),
+      ),
+    ));
+
+    final drawSegment = tester.getRect(find
+        .ancestor(
+          of: find.text('15.0%'),
+          matching: find.byType(Container),
+        )
+        .first);
+    final drawLabel = tester.getRect(find.text('Draw'));
+    expect(drawLabel.center.dx, closeTo(drawSegment.center.dx, 0.1));
+    expect(drawLabel.top, closeTo(drawSegment.bottom + 8, 0.1));
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('uses the server stake unit for minimum and amount buttons',
       (tester) async {
     final repository = FakeBettingRepository()
@@ -94,20 +123,41 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Draw').last);
     await tester.pump();
+    await tester.ensureVisible(find.text('CONTINUE'));
     await tester.tap(find.text('CONTINUE'));
     await tester.pumpAndSettle();
-    expect(find.text('75 pts'), findsOneWidget);
+    expect(find.text('75'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const ValueKey('bet-decrease')));
     await tester.tap(find.byKey(const ValueKey('bet-decrease')));
     await tester.pump();
-    expect(find.text('50 pts'), findsOneWidget);
+    expect(find.text('50'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('bet-increase')));
     await tester.pump();
-    expect(find.text('75 pts'), findsOneWidget);
+    expect(find.text('75'), findsOneWidget);
     expect(
         tester
             .widget<IconButton>(find.byKey(const ValueKey('bet-increase')))
             .onPressed,
         isNull);
+    for (var i = 0; i < 2; i++) {
+      await tester.tap(find.byKey(const ValueKey('bet-decrease')));
+      await tester.pump();
+    }
+    expect(find.text('25'), findsOneWidget);
+    expect(
+        tester
+            .widget<IconButton>(find.byKey(const ValueKey('bet-decrease')))
+            .onPressed,
+        isNull);
+    await tester.ensureVisible(find.text('CHANGE PICK'));
+    await tester.tap(find.text('CHANGE PICK'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('CONTINUE'));
+    await tester.tap(find.text('CONTINUE'));
+    await tester.pumpAndSettle();
+    expect(find.text('25'), findsOneWidget);
+    expect(find.text('If correct: +225 pts'), findsOneWidget);
+    expect(repository.saveCalls, 0);
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
   });
@@ -276,13 +326,55 @@ void main() {
             ),
           ),
         );
-        expect(find.text('1touch'), findsOneWidget);
+        expect(find.text('1TOUCH'), findsOneWidget);
         expect(find.text('EXPERT'), findsNothing);
         expect(find.text('Draw'), drawAllowed ? findsOneWidget : findsNothing);
         expect(find.text('D'), drawAllowed ? findsOneWidget : findsNothing);
         for (final bar in tester.widgetList<BettingProbabilityBar>(
             find.byType(BettingProbabilityBar))) {
           expect(bar.values, drawAllowed ? [0.6, 0.1, 0.3] : [0.8, 0, 0.2]);
+        }
+        final statsHeader = find.byType(MatchStatsHeader);
+        final headerBar = tester.getRect(find.descendant(
+          of: statsHeader,
+          matching: find.byKey(
+            const ValueKey('betting-probability-bar-surface'),
+          ),
+        ));
+        final homeLabel = find.descendant(
+          of: statsHeader,
+          matching: find.text('TOT Win'),
+        );
+        final awayLabel = find.descendant(
+          of: statsHeader,
+          matching: find.text('MUN Win'),
+        );
+        final homeRect = tester.getRect(homeLabel);
+        final awayRect = tester.getRect(awayLabel);
+        expect(tester.widget<Text>(homeLabel).textAlign, TextAlign.left);
+        expect(tester.widget<Text>(awayLabel).textAlign, TextAlign.right);
+        expect(homeRect.left, closeTo(headerBar.left, 0.1));
+        expect(awayRect.right, closeTo(headerBar.right, 0.1));
+        expect(homeRect.top, closeTo(headerBar.bottom + 8, 0.1));
+        expect(awayRect.top, closeTo(homeRect.top, 0.1));
+        if (drawAllowed) {
+          final drawLabel = find.descendant(
+            of: statsHeader,
+            matching: find.text('Draw'),
+          );
+          final drawRect = tester.getRect(drawLabel);
+          final drawSegment = tester.getRect(find
+              .ancestor(
+                of: find.descendant(
+                  of: statsHeader,
+                  matching: find.text('10.0%'),
+                ),
+                matching: find.byType(Container),
+              )
+              .first);
+          expect(tester.widget<Text>(drawLabel).textAlign, TextAlign.center);
+          expect(drawRect.center.dx, closeTo(drawSegment.center.dx, 0.1));
+          expect(drawRect.top, closeTo(homeRect.top, 0.1));
         }
         if (!drawAllowed) {
           for (final label in find.text('20.0%').evaluate()) {
@@ -375,6 +467,12 @@ void main() {
         await tester.pump();
         expect(find.text('Bet Submitted!'), findsNothing);
         expect(repository.saveCalls, 1);
+        for (final key in ['bet-decrease', 'bet-increase']) {
+          expect(
+            tester.widget<IconButton>(find.byKey(ValueKey(key))).onPressed,
+            isNull,
+          );
+        }
         repository.submitGate!.complete();
         await tester.pumpAndSettle();
         expect(find.text('Bet Submitted!'), findsOneWidget);

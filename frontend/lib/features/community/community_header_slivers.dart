@@ -31,11 +31,8 @@ class CommunitySliverAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = Theme.of(context).colorScheme.onSurface;
     return SliverAppBar(
-      backgroundColor: Color.lerp(
-        Colors.transparent,
-        pageBackground,
-        opacityFactor,
-      ),
+      backgroundColor:
+          scrollingAppBarBackground(context, pageBackground, opacityFactor),
       foregroundColor: foreground,
       elevation: 0,
       floating: true,

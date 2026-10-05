@@ -263,8 +263,8 @@ class _ProfileState extends State<Profile> {
               SliverAppBar(
                 automaticallyImplyLeading: false,
                 // App bar becomes dark as you scroll down
-                backgroundColor: Color.lerp(
-                    Colors.transparent, profileBackground, opacityFactor),
+                backgroundColor: scrollingAppBarBackground(
+                    context, profileBackground, opacityFactor),
                 elevation: 0,
                 floating: true,
                 snap: true,

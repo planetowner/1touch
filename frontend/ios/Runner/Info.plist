@@ -57,7 +57,7 @@
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string></string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Choose a profile photo for your 1touch account.</string>
+	<string>Choose photos and videos for your profile and community posts in 1touch.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

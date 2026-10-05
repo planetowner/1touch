@@ -198,13 +198,6 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                                     appColors.mutedForeground),
                                       ),
                                     ),
-                                    if (isSelected)
-                                      AppDropdownChevron(
-                                        expanded: true,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                      ),
                                   ],
                                 ),
                               ),

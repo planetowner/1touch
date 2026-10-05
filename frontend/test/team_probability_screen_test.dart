@@ -16,6 +16,38 @@ import 'package:onetouch/screens/TeamProbabilityScreen.dart';
 import 'package:onetouch/screens/team_probability_what_if_screen.dart';
 
 void main() {
+  for (final width in [360.0, 393.0, 430.0]) {
+    testWidgets('English relegation playoff title fits two lines at $width',
+        (tester) async {
+      tester.view.physicalSize = Size(width, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: TeamProbabilityScreen(
+          teamId: 83,
+          event: 'relegation_playoff',
+          initialSnapshot: _snapshot(relegationEvent: 'relegation_playoff'),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final title = find.byKey(const ValueKey('probability-event-title'));
+      final titleWidget = tester.widget<Text>(title);
+      expect(titleWidget.data, 'Chances to\nRelegation Playoff');
+      expect(titleWidget.style?.fontSize, Body1.style.fontSize);
+      expect(find.ancestor(of: title, matching: find.byType(FittedBox)),
+          findsNothing);
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.descendant(of: title, matching: find.byType(RichText)),
+      );
+      expect(paragraph.didExceedMaxLines, isFalse);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   for (final size in [const Size(393, 852), const Size(430, 932)]) {
     testWidgets('history chart fits the shared design at $size',
         (tester) async {
@@ -315,6 +347,19 @@ void main() {
       find.byKey(const ValueKey('what-if-scenario-chart')),
       findsOneWidget,
     );
+    for (final (index, outcome) in ['win', 'draw', 'loss'].indexed) {
+      final option = find.byKey(ValueKey('what-if-outcome-$outcome'));
+      final labels = find.descendant(of: option, matching: find.byType(Text));
+      expect(labels, findsNWidgets(2));
+      final first = tester.getRect(labels.first);
+      final last = tester.getRect(labels.last);
+      expect((first.top + last.bottom) / 2,
+          closeTo(tester.getRect(option).center.dy, 0.1));
+      expect(
+          find.descendant(
+              of: option, matching: find.text('(${[55, 25, 20][index]}%)')),
+          findsOneWidget);
+    }
     await tester.tap(find.byKey(const ValueKey('what-if-outcome-win')));
     await tester.pump();
 
@@ -476,6 +521,12 @@ void main() {
       expected: '바르셀로나가 이기면 강등 확률이 4.0%p 내려가요. 지면 5.0%p 올라요.'
     ),
     (
+      event: 'relegation_playoff',
+      teamId: 83,
+      unchanged: false,
+      expected: '바르셀로나가 이기면 강등 플레이오프 확률이 4.0%p 내려가요. 지면 5.0%p 올라요.'
+    ),
+    (
       event: 'league_winner',
       teamId: 83,
       unchanged: true,
@@ -494,7 +545,10 @@ void main() {
       final snapshot = _snapshot(
           teamId: testCase.teamId,
           winProbability: testCase.unchanged ? 0.324 : 0.38,
-          lossProbability: testCase.unchanged ? 0.324 : 0.21);
+          lossProbability: testCase.unchanged ? 0.324 : 0.21,
+          relegationEvent: testCase.event == 'relegation_playoff'
+              ? 'relegation_playoff'
+              : 'direct_relegation');
       await tester.pumpWidget(MaterialApp(
         locale: const Locale('ko'),
         supportedLocales: appSupportedLocales,
@@ -559,6 +613,9 @@ void main() {
       await tester.pump();
       await tester.scrollUntilVisible(find.text(testCase.expected), 200);
       expect(find.text(testCase.expected), findsOneWidget);
+      if (testCase.event == 'relegation_playoff') {
+        expect(find.text('강등 플레이오프 확률'), findsOneWidget);
+      }
       for (final label in ['이기면', '비기면', '지면']) {
         expect(find.text(label), findsOneWidget);
       }
@@ -570,7 +627,8 @@ void main() {
 TeamProbabilitySnapshot _snapshot(
     {int teamId = 83,
     double winProbability = 0.38,
-    double lossProbability = 0.21}) {
+    double lossProbability = 0.21,
+    String relegationEvent = 'direct_relegation'}) {
   const currentCard = TeamProbabilityCard(
     event: 'league_winner',
     competitionId: 564,
@@ -579,8 +637,8 @@ TeamProbabilitySnapshot _snapshot(
     changePercentagePoints: 2.4,
     entropy: 0.9,
   );
-  const relegationCard = TeamProbabilityCard(
-    event: 'direct_relegation',
+  final relegationCard = TeamProbabilityCard(
+    event: relegationEvent,
     competitionId: 564,
     category: 'RELEGATION',
     probability: 0.08,
@@ -616,7 +674,7 @@ TeamProbabilitySnapshot _snapshot(
       available: true,
       asOf: DateTime.utc(2026, 9, 11),
     ),
-    cards: const [currentCard, relegationCard],
+    cards: [currentCard, relegationCard],
     history: [
       TeamProbabilityHistoryPoint(
         asOf: DateTime.utc(2026, 9, 11),
@@ -636,7 +694,7 @@ TeamProbabilitySnapshot _snapshot(
       TeamProbabilityHistoryPoint(
         asOf: DateTime.utc(2026, 9, 18),
         played: 5,
-        events: const [currentCard, relegationCard],
+        events: [currentCard, relegationCard],
         expectedPoints: 82.4,
       ),
     ],
@@ -651,15 +709,16 @@ TeamProbabilitySnapshot _snapshot(
         probabilities: const [0.55, 0.25, 0.2],
       ),
       scenarios: [
-        _scenario('win', winProbability),
-        _scenario('draw', 0.29),
-        _scenario('loss', lossProbability),
+        _scenario('win', winProbability, relegationEvent),
+        _scenario('draw', 0.29, relegationEvent),
+        _scenario('loss', lossProbability, relegationEvent),
       ],
     ),
   );
 }
 
-TeamProbabilityWhatIfScenario _scenario(String outcome, double probability) {
+TeamProbabilityWhatIfScenario _scenario(
+    String outcome, double probability, String relegationEvent) {
   return TeamProbabilityWhatIfScenario(
     outcome: outcome,
     events: [
@@ -672,7 +731,7 @@ TeamProbabilityWhatIfScenario _scenario(String outcome, double probability) {
         entropy: null,
       ),
       TeamProbabilityCard(
-        event: 'direct_relegation',
+        event: relegationEvent,
         competitionId: 564,
         category: 'RELEGATION',
         probability: switch (outcome) {

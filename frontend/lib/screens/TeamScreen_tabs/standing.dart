@@ -483,7 +483,7 @@ class _StandingTabState extends State<StandingTab> {
                     StandingsLegend(leagueId: selectedLeagueId),
                 ],
               ),
-              const SizedBox(height: 144),
+              const SizedBox(height: 24),
             ],
           ),
         ),
