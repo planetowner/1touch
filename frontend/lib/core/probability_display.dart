@@ -8,7 +8,7 @@ String probabilityEventTitle(String event) => switch (event) {
       'top_4' => 'Chances to Finish\nTop 4',
       'top_6' => 'Chances to Finish\nTop 6',
       'direct_relegation' => 'Chances of\nRelegation',
-      'relegation_playoff' => 'Chances of Relegation\nPlayoff',
+      'relegation_playoff' => 'Chances to\nRelegation Playoff',
       _ => event
           .split('_')
           .where((part) => part.isNotEmpty)

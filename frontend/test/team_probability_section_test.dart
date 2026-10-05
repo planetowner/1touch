@@ -309,6 +309,9 @@ void main() {
       expect(title.maxLines, 1);
       expect(title.softWrap, isFalse);
       expect(title.data, isNot(contains('\n')));
+      if (event == 'relegation_playoff') {
+        expect(title.data, '강등 플레이오프 확률');
+      }
     }
     expect(tester.takeException(), isNull);
   });
