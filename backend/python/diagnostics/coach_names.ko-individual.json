@@ -1,0 +1,1081 @@
+{
+  "reviewed_on": "2026-10-05",
+  "method": "개별 신원·실제 원어 사용명·국립국어원 규칙·직접 심의 용례 대조. 개인 심의 확정표나 본인 발음 전수 청취 결과가 아닌 규칙 적용안. 기존 한국어 이름은 보존.",
+  "additional_review_ids": [
+    57037,
+    455650,
+    464996,
+    466802,
+    1500238,
+    10966289,
+    10995347,
+    18219447,
+    21404466,
+    29313767,
+    37416958,
+    37453039,
+    37524062,
+    37646028,
+    37648171,
+    37660199
+  ],
+  "held_coach_ids": [
+    94064,
+    97444,
+    97499,
+    120315,
+    128124,
+    186071,
+    345859,
+    456105,
+    460151,
+    462666,
+    530681,
+    1477272,
+    3876677,
+    5283476,
+    10644819,
+    21803155,
+    37257795,
+    37347403,
+    37453040,
+    37523749,
+    37524048,
+    37552530,
+    37555912,
+    37613259,
+    37630747,
+    37646482,
+    37647434,
+    37928902,
+    37953834
+  ],
+  "entities": {
+    "coaches": [
+      {
+        "coach_id": 1195,
+        "identity": {
+          "name": "Sebastien Pocognoli"
+        },
+        "ko": "세바스티앵 포코뇰리",
+        "review": {
+          "coach_id": 1195,
+          "name": "Sebastien Pocognoli",
+          "source_row": 33,
+          "status": "rule_proposal",
+          "proposed_ko": "세바스티앵 포코뇰리",
+          "identity_evidence": "AS Monaco가 Seraing 출생(1987-08-01), 왈롱 출신 감독으로 소개. 본인 인터뷰에서 이탈리아계 가족 배경 확인.",
+          "provider_birth_date": "1987-08-01",
+          "provider_full_name": "Sébastien Pocognoli",
+          "language_assessment": "프랑스어 이름 Sébastien + 이탈리아계 성 Pocognoli. 출신 지역과 본인 발언을 함께 근거로 삼음.",
+          "rule_or_missing_evidence": "프랑스어 비모음과 이탈리아어 gn, 모음 사이 l 규칙을 적용한 표기안.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.asmonaco.com/fr/joueurs/s-bastien-pocognoli",
+            "https://www.levif.be/sport/autres-sports/stephane-pauwels-sonne-sebastien-pocognoli-donofrio-cest-un-malade-de-travail/"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 23435,
+        "identity": {
+          "name": "Alfred Schreuder"
+        },
+        "ko": "알프러트 스흐뢰더르",
+        "review": {
+          "coach_id": 23435,
+          "name": "Alfred Schreuder",
+          "source_row": 61,
+          "status": "rule_proposal",
+          "proposed_ko": "알프러트 스흐뢰더르",
+          "identity_evidence": "Ajax 공식 자료의 Alfred Schreuder, Barneveld 출생. 공식 생일 1972-11-02로 공급자 1972-02-11과 다름. Hoffenheim·Ajax 경력과 형제 인터뷰로 연결.",
+          "provider_birth_date": "1972-02-11",
+          "provider_full_name": "Alfred Schreuder",
+          "language_assessment": "Barneveld에서 성장한 Schreuder 형제의 네덜란드어 이름. 독일 근무 경력을 언어 판단에 사용하지 않음.",
+          "rule_or_missing_evidence": "네덜란드어 제2·5·10항과 표 18: 어말 d→트, 마지막 음절 e→어, eu→외, ch→ㅎ.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://acc.ajax.nl/artikelen/ajax-stelt-schreuder-op-non-actief/",
+            "https://www.ajax.nl/artikelen/over-schreuder-alfred-is-echt-een-mensenmens"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 29935,
+        "identity": {
+          "name": "Aleksandar Vasoski"
+        },
+        "ko": "알렉산다르 바소스키",
+        "review": {
+          "coach_id": 29935,
+          "name": "Jovan Pop Zlatanov → Aleksandar Vasoski",
+          "source_row": 73,
+          "status": "identity_repair_ready",
+          "proposed_ko": "알렉산다르 바소스키",
+          "identity_evidence": "1979-11-21생 Aleksandar Vasoski. Sileks의 경기·감독 경력과 공급자 전체 이름·생일을 대조했다. 마케도니아축구협회가 본인 인터뷰에서 Александар Васоски로 표기한 원형을 기준으로 삼았다.",
+          "provider_birth_date": "1979-11-21",
+          "provider_full_name": "Aleksandar Vasoski",
+          "language_assessment": "마케도니아어",
+          "rule_or_missing_evidence": "별도 마케도니아어 세칙이 없어 제4장 제1절 제2항의 원지음 원칙과 표 1을 적용했다. Friedman의 Macedonian 1.1~1.2에서 원어 자모와 음가를 확인했다. 모음 사이 l은 ㄹㄹ, ks는 ㄱㅅ, 어말 r은 르, 모음 앞 v는 ㅂ, k 앞의 s는 스로 적어 알렉산다르 바소스키로 정리했다.",
+          "nikl_same_person": "해당 데이터가 없습니다. 공개 용례에서 동일 인물의 직접 심의 표기는 찾지 못했다. 국립국어원 확정 표기가 아니라 신원·원어를 개별 대조한 규칙 적용안이다. 이름의 언어 판단은 기록된 사용형에 근거하며 본인 발음 녹음을 직접 청취한 것은 아니다.",
+          "sources": [
+            "https://www.uefa.com/uefaconferenceleague/clubs/59871--sileks/squad/",
+            "https://www.ffm.mk/en/vasoski-nema-da-potcenuvame-nikogo-ocekuvam-da-bideme-na-vistinsko-nivo-i-da-pocneme-so-pobeda/",
+            "https://www.vi.nl/wedstrijden/2026-07-16/sileks-vs-dinamo-minsk",
+            "https://www.ffm.mk/vasoski-nema-da-potcenuvame-nikogo-ocekuvam-da-bideme-na-vistinsko-nivo-i-da-pocneme-so-pobeda/",
+            "https://slaviccenters.duke.edu/macedonian",
+            "http://www.seelrc.org:8080/grammar/pdf/compgrammar_macedonian.pdf"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "target_coach_id": 29935
+        }
+      },
+      {
+        "coach_id": 57037,
+        "identity": {
+          "name": "Aleksandr Shagojko"
+        },
+        "ko": "알렉산드르 샤고이코",
+        "review": {
+          "coach_id": 57037,
+          "name": "Aleksandr Shagojko",
+          "source_row": 112,
+          "status": "rule_proposal",
+          "proposed_ko": "알렉산드르 샤고이코",
+          "identity_evidence": "Isloch 공식 선수 프로필의 Александр Шагойко, 1980-07-27, Minsk 출생이 공급자와 일치. Dinamo Minsk의 2026-01-03 감독 선임 발표로 현재 감독 경력을 연결.",
+          "provider_birth_date": "1980-07-27",
+          "provider_full_name": "Aleksandr Shagojko",
+          "language_assessment": "벨라루스 국적에서 언어를 추정하지 않고 두 소속 구단이 실제 사용하는 러시아어 원명 Александр Шагойко를 기준으로 삼음. 가족의 모어를 확인했다는 뜻은 아님.",
+          "rule_or_missing_evidence": "러시아어 표 19와 제21절 적용: к는 с 앞에서 받침 ㄱ, л은 모음 앞에서 ㄹㄹ, ш→시/샤 계열, ой→오이, ко→코. Александр→알렉산드르, Шагойко→샤고이코. 개인 음성 녹음에 대한 판정은 아님.",
+          "nikl_same_person": "Shagojko/Shagoyko/Шагойко 검색에서 같은 감독의 직접 심의를 발견하지 못함. 모든 과거 심의 문서에 없다는 단정은 아님.",
+          "sources": [
+            "https://fcisloch.by/player.asp?id=Aleksandr-Shagojko-8",
+            "https://dinamo-minsk.by/press-centr/news/20262/yanvar8/aleksandr-shagojko-glavnyj-trener-belo-sinih"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 95553,
+        "identity": {
+          "name": "Yannick Cahuzac"
+        },
+        "ko": "야니크 카위자크",
+        "review": {
+          "coach_id": 95553,
+          "name": "Yannick Cahuzac",
+          "source_row": 149,
+          "status": "rule_proposal",
+          "proposed_ko": "야니크 카위자크",
+          "identity_evidence": "Lorient 구단이 Ajaccio 출생, Bastia·Toulouse·Lens 경력을 확인. DB의 Lens 감독 대행 연결과 부합.",
+          "provider_birth_date": "1985-01-18",
+          "provider_full_name": "Yannick Cahuzac",
+          "language_assessment": "코르시카 출신 프랑스어 사용 인명. 지역 출신임을 확인한 뒤 프랑스어 표기안을 작성.",
+          "rule_or_missing_evidence": "프랑스어 [y]→위, 어말 [k]→크. Cahuzac의 카위자크 용례는 Jérôme Cahuzac이라는 다른 인물의 용례이며 이 감독의 직접 심의가 아님.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.fclorient.bzh/les-corses-du-vestiaire-lorientais/",
+            "https://www.fclorient.bzh/yannick-cahuzac-integre-le-staff-professionnel-lorientais/"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 127886,
+        "identity": {
+          "name": "Luis López Breijo"
+        },
+        "ko": "루이스 로페스 브레이호",
+        "review": {
+          "coach_id": 127886,
+          "name": "Luis López Breijo",
+          "source_row": 177,
+          "status": "rule_proposal",
+          "proposed_ko": "루이스 로페스 브레이호",
+          "identity_evidence": "우루과이축구협회 AUF의 Luis Diego López Breijo. Cagliari 소속 경력으로 스페인 골키퍼 Diego López와 구별.",
+          "provider_birth_date": "1974-08-22",
+          "provider_full_name": "Luis Diego López Breijo",
+          "language_assessment": "우루과이의 스페인어 사용 인명. AUF가 사용하는 원어 전체 이름을 확인.",
+          "rule_or_missing_evidence": "에스파냐어 표 2와 제4절: z→ㅅ, j→ㅎ, 이중 모음 ei 유지. 현재 표시명에 없는 Diego를 임의로 추가하지 않음.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.auf.org.uy/diego-lopez/"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 455650,
+        "identity": {
+          "name": "Heimir Gudjonsson"
+        },
+        "ko": "헤이미르 그뷔드욘손",
+        "review": {
+          "coach_id": 455650,
+          "name": "Heimir Gudjonsson",
+          "source_row": 308,
+          "status": "rule_proposal",
+          "proposed_ko": "헤이미르 그뷔드욘손",
+          "identity_evidence": "KSÍ 등록 Heimir Guðjónsson의 1969년생·FH 경력이 공급자 1969-04-03 및 DB의 FH 경기 연결과 부합. 영문 단순화 Gudjonsson의 원어 Guðjónsson을 협회 자료로 확인.",
+          "provider_birth_date": "1969-04-03",
+          "provider_full_name": "Heimir Gudjonsson",
+          "language_assessment": "협회가 등록한 아이슬란드어 원명과 Grammatek의 사람이 검수한 표준 발음 사전 항목 Heimir [h eiː m ɪ r], Guðjónsson [k v ʏ ð j ou n s ɔ n]을 대조. 국적 코드만으로 언어를 고르거나 로마자를 영어식으로 읽지 않음. 개인 음성은 미청취.",
+          "rule_or_missing_evidence": "아이슬란드어 별도 세칙이 없어 제4장 제1절 제2항의 원지음 원칙과 제2장 표 1을 참고. Heimir의 [eiː]→에이, [mɪr]→미르. 성은 국립국어원 Laxness, Halldór (Guđjónsson Kiljan)의 그뷔드욘손 용례를 우선 대조해 적용. 해당 작가와 이 감독은 다른 인물이며 감독 본인의 직접 심의로 표시하지 않음.",
+          "nikl_same_person": "Heimir 등 원어 검색에서 이 감독의 직접 심의는 찾지 못함. Guðjónsson과 같은 성을 포함한 Laxness의 그뷔드욘손 용례만 대조. 규칙·유사 용례 적용안.",
+          "sources": [
+            "https://www.ksi.is/leikmenn/leikmadur?id=2343",
+            "https://github.com/grammatek/iceprondict",
+            "https://raw.githubusercontent.com/grammatek/iceprondict/master/dictionaries/ice_pron_dict_standard_clear_IPA.csv",
+            "https://www.korean.go.kr/kornorms/example/exampleList.do?regltn_code=0003"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true,
+          "reviewed_on": "2026-10-05"
+        }
+      },
+      {
+        "coach_id": 457103,
+        "identity": {
+          "name": "Patrice Garande"
+        },
+        "ko": "파트리스 가랑드",
+        "review": {
+          "coach_id": 457103,
+          "name": "Jessy Deminguet → Patrice Garande",
+          "source_row": 362,
+          "status": "identity_repair_ready",
+          "proposed_ko": "파트리스 가랑드",
+          "identity_evidence": "FFF의 1960-11-27 Oullins 출생 Patrice Garande와 Caen 2017/18 감독을 대조했다. FFF의 프랑스어 등록명과 Caen의 본인 인터뷰에 쓰인 이름을 기준으로 프랑스어 사용형을 판단했다. Deminguet 선수나 다른 언어권의 동명 성과 구별하며 가족의 언어 계보까지 확인했다는 뜻은 아니다.",
+          "provider_birth_date": "1960-11-27",
+          "provider_full_name": "Patrice Garande",
+          "language_assessment": "프랑스어",
+          "rule_or_missing_evidence": "표 1과 제3장 제3절을 적용한 수동 표기안이다. 프랑스어 사용형 Patrice의 t는 트, 어말 s는 스, Garande의 an 비모음은 앙, 어말 d는 제1항에 따라 드로 적어 파트리스 가랑드로 정리했다. 표준 프랑스어 사용형에 대한 규칙 적용이며 개인의 발음 녹음을 직접 청취한 결과는 아니다.",
+          "nikl_same_person": "해당 데이터가 없습니다. 공개 용례에서 동일 인물의 직접 심의 표기는 찾지 못했다. 국립국어원 확정 표기가 아니라 신원·원어를 개별 대조한 규칙 적용안이다. 이름의 언어 판단은 기록된 사용형에 근거하며 본인 발음 녹음을 직접 청취한 것은 아니다.",
+          "sources": [
+            "https://www.smcaen.fr/2017-2018/actualites/groupe-pro/sm-caen-paris-sg-0-0",
+            "https://www.smcaen.fr/2017-2018/actualites/groupe-pro/jessy-deminguet-sengage-pour-trois-ans",
+            "https://www.fff.fr/equipe-nationale/joueur/7657-garande-patrice/fiche.html",
+            "https://www.smcaen.fr/2017-2018/actualites/groupe-pro/patrice-garande-fait-sa-rentree-mediatique"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "target_coach_id": 457103
+        }
+      },
+      {
+        "coach_id": 462010,
+        "identity": {
+          "name": "Ilir Daja"
+        },
+        "ko": "일리르 다야",
+        "review": {
+          "coach_id": 462010,
+          "name": "Djair → Ilir Daja",
+          "source_row": 402,
+          "status": "identity_repair_ready",
+          "proposed_ko": "일리르 다야",
+          "identity_evidence": "1966-10-20생 Ilir Daja. Dinamo City의 해당 시즌 경기, UEFA 감독 명단, 구단 본인 인터뷰와 알바니아축구협회의 알바니아어 Ilir Daja 표기를 대조했다. Djair와는 다른 인물이다.",
+          "provider_birth_date": "1966-10-20",
+          "provider_full_name": "Ilir Daja",
+          "language_assessment": "알바니아어",
+          "rule_or_missing_evidence": "별도 알바니아어 세칙이 없어 제4장 제1절 제2항의 원지음 원칙과 표 1을 적용했다. 알바니아어 자모·음가 자료에서 i, a, l, r, j를 대조하고, 모음 사이 l→ㄹㄹ, 어말 r→르, j와 a의 결합→야로 적어 일리르 다야로 정리했다. 같은 철자의 스페인어 j 발음을 적용하지 않았다.",
+          "nikl_same_person": "Dajabón→다하본(도미니카 공화국 지명, 에스파냐어)만 검색됨. 이 감독의 표기가 아니다. 공개 용례에서 동일 인물의 직접 심의 표기는 찾지 못했다. 국립국어원 확정 표기가 아니라 신원·원어를 개별 대조한 규칙 적용안이다. 이름의 언어 판단은 기록된 사용형에 근거하며 본인 발음 녹음을 직접 청취한 것은 아니다.",
+          "sources": [
+            "https://www.uefa.com/uefaconferenceleague/clubs/52792--dinamo-city/squad/",
+            "https://fcdinamocity.al/2025/08/01/trajneri-daja-flet-pas-kualifikimit/",
+            "https://fshf.org/sq/abissnet-superiore-ilir-daja-shpallet-trajneri-me-i-mire-i-muajit-tetor/",
+            "https://lrc.la.utexas.edu/eieol/albol/0",
+            "https://www.cambridge.org/core/journals/journal-of-the-international-phonetic-association/article/northern-tosk-albanian/D27484BD90369B3BC0FBA9479074ED88"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "target_coach_id": 462010
+        }
+      },
+      {
+        "coach_id": 464996,
+        "identity": {
+          "name": "Jean Garcia"
+        },
+        "ko": "장 가르시아",
+        "review": {
+          "coach_id": 464996,
+          "name": "Jean Garcia",
+          "source_row": 415,
+          "status": "rule_proposal",
+          "proposed_ko": "장 가르시아",
+          "identity_evidence": "Troyes 공식 역사와 Nancy의 역대 감독·본인 인터뷰에서 Jean-Louis Garcia를 확인. 공급자 전체 이름 Jean Louis Garcia와 감독 경력을 대조.",
+          "provider_birth_date": "1962-09-20",
+          "provider_full_name": "Jean Louis Garcia",
+          "language_assessment": "프랑스 구단의 실제 활동명 Jean-Louis Garcia를 기준으로 검토. Garcia의 가족 언어는 확인하지 못했으나 프랑스어 사용형 /gaʁsja/와 에스파냐어형 /gaɾsia/에 대한 표기 규칙은 모두 가르시아로 모임.",
+          "rule_or_missing_evidence": "프랑스어 Jean의 비모음→장, 자음 뒤 [j]→이로 가르시아. 한국어 표시명은 기존 Jean Garcia 범위를 유지해 Louis를 추가하지 않음. 성의 개인 발음을 직접 청취한 결과는 아님.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.estac.fr/125-ans-du-football-troyen-une-decennie-2010-historique/",
+            "https://www.asnl.net/108/entraineurs",
+            "https://www.asnl.net/58/actualites/actualites/fiche/27043"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 466802,
+        "identity": {
+          "name": "Samal Hentze"
+        },
+        "ko": "소아말 헨세",
+        "review": {
+          "coach_id": 466802,
+          "name": "Samal Hentze",
+          "source_row": 422,
+          "status": "rule_proposal",
+          "proposed_ko": "소아말 헨세",
+          "identity_evidence": "페로축구협회 FSF의 2016년 수상 기록에서 Víkingur 감독 Sámal Erik Hentze를 확인하고, 2020년 U21 감독 재계약 발표의 동일 인물·별명 Bagge·Víkingur 경력을 대조했다. DB의 Víkingur 연결 및 전체 이름과 일치한다. 공급자 생일 1972-01-27은 L’Équipe의 지도자 프로필과 일치한다(생일 근거는 2차 자료).",
+          "provider_birth_date": "1972-01-27",
+          "provider_full_name": "Samal Erik Hentze",
+          "language_assessment": "FSF가 현지에서 쓰는 원어 이름 Sámal Erik Hentze를 기준으로 페로어 발음 사전의 Sámal과 Hentze 항목을 각각 확인했다. 중앙·동부 방언 사전 모두 sámal s OA m a l / hentze h E n s E로 일치한다. Hentze를 독일어식으로 읽거나 Samal을 영어식으로 읽지 않는다. 개인 음성의 청취 결과는 아니다.",
+          "rule_or_missing_evidence": "페로어별 세칙이 없어 국립국어원 제4장 제1절 원지음 원칙과 제2장 표 1을 적용한 조사자 표기안. 사전의 SAMPA와 2023년 연구 논문 표 4를 대조하면 OA=[ɔa], E=[ɛ]이므로 [sɔamal hɛnsɛ]→소아말 헨세로 옮긴다. 중앙·동부 사전에 이미 수록된 항목을 조회했으며 G2P 모델을 실행해 철자를 자동 변환하지 않았다. 현재 DB 표시명 범위에 맞춰 Erik은 추가하지 않는다.",
+          "nikl_same_person": "2026-10-05 국립국어원 공개 용례에서 원어 표기/포함 조건으로 Hentze·Sámal을 검색했으나 결과 0건. 해당 인물 직접 심의 표기로 제시하지 않으며, 모든 과거 심의 자료에 없다고 단정하지 않는다.",
+          "sources": [
+            "https://www.fsf.fo/rannva-og-solvi-arsins-spaelarar/",
+            "https://www.fsf.fo/atli-skal-hjalpa-bagga/",
+            "https://www.lequipe.fr/Football/FootballFicheEntraineur6124.html",
+            "https://mtd.setur.fo/resource/faroese_pronunciation_dictionaries/",
+            "https://mtd.setur.fo/wp-content/uploads/2024/03/Pron_dicts_for_G2P.zip",
+            "https://repository.clarin.is/repository/xmlui/handle/20.500.12537/304",
+            "https://aclanthology.org/2022.lrec-1.495.pdf",
+            "https://aclanthology.org/2023.nodalida-1.4.pdf"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true,
+          "reviewed_on": "2026-10-05"
+        }
+      },
+      {
+        "coach_id": 523914,
+        "identity": {
+          "name": "Carlos Soares da Costa Faria Carvalhal"
+        },
+        "ko": "카를루스 카르발랼",
+        "review": {
+          "coach_id": 224127,
+          "name": "Jefferson → Carlos Carvalhal",
+          "source_row": 254,
+          "status": "identity_repair_ready",
+          "proposed_ko": "카를루스 카르발랼",
+          "identity_evidence": "실제 대상은 1965-12-04생 Carlos Carvalhal, ID 523914다. Celta의 선임 발표와 Braga 공식 자료에서 같은 포르투갈어 활동명을 확인했다. 브라질의 Jefferson Carlos Carvalhal da Silva, ID 224127과 구별한다.",
+          "provider_birth_date": "1975-06-04",
+          "provider_full_name": "Jefferson Carlos Carvalhal da Silva",
+          "language_assessment": "포르투갈의 포르투갈어",
+          "rule_or_missing_evidence": "제3장 제19절의 포르투갈어 세칙과 표 17을 적용했다. Carlos→카를루스는 제5항의 직접 예시다. Carvalhal의 r→르, v→ㅂ, lh→ㄹ리와 뒤 모음 a의 결합→랴, 어말 l→받침 ㄹ에 따라 카르발랼로 적었다. 브라질의 어말 l→우 규칙은 적용하지 않았다. Infopédia의 동형 단어 carvalhal 음가 kɐrvɐˈʎaɫ은 lh·어말 l의 보조 근거이며 본인 발음 녹음은 아니다.",
+          "nikl_same_person": "해당 데이터가 없습니다. 공개 용례에서 동일 인물의 직접 심의 표기는 찾지 못했다. 국립국어원 확정 표기가 아니라 신원·원어를 개별 대조한 규칙 적용안이다. 이름의 언어 판단은 기록된 사용형에 근거하며 본인 발음 녹음을 직접 청취한 것은 아니다.",
+          "sources": [
+            "https://rccelta.es/club/actualidad/carlos-carvalhal-sera-entrenador-del-rc-celta-hasta-2024/",
+            "https://centenario.rccelta.es/sin-categorizar/el-rc-celta-emprende-el-miercoles-el-caminoaocentenario-reviviendo-el-primer-partido-de-su-historia.html",
+            "https://www.bdfutbol.com/es/j/j61508.html",
+            "https://scbraga.pt/wp-content/uploads/2025/10/RC-SAD-24-25.pdf",
+            "https://www.infopedia.pt/dicionarios/lingua-portuguesa/carvalhal"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "target_coach_id": 523914
+        }
+      },
+      {
+        "coach_id": 524257,
+        "identity": {
+          "name": "David Wagner"
+        },
+        "ko": "다비트 바그너",
+        "review": {
+          "coach_id": 524257,
+          "name": "David Wagner",
+          "source_row": 466,
+          "status": "rule_proposal",
+          "proposed_ko": "다비트 바그너",
+          "identity_evidence": "DFL 공식 자료: Frankfurt 출생 1971-10-19. Huddersfield·Schalke 감독 경력. Young Boys가 독일·미국 이중 국적으로 소개.",
+          "provider_birth_date": "1971-10-19",
+          "provider_full_name": "David Wagner",
+          "language_assessment": "독일 성장 배경과 독일어 인터뷰 확인. 미국 대표 경력만으로 영어 David/Wagner를 적용하지 않음.",
+          "rule_or_missing_evidence": "독일어의 어말 d 무성음, w→ㅂ, -er→어를 적용한 표기안.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://media.dfl.de/sites/2/2019/12/DFL-Magazin-7-2019.pdf",
+            "https://www.bscyb.ch/news?nID=12537"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 896485,
+        "identity": {
+          "name": "Dick Schreuder"
+        },
+        "ko": "딕 스흐뢰더르",
+        "review": {
+          "coach_id": 896485,
+          "name": "Dick Schreuder",
+          "source_row": 520,
+          "status": "rule_proposal",
+          "proposed_ko": "딕 스흐뢰더르",
+          "identity_evidence": "NEC 공식 프로필: Barneveld, 1971-08-02. 공급자 감독 생일 1971-08-12와 다르지만 연결 선수 생일·공식 프로필·형제 관계가 일치.",
+          "provider_birth_date": "1971-08-12",
+          "provider_full_name": "Dick Schreuder",
+          "language_assessment": "Alfred의 형 Dick과 네덜란드 가족 배경을 본인 인터뷰로 확인.",
+          "rule_or_missing_evidence": "네덜란드어 표 18, 제1·5·10항: Dick의 어말 k 받침 ㄱ, Schreuder의 eu→외·어말 er→어르.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.nec-nijmegen.nl/teams/staflid/dick-schreuder.htm",
+            "https://www.ajax.nl/artikelen/over-schreuder-alfred-is-echt-een-mensenmens"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 1500238,
+        "identity": {
+          "name": "Jure Arsic"
+        },
+        "ko": "유라 아르시치",
+        "review": {
+          "coach_id": 1500238,
+          "name": "Jure Arsic",
+          "source_row": 564,
+          "status": "rule_proposal",
+          "proposed_ko": "유라 아르시치",
+          "identity_evidence": "DB의 Aluminij 연결 4경기와 공급자 생일 1981-11-14를 대조. Aluminij의 2024-06-17 선임 발표는 당시 42세인 Jura Arsić의 Drava·Rogaška·Bistrica 경력을 소개한다. 슬로베니아축구협회도 현재 감독 원형을 Jura Arsić로 표기한다. Jure Arsića는 굴절형으로 나타나므로 현재 공식 원형 Jura를 사용한다.",
+          "provider_birth_date": "1981-11-14",
+          "provider_full_name": "Jure Arsic",
+          "language_assessment": "슬로베니아 구단·협회의 원어 표기 및 슬로베니아어 본인 인터뷰를 기준으로 삼는다. 슬로베니아어 자료에서 남슬라브 차용 문자 ć는 č와 같은 가장 가까운 음으로 발음됨을 Greenberg의 표준 슬로베니아어 문법서 16~18쪽에서 대조했다. 가족 출신을 근거 없이 특정하지 않는다.",
+          "rule_or_missing_evidence": "슬로베니아어 전용 세칙이 없어 외래어 표기법 제4장 제1절 제2항의 원지음 원칙과 표 1을 적용한 안. j [j]+u→유, 모음 앞 r→ㄹ, 자음 앞 r→르, i→이, 어말 ć/č [tʃ]→치로 Jura Arsić→유라 아르시치. 개인 녹음을 직접 들은 결과는 아니다.",
+          "nikl_same_person": "Arsic, Arsić, Arsič 원어 검색에서 같은 감독의 직접 심의를 발견하지 못했다. 공개 검색 범위의 결과이며 모든 과거 문서에 없다는 단정은 아니다.",
+          "sources": [
+            "https://nkaluminij.net/jura-arsic-je-novi-trener-rdece-belih/",
+            "https://www.nzs.si/podrocja/novinarji/novice/v-mislih-kidricanov-tudi-evropsko-dokazovanje-379457",
+            "https://www.nzs.si/Doc/Bro%C5%A1ura_trenerski_seminar_2026.pdf",
+            "https://fran.si/slovnice-in-pravopisi/pdf/2006Greenberg.pdf"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 10966289,
+        "identity": {
+          "name": "Éric Bedouet"
+        },
+        "ko": "에리크 브두에",
+        "review": {
+          "coach_id": 10966289,
+          "name": "Éric Bedouet",
+          "source_row": 623,
+          "status": "rule_proposal",
+          "proposed_ko": "에리크 브두에",
+          "identity_evidence": "Bordeaux 공식 2018-09-05 발표의 1군 감독 Eric Bedouet. DB Bordeaux 연결과 일치. 생일 1954-04-14는 공급자 자료.",
+          "provider_birth_date": "1954-04-14",
+          "provider_full_name": "Éric Bedouet",
+          "language_assessment": "Bordeaux가 쓰는 프랑스어 원명 Éric Bedouet를 기준으로 판단. 구단 경력과 원어 철자를 대조한 일반 프랑스어 규칙 적용안.",
+          "rule_or_missing_evidence": "프랑스어 표 1·제3절: Éric의 어말 [k]→크, Bedouet의 표준 독법 [bədwɛ]에 따라 [ə]→으, [w]→우. 에리크 브두에. 본인 음성으로 첫 모음을 검증한 것은 아니며 규칙 적용안으로 분류.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://girondins.com/fr/news/21410/communique-de-presse"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 10995347,
+        "identity": {
+          "name": "Mickaël Debeve"
+        },
+        "ko": "미카엘 드베브",
+        "review": {
+          "coach_id": 10995347,
+          "name": "Mickaël Debeve",
+          "source_row": 624,
+          "status": "rule_proposal",
+          "proposed_ko": "미카엘 드베브",
+          "identity_evidence": "Toulouse 공식 선수 기록의 Mickaël Debève, 이후 지도자로 활동한 인물. 원어 성의 è 복원. 공급자 생일 1970-12-01.",
+          "provider_birth_date": "1970-12-01",
+          "provider_full_name": "Mickaël Debeve",
+          "language_assessment": "Toulouse 공식 프랑스어 기록의 Mickaël Debève를 채택. Debeve에 생략된 è를 복원하고 프랑스어 인명으로 판단.",
+          "rule_or_missing_evidence": "Mickaël의 a와 ë를 나누어 미카엘, Debève의 표준 독법 [də.bɛv]에 표 1을 적용해 드베브. 영어식 마이클이나 로마자 일괄 변환을 사용하지 않음. 개인 녹음 확인 없이 원어와 일반 음가를 근거로 한 안.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.toulousefc.com/region/histoire/annees-90/1992-1993"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 18219447,
+        "identity": {
+          "name": "Benoit Tavenot"
+        },
+        "ko": "브누아 타브노",
+        "review": {
+          "coach_id": 18219447,
+          "name": "Benoit Tavenot",
+          "source_row": 635,
+          "status": "rule_proposal",
+          "proposed_ko": "브누아 타브노",
+          "identity_evidence": "Metz 공식 스태프 프로필의 Benoît Tavenot, 1977-01-03. 구단 프랑스어 인터뷰와 대조.",
+          "provider_birth_date": "1977-01-03",
+          "provider_full_name": "Benoit Tavenot",
+          "language_assessment": "Metz의 공식 프로필과 프랑스어 인터뷰에서 Benoît Tavenot 확인. 해당 프랑스어 활동명에 규정을 적용.",
+          "rule_or_missing_evidence": "Benoît의 [ə]→으, [w]→우로 브누아. Tavenot의 자음 앞 [v]→브, 어말 t를 발음하지 않는 일반 프랑스어 독법으로 타브노. 본인 이름 녹음을 확인한 것은 아님.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.fcmetz.com/fr/Squad/StaffMember?id=87&webPageId=307",
+            "https://www.fcmetz.com/articles/lens-metz%2C-la-reaction-de-benoit-tavenot"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 21404466,
+        "identity": {
+          "name": "Sebastien Tambouret"
+        },
+        "ko": "세바스티앵 탕부레",
+        "review": {
+          "coach_id": 21404466,
+          "name": "Sebastien Tambouret",
+          "source_row": 641,
+          "status": "rule_proposal",
+          "proposed_ko": "세바스티앵 탕부레",
+          "identity_evidence": "Metz U19 지도자 공식 인터뷰와 Rennes 2026-02-13 감독 대행 인터뷰의 Sébastien Tambouret. 공급자 경력·생일 1976-07-04와 대조.",
+          "provider_birth_date": "1976-07-04",
+          "provider_full_name": "Sebastien Tambouret",
+          "language_assessment": "서로 다른 두 구단이 쓰는 동일한 프랑스어 원명과 본인 인터뷰를 근거로 프랑스어 활동명을 채택.",
+          "rule_or_missing_evidence": "Sébastien의 자음 뒤 [j]→이, 비모음 [ɛ̃]→앵. Tambouret의 [ɑ̃]→앙, [u]→우, 어말 et의 일반 음가 [e/ɛ]→에로 세바스티앵 탕부레. 개인별 음성 녹음 확인과는 구별한 규칙 적용안.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.fcmetz.com/2016-2017/actualites/formation/sebastien-tambouret-sylvain-marchal-interview-croisee",
+            "https://www.staderennais.com/actualites/ligue-1-mcdonalds/sebastien-tambouret-il-fallait-de-la-clarte-des-choses-simples-et"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 29313767,
+        "identity": {
+          "name": "Pascal Plancque"
+        },
+        "ko": "파스칼 플랑크",
+        "review": {
+          "coach_id": 29313767,
+          "name": "Pascal Plancque",
+          "source_row": 652,
+          "status": "rule_proposal",
+          "proposed_ko": "파스칼 플랑크",
+          "identity_evidence": "LOSC 공식 인터뷰의 Pascal Plancque. 선수 경력과 Nîmes 감독 경력을 공급자 행과 대조. 생일 1963-08-20는 공급자 자료.",
+          "provider_birth_date": "1963-08-20",
+          "provider_full_name": "Pascal Plancque",
+          "language_assessment": "LOSC가 본인 인터뷰에 사용하는 Pascal Plancque라는 프랑스어 활동명을 기준으로 판단.",
+          "rule_or_missing_evidence": "프랑스어 일반 독법 Plancque [plɑ̃k]의 비모음 [ɑ̃]→앙, 어말 [k]→크로 플랑크. Pascal은 파스칼. 원어 대조와 규칙 적용 결과이며 개인 발음을 직접 청취한 결과는 아님.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.losc.fr/actualites/2024-11-12/soiree-mythique-grimonprez-jooris-racontee-par-pascal-plancque"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 37400429,
+        "identity": {
+          "name": "P. Simonis"
+        },
+        "ko": "파울 시모니스",
+        "review": {
+          "coach_id": 37400429,
+          "name": "P. Simonis",
+          "source_row": 681,
+          "status": "rule_proposal",
+          "proposed_ko": "파울 시모니스",
+          "identity_evidence": "Wolfsburg 공식 소개: Paul Simonis, Leidschendam-Voorburg 출신, 40세(2025), 생일 2월 14일. Go Ahead Eagles 경력.",
+          "provider_birth_date": "1985-02-14",
+          "provider_full_name": "Paul Simonis",
+          "language_assessment": "남홀란트 출생·네덜란드 경력의 네덜란드어 인명. 독일 구단으로 이적한 사실과 이름 언어를 구분.",
+          "rule_or_missing_evidence": "네덜란드어 표 18: au→아우, Simonis의 자모 대조. 이니셜은 확인한 이름 Paul로 풀어 적음.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.vfl-wolfsburg.de/en/newsdetails/news-detail/detail/news/a-trophy-at-the-first-attempt"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 37412485,
+        "identity": {
+          "name": "J. Collins"
+        },
+        "ko": "제임스 콜린스",
+        "review": {
+          "coach_id": 37412485,
+          "name": "J. Collins",
+          "source_row": 682,
+          "status": "rule_proposal",
+          "proposed_ko": "제임스 콜린스",
+          "identity_evidence": "Wolves의 U23/U21 지도자 James Collins. 구단의 Crewe 경력과 감독 대행 기록 확인. 1978-05-28은 2차 프로필과 공급자가 일치.",
+          "provider_birth_date": "1978-05-28",
+          "provider_full_name": "James Collins",
+          "language_assessment": "Liverpool 출생 영국 지도자의 영어 활동명. 웨일스 수비수 및 아일랜드 공격수 동명이인과 구별.",
+          "rule_or_missing_evidence": "영어 자음·모음 표기에 따른 제임스 콜린스. 이니셜을 확인한 James로 풀어 적음.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.wolves.co.uk/news/under-21/20191213-collins-appointed-as-wolves-under-23-head-coach/",
+            "https://www.wolves.co.uk/news/mens-first-team/20251106-gallery-a-fresh-start-at-compton/",
+            "https://www.transfermarkt.com/jamie-collins/profil/spieler/642519"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 37416958,
+        "identity": {
+          "name": "A. Portela da Silva"
+        },
+        "ko": "아우구스투 포르텔라 다실바",
+        "review": {
+          "coach_id": 37416958,
+          "name": "A. Portela da Silva",
+          "source_row": 683,
+          "status": "rule_proposal",
+          "proposed_ko": "아우구스투 포르텔라 다실바",
+          "identity_evidence": "몰타축구협회 Floriana 등록명 PORTELA DA SILVA Augusto Daniel과 Liga Portugal의 Augusto Daniel Portela da Silva·Boavista 2014/15 지도자 기록 일치. 2차 프로필의 1968-03-09, Póvoa de Varzim 출생을 공급자와 대조.",
+          "provider_birth_date": "1968-03-09",
+          "provider_full_name": "Augusto Daniel Portela da Silva",
+          "language_assessment": "몰타 근무지의 언어가 아닌, 포르투갈 출생·포르투갈 리그 경력과 포르투갈어 공식 등록명을 근거로 유럽 포르투갈어 표기 규칙을 적용.",
+          "rule_or_missing_evidence": "포르투갈어 표 17·제19절: 어말 o→우, 모음 사이 l→ㄹㄹ, 자음 앞 l은 받침 ㄹ. A.는 확인된 Augusto로 풀고 현재 표시명에 없는 Daniel은 추가하지 않음. 개인 음성 녹음 확인 없이 원어·규칙을 대조한 안.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://matchcentre.mfa.com.mt/match/53208465",
+            "https://www.ligaportugal.pt/coach/69996/53/20142015",
+            "https://www.zerozero.pt/treinador/daniel-portela/11885?search=1"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 37438919,
+        "identity": {
+          "name": "L. Blanc"
+        },
+        "ko": "로랑 블랑",
+        "review": {
+          "coach_id": 37438919,
+          "name": "L. Blanc",
+          "source_row": 684,
+          "status": "rule_proposal",
+          "proposed_ko": "로랑 블랑",
+          "identity_evidence": "FFF 공식 감독 프로필: Laurent Blanc, Alès 출생 1965-11-19, Lyon 경력.",
+          "provider_birth_date": "1965-11-19",
+          "provider_full_name": "Laurent Blanc",
+          "language_assessment": "프랑스 Alès 출생·프랑스어 활동명의 Laurent Blanc. 이니셜 L.의 신원 확인.",
+          "rule_or_missing_evidence": "프랑스어 비모음 [ɑ̃]→앙 및 어말 무음. NIKL 검색의 Louis Blanc은 다른 인물임.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.fff.fr/equipe-nationale/selectionneur/114-laurent-blanc/fiche.html"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 37453039,
+        "identity": {
+          "name": "J. Arpinon"
+        },
+        "ko": "제롬 아르피농",
+        "review": {
+          "coach_id": 37453039,
+          "name": "J. Arpinon",
+          "source_row": 686,
+          "status": "rule_proposal",
+          "proposed_ko": "제롬 아르피농",
+          "identity_evidence": "Nîmes 지도자 Jérôme Arpinon. 본인 인터뷰에서 Nîmes 출생·성장 확인. 공급자 1978-04-05는 2차 자료와 일치.",
+          "provider_birth_date": "1978-04-05",
+          "provider_full_name": "Jérôme Arpinon",
+          "language_assessment": "Nîmes 출생·성장과 프랑스어 직접 인터뷰를 근거로 프랑스어 활동명 적용.",
+          "rule_or_missing_evidence": "확인된 Jérôme를 줄임말 J. 대신 사용. 프랑스어 표 1·제3절과 영어 세칙 준용: 자음 앞 r→르, on의 비모음 [ɔ̃]→옹으로 아르피농. 본인 이름 녹음을 직접 확인한 것은 아니며 원어와 일반 규칙의 적용안.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.planetenimesolympique.fr/saison-2020-2021/interviews/j%C3%A9r%C3%B4me-arpinon/",
+            "https://mhscfoot.com/wp-content/uploads/2024/06/echo_4_nimes_definitif_reduit-1.pdf"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 37510953,
+        "identity": {
+          "name": "R. Kováč"
+        },
+        "ko": "라도슬라프 코바치",
+        "review": {
+          "coach_id": 37510953,
+          "name": "R. Kováč",
+          "source_row": 688,
+          "status": "rule_proposal",
+          "proposed_ko": "라도슬라프 코바치",
+          "identity_evidence": "체코축구협회 등록 Radoslav Kováč 국가대표 경력과 공급자 1979-11-27 인물 대조.",
+          "provider_birth_date": "1979-11-27",
+          "provider_full_name": "Radoslav Kováč",
+          "language_assessment": "체코어 원형 Radoslav Kováč. 같은 계통 성을 가진 세르비아·크로아티아 인물과 구별.",
+          "rule_or_missing_evidence": "체코어 제9절: 어말 v→프, 표 7 č→치. NIKL의 Michal Kováč 용례는 다른 사람.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.fotbal.cz/repre/hrac/hraci/1236"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 37512287,
+        "identity": {
+          "name": "M. Kaltenbach"
+        },
+        "ko": "마티아스 칼텐바흐",
+        "review": {
+          "coach_id": 37512287,
+          "name": "M. Kaltenbach",
+          "source_row": 689,
+          "status": "rule_proposal",
+          "proposed_ko": "마티아스 칼텐바흐",
+          "identity_evidence": "DFB 공식 Matthias Kaltenbach, 1985-03-03, Hoffenheim 경력. 공급자 Mathias 철자와 구분.",
+          "provider_birth_date": "1985-03-03",
+          "provider_full_name": "Mathias Kaltenbach",
+          "language_assessment": "Freiburg 출신 독일 지도자의 독일어 이름. Ajax 근무를 이유로 네덜란드어로 읽지 않음.",
+          "rule_or_missing_evidence": "독일어 th→ㅌ, bach의 ch→흐. 확인한 전체 이름 Matthias로 이니셜을 풀어 적음.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://datencenter.dfb.de/personen/matthias-kaltenbach/trainer",
+            "https://de.wikipedia.org/wiki/Matthias_Kaltenbach",
+            "https://www.ajax.nl/artikelen/in-beeld-eerste-training-seizoen-20222023/"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 37524062,
+        "identity": {
+          "name": "Siggi Eyjolfsson"
+        },
+        "ko": "시기 에이욜프손",
+        "review": {
+          "coach_id": 37524062,
+          "name": "Siggi Eyjolfsson",
+          "source_row": 696,
+          "status": "rule_proposal",
+          "proposed_ko": "시기 에이욜프손",
+          "identity_evidence": "KSÍ 등록 Sigurður Ragnar Eyjólfsson의 1973년생·ÍA 기록과 공급자 1973-12-01을 대조. KSÍ 강연자 소개가 약칭 Siggi Raggi를 명시하고, NSÍ의 2025-12-01 감독 선임 발표가 동일한 전체 이름과 약칭을 함께 사용해 DB의 NSÍ 연결을 확인.",
+          "provider_birth_date": "1973-12-01",
+          "provider_full_name": "Siggi Eyjolfsson",
+          "language_assessment": "페로 제도 NSÍ 근무지를 이름 언어로 삼지 않고 KSÍ 원명과 아이슬란드어 약칭을 사용. Grammatek 검수 사전의 Siggi [s ɪ c ɪ], Eyjólfsson [ei j ou l f s ɔ n]을 확인. 본인 음성을 들었다는 뜻은 아님.",
+          "rule_or_missing_evidence": "제4장 제1절 제2항의 원지음 원칙과 제2장 표 1을 참고. Siggi의 [cɪ]는 같은 사전의 Gylfi [c ɪ l v ɪ] 및 국립국어원 길비 용례를 대조해 기로 제안. Eyjólfsson의 ey [ei]→에이, jó [jou]→요는 욘스도티르·에이야퍄들라이외퀴들산 용례와 대조하고 [l f s ɔ n]→ㄹ프손 적용. 아이슬란드어 세칙이나 감독 본인의 심의 결과가 아닌 비교·적용안이며, 현재 표시명 Siggi에 없는 Ragnar를 추가하지 않음.",
+          "nikl_same_person": "Eyjólfsson 원어 검색에서 이 감독의 직접 심의는 찾지 못함. Gylfi의 길비, Jónsdóttir의 욘스도티르와 지명 Eyjafjallajökull의 에이야퍄들라이외퀴들산은 관련 음가 대조용으로만 사용.",
+          "sources": [
+            "https://www.ksi.is/leikmenn/leikmadur?id=2352",
+            "https://www.ksi.is/um-ksi/frettir/fraedsla/supufundur-ksi-hvernig-getum-vid-buid-til-fleiri-framurskarandi-leikmenn-a-islandi/",
+            "https://www.nsi.fo/tidindi/nsi-sett-hovudsvenjara?fd542dc6_page=3",
+            "https://github.com/grammatek/iceprondict",
+            "https://raw.githubusercontent.com/grammatek/iceprondict/master/dictionaries/ice_pron_dict_standard_clear_IPA.csv",
+            "https://www.korean.go.kr/kornorms/example/exampleList.do?regltn_code=0003"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true,
+          "reviewed_on": "2026-10-05"
+        }
+      },
+      {
+        "coach_id": 37646028,
+        "identity": {
+          "name": "Victor Mihailov"
+        },
+        "ko": "빅토르 미하일로프",
+        "review": {
+          "coach_id": 37646028,
+          "name": "Victor Mihailov",
+          "source_row": 726,
+          "status": "rule_proposal",
+          "proposed_ko": "빅토르 미하일로프",
+          "identity_evidence": "Sheriff 감독 Victor Mihailov의 공급자 생일 1981-12-18과 2차 프로필의 Victor Vasilyevich Mihailov를 대조. Moldfootball 기자가 직접 취재한 2026-05-22 Sheriff 기자회견에서 Виктор Михайлов를 확인.",
+          "provider_birth_date": "1981-12-18",
+          "provider_full_name": "Victor Mihailov",
+          "language_assessment": "몰도바 국적에서 루마니아어로 추정하지 않고, 본인 기자회견의 러시아어 사용명 Виктор Михайлов를 기준으로 표기. 가족의 모어와 개인 음성 발음을 확정했다는 뜻은 아님.",
+          "rule_or_missing_evidence": "러시아어 표 19·제21절: к는 т 앞에서 받침 ㄱ, й→이, л은 모음 앞에서 ㄹㄹ, 어말 в→프. Виктор Михайлов→빅토르 미하일로프. 국립국어원의 동명 용례는 원자력 장관 Viktor N. Mikhailov로 확인하여 이 감독의 직접 심의로 사용하지 않음.",
+          "nikl_same_person": "Mihailov/Mikhaylov/Mikhailov/Михайлов 검색. 제13차 외래어 심의회(1996-09-16)의 빅토르 미하일로프는 러시아 원자력 장관으로 다른 인물이다. 이 감독의 직접 심의는 공개 용례 검색에서 발견하지 못함.",
+          "sources": [
+            "https://moldfootball.com/ru/news/viktor-mikhajjlov-v-blizhajjshem-budushhem-vy-snova-uvidite-sherif-na-vedushhikh-roljakh",
+            "https://en.wikipedia.org/wiki/Victor_Mihailov"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 37646986,
+        "identity": {
+          "name": "Fabio Valentin Álvarez"
+        },
+        "ko": "파비오 발렌틴 알바레스",
+        "review": {
+          "coach_id": 37646986,
+          "name": "Fabio Valentin Álvarez",
+          "source_row": 732,
+          "status": "rule_proposal",
+          "proposed_ko": "파비오 발렌틴 알바레스",
+          "identity_evidence": "Sevilla 공식 2025년 발표의 AEK 출신 스태프 Fabio Álvarez. 2차 지도자 프로필의 전체 이름 Fabio Valentín Álvarez·1967-12-02와 공급자 대조. 현역 동명이인 선수와 구별.",
+          "provider_birth_date": "1967-12-02",
+          "provider_full_name": "Fabio Valentin Álvarez",
+          "language_assessment": "아르헨티나 지도자의 스페인어 활동명. 악센트가 있는 원어 이름을 기준으로 판단.",
+          "rule_or_missing_evidence": "에스파냐어 표 2·제4절: z→ㅅ, v→ㅂ, 자음 앞 l 받침. 전체 이름 범위를 현재 표시명과 맞춤.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://prod.sevillafc.es/en/actualidad/noticias/three-new-additions-to-matias-almeyda-s-coaching-staff-confirmed",
+            "https://www.transfermarkt.mx/fabio-alvarez/profil/trainer/35117"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 37648058,
+        "identity": {
+          "name": "Predrag Kandic"
+        },
+        "ko": "프레드라그 칸디치",
+        "review": {
+          "coach_id": 37648058,
+          "name": "Predrag Kandic",
+          "source_row": 740,
+          "status": "rule_proposal",
+          "proposed_ko": "프레드라그 칸디치",
+          "identity_evidence": "Vojvodina 공식 스태프: Predrag Kandić, Zrenjanin 출생 1981-10-15. DB 구단과 생일 일치.",
+          "provider_birth_date": "1981-10-15",
+          "provider_full_name": "Predrag Kandic",
+          "language_assessment": "세르비아 현지 등록 원형 Predrag Kandić 확인. diacritic 없는 영어 전사 대신 원어 사용.",
+          "rule_or_missing_evidence": "세르보크로아트어 표 8: 어말 g→그, ć→치. 제10절 적용.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.fkvojvodina.rs/prvi-tim/strucni-stab/?script=lat"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 37648171,
+        "identity": {
+          "name": "Visar Sermaxhaj"
+        },
+        "ko": "비사르 세르마자이",
+        "review": {
+          "coach_id": 37648171,
+          "name": "Visar Sermaxhaj",
+          "source_row": 741,
+          "status": "rule_proposal",
+          "proposed_ko": "비사르 세르마자이",
+          "identity_evidence": "UEFA Drita–Tre Fiori 2026/27 라인업의 감독 Visar Sermaxhaj와 DB의 Drita 연결을 대조. 2026-08-06 경기 전 본인 발언을 실은 알바니아어 보도에서도 같은 이름·감독 역할 확인. 1985-01-02 생일은 공급자와 2차 프로필의 정보이며 별도 1차 생일 증명은 확보하지 못함.",
+          "provider_birth_date": "1985-01-02",
+          "provider_full_name": "Visar Sermaxhaj",
+          "language_assessment": "본인 발언을 싣고 ë를 정상적으로 사용하는 알바니아어 기사에서 활동명 Visar Sermaxhaj를 확인해 ë가 탈락한 영문 전사라는 추측을 배제. University of Texas LRC의 알바니아어 음가 설명과 대조. 개인 음성이나 가족 언어사를 직접 확인한 것은 아님.",
+          "rule_or_missing_evidence": "알바니아어 별도 세칙이 없어 제4장 제1절 제2항과 제2장 표 1 적용안. v→ㅂ, i→이, e [ɛ]→에, xh [dʒ]→ㅈ, aj [aj]→아이, 자음 앞·어말 r→르로 비사르 세르마자이 제안. 알바니아어 활동명과 표준 음가를 수동 대조한 결과이며 개인별 심의 확정표가 아님.",
+          "nikl_same_person": "Sermaxhaj 원어 검색에서 이 감독의 직접 심의는 찾지 못함. 직접 심의가 없다는 단정은 아니며 이번 결과는 규칙 적용안.",
+          "sources": [
+            "https://pt.uefa.com/uefaconferenceleague/match/2049175--drita-vs-tre-fiori/lineups/",
+            "https://radiostargjilan.com/web/drita-kerkon-fitoren-ne-san-marino/",
+            "https://lrc.la.utexas.edu/eieol/albol/0",
+            "https://www.korean.go.kr/kornorms/example/exampleList.do?regltn_code=0003"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true,
+          "reviewed_on": "2026-10-05"
+        }
+      },
+      {
+        "coach_id": 37660199,
+        "identity": {
+          "name": "Vitaliy Ponomarov"
+        },
+        "ko": "비탈리 포노마료우",
+        "review": {
+          "coach_id": 37660199,
+          "name": "Vitaliy Ponomarov",
+          "source_row": 743,
+          "status": "rule_proposal",
+          "proposed_ko": "비탈리 포노마료우",
+          "identity_evidence": "DB의 LNZ Cherkasy 연결 2경기와 UPL의 LNZ 감독 Пономарьов Віталій Юрійович를 대조했다. LNZ 공식 선임 발표가 Rukh U19·1군 경력을 직접 연결하므로 같은 지도자로 판단한다. 생일은 UPL·UAF 1974-01-07, Rukh 선임 기사 1973-12-07, 공급자 연결 선수 1974-12-07로 불일치한다. 생일은 확정하거나 수정하지 않고, 소속·직책·경력으로 확인한 이름만 보완한다.",
+          "provider_birth_date": null,
+          "provider_full_name": "Vitaliy Ponomarov",
+          "language_assessment": "LNZ의 우크라이나어 선임 발표·본인 인터뷰와 UPL 등록 원형 Віталій Пономарьов를 사용한다. 공급자 영문 Ponomarov를 러시아어 Пономарёв로 바꾸지 않는다. 우크라이나어 어말 в의 표준 실현은 Encyclopedia of Ukraine의 음운 설명을 대조했다.",
+          "rule_or_missing_evidence": "우크라이나어 전용 세칙이 없어 제4장 제1절 제2항의 원지음 원칙과 표 1을 적용한 안. Віталій→비탈리, Пономарьов의 рьо→료, 어말 в의 [w]/비음절 u 실현→우로 포노마료우. 국립국어원의 비탈리 클리치코는 동일 언어의 같은 이름 요소 참고 용례이며 이 감독의 직접 심의는 아니다. 개인 발음 녹음을 직접 들은 결과는 아니다.",
+          "nikl_same_person": "Ponomarov·Ponomar·Пономарьов 원어 검색에서 같은 감독의 직접 심의를 발견하지 못했다. 2014년 새국어생활의 Віталій→비탈리 용례는 다른 인물 Klitschko이다.",
+          "sources": [
+            "https://www.upl.ua/ua/clubs/view/1813/36",
+            "https://upl.ua/ua/people/view/66625?id=66625",
+            "https://start.uaf.ua/players/44267",
+            "https://fc-lnz.com/25017-media/vitalii-ponomarov-novyi-holovnyi-trener-fk-lnz.html",
+            "https://fc-lnz.com/25020-interviu/vitalii-ponomarov-pershe-intrev-iu-v-lnz.html",
+            "https://fcruhlviv.com/posts/vitaliy-ponomarov-golovniy-trener-ruhu",
+            "https://www.encyclopediaofukraine.com/display.asp?linkpath=pages%5CU%5CK%5CUkrainianlanguage.htm",
+            "https://www.korean.go.kr/nkview/nklife/2014_2/24_0212.pdf"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true
+        }
+      },
+      {
+        "coach_id": 37921530,
+        "identity": {
+          "name": "Miroslav Tanjga"
+        },
+        "ko": "미로슬라브 탄가",
+        "review": {
+          "coach_id": 37921530,
+          "name": "Miroslav Tanjga",
+          "source_row": 774,
+          "status": "rule_proposal",
+          "proposed_ko": "미로슬라브 탄가",
+          "identity_evidence": "Vojvodina 공식 스태프: Miroslav Tanjga, 1964-07-22. 구단·생일·선수 및 지도자 경력 대조.",
+          "provider_birth_date": "1964-07-22",
+          "provider_full_name": "Miroslav Tanjga",
+          "language_assessment": "세르비아 현지 인명 Tanjga의 nj 자모를 확인.",
+          "rule_or_missing_evidence": "세르보크로아트어 표 8: v→브, 자음 앞 nj→받침 ㄴ. 철자 j를 별도 이로 옮기지 않음.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.fkvojvodina.rs/prvi-tim/strucni-stab/?script=lat"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 37953758,
+        "identity": {
+          "name": "F. Del Rosso"
+        },
+        "ko": "파브리치오 델로소",
+        "review": {
+          "coach_id": 37953758,
+          "name": "F. Del Rosso",
+          "source_row": 776,
+          "status": "rule_proposal",
+          "proposed_ko": "파브리치오 델로소",
+          "identity_evidence": "US Lecce 공식 스태프의 Fabrizio Del Rosso. 2차 프로필 Montecatini Terme 출생 1963-05-25와 공급자 대조.",
+          "provider_birth_date": "1963-05-25",
+          "provider_full_name": "Fabrizio Del Rosso",
+          "language_assessment": "이탈리아 출생 및 이탈리아어 인명 원형. Del Rosso를 일반 영어식으로 읽지 않음.",
+          "rule_or_missing_evidence": "이탈리아어 표 3·제5절: z→ㅊ, ss는 단자음처럼 표기. 성 내부의 관사·전치사는 붙여 적음.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://uslecce.it/giocatori/fabrizio-del-rosso/",
+            "https://www.transfermarkt.it/fabrizio-del-rosso/profil/spieler/525433"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      },
+      {
+        "coach_id": 37953964,
+        "identity": {
+          "name": "A. Bertolini"
+        },
+        "ko": "알베르토 베르톨리니",
+        "review": {
+          "coach_id": 37953964,
+          "name": "A. Bertolini",
+          "source_row": 779,
+          "status": "rule_proposal",
+          "proposed_ko": "알베르토 베르톨리니",
+          "identity_evidence": "Hellas Verona 공식 경기 기록·훈련 기사에 Alberto Bertolini 감독 대행/수석코치 확인. 1977-04-23은 공급자·2차 경기 프로필이 일치.",
+          "provider_birth_date": "1977-04-23",
+          "provider_full_name": "Alberto Bertolini",
+          "language_assessment": "2차 지도자 프로필에서 Morbegno 출생을 확인하고 이탈리아에서의 선수·지도자 경력과 구단 활동명을 대조해 이탈리아어로 판단. 가족 언어 자체를 조사한 것은 아님.",
+          "rule_or_missing_evidence": "이탈리아어 자모 대조, r 뒤 t→트, 모음 사이 l→ㄹㄹ에 따른 표기안.",
+          "nikl_same_person": "이번 공개 용례 검색에서 발견하지 못함. 직접 심의가 없다는 단정이 아님.",
+          "sources": [
+            "https://www.hellasverona.it/en/news/2024-25-serie-a-enilive-juventus-wins-at-the-stadium",
+            "https://www.transfermarkt.it/alberto-bertolini/profil/trainer/43017"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null
+        }
+      }
+    ]
+  },
+  "latest_review_ids": [
+    466802
+  ],
+  "latest_researched_ids": [
+    94064,
+    97444,
+    97499,
+    120315,
+    128124,
+    186071,
+    345859,
+    456105,
+    460151,
+    462666,
+    466802,
+    530681,
+    1477272,
+    3876677,
+    5283476,
+    10644819,
+    21803155,
+    37257795,
+    37347403,
+    37453040,
+    37523749,
+    37524048,
+    37552530,
+    37555912,
+    37613259,
+    37630747,
+    37646482,
+    37647434,
+    37928902,
+    37953834
+  ]
+}

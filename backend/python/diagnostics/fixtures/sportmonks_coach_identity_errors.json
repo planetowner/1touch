@@ -1,0 +1,528 @@
+{
+  "source": "Sportmonks v3 raw coach and fixture responses; checked 2026-10-04",
+  "evidence": [
+    {
+      "coach_id": 29935,
+      "saved_name": "Jovan Pop Zlatanov",
+      "confirmed_person": "Aleksandar Vasoski",
+      "correct_coach_id": 29935,
+      "correction_type": "coach_display_name",
+      "affected_fixture_ids": [
+        19719455,
+        19719429
+      ],
+      "evidence": "DB의 2026-07-09·07-16 Sileks–Dinamo Minsk 두 경기는 UEFA 2026/27 Sileks 감독 Aleksandar Vasoski와 일치. 현재 API도 name과 player.name은 Aleksandar Vasoski, 생일은 1979-11-21이며 감독 display_name만 Jovan Pop Zlatanov이다.",
+      "sources": [
+        "https://www.uefa.com/uefaconferenceleague/clubs/59871--sileks/squad/",
+        "https://www.ffm.mk/en/vasoski-nema-da-potcenuvame-nikogo-ocekuvam-da-bideme-na-vistinsko-nivo-i-da-pocneme-so-pobeda/",
+        "https://www.vi.nl/wedstrijden/2026-07-16/sileks-vs-dinamo-minsk"
+      ],
+      "korean_name_review": {
+        "name_ko": "알렉산다르 바소스키",
+        "original_name": "Александар Васоски",
+        "language": "마케도니아어",
+        "identity_and_language": "1979-11-21생 Aleksandar Vasoski. Sileks의 경기·감독 경력과 공급자 전체 이름·생일을 대조했다. 마케도니아축구협회가 본인 인터뷰에서 Александар Васоски로 표기한 원형을 기준으로 삼았다.",
+        "rule_application": "별도 마케도니아어 세칙이 없어 제4장 제1절 제2항의 원지음 원칙과 표 1을 적용했다. Friedman의 Macedonian 1.1~1.2에서 원어 자모와 음가를 확인했다. 모음 사이 l은 ㄹㄹ, ks는 ㄱㅅ, 어말 r은 르, 모음 앞 v는 ㅂ, k 앞의 s는 스로 적어 알렉산다르 바소스키로 정리했다.",
+        "nikl_query": "Vasoski",
+        "nikl_result": "해당 데이터가 없습니다.",
+        "sources": [
+          "https://www.ffm.mk/vasoski-nema-da-potcenuvame-nikogo-ocekuvam-da-bideme-na-vistinsko-nivo-i-da-pocneme-so-pobeda/",
+          "https://slaviccenters.duke.edu/macedonian",
+          "http://www.seelrc.org:8080/grammar/pdf/compgrammar_macedonian.pdf"
+        ],
+        "target_coach_id": 29935,
+        "reviewed_on": "2026-10-04",
+        "status": "manual_rule_application",
+        "nikl_same_person_found": false,
+        "nikl_search_url": "https://www.korean.go.kr/kornorms/example/exampleList.do",
+        "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+        "note": "공개 용례에서 동일 인물의 직접 심의 표기는 찾지 못했다. 국립국어원 확정 표기가 아니라 신원·원어를 개별 대조한 규칙 적용안이다. 이름의 언어 판단은 기록된 사용형에 근거하며 본인 발음 녹음을 직접 청취한 것은 아니다."
+      }
+    },
+    {
+      "coach_id": 224127,
+      "saved_name": "Jefferson",
+      "confirmed_person": "Carlos Carvalhal",
+      "correct_coach_id": 523914,
+      "correction_type": "fixture_coach_reference",
+      "affected_fixture_ids": [
+        18545231
+      ],
+      "evidence": "DB에는 2022-12-30 Celta–Sevilla 경기 하나가 Jefferson ID 224127에 연결되어 있다. Celta 공식 발표와 해당 경기 사전 안내의 감독은 포르투갈인 Carlos Carvalhal. 실제 Carlos 감독 ID 523914가 이미 DB에 있고 API 전체 이름 Carlos Augusto Soares da Costa Faria Carvalhal·생일 1965-12-04·포르투갈 국적과 일치한다. ID 224127의 전체 이름·생일 1975-06-04·브라질 국적은 브라질 골키퍼 Jefferson의 프로필이다.",
+      "recommended_correction": "ID 224127을 Carlos로 개명하지 않고 fixture_id=18545231, team_id=36의 coach_id를 기존 523914로 교정. Jefferson 레코드의 삭제·변경은 이번 신원 확인에서 실행하지 않음.",
+      "sources": [
+        "https://rccelta.es/club/actualidad/carlos-carvalhal-sera-entrenador-del-rc-celta-hasta-2024/",
+        "https://centenario.rccelta.es/sin-categorizar/el-rc-celta-emprende-el-miercoles-el-caminoaocentenario-reviviendo-el-primer-partido-de-su-historia.html",
+        "https://www.bdfutbol.com/es/j/j61508.html"
+      ],
+      "korean_name_review": {
+        "name_ko": "카를루스 카르발랼",
+        "original_name": "Carlos Carvalhal",
+        "language": "포르투갈의 포르투갈어",
+        "identity_and_language": "실제 대상은 1965-12-04생 Carlos Carvalhal, ID 523914다. Celta의 선임 발표와 Braga 공식 자료에서 같은 포르투갈어 활동명을 확인했다. 브라질의 Jefferson Carlos Carvalhal da Silva, ID 224127과 구별한다.",
+        "rule_application": "제3장 제19절의 포르투갈어 세칙과 표 17을 적용했다. Carlos→카를루스는 제5항의 직접 예시다. Carvalhal의 r→르, v→ㅂ, lh→ㄹ리와 뒤 모음 a의 결합→랴, 어말 l→받침 ㄹ에 따라 카르발랼로 적었다. 브라질의 어말 l→우 규칙은 적용하지 않았다. Infopédia의 동형 단어 carvalhal 음가 kɐrvɐˈʎaɫ은 lh·어말 l의 보조 근거이며 본인 발음 녹음은 아니다.",
+        "nikl_query": "Carvalhal",
+        "nikl_result": "해당 데이터가 없습니다.",
+        "sources": [
+          "https://rccelta.es/club/actualidad/carlos-carvalhal-sera-entrenador-del-rc-celta-hasta-2024/",
+          "https://scbraga.pt/wp-content/uploads/2025/10/RC-SAD-24-25.pdf",
+          "https://www.infopedia.pt/dicionarios/lingua-portuguesa/carvalhal"
+        ],
+        "target_coach_id": 523914,
+        "reviewed_on": "2026-10-04",
+        "status": "manual_rule_application",
+        "nikl_same_person_found": false,
+        "nikl_search_url": "https://www.korean.go.kr/kornorms/example/exampleList.do",
+        "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+        "note": "공개 용례에서 동일 인물의 직접 심의 표기는 찾지 못했다. 국립국어원 확정 표기가 아니라 신원·원어를 개별 대조한 규칙 적용안이다. 이름의 언어 판단은 기록된 사용형에 근거하며 본인 발음 녹음을 직접 청취한 것은 아니다."
+      }
+    },
+    {
+      "coach_id": 457103,
+      "saved_name": "Jessy Deminguet",
+      "confirmed_person": "Patrice Garande",
+      "correct_coach_id": 457103,
+      "correction_type": "coach_display_name_and_localizations",
+      "affected_fixture_count": 38,
+      "fixture_date_range": [
+        "2017-08-05",
+        "2018-05-19"
+      ],
+      "evidence": "DB의 Caen 2017/18 리그 38경기 감독 레코드. 구단의 2018-05-19 Caen–PSG 공식 경기 기록에서 감독은 Patrice Garande, Jessy Deminguet는 선발 선수로 동시에 기록된다. 현재 API의 전체 이름과 1960-11-27 생일은 Garande인데 감독 및 연결 선수 display_name이 Deminguet로 잘못 표시되어 있다.",
+      "also_affected": {
+        "name_ja": "ジェシー・デミンゲット",
+        "name_zh": "杰西·德明盖特"
+      },
+      "recommended_correction": "감독 영문 표시명과 이미 적재된 Deminguet의 일본어·중국어 이름을 함께 교정해야 함. 새 번역 검증 전에는 해당 오역 값을 유지하지 않는 방안을 별도 데이터 변경으로 준비.",
+      "sources": [
+        "https://www.smcaen.fr/2017-2018/actualites/groupe-pro/sm-caen-paris-sg-0-0",
+        "https://www.smcaen.fr/2017-2018/actualites/groupe-pro/jessy-deminguet-sengage-pour-trois-ans"
+      ],
+      "korean_name_review": {
+        "name_ko": "파트리스 가랑드",
+        "original_name": "Patrice Garande",
+        "language": "프랑스어",
+        "identity_and_language": "FFF의 1960-11-27 Oullins 출생 Patrice Garande와 Caen 2017/18 감독을 대조했다. FFF의 프랑스어 등록명과 Caen의 본인 인터뷰에 쓰인 이름을 기준으로 프랑스어 사용형을 판단했다. Deminguet 선수나 다른 언어권의 동명 성과 구별하며 가족의 언어 계보까지 확인했다는 뜻은 아니다.",
+        "rule_application": "표 1과 제3장 제3절을 적용한 수동 표기안이다. 프랑스어 사용형 Patrice의 t는 트, 어말 s는 스, Garande의 an 비모음은 앙, 어말 d는 제1항에 따라 드로 적어 파트리스 가랑드로 정리했다. 표준 프랑스어 사용형에 대한 규칙 적용이며 개인의 발음 녹음을 직접 청취한 결과는 아니다.",
+        "nikl_query": "Garande",
+        "nikl_result": "해당 데이터가 없습니다.",
+        "sources": [
+          "https://www.fff.fr/equipe-nationale/joueur/7657-garande-patrice/fiche.html",
+          "https://www.smcaen.fr/2017-2018/actualites/groupe-pro/sm-caen-paris-sg-0-0",
+          "https://www.smcaen.fr/2017-2018/actualites/groupe-pro/patrice-garande-fait-sa-rentree-mediatique"
+        ],
+        "target_coach_id": 457103,
+        "reviewed_on": "2026-10-04",
+        "status": "manual_rule_application",
+        "nikl_same_person_found": false,
+        "nikl_search_url": "https://www.korean.go.kr/kornorms/example/exampleList.do",
+        "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+        "note": "공개 용례에서 동일 인물의 직접 심의 표기는 찾지 못했다. 국립국어원 확정 표기가 아니라 신원·원어를 개별 대조한 규칙 적용안이다. 이름의 언어 판단은 기록된 사용형에 근거하며 본인 발음 녹음을 직접 청취한 것은 아니다."
+      }
+    },
+    {
+      "coach_id": 462010,
+      "saved_name": "Djair",
+      "confirmed_person": "Ilir Daja",
+      "correct_coach_id": 462010,
+      "correction_type": "coach_display_name",
+      "affected_fixture_count": 8,
+      "fixture_date_range": [
+        "2026-07-09",
+        "2026-08-27"
+      ],
+      "evidence": "DB의 Dinamo City 2026/27 유럽대항전 8경기와 UEFA 같은 시즌 감독 Ilir Daja가 일치. 구단도 Ilir Daja 감독으로 소개한다. 현재 API의 name과 player.name·display_name은 Ilir Daja, 생일은 1966-10-20이고 감독 display_name만 Djair이다.",
+      "sources": [
+        "https://www.uefa.com/uefaconferenceleague/clubs/52792--dinamo-city/squad/",
+        "https://fcdinamocity.al/2025/08/01/trajneri-daja-flet-pas-kualifikimit/"
+      ],
+      "korean_name_review": {
+        "name_ko": "일리르 다야",
+        "original_name": "Ilir Daja",
+        "language": "알바니아어",
+        "identity_and_language": "1966-10-20생 Ilir Daja. Dinamo City의 해당 시즌 경기, UEFA 감독 명단, 구단 본인 인터뷰와 알바니아축구협회의 알바니아어 Ilir Daja 표기를 대조했다. Djair와는 다른 인물이다.",
+        "rule_application": "별도 알바니아어 세칙이 없어 제4장 제1절 제2항의 원지음 원칙과 표 1을 적용했다. 알바니아어 자모·음가 자료에서 i, a, l, r, j를 대조하고, 모음 사이 l→ㄹㄹ, 어말 r→르, j와 a의 결합→야로 적어 일리르 다야로 정리했다. 같은 철자의 스페인어 j 발음을 적용하지 않았다.",
+        "nikl_query": "Daja",
+        "nikl_result": "Dajabón→다하본(도미니카 공화국 지명, 에스파냐어)만 검색됨. 이 감독의 표기가 아니다.",
+        "sources": [
+          "https://fcdinamocity.al/2025/08/01/trajneri-daja-flet-pas-kualifikimit/",
+          "https://fshf.org/sq/abissnet-superiore-ilir-daja-shpallet-trajneri-me-i-mire-i-muajit-tetor/",
+          "https://lrc.la.utexas.edu/eieol/albol/0",
+          "https://www.cambridge.org/core/journals/journal-of-the-international-phonetic-association/article/northern-tosk-albanian/D27484BD90369B3BC0FBA9479074ED88"
+        ],
+        "target_coach_id": 462010,
+        "reviewed_on": "2026-10-04",
+        "status": "manual_rule_application",
+        "nikl_same_person_found": false,
+        "nikl_search_url": "https://www.korean.go.kr/kornorms/example/exampleList.do",
+        "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+        "note": "공개 용례에서 동일 인물의 직접 심의 표기는 찾지 못했다. 국립국어원 확정 표기가 아니라 신원·원어를 개별 대조한 규칙 적용안이다. 이름의 언어 판단은 기록된 사용형에 근거하며 본인 발음 녹음을 직접 청취한 것은 아니다."
+      }
+    }
+  ],
+  "fixtures": [
+    {
+      "id": 19719455,
+      "coaches": [
+        {
+          "id": 57037,
+          "player_id": 57037,
+          "sport_id": 1,
+          "country_id": 212,
+          "nationality_id": null,
+          "city_id": null,
+          "common_name": "A. Shagojko",
+          "firstname": "Aleksandr",
+          "lastname": "Shagojko",
+          "name": "Aleksandr Shagojko",
+          "display_name": "Aleksandr Shagojko",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 181,
+          "weight": null,
+          "date_of_birth": "1980-07-27",
+          "gender": "male",
+          "meta": {
+            "fixture_id": 19719455,
+            "coach_id": 57037,
+            "participant_id": 3791
+          }
+        },
+        {
+          "id": 29935,
+          "player_id": 29935,
+          "sport_id": 1,
+          "country_id": 57142,
+          "nationality_id": 57142,
+          "city_id": null,
+          "common_name": "A. Vasoski",
+          "firstname": "Aleksandar",
+          "lastname": "Vasoski",
+          "name": "Aleksandar Vasoski",
+          "display_name": "Jovan Pop Zlatanov",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 180,
+          "weight": 76,
+          "date_of_birth": "1979-11-21",
+          "gender": "male",
+          "meta": {
+            "fixture_id": 19719455,
+            "coach_id": 29935,
+            "participant_id": 5426
+          }
+        }
+      ],
+      "events": [],
+      "lineups": [],
+      "statistics": [],
+      "formations": [],
+      "pressure": []
+    },
+    {
+      "id": 18545231,
+      "coaches": [
+        {
+          "id": 224127,
+          "player_id": 224127,
+          "sport_id": 1,
+          "country_id": 5,
+          "nationality_id": 5,
+          "city_id": null,
+          "common_name": "J. Carvalhal da Silva",
+          "firstname": "Jefferson Carlos",
+          "lastname": "Carvalhal da Silva",
+          "name": "Jefferson Carlos Carvalhal da Silva",
+          "display_name": "Jefferson",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1975-06-04",
+          "gender": null,
+          "meta": {
+            "fixture_id": 18545231,
+            "coach_id": 224127,
+            "participant_id": 36
+          }
+        },
+        {
+          "id": 456014,
+          "player_id": 456014,
+          "sport_id": 1,
+          "country_id": 44,
+          "nationality_id": 44,
+          "city_id": null,
+          "common_name": "J. Sampaoli Moya",
+          "firstname": "Jorge Luis",
+          "lastname": "Sampaoli Moya",
+          "name": "Jorge Luis Sampaoli Moya",
+          "display_name": "Jorge Sampaoli Moya",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/14/456014.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1960-03-13",
+          "gender": "male",
+          "meta": {
+            "fixture_id": 18545231,
+            "coach_id": 456014,
+            "participant_id": 676
+          }
+        }
+      ],
+      "events": [],
+      "lineups": [],
+      "statistics": [],
+      "formations": [],
+      "pressure": []
+    },
+    {
+      "id": 1726535,
+      "coaches": [
+        {
+          "id": 455907,
+          "player_id": 455907,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": 32,
+          "city_id": null,
+          "common_name": "U. Emery Etxegoien",
+          "firstname": "Unai",
+          "lastname": "Emery Etxegoien",
+          "name": "Unai Emery Etxegoien",
+          "display_name": "Unai Emery",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/coaches/3/455907.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1971-11-03",
+          "gender": "male",
+          "meta": {
+            "fixture_id": 1726535,
+            "coach_id": 455907,
+            "participant_id": 591
+          }
+        },
+        {
+          "id": 457103,
+          "player_id": 457103,
+          "sport_id": 1,
+          "country_id": 17,
+          "nationality_id": 17,
+          "city_id": null,
+          "common_name": "P. Garande",
+          "firstname": "Patrice",
+          "lastname": "Garande",
+          "name": "Patrice Garande",
+          "display_name": "Jessy Deminguet",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1960-11-27",
+          "gender": "male",
+          "meta": {
+            "fixture_id": 1726535,
+            "coach_id": 457103,
+            "participant_id": 1393
+          }
+        }
+      ],
+      "events": [],
+      "lineups": [],
+      "statistics": [],
+      "formations": [],
+      "pressure": []
+    },
+    {
+      "id": 19719457,
+      "coaches": [
+        {
+          "id": 462010,
+          "player_id": 462010,
+          "sport_id": 1,
+          "country_id": 2454,
+          "nationality_id": 2454,
+          "city_id": null,
+          "common_name": "I. Daja",
+          "firstname": "Ilir",
+          "lastname": "Daja",
+          "name": "Ilir Daja",
+          "display_name": "Djair",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1966-10-20",
+          "gender": "male",
+          "meta": {
+            "fixture_id": 19719457,
+            "coach_id": 462010,
+            "participant_id": 5206
+          }
+        },
+        {
+          "id": 13238945,
+          "player_id": 13238945,
+          "sport_id": 1,
+          "country_id": 2427,
+          "nationality_id": 2427,
+          "city_id": null,
+          "common_name": "G. Babayan",
+          "firstname": "Grigoriy",
+          "lastname": "Babayan",
+          "name": "Grigoriy Babayan",
+          "display_name": "Grigoriy Babayan",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1980-04-02",
+          "gender": "male",
+          "meta": {
+            "fixture_id": 19719457,
+            "coach_id": 13238945,
+            "participant_id": 5909
+          }
+        }
+      ],
+      "events": [],
+      "lineups": [],
+      "statistics": [],
+      "formations": [],
+      "pressure": []
+    }
+  ],
+  "correct_carlos_profile": {
+    "id": 523914,
+    "player_id": 523914,
+    "country_id": 20,
+    "nationality_id": 20,
+    "name": "Carlos Augusto Soares da Costa Faria Carvalhal",
+    "display_name": "Carlos Soares da Costa Faria Carvalhal",
+    "date_of_birth": "1965-12-04",
+    "player": {
+      "id": 523914,
+      "country_id": 20,
+      "nationality_id": 20,
+      "name": "Carlos Augusto Soares da Costa Faria Carvalhal",
+      "display_name": "Carlos Carvalhal",
+      "date_of_birth": "1965-12-04"
+    }
+  },
+  "garande_translation": {
+    "current": {
+      "coach_id": 457103,
+      "name": "Jessy Deminguet"
+    },
+    "profiles": {
+      "en": {
+        "id": 457103,
+        "player_id": 457103,
+        "sport_id": 1,
+        "country_id": 17,
+        "nationality_id": 17,
+        "city_id": null,
+        "common_name": "P. Garande",
+        "firstname": "Patrice",
+        "lastname": "Garande",
+        "name": "Patrice Garande",
+        "display_name": "Jessy Deminguet",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+        "height": null,
+        "weight": null,
+        "date_of_birth": "1960-11-27",
+        "gender": "male",
+        "player": {
+          "id": 457103,
+          "sport_id": 1,
+          "country_id": 17,
+          "nationality_id": 17,
+          "city_id": 66153,
+          "position_id": null,
+          "detailed_position_id": null,
+          "type_id": 221,
+          "common_name": "P. Garande",
+          "firstname": "Patrice",
+          "lastname": "Garande",
+          "name": "Patrice Garande",
+          "display_name": "Jessy Deminguet",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1960-11-27",
+          "gender": "male"
+        }
+      },
+      "ja": {
+        "id": 457103,
+        "player_id": 457103,
+        "sport_id": 1,
+        "country_id": 17,
+        "nationality_id": 17,
+        "city_id": null,
+        "common_name": "P. Garande",
+        "firstname": "Patrice",
+        "lastname": "Garande",
+        "name": "Patrice Garande",
+        "display_name": "Jessy Deminguet",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+        "height": null,
+        "weight": null,
+        "date_of_birth": "1960-11-27",
+        "gender": "male",
+        "player": {
+          "id": 457103,
+          "sport_id": 1,
+          "country_id": 17,
+          "nationality_id": 17,
+          "city_id": 66153,
+          "position_id": null,
+          "detailed_position_id": null,
+          "type_id": 221,
+          "common_name": "P. Garande",
+          "firstname": "Patrice",
+          "lastname": "Garande",
+          "name": "パトリス・ガランデ",
+          "display_name": "ジェシー・デミンゲット",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1960-11-27",
+          "gender": "male"
+        }
+      },
+      "zh": {
+        "id": 457103,
+        "player_id": 457103,
+        "sport_id": 1,
+        "country_id": 17,
+        "nationality_id": 17,
+        "city_id": null,
+        "common_name": "P. Garande",
+        "firstname": "Patrice",
+        "lastname": "Garande",
+        "name": "Patrice Garande",
+        "display_name": "Jessy Deminguet",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+        "height": null,
+        "weight": null,
+        "date_of_birth": "1960-11-27",
+        "gender": "male",
+        "player": {
+          "id": 457103,
+          "sport_id": 1,
+          "country_id": 17,
+          "nationality_id": 17,
+          "city_id": 66153,
+          "position_id": null,
+          "detailed_position_id": null,
+          "type_id": 221,
+          "common_name": "P. Garande",
+          "firstname": "Patrice",
+          "lastname": "Garande",
+          "name": "帕特里斯·加兰德",
+          "display_name": "杰西·德明盖特",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1960-11-27",
+          "gender": "male"
+        }
+      }
+    }
+  }
+}
