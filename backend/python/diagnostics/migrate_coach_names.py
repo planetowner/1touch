@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 
 from diagnostics import migrate_sportmonks_names as shared
+from one_touch_loader.core.sportmonks import SPORTMONKS_COACH_NAME_OVERRIDES
 
 # 한국어 입력 파일은 DB 반영을 마쳐 삭제했고, 남은 일본어·중국어 입력만 사용해요.
 LOCALE_GROUPS = {'ja-zh': ('ja', 'zh')}
@@ -33,6 +34,10 @@ def migrate_data(conn, locale_group='ja-zh'):
 
 def reviewed_player_translation(current, profiles):
     english = profiles['en']
+    # Garande처럼 감독과 연결 선수에 같은 잘못된 이름이 있어도 번역을 승인하지 않아요.
+    verified_name = SPORTMONKS_COACH_NAME_OVERRIDES.get(current['coach_id'])
+    if verified_name and shared.identity_value(english.get('display_name')) != verified_name:
+        return None, ['name']
     if any(profile.get('id') != current['coach_id'] for profile in profiles.values()):
         return None, ['provider_id']
     if shared.identity_value(current['name']) != shared.identity_value(english.get('display_name')):

@@ -35,7 +35,7 @@ class NameMigrationDatabase:
             def cursor(self):
                 return Cursor()
 
-            def start_transaction(self):
+            def start_transaction(self, **kwargs):
                 db.execute("BEGIN")
 
             def commit(self):
