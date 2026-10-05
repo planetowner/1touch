@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/full_screen_back_gesture.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';
 import 'package:onetouch/data/chat/chat_repository_provider.dart'
     as chat_repository_provider;
@@ -42,6 +43,9 @@ class _LiveChatTabState extends State<LiveChatTab> {
   int _requestId = 0;
   bool _isClosing = false;
   bool _chatUnavailable = false;
+  bool _showTopFade = false;
+  bool _canScroll = false;
+  bool _scrollStateUpdateScheduled = false;
 
   ChatRepository get _repository =>
       widget.repository ?? chat_repository_provider.chatRepository;
@@ -51,6 +55,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_scheduleScrollStateUpdate);
     _initChat();
   }
 
@@ -71,6 +76,8 @@ class _LiveChatTabState extends State<LiveChatTab> {
       _messages.clear();
       _isInitialized = false;
       _initError = null;
+      _showTopFade = false;
+      _canScroll = false;
     });
     await _initChat();
   }
@@ -187,11 +194,30 @@ class _LiveChatTabState extends State<LiveChatTab> {
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
+        _scheduleScrollStateUpdate();
         _scrollController.animateTo(
-          _scrollController.position.minScrollExtent,
+          _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
         );
+      }
+    });
+  }
+
+  void _scheduleScrollStateUpdate() {
+    if (_scrollStateUpdateScheduled) return;
+    _scrollStateUpdateScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollStateUpdateScheduled = false;
+      if (!mounted) return;
+      final canScroll = _scrollController.hasClients &&
+          _scrollController.position.maxScrollExtent > 0;
+      final showFade = canScroll && _scrollController.position.pixels > 1;
+      if (canScroll != _canScroll || showFade != _showTopFade) {
+        setState(() {
+          _canScroll = canScroll;
+          _showTopFade = showFade;
+        });
       }
     });
   }
@@ -284,6 +310,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backSwipeActive = FullScreenBackGesture.isSwipeActive(context);
     final appColors = AppColors.of(context);
     if (_initError != null) {
       return Center(
@@ -332,8 +359,6 @@ class _LiveChatTabState extends State<LiveChatTab> {
       );
     }
 
-    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
-    final composerBottom = bottomInset > 24 ? bottomInset : 24.0;
     final pageBackground = mainPageBackground(context);
     final messageContent = !_isInitialized
         ? const SizedBox.expand(key: ValueKey('live-chat-loading-shell'))
@@ -345,43 +370,51 @@ class _LiveChatTabState extends State<LiveChatTab> {
                       style: Body1.style),
                 ),
               )
-            : ListView.builder(
-                key: const ValueKey('live-chat-message-list'),
-                controller: _scrollController,
-                reverse: true,
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final messageIndex = _messages.length - 1 - index;
-                  final msg = _messages[messageIndex];
-                  final prevMsg =
-                      messageIndex > 0 ? _messages[messageIndex - 1] : null;
-                  final nextMsg = messageIndex + 1 < _messages.length
-                      ? _messages[messageIndex + 1]
-                      : null;
-                  final showHeader =
-                      prevMsg == null || prevMsg.nicknameEn != msg.nicknameEn;
-                  final continuesGroup =
-                      nextMsg != null && nextMsg.nicknameEn == msg.nicknameEn;
-
-                  return GestureDetector(
-                    onLongPressStart: (details) => _showContextMenu(
-                      context,
-                      details.globalPosition,
-                      msg,
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        bottom: nextMsg == null
-                            ? 0
-                            : continuesGroup
-                                ? 8
-                                : 16,
-                      ),
-                      child: _buildMessage(msg, showHeader),
-                    ),
-                  );
+            : NotificationListener<ScrollMetricsNotification>(
+                onNotification: (_) {
+                  _scheduleScrollStateUpdate();
+                  return false;
                 },
+                child: ListView.builder(
+                  key: const ValueKey('live-chat-message-list'),
+                  controller: _scrollController,
+                  physics: _canScroll && !backSwipeActive
+                      ? null
+                      : const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    final messageIndex = index;
+                    final msg = _messages[messageIndex];
+                    final prevMsg =
+                        messageIndex > 0 ? _messages[messageIndex - 1] : null;
+                    final nextMsg = messageIndex + 1 < _messages.length
+                        ? _messages[messageIndex + 1]
+                        : null;
+                    final showHeader =
+                        prevMsg == null || prevMsg.nicknameEn != msg.nicknameEn;
+                    final continuesGroup =
+                        nextMsg != null && nextMsg.nicknameEn == msg.nicknameEn;
+
+                    return GestureDetector(
+                      onLongPressStart: (details) => _showContextMenu(
+                        context,
+                        details.globalPosition,
+                        msg,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          bottom: nextMsg == null
+                              ? 0
+                              : continuesGroup
+                                  ? 8
+                                  : 16,
+                        ),
+                        child: _buildMessage(msg, showHeader),
+                      ),
+                    );
+                  },
+                ),
               );
 
     return Column(
@@ -391,33 +424,34 @@ class _LiveChatTabState extends State<LiveChatTab> {
             key: const ValueKey('live-chat-message-viewport'),
             children: [
               Positioned.fill(child: messageContent),
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 100,
-                child: IgnorePointer(
-                  child: DecoratedBox(
-                    key: const ValueKey('live-chat-top-fade'),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          pageBackground,
-                          pageBackground.withValues(alpha: 0),
-                        ],
+              if (_showTopFade)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 100,
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      key: const ValueKey('live-chat-top-fade'),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            pageBackground,
+                            pageBackground.withValues(alpha: 0),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
         Container(
           key: const ValueKey('live-chat-composer'),
-          padding: EdgeInsets.fromLTRB(12, 12, 12, composerBottom),
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
           color: isDark ? const Color(0xFF272828) : AppPalette.white,
           child: Row(
             children: [

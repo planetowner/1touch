@@ -66,7 +66,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('matches-live-header')),
+      find.byKey(const ValueKey('matches-inline-live-header')),
       findsOneWidget,
     );
     expect(find.text(':'), findsNothing);
@@ -101,6 +101,33 @@ void main() {
     tester.view.physicalSize = const Size(430, 932);
     await tester.pump();
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('moves a realtime fixture from upcoming into the live section',
+      (tester) async {
+    final live = _fixture(20, FixtureStatus.live);
+    final repository = MockFixtureRepository(
+      fixtures: [
+        _fixture(20, FixtureStatus.upcoming),
+        _fixture(21, FixtureStatus.upcoming),
+      ],
+    );
+
+    await tester.pumpWidget(
+      _app(
+        repository,
+        teamId: 9,
+        realtimeLiveMatches: [live],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('matches-live-header')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('team-fixture-card-20')), findsOneWidget);
+    expect(find.byKey(const ValueKey('team-fixture-card-21')), findsOneWidget);
   });
 
   testWidgets('sorts unsorted API pages by kickoff then fixture ID',
@@ -158,7 +185,7 @@ void main() {
 
   for (final hasLive in [false, true]) {
     testWidgets(
-        'opens near the current match and scrolls from oldest to newest, live=$hasLive',
+        'opens around the current match in newest-to-oldest order, live=$hasLive',
         (tester) async {
       tester.view.physicalSize = const Size(393, 852);
       tester.view.devicePixelRatio = 1;
@@ -183,11 +210,26 @@ void main() {
       final controller = tester.widget<CustomScrollView>(scroll).controller!;
       final entryId = hasLive ? 201 : 202;
       if (hasLive) {
+        final liveCard = find.byKey(ValueKey('team-fixture-card-$entryId'));
+        expect(tester.getTopLeft(liveCard).dy,
+            closeTo(tester.getCenter(scroll).dy, 0.1));
+        for (final id in [199, 200, 202]) {
+          expect(find.byKey(ValueKey('team-fixture-card-$id')).hitTestable(),
+              findsOneWidget);
+        }
         expect(
-            tester
-                .getTopLeft(find.byKey(ValueKey('team-fixture-card-$entryId')))
-                .dy,
-            closeTo(tester.getTopLeft(scroll).dy, 0.1));
+          tester
+              .getBottomLeft(
+                  find.byKey(const ValueKey('team-fixture-card-200')))
+              .dy,
+          lessThan(tester.getTopLeft(liveCard).dy),
+        );
+        expect(
+          tester
+              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-202')))
+              .dy,
+          greaterThan(tester.getBottomLeft(liveCard).dy),
+        );
         expect(controller.offset, 0);
       } else {
         final boundary = find.byKey(const ValueKey('matches-upcoming-divider'));
@@ -732,7 +774,8 @@ Widget _app(MockFixtureRepository repository,
     {required int teamId,
     Locale locale = const Locale('en'),
     VoidCallback? onTopOverscroll,
-    ValueChanged<bool>? onHeaderVisibilityChanged}) {
+    ValueChanged<bool>? onHeaderVisibilityChanged,
+    List<Fixture>? realtimeLiveMatches}) {
   return MaterialApp(
     locale: locale,
     supportedLocales: appSupportedLocales,
@@ -750,6 +793,7 @@ Widget _app(MockFixtureRepository repository,
           imagePath: '',
         ),
         fixtureRepository: repository,
+        realtimeLiveMatches: realtimeLiveMatches,
         onTopOverscroll: onTopOverscroll,
         onHeaderVisibilityChanged: onHeaderVisibilityChanged,
       ),

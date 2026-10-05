@@ -16,6 +16,7 @@ import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/current_form/mock/mock_current_form_repository.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_clock.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/screens/team_screen.dart';
@@ -70,7 +71,7 @@ void main() {
         xpts: 7.2),
   ]);
   final currentFormRepository = MockCurrentFormRepository();
-  final fixtureRepository = MockFixtureRepository();
+  final fixtureRepository = _UnavailableLiveRefreshFixtureRepository();
   const phoneSizes = [
     Size(320, 568),
     Size(375, 667),
@@ -376,6 +377,69 @@ void main() {
     final darkDecoration = await pumpFixtureCard(app_style.darktheme);
     expect(darkDecoration.boxShadow, isEmpty);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Team overview shows a live match before the next match',
+      (tester) async {
+    const nextMatch = Fixture(
+      fixtureId: 9001,
+      seasonId: 25583,
+      competitionId: 8,
+      homeTeamId: 9,
+      awayTeamId: 19,
+      competitionType: CompetitionType.league,
+      roundName: '4',
+      status: FixtureStatus.upcoming,
+      startingAt: '2026-09-20T15:00:00.000Z',
+    );
+    const liveMatch = Fixture(
+      fixtureId: 9002,
+      seasonId: 25583,
+      competitionId: 8,
+      homeTeamId: 9,
+      awayTeamId: 8,
+      competitionType: CompetitionType.league,
+      roundName: '5',
+      status: FixtureStatus.live,
+      startingAt: '2026-09-27T15:00:00.000Z',
+      homeScore: 1,
+      awayScore: 0,
+    );
+    const team = TeamOverview(
+      id: 9,
+      name: 'Manchester City',
+      shortName: 'MCI',
+      imagePath: '',
+      nextMatch: nextMatch,
+    );
+    final liveClock = FixtureClock(
+      periodTypeId: 1,
+      countsFrom: 0,
+      minutes: 38,
+      seconds: 12,
+      ticking: false,
+      isStale: false,
+      sampleAgeSeconds: 0,
+      receivedAt: DateTime.utc(2026, 9, 27, 15, 38, 12),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Fixtures(
+            teams: team,
+            liveMatch: liveMatch,
+            liveMatchClock: liveClock,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('LIVE MATCH'), findsOneWidget);
+    expect(find.text('38:12'), findsOneWidget);
+    expect(find.byKey(const ValueKey('live-match-score-row')), findsOneWidget);
+    final card = tester.widget<MatchCard>(find.byType(MatchCard));
+    expect(card.match?.fixtureId, liveMatch.fixtureId);
   });
 
   for (final testCase in <({String name, ThemeData theme})>[
@@ -1075,15 +1139,15 @@ void main() {
     );
     expect(
       find.byKey(const ValueKey('matches-live-header')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('matches-inline-live-header')),
       findsOneWidget,
     );
     expect(
       find.byKey(const ValueKey('matches-upcoming-header')),
       findsNothing,
-    );
-    expect(
-      find.byKey(const ValueKey('matches-inline-upcoming-header')),
-      findsOneWidget,
     );
 
     controller.jumpTo(controller.position.maxScrollExtent);
@@ -1158,7 +1222,7 @@ void main() {
     );
     expect(
       find.byKey(const ValueKey('matches-live-header')),
-      findsOneWidget,
+      findsNothing,
     );
     expect(
       find.byKey(const ValueKey('matches-upcoming-header')),
@@ -1482,5 +1546,29 @@ void main() {
       }
       expect(tester.takeException(), isNull);
     });
+  }
+}
+
+class _UnavailableLiveRefreshFixtureRepository extends MockFixtureRepository {
+  @override
+  Future<List<Fixture>> refreshForTeam(
+    int teamId, {
+    FixtureStatus? status,
+    DateTime? start,
+    DateTime? end,
+    int limit = 50,
+    int offset = 0,
+  }) {
+    if (status == FixtureStatus.live) {
+      return Future.error(StateError('Realtime refresh is unavailable.'));
+    }
+    return super.refreshForTeam(
+      teamId,
+      status: status,
+      start: start,
+      end: end,
+      limit: limit,
+      offset: offset,
+    );
   }
 }

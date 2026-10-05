@@ -4,6 +4,40 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/full_screen_back_gesture.dart';
 
 void main() {
+  testWidgets('exposes the iOS back swipe only while dragging', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: ThemeData(platform: TargetPlatform.iOS),
+      home: FullScreenBackGesture(
+        canGoBack: () => true,
+        goBack: () async => true,
+        child: Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: Text('${FullScreenBackGesture.isSwipeActive(context)}'),
+            ),
+          ),
+        ),
+      ),
+    ));
+
+    expect(find.text('false'), findsOneWidget);
+    final gesture = await tester.startGesture(const Offset(400, 300));
+    await gesture.moveBy(const Offset(40, 0));
+    await tester.pump();
+    expect(find.text('true'), findsOneWidget);
+    await gesture.up();
+    await tester.pump();
+    expect(find.text('false'), findsOneWidget);
+
+    final cancelled = await tester.startGesture(const Offset(400, 300));
+    await cancelled.moveBy(const Offset(40, 0));
+    await tester.pump();
+    expect(find.text('true'), findsOneWidget);
+    await cancelled.cancel();
+    await tester.pump();
+    expect(find.text('false'), findsOneWidget);
+  });
+
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets('right swipe pops a detail at ${size.width}x${size.height}',
         (tester) async {

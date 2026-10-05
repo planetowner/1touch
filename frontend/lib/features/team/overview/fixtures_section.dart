@@ -1,9 +1,11 @@
 part of 'team_screen_features.dart';
 
 class Fixtures extends StatefulWidget {
-  Fixtures({super.key, this.teams});
+  Fixtures({super.key, this.teams, this.liveMatch, this.liveMatchClock});
 
   final TeamOverview? teams;
+  final Fixture? liveMatch;
+  final FixtureClock? liveMatchClock;
 
   @override
   State<Fixtures> createState() => _FixturesState();
@@ -15,7 +17,7 @@ class _FixturesState extends State<Fixtures> {
     final team = widget.teams;
     if (team == null) return const SizedBox.shrink();
 
-    final match = team.nextMatch;
+    final match = widget.liveMatch ?? team.liveMatch ?? team.nextMatch;
     final lastMatch = team.lastMatch;
     final competitionId = match?.competitionId ?? lastMatch?.competitionId;
     final leagueName = competitionId == null
@@ -49,11 +51,14 @@ class _FixturesState extends State<Fixtures> {
               if (match != null)
                 GestureDetector(
                   onTap: () => context.push(
-                    '/match/${match.fixtureId}',
+                    '/match/${match.fixtureId}?status=${match.status.name}',
                     extra: match,
                   ),
                   child: MatchCard(
                     match: match,
+                    clock: match.status == FixtureStatus.live
+                        ? widget.liveMatchClock
+                        : null,
                     leagueName: leagueName,
                     backgroundColor: nextMatchBackground,
                   ),
