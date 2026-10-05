@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/core/debounced_search_controller.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -81,7 +82,13 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
     Widget alignStatus(String message, {TextStyle? style}) =>
         Transform.translate(
           offset: Offset(-statusInset, 0),
-          child: Text(message, style: style),
+          // Material 3의 기본 간격 4에 더해 Figma의 안내문 간격 8을 맞춰요.
+          child: Padding(
+            padding:
+                EdgeInsets.only(top: Theme.of(context).useMaterial3 ? 4 : 0),
+            child: Text(message,
+                style: style ?? AuthStyles.signupTextStyle(Eyebrow.style)),
+          ),
         );
     return TextFormField(
       controller: widget.controller,
@@ -94,9 +101,9 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
             ? null
             : alignStatus(
                 tr(context, helper),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                style: AuthStyles.signupTextStyle(Eyebrow.style).copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
         helperMaxLines: 2,
         suffixIcon: _availability.error == null
@@ -113,7 +120,7 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
         return message == null ? null : tr(context, message);
       },
       errorBuilder: (context, message) => alignStatus(message),
-      style: Body1.style,
+      style: AuthStyles.signupTextStyle(Body1.style),
     );
   }
 }

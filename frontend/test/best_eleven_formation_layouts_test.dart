@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:onetouch/features/team/best_eleven/best_eleven_formation_layouts.dart';
+import 'package:onetouch/core/formation_layout.dart';
 import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
 
@@ -10,7 +10,7 @@ void main() {
   setUpAppCatalog();
 
   test('every Figma formation maps all eleven slots', () {
-    for (final entry in bestElevenFormationLayouts.entries) {
+    for (final entry in formationLayouts.entries) {
       final counts = entry.key.split('-').map(int.parse).toList();
       expect(
         counts.fold<int>(0, (total, count) => total + count),
@@ -31,12 +31,12 @@ void main() {
   });
 
   test('4-3-3 uses the 4-1-2-3 layout without becoming a layout code', () {
-    expect(bestElevenFormationLayouts.containsKey('4-3-3'), isFalse);
-    expect(bestElevenLayoutFormation('4-3-3'), '4-1-2-3');
-    expect(bestElevenLayoutFormation('433'), '4-1-2-3');
-    expect(bestElevenLayoutFormation('4-1-2-3'), '4-1-2-3');
+    expect(formationLayouts.containsKey('4-3-3'), isFalse);
+    expect(formationLayoutCode('4-3-3'), '4-1-2-3');
+    expect(formationLayoutCode('433'), '4-1-2-3');
+    expect(formationLayoutCode('4-1-2-3'), '4-1-2-3');
 
-    final layout = bestElevenFormationLayouts['4-1-2-3']!;
+    final layout = formationLayouts['4-1-2-3']!;
 
     expect(layout.positionForSlot('1:1'), const Offset(173, 340));
     expect(layout.positionForSlot('2:1'), const Offset(48, 220));
@@ -46,14 +46,22 @@ void main() {
     expect(layout.positionForSlot('5:1'), const Offset(48, 72));
     expect(layout.positionForSlot('5:2'), const Offset(173, 44));
 
-    expect(bestElevenLayoutSlotKey('4-3-3', '3:1'), '4:1');
-    expect(bestElevenLayoutSlotKey('4-3-3', '3:2'), '3:1');
-    expect(bestElevenLayoutSlotKey('4-3-3', '3:3'), '4:2');
-    expect(bestElevenLayoutSlotKey('4-3-3', '4:2'), '5:2');
+    expect(formationLayoutSlotKey('4-3-3', '3:1'), '4:1');
+    expect(formationLayoutSlotKey('4-3-3', '3:2'), '3:1');
+    expect(formationLayoutSlotKey('4-3-3', '3:3'), '4:2');
+    expect(formationLayoutSlotKey('4-3-3', '4:2'), '5:2');
+  });
+
+  test('keeps slots for other or missing formations unchanged', () {
+    for (final formation in [null, '4-1-2-3', '4-2-3-1']) {
+      for (final slot in ['1:1', '2:4', '3:1', '3:2', '4:1', '5:3']) {
+        expect(formationLayoutSlotKey(formation, slot), slot);
+      }
+    }
   });
 
   test('unknown valid formations receive a complete fallback layout', () {
-    final layout = buildFallbackBestElevenLayout('2-2-2-2-2');
+    final layout = buildFallbackFormationLayout('2-2-2-2-2');
 
     expect(layout.positionForSlot('1:1'), isNotNull);
     for (var row = 2; row <= 6; row += 1) {

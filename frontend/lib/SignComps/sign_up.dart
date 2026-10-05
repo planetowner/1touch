@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/identity_name_rules.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
@@ -8,6 +8,7 @@ import 'package:onetouch/data/auth/auth_repository_provider.dart'
 import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/registration_field.dart';
+import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/SignComps/verify_email.dart';
 import 'package:onetouch/SignComps/signup_availability_field.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -46,19 +47,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
   AuthService get _authService =>
       widget.authService ?? auth_provider.authService;
-
-  InputDecoration _dec(BuildContext context, String hint) {
-    final appColors = AppColors.of(context);
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: Body1.style.copyWith(color: appColors.mutedForeground),
-      filled: true,
-      fillColor: appColors.subtleBackground,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-    );
-  }
 
   bool get _validInputs =>
       _agreed &&
@@ -151,25 +139,47 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final bodyStyle = AuthStyles.signupTextStyle(Body1.style);
+    final labelStyle = AuthStyles.signupTextStyle(Eyebrow.style);
 
     return Scaffold(
+      backgroundColor: AuthStyles.background(context),
       appBar: AppBar(
+        toolbarHeight: 24,
+        leadingWidth: 56,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: BackButton(
-          color: colors.onSurface,
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/onboarding');
-            }
-          },
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 24),
+          child: IconButton(
+            key: const ValueKey('signup-back-button'),
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+            padding: EdgeInsets.zero,
+            style: IconButton.styleFrom(
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            icon: SvgPicture.asset(
+              'assets/auth/back.svg',
+              width: 32,
+              height: 24,
+              colorFilter: ColorFilter.mode(colors.onSurface, BlendMode.srcIn),
+            ),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/onboarding');
+              }
+            },
+          ),
         ),
         centerTitle: true,
-        title: Text(tr(context, 'Sign up'), style: Body1.style),
+        title: Text(tr(context, 'Sign up'), style: bodyStyle),
       ),
       body: SafeArea(
+        // Figma의 하단 72에는 기기 안전 영역도 포함돼요.
+        minimum: const EdgeInsets.only(bottom: 72),
         child: Column(
           children: [
             Expanded(
@@ -182,7 +192,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 48),
                       for (final field in [
                         (
                           field: RegistrationField.username,
@@ -212,7 +222,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                           validator: _emailValidationMessage,
                         ),
                       ]) ...[
-                        Text(tr(context, field.label), style: Eyebrow.style),
+                        Text(tr(context, field.label), style: labelStyle),
                         const SizedBox(height: 8),
                         SignupAvailabilityField(
                           key: ValueKey(
@@ -221,7 +231,9 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                           maxLength: field.maxLength,
                           keyboardType: field.keyboardType,
                           enabled: !_submitting,
-                          decoration: _dec(context, field.hint)
+                          decoration: AuthStyles.inputDecoration(
+                                  context, field.hint,
+                                  textStyle: bodyStyle)
                               .copyWith(counterText: ''),
                           validator: field.validator,
                           checkAvailability: (value) =>
@@ -232,19 +244,18 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         ),
                         const SizedBox(height: 16),
                       ],
-                      Text(tr(context, 'Password'), style: Eyebrow.style),
+                      Text(tr(context, 'Password'), style: labelStyle),
                       const SizedBox(height: 8),
                       TextFormField(
                         key: const ValueKey('signup-password-field'),
                         controller: _password,
                         obscureText: _obscure,
-                        decoration: _dec(context, '• • • • • • • •').copyWith(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                                _obscure
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                color: colors.onSurface),
+                        decoration: AuthStyles.inputDecoration(
+                                context, '••••••••',
+                                textStyle: bodyStyle)
+                            .copyWith(
+                          suffixIcon: AuthPasswordVisibilityButton(
+                            obscureText: _obscure,
                             onPressed: () =>
                                 setState(() => _obscure = !_obscure),
                           ),
@@ -253,30 +264,28 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             ? null
                             : tr(context,
                                 'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
-                        style: Body1.style,
+                        style: bodyStyle,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         tr(context,
                             'Choose a password that is 8 or more characters long.'),
-                        style: Eyebrow.style,
+                        style: labelStyle,
                       ),
-                      const SizedBox(height: 24),
-                      Text(tr(context, 'Retype Password'),
-                          style: Eyebrow.style),
+                      const SizedBox(height: 16),
+                      Text(tr(context, 'Retype Password'), style: labelStyle),
                       const SizedBox(height: 8),
                       TextFormField(
                         key: const ValueKey('signup-confirm-password-field'),
                         controller: _confirmPassword,
                         obscureText: _obscureConfirm,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: _dec(context, '• • • • • • • •').copyWith(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                                _obscureConfirm
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                color: colors.onSurface),
+                        decoration: AuthStyles.inputDecoration(
+                                context, '••••••••',
+                                textStyle: bodyStyle)
+                            .copyWith(
+                          suffixIcon: AuthPasswordVisibilityButton(
+                            obscureText: _obscureConfirm,
                             onPressed: () => setState(
                                 () => _obscureConfirm = !_obscureConfirm),
                           ),
@@ -284,7 +293,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         validator: (value) => value == _password.text
                             ? null
                             : tr(context, 'Passwords do not match.'),
-                        style: Body1.style,
+                        style: bodyStyle,
                       ),
                       const SizedBox(height: 24),
                     ],
@@ -293,7 +302,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -335,32 +344,17 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    height: 56,
-                    width: double.infinity,
-                    child: FilledButton(
-                      key: const ValueKey('email-sign-up-button'),
-                      onPressed: _submitting ||
-                              (_validInputs &&
-                                  _availableFields.length !=
-                                      RegistrationField.values.length)
-                          ? null
-                          : _submit,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: colors.onSurface,
-                        foregroundColor: colors.surface,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: _submitting
-                          ? const SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2))
-                          : Text(trUpper(context, 'Sign up'),
-                              style: Body2_b.style
-                                  .copyWith(color: colors.surface)),
-                    ),
+                  AuthPrimaryButton(
+                    buttonKey: const ValueKey('email-sign-up-button'),
+                    label: trUpper(context, 'Sign up'),
+                    textStyle: AuthStyles.signupTextStyle(Body2_b.style),
+                    loading: _submitting,
+                    onPressed: _submitting ||
+                            (_validInputs &&
+                                _availableFields.length !=
+                                    RegistrationField.values.length)
+                        ? null
+                        : _submit,
                   ),
                 ],
               ),

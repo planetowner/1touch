@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/SignComps/signup_availability_field.dart';
 import 'package:onetouch/core/identity_name_rules.dart';
-import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -34,21 +33,6 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
   void dispose() {
     _nickname.dispose();
     super.dispose();
-  }
-
-  InputDecoration _dec(BuildContext context, String hint) {
-    final colors = AppColors.of(context);
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: Body1.style.copyWith(color: colors.mutedForeground),
-      filled: true,
-      fillColor: colors.subtleBackground,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide.none,
-      ),
-    );
   }
 
   Future<void> _submit() async {
@@ -103,8 +87,11 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
                       controller: _nickname,
                       enabled: !_saving,
                       maxLength: 12,
-                      decoration:
-                          _dec(context, 'Nickname').copyWith(counterText: ''),
+                      decoration: AuthStyles.inputDecoration(
+                              context, 'Nickname',
+                              textStyle:
+                                  AuthStyles.signupTextStyle(Body1.style))
+                          .copyWith(counterText: ''),
                       validator: displayNameValidationMessage,
                       checkAvailability: widget.checkNicknameAvailability,
                       onAvailabilityChanged: (available) {
