@@ -312,7 +312,12 @@ void main() {
     );
     expect(tester.widget<Text>(viceCaptainText).style?.fontSize, 14);
     expect(tester.widget<Text>(viceCaptainText).style?.fontFamily, 'Archivo');
-    expect(tester.widget<Text>(viceCaptainText).style?.height, 1.3);
+    expect(tester.widget<Text>(viceCaptainText).style?.height, 1);
+    final badgeCenter = tester.getCenter(viceCaptain);
+    final textCenter = tester.getCenter(viceCaptainText);
+    expect((textCenter.dx - badgeCenter.dx).abs(), lessThan(0.5));
+    expect((textCenter.dy - badgeCenter.dy).abs(), lessThan(0.5));
+    expect(tester.getSize(viceCaptainText).height, lessThanOrEqualTo(16));
     expect(
       tester.renderObject<RenderParagraph>(viceCaptainText).didExceedMaxLines,
       isFalse,
