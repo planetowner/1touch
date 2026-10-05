@@ -571,13 +571,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     const SizedBox(height: 32),
                     Row(
                       key: const ValueKey('home-calendar-title-row'),
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SectionHeader(title: tr(context, "CALENDAR")),
                         const Spacer(),
                         Padding(
                           padding: const EdgeInsets.only(right: 24),
                           child: IconButton(
+                            padding: EdgeInsets.zero,
+                            alignment: Alignment.centerRight,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 48,
+                              height: 48,
+                            ),
                             icon: Icon(
                               Icons.sync,
                               color: colorScheme.onSurface,
@@ -593,6 +599,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
                     FixtureCalendar(
                       allMatches: homeData.calendar,
                       favoriteTeamId: viewedTeamId,
