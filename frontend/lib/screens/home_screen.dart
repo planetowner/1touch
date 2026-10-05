@@ -447,11 +447,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverAppBar(
-                  backgroundColor: Color.lerp(
-                    Colors.transparent,
-                    pageBackground,
-                    opacityFactor,
-                  ),
+                  backgroundColor: scrollingAppBarBackground(
+                      context, pageBackground, opacityFactor),
                   foregroundColor: appBarForeground,
                   elevation: 0,
                   floating: true,

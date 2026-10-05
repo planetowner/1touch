@@ -456,11 +456,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               slivers: [
                 SliverAppBar(
                   // 4. Fade AppBar background to black as you scroll
-                  backgroundColor: Color.lerp(
-                    Colors.transparent,
-                    pageBackground,
-                    opacityFactor,
-                  ),
+                  backgroundColor: scrollingAppBarBackground(
+                      context, pageBackground, opacityFactor),
                   elevation: 0,
                   leading: IconButton(
                     icon: Icon(

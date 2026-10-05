@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 abstract final class AppPalette {
   static const black = Color(0xFF090A0A);
@@ -43,6 +44,15 @@ Color mainPageBackground(BuildContext context) {
       ? AppPalette.lightModeDarkGrey
       : AppColors.of(context).pageBackground;
 }
+
+Color scrollingAppBarBackground(
+  BuildContext context,
+  Color background,
+  double opacityFactor,
+) =>
+    Theme.of(context).brightness == Brightness.light
+        ? background
+        : Color.lerp(Colors.transparent, background, opacityFactor)!;
 
 Color appPillBackground(BuildContext context, {required bool selected}) {
   if (selected) return AppPalette.white;
@@ -195,6 +205,11 @@ ThemeData _buildTheme(
     appBarTheme: AppBarTheme(
       backgroundColor: colors.pageBackground,
       foregroundColor: foreground,
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      ),
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,

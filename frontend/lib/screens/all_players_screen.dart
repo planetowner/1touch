@@ -188,11 +188,8 @@ class _PlayerCardState extends State<PlayerCard>
                 headerSliverBuilder: (context, innerBoxIsScrolled) => [
                   SliverAppBar(
                     automaticallyImplyLeading: false,
-                    backgroundColor: Color.lerp(
-                      Colors.transparent,
-                      pageBackground,
-                      opacityFactor,
-                    ),
+                    backgroundColor: scrollingAppBarBackground(
+                        context, pageBackground, opacityFactor),
                     elevation: 0,
                     floating: true,
                     snap: true,
@@ -247,11 +244,8 @@ class _PlayerCardState extends State<PlayerCard>
                       ),
                       controller: _tabController,
                       backgroundGradient: tabBarGradient,
-                      backgroundColor: Color.lerp(
-                        Colors.transparent,
-                        pageBackground,
-                        opacityFactor,
-                      ),
+                      backgroundColor: scrollingAppBarBackground(
+                          context, pageBackground, opacityFactor),
                     ),
                   ),
                 ],

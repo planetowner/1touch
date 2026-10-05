@@ -221,11 +221,8 @@ class _AddPostState extends State<AddPost> {
       extendBodyBehindAppBar: true, // 3. Allow content/gradient behind AppBar
       appBar: AppBar(
         // 4. Fade AppBar to Black on scroll (starts transparent)
-        backgroundColor: Color.lerp(
-          Colors.transparent,
-          pageBackground,
-          opacityFactor,
-        ),
+        backgroundColor:
+            scrollingAppBarBackground(context, pageBackground, opacityFactor),
         elevation: 0,
         leading: IconButton(
           icon: Icon(
