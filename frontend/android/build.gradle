@@ -18,9 +18,13 @@ subprojects {
         project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
             kotlinOptions.jvmTarget = "1.8"
         }
+    }
+
+    // 낮은 SDK를 고정한 플러그인도 현재 AndroidX 요구사항에 맞게 앱과 같은 SDK를 써요.
+    if (project.name in ["flutter_line_sdk", "insta_assets_crop"]) {
         project.pluginManager.withPlugin("com.android.library") {
             project.androidComponents.finalizeDsl { android ->
-                android.compileSdk = 36
+                android.compileSdk = project(":app").android.compileSdk
             }
         }
     }

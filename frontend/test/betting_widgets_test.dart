@@ -123,20 +123,41 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Draw').last);
     await tester.pump();
+    await tester.ensureVisible(find.text('CONTINUE'));
     await tester.tap(find.text('CONTINUE'));
     await tester.pumpAndSettle();
-    expect(find.text('75 pts'), findsOneWidget);
+    expect(find.text('75'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const ValueKey('bet-decrease')));
     await tester.tap(find.byKey(const ValueKey('bet-decrease')));
     await tester.pump();
-    expect(find.text('50 pts'), findsOneWidget);
+    expect(find.text('50'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('bet-increase')));
     await tester.pump();
-    expect(find.text('75 pts'), findsOneWidget);
+    expect(find.text('75'), findsOneWidget);
     expect(
         tester
             .widget<IconButton>(find.byKey(const ValueKey('bet-increase')))
             .onPressed,
         isNull);
+    for (var i = 0; i < 2; i++) {
+      await tester.tap(find.byKey(const ValueKey('bet-decrease')));
+      await tester.pump();
+    }
+    expect(find.text('25'), findsOneWidget);
+    expect(
+        tester
+            .widget<IconButton>(find.byKey(const ValueKey('bet-decrease')))
+            .onPressed,
+        isNull);
+    await tester.ensureVisible(find.text('CHANGE PICK'));
+    await tester.tap(find.text('CHANGE PICK'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('CONTINUE'));
+    await tester.tap(find.text('CONTINUE'));
+    await tester.pumpAndSettle();
+    expect(find.text('25'), findsOneWidget);
+    expect(find.text('If correct: +225 pts'), findsOneWidget);
+    expect(repository.saveCalls, 0);
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
   });
@@ -446,6 +467,12 @@ void main() {
         await tester.pump();
         expect(find.text('Bet Submitted!'), findsNothing);
         expect(repository.saveCalls, 1);
+        for (final key in ['bet-decrease', 'bet-increase']) {
+          expect(
+            tester.widget<IconButton>(find.byKey(ValueKey(key))).onPressed,
+            isNull,
+          );
+        }
         repository.submitGate!.complete();
         await tester.pumpAndSettle();
         expect(find.text('Bet Submitted!'), findsOneWidget);
