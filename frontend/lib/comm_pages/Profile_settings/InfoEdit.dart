@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:cross_file/cross_file.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/identity_name_rules.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -17,6 +17,7 @@ import 'package:onetouch/data/profile/profile_avatar_repository_provider.dart'
     as avatar_provider;
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/features/media/asset_media_picker.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/data/auth/social_identity_service.dart';
@@ -87,15 +88,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Future<XFile?> _pickAvatar() =>
-      widget.pickAvatar?.call() ??
-      ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 2048,
-        maxHeight: 2048,
-        imageQuality: 90,
-        requestFullMetadata: false,
-      );
+  Future<XFile?> _pickAvatar() async {
+    if (widget.pickAvatar != null) return widget.pickAvatar!();
+    return pickAvatarImage(context);
+  }
 
   Future<void> _showAvatarActions() async {
     if (_isAvatarSaving) return;
@@ -179,11 +175,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _chooseAndUploadAvatar() async {
-    final file = await _pickAvatar();
-    if (!mounted || file == null) return;
-
-    setState(() => _isAvatarSaving = true);
     try {
+      final file = await _pickAvatar();
+      if (!mounted || file == null) return;
+      setState(() => _isAvatarSaving = true);
       final filename = file.name.trim().isEmpty ? 'profile-avatar' : file.name;
       final avatarUri = await _avatarRepository.upload(
         bytes: await file.readAsBytes(),

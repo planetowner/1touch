@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:cross_file/cross_file.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/api_image_headers.dart';
 import 'package:onetouch/core/style.dart';
