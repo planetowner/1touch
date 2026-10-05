@@ -13,6 +13,68 @@ import 'package:onetouch/screens/MatchScreen_tabs/anal.dart';
 
 void main() {
   setUpAppCatalog();
+  testWidgets('xG uses comparison colors for Atlético against Real Madrid',
+      (tester) async {
+    const fixture = Fixture(
+      fixtureId: 900001,
+      seasonId: 25659,
+      competitionId: 564,
+      homeTeamId: 7980,
+      awayTeamId: 3468,
+      competitionType: CompetitionType.league,
+      roundName: 'RO 1',
+      status: FixtureStatus.past,
+      startingAt: '2026-02-22 21:00:00',
+    );
+    final detail = _detailWithStatistics(fixture, const [],
+        expectedGoals: const FixtureExpectedGoals(
+          homeXg: 1.2,
+          awayXg: 0.8,
+          homeXga: 0.8,
+          awayXga: 1.2,
+          provider: 'understat',
+        ));
+    final repository = TestMatchAnalysisRepository(
+      const MatchTacticalAnalysis(
+        fixtureId: 900001,
+        available: false,
+        home: null,
+        away: null,
+      ),
+      MatchShotMap(
+        fixtureId: 900001,
+        available: false,
+        homeCount: null,
+        awayCount: null,
+        shots: [],
+      ),
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: Scaffold(
+        body: AnalysisTab(
+          fixture: fixture,
+          detail: detail,
+          repository: repository,
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final homeBox = tester.widget<Container>(
+      find.byKey(const ValueKey('match-analysis-home-xg-box')),
+    );
+    final awayBox = tester.widget<Container>(
+      find.byKey(const ValueKey('match-analysis-away-xg-box')),
+    );
+    expect((homeBox.decoration! as ShapeDecoration).color,
+        const Color(0xFFE7151D));
+    expect((awayBox.decoration! as ShapeDecoration).color,
+        const Color(0xFF1877CD));
+    expect(tester.takeException(), isNull);
+  });
+
   test('shot-map dots lead lines, and arrows stagger by 420ms', () {
     expect(matchShotTimelineMs, 503);
     expect(matchShotTimelineDurationMs(1), 503);
@@ -918,12 +980,13 @@ double _diagramProgress(WidgetTester tester, Finder diagram) {
 
 FixtureDetail _detailWithStatistics(
   Fixture fixture,
-  List<FixtureStatistic> statistics,
-) =>
+  List<FixtureStatistic> statistics, {
+  FixtureExpectedGoals? expectedGoals,
+}) =>
     FixtureDetail(
       fixture: fixture,
       venueName: null,
-      expectedGoals: null,
+      expectedGoals: expectedGoals,
       playerExpectedGoals: const [],
       shots: const [],
       events: const [],

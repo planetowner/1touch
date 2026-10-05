@@ -245,16 +245,12 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildXGSection(FixtureExpectedGoals expectedGoals) {
-    final home = fixtureHomeTeam(widget.fixture, teamRepository);
-    final away = fixtureAwayTeam(widget.fixture, teamRepository);
-    final homeColor = TeamComparisonColorResolver.paletteFor(
-      teamName: home.name,
-      primaryFallback: Color(home.primaryColor),
-    ).primary;
-    final awayColor = TeamComparisonColorResolver.paletteFor(
-      teamName: away.name,
-      primaryFallback: Color(away.primaryColor),
-    ).primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = _comparisonColors(
+      isDark ? AppPalette.darkGrey : AppPalette.white,
+    );
+    final homeColor = colors.anchor;
+    final awayColor = colors.opponent;
     return SizedBox(
       key: const ValueKey('match-analysis-xg'),
       width: double.infinity,
