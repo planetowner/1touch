@@ -402,6 +402,10 @@ class PlayerDetailRepositoryTests(unittest.TestCase):
             self.assertEqual(response['player_id'], 1)
             self.assertEqual(response['profile']['nationality_id'], 712)
             self.assertEqual(response['profile']['nationality'], 'South Korea')
+            self.assertEqual(
+                [row['competition_id'] for row in response['matches']],
+                [row['competition_id'] for row in get.return_value['matches']],
+            )
             get.assert_called_with(1,5)
             get.side_effect=ValueError('Player has no record for this league season')
             self.assertEqual(client.get('/players/1/detail?season_id=6').status_code,404)

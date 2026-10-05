@@ -10,6 +10,7 @@ import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/round_chart_visuals.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/screens/all_players_screen.dart';
@@ -43,6 +44,35 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets('match cards localize API results and share competition rounds',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    for (final (result, label) in [
+      ('WIN', '승'),
+      ('DRAW', '무'),
+      ('DEF', '패'),
+      ('LOSE', '패'),
+    ]) {
+      final json = playerDetailJson();
+      json['matches'][0]['result'] = result;
+      final match = playerDetailFromJson(json).matches.first;
+      await tester.pumpWidget(MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        home: FootballNamesScope(
+          names: const FootballNames(competitions: {564: '라리가'}),
+          child: Scaffold(body: PlayerDetailMatchCard(match: match)),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text(label), findsOneWidget);
+      expect(find.text('라리가 7R'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   final player = playerRepository.findById('lee-kang-in')!;
   for (final (role, theme, size) in [
     (TeamLeadershipRole.captain, app_style.darktheme, const Size(320, 568)),
@@ -894,6 +924,9 @@ void main() {
         addTearDown(() => appLocaleController.value = const Locale('en'));
 
         await tester.pumpWidget(MaterialApp(
+          locale: locale,
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
           theme: app_style.darktheme,
           home: PlayerCard(
             player: player,
@@ -911,6 +944,12 @@ void main() {
           matching: find.byType(Text),
         );
         expect(headerTexts, findsNWidgets(4));
+        expect(
+          tester.widgetList<Text>(headerTexts).map((text) => text.data),
+          locale.languageCode == 'ko'
+              ? ['대회', '출전', '승률', '평점']
+              : ['League', 'MP', 'WR', 'Rating'],
+        );
         expect(valueTexts, findsNWidgets(4));
         for (var column = 1; column < 4; column++) {
           final headerX = tester.getCenter(headerTexts.at(column)).dx;
@@ -1112,7 +1151,7 @@ void main() {
       surface.padding,
       const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
     );
-    for (final label in ['키 패스', '볼 회수', '공격 지역 패스']) {
+    for (final label in ['키패스', '리커버리', '파이널 서드 패스']) {
       final text = tester.widget<Text>(find.text(label));
       expect(text.maxLines, 2);
       expect(tester.getSize(find.text(label)).height, lessThan(30));

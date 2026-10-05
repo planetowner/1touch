@@ -242,11 +242,12 @@ class _CareerTabState extends State<CareerTab> {
         ),
         Expanded(
             flex: 2,
-            child: Text(tr(context, 'MP'),
+            child: Text(playerRecordHeaderLabel(context, 'MP'),
                 textAlign: TextAlign.center, style: style)),
         Expanded(
             flex: 2,
-            child: Text('WR', textAlign: TextAlign.center, style: style)),
+            child: Text(playerRecordHeaderLabel(context, 'WR'),
+                textAlign: TextAlign.center, style: style)),
         Expanded(
             flex: 2,
             child: Text(tr(context, 'Rating'),
