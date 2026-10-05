@@ -199,10 +199,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const ValueKey('bracket-round-window-0')),
-      findsOneWidget,
-    );
+    final quarterCard =
+        find.byKey(const ValueKey('bracket-match-card-Quarter-finals:0'));
+    final quarterElement = tester.element(quarterCard);
+    final quarterBefore = tester.getTopLeft(quarterCard);
     final initialViewportHeight = tester
         .getSize(find.byKey(const ValueKey('tournament-bracket-pages')))
         .height;
@@ -226,10 +226,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const ValueKey('bracket-round-window-1')),
-      findsOneWidget,
-    );
+    expect(tester.element(quarterCard), same(quarterElement));
     expect(
       find.byKey(const ValueKey('bracket-stage-Quarter-finals')),
       findsOneWidget,
@@ -250,6 +247,9 @@ void main() {
     final secondSemi = tester.getTopLeft(
       find.byKey(const ValueKey('bracket-match-card-Semi-finals:1')),
     );
+    expect(firstQuarter.dx, lessThan(quarterBefore.dx));
+    expect(firstQuarter.dx, closeTo(viewport.left + 16, 0.1));
+    expect(firstSemi.dx - firstQuarter.dx, 146);
     expect(secondQuarter.dy - firstQuarter.dy, 116);
     expect(secondSemi.dy - firstSemi.dy, 232);
     expect(
@@ -267,10 +267,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const ValueKey('bracket-round-window-2')),
-      findsOneWidget,
-    );
+    expect(tester.element(quarterCard), same(quarterElement));
     expect(
       tester
           .getSize(
@@ -279,6 +276,18 @@ void main() {
           .height,
       240,
     );
+    await tester.drag(
+      find.byKey(const ValueKey('tournament-bracket-pages')),
+      const Offset(350, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(quarterCard).dx, closeTo(viewport.left + 16, 0.1));
+    await tester.drag(
+      find.byKey(const ValueKey('tournament-bracket-pages')),
+      const Offset(350, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(quarterCard).dx, closeTo(quarterBefore.dx, 0.1));
     expect(tester.takeException(), isNull);
   });
 
