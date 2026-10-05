@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:cross_file/cross_file.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/post_attachments/post_attachment_repository.dart';
@@ -11,6 +11,7 @@ import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
 import 'package:onetouch/features/community/post_attachment_publisher.dart';
 import 'package:onetouch/features/community/post_composer_widgets.dart';
+import 'package:onetouch/features/media/asset_media_picker.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -49,7 +50,6 @@ class _AddPostState extends State<AddPost> {
 
   final List<XFile> _mediaFiles = [];
   final List<PostAttachment> _existingAttachments = [];
-  final ImagePicker _picker = ImagePicker();
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
@@ -98,11 +98,11 @@ class _AddPostState extends State<AddPost> {
         showLimit();
         return;
       }
-      final picked =
-          await (widget.pickMedia?.call() ?? _picker.pickMultipleMedia());
-      if (!mounted || picked.isEmpty) return;
       final remaining =
           maximumAttachments - _existingAttachments.length - _mediaFiles.length;
+      final picked = await (widget.pickMedia?.call() ??
+          pickAssetMedia(context, maxAssets: remaining.clamp(1, 10)));
+      if (!mounted || picked.isEmpty) return;
       setState(() => _mediaFiles.addAll(picked.take(remaining)));
       if (picked.length > remaining) showLimit();
     } on Object {
