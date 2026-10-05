@@ -433,7 +433,10 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
                 width: 24,
                 height: 24,
               ),
-              icon: Icon(Icons.tune, color: colors.onSurface),
+              icon: Transform.translate(
+                offset: const Offset(0, -2),
+                child: Icon(Icons.tune, color: colors.onSurface),
+              ),
             ),
           ],
         ),
@@ -462,7 +465,6 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
             ),
           ),
         ],
-        const SizedBox(height: 16),
         if (_failed)
           TextButton(
             onPressed: () => _load(forceRefresh: _items.isNotEmpty),
