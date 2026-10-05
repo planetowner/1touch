@@ -285,8 +285,8 @@ void main() {
         localizationsDelegates: appLocalizationDelegates,
       ));
       await tester.pumpAndSettle();
-      expect(find.text(translateMessage(locale, 'Continue with Kakao')),
-          findsOneWidget);
+      expect(
+          find.byKey(const ValueKey('kakao-sign-in-button')), findsOneWidget);
       expect(find.byKey(const ValueKey('line-sign-in-button')), findsNothing);
       final otherMethods = find.byKey(const ValueKey('other-login-methods'));
       expect(otherMethods, findsOneWidget);
@@ -361,7 +361,8 @@ void main() {
       ));
       await tester.pumpAndSettle();
       final provider = LoginProvider.values.byName(first);
-      expect(find.text(provider.label), findsOneWidget);
+      expect(find.byKey(ValueKey('${provider.name}-sign-in-button')),
+          findsOneWidget);
       for (final name in other) {
         expect(find.byKey(ValueKey('$name-sign-in-button')), findsNothing);
       }

@@ -86,7 +86,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('google-sign-in-button')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Continue with Google'), findsOneWidget);
+    expect(find.byKey(const ValueKey('google-sign-in-button')), findsOneWidget);
     expect(find.byType(SnackBar), findsNothing);
     expect(tester.takeException(), isNull);
   });

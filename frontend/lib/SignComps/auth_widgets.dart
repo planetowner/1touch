@@ -29,6 +29,7 @@ abstract final class AuthStyles {
     String hint, {
     EdgeInsetsGeometry? contentPadding,
     TextStyle? textStyle,
+    Widget? suffixIcon,
   }) {
     final inputStyle = textStyle ?? body;
     final colors = Theme.of(context).colorScheme;
@@ -51,6 +52,7 @@ abstract final class AuthStyles {
           : AppColors.of(context).subtleBackground,
       contentPadding: contentPadding ??
           EdgeInsets.fromLTRB(16, verticalPadding, 8, verticalPadding),
+      suffixIcon: suffixIcon,
       // 눈·재시도 아이콘이 기본 최소 크기로 입력칸 높이를 늘리지 않게 해요.
       suffixIconConstraints: const BoxConstraints.tightFor(
           width: inputHeight, height: inputHeight),
@@ -68,22 +70,26 @@ class AuthInput extends StatelessWidget {
       required this.label,
       required this.controller,
       this.fieldKey,
+      this.fieldHeight = AuthStyles.inputHeight,
       this.enabled = true,
       this.obscureText = false,
       this.keyboardType,
       this.textInputAction,
       this.autofillHints,
+      this.suffixIcon,
       this.contentPadding = const EdgeInsets.fromLTRB(16, 8, 8, 8),
       this.onSubmitted});
 
   final String label;
   final TextEditingController controller;
   final Key? fieldKey;
+  final double fieldHeight;
   final bool enabled;
   final bool obscureText;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final Iterable<String>? autofillHints;
+  final Widget? suffixIcon;
   final EdgeInsetsGeometry contentPadding;
   final ValueChanged<String>? onSubmitted;
 
@@ -95,8 +101,7 @@ class AuthInput extends StatelessWidget {
           child: Text(label, style: AuthStyles.label)),
       const SizedBox(height: 8),
       SizedBox(
-        height:
-            AuthStyles.inputHeight * MediaQuery.textScalerOf(context).scale(1),
+        height: fieldHeight * MediaQuery.textScalerOf(context).scale(1),
         child: TextField(
           key: fieldKey,
           controller: controller,
@@ -114,6 +119,7 @@ class AuthInput extends StatelessWidget {
             context,
             label,
             contentPadding: contentPadding,
+            suffixIcon: suffixIcon,
           ),
         ),
       ),
@@ -126,16 +132,21 @@ class AuthPasswordVisibilityButton extends StatelessWidget {
     super.key,
     required this.obscureText,
     required this.onPressed,
+    this.compact = false,
   });
 
   final bool obscureText;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.onSurface;
     return IconButton(
       onPressed: onPressed,
+      constraints:
+          compact ? const BoxConstraints.tightFor(width: 40, height: 40) : null,
+      padding: compact ? const EdgeInsets.all(8) : null,
       icon: obscureText
           ? SvgPicture.asset(
               'assets/auth/visibility_off.svg',
