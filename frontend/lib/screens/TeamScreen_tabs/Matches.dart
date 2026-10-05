@@ -83,7 +83,6 @@ class _MatchesTabState extends State<MatchesTab> {
   bool _isNearBottom = false;
   bool _isTeamHeaderVisible = true;
   bool _isLoading = true;
-  bool _isLiveVerifying = false;
   Object? _loadError;
   int _requestId = 0;
 
@@ -146,9 +145,6 @@ class _MatchesTabState extends State<MatchesTab> {
       return false;
     }
     _displayedPastPage = past;
-    if (live != null && !identical(live, _displayedLivePage)) {
-      _isLiveVerifying = true;
-    }
     _displayedLivePage = live;
     _displayedUpcomingPage = upcoming;
     pastMatches = nextPast;
@@ -264,7 +260,6 @@ class _MatchesTabState extends State<MatchesTab> {
         _visibleHeaderCount = centerNoLiveBoundary ? 1 : _entrySectionIndex + 1;
         _hasEarlierMatches = centerNoLiveBoundary;
         _isLoading = false;
-        _isLiveVerifying = false;
         _loadError = null;
       });
       _schedulePostLoadLayout();
@@ -299,7 +294,6 @@ class _MatchesTabState extends State<MatchesTab> {
     liveMatches = const [];
     upcomingMatches = const [];
     _isLoading = true;
-    _isLiveVerifying = false;
     _loadError = null;
     _sectionOffsets.clear();
     _visibleHeaderCount = 1;
@@ -509,11 +503,6 @@ class _MatchesTabState extends State<MatchesTab> {
     return Column(
       key: const ValueKey('matches-tab-layout'),
       children: [
-        if (_isLiveVerifying && liveMatches.isNotEmpty)
-          const LinearProgressIndicator(
-            key: ValueKey('matches-live-verifying'),
-            minHeight: 2,
-          ),
         Column(
           key: const ValueKey('matches-header-stack'),
           children: [

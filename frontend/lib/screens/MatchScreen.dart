@@ -61,7 +61,6 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
   BettingController? _betting;
   Timer? _refreshTimer;
   bool _requestInFlight = false;
-  bool _isLiveVerifying = false;
 
   bool get _isLiveChatSelected =>
       selectedIndex < tabs.length && tabs[selectedIndex] == 'LIVE CHAT';
@@ -84,9 +83,6 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
   }
 
   void _applyDetail(FixtureDetail detail) {
-    final wasShowingLiveCache = _isLiveVerifying;
-    final firstLiveDetail =
-        _fixtureDetail == null && detail.fixture.status == FixtureStatus.live;
     setState(() {
       final selectedTab = tabs[selectedIndex];
       fixture = detail.fixture;
@@ -96,7 +92,6 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
       selectedIndex = nextIndex < 0 ? 0 : nextIndex;
       _isLoading = false;
       _hasLoadError = false;
-      _isLiveVerifying = firstLiveDetail && !wasShowingLiveCache;
     });
     _ensureLiveChatTabVisible();
   }
@@ -138,7 +133,6 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
           (initialFixture?.fixtureId == _fixtureId ? initialFixture : null);
       if (_fixtureDetail != null) {
         tabs = _tabsFor(fixture!.status.name);
-        _isLiveVerifying = fixture!.status == FixtureStatus.live;
       }
       _isLoading = fixture == null;
       _loadFixture(_fixtureId!);
@@ -158,7 +152,6 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
       }
       if (!mounted) return;
       if (!identical(_fixtureDetail, detail)) _applyDetail(detail);
-      if (_isLiveVerifying) setState(() => _isLiveVerifying = false);
     } on Object {
       if (!mounted) return;
       setState(() {
@@ -330,16 +323,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
               )
             : SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: _isLiveVerifying
-                    ? Column(
-                        children: [
-                          const LinearProgressIndicator(
-                            key: ValueKey('match-live-verifying'),
-                          ),
-                          _buildTabContent(),
-                        ],
-                      )
-                    : _buildTabContent(),
+                child: _buildTabContent(),
               ),
       ),
     );

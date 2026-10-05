@@ -95,6 +95,40 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('starts chat at the top and fades only after overflow at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final session = _ChatSession();
+      await tester.pumpWidget(_app(
+        repository: _ChatRepository([_message(messageId: 10, userId: 7)]),
+        socket: _ChatSocket(session: session),
+      ));
+      await tester.pumpAndSettle();
+
+      final viewport = tester.getRect(
+        find.byKey(const ValueKey('live-chat-message-viewport')),
+      );
+      expect(tester.getTopLeft(find.text('History message 10')).dy,
+          lessThan(viewport.top + 100));
+      expect(find.byKey(const ValueKey('live-chat-top-fade')), findsNothing);
+
+      for (var id = 11; id <= 45; id++) {
+        session.add(_message(messageId: id, userId: 8));
+      }
+      await tester.pumpAndSettle();
+
+      expect(find.text('History message 45'), findsOneWidget);
+      expect(find.byKey(const ValueKey('live-chat-top-fade')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
   testWidgets('shows the backend favorite-team restriction', (tester) async {
     await tester.pumpWidget(
       _app(
