@@ -273,7 +273,11 @@ const appMessages = <String, MessageTranslations>{
   "Continue with Kakao": (ko: "카카오로 계속하기", ja: "Kakaoで続ける", zh: "使用 Kakao 继续"),
   "Continue with LINE": (ko: "LINE으로 계속하기", ja: "LINEで続ける", zh: "使用 LINE 继续"),
   "Continue with email": (ko: "이메일로 계속하기", ja: "メールで続ける", zh: "使用邮箱继续"),
-  "Other login methods": (ko: "다른 로그인 방법", ja: "その他のログイン方法", zh: "其他登录方式"),
+  "Other ways to sign in": (
+    ko: "다른 방식으로 로그인하기",
+    ja: "その他の方法でログイン",
+    zh: "使用其他方式登录"
+  ),
   "Unable to load login methods. Please try again.": (
     ko: "로그인 방법을 불러오지 못했어요. 다시 시도해 주세요.",
     ja: "ログイン方法を読み込めませんでした。もう一度お試しください。",
