@@ -16,6 +16,7 @@ import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/current_form/mock/mock_current_form_repository.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_clock.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/screens/team_screen.dart';
@@ -411,16 +412,32 @@ void main() {
       imagePath: '',
       nextMatch: nextMatch,
     );
+    final liveClock = FixtureClock(
+      periodTypeId: 1,
+      countsFrom: 0,
+      minutes: 38,
+      seconds: 12,
+      ticking: false,
+      isStale: false,
+      sampleAgeSeconds: 0,
+      receivedAt: DateTime.utc(2026, 9, 27, 15, 38, 12),
+    );
 
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: Fixtures(teams: team, liveMatch: liveMatch),
+          body: Fixtures(
+            teams: team,
+            liveMatch: liveMatch,
+            liveMatchClock: liveClock,
+          ),
         ),
       ),
     );
 
     expect(find.text('LIVE MATCH'), findsOneWidget);
+    expect(find.text('38:12'), findsOneWidget);
+    expect(find.byKey(const ValueKey('live-match-score-row')), findsOneWidget);
     final card = tester.widget<MatchCard>(find.byType(MatchCard));
     expect(card.match?.fixtureId, liveMatch.fixtureId);
   });

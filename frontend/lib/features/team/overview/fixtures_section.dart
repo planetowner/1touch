@@ -1,10 +1,16 @@
 part of 'team_screen_features.dart';
 
 class Fixtures extends StatefulWidget {
-  Fixtures({super.key, this.teams, this.liveMatch});
+  Fixtures({
+    super.key,
+    this.teams,
+    this.liveMatch,
+    this.liveMatchClock,
+  });
 
   final TeamOverview? teams;
   final Fixture? liveMatch;
+  final FixtureClock? liveMatchClock;
 
   @override
   State<Fixtures> createState() => _FixturesState();
@@ -55,6 +61,9 @@ class _FixturesState extends State<Fixtures> {
                   ),
                   child: MatchCard(
                     match: match,
+                    clock: match.status == FixtureStatus.live
+                        ? widget.liveMatchClock
+                        : null,
                     leagueName: leagueName,
                     backgroundColor: nextMatchBackground,
                   ),

@@ -23,6 +23,7 @@ import 'package:onetouch/data/teams/team_repository_provider.dart'
 import 'package:onetouch/features/helper.dart';
 import 'TeamScreen_tabs/index.dart';
 import '../models/fixture.dart';
+import '../models/fixture_clock.dart';
 import '../models/team_overview.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -73,6 +74,7 @@ class _TeamScreenState extends State<TeamScreen>
   int _selectedTabIndex = 0;
   int _tabViewEpoch = 0;
   List<Fixture>? _liveMatches;
+  FixtureClock? _liveMatchClock;
   Timer? _liveMatchTimer;
   int _liveMatchRequestId = 0;
   bool? _wasTickerEnabled;
@@ -138,19 +140,38 @@ class _TeamScreenState extends State<TeamScreen>
         status: FixtureStatus.live,
         limit: 200,
       );
+      final liveMatches = matches
+          .where(
+            (fixture) =>
+                fixture.status == FixtureStatus.live &&
+                (fixture.homeTeamId == teamId || fixture.awayTeamId == teamId),
+          )
+          .toList(growable: true);
+      FixtureClock? liveMatchClock;
+      if (liveMatches.firstOrNull case final liveMatch?) {
+        try {
+          final detail =
+              await _fixtureRepository.refreshDetail(liveMatch.fixtureId);
+          if (detail.fixture.status == FixtureStatus.live) {
+            liveMatches[0] = detail.fixture;
+            liveMatchClock = detail.clock;
+          } else {
+            liveMatches.removeAt(0);
+          }
+        } on Object {
+          if (_liveMatches?.firstOrNull?.fixtureId == liveMatch.fixtureId) {
+            liveMatchClock = _liveMatchClock;
+          }
+        }
+      }
       if (!mounted ||
           requestId != _liveMatchRequestId ||
           teamId != widget.teamId) {
         return;
       }
       setState(() {
-        _liveMatches = List.unmodifiable(
-          matches.where(
-            (fixture) =>
-                fixture.status == FixtureStatus.live &&
-                (fixture.homeTeamId == teamId || fixture.awayTeamId == teamId),
-          ),
-        );
+        _liveMatches = List.unmodifiable(liveMatches);
+        _liveMatchClock = liveMatchClock;
       });
     } on Object {
       // Keep the last verified live state until the next poll succeeds.
@@ -273,11 +294,13 @@ class _TeamScreenState extends State<TeamScreen>
     // team was loaded first, forever.
     if (widget.teamId != oldWidget.teamId || repositoryChanged) {
       _liveMatches = null;
+      _liveMatchClock = null;
       ++_liveMatchRequestId;
       _startOverviewLoad();
       unawaited(_refreshLiveMatches());
     } else if (fixtureRepositoryChanged) {
       _liveMatches = null;
+      _liveMatchClock = null;
       ++_liveMatchRequestId;
       unawaited(_refreshLiveMatches());
     }
@@ -626,6 +649,7 @@ class _TeamScreenState extends State<TeamScreen>
                       ),
                       team: team,
                       liveMatch: _liveMatches?.firstOrNull,
+                      liveMatchClock: _liveMatchClock,
                       onStandingCompetitionSelected: _openStandingCompetition,
                       standingRepository: widget.standingRepository,
                     ),
