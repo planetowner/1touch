@@ -10,6 +10,7 @@ import 'package:onetouch/SignComps/other_login_methods.dart';
 import 'package:onetouch/SignComps/sign_in.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/device_region.dart';
+import 'package:onetouch/core/probability_display.dart';
 import 'package:onetouch/data/auth/api/api_login_options_repository.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/features/community/community_identity.dart';
@@ -102,8 +103,13 @@ void main() {
       'Chances to Finish\nTop 4': '4위 이내 진입 확률',
       'Chances to Finish\nTop 6': '6위 이내 진입 확률',
       'Chances of\nRelegation': '강등 확률',
-      'Chances of Relegation\nPlayoff': '강등 PO 확률',
+      'Chances to\nRelegation Playoff': '강등 플레이오프 확률',
     };
+    expect(probabilityEventTitle('relegation_playoff'),
+        'Chances to\nRelegation Playoff');
+    expect(
+        translateMessage(const Locale('ko'), 'RELEGATION PLAYOFF PROBABILITY'),
+        '강등 플레이오프 확률');
     for (final entry in expected.entries) {
       final translated = translateMessage(const Locale('ko'), entry.key);
       expect(translated, entry.value);
