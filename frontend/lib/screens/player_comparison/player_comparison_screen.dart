@@ -161,7 +161,6 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
                   onTap1: _loading ? null : () => _pickPlayer(0),
                   onTap2: _loading ? null : () => _pickPlayer(1),
                 ),
-                if (_loading) const LinearProgressIndicator(minHeight: 2),
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),

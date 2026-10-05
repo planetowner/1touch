@@ -17,7 +17,7 @@ class _ComparisonContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 8),
+          const SizedBox(height: 24),
           Text(tr(context, 'ATTRIBUTES'), style: Body2_b.style),
           const SizedBox(height: 16),
           PlayerSurface(
@@ -34,13 +34,15 @@ class _ComparisonContent extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 24),
-          for (final category in categories)
+          const SizedBox(height: 48),
+          for (var index = 0; index < categories.length; index++) ...[
             _StatCategoryCard(
-              category: category,
+              category: categories[index],
               firstColor: colors.anchor,
               secondColor: colors.opponent,
             ),
+            if (index < categories.length - 1) const SizedBox(height: 48),
+          ],
           const SizedBox(height: 24),
         ],
       ),
@@ -100,38 +102,35 @@ class _StatCategoryCard extends StatelessWidget {
     for (final metric in [...category.first, ...category.second]) {
       if (!names.contains(metric.metric.code)) names.add(metric.metric.code);
     }
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            playerCategoryLabel(context, category.label).toUpperCase(),
-            style: Body2_b.style.copyWith(color: foreground),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          playerCategoryLabel(context, category.label).toUpperCase(),
+          style: Body2_b.style.copyWith(color: foreground, height: 1.30),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          key: ValueKey('comparison-stat-card-${category.label}'),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+          decoration: BoxDecoration(
+            color: isDark ? AppPalette.darkGrey : AppPalette.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: appCardShadows(context),
           ),
-          const SizedBox(height: 8),
-          Container(
-            key: ValueKey('comparison-stat-card-${category.label}'),
-            padding: const EdgeInsets.fromLTRB(14, 14, 14, 2),
-            decoration: BoxDecoration(
-              color: isDark ? AppPalette.darkGrey : AppPalette.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: appCardShadows(context),
-            ),
-            child: Column(
-              children: [
-                for (final code in names)
-                  _StatRow(
-                    code: code,
-                    category: category,
-                    firstColor: firstColor,
-                    secondColor: secondColor,
-                  ),
-              ],
-            ),
+          child: Column(
+            children: [
+              for (final code in names)
+                _StatRow(
+                  code: code,
+                  category: category,
+                  firstColor: firstColor,
+                  secondColor: secondColor,
+                ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -171,7 +170,7 @@ class _StatRow extends StatelessWidget {
     final firstLabel = firstStat.text;
     final secondLabel = secondStat.text;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -182,6 +181,7 @@ class _StatRow extends StatelessWidget {
                   appStatLabel(context, stat.label),
                   style: Body1_b.style.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.30,
                   ),
                 ),
               ),
@@ -189,11 +189,11 @@ class _StatRow extends StatelessWidget {
               Text(tr(context, stat.unit), style: Eyebrow.style),
             ],
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 12),
           ClipRRect(
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(4),
             child: SizedBox(
-              height: 34,
+              height: 32,
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   double minimumWidth(String text) {
