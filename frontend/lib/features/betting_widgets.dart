@@ -239,6 +239,13 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
               Theme.of(context).brightness == Brightness.dark
                   ? AppPalette.lightGrey
                   : AppColors.of(context).divider;
+          final closeButton = GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Icon(
+              Icons.close,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          );
           return Container(
             key: const ValueKey('match-betting-modal'),
             constraints: BoxConstraints(
@@ -254,48 +261,53 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
               child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(
                   24,
-                  16,
+                  24,
                   24,
                   24 + MediaQuery.viewInsetsOf(context).bottom,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                            child: Text(tr(context, 'Bets'),
-                                style: Heading3.style)),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
                     if (_submitted) ...[
-                      const Icon(Icons.check_circle_outline, size: 72),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: closeButton,
+                      ),
                       const SizedBox(height: 16),
+                      const Icon(Icons.check_circle_outline, size: 80),
+                      const SizedBox(height: 24),
                       Text(tr(context, 'Bet Submitted!'),
                           style: Heading3.style),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Text(
                         tr(context,
                             'Check back after the final whistle for the result.'),
                         textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.grey),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 48),
                       _BetButton(
                         text: trUpper(context, 'Done'),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ] else ...[
+                      Stack(
+                        children: [
+                          Center(
+                            child: Text(tr(context, 'Bets'),
+                                style: Heading3.style),
+                          ),
+                          Positioned(right: 0, top: 0, child: closeButton),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
                       MatchStatsHeader(
                         homeTeam: widget.homeTeam,
                         awayTeam: widget.awayTeam,
                         options: market.options,
                         anchorTeamId: widget.anchorTeamId,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
                       if (!_choosingAmount)
                         ...market.options.map(
                           (option) => Column(
@@ -360,40 +372,25 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                           style: Heading5.style,
                         ),
                         const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              key: const ValueKey('bet-decrease'),
-                              onPressed: controller.saving ||
-                                      _amount <= market.stakeUnit
-                                  ? null
-                                  : () => setState(
-                                      () => _amount -= market.stakeUnit),
-                              icon: const Icon(Icons.remove_circle_outline),
-                            ),
-                            Flexible(
-                              child: FittedBox(
-                                child: Text(
-                                    tr(context, '{points} pts',
-                                        {'points': _amount}),
-                                    style: Heading3.style),
-                              ),
-                            ),
-                            IconButton(
-                              key: const ValueKey('bet-increase'),
-                              onPressed: controller.saving ||
-                                      _amount + market.stakeUnit >
-                                          controller.spendingLimit
-                                  ? null
-                                  : () => setState(
-                                      () => _amount += market.stakeUnit),
-                              icon: const Icon(Icons.add_circle_outline),
-                            ),
-                          ],
+                        _BetAmountInput(
+                          amount: _amount,
+                          onDecrease: controller.saving ||
+                                  _amount <= market.stakeUnit
+                              ? null
+                              : () =>
+                                  setState(() => _amount -= market.stakeUnit),
+                          onIncrease: controller.saving ||
+                                  _amount + market.stakeUnit >
+                                      controller.spendingLimit
+                              ? null
+                              : () =>
+                                  setState(() => _amount += market.stakeUnit),
                         ),
-                        Text(tr(context, 'Available: {points} pts',
-                            {'points': controller.spendingLimit})),
+                        const SizedBox(height: 16),
+                        Text(
+                            tr(context, 'Available: {points} pts',
+                                {'points': controller.spendingLimit}),
+                            style: const TextStyle(color: Colors.grey)),
                         const SizedBox(height: 16),
                         if (total != null) ...[
                           Text(
@@ -426,7 +423,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                         ),
                       if (!controller.beforeKickoff)
                         Text(tr(context, 'Betting is closed for this match.')),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       _BetButton(
                         text: controller.saving
                             ? tr(context, 'SUBMITTING…')
@@ -459,6 +456,118 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
           );
         },
       );
+}
+
+class _BetAmountInput extends StatelessWidget {
+  const _BetAmountInput({
+    required this.amount,
+    required this.onDecrease,
+    required this.onIncrease,
+  });
+
+  final int amount;
+  final VoidCallback? onDecrease;
+  final VoidCallback? onIncrease;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final foreground = theme.colorScheme.onSurface;
+    // 서버의 금액 규칙은 유지하고, 기존 금액 박스와 오른쪽 버튼 배치를 복원해요.
+    return Container(
+      key: const ValueKey('match-betting-amount-input'),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.brightness == Brightness.dark
+            ? AppPalette.lightGrey
+            : AppPalette.lightGreyBox,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text('$amount',
+                      style: TextStyle(
+                          color: foreground,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Text(
+                      tr(context, '{points} pts', {'points': ''}).trim(),
+                      style: TextStyle(
+                          color: foreground,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              _BetAmountButton(
+                buttonKey: const ValueKey('bet-decrease'),
+                icon: Icons.remove,
+                onPressed: onDecrease,
+              ),
+              const SizedBox(width: 16),
+              _BetAmountButton(
+                buttonKey: const ValueKey('bet-increase'),
+                icon: Icons.add,
+                onPressed: onIncrease,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BetAmountButton extends StatelessWidget {
+  const _BetAmountButton({
+    required this.buttonKey,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final Key buttonKey;
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox.square(
+      dimension: 32,
+      child: IconButton(
+        key: buttonKey,
+        onPressed: onPressed,
+        icon: Icon(icon, size: 20),
+        style: IconButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: const Size.square(32),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          foregroundColor: theme.colorScheme.onSurface,
+          shape: const CircleBorder(),
+          side: BorderSide(
+            color: onPressed == null
+                ? theme.disabledColor
+                : theme.colorScheme.onSurface,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class MatchStatsHeader extends StatelessWidget {
