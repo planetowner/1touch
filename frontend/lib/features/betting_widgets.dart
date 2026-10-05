@@ -294,7 +294,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                       Stack(
                         children: [
                           Center(
-                            child: Text(tr(context, 'Bets'),
+                            child: Text(trUpper(context, 'Bets'),
                                 style: Heading3.style),
                           ),
                           Positioned(right: 0, top: 0, child: closeButton),
