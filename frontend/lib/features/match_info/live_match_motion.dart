@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 const _liveMotionCurve = Cubic(0.5, 0, 0.5, 1);
 const _liveMotionDuration = Duration(seconds: 1);
+const _liveTrimCycleDuration = Duration(seconds: 2);
 
 /// A live indicator that fades out and back in, one second in each direction.
 class LivePulseDot extends StatefulWidget {
@@ -61,7 +62,7 @@ class _LivePulseDotState extends State<LivePulseDot>
       );
 }
 
-/// Draws a short straight line from left to right once when it appears.
+/// Repeatedly draws a short straight line from left to right while live.
 class LiveTrimLine extends StatefulWidget {
   const LiveTrimLine({super.key, this.width = 24, this.color});
 
@@ -76,16 +77,17 @@ class _LiveTrimLineState extends State<LiveTrimLine>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: _liveMotionDuration,
+    duration: _liveTrimCycleDuration,
   );
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (MediaQuery.disableAnimationsOf(context)) {
+      _controller.stop();
       _controller.value = 1;
-    } else if (_controller.value == 0) {
-      _controller.forward();
+    } else if (!_controller.isAnimating) {
+      _controller.repeat();
     }
   }
 
@@ -104,7 +106,9 @@ class _LiveTrimLineState extends State<LiveTrimLine>
           animation: _controller,
           builder: (context, child) => FractionallySizedBox(
             alignment: Alignment.centerLeft,
-            widthFactor: _liveMotionCurve.transform(_controller.value),
+            widthFactor: _controller.value < 0.5
+                ? _liveMotionCurve.transform(_controller.value * 2)
+                : 1,
             child: child,
           ),
           child: ColoredBox(

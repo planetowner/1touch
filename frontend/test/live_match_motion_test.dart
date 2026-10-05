@@ -24,7 +24,8 @@ void main() {
     expect(opacity(), closeTo(1, 0.01));
   });
 
-  testWidgets('live line draws once and stays drawn', (tester) async {
+  testWidgets('live line continuously redraws from left to right',
+      (tester) async {
     await tester.pumpWidget(const MaterialApp(home: LiveTrimLine()));
     double widthFactor() => tester
         .widget<FractionallySizedBox>(
@@ -39,9 +40,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expect(widthFactor(), closeTo(0.5, 0.01));
     await tester.pump(const Duration(milliseconds: 500));
-    expect(widthFactor(), 1);
-    await tester.pump(const Duration(seconds: 1));
-    expect(widthFactor(), 1);
+    expect(widthFactor(), closeTo(1, 0.01));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(widthFactor(), closeTo(1, 0.01));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(widthFactor(), closeTo(0, 0.01));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(widthFactor(), closeTo(0.5, 0.01));
   });
 
   testWidgets('reduced motion keeps both indicators visible', (tester) async {
