@@ -48,8 +48,9 @@ class AppInfoButton extends StatelessWidget {
                     AppCloseHeader(
                       closeKey: const ValueKey('app-info-close'),
                       onClose: () => Navigator.of(dialogContext).pop(),
+                      buttonSize: 24,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     SizedBox(
                       width: double.infinity,
                       child: Text(

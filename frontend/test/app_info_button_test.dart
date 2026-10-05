@@ -41,7 +41,8 @@ void main() {
     final closeRect = tester.getRect(find.byKey(const ValueKey('app-info-close')));
     expect(messageRect.left - contentRect.left, 24);
     expect(closeRect.top - contentRect.top, 24);
-    expect(messageRect.top - closeRect.bottom, 16);
+    expect(closeRect.size, const Size.square(24));
+    expect(messageRect.top - closeRect.bottom, 8);
     expect(messageRect.width, contentRect.width - 48);
     expect(contentRect.bottom - messageRect.bottom, 24);
     expect(contentRect.right - closeRect.right, 24);
