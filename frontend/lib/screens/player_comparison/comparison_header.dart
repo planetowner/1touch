@@ -146,8 +146,9 @@ class _HeaderArea extends StatelessWidget {
                 'VS',
                 style: TextStyle(
                   color: foreground,
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.w700,
+                  height: 1.10,
                 ),
               ),
             ),

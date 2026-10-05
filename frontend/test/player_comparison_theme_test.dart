@@ -132,6 +132,17 @@ void main() {
             find.byKey(const ValueKey('comparison-stat-card-Finish')));
         final decoration = statCard.decoration as BoxDecoration;
         expect(decoration.color, dark ? AppPalette.darkGrey : AppPalette.white);
+        expect(statCard.padding, const EdgeInsets.fromLTRB(24, 24, 24, 0));
+        expect(decoration.borderRadius, BorderRadius.circular(16));
+        expect(tester.widget<Text>(find.text('VS')).style?.fontSize, 18);
+        expect(
+          tester.getTopLeft(find.text('ATTRIBUTES')).dy -
+              tester
+                  .getRect(
+                      find.byKey(const ValueKey('comparison-header-gradient')))
+                  .bottom,
+          closeTo(24, 0.1),
+        );
         final categoryTitle = tester.widget<Text>(find.text('FINISH'));
         expect(categoryTitle.style?.fontSize, Body2_b.style.fontSize);
         expect(categoryTitle.style?.fontWeight, Body2_b.style.fontWeight);
@@ -142,6 +153,19 @@ void main() {
           statName.style?.color,
           categoryTitle.style?.color,
         );
+        final cardRect = tester
+            .getRect(find.byKey(const ValueKey('comparison-stat-card-Finish')));
+        final titleRect = tester.getRect(find.text('FINISH'));
+        final goalRect = tester.getRect(find.text('Goals'));
+        final goalBarRect = tester
+            .getRect(find.byKey(const ValueKey('comparison-stat-first-goals')));
+        final xgRect = tester.getRect(find.text('xG'));
+        expect(cardRect.top - titleRect.bottom, closeTo(16, 0.1));
+        expect(goalRect.left - cardRect.left, closeTo(24, 0.1));
+        expect(goalRect.top - cardRect.top, closeTo(24, 0.1));
+        expect(goalBarRect.top - goalRect.bottom, closeTo(12, 0.1));
+        expect(goalBarRect.height, 32);
+        expect(xgRect.top - goalBarRect.bottom, closeTo(24, 0.1));
         final statValue = tester
             .widgetList<Text>(
               find.descendant(
