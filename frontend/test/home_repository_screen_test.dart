@@ -466,6 +466,38 @@ void main() {
     expect(teamPicker.left - search.right, 16);
     expect(profile.left - teamPicker.right, 16);
     expect(393 - profile.right, 24);
+    final pickerDecoration = tester
+        .widget<Container>(
+          find.byKey(const ValueKey('home-app-bar-team-picker')),
+        )
+        .decoration as BoxDecoration;
+    expect(pickerDecoration.color, Colors.white);
+    expect(pickerDecoration.boxShadow, app_style.lightModeCardShadows);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home team picker keeps its dark mode surface', (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final repository = _ControlledHomeRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: HomeScreen(
+          repository: repository,
+          newsRepository: _RecordingNewsRepository(),
+        ),
+      ),
+    );
+    repository.calls.single.completer.complete(_homeData());
+    await tester.pumpAndSettle();
+
+    final picker = find.byKey(const ValueKey('home-app-bar-team-picker'));
+    final decoration =
+        tester.widget<Container>(picker).decoration as BoxDecoration;
+    expect(tester.getSize(picker), const Size(64, 40));
+    expect(decoration.color, Colors.white.withValues(alpha: 0.2));
+    expect(decoration.boxShadow, isNull);
     expect(tester.takeException(), isNull);
   });
 
