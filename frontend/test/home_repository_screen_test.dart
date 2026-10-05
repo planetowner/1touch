@@ -534,7 +534,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('calendar starts 16px below its heading text', (tester) async {
+  testWidgets('calendar title and right-aligned sync icon sit above the card',
+      (tester) async {
     for (final size in [const Size(320, 568), const Size(393, 852)]) {
       await tester.pumpWidget(const SizedBox.shrink());
       await _setScreenSize(tester, size);
@@ -552,16 +553,36 @@ void main() {
       repository.calls.single.completer.complete(_homeData());
       await tester.pumpAndSettle();
 
+      final titleRow = find.byKey(const ValueKey('home-calendar-title-row'));
       final heading = find.descendant(
-        of: find.byKey(const ValueKey('home-calendar-title-row')),
+        of: titleRow,
         matching: find.text('CALENDAR'),
+      );
+      final syncIcon = find.descendant(
+        of: titleRow,
+        matching: find.byIcon(Icons.sync),
       );
       final calendarCard = find.byKey(
         const ValueKey('fixture-calendar-card'),
       );
 
       expect(
-        tester.getTopLeft(calendarCard).dy - tester.getBottomLeft(heading).dy,
+        tester.getCenter(heading).dy,
+        closeTo(tester.getCenter(syncIcon).dy, 0.1),
+      );
+      expect(
+        tester.getRect(titleRow).right - tester.getRect(syncIcon).right,
+        24,
+      );
+      expect(
+        tester.getSize(find.ancestor(
+          of: syncIcon,
+          matching: find.byType(IconButton),
+        )),
+        const Size(48, 48),
+      );
+      expect(
+        tester.getTopLeft(calendarCard).dy - tester.getBottomLeft(titleRow).dy,
         16,
       );
       expect(tester.takeException(), isNull);
