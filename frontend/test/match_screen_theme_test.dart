@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/chat/chat_repository.dart';
+import 'package:onetouch/data/chat/chat_socket.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/models/fixture_detail.dart';
+import 'package:onetouch/models/fixture_chat_message.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
 import 'support/fake_betting_repository.dart';
 import 'support/test_match_analysis_repository.dart';
@@ -19,6 +24,8 @@ void main() {
     required Size size,
     required String matchId,
     required String matchStatus,
+    ChatRepository? chatRepository,
+    ChatSocket? chatSocket,
   }) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -75,6 +82,8 @@ void main() {
                 shots: const []),
           ),
           standingRepository: MockStandingRepository(),
+          chatRepository: chatRepository,
+          chatSocket: chatSocket,
         ),
       ),
     );
@@ -383,4 +392,89 @@ void main() {
     expect(find.text('Live'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('live chat keeps its selected tab visible and pinned',
+      (tester) async {
+    await pumpMatch(
+      tester,
+      theme: app_style.darktheme,
+      size: const Size(320, 568),
+      matchId: '19200003',
+      matchStatus: 'live',
+      chatRepository: _EmptyChatRepository(),
+      chatSocket: _TestChatSocket(),
+    );
+
+    expect(find.text('ANALYSIS'), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text('LIVE CHAT'),
+      120,
+      scrollable: find.descendant(
+        of: find.byKey(const ValueKey('match-tab-scroll')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.text('LIVE CHAT'));
+    await tester.pumpAndSettle();
+
+    final tab = tester.getRect(find.byKey(const ValueKey('match-tab-2')));
+    final messageViewport = tester
+        .getRect(find.byKey(const ValueKey('live-chat-message-viewport')));
+    expect(tab.right, closeTo(320 - 24, 0.01));
+    expect(messageViewport.top, greaterThanOrEqualTo(tab.bottom));
+    expect(find.byKey(const ValueKey('live-chat-input')), findsOneWidget);
+    expect(
+      tester
+          .widget<SliverPersistentHeader>(
+            find.byType(SliverPersistentHeader),
+          )
+          .pinned,
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+  });
+}
+
+class _EmptyChatRepository implements ChatRepository {
+  @override
+  final ValueNotifier<Map<int, List<FixtureChatMessage>>> cachedHistories =
+      ValueNotifier(const {});
+
+  @override
+  List<FixtureChatMessage> cachedHistoryForFixture(int fixtureId) => const [];
+
+  @override
+  Future<List<FixtureChatMessage>> loadHistory({
+    required int fixtureId,
+    int? beforeId,
+    int? afterId,
+    int limit = 50,
+  }) async =>
+      const [];
+
+  @override
+  Future<void> reportMessage({
+    required int messageId,
+    required String reason,
+  }) async {}
+}
+
+class _TestChatSocket implements ChatSocket {
+  @override
+  Future<ChatSocketSession> connect(int fixtureId) async => _TestChatSession();
+}
+
+class _TestChatSession implements ChatSocketSession {
+  final StreamController<FixtureChatMessage> _messages =
+      StreamController.broadcast();
+
+  @override
+  Stream<FixtureChatMessage> get messages => _messages.stream;
+
+  @override
+  Future<void> send(String text) async {}
+
+  @override
+  Future<void> close() => _messages.close();
 }

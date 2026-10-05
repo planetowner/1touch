@@ -95,6 +95,154 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('shows the fixed chat shell while the connection is loading',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final connection = Completer<ChatSocketSession>();
+    final session = _ChatSession();
+
+    await tester.pumpWidget(_app(
+      repository: _ChatRepository(const []),
+      socket: _PendingChatSocket(connection.future),
+      theme: app_style.darktheme,
+    ));
+    await tester.pump();
+
+    expect(
+        find.byKey(const ValueKey('live-chat-loading-shell')), findsOneWidget);
+    expect(find.byKey(const ValueKey('live-chat-input')), findsOneWidget);
+    expect(find.byKey(const ValueKey('live-chat-top-fade')), findsOneWidget);
+    expect(find.text('Be the first to chat!'), findsNothing);
+    expect(
+      tester.getRect(find.byKey(const ValueKey('live-chat-composer'))),
+      const Rect.fromLTWH(0, 773, 393, 79),
+    );
+    expect(find.byKey(const ValueKey('live-chat-add-button')), findsNothing);
+    expect(find.byIcon(Icons.add), findsNothing);
+    expect(
+      tester.getRect(find.byKey(const ValueKey('live-chat-input'))),
+      const Rect.fromLTWH(12, 785, 318, 43),
+    );
+    expect(
+      tester.getRect(find.byKey(const ValueKey('live-chat-send-button'))),
+      const Rect.fromLTWH(338, 785, 43, 43),
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey('live-chat-top-fade'))),
+      const Size(393, 100),
+    );
+
+    await tester.enterText(
+        find.byKey(const ValueKey('live-chat-input')), 'ready to send');
+    connection.complete(session);
+    await tester.pumpAndSettle();
+
+    expect(find.text('ready to send'), findsOneWidget);
+    expect(find.text('Be the first to chat!'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('matches message padding, corners and group spacing',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(_app(
+      repository: _ChatRepository([
+        _message(messageId: 10, userId: 7),
+        _message(messageId: 11, userId: 7),
+        _message(messageId: 12, userId: 8),
+      ]),
+      socket: _ChatSocket(session: _ChatSession()),
+      theme: app_style.darktheme,
+    ));
+    await tester.pumpAndSettle();
+
+    final first = find.byKey(const ValueKey('live-chat-message-10'));
+    final second = find.byKey(const ValueKey('live-chat-message-11'));
+    final third = find.byKey(const ValueKey('live-chat-message-12'));
+    for (final bubble in [first, second, third]) {
+      expect(tester.widget<Container>(bubble).padding,
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 12));
+    }
+    expect(tester.getRect(second).top - tester.getRect(first).bottom, 8);
+    final thirdHeader = find
+        .ancestor(of: find.text('rooney_x7k2'), matching: find.byType(Row))
+        .first;
+    expect(tester.getRect(thirdHeader).top - tester.getRect(second).bottom, 16);
+    expect(
+      (tester.widget<Container>(first).decoration! as BoxDecoration)
+          .borderRadius,
+      const BorderRadius.only(
+        topLeft: Radius.circular(16),
+        bottomLeft: Radius.circular(16),
+        bottomRight: Radius.circular(16),
+      ),
+    );
+    expect(
+      (tester.widget<Container>(third).decoration! as BoxDecoration)
+          .borderRadius,
+      const BorderRadius.only(
+        topRight: Radius.circular(16),
+        bottomLeft: Radius.circular(16),
+        bottomRight: Radius.circular(16),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('anchors the first message above the composer', (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(_app(
+      repository: _ChatRepository([_message(messageId: 10, userId: 7)]),
+      socket: _ChatSocket(session: _ChatSession()),
+      theme: app_style.darktheme,
+    ));
+    await tester.pumpAndSettle();
+
+    final bubble =
+        tester.getRect(find.byKey(const ValueKey('live-chat-message-10')));
+    final composer =
+        tester.getRect(find.byKey(const ValueKey('live-chat-composer')));
+    expect(composer.top - bubble.bottom, 24);
+    expect(
+      tester
+          .widget<ListView>(
+            find.byKey(const ValueKey('live-chat-message-list')),
+          )
+          .reverse,
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps the composer fixed on a tall phone', (tester) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(_app(
+      repository: _ChatRepository(const []),
+      socket: _ChatSocket(session: _ChatSession()),
+    ));
+    await tester.pumpAndSettle();
+
+    final composer =
+        tester.getRect(find.byKey(const ValueKey('live-chat-composer')));
+    expect(composer.bottom, 932);
+    expect(composer.height, 79);
+    expect(tester.getSize(find.byKey(const ValueKey('live-chat-input'))).height,
+        43);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('shows the backend favorite-team restriction', (tester) async {
     await tester.pumpWidget(
       _app(
@@ -241,12 +389,13 @@ Widget _app({
   required ChatRepository repository,
   required ChatSocket socket,
   String language = 'en',
+  ThemeData? theme,
 }) {
   return MaterialApp(
     locale: Locale(language),
     supportedLocales: appSupportedLocales,
     localizationsDelegates: appLocalizationDelegates,
-    theme: app_style.whitetheme,
+    theme: theme ?? app_style.whitetheme,
     home: Scaffold(
       body: LiveChatTab(
         matchId: 42,
@@ -317,6 +466,15 @@ class _ChatSocket implements ChatSocket {
     if (connectionError != null) throw connectionError;
     return session!;
   }
+}
+
+class _PendingChatSocket implements ChatSocket {
+  const _PendingChatSocket(this.connection);
+
+  final Future<ChatSocketSession> connection;
+
+  @override
+  Future<ChatSocketSession> connect(int fixtureId) => connection;
 }
 
 class _ChatSession implements ChatSocketSession {

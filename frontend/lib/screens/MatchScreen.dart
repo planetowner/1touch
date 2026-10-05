@@ -50,6 +50,7 @@ class MatchScreen extends StatefulWidget {
 }
 
 class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
+  final ScrollController _tabScrollController = ScrollController();
   int selectedIndex = 0;
   late List<String> tabs;
   Fixture? fixture;
@@ -61,6 +62,9 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
   Timer? _refreshTimer;
   bool _requestInFlight = false;
   bool _isLiveVerifying = false;
+
+  bool get _isLiveChatSelected =>
+      selectedIndex < tabs.length && tabs[selectedIndex] == 'LIVE CHAT';
 
   List<String> _tabsFor(String status) => switch (status) {
         'past' => ['MATCH INFO', 'HEAD TO HEAD', 'Analysis'],
@@ -93,6 +97,24 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
       _isLoading = false;
       _hasLoadError = false;
       _isLiveVerifying = firstLiveDetail && !wasShowingLiveCache;
+    });
+    _ensureLiveChatTabVisible();
+  }
+
+  void _selectTab(int index) {
+    setState(() => selectedIndex = index);
+    _ensureLiveChatTabVisible();
+  }
+
+  void _ensureLiveChatTabVisible() {
+    if (!_isLiveChatSelected) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_tabScrollController.hasClients) return;
+      _tabScrollController.animateTo(
+        _tabScrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
     });
   }
 
@@ -181,6 +203,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _refreshTimer?.cancel();
     _betting?.dispose();
+    _tabScrollController.dispose();
     super.dispose();
   }
 
@@ -199,6 +222,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
     final foreground = Theme.of(context).colorScheme.onSurface;
     // 상단 바와 본문이 같은 배경을 써야 색 경계가 생기지 않아요.
     final pageBackground = mainPageBackground(context);
+    final liveChatSelected = _isLiveChatSelected;
 
     return Scaffold(
       key: const ValueKey('match-screen-scaffold'),
@@ -263,45 +287,60 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
               ),
             ],
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: SingleChildScrollView(
-                key: const ValueKey('match-tab-scroll'),
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
-                  key: const ValueKey('match-tab-list'),
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (var index = 0; index < tabs.length; index++) ...[
-                      if (index > 0) const SizedBox(width: 8),
-                      _MatchPillTab(
-                        surfaceKey: ValueKey('match-tab-$index'),
-                        label: trUpper(context, tabs[index]),
-                        selected: selectedIndex == index,
-                        onTap: () => setState(() => selectedIndex = index),
-                      ),
+          SliverPersistentHeader(
+            pinned: liveChatSelected,
+            delegate: _MatchTabsHeaderDelegate(
+              extent: liveChatSelected ? 70 : 58,
+              backgroundColor: pageBackground,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: 12,
+                  bottom: liveChatSelected ? 24 : 12,
+                ),
+                child: SingleChildScrollView(
+                  key: const ValueKey('match-tab-scroll'),
+                  controller: _tabScrollController,
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    key: const ValueKey('match-tab-list'),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (var index = 0; index < tabs.length; index++) ...[
+                        if (index > 0) const SizedBox(width: 8),
+                        _MatchPillTab(
+                          surfaceKey: ValueKey('match-tab-$index'),
+                          label: trUpper(context, tabs[index]),
+                          selected: selectedIndex == index,
+                          onTap: () => _selectTab(index),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
         ],
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: _isLiveVerifying
-              ? Column(
-                  children: [
-                    const LinearProgressIndicator(
-                      key: ValueKey('match-live-verifying'),
-                    ),
-                    _buildTabContent(),
-                  ],
-                )
-              : _buildTabContent(),
-        ),
+        body: liveChatSelected && _fixtureId != null
+            ? LiveChatTab(
+                matchId: _fixtureId!,
+                repository: widget.chatRepository,
+                socket: widget.chatSocket,
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _isLiveVerifying
+                    ? Column(
+                        children: [
+                          const LinearProgressIndicator(
+                            key: ValueKey('match-live-verifying'),
+                          ),
+                          _buildTabContent(),
+                        ],
+                      )
+                    : _buildTabContent(),
+              ),
       ),
     );
   }
@@ -389,6 +428,38 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
         return const SizedBox.shrink();
     }
   }
+}
+
+class _MatchTabsHeaderDelegate extends SliverPersistentHeaderDelegate {
+  const _MatchTabsHeaderDelegate({
+    required this.extent,
+    required this.backgroundColor,
+    required this.child,
+  });
+
+  final double extent;
+  final Color backgroundColor;
+  final Widget child;
+
+  @override
+  double get minExtent => extent;
+
+  @override
+  double get maxExtent => extent;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) =>
+      ColoredBox(color: backgroundColor, child: child);
+
+  @override
+  bool shouldRebuild(covariant _MatchTabsHeaderDelegate oldDelegate) =>
+      extent != oldDelegate.extent ||
+      backgroundColor != oldDelegate.backgroundColor ||
+      child != oldDelegate.child;
 }
 
 class _MatchPillTab extends StatelessWidget {

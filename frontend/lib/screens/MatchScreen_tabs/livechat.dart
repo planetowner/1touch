@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
@@ -189,7 +188,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
+          _scrollController.position.minScrollExtent,
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
         );
@@ -285,7 +284,6 @@ class _LiveChatTabState extends State<LiveChatTab> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final foreground = Theme.of(context).colorScheme.onSurface;
     final appColors = AppColors.of(context);
     if (_initError != null) {
       return Center(
@@ -334,109 +332,152 @@ class _LiveChatTabState extends State<LiveChatTab> {
       );
     }
 
-    if (!_isInitialized) {
-      return const Center(child: FootballLoadingIndicator());
-    }
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    final composerBottom = bottomInset > 24 ? bottomInset : 24.0;
+    final pageBackground = mainPageBackground(context);
+    final messageContent = !_isInitialized
+        ? const SizedBox.expand(key: ValueKey('live-chat-loading-shell'))
+        : _messages.isEmpty
+            ? Center(
+                child: Opacity(
+                  opacity: 0.4,
+                  child: Text(tr(context, 'Be the first to chat!'),
+                      style: Body1.style),
+                ),
+              )
+            : ListView.builder(
+                key: const ValueKey('live-chat-message-list'),
+                controller: _scrollController,
+                reverse: true,
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final messageIndex = _messages.length - 1 - index;
+                  final msg = _messages[messageIndex];
+                  final prevMsg =
+                      messageIndex > 0 ? _messages[messageIndex - 1] : null;
+                  final nextMsg = messageIndex + 1 < _messages.length
+                      ? _messages[messageIndex + 1]
+                      : null;
+                  final showHeader =
+                      prevMsg == null || prevMsg.nicknameEn != msg.nicknameEn;
+                  final continuesGroup =
+                      nextMsg != null && nextMsg.nicknameEn == msg.nicknameEn;
 
-    return SizedBox(
-      height: MediaQuery.of(context).size.height,
-      child: Column(
-        children: [
-          Expanded(
-            child: _messages.isEmpty
-                ? Center(
-                    child: Opacity(
-                      opacity: 0.4,
-                      child: Text(tr(context, 'Be the first to chat!'),
-                          style: Body1.style),
+                  return GestureDetector(
+                    onLongPressStart: (details) => _showContextMenu(
+                      context,
+                      details.globalPosition,
+                      msg,
                     ),
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 24),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      final msg = _messages[index];
-                      final prevMsg = index > 0 ? _messages[index - 1] : null;
-                      final showHeader = prevMsg == null ||
-                          prevMsg.nicknameEn != msg.nicknameEn;
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        bottom: nextMsg == null
+                            ? 0
+                            : continuesGroup
+                                ? 8
+                                : 16,
+                      ),
+                      child: _buildMessage(msg, showHeader),
+                    ),
+                  );
+                },
+              );
 
-                      return GestureDetector(
-                        onLongPressStart: (details) => _showContextMenu(
-                          context,
-                          details.globalPosition,
-                          msg,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _buildMessage(msg, showHeader),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          SafeArea(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              color: isDark ? Colors.black : AppPalette.white,
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
+    return Column(
+      children: [
+        Expanded(
+          child: Stack(
+            key: const ValueKey('live-chat-message-viewport'),
+            children: [
+              Positioned.fill(child: messageContent),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 100,
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    key: const ValueKey('live-chat-top-fade'),
                     decoration: BoxDecoration(
-                      color: isDark
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          pageBackground,
+                          pageBackground.withValues(alpha: 0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          key: const ValueKey('live-chat-composer'),
+          padding: EdgeInsets.fromLTRB(12, 12, 12, composerBottom),
+          color: isDark ? const Color(0xFF272828) : AppPalette.white,
+          child: Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 43,
+                  child: TextField(
+                    key: const ValueKey('live-chat-input'),
+                    controller: _controller,
+                    style: Body1.style.copyWith(height: 1.3),
+                    textAlignVertical: TextAlignVertical.center,
+                    decoration: InputDecoration(
+                      hintText: tr(context, 'Type a message'),
+                      hintStyle: Body1.style.copyWith(
+                        color: appColors.mutedForeground,
+                        height: 1.3,
+                      ),
+                      isDense: true,
+                      filled: true,
+                      fillColor: isDark
                           ? AppPalette.lightGrey
                           : AppPalette.lightGreyBox,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.add, color: foreground, size: 22),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? AppPalette.darkGrey
-                            : AppPalette.lightGreyBox,
-                        borderRadius: BorderRadius.circular(24),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
                       ),
-                      child: TextField(
-                        controller: _controller,
-                        style: Body1.style,
-                        decoration: InputDecoration(
-                          hintText: tr(context, 'Type a message'),
-                          hintStyle: Body1.style.copyWith(
-                            color: appColors.mutedForeground,
-                          ),
-                          border: InputBorder.none,
-                        ),
-                        onSubmitted: (_) => _sendMessage(),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
                       ),
                     ),
+                    onSubmitted: (_) => _sendMessage(),
                   ),
-                  const SizedBox(width: 10),
-                  GestureDetector(
-                    onTap: _sendMessage,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF2979FF),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.send_rounded,
-                          color: Colors.white, size: 20),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                key: const ValueKey('live-chat-send-button'),
+                onTap: _sendMessage,
+                child: Container(
+                  width: 43,
+                  height: 43,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5B92FF),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: const Icon(Icons.send_rounded,
+                      color: Colors.white, size: 24),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -463,13 +504,24 @@ class _LiveChatTabState extends State<LiveChatTab> {
                 msg.isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: msg.isMine ? [time, gap, author] : [author, gap, time],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
         ],
         Container(
+          key: ValueKey('live-chat-message-${msg.messageId}'),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: isDark ? AppPalette.lightGrey : AppPalette.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: msg.isMine
+                ? const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  )
+                : const BorderRadius.only(
+                    topRight: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
           ),
           child: Text(msg.text, style: Body1.style),
         ),
