@@ -70,13 +70,17 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
   }
 
   Widget _providerButton(LoginProvider provider) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     final icon = switch (provider) {
       LoginProvider.kakao =>
         SvgPicture.asset('assets/auth/kakao.svg', width: 24, height: 24),
       LoginProvider.google =>
         Image.asset('assets/auth/google.png', width: 24, height: 24),
-      LoginProvider.apple =>
-        SvgPicture.asset('assets/auth/apple.svg', width: 23, height: 28),
+      LoginProvider.apple => SvgPicture.asset('assets/auth/apple.svg',
+          width: 23,
+          height: 28,
+          colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn)),
       LoginProvider.line =>
         SvgPicture.asset('assets/auth/line.svg', width: 24, height: 24),
       LoginProvider.email => const SizedBox.shrink(),
@@ -90,10 +94,9 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
             ? null
             : () => _signIn(provider),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).brightness == Brightness.light
-              ? AppPalette.black
-              : AppPalette.lightGrey,
-          foregroundColor: AppPalette.white,
+          backgroundColor:
+              isLight ? AppPalette.lightModeDarkGrey : AppPalette.lightGrey,
+          foregroundColor: foreground,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 0,
@@ -109,7 +112,7 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
                 child: CircularProgressIndicator(
                     key: ValueKey('${provider.name}-sign-in-progress'),
                     strokeWidth: 2,
-                    color: AppPalette.white))
+                    color: foreground))
             : widget.iconOnly
                 ? Tooltip(message: tr(context, provider.label), child: icon)
                 : Stack(alignment: Alignment.center, children: [
@@ -118,8 +121,8 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
                         padding: const EdgeInsets.symmetric(horizontal: 32),
                         child: Text(tr(context, provider.label),
                             textAlign: TextAlign.center,
-                            style: AuthStyles.body
-                                .copyWith(color: AppPalette.white))),
+                            style:
+                                AuthStyles.body.copyWith(color: foreground))),
                   ]),
       ),
     );
