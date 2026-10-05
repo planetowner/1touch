@@ -66,6 +66,7 @@ class _TeamScreenState extends State<TeamScreen>
   int _standingSelectionRequestId = 0;
   bool _isBracketInteracting = false;
   bool _isRevealingTeamAppBar = false;
+  bool _isMatchHeaderVisible = true;
   int _selectedTabIndex = 0;
   int _tabViewEpoch = 0;
   final List<int> _tabRefreshEpochs = List<int>.filled(5, 0);
@@ -104,6 +105,13 @@ class _TeamScreenState extends State<TeamScreen>
   void _handleTabChange() {
     if (_selectedTabIndex == _tabController.index) return;
     setState(() => _selectedTabIndex = _tabController.index);
+    if (_selectedTabIndex == 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _selectedTabIndex == 1) {
+          _setMatchHeaderVisible(true, force: true);
+        }
+      });
+    }
   }
 
   void _handleMainTabAction() {
@@ -124,8 +132,28 @@ class _TeamScreenState extends State<TeamScreen>
 
   void _showRootAppBar() {
     if (!mounted) return;
+    _isMatchHeaderVisible = true;
     _jumpToStartIfReady(_nestedScrollKey.currentState?.innerController);
     _jumpToStartIfReady(_scrollController);
+  }
+
+  void _setMatchHeaderVisible(bool visible, {bool force = false}) {
+    if (_selectedTabIndex != 1 ||
+        !_scrollController.hasClients ||
+        (_isMatchHeaderVisible == visible && !force)) {
+      return;
+    }
+    final position = _scrollController.position;
+    if (!position.hasContentDimensions) return;
+    _isMatchHeaderVisible = visible;
+    final target =
+        visible ? position.minScrollExtent : position.maxScrollExtent;
+    if ((position.pixels - target).abs() < 0.5) return;
+    unawaited(_scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+    ));
   }
 
   void _jumpToStartIfReady(ScrollController? controller) {
@@ -513,6 +541,8 @@ class _TeamScreenState extends State<TeamScreen>
                       team: team,
                       fixtureRepository: widget.fixtureRepository,
                       onTopOverscroll: _revealTeamAppBar,
+                      onHeaderVisibilityChanged: _setMatchHeaderVisible,
+                      isActive: _selectedTabIndex == 1,
                       refreshRequestId: _tabRefreshEpochs[1],
                     ),
                     StandingTab(

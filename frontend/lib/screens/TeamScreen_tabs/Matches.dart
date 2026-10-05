@@ -26,6 +26,8 @@ class MatchesTab extends StatefulWidget {
   final TeamOverview? team;
   final FixtureRepository? fixtureRepository;
   final VoidCallback? onTopOverscroll;
+  final ValueChanged<bool>? onHeaderVisibilityChanged;
+  final bool isActive;
   final int refreshRequestId;
 
   const MatchesTab({
@@ -33,6 +35,8 @@ class MatchesTab extends StatefulWidget {
     required this.team,
     this.fixtureRepository,
     this.onTopOverscroll,
+    this.onHeaderVisibilityChanged,
+    this.isActive = true,
     this.refreshRequestId = 0,
   });
 
@@ -43,6 +47,9 @@ class MatchesTab extends StatefulWidget {
 class _MatchesTabState extends State<MatchesTab> {
   // 공유 미리보기에서 디자이너가 확정한 높이와 알파 값을 사용해요.
   static const _topFadeHeight = 40.0;
+  static const _directionThreshold = 28.0;
+  static const _nearBottomThreshold = 160.0;
+  static const _bottomReleaseThreshold = 360.0;
   static const _topFadeGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -70,6 +77,11 @@ class _MatchesTabState extends State<MatchesTab> {
   int _visibleHeaderCount = 1;
   bool _hasEarlierMatches = false;
   double _trailingScrollExtent = 24;
+  double? _previousScrollOffset;
+  double _directionTravel = 0;
+  int _scrollDirection = 0;
+  bool _isNearBottom = false;
+  bool _isTeamHeaderVisible = true;
   bool _isLoading = true;
   bool _isLiveVerifying = false;
   Object? _loadError;
@@ -165,6 +177,12 @@ class _MatchesTabState extends State<MatchesTab> {
   @override
   void didUpdateWidget(MatchesTab oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (!oldWidget.isActive && widget.isActive) {
+      _resetTeamHeaderTracking();
+      if (_scrollController.hasClients) {
+        _previousScrollOffset = _scrollController.offset;
+      }
+    }
     final oldRepository = _repositoryFor(oldWidget);
     final repositoryChanged = !identical(oldRepository, _fixtureRepository);
     if (repositoryChanged) {
@@ -287,6 +305,15 @@ class _MatchesTabState extends State<MatchesTab> {
     _visibleHeaderCount = 1;
     _hasEarlierMatches = false;
     _trailingScrollExtent = 24;
+    _resetTeamHeaderTracking();
+  }
+
+  void _resetTeamHeaderTracking() {
+    _previousScrollOffset = null;
+    _directionTravel = 0;
+    _scrollDirection = 0;
+    _isNearBottom = false;
+    _isTeamHeaderVisible = true;
   }
 
   void _schedulePostLoadLayout() {
@@ -300,6 +327,7 @@ class _MatchesTabState extends State<MatchesTab> {
     if (!mounted || !_scrollController.hasClients) {
       return;
     }
+    _syncTeamHeaderVisibility();
 
     final sections = _sections;
     for (final section in sections) {
@@ -349,6 +377,49 @@ class _MatchesTabState extends State<MatchesTab> {
         _syncHeaderStack();
       });
     }
+  }
+
+  void _syncTeamHeaderVisibility() {
+    if (!widget.isActive) return;
+    final position = _scrollController.position;
+    if (!position.hasContentDimensions) return;
+
+    final offset = position.pixels.clamp(
+      position.minScrollExtent,
+      position.maxScrollExtent,
+    );
+    final previous = _previousScrollOffset;
+    _previousScrollOffset = offset;
+    final distanceToBottom = position.maxScrollExtent - offset;
+    if (distanceToBottom <= _nearBottomThreshold) {
+      _isNearBottom = true;
+      _directionTravel = 0;
+      _setTeamHeaderVisible(true);
+      return;
+    }
+    if (_isNearBottom && distanceToBottom <= _bottomReleaseThreshold) {
+      return;
+    }
+    _isNearBottom = false;
+    if (previous == null) return;
+
+    final delta = offset - previous;
+    if (delta == 0) return;
+    final direction = delta > 0 ? 1 : -1;
+    if (direction != _scrollDirection) {
+      _scrollDirection = direction;
+      _directionTravel = 0;
+    }
+    _directionTravel += delta.abs();
+    if (_directionTravel < _directionThreshold) return;
+    _directionTravel = 0;
+    _setTeamHeaderVisible(direction < 0);
+  }
+
+  void _setTeamHeaderVisible(bool visible) {
+    if (_isTeamHeaderVisible == visible) return;
+    _isTeamHeaderVisible = visible;
+    widget.onHeaderVisibilityChanged?.call(visible);
   }
 
   List<_MatchSectionData> get _sections => [

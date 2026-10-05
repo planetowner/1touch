@@ -1126,6 +1126,104 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('Matches header follows list direction and bottom at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final matches = MockFixtureRepository(fixtures: [
+        for (var index = 1; index <= 40; index++)
+          Fixture(
+            fixtureId: index,
+            seasonId: 25583,
+            competitionId: 8,
+            homeTeamId: 9,
+            awayTeamId: 8,
+            competitionType: CompetitionType.league,
+            roundName: '$index',
+            status: FixtureStatus.upcoming,
+            startingAt: DateTime(2026, 1, index).toIso8601String(),
+          ),
+      ]);
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: TeamScreen(
+          fixtureRepository: matches,
+          standingRepository: standingRepository,
+          currentFormRepository: currentFormRepository,
+          teamId: 9,
+          teamAttributeRepository: teamAttributeRepository,
+          teamOverviewRepository: teamOverviewRepository,
+        ),
+      ));
+      await tester.pumpAndSettle();
+      tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(1);
+      await tester.pumpAndSettle();
+
+      final scrollFinder = find.byKey(const ValueKey('matches-scroll'));
+      final controller =
+          tester.widget<CustomScrollView>(scrollFinder).controller!;
+      final outer = tester
+          .widget<NestedScrollView>(find.byType(NestedScrollView))
+          .controller!;
+      final initialListHeight = tester.getSize(scrollFinder).height;
+      expect(outer.offset, outer.position.minScrollExtent);
+      expect(find.byKey(const ValueKey('team-app-bar-logo')), findsOneWidget);
+      expect(find.byKey(const ValueKey('team-tab-header')), findsOneWidget);
+
+      controller.jumpTo(50);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 80));
+      expect(outer.offset, greaterThan(outer.position.minScrollExtent));
+      expect(outer.offset, lessThan(outer.position.maxScrollExtent));
+      await tester.pumpAndSettle();
+      expect(outer.offset, closeTo(outer.position.maxScrollExtent, 1));
+      expect(
+          tester.getSize(scrollFinder).height, greaterThan(initialListHeight));
+      expect(find.byKey(const ValueKey('team-app-bar-logo')), findsNothing);
+      expect(find.byKey(const ValueKey('team-tab-header')), findsNothing);
+
+      controller.jumpTo(15);
+      await tester.pumpAndSettle();
+      expect(outer.offset, closeTo(outer.position.minScrollExtent, 1));
+      expect(find.byKey(const ValueKey('team-app-bar-logo')), findsOneWidget);
+      expect(find.byKey(const ValueKey('team-tab-header')), findsOneWidget);
+
+      controller.jumpTo(50);
+      await tester.pumpAndSettle();
+      controller.jumpTo(controller.position.maxScrollExtent - 120);
+      await tester.pumpAndSettle();
+      expect(outer.offset, closeTo(outer.position.minScrollExtent, 1));
+      controller.jumpTo(controller.position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      expect(outer.offset, closeTo(outer.position.minScrollExtent, 1));
+      expect(find.byKey(const ValueKey('team-tab-header')), findsOneWidget);
+      expect(find.byKey(const ValueKey('team-fixture-card-40')).hitTestable(),
+          findsOneWidget);
+      await tester.fling(scrollFinder, const Offset(0, -300), 2500);
+      await tester.pumpAndSettle();
+      expect(outer.offset, closeTo(outer.position.minScrollExtent, 1));
+
+      final tabs = tester.widget<TabBar>(find.byType(TabBar)).controller!;
+      tabs.animateTo(0);
+      await tester.pumpAndSettle();
+      tabs.animateTo(1);
+      await tester.pumpAndSettle();
+      expect(outer.offset, closeTo(outer.position.minScrollExtent, 1));
+      final returnedController =
+          tester.widget<CustomScrollView>(scrollFinder).controller!;
+      returnedController.jumpTo(0);
+      await tester.pumpAndSettle();
+      returnedController.jumpTo(50);
+      await tester.pumpAndSettle();
+      expect(outer.offset, closeTo(outer.position.maxScrollExtent, 1));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('Standing and Analysis filters use black text in light mode',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);

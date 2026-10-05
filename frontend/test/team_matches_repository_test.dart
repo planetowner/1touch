@@ -675,12 +675,64 @@ void main() {
     expect(topPulls, greaterThan(0));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('header requests use direction threshold and bottom hysteresis',
+      (tester) async {
+    final requests = <bool>[];
+    final repository = MockFixtureRepository(fixtures: [
+      for (var index = 1; index <= 40; index++)
+        _fixture(index, FixtureStatus.upcoming,
+            kickoff: DateTime(2026, 1, index)),
+    ]);
+    await tester.pumpWidget(_app(
+      repository,
+      teamId: 9,
+      onHeaderVisibilityChanged: requests.add,
+    ));
+    await tester.pumpAndSettle();
+    final controller = tester
+        .widget<CustomScrollView>(find.byKey(const ValueKey('matches-scroll')))
+        .controller!;
+    expect(controller.position.maxScrollExtent, greaterThan(500));
+    expect(requests, isEmpty);
+
+    controller.jumpTo(20);
+    await tester.pump();
+    expect(requests, isEmpty);
+    controller.jumpTo(40);
+    await tester.pump();
+    expect(requests, [false]);
+
+    controller.jumpTo(38);
+    await tester.pump();
+    expect(requests, [false]);
+    controller.jumpTo(5);
+    await tester.pump();
+    expect(requests, [false, true]);
+
+    final bottom = controller.position.maxScrollExtent;
+    controller.jumpTo(bottom - 200);
+    await tester.pump();
+    expect(requests.last, isFalse);
+    controller.jumpTo(bottom - 120);
+    await tester.pump();
+    expect(requests.last, isTrue);
+    final countAtBottom = requests.length;
+    controller.jumpTo(controller.position.maxScrollExtent);
+    await tester.pump();
+    expect(requests.length, countAtBottom);
+    controller.jumpTo(controller.position.maxScrollExtent - 300);
+    await tester.pump();
+    expect(requests.length, countAtBottom);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Widget _app(MockFixtureRepository repository,
     {required int teamId,
     Locale locale = const Locale('en'),
-    VoidCallback? onTopOverscroll}) {
+    VoidCallback? onTopOverscroll,
+    ValueChanged<bool>? onHeaderVisibilityChanged}) {
   return MaterialApp(
     locale: locale,
     supportedLocales: appSupportedLocales,
@@ -699,6 +751,7 @@ Widget _app(MockFixtureRepository repository,
         ),
         fixtureRepository: repository,
         onTopOverscroll: onTopOverscroll,
+        onHeaderVisibilityChanged: onHeaderVisibilityChanged,
       ),
     ),
   );
