@@ -19,6 +19,14 @@ if [[ ! -f .schema-initialized ]]; then
   touch .schema-initialized
 fi
 
+# 기존 테스트 계정·베팅을 보관한 뒤, API를 교체하기 전에 필요한 구조만 추가해요.
+backup_directory="../../logs/live-test-backups/$(date -u +%Y%m%dT%H%M%SZ)"
+install -d -m 700 "$backup_directory"
+bash compose.sh exec -T live-test-db sh -c \
+  'MYSQL_PWD="$MYSQL_PASSWORD" mysqldump --user="$MYSQL_USER" --single-transaction --no-tablespaces --set-gtid-purged=OFF "$MYSQL_DATABASE"' \
+  | gzip > "$backup_directory/database.sql.gz"
+bash compose.sh run --rm --no-deps api python -m live_test.migrate_schema --apply
+
 bash compose.sh run --rm --no-deps api python -m live_test.seed --apply
 bash compose.sh run --rm --no-deps api python -c \
   'from live_test.predictions import refresh; print(refresh(apply=True))'

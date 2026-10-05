@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'support/api_path.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -29,21 +30,21 @@ void main() {
         () => MockClient((request) async {
               requests.add(request);
               Object body;
-              switch (request.url.path) {
-                case '/v1/catalog':
+              switch (relativeApiPath(request.url)) {
+                case 'catalog':
                   body = catalog;
-                case '/v1/users/me':
+                case 'users/me':
                   if (fail) return http.Response('{}', 500);
                   body = account;
-                case '/v1/users/me/points/initialize':
+                case 'users/me/points/initialize':
                   body = {'balance': 0, 'initialized': true};
-                case '/v1/users/me/profile':
+                case 'users/me/profile':
                   account
                       .addAll(jsonDecode(request.body) as Map<String, dynamic>);
                   body = account;
-                case '/v1/users/me/following/teams':
+                case 'users/me/following/teams':
                   body = [catalog['teams'][0]];
-                case '/v1/users/me/following/players':
+                case 'users/me/following/players':
                   body = {'items': []};
                 default:
                   throw StateError('Unexpected request ${request.url}');

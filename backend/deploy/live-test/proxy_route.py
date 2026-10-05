@@ -18,7 +18,7 @@ def update(source, enable):
         _, after = remainder.split(END, 1)
         source = before + after
     if enable:
-        anchor = '\treverse_proxy api:8000\n'
+        anchor = '\treverse_proxy onetouch-dev-api-1:8000\n'
         if anchor not in source:
             raise ValueError('The existing API proxy route was not found')
         source = source.replace(anchor, BLOCK + anchor, 1)

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'support/api_path.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,13 +38,13 @@ void main() {
       () => apiClient.baseUri,
       () => MockClient((request) async {
         requests.add(request);
-        final path = request.url.path;
+        final path = relativeApiPath(request.url);
         final teamId =
             int.tryParse(request.url.queryParameters['team_id'] ?? '');
         Object body;
-        if (path == '/v1/catalog') {
+        if (path == 'catalog') {
           body = catalog;
-        } else if (path.startsWith('/v1/football-names/')) {
+        } else if (path.startsWith('football-names/')) {
           body = {
             'teams': {},
             'team_short_names': {},
@@ -53,7 +54,7 @@ void main() {
             'countries': {},
             'coaches': {},
           };
-        } else if (path == '/v1/users/me') {
+        } else if (path == 'users/me') {
           body = {
             'user_id': 1,
             'username': 'example',
@@ -66,11 +67,11 @@ void main() {
             'created_at': '2026-09-22T00:00:00Z',
             'onboarding_complete': true,
           };
-        } else if (path == '/v1/users/me/following/teams') {
+        } else if (path == 'users/me/following/teams') {
           body = teams;
-        } else if (path == '/v1/users/me/following/players') {
+        } else if (path == 'users/me/following/players') {
           body = {'items': []};
-        } else if (path == '/v1/home') {
+        } else if (path == 'home') {
           body = {
             'favorite_team': team(teamId ?? 8),
             'following_teams': teams,
@@ -79,16 +80,16 @@ void main() {
             'calendar': [],
             'highlights': null,
           };
-        } else if (RegExp(r'^/v1/teams/\d+$').hasMatch(path)) {
+        } else if (RegExp(r'^teams/\d+$').hasMatch(path)) {
           body = {
             'team': team(int.parse(request.url.pathSegments.last)),
             'next_match': null,
             'last_match': null,
             'standing': null,
           };
-        } else if (path == '/v1/posts') {
+        } else if (path == 'posts') {
           body = {'items': [], 'limit': 50, 'offset': 0};
-        } else if (path == '/v1/community/followers') {
+        } else if (path == 'community/followers') {
           body = {'team_id': teamId, 'follower_count': 3};
         } else {
           // 이 테스트에서 다루지 않는 부가 콘텐츠는 기존 오류 상태로 표시해요.
@@ -141,7 +142,7 @@ void main() {
       expect(tester.state(find.byType(Community)), same(communityState));
       expect(
           requests
-              .lastWhere((r) => r.url.path == '/v1/posts')
+              .lastWhere((r) => relativeApiPath(r.url) == 'posts')
               .url
               .queryParameters['team_id'],
           '$id');
