@@ -329,7 +329,7 @@ class _SearchContentState extends State<SearchContent> {
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       itemCount: children.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (_, index) => children[index],
     );
   }
