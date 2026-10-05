@@ -92,6 +92,7 @@ void main() {
     final fixtureCard = tester.widget<Container>(
       find.byKey(const ValueKey('team-fixture-card-3')),
     );
+    expect(fixtureCard.padding, const EdgeInsets.all(16));
     expect(
       (fixtureCard.decoration as BoxDecoration).boxShadow,
       app_style.lightModeCardShadows,

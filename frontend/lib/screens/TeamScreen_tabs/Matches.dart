@@ -617,7 +617,7 @@ class _MatchesTabState extends State<MatchesTab> {
       child: Container(
         key: ValueKey('team-fixture-card-${fixture.fixtureId}'),
         margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: cardBackground,
           borderRadius: BorderRadius.circular(14),
