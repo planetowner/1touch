@@ -171,6 +171,52 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final (size, topInset) in [
+    (const Size(320, 568), 24.0),
+    (const Size(430, 932), 54.0),
+  ]) {
+    testWidgets('Team standing scroll stays below the status bar at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: MediaQuery(
+          data: MediaQueryData(
+              size: size, padding: EdgeInsets.only(top: topInset)),
+          child: TeamScreen(
+            fixtureRepository: fixtureRepository,
+            standingRepository: standingRepository,
+            currentFormRepository: currentFormRepository,
+            teamId: 9,
+            teamAttributeRepository: teamAttributeRepository,
+            teamOverviewRepository: teamOverviewRepository,
+            xgStandingRepository: xgStandingRepository,
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(2);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('standing-filter-row')), findsOneWidget);
+
+      final scrollView = find.byType(NestedScrollView);
+      expect(tester.getTopLeft(scrollView).dy, topInset);
+      await tester.drag(scrollView, const Offset(0, -600));
+      await tester.pumpAndSettle();
+      final scrollState = tester.state<NestedScrollViewState>(scrollView);
+      expect(
+        scrollState.outerController.offset + scrollState.innerController.offset,
+        greaterThan(0),
+      );
+      expect(tester.getTopLeft(scrollView).dy, topInset);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('Team tab action restores the first feature and visible app bar',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
