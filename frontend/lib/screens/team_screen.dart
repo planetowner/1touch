@@ -328,7 +328,7 @@ class _TeamScreenState extends State<TeamScreen>
     final displayedTeamId = currentTeam.id;
     final rankChange = currentTeam.standing?.rankDelta;
     final appBarForeground = colors.onSurface;
-    final topInset = MediaQuery.paddingOf(context).top;
+    final topInset = appStatusBarInset(context);
     const baseToolbarVerticalPadding =
         (_teamAppBarBaseToolbarHeight - _teamAppBarLogoSize) / 2;
     final currentContentTop = topInset + baseToolbarVerticalPadding;
