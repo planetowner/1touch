@@ -65,10 +65,18 @@ class CoachNamesTests(unittest.TestCase):
         by_id = {row['coach_id']: row for row in rows}
         for key in (50, 307, 455384):
             self.assertEqual(by_id[key], migration.reviewed_player_translation(**self.profiles[key])[0])
-        for key in (1260, 94341, 3721, 127657, 37648736):
+        for key in (1260, 94341, 3721, 127657, 37648736, 457103):
             self.assertNotIn(key, by_id)
-        self.assertEqual(sum(row['ja'] is not None for row in rows), 544)
-        self.assertEqual(sum(row['zh'] is not None for row in rows), 540)
+        self.assertEqual(sum(row['ja'] is not None for row in rows), 543)
+        self.assertEqual(sum(row['zh'] is not None for row in rows), 539)
+
+    def test_same_wrong_name_in_coach_and_player_is_not_a_verified_translation(self):
+        source = json.loads(Path(__file__).with_name('fixtures').joinpath(
+            'sportmonks_coach_identity_errors.json').read_text(encoding='utf-8'))
+        source = source['garande_translation']
+        self.assertEqual(migration.reviewed_player_translation(**source), (None, ['name']))
+        source['current']['name'] = 'Patrice Garande'
+        self.assertEqual(migration.reviewed_player_translation(**source), (None, ['name']))
 
     def test_migration_preserves_original_korean_and_unmatched_rows(self):
         fixture = NameMigrationDatabase()
