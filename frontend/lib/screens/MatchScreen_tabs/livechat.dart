@@ -332,8 +332,6 @@ class _LiveChatTabState extends State<LiveChatTab> {
       );
     }
 
-    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
-    final composerBottom = bottomInset > 24 ? bottomInset : 24.0;
     final pageBackground = mainPageBackground(context);
     final messageContent = !_isInitialized
         ? const SizedBox.expand(key: ValueKey('live-chat-loading-shell'))
@@ -417,7 +415,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
         ),
         Container(
           key: const ValueKey('live-chat-composer'),
-          padding: EdgeInsets.fromLTRB(12, 12, 12, composerBottom),
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
           color: isDark ? const Color(0xFF272828) : AppPalette.white,
           child: Row(
             children: [
