@@ -40,6 +40,8 @@ METRICS = {
     "long_balls_won": ("Long balls completed", "count", (123,)),
     "accurate_passes": ("Accurate passes", "count", (116,)),
     "passes_attempted": ("Passes", "count", (80,)),
+    "long_balls_pair": ("Long balls completed / attempted", "pair", (123, 122)),
+    "dribbles": ("Successful dribbles / attempts", "pair", (109, 108)),
 }
 
 # Overview와 Matches는 경기별 포지션 대신 이번 시즌 최다 출전 포지션을 사용해요.
@@ -79,6 +81,14 @@ CATEGORIES = {
         ("dribble", "Dribble", ("dribble_attempts", "dribble_success_rate", "fouls_drawn")),
         ("link_up", "Link Up", ("touches", "passes", "possession_lost")),
     ),
+}
+
+# 라인업에서만 항목을 합치거나 바꿔요. 시즌 순위와 선수 비교의 지표는 유지해요.
+MATCH_CATEGORY_METRICS = {
+    (24, "long_balls"): ("long_balls_pair",),
+    (25, "physicality"): ("duels_won", "aerial_duels_won"),
+    (25, "build_up"): ("touches", "passes", "long_balls_pair"),
+    (27, "dribble"): ("dribbles", "fouls_drawn"),
 }
 
 # Touches는 출전 선수 모두의 값이 필요하지만, 블록은 기록된 선수만 응답에 나와요.
@@ -169,10 +179,12 @@ def build_team_player_statistics(team_ids: list[int], lineups: list[dict], stat_
     return result
 
 
-def build_categories(position_id: int | None, stats: dict, xg) -> list[dict]:
+def build_categories(position_id: int | None, stats: dict, xg, *, for_match: bool = False) -> list[dict]:
     return [
         {"code": code, "label": label,
-         "metrics": [build_metric(metric, stats, xg) for metric in metric_codes]}
+         "metrics": [build_metric(metric, stats, xg) for metric in (
+             MATCH_CATEGORY_METRICS.get((position_id, code), metric_codes) if for_match else metric_codes
+         )]}
         for code, label, metric_codes in CATEGORIES.get(position_id, ())
     ]
 
@@ -196,6 +208,6 @@ def build_player_statistics(lineups: list[dict], stat_rows: list[dict], xg_rows:
             "minutes_played": lineup["minutes_played"], "rating": lineup["rating"],
             # 최고 평점으로 POM을 만들어 내지 않아요. 미제공은 null로 남겨요.
             "is_man_of_match": None if pom is None else bool(pom),
-            "categories": build_categories(position_id, stats, xg_by_player.get(lineup["player_id"])),
+            "categories": build_categories(position_id, stats, xg_by_player.get(lineup["player_id"]), for_match=True),
         })
     return players
