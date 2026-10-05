@@ -248,7 +248,7 @@ void main() {
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
-    testWidgets('keeps login dimensions and dark colors at $size',
+    testWidgets('keeps login dimensions and light colors at $size',
         (tester) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
@@ -269,7 +269,7 @@ void main() {
 
       final expectedWidth = (size.width - 48).clamp(0, 345);
       expect(tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
-          app_style.AppPalette.black);
+          app_style.AppPalette.white);
       for (final key in [
         'sign-in-username',
         'sign-in-password',
@@ -290,9 +290,15 @@ void main() {
               .height,
           56);
       for (final provider in ['kakao', 'google', 'apple']) {
-        expect(tester.getSize(find.byKey(ValueKey('$provider-sign-in-button'))),
-            const Size(56, 56));
+        final buttonFinder = find.byKey(ValueKey('$provider-sign-in-button'));
+        expect(tester.getSize(buttonFinder), const Size(56, 56));
+        final button = tester.widget<ElevatedButton>(buttonFinder);
+        expect(button.style!.backgroundColor!.resolve({}),
+            app_style.AppPalette.lightModeDarkGrey);
       }
+      final username = tester
+          .widget<TextField>(find.byKey(const ValueKey('sign-in-username')));
+      expect(username.decoration!.fillColor, app_style.AppPalette.lightGreyBox);
       expect(tester.takeException(), isNull);
     });
   }

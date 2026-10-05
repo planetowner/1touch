@@ -121,87 +121,78 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Theme(
-      data: theme.copyWith(
-        brightness: Brightness.dark,
-        colorScheme: theme.colorScheme.copyWith(
-          brightness: Brightness.dark,
-          surface: AppPalette.black,
-          onSurface: AppPalette.white,
-        ),
-      ),
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light,
-        child: Builder(builder: (context) {
-          final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
-          return Scaffold(
-            backgroundColor: AppPalette.black,
-            body: LayoutBuilder(
-              builder: (context, constraints) {
-                final contentWidth =
-                    (constraints.maxWidth - 48).clamp(0.0, 345.0).toDouble();
-                return SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  child: ConstrainedBox(
-                    constraints:
-                        BoxConstraints(minHeight: constraints.maxHeight),
-                    child: IntrinsicHeight(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                            24, 0, 24, bottomInset > 48 ? bottomInset : 48),
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minHeight: 30 +
-                                      2 * MediaQuery.viewPaddingOf(context).top,
-                                ),
-                                child: Center(
-                                  child: SvgPicture.asset(
-                                    'assets/auth/logo.svg',
-                                    key: const ValueKey('onboarding-logo'),
-                                    width: 207,
-                                    height: 30,
-                                    colorFilter: const ColorFilter.mode(
-                                        AppPalette.white, BlendMode.srcIn),
-                                  ),
-                                ),
+    final isDark = theme.brightness == Brightness.dark;
+    final colors = AppColors.of(context);
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: colors.pageBackground,
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final contentWidth =
+                (constraints.maxWidth - 48).clamp(0.0, 345.0).toDouble();
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                        24, 0, 24, bottomInset > 48 ? bottomInset : 48),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: 30 +
+                                  2 * MediaQuery.viewPaddingOf(context).top,
+                            ),
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/auth/logo.svg',
+                                key: const ValueKey('onboarding-logo'),
+                                width: 207,
+                                height: 30,
+                                colorFilter: ColorFilter.mode(
+                                    theme.colorScheme.onSurface,
+                                    BlendMode.srcIn),
                               ),
                             ),
-                            SizedBox(
-                              width: contentWidth,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  PasswordSignInForm(
-                                    authService: widget.authService,
-                                    enabled: !_socialBusy,
-                                    onboardingLayout: true,
-                                    onBusyChanged: (busy) =>
-                                        setState(() => _passwordBusy = busy),
-                                  ),
-                                  const SizedBox(height: 32),
-                                  SvgPicture.asset('assets/auth/divider.svg',
-                                      key: const ValueKey('onboarding-divider'),
-                                      height: 2,
-                                      fit: BoxFit.fill),
-                                  const SizedBox(height: 32),
-                                  _socialChoices(context),
-                                ],
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                        SizedBox(
+                          width: contentWidth,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              PasswordSignInForm(
+                                authService: widget.authService,
+                                enabled: !_socialBusy,
+                                onboardingLayout: true,
+                                onBusyChanged: (busy) =>
+                                    setState(() => _passwordBusy = busy),
+                              ),
+                              const SizedBox(height: 32),
+                              SvgPicture.asset('assets/auth/divider.svg',
+                                  key: const ValueKey('onboarding-divider'),
+                                  height: 2,
+                                  fit: BoxFit.fill,
+                                  colorFilter: ColorFilter.mode(
+                                      colors.divider, BlendMode.srcIn)),
+                              const SizedBox(height: 32),
+                              _socialChoices(context),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
-            ),
-          );
-        }),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
