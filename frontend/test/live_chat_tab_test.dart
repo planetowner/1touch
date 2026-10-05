@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
+import 'package:onetouch/core/full_screen_back_gesture.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/chat/chat_repository.dart';
 import 'package:onetouch/data/chat/chat_socket.dart';
@@ -116,6 +117,18 @@ void main() {
       expect(tester.getTopLeft(find.text('History message 10')).dy,
           lessThan(viewport.top + 100));
       expect(find.byKey(const ValueKey('live-chat-top-fade')), findsNothing);
+      final list = find.byKey(const ValueKey('live-chat-message-list'));
+      expect(tester.widget<ListView>(list).padding,
+          const EdgeInsets.fromLTRB(24, 0, 24, 24));
+      final scrollable = find.descendant(
+        of: list,
+        matching: find.byType(Scrollable),
+      );
+      expect(tester.widget<ListView>(list).physics,
+          isA<NeverScrollableScrollPhysics>());
+      await tester.drag(list, const Offset(0, -180));
+      await tester.pumpAndSettle();
+      expect(tester.state<ScrollableState>(scrollable).position.pixels, 0);
 
       for (var id = 11; id <= 45; id++) {
         session.add(_message(messageId: id, userId: 8));
@@ -124,8 +137,47 @@ void main() {
 
       expect(find.text('History message 45'), findsOneWidget);
       expect(find.byKey(const ValueKey('live-chat-top-fade')), findsOneWidget);
+      expect(tester.widget<ListView>(list).physics,
+          isNot(isA<NeverScrollableScrollPhysics>()));
+      final position = tester.state<ScrollableState>(scrollable).position;
+      expect(position.maxScrollExtent, greaterThan(0));
+      final beforeDrag = position.pixels;
+      await tester.drag(list, const Offset(0, 180));
+      await tester.pumpAndSettle();
+      expect(position.pixels, lessThan(beforeDrag));
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets('locks an overflowing chat during an iOS back swipe at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(_app(
+        repository: _ChatRepository([
+          for (var id = 10; id <= 45; id++) _message(messageId: id, userId: 8),
+        ]),
+        socket: _ChatSocket(session: _ChatSession()),
+        withBackGesture: true,
+      ));
+      await tester.pumpAndSettle();
+
+      final list = find.byKey(const ValueKey('live-chat-message-list'));
+      expect(tester.widget<ListView>(list).physics,
+          isNot(isA<NeverScrollableScrollPhysics>()));
+
+      final gesture = await tester.startGesture(tester.getCenter(list));
+      await gesture.moveBy(const Offset(40, 0));
+      await tester.pump();
+      expect(tester.widget<ListView>(list).physics,
+          isA<NeverScrollableScrollPhysics>());
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(tester.widget<ListView>(list).physics,
+          isNot(isA<NeverScrollableScrollPhysics>()));
     });
   }
 
@@ -275,12 +327,22 @@ Widget _app({
   required ChatRepository repository,
   required ChatSocket socket,
   String language = 'en',
+  bool withBackGesture = false,
 }) {
   return MaterialApp(
     locale: Locale(language),
     supportedLocales: appSupportedLocales,
     localizationsDelegates: appLocalizationDelegates,
-    theme: app_style.whitetheme,
+    theme: withBackGesture
+        ? app_style.whitetheme.copyWith(platform: TargetPlatform.iOS)
+        : app_style.whitetheme,
+    builder: withBackGesture
+        ? (_, child) => FullScreenBackGesture(
+              canGoBack: () => true,
+              goBack: () async => true,
+              child: child!,
+            )
+        : null,
     home: Scaffold(
       body: LiveChatTab(
         matchId: 42,

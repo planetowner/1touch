@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/full_screen_back_gesture.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';
 import 'package:onetouch/data/chat/chat_repository_provider.dart'
     as chat_repository_provider;
@@ -43,7 +44,8 @@ class _LiveChatTabState extends State<LiveChatTab> {
   bool _isClosing = false;
   bool _chatUnavailable = false;
   bool _showTopFade = false;
-  bool _fadeUpdateScheduled = false;
+  bool _canScroll = false;
+  bool _scrollStateUpdateScheduled = false;
 
   ChatRepository get _repository =>
       widget.repository ?? chat_repository_provider.chatRepository;
@@ -53,7 +55,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_scheduleFadeUpdate);
+    _scrollController.addListener(_scheduleScrollStateUpdate);
     _initChat();
   }
 
@@ -75,6 +77,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
       _isInitialized = false;
       _initError = null;
       _showTopFade = false;
+      _canScroll = false;
     });
     await _initChat();
   }
@@ -191,7 +194,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scheduleFadeUpdate();
+        _scheduleScrollStateUpdate();
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 200),
@@ -201,16 +204,21 @@ class _LiveChatTabState extends State<LiveChatTab> {
     });
   }
 
-  void _scheduleFadeUpdate() {
-    if (_fadeUpdateScheduled) return;
-    _fadeUpdateScheduled = true;
+  void _scheduleScrollStateUpdate() {
+    if (_scrollStateUpdateScheduled) return;
+    _scrollStateUpdateScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fadeUpdateScheduled = false;
+      _scrollStateUpdateScheduled = false;
       if (!mounted) return;
-      final show = _scrollController.hasClients &&
-          _scrollController.position.maxScrollExtent > 0 &&
-          _scrollController.position.pixels > 1;
-      if (show != _showTopFade) setState(() => _showTopFade = show);
+      final canScroll = _scrollController.hasClients &&
+          _scrollController.position.maxScrollExtent > 0;
+      final showFade = canScroll && _scrollController.position.pixels > 1;
+      if (canScroll != _canScroll || showFade != _showTopFade) {
+        setState(() {
+          _canScroll = canScroll;
+          _showTopFade = showFade;
+        });
+      }
     });
   }
 
@@ -302,6 +310,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backSwipeActive = FullScreenBackGesture.isSwipeActive(context);
     final appColors = AppColors.of(context);
     if (_initError != null) {
       return Center(
@@ -363,13 +372,16 @@ class _LiveChatTabState extends State<LiveChatTab> {
               )
             : NotificationListener<ScrollMetricsNotification>(
                 onNotification: (_) {
-                  _scheduleFadeUpdate();
+                  _scheduleScrollStateUpdate();
                   return false;
                 },
                 child: ListView.builder(
                   key: const ValueKey('live-chat-message-list'),
                   controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                  physics: _canScroll && !backSwipeActive
+                      ? null
+                      : const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
                     final messageIndex = index;
