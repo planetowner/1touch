@@ -389,6 +389,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final pageBackground = mainPageBackground(context);
     final colorScheme = Theme.of(context).colorScheme;
     final appBarForeground = colorScheme.onSurface;
+    final isLightMode = Theme.of(context).brightness == Brightness.light;
 
     final homeData = _homeData;
     if (_isLoading && homeData == null) {
@@ -511,10 +512,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               key: const ValueKey('home-app-bar-team-picker'),
                               padding: AppDropdownTokens.compactPadding,
                               decoration: BoxDecoration(
-                                color: AppPalette.white.withValues(alpha: 0.2),
+                                color: isLightMode
+                                    ? AppPalette.white
+                                    : AppPalette.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(
                                   AppDropdownTokens.radius,
                                 ),
+                                boxShadow:
+                                    isLightMode ? lightModeCardShadows : null,
                               ),
                               child: Row(
                                 children: [

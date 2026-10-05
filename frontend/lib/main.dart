@@ -689,29 +689,37 @@ class MyApp extends StatelessWidget {
           localeListResolutionCallback: resolveAppLocale,
           builder: (context, child) {
             Intl.defaultLocale = Localizations.localeOf(context).languageCode;
-            return SessionSyncLifecycle(
-              child: AnimatedBuilder(
-                animation: _router.routeInformationProvider,
-                builder: (context, _) => AppKeyboardDismissBoundary(
-                  child: BetSettlementNotificationHost(
-                    reserveBottomNavigation: _usesMainBottomNavigation(
-                      _router.routeInformationProvider.value.uri.path,
-                    ),
-                    onSeeResults: (fixtureId) => _router.push(
-                      '/match/$fixtureId?status=past',
-                    ),
-                    child: ListenableBuilder(
-                      listenable: authSession,
-                      builder: (context, _) => FootballNamesLoader(
-                        repository: _footballNames,
-                        enabled: authSession.isAuthenticated,
-                        child: FullScreenBackGesture(
-                          canGoBack: _router.canPop,
-                          goBack: _router.routerDelegate.popRoute,
-                          child: Banner(
-                            message: 'LIVE TEST',
-                            location: BannerLocation.topEnd,
-                            child: child!,
+            return ColoredBox(
+              color: style.mainPageBackground(context),
+              child: SafeArea(
+                left: false,
+                right: false,
+                bottom: false,
+                child: SessionSyncLifecycle(
+                  child: AnimatedBuilder(
+                    animation: _router.routeInformationProvider,
+                    builder: (context, _) => AppKeyboardDismissBoundary(
+                      child: BetSettlementNotificationHost(
+                        reserveBottomNavigation: _usesMainBottomNavigation(
+                          _router.routeInformationProvider.value.uri.path,
+                        ),
+                        onSeeResults: (fixtureId) => _router.push(
+                          '/match/$fixtureId?status=past',
+                        ),
+                        child: ListenableBuilder(
+                          listenable: authSession,
+                          builder: (context, _) => FootballNamesLoader(
+                            repository: _footballNames,
+                            enabled: authSession.isAuthenticated,
+                            child: FullScreenBackGesture(
+                              canGoBack: _router.canPop,
+                              goBack: _router.routerDelegate.popRoute,
+                              child: Banner(
+                                message: 'LIVE TEST',
+                                location: BannerLocation.topEnd,
+                                child: child!,
+                              ),
+                            ),
                           ),
                         ),
                       ),

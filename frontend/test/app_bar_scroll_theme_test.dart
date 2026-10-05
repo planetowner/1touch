@@ -23,6 +23,39 @@ void main() {
     expect(dark.statusBarColor, Colors.transparent);
   });
 
+  for (final (size, topInset) in [
+    (const Size(320, 568), 24.0),
+    (const Size(430, 932), 54.0),
+  ]) {
+    testWidgets('app bar spacing stays below the shared SafeArea at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      tester.view.padding = FakeViewPadding(top: topInset);
+      tester.view.viewPadding = FakeViewPadding(top: topInset);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPadding);
+      addTearDown(tester.view.resetViewPadding);
+
+      await tester.pumpWidget(MaterialApp(
+        home: SafeArea(
+          bottom: false,
+          child: Builder(builder: (context) {
+            expect(MediaQuery.paddingOf(context).top, 0);
+            expect(app_style.appStatusBarInset(context), topInset);
+            expect(
+              app_style.appBarContentTop(context),
+              (app_style.appBarMinimumContentTop - topInset).clamp(0, 47),
+            );
+            return const SizedBox.expand();
+          }),
+        ),
+      ));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   for (final theme in [app_style.whitetheme, app_style.darktheme]) {
     testWidgets('scrolling app bars follow ${theme.brightness} mode',
         (tester) async {
