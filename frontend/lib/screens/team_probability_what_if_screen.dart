@@ -690,8 +690,7 @@ String _eventSectionTitle(BuildContext context, String event) =>
     switch (event) {
       'league_winner' => tr(context, 'LEAGUE WINNER PROBABILITY'),
       'top_four' || 'top_4' => tr(context, 'TOP 4 PROBABILITY'),
-      'direct_relegation' ||
-      'relegation_playoff' =>
-        tr(context, 'RELEGATION PROBABILITY'),
+      'direct_relegation' => tr(context, 'RELEGATION PROBABILITY'),
+      'relegation_playoff' => tr(context, 'RELEGATION PLAYOFF PROBABILITY'),
       _ => trUpper(context, 'Probability'),
     };
