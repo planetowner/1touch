@@ -10,21 +10,35 @@ import 'package:onetouch/screens/home_screen.dart';
 void main() {
   testWidgets('routes from splash using the configured onboarding mode',
       (tester) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    tester.view.padding = const FakeViewPadding(top: 24);
+    tester.view.viewPadding = const FakeViewPadding(top: 24);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewPadding);
     await tester.pumpWidget(const MyApp());
 
     expect(find.byType(SplashScreen), findsOneWidget);
+    expect(tester.getTopLeft(find.byType(SplashScreen)).dy, 24);
     expect(find.byType(OnboardingScreen), findsNothing);
     expect(find.byType(HomeScreen), findsNothing);
 
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.padding = const FakeViewPadding(top: 54);
+    tester.view.viewPadding = const FakeViewPadding(top: 54);
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
 
     expect(find.byType(SplashScreen), findsNothing);
     if (ApiConfig.skipOnboardingForDevelopment) {
       expect(find.byType(HomeScreen), findsOneWidget);
+      expect(tester.getTopLeft(find.byType(HomeScreen)).dy, 54);
       expect(find.byType(OnboardingScreen), findsNothing);
     } else {
       expect(find.byType(OnboardingScreen), findsOneWidget);
+      expect(tester.getTopLeft(find.byType(OnboardingScreen)).dy, 54);
       expect(find.byType(HomeScreen), findsNothing);
     }
   });
