@@ -2,8 +2,13 @@ part of 'home_screen_features.dart';
 
 class FavoriteTeamCard extends StatelessWidget {
   final TeamOverview team;
+  final FixtureClock? liveMatchClock;
 
-  const FavoriteTeamCard({super.key, required this.team});
+  const FavoriteTeamCard({
+    super.key,
+    required this.team,
+    this.liveMatchClock,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +110,9 @@ class FavoriteTeamCard extends StatelessWidget {
                     },
                     child: MatchCard(
                       match: match,
+                      clock: match.status == FixtureStatus.live
+                          ? liveMatchClock
+                          : null,
                       leagueName: competitionRepository
                           .findById(match.competitionId)
                           ?.name,

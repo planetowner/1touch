@@ -21,6 +21,7 @@ import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
 import 'package:onetouch/features/home/screen/live_match_ball_button.dart';
 import 'package:onetouch/features/home/home_content_image.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_clock.dart';
 import '../core/style.dart';
 import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
@@ -69,6 +70,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _teamPreferenceRefreshScheduled = false;
   bool _forceTeamPreferenceRefresh = false;
   Fixture? _liveMatch;
+  FixtureClock? _liveMatchClock;
+  bool _hasVerifiedLiveMatch = false;
   bool _restoredHomeNeedsLiveCheck = false;
   Timer? _liveMatchTimer;
   int _liveMatchRequestId = 0;
@@ -165,12 +168,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           _homeData?.favoriteTeam.teamId != teamId) {
         return;
       }
+      var liveMatch = liveFixtures
+          .where((fixture) =>
+              fixture.status == FixtureStatus.live &&
+              (fixture.homeTeamId == teamId || fixture.awayTeamId == teamId))
+          .firstOrNull;
+      FixtureClock? liveMatchClock;
+      if (liveMatch != null) {
+        final liveMatchId = liveMatch.fixtureId;
+        try {
+          final detail = await repository.refreshDetail(liveMatchId);
+          if (detail.fixture.status == FixtureStatus.live) {
+            liveMatch = detail.fixture;
+            liveMatchClock = detail.clock;
+          } else {
+            liveMatch = null;
+          }
+        } on Object {
+          if (_liveMatch?.fixtureId == liveMatchId) {
+            liveMatchClock = _liveMatchClock;
+          }
+        }
+      }
+      if (!mounted ||
+          requestId != _liveMatchRequestId ||
+          _homeData?.favoriteTeam.teamId != teamId) {
+        return;
+      }
       setState(() {
-        _liveMatch = liveFixtures
-            .where((fixture) =>
-                fixture.status == FixtureStatus.live &&
-                (fixture.homeTeamId == teamId || fixture.awayTeamId == teamId))
-            .firstOrNull;
+        _liveMatch = liveMatch;
+        _liveMatchClock = liveMatchClock;
+        _hasVerifiedLiveMatch = true;
       });
     } on Object {
       // Keep the latest known state until the next poll or refresh succeeds.
@@ -261,6 +289,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         }
         if (teamChanged) {
           _liveMatch = restoredFromDisk ? null : cached?.data.liveMatch;
+          _liveMatchClock = null;
+          _hasVerifiedLiveMatch = false;
         }
         if (teamChanged || cached != null) {
           _restoredHomeNeedsLiveCheck = restoredFromDisk;
@@ -303,6 +333,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _displayedMonth = month;
         _restoredHomeNeedsLiveCheck = false;
         if (data.liveMatch != null || _fixtureRepository == null) {
+          if (_liveMatch?.fixtureId != data.liveMatch?.fixtureId) {
+            _liveMatchClock = null;
+            _hasVerifiedLiveMatch = false;
+          }
           _liveMatch = data.liveMatch;
         }
         _isLoading = false;
@@ -312,7 +346,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       if (!mounted || requestId != _homeRequestId) return;
       setState(() {
         if (monthChanged && cached == null) _homeData = null;
-        if (_homeData == null) _liveMatch = null;
+        if (_homeData == null) {
+          _liveMatch = null;
+          _liveMatchClock = null;
+          _hasVerifiedLiveMatch = false;
+        }
         _isLoading = false;
       });
     }
@@ -431,7 +469,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               position: homeData.leaguePosition!,
               rankDelta: homeData.leagueRankDelta,
             ),
-      liveMatch: _restoredHomeNeedsLiveCheck ? _liveMatch : homeData.liveMatch,
+      liveMatch: _hasVerifiedLiveMatch || _restoredHomeNeedsLiveCheck
+          ? _liveMatch
+          : homeData.liveMatch,
       nextMatch: homeData.nextMatch,
       lastMatch: homeData.lastMatch,
     );
@@ -572,7 +612,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       key: const ValueKey('home-favorite-team-header'),
                       title: tr(context, "FAVORITE TEAM"),
                     ),
-                    FavoriteTeamCard(team: viewedTeam),
+                    FavoriteTeamCard(
+                      team: viewedTeam,
+                      liveMatchClock: _liveMatchClock,
+                    ),
                     const SizedBox(height: 32),
                     Row(
                       key: const ValueKey('home-calendar-title-row'),

@@ -11,6 +11,7 @@ import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/features/home_screen_features.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_clock.dart';
 import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/models/team_standing_summary.dart';
@@ -360,6 +361,17 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final liveClock = FixtureClock(
+      periodTypeId: 1,
+      countsFrom: 0,
+      minutes: 38,
+      seconds: 12,
+      ticking: false,
+      isStale: false,
+      sampleAgeSeconds: 0,
+      receivedAt: DateTime.utc(2026, 8, 18, 12, 38, 12),
+    );
+
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
@@ -375,6 +387,7 @@ void main() {
                 nextMatch: match,
                 lastMatch: lastMatch,
               ),
+              liveMatchClock: liveClock,
             ),
           ),
         ),
@@ -387,9 +400,86 @@ void main() {
     expect(find.text('LIVE MATCH'), findsOneWidget);
     expect(find.byKey(const ValueKey('live-pulse-dot')), findsOneWidget);
     expect(find.byKey(const ValueKey('live-trim-line')), findsOneWidget);
+    expect(find.byKey(const ValueKey('live-match-score-row')), findsOneWidget);
+    expect(find.text('38:12'), findsOneWidget);
+    expect(find.text('1'), findsNWidgets(2));
     expect(find.text('NEXT MATCH'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  for (final testCase in <({
+    String name,
+    ThemeData theme,
+    Color scoreBackground,
+    Color scoreForeground,
+  })>[
+    (
+      name: 'dark',
+      theme: app_style.darktheme,
+      scoreBackground: app_style.AppPalette.darkGrey,
+      scoreForeground: app_style.AppPalette.white,
+    ),
+    (
+      name: 'light',
+      theme: app_style.whitetheme,
+      scoreBackground: app_style.AppPalette.lightModeDarkGrey,
+      scoreForeground: app_style.AppPalette.black,
+    ),
+  ]) {
+    testWidgets('Live score card uses approved ${testCase.name} geometry',
+        (tester) async {
+      final liveClock = FixtureClock(
+        periodTypeId: 1,
+        countsFrom: 0,
+        minutes: 38,
+        seconds: 12,
+        ticking: false,
+        isStale: false,
+        sampleAgeSeconds: 0,
+        receivedAt: DateTime.utc(2026, 8, 18, 12, 38, 12),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: testCase.theme,
+          home: Scaffold(
+            body: SizedBox(
+              width: 393,
+              child: MatchCard(
+                match: liveMatch,
+                clock: liveClock,
+                leagueName: 'Premier League',
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final homeScore = find.byKey(const ValueKey('live-match-home-score'));
+      final awayScore = find.byKey(const ValueKey('live-match-away-score'));
+      final homeSurface = tester
+          .widgetList<Container>(
+            find.descendant(of: homeScore, matching: find.byType(Container)),
+          )
+          .first;
+      final scoreText = tester.widget<Text>(
+        find.descendant(of: homeScore, matching: find.text('1')),
+      );
+
+      expect(
+        (homeSurface.decoration as BoxDecoration).color,
+        testCase.scoreBackground,
+      );
+      expect(scoreText.style?.color, testCase.scoreForeground);
+      expect(scoreText.style?.fontSize, 32);
+      expect(
+        tester.getTopLeft(awayScore).dx - tester.getTopRight(homeScore).dx,
+        8,
+      );
+      expect(find.text('38:12'), findsOneWidget);
+      expect(find.byType(FixtureDateTime), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   for (final width in [320.0, 430.0]) {
     testWidgets('Live match card fits ${width.toInt()}px', (tester) async {

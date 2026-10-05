@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:clock/clock.dart' as time;
 import 'package:flutter/material.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
@@ -6,7 +9,9 @@ import "package:onetouch/core/stylesheet.dart";
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_clock.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/match_status_labels.dart';
 import 'package:onetouch/features/match_info/live_match_motion.dart';
 import 'package:onetouch/core/overflow_scrolling_text.dart';
 
@@ -137,12 +142,14 @@ class MatchCard extends StatelessWidget {
   final Fixture? match;
   final String? leagueName;
   final Color? backgroundColor;
+  final FixtureClock? clock;
 
   const MatchCard({
     super.key,
     required this.match,
     this.leagueName,
     this.backgroundColor,
+    this.clock,
   });
 
   @override
@@ -176,16 +183,18 @@ class MatchCard extends StatelessWidget {
             builder: (context, constraints) {
               final compact = constraints.maxWidth < 300;
               final infoGap = compact ? 0.0 : 8.0;
+              final compactLive =
+                  compact && match!.status == FixtureStatus.live;
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SizedBox(
-                    width: compact ? 72 : 81,
+                    width: compactLive ? 64 : (compact ? 72 : 81),
                     child: _TeamDisplay(
                       teamId: homeTeam.teamId,
                       teamName: homeTeam.displayName,
                       teamLogo: homeTeam.imagePath ?? '',
-                      logoSize: 72,
+                      logoSize: compactLive ? 64 : 72,
                       logoKey: const ValueKey('next-match-home-logo'),
                     ),
                   ),
@@ -193,6 +202,7 @@ class MatchCard extends StatelessWidget {
                   Expanded(
                     child: _MatchInfo(
                       match: match,
+                      clock: clock,
                       leagueName: leagueName == null
                           ? null
                           : competitionNameLabel(
@@ -201,12 +211,12 @@ class MatchCard extends StatelessWidget {
                   ),
                   SizedBox(width: infoGap),
                   SizedBox(
-                    width: compact ? 72 : 76,
+                    width: compactLive ? 64 : (compact ? 72 : 76),
                     child: _TeamDisplay(
                       teamId: awayTeam.teamId,
                       teamName: awayTeam.displayName,
                       teamLogo: awayTeam.imagePath ?? '',
-                      logoSize: 72,
+                      logoSize: compactLive ? 64 : 72,
                       logoKey: const ValueKey('next-match-away-logo'),
                     ),
                   ),
@@ -617,10 +627,12 @@ class _TeamDisplay2 extends StatelessWidget {
 class _MatchInfo extends StatelessWidget {
   final Fixture? match;
   final String? leagueName;
+  final FixtureClock? clock;
 
   const _MatchInfo({
     required this.match,
     this.leagueName,
+    this.clock,
   });
 
   @override
@@ -634,6 +646,14 @@ class _MatchInfo extends StatelessWidget {
               if (roundLabel != null) roundLabel,
             ].join('  ');
 
+    if (match!.status == FixtureStatus.live) {
+      return _LiveMatchInfo(
+        match: match!,
+        clock: clock,
+        competitionAndRound: competitionAndRound,
+      );
+    }
+
     return Column(
       children: [
         FixtureDateTime(
@@ -641,14 +661,11 @@ class _MatchInfo extends StatelessWidget {
               locale: Localizations.localeOf(context)),
         ),
         const SizedBox(height: 8),
-        if (match!.status == FixtureStatus.live)
-          LiveTrimLine(color: AppColors.of(context).divider)
-        else
-          Container(
-            width: 24,
-            height: 1,
-            color: AppColors.of(context).divider,
-          ),
+        Container(
+          width: 24,
+          height: 1,
+          color: AppColors.of(context).divider,
+        ),
         const SizedBox(height: 8),
         Text(
           competitionAndRound,
@@ -661,6 +678,163 @@ class _MatchInfo extends StatelessWidget {
         const SizedBox(height: 4),
         // Text('Venue ID ${match?.venueId}', style: .style),
       ],
+    );
+  }
+}
+
+class _LiveMatchInfo extends StatelessWidget {
+  const _LiveMatchInfo({
+    required this.match,
+    required this.clock,
+    required this.competitionAndRound,
+  });
+
+  final Fixture match;
+  final FixtureClock? clock;
+  final String competitionAndRound;
+
+  @override
+  Widget build(BuildContext context) {
+    final homeScore = match.homeScore;
+    final awayScore = match.awayScore;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          key: const ValueKey('live-match-score-row'),
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _LiveScoreBoard(
+              key: const ValueKey('live-match-home-score'),
+              score: homeScore,
+              isDimmed: homeScore != null &&
+                  awayScore != null &&
+                  homeScore < awayScore,
+            ),
+            const SizedBox(width: 8),
+            _LiveScoreBoard(
+              key: const ValueKey('live-match-away-score'),
+              score: awayScore,
+              isDimmed: homeScore != null &&
+                  awayScore != null &&
+                  awayScore < homeScore,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _LiveMatchClockLabel(match: match, clock: clock),
+        const SizedBox(height: 8),
+        LiveTrimLine(color: AppColors.of(context).divider),
+        const SizedBox(height: 8),
+        Text(
+          competitionAndRound,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: Body2.style,
+        ),
+      ],
+    );
+  }
+}
+
+class _LiveScoreBoard extends StatelessWidget {
+  const _LiveScoreBoard({
+    super.key,
+    required this.score,
+    required this.isDimmed,
+  });
+
+  final int? score;
+  final bool isDimmed;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: isDark ? AppPalette.darkGrey : AppPalette.lightModeDarkGrey,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Opacity(
+        opacity: isDimmed ? 0.5 : 1,
+        child: Text(
+          score?.toString() ?? '-',
+          textAlign: TextAlign.center,
+          style: Heading2.latinStyle.copyWith(color: foreground),
+        ),
+      ),
+    );
+  }
+}
+
+class _LiveMatchClockLabel extends StatefulWidget {
+  const _LiveMatchClockLabel({required this.match, required this.clock});
+
+  final Fixture match;
+  final FixtureClock? clock;
+
+  @override
+  State<_LiveMatchClockLabel> createState() => _LiveMatchClockLabelState();
+}
+
+class _LiveMatchClockLabelState extends State<_LiveMatchClockLabel> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void didUpdateWidget(covariant _LiveMatchClockLabel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.clock != widget.clock || oldWidget.match != widget.match) {
+      _startTimer();
+    }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    if (!(widget.clock?.isRunningAt(time.clock.now()) ?? false)) return;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      setState(() {});
+      if (!(widget.clock?.isRunningAt(time.clock.now()) ?? false)) {
+        timer.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final totalSeconds = widget.clock?.totalSecondsAt(time.clock.now());
+    final label = totalSeconds == null
+        ? matchStatusLabel(
+            widget.match,
+            clock: widget.clock,
+            now: time.clock.now(),
+            locale: Localizations.localeOf(context),
+          )
+        : '${(totalSeconds ~/ 60).toString().padLeft(2, '0')}:'
+            '${(totalSeconds % 60).toString().padLeft(2, '0')}';
+    return Text(
+      label,
+      key: const ValueKey('live-match-clock'),
+      textAlign: TextAlign.center,
+      style: Body2.style,
     );
   }
 }
