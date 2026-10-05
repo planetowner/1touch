@@ -23,11 +23,13 @@ class LineupPlayer {
   final int? number;
   final String name;
   final List<LineupEvent> events;
+  final Offset? formationPosition;
   const LineupPlayer({
     required this.teamId,
     required this.playerId,
     required this.number,
     required this.name,
     this.events = const [],
+    this.formationPosition,
   });
 }

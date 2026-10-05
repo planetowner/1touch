@@ -317,7 +317,7 @@ void main() {
     );
   });
 
-  testWidgets('grows a five-row pitch for two-line Korean player names',
+  testWidgets('keeps the pitch size for long Korean player names',
       (tester) async {
     final previousLocale = appLocaleController.value;
     appLocaleController.value = const Locale('ko');
@@ -354,7 +354,7 @@ void main() {
 
     expect(
       tester.getSize(find.byKey(const ValueKey('match-lineup-card'))).height,
-      greaterThan(820),
+      820,
     );
     expect(tester.takeException(), isNull);
   });
