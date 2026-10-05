@@ -128,6 +128,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final size in <Size>[
+    const Size(320, 568),
+    const Size(393, 852),
+  ]) {
+    testWidgets('Android notification switches are green when on at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: app_style.darktheme.copyWith(platform: TargetPlatform.android),
+          home: NotificationListPage(
+            repository: _StaticNotificationPreferencesRepository(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final switches = tester.widgetList<Switch>(find.byType(Switch)).toList();
+      expect(switches, hasLength(3));
+      for (final toggle in switches) {
+        expect(toggle.value, isTrue);
+        expect(toggle.activeTrackColor, const Color(0xFF34C759));
+        expect(toggle.inactiveTrackColor, isNull);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('profile real name cannot be edited after registration',
       (tester) async {
     await tester.pumpWidget(
