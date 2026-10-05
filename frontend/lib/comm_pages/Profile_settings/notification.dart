@@ -789,6 +789,7 @@ Widget _switchRow(
       Switch.adaptive(
         value: value,
         onChanged: onChanged,
+        activeTrackColor: const Color(0xFF34C759),
       ),
     ],
   );
