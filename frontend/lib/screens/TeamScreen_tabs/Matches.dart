@@ -25,6 +25,7 @@ import 'package:onetouch/l10n/fixture_labels.dart';
 class MatchesTab extends StatefulWidget {
   final TeamOverview? team;
   final FixtureRepository? fixtureRepository;
+  final List<Fixture>? realtimeLiveMatches;
   final VoidCallback? onTopOverscroll;
   final ValueChanged<bool>? onHeaderVisibilityChanged;
   final bool isActive;
@@ -34,6 +35,7 @@ class MatchesTab extends StatefulWidget {
     super.key,
     required this.team,
     this.fixtureRepository,
+    this.realtimeLiveMatches,
     this.onTopOverscroll,
     this.onHeaderVisibilityChanged,
     this.isActive = true,
@@ -99,6 +101,18 @@ class _MatchesTabState extends State<MatchesTab> {
   FixtureRepository _repositoryFor(MatchesTab configuration) =>
       configuration.fixtureRepository ??
       fixture_providers.fixtureDetailRepository;
+
+  List<Fixture> get _visibleLiveMatches =>
+      widget.realtimeLiveMatches ?? liveMatches;
+
+  List<Fixture> get _visiblePastMatches => _withoutLiveDuplicates(pastMatches);
+
+  List<Fixture> get _visibleUpcomingMatches =>
+      _withoutLiveDuplicates(upcomingMatches);
+
+  bool get _opensAroundCurrentMatch =>
+      _visiblePastMatches.isNotEmpty &&
+      (_visibleLiveMatches.isNotEmpty || _visibleUpcomingMatches.isNotEmpty);
 
   @override
   void initState() {
@@ -197,6 +211,12 @@ class _MatchesTabState extends State<MatchesTab> {
     } else if (widget.refreshRequestId != oldWidget.refreshRequestId) {
       unawaited(_loadFixtures(forceRefresh: true));
     }
+    if (!identical(
+      widget.realtimeLiveMatches,
+      oldWidget.realtimeLiveMatches,
+    )) {
+      _schedulePostLoadLayout();
+    }
   }
 
   Future<void> _loadFixtures({bool forceRefresh = false}) async {
@@ -254,11 +274,10 @@ class _MatchesTabState extends State<MatchesTab> {
         pastMatches = _sortFixturesByKickoff(results[0], nullsFirst: true);
         liveMatches = _sortFixturesByKickoff(results[1]);
         upcomingMatches = _sortFixturesByKickoff(results[2]);
-        final centerNoLiveBoundary = liveMatches.isEmpty &&
-            pastMatches.isNotEmpty &&
-            upcomingMatches.isNotEmpty;
-        _visibleHeaderCount = centerNoLiveBoundary ? 1 : _entrySectionIndex + 1;
-        _hasEarlierMatches = centerNoLiveBoundary;
+        final opensAroundCurrentMatch = pastMatches.isNotEmpty &&
+            (liveMatches.isNotEmpty || upcomingMatches.isNotEmpty);
+        _visibleHeaderCount = 1;
+        _hasEarlierMatches = opensAroundCurrentMatch;
         _isLoading = false;
         _loadError = null;
       });
@@ -324,12 +343,15 @@ class _MatchesTabState extends State<MatchesTab> {
     _syncTeamHeaderVisibility();
 
     final sections = _sections;
+    final anchorOffset = _opensAroundCurrentMatch
+        ? _scrollController.position.viewportDimension * 0.5
+        : 0.0;
     for (final section in sections) {
       final renderObject = section.key.currentContext?.findRenderObject();
       if (renderObject == null || !renderObject.attached) continue;
       final viewport = RenderAbstractViewport.of(renderObject);
       _sectionOffsets[section.type] =
-          viewport.getOffsetToReveal(renderObject, 0).offset;
+          viewport.getOffsetToReveal(renderObject, 0).offset + anchorOffset;
     }
 
     var nextHeaderCount = sections.isEmpty ? 0 : 1;
@@ -417,32 +439,41 @@ class _MatchesTabState extends State<MatchesTab> {
   }
 
   List<_MatchSectionData> get _sections => [
-        if (pastMatches.isNotEmpty)
+        if (_visiblePastMatches.isNotEmpty)
           _MatchSectionData(
             type: _MatchSection.past,
             title: tr(context, 'PAST'),
-            matches: pastMatches,
+            matches: _visiblePastMatches,
             key: _pastSectionKey,
           ),
-        if (liveMatches.isNotEmpty)
+        if (_visibleLiveMatches.isNotEmpty)
           _MatchSectionData(
             type: _MatchSection.live,
             title: trUpper(context, 'Live'),
-            matches: liveMatches,
+            matches: _visibleLiveMatches,
             key: _liveSectionKey,
           ),
-        if (upcomingMatches.isNotEmpty)
+        if (_visibleUpcomingMatches.isNotEmpty)
           _MatchSectionData(
             type: _MatchSection.upcoming,
             title: tr(context, 'UPCOMING'),
-            matches: upcomingMatches,
+            matches: _visibleUpcomingMatches,
             key: _upcomingSectionKey,
           ),
       ];
 
-  _MatchSection get _entrySection => liveMatches.isNotEmpty
+  List<Fixture> _withoutLiveDuplicates(List<Fixture> matches) {
+    final liveIds =
+        _visibleLiveMatches.map((fixture) => fixture.fixtureId).toSet();
+    if (liveIds.isEmpty) return matches;
+    return matches
+        .where((fixture) => !liveIds.contains(fixture.fixtureId))
+        .toList(growable: false);
+  }
+
+  _MatchSection get _entrySection => _visibleLiveMatches.isNotEmpty
       ? _MatchSection.live
-      : upcomingMatches.isNotEmpty
+      : _visibleUpcomingMatches.isNotEmpty
           ? _MatchSection.upcoming
           : _MatchSection.past;
 
@@ -494,11 +525,13 @@ class _MatchesTabState extends State<MatchesTab> {
     final showTopFade = _hasEarlierMatches;
     final entrySection = _entrySection;
     final entrySectionIndex = _entrySectionIndex;
-    final entryPastLeadingCount =
-        entrySection == _MatchSection.past ? pastMatches.length - 1 : 0;
-    final centerNoLiveBoundary = liveMatches.isEmpty &&
-        pastMatches.isNotEmpty &&
-        upcomingMatches.isNotEmpty;
+    final entryPastLeadingCount = entrySection == _MatchSection.past
+        ? sections[entrySectionIndex].matches.length - 1
+        : 0;
+    final centerNoLiveBoundary = _visibleLiveMatches.isEmpty &&
+        _visiblePastMatches.isNotEmpty &&
+        _visibleUpcomingMatches.isNotEmpty;
+    final opensAroundCurrentMatch = _opensAroundCurrentMatch;
 
     return Column(
       key: const ValueKey('matches-tab-layout'),
@@ -547,11 +580,12 @@ class _MatchesTabState extends State<MatchesTab> {
               child: CustomScrollView(
                 key: const ValueKey('matches-scroll'),
                 controller: _scrollController,
-                // 라이브가 없으면 지난 경기와 예정 경기의 경계에서 바로 시작해요.
+                // 현재 시점이 화면 중앙에 오도록 열어 최근 경기 두 개와
+                // 라이브/가까운 예정 경기를 한 화면에서 이어서 보여줘요.
                 center: centerNoLiveBoundary
                     ? _noLiveBoundarySliverKey
                     : _entrySliverKey,
-                anchor: centerNoLiveBoundary ? 0.5 : 0.0,
+                anchor: opensAroundCurrentMatch ? 0.5 : 0.0,
                 slivers: [
                   for (var index = 0; index < sections.length; index++) ...[
                     // 카드 하단 8px에 16px을 더해 마지막 카드와 divider를 24px 띄워요.
@@ -623,7 +657,8 @@ class _MatchesTabState extends State<MatchesTab> {
                         (_, matchIndex) {
                           final matches = sections[index].matches;
                           // Slivers above `center` grow upward. Feed them
-                          // newest-first so the painted list reads oldest-first.
+                          // newest-first so the latest Past remains directly
+                          // above Live while Upcoming grows below it.
                           final fixtureIndex = index < entrySectionIndex
                               ? matches.length - 1 - matchIndex
                               : matchIndex +

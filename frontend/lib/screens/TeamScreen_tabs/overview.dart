@@ -8,10 +8,12 @@ import 'package:onetouch/features/team_screen_features.dart';
 import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_overview.dart';
+import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/widgets/ads/banner_ad_widget.dart';
 
 class OverviewTab extends StatefulWidget {
   final TeamOverview? team;
+  final Fixture? liveMatch;
   final ValueChanged<int>? onStandingCompetitionSelected;
   final BestElevenRepository? bestElevenRepository;
   final TeamInjuryRepository? injuryRepository;
@@ -21,6 +23,7 @@ class OverviewTab extends StatefulWidget {
   const OverviewTab({
     super.key,
     required this.team,
+    this.liveMatch,
     this.onStandingCompetitionSelected,
     this.bestElevenRepository,
     this.injuryRepository,
@@ -77,7 +80,7 @@ class _OverviewTabState extends State<OverviewTab> {
               const SizedBox(height: 24),
               SectionHeader(title: tr(context, "FIXTURE")),
               // Pass the whole team map
-              Fixtures(teams: widget.team),
+              Fixtures(teams: widget.team, liveMatch: widget.liveMatch),
 
               if (hasStanding) ...[
                 const SizedBox(height: 32),

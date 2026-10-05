@@ -9,6 +9,8 @@ import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
+    as fixture_providers;
 import 'package:onetouch/data/current_form/current_form_repository.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
@@ -20,6 +22,7 @@ import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
 import 'package:onetouch/features/helper.dart';
 import 'TeamScreen_tabs/index.dart';
+import '../models/fixture.dart';
 import '../models/team_overview.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -53,7 +56,7 @@ class TeamScreen extends StatefulWidget {
 }
 
 class _TeamScreenState extends State<TeamScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final ScrollController _scrollController;
   late final TabController _tabController;
   final GlobalKey<NestedScrollViewState> _nestedScrollKey = GlobalKey();
@@ -69,6 +72,10 @@ class _TeamScreenState extends State<TeamScreen>
   bool _isMatchHeaderVisible = true;
   int _selectedTabIndex = 0;
   int _tabViewEpoch = 0;
+  List<Fixture>? _liveMatches;
+  Timer? _liveMatchTimer;
+  int _liveMatchRequestId = 0;
+  bool? _wasTickerEnabled;
   final List<int> _tabRefreshEpochs = List<int>.filled(5, 0);
 
   TeamOverviewRepository get _teamOverviewRepository =>
@@ -79,9 +86,16 @@ class _TeamScreenState extends State<TeamScreen>
       configuration.teamOverviewRepository ??
       team_overview_providers.teamOverviewRepository;
 
+  FixtureRepository get _fixtureRepository =>
+      widget.fixtureRepository ?? fixture_providers.fixtureRepository;
+
+  FixtureRepository _fixtureRepositoryFor(TeamScreen configuration) =>
+      configuration.fixtureRepository ?? fixture_providers.fixtureRepository;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _scrollController = ScrollController();
 
     _tabController = TabController(length: 5, vsync: this)
@@ -90,6 +104,68 @@ class _TeamScreenState extends State<TeamScreen>
     _teamOverviewRepository.cachedTeams.addListener(_handleOverviewCache);
 
     _startOverviewLoad(updateState: false);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final tickerEnabled = TickerMode.valuesOf(context).enabled;
+    final firstCheck = _wasTickerEnabled == null;
+    final returnedToScreen = _wasTickerEnabled == false && tickerEnabled;
+    _wasTickerEnabled = tickerEnabled;
+    _updateLiveMatchPolling(tickerEnabled);
+    if (tickerEnabled && (firstCheck || returnedToScreen)) {
+      unawaited(_refreshLiveMatches());
+    }
+  }
+
+  void _updateLiveMatchPolling(bool enabled) {
+    _liveMatchTimer?.cancel();
+    _liveMatchTimer = null;
+    if (!enabled) return;
+    _liveMatchTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => unawaited(_refreshLiveMatches()),
+    );
+  }
+
+  Future<void> _refreshLiveMatches() async {
+    final teamId = widget.teamId;
+    final requestId = ++_liveMatchRequestId;
+    try {
+      final matches = await _fixtureRepository.refreshForTeam(
+        teamId,
+        status: FixtureStatus.live,
+        limit: 200,
+      );
+      if (!mounted ||
+          requestId != _liveMatchRequestId ||
+          teamId != widget.teamId) {
+        return;
+      }
+      setState(() {
+        _liveMatches = List.unmodifiable(
+          matches.where(
+            (fixture) =>
+                fixture.status == FixtureStatus.live &&
+                (fixture.homeTeamId == teamId || fixture.awayTeamId == teamId),
+          ),
+        );
+      });
+    } on Object {
+      // Keep the last verified live state until the next poll succeeds.
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _wasTickerEnabled == true) {
+      _updateLiveMatchPolling(true);
+      unawaited(_refreshLiveMatches());
+    } else if (state != AppLifecycleState.resumed) {
+      _liveMatchTimer?.cancel();
+      _liveMatchTimer = null;
+    }
   }
 
   void _handleOverviewCache() {
@@ -169,7 +245,10 @@ class _TeamScreenState extends State<TeamScreen>
     final requestId = ++_loadRequestId;
     final selectedTab = _selectedTabIndex;
     setState(() => _tabRefreshEpochs[selectedTab] += 1);
-    await _loadOverview(widget.teamId, requestId);
+    await Future.wait<void>([
+      _loadOverview(widget.teamId, requestId),
+      _refreshLiveMatches(),
+    ]);
   }
 
   @override
@@ -184,12 +263,23 @@ class _TeamScreenState extends State<TeamScreen>
       oldRepository.cachedTeams.removeListener(_handleOverviewCache);
       _teamOverviewRepository.cachedTeams.addListener(_handleOverviewCache);
     }
+    final fixtureRepositoryChanged = !identical(
+      _fixtureRepositoryFor(oldWidget),
+      _fixtureRepository,
+    );
     // This screen's State is reused across team switches (the Team-tab
     // branch stays alive in the bottom-nav shell), so reload instead of
     // only loading once in initState — otherwise it keeps showing whichever
     // team was loaded first, forever.
     if (widget.teamId != oldWidget.teamId || repositoryChanged) {
+      _liveMatches = null;
+      ++_liveMatchRequestId;
       _startOverviewLoad();
+      unawaited(_refreshLiveMatches());
+    } else if (fixtureRepositoryChanged) {
+      _liveMatches = null;
+      ++_liveMatchRequestId;
+      unawaited(_refreshLiveMatches());
     }
   }
 
@@ -267,6 +357,8 @@ class _TeamScreenState extends State<TeamScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _liveMatchTimer?.cancel();
     _teamOverviewRepository.cachedTeams.removeListener(_handleOverviewCache);
     mainTabActions.removeListener(_handleMainTabAction);
     _scrollController.dispose();
@@ -533,6 +625,7 @@ class _TeamScreenState extends State<TeamScreen>
                         'team-overview-refresh-${_tabRefreshEpochs[0]}',
                       ),
                       team: team,
+                      liveMatch: _liveMatches?.firstOrNull,
                       onStandingCompetitionSelected: _openStandingCompetition,
                       standingRepository: widget.standingRepository,
                     ),
@@ -540,6 +633,7 @@ class _TeamScreenState extends State<TeamScreen>
                       key: const ValueKey('team-matches'),
                       team: team,
                       fixtureRepository: widget.fixtureRepository,
+                      realtimeLiveMatches: _liveMatches,
                       onTopOverscroll: _revealTeamAppBar,
                       onHeaderVisibilityChanged: _setMatchHeaderVisible,
                       isActive: _selectedTabIndex == 1,
