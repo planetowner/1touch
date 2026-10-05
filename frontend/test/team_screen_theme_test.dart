@@ -175,6 +175,47 @@ void main() {
     (const Size(320, 568), 24.0),
     (const Size(430, 932), 54.0),
   ]) {
+    testWidgets(
+        'Team avoids a second top inset inside the app SafeArea at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      tester.view.padding = FakeViewPadding(top: topInset);
+      tester.view.viewPadding = FakeViewPadding(top: topInset);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPadding);
+      addTearDown(tester.view.resetViewPadding);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: SafeArea(
+          bottom: false,
+          child: TeamScreen(
+            fixtureRepository: fixtureRepository,
+            standingRepository: standingRepository,
+            currentFormRepository: currentFormRepository,
+            teamId: 9,
+            teamAttributeRepository: teamAttributeRepository,
+            teamOverviewRepository: teamOverviewRepository,
+            xgStandingRepository: xgStandingRepository,
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(tester.getTopLeft(find.byType(NestedScrollView)).dy, topInset);
+      expect(
+        tester
+            .getTopLeft(
+              find.byKey(const ValueKey('team-app-bar-logo')),
+            )
+            .dy,
+        topInset == 24 ? 47 : 70,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('Team standing scroll stays below the status bar at $size',
         (tester) async {
       tester.view.physicalSize = size;

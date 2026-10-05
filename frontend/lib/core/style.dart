@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -70,11 +72,19 @@ Color appPillForeground(BuildContext context, {required bool selected}) {
 
 const double appBarMinimumContentTop = 47;
 
+double appStatusBarInset(BuildContext context) {
+  final view = View.of(context);
+  final viewTop = view.viewPadding.top / view.devicePixelRatio;
+  return math.max(MediaQuery.paddingOf(context).top, viewTop);
+}
+
 double appBarContentTop(BuildContext context) {
-  final topInset = MediaQuery.paddingOf(context).top;
-  return topInset < appBarMinimumContentTop
-      ? appBarMinimumContentTop
-      : topInset;
+  final remainingTop = MediaQuery.paddingOf(context).top;
+  final consumedTop = appStatusBarInset(context) - remainingTop;
+  return math.max(
+    remainingTop,
+    math.max(0, appBarMinimumContentTop - consumedTop),
+  );
 }
 
 double responsiveBrandGradientHeight(BuildContext context) {
