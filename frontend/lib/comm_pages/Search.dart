@@ -144,7 +144,9 @@ class _SearchContentState extends State<SearchContent> {
                     height: 56,
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      color: appColors.cardBackground,
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? appColors.subtleBackground
+                          : appColors.cardBackground,
                       borderRadius:
                           BorderRadius.circular(AppSearchFieldTokens.radius),
                     ),
@@ -239,7 +241,7 @@ class _SearchContentState extends State<SearchContent> {
       key: const ValueKey('search-results'),
       children: [
         SizedBox(
-          height: 92,
+          height: 78,
           child: ListView.separated(
             key: const ValueKey('search-category-tabs'),
             scrollDirection: Axis.horizontal,
@@ -261,17 +263,18 @@ class _SearchContentState extends State<SearchContent> {
 
     return InkWell(
       key: ValueKey('search-tab-${_tabs[index].toLowerCase()}'),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(16),
       onTap: () => setState(() => _selectedIndex = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        height: 42,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: isSelected
               ? appColors.cardBackground
               : appColors.subtleBackground,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: isSelected
               ? const [
                   BoxShadow(
@@ -284,7 +287,10 @@ class _SearchContentState extends State<SearchContent> {
         ),
         child: Text(
           trUpper(context, _tabs[index]),
-          style: Body1_b.style.copyWith(color: colors.onSurface),
+          style: Body2_b.style.copyWith(
+            color: colors.onSurface,
+            height: 1.30,
+          ),
         ),
       ),
     );
