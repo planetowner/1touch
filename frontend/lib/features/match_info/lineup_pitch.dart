@@ -9,8 +9,6 @@ class LineupPitch extends StatelessWidget {
 
   /// Called when the user taps a player dot.
   final void Function(BuildContext context, LineupPlayer player)? onPlayerTap;
-  final String? homeFormation;
-  final String? awayFormation;
   final Color homeColor;
   final Color awayColor;
 
@@ -19,8 +17,6 @@ class LineupPitch extends StatelessWidget {
     required this.awayRows,
     required this.homeRows,
     this.onPlayerTap,
-    this.homeFormation,
-    this.awayFormation,
     required this.homeColor,
     required this.awayColor,
   });
@@ -36,23 +32,7 @@ class LineupPitch extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(tr(context, "LINEUP"), style: Body2_b.style),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                tr(context, 'HOME {home}  •  AWAY {away}', {
-                  'home': homeFormation ?? '—',
-                  'away': awayFormation ?? '—'
-                }),
-                style: Eyebrow.style,
-                textAlign: TextAlign.right,
-              ),
-            ),
-          ],
-        ),
+        Text(tr(context, "LINEUP"), style: Body2_b.style),
         const SizedBox(height: 12),
         Container(
           key: const ValueKey('match-lineup-card'),
