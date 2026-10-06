@@ -1,6 +1,8 @@
 // ignore_for_file: file_names
 
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/app_info_button.dart';
@@ -20,6 +22,97 @@ import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+
+String? _countryFlagEmoji(String? rawCode) {
+  final code = rawCode?.trim().toUpperCase();
+  final subdivision = switch (code) {
+    'GB-ENG' => 'gbeng',
+    'GB-SCT' => 'gbsct',
+    'GB-WLS' => 'gbwls',
+    _ => null,
+  };
+  if (subdivision != null) {
+    // 영국 구성국 국기는 국가 코드 두 글자가 아닌 태그 시퀀스를 사용해요.
+    return String.fromCharCodes([
+      0x1F3F4,
+      ...subdivision.codeUnits.map((unit) => 0xE0000 + unit),
+      0xE007F,
+    ]);
+  }
+  if (code == null || !RegExp(r'^[A-Z]{2}$').hasMatch(code)) return null;
+  return String.fromCharCodes([
+    for (final unit in code.codeUnits) 0x1F1E6 + unit - 0x41,
+  ]);
+}
+
+String? _countryFlagImageUrl(String? rawCode, String? fallback) {
+  final code = rawCode?.trim().toUpperCase();
+  if (code != null &&
+      (RegExp(r'^[A-Z]{2}$').hasMatch(code) ||
+          const {'GB-ENG', 'GB-SCT', 'GB-WLS', 'GB-NIR'}.contains(code))) {
+    return 'https://flagcdn.com/48x36/${code.toLowerCase()}.png';
+  }
+  return fallback?.trim().isNotEmpty == true ? fallback!.trim() : null;
+}
+
+class _PlayerCountryLabel extends StatelessWidget {
+  const _PlayerCountryLabel({required this.profile});
+
+  final PlayerDetailProfile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = countryNameLabel(
+      context,
+      profile.nationalityId,
+      profile.nationality ?? '—',
+    );
+    final emoji = defaultTargetPlatform == TargetPlatform.iOS
+        ? _countryFlagEmoji(profile.nationalityCode)
+        : null;
+    if (emoji != null) {
+      return Text(
+        '$name $emoji',
+        key: const ValueKey('player-overview-country'),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+
+    final imageUrl = _countryFlagImageUrl(
+      profile.nationalityCode,
+      profile.nationalityImage,
+    );
+    if (imageUrl == null) {
+      return Text(
+        name,
+        key: const ValueKey('player-overview-country'),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    return Row(
+      key: const ValueKey('player-overview-country'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+          child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+        const SizedBox(width: 2),
+        CachedNetworkImage(
+          imageUrl: imageUrl,
+          width: 16,
+          height: 12,
+          fit: BoxFit.contain,
+          placeholder: (_, __) => const SizedBox(width: 16, height: 12),
+          errorWidget: (_, __, ___) => const SizedBox(width: 16, height: 12),
+          fadeInDuration: Duration.zero,
+          fadeOutDuration: Duration.zero,
+        ),
+      ],
+    );
+  }
+}
 
 class PlayerOverviewTab extends StatelessWidget {
   const PlayerOverviewTab(
@@ -141,17 +234,7 @@ class PlayerOverviewTab extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 8),
-                                  Text(
-                                    countryNameLabel(
-                                      context,
-                                      detail.profile.nationalityId,
-                                      detail.profile.nationality ?? '—',
-                                    ),
-                                    key: const ValueKey(
-                                        'player-overview-country'),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                  _PlayerCountryLabel(profile: detail.profile),
                                   const SizedBox(height: 16),
                                 ],
                               ))),

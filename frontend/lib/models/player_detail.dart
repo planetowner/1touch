@@ -13,6 +13,7 @@ typedef PlayerDetailProfile = ({
   DateTime? birthDate,
   int? nationalityId,
   String? nationality,
+  String? nationalityCode,
   String? nationalityImage,
   String? position,
   String? squadRole,

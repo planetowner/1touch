@@ -6,6 +6,7 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/competition_display_order.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
 import 'package:onetouch/features/player/player_image_cache.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -14,12 +15,14 @@ import 'package:onetouch/l10n/fixture_labels.dart';
 // 선수 기록의 MP는 팀 경기 수가 아닌 출전 횟수예요. 영어 표의 짧은 표기는 유지해요.
 String playerRecordHeaderLabel(BuildContext context, String label) {
   if (Localizations.localeOf(context).languageCode == 'en') return label;
-  return tr(context, switch (label) {
-    'League' => 'COMPETITION',
-    'MP' => 'Appearances',
-    'WR' => 'Win Rate',
-    _ => label,
-  });
+  return tr(
+      context,
+      switch (label) {
+        'League' => 'COMPETITION',
+        'MP' => 'Appearances',
+        'WR' => 'Win Rate',
+        _ => label,
+      });
 }
 
 class PlayerRemoteImage extends StatelessWidget {
@@ -251,12 +254,16 @@ class PlayerCompetitionTable extends StatelessWidget {
                   children: [
                     Expanded(
                         flex: 3,
-                        child: Text(
-                            _competitionLabel(context, competitions[index]),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.left,
-                            style: Heading5.style)),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: CompetitionLabel(
+                            competitionId: competitions[index].id,
+                            label:
+                                _competitionLabel(context, competitions[index]),
+                            style: Heading5.style,
+                            iconSize: competitions[index].id == 2 ? 14 : 12,
+                          ),
+                        )),
                     _statColumns(
                         'row-${competitions[index].id}',
                         Text('${competitions[index].record.appearances}',
@@ -317,18 +324,21 @@ class PlayerDetailMatchCard extends StatelessWidget {
               live: match.live,
               result: match.live
                   ? trUpper(context, 'Live')
-                  : trUpper(context, switch (match.result) {
-                      'WIN' => 'Win',
-                      'DRAW' => 'Draw',
-                      // 서버는 패배를 DEF로 내려줘요.
-                      'DEF' || 'LOSE' => 'Lose',
-                      _ => match.result ?? '—',
-                    }),
+                  : trUpper(
+                      context,
+                      switch (match.result) {
+                        'WIN' => 'Win',
+                        'DRAW' => 'Draw',
+                        // 서버는 패배를 DEF로 내려줘요.
+                        'DEF' || 'LOSE' => 'Lose',
+                        _ => match.result ?? '—',
+                      }),
               score: '${match.homeScore ?? '—'} - ${match.awayScore ?? '—'}',
               competition: competitionRoundLabel(context,
                   competitionId: match.competitionId,
                   competitionName: match.competition,
                   roundName: match.round),
+              competitionId: match.competitionId,
               againstLogo: match.opponentImage,
               remoteLogo: true,
               stats: [
