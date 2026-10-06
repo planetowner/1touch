@@ -261,7 +261,7 @@ class _PlayerCardState extends State<PlayerCard>
                         tabs: [
                           Tab(text: tr(context, "Overview")),
                           Tab(text: tr(context, "Analysis")),
-                          Tab(text: tr(context, "Matches")),
+                          Tab(text: playerTabLabel(context, "Matches")),
                           Tab(text: tr(context, "Career")),
                         ],
                         tabAlignment: TabAlignment.start,
