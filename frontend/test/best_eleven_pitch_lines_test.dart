@@ -11,7 +11,11 @@ import 'support/app_catalog.dart';
 void main() {
   setUpAppCatalog();
 
-  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+  for (final size in [
+    const Size(320, 568),
+    const Size(393, 852),
+    const Size(430, 932),
+  ]) {
     testWidgets('keeps every player inside the 24px inset at $size',
         (tester) async {
       tester.view.physicalSize = size;
@@ -68,9 +72,78 @@ void main() {
         expect(player.top, greaterThanOrEqualTo(card.top + 24));
         expect(player.bottom, lessThanOrEqualTo(card.bottom - 24));
       }
+      final leftDefender = tester.getRect(
+        find.byKey(const ValueKey('best-eleven-player-link-2')),
+      );
+      final rightDefender = tester.getRect(
+        find.byKey(const ValueKey('best-eleven-player-link-5')),
+      );
+      if (size.width == 393) {
+        expect(leftDefender.left, closeTo(card.left + 24, 0.01));
+        expect(rightDefender.right, closeTo(card.right - 24, 0.01));
+      }
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('4-2-3-1 circles follow the design rows at 345px',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const rows = <String, double>{
+      '1:1': 316,
+      '2:1': 232,
+      '2:2': 248,
+      '2:3': 248,
+      '2:4': 232,
+      '3:1': 168,
+      '3:2': 168,
+      '4:1': 88,
+      '4:2': 100,
+      '4:3': 88,
+      '5:1': 24,
+    };
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: BestElevenPitch(
+            teamId: 503,
+            formation: '4-2-3-1',
+            players: [
+              for (final (index, slot) in rows.keys.indexed)
+                BestElevenEntry(
+                  slotKey: slot,
+                  slotIndex: index,
+                  playerId: index + 1,
+                  playerName: 'Player $index',
+                  starts: 1,
+                  jerseyNumber: index + 1,
+                ),
+            ],
+          ),
+        ),
+      ),
+    ));
+
+    final card = tester.getRect(
+      find.byKey(const ValueKey('team-best-eleven-card')),
+    );
+    for (final entry in rows.entries) {
+      final dot = tester.getRect(
+        find.byKey(ValueKey('best-eleven-player-dot-${entry.key}')),
+      );
+      expect(dot.top - card.top, closeTo(entry.value, 1));
+    }
+    final striker = tester.getCenter(
+      find.byKey(const ValueKey('best-eleven-player-dot-5:1')),
+    );
+    expect(striker.dx - card.left, closeTo(card.width / 2, 0.01));
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('goalkeeper boxes follow the 345 by 392 pitch design',
       (tester) async {
