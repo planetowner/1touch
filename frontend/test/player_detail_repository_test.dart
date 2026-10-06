@@ -85,6 +85,7 @@ void main() {
     expect(detail.profile.image, isNull);
     expect(detail.profile.nationalityId, 712);
     expect(detail.profile.nationality, 'South Korea');
+    expect(detail.profile.nationalityCode, 'KR');
     expect(detail.matches.first.metrics.map((m) => m.code),
         ['goals', 'assists', 'shots']);
     expect(detail.matches.first.metrics[1].value, isNull);

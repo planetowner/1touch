@@ -59,6 +59,7 @@ PlayerDetail playerDetailFromJson(Map<String, dynamic> j) {
         birthDate: _date(p['date_of_birth'] as String?),
         nationalityId: p['nationality_id'] as int?,
         nationality: p['nationality'] as String?,
+        nationalityCode: p['nationality_code'] as String?,
         nationalityImage: p['nationality_image'] as String?,
         position: p['position_group'] as String?,
         squadRole: p['squad_role'] as String?
