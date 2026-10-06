@@ -426,11 +426,6 @@ class FixtureDetailsStorageTests(unittest.TestCase):
                                     side_effect=lambda *args, **kwargs: nullcontext())
         role_refresh.start()
         self.addCleanup(role_refresh.stop)
-        # 포지션 저장의 실제 연동은 test_player_season_positions에서 확인해요.
-        position_refresh = patch.object(details.player_positions, 'refresh_positions_after_fixtures',
-                                        side_effect=lambda *args, **kwargs: nullcontext())
-        position_refresh.start()
-        self.addCleanup(position_refresh.stop)
         # 운영 DB 대신 메모리 안에서 실제 INSERT·DELETE·FK·rollback을 확인해요.
         self.connection = sqlite3.connect(":memory:")
         self.connection.execute("PRAGMA foreign_keys = ON")

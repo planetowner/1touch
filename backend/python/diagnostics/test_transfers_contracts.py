@@ -26,7 +26,6 @@ from one_touch_loader.core.transfer_team_levels import VERIFIED_NON_SENIOR_TEAM_
 from one_touch_loader.loaders import transfers_loader as transfers
 from one_touch_loader.loaders import player_contracts_loader as contracts
 from one_touch_loader.loaders import team_squad_members_loader as squads
-from one_touch_loader.loaders import player_season_positions_loader as player_positions
 from one_touch_loader.api.repos import transfers_repo, contracts_repo
 from one_touch_loader.api.routes import teams as routes
 from one_touch_loader.api.deps import get_user_id
@@ -52,7 +51,9 @@ class TransfersContractsTests(unittest.TestCase):
         self.sql.execute("PRAGMA foreign_keys=ON")
         self.sql.executescript("""
             CREATE TABLE teams (team_id BIGINT PRIMARY KEY, name TEXT, short_code TEXT, image_path TEXT);
-            CREATE TABLE players (player_id BIGINT PRIMARY KEY, display_name TEXT, image_path TEXT, date_of_birth DATE);
+            CREATE TABLE players (player_id BIGINT PRIMARY KEY, display_name TEXT, image_path TEXT, date_of_birth DATE, position_id INTEGER);
+            CREATE TABLE positions (position_id INTEGER PRIMARY KEY,position_group_id INTEGER);
+            INSERT INTO positions VALUES (156,27),(150,26),(24,24);
             CREATE TABLE seasons (season_id BIGINT PRIMARY KEY, competition_id BIGINT, name TEXT, is_current INT);
             CREATE TABLE competitions (competition_id BIGINT PRIMARY KEY);
             CREATE TABLE stages (stage_id BIGINT PRIMARY KEY, season_id BIGINT);
@@ -70,8 +71,7 @@ class TransfersContractsTests(unittest.TestCase):
             INSERT INTO seasons VALUES (28083,8,'2026/2027',1),(25000,8,'2025/2026',0);
         """)
         folder = Path(__file__).parents[1] / "one_touch_loader/sql"
-        for name in ("migrate_transfers_contracts_minimal.sql", "create_transfers.sql", "create_player_contracts.sql",
-                     "create_player_season_positions.sql"):
+        for name in ("migrate_transfers_contracts_minimal.sql", "create_transfers.sql", "create_player_contracts.sql"):
             self.sql.executescript(sqlite_ddl((folder / name).read_text(encoding="utf-8")))
         for pid in (832, 997, 4313, 163152, 185658, 25162, 11353231):
             self.sql.execute("INSERT INTO players (player_id, display_name, image_path) VALUES (?, ?, NULL)", (pid, f"Existing {pid}"))
@@ -114,12 +114,6 @@ class TransfersContractsTests(unittest.TestCase):
         client = TestClient(app)
         self.addCleanup(client.close)
         return client
-
-    def refresh_positions(self, season_name):
-        from diagnostics.test_player_rating_rankings import MemoryCursor
-        with MemoryCursor(self.sql) as cur:
-            cur.cursor.row_factory = sqlite3.Row
-            player_positions.refresh_season_positions(cur, season_name, as_of=datetime(2026,10,2))
 
     def store(self, player_id):
         rows = transfers.build_transfer_rows(player_id, CASES["players"][str(player_id)], SENIOR)
@@ -478,7 +472,7 @@ class TransfersContractsTests(unittest.TestCase):
                       "estimated_weekly_gross_eur","leadership_role","start_date","end_date"):
             self.assertIsNone(missing[field])
 
-    def test_squad_positions_use_all_competitions_and_keep_roster_positions_without_appearances(self):
+    def test_current_squad_positions_ignore_profile_and_appearance_calculation(self):
         self.sql.executescript("""
             INSERT INTO teams VALUES (6,'Spurs',NULL,NULL);
             INSERT INTO team_seasons VALUES (6,28083);
@@ -499,22 +493,20 @@ class TransfersContractsTests(unittest.TestCase):
                 (1,6,4313,12,26,0,NULL),(4,6,4313,11,26,90,7),(5,6,4313,11,26,90,7),
                 (1,6,185658,11,NULL,90,7),(1,6,11353231,11,25,90,7);
         """)
-        self.refresh_positions('2026/2027')
+        self.sql.execute('UPDATE players SET position_id=156 WHERE player_id=997')
         writes_before = self.sql.total_changes
         with patch.object(contracts_repo, "fetch_all_dict", wraps=self.fetch_dicts) as fetch:
             response = self.api_client().get('/v1/teams/6/contracts?season_id=28083')
         self.assertEqual(response.status_code, 200)
         positions = {row['player_id']: row['position_group_id'] for row in response.json()['players']}
-        self.assertEqual(positions, {997:27, 4313:27, 163152:24, 185658:26, 832:None})
+        self.assertEqual(positions, {997:26, 4313:27, 163152:24, 185658:26, 832:None})
         self.assertEqual(self.sql.total_changes, writes_before)
         self.assertEqual(self.sql.execute(
             'SELECT position_group_id FROM team_squad_members WHERE player_id=997').fetchone()[0], 26)
         self.assertFalse(any('FROM fixture_lineups fl' in call.args[0] for call in fetch.call_args_list))
-        position_queries = [call for call in fetch.call_args_list if 'JOIN player_season_positions' in call.args[0]]
-        self.assertEqual(len(position_queries), 1)
-        self.assertEqual(position_queries[0].args[1][0], '2026/2027')
+        self.assertFalse(any('player_season_positions' in call.args[0] for call in fetch.call_args_list))
 
-    def test_squad_positions_follow_selected_past_season_and_shared_tie_rules(self):
+    def test_squad_positions_keep_past_roster_instead_of_current_profile_or_matches(self):
         self.sql.executescript("""
             INSERT INTO teams VALUES (6,'Spurs',NULL,NULL);
             INSERT INTO team_seasons VALUES (6,25000);
@@ -529,12 +521,11 @@ class TransfersContractsTests(unittest.TestCase):
                 (1,6,4313,11,26,90,7),(2,6,4313,11,25,90,7),
                 (4,6,997,11,27,90,7),(4,6,4313,11,27,90,7);
         """)
-        self.refresh_positions('2025/2026')
-        self.refresh_positions('2026/2027')
+        self.sql.execute('UPDATE players SET position_id=150 WHERE player_id IN (997,4313)')
         result = contracts_repo.get_team_contracts(6,25000)
         self.assertFalse(result['is_current'])
         self.assertEqual({row['player_id']: row['position_group_id'] for row in result['players']},
-                         {997:26, 4313:25})
+                         {997:27, 4313:27})
 
     def test_historical_squad_uses_its_season_and_has_no_contract_dates_or_contract_sort(self):
         self.sql.executescript("""

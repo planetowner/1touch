@@ -2338,8 +2338,8 @@ class SportmonksClient:
         return response["data"]
 
     def get_team_season_squad(self, team_id: int, season_id: int) -> List[Dict]:
-        # Sportmonks가 시즌 스쿼드라고 부르는 데이터예요. 1Touch에서는 완료된 시즌의
-        # 명단을 재구성하는 바탕으로만 써요. 공식 시즌 종료 등록 명단으로 보지 않아요.
+        # 모든 시즌의 포지션과 과거 시즌 명단 재구성에 사용해요.
+        # 현재 명단·계약은 별도의 현재 스쿼드 응답을 사용해요.
         response = self._get(
             f"squads/seasons/{season_id}/teams/{team_id}",
             params={"include": "player"},

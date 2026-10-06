@@ -8,7 +8,8 @@ from ..db import get_conn
 from .player_detail_repo import (
     APPEARED, COMPLETED, get_current_player_teams,
 )
-from ...core.player_ranking import merge_current_scores, rank_current_scores, season_player_positions
+from ...core.player_ranking import merge_current_scores, rank_current_scores
+from ...core.player_positions import season_player_positions
 from ...core.player_rating_percentile import (
     HistoricalPercentile, RATING_COMPETITION_IDS, REFERENCE_START_SEASON_NAME,
     average_rating, display_score,

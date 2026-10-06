@@ -80,10 +80,6 @@ class PlayerRatingRefreshTests(unittest.TestCase):
                                   side_effect=lambda *args, **kwargs: nullcontext())
         role_patch.start()
         self.addCleanup(role_patch.stop)
-        position_patch = patch.object(details.player_positions, 'refresh_positions_after_fixtures',
-                                      side_effect=lambda *args, **kwargs: nullcontext())
-        position_patch.start()
-        self.addCleanup(position_patch.stop)
         self.initialize()
         # 기반 픽스처의 INSERT는 추가한 점수 필드도 명시하도록 이 테스트에서만 맞춰요.
         self.seed_matches(self.target, count=9)

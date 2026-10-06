@@ -1,5 +1,5 @@
 """자동 동기화가 수동 이름·사진·역할을 보존하고 팀 단위로 저장하는지 확인해요."""
-from contextlib import ExitStack, redirect_stdout
+from contextlib import ExitStack, contextmanager, redirect_stdout
 from copy import deepcopy
 from datetime import date
 import io
@@ -34,7 +34,11 @@ def member(player_id, jersey=9):
 class Cursor(_SqliteCursor):
     @staticmethod
     def _sql(sql):
-        return _SqliteCursor._sql(sql).replace("LEFT(seasons.name, 4)", "substr(seasons.name, 1, 4)")
+        return (_SqliteCursor._sql(sql).replace("LEFT(seasons.name, 4)", "substr(seasons.name, 1, 4)")
+                .replace(" FOR UPDATE", ""))
+
+    def fetchone(self):
+        return self.cursor.fetchone()
 
     @property
     def rowcount(self):
@@ -47,6 +51,8 @@ class SyncDatabaseCase(unittest.TestCase):
         self.addCleanup(self.sql.close)
         self.sql.executescript("""
             PRAGMA foreign_keys=ON;
+            CREATE TABLE competitions(competition_id INTEGER PRIMARY KEY);
+            INSERT INTO competitions VALUES (8);
             CREATE TABLE positions(position_id INTEGER PRIMARY KEY);
             INSERT INTO positions VALUES (151),(154);
             CREATE TABLE countries(country_id INTEGER PRIMARY KEY);
@@ -97,6 +103,8 @@ class SyncDatabaseCase(unittest.TestCase):
         self.client.iter_transfers_between_dates.side_effect = lambda start, end: self.api([])
         self.client.get_team_squad.side_effect = lambda team: self.api(
             [member(1), member(2), member(5)] if team == 10 else [member(2)])
+        self.client.get_team_season_squad.side_effect = lambda team, season: self.api(
+            [member(pid) for pid in (1, 2, 5, 6)])
         self.client.get_player_or_none.side_effect = lambda pid: self.api(profile(pid))
         self.stack = ExitStack()
         self.addCleanup(self.stack.close)
@@ -116,6 +124,64 @@ class SyncDatabaseCase(unittest.TestCase):
 
 
 class CurrentPlayerSyncTests(SyncDatabaseCase):
+    def test_each_team_locks_ranking_pool_before_any_player_or_squad_write(self):
+        statements = []
+        execute = Cursor.execute
+        executemany = Cursor.executemany
+        transaction = sync.transaction
+
+        def record_execute(cursor, sql, params=()):
+            statements.append((sql, params))
+            return execute(cursor, sql, params)
+
+        def record_many(cursor, sql, rows):
+            statements.append((sql, rows))
+            return executemany(cursor, sql, rows)
+
+        @contextmanager
+        def checked_transaction():
+            with transaction() as connection:
+                statements.clear()
+                yield connection
+                # 선수 한 명이라도 먼저 잠그면 순위 저장과 같은 교착이 다시 생길 수 있어요.
+                self.assertEqual(statements[0], (
+                    "SELECT competition_id FROM competitions WHERE competition_id=%s FOR UPDATE", (8,)))
+
+        with patch.object(Cursor, 'execute', record_execute), patch.object(Cursor, 'executemany', record_many), \
+                patch.object(sync, 'transaction', checked_transaction):
+            sync.sync_current_squads(apply=True)
+        self.assertEqual(self.connection.commit.call_count, 2)
+
+    def test_season_positions_replace_current_values_without_changing_membership_or_contracts(self):
+        self.client.get_team_season_squad.side_effect = lambda team, season: self.api([
+            {**member(1, jersey=88), 'position_id': 26, 'end': None},
+            {**member(2), 'position_id': None}, member(5), member(6),
+        ])
+        sync.sync_current_squads(apply=True)
+        self.assertEqual(self.client.get_team_season_squad.call_args_list, [call(10, 800), call(20, 800)])
+        self.assertEqual(self.sql.execute('''SELECT player_id,position_group_id,jersey_number,squad_role
+            FROM team_squad_members WHERE team_id=10 AND season_id=800 ORDER BY player_id''').fetchall(),
+            [(1, 26, 9, 'important'), (2, None, 9, None), (5, 27, 9, None)])
+        self.assertEqual(self.sql.execute('SELECT position_id FROM players WHERE player_id=1').fetchone(), (151,))
+        self.assertEqual(self.sql.execute('SELECT end_date FROM player_contracts WHERE team_id=10 AND player_id=1').fetchone(),
+                         (date(2028, 6, 30),))
+        self.assertEqual(self.sql.execute('SELECT position_group_id FROM team_squad_members WHERE season_id=799').fetchall(), [(25,)])
+
+    def test_empty_season_squad_does_not_write_current_positions(self):
+        before = list(self.sql.iterdump())
+        self.client.get_team_season_squad.side_effect = lambda team, season: self.api([])
+        with self.assertRaisesRegex(ValueError, 'empty season squad'):
+            sync.sync_current_squads(apply=True)
+        self.assertEqual(list(self.sql.iterdump()), before)
+        self.connection.commit.assert_not_called()
+
+    def test_invalid_season_position_uses_that_responses_profile(self):
+        self.client.get_team_season_squad.side_effect = lambda team, season: self.api([
+            {**member(1), 'position_id': 221, 'player': profile(1, position_id=24)}, member(2), member(5),
+        ])
+        sync.sync_current_squads(apply=True)
+        self.assertEqual(self.sql.execute('SELECT position_group_id FROM team_squad_members WHERE player_id=1').fetchone(), (24,))
+
     def test_squads_only_fetch_globally_missing_players_and_preserve_manual_fields(self):
         before = self.names()
         result = sync.sync_current_squads(apply=True)
