@@ -206,6 +206,10 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
         followedTeamIds: savedTeams.map((team) => team.teamId).toList(),
       ));
       currentUserPreferences.resetViewedTeam();
+      if (selectedTeam != null &&
+          savedTeams.any((team) => team.teamId == selectedTeam.teamId)) {
+        currentUserPreferences.viewTeam(selectedTeam.teamId);
+      }
       if (!mounted) return;
       Navigator.of(context).pop(
         FollowingTeamsEditResult(

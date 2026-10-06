@@ -541,14 +541,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             width: 16,
                           ),
                           GestureDetector(
-                            onTap: () => TeamSelectionSheet.show(
-                              context,
-                              initialTeamId: viewedTeamId,
-                              favoriteTeamId:
-                                  currentUserPreferences.favoriteTeamId.value,
-                              followingTeams: homeData.followingTeams,
-                              onSwitch: _switchViewedTeam,
-                            ),
+                            onTap: () {
+                              final rankedIds =
+                                  currentUserPreferences.followedTeamIds.value;
+                              final rankedTeams = [
+                                for (final id in rankedIds)
+                                  ...homeData.followingTeams
+                                      .where((team) => team.teamId == id),
+                                ...homeData.followingTeams.where(
+                                    (team) => !rankedIds.contains(team.teamId)),
+                              ];
+                              TeamSelectionSheet.show(
+                                context,
+                                initialTeamId: viewedTeamId,
+                                favoriteTeamId:
+                                    currentUserPreferences.favoriteTeamId.value,
+                                followingTeams: rankedTeams,
+                                onSwitch: _switchViewedTeam,
+                              );
+                            },
                             child: Container(
                               key: const ValueKey('home-app-bar-team-picker'),
                               padding: AppDropdownTokens.compactPadding,
