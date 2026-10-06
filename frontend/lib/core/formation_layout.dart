@@ -13,7 +13,7 @@ class FormationLayout {
   static const Size designSize = Size(345, 392);
   static final Offset goalkeeper = Offset(
     designSize.width / 2,
-    designSize.height * 7 / 8,
+    designSize.height - 60,
   );
 
   final List<List<Offset>> rows;
@@ -46,19 +46,24 @@ FormationLayout buildFormationLayout(String formation) {
   }
 
   final centerX = FormationLayout.designSize.width / 2;
-  final sideInset = FormationLayout.designSize.width / 8;
-  final usableWidth = FormationLayout.designSize.width - 2 * sideInset;
-  final attackerY = FormationLayout.designSize.height / 8;
-  final defenderY = FormationLayout.designSize.height * 0.65;
-  final rowGap =
-      counts.length == 1 ? 0.0 : (defenderY - attackerY) / (counts.length - 1);
+  // 345 × 392 시안의 줄 간격을 기준으로 다른 줄 수는 사이를 보간해요.
+  const rowAnchors = [264.0, 184.0, 116.0, 40.0];
+
+  double rowY(int row) {
+    if (counts.length == 1) return rowAnchors.last;
+    final anchor = row * (rowAnchors.length - 1) / (counts.length - 1);
+    final lower = anchor.floor();
+    final upper = anchor.ceil();
+    final progress = anchor - lower;
+    return rowAnchors[lower] * (1 - progress) + rowAnchors[upper] * progress;
+  }
 
   Offset position(int row, int column) {
     final count = counts[row];
     final middle = (count - 1) / 2;
     final distance = middle == 0 ? 0.0 : (column - middle).abs() / middle;
     final curve = distance * distance;
-    final baseY = defenderY - rowGap * row;
+    final baseY = rowY(row);
     final height = FormationLayout.designSize.height;
     double y;
     if (count == 5 && row == 1 && counts.length == 3) {
@@ -69,17 +74,23 @@ FormationLayout buildFormationLayout(String formation) {
           height * 0.04 +
           height * 0.10 * wave * wave +
           outerShift * curve;
-    } else if (row == counts.length - 1 && count >= 3) {
-      final bend = height * math.min(0.10, 0.07 + 0.03 * (count - 3));
-      y = baseY + bend * curve;
+    } else if (count >= 3) {
+      // 네 명 수비의 바깥쪽은 16px, 세 명 공격의 바깥쪽은 12px 휘어요.
+      final bend = count * 4.0;
+      final edgeCurve = curve * curve;
+      y = baseY + (row == counts.length - 1 ? bend : -bend) * edgeCurve;
     } else {
-      final bend = row == 0
-          ? height * math.min(0.08, 0.02 + 0.06 * (count - 3))
-          : height * math.min(0.08, 0.04 * (count - 2));
-      y = baseY - math.max(0.0, bend) * curve;
+      y = baseY;
     }
+    // 인원수별 가로 간격만 사용하고 각 포메이션의 좌표를 따로 저장하지 않아요.
+    final span = switch (count) {
+      1 => 0.0,
+      2 => 87.5,
+      3 => 220.0,
+      _ => 252.0,
+    };
     return Offset(
-      centerX + (column - middle) * usableWidth / math.max(2, count - 1),
+      centerX + (column - middle) * span / math.max(1, count - 1),
       y,
     );
   }

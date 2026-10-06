@@ -66,26 +66,43 @@ class BestElevenPitch extends StatelessWidget {
                 padding: const EdgeInsets.all(24),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final scaleY = constraints.maxHeight /
-                        FormationLayout.designSize.height;
+                    final innerWidth = constraints.maxWidth;
+                    final innerHeight = constraints.maxHeight;
+                    final designWidth = FormationLayout.designSize.width;
+                    final designHeight = FormationLayout.designSize.height;
+                    final cardScaleX = (innerWidth + 48) / designWidth;
+                    final cardScaleY = (innerHeight + 48) / designHeight;
+                    final innerScaleX = innerWidth / designWidth;
+                    final innerScaleY = innerHeight / designHeight;
+                    final playerWidth = 45 *
+                        (cardScaleX < 1 ? cardScaleX : 1) /
+                        (innerScaleX < 1 ? innerScaleX : 1);
+                    final visiblePlayerWidth =
+                        playerWidth * (innerScaleX < 1 ? innerScaleX : 1);
                     final labelHeight = (Eyebrow.style.fontSize ?? 12) *
                         (Eyebrow.style.height ?? 1);
-                    // 작은 화면에서도 키퍼 이름 아래 24px 여백을 지켜요.
-                    final maxKeeperY =
-                        (constraints.maxHeight - 16 - 6 - labelHeight) / scaleY;
                     return FormationPlayerPositions<_BestElevenPitchPlayer>(
                       players: _players,
                       positionOf: (player) {
                         final position = layout.positionForSlot(
                           formationLayoutSlotKey(formation, player.slotKey),
                         );
-                        if (position == null || player.slotKey != '1:1') {
-                          return position;
-                        }
+                        if (position == null) return null;
+                        // 원래 카드 간격을 유지하고 가장자리만 24px 안으로 옮겨요.
+                        final x = (position.dx * cardScaleX - 24).clamp(
+                          visiblePlayerWidth / 2,
+                          innerWidth - visiblePlayerWidth / 2,
+                        );
+                        final y = (position.dy * cardScaleY - 24).clamp(
+                          16.0,
+                          innerHeight - 22 - labelHeight,
+                        );
                         return Offset(
-                            position.dx, position.dy.clamp(0.0, maxKeeperY));
+                          x / innerScaleX,
+                          y / innerScaleY,
+                        );
                       },
-                      playerWidth: 62,
+                      playerWidth: playerWidth,
                       playerBuilder: (player) => _BestElevenPlayerDot(
                         player: player,
                         circleColor: playerCircleColor,
@@ -128,7 +145,7 @@ class _BestElevenPlayerDot extends StatelessWidget {
         onTap: () => openPlayerPage(context, player.playerId.toString()),
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(
-          width: 62,
+          width: 45,
           child: Column(
             children: [
               Container(

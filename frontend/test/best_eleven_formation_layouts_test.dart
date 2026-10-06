@@ -83,6 +83,19 @@ void main() {
     );
   });
 
+  test('4-2-3-1 follows the 345 by 392 design row anchors', () {
+    final layout = FormationLayout.forFormation('4-2-3-1');
+
+    expect(layout.positionForSlot('1:1'), const Offset(172.5, 332));
+    expect(layout.positionForSlot('2:1'), const Offset(46.5, 248));
+    expect(layout.positionForSlot('2:2')!.dx, closeTo(130.5, 0.01));
+    expect(layout.positionForSlot('2:2')!.dy, closeTo(263.8, 0.01));
+    expect(layout.positionForSlot('3:1'), const Offset(128.75, 184));
+    expect(layout.positionForSlot('4:1'), const Offset(62.5, 104));
+    expect(layout.positionForSlot('4:2'), const Offset(172.5, 116));
+    expect(layout.positionForSlot('5:1'), const Offset(172.5, 40));
+  });
+
   test('4-3-3 uses the 4-1-2-3 shape without changing slot mapping', () {
     expect(formationLayoutCode('4-3-3'), '4-1-2-3');
     expect(formationLayoutCode('433'), '4-1-2-3');
