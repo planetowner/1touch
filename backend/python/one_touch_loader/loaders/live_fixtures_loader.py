@@ -10,7 +10,6 @@ from ..api.repos.notifications_repo import capture_fixture
 from .fixture_details_loader import _normalize_fixture_details, verified_event_player_profiles, write_fixture_detail_rows
 from . import player_rating_rankings_loader as player_rankings
 from . import squad_roles_loader as squad_roles
-from . import player_season_positions_loader as player_positions
 from .fixtures_loader import (
     SPORTMONKS_CURRENT_SCORE_TYPE_ID, SPORTMONKS_PENALTY_SCORE_TYPE_ID,
     SQL_UPSERT_FIXTURE_STATE, _score_pair,
@@ -62,7 +61,7 @@ def store_live_fixture(fixture: dict, home_team_id: int, away_team_id: int,
         # 확인된 이벤트·결과만 보충할 때는 이미 저장한 선수 통계를 유지해요.
         rows = {key: rows[key] for key in detail_keys}
     profiles = verified_event_player_profiles(fixture)
-    with transaction() as connection, player_positions.refresh_positions_after_fixtures(connection, [fixture["id"]]):
+    with transaction() as connection:
         with player_rankings.refresh_player_ratings_after_fixture(
             connection, fixture["id"], state_id=fixture["state_id"],
         ), squad_roles.refresh_squad_roles_after_fixture(

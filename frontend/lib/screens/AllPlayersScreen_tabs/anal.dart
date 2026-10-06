@@ -84,7 +84,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       titleAccessory: const AppInfoButton(
         key: ValueKey('top-stats-help-icon'),
         message:
-            'Top 3 stats where the player ranks best in the league. The displayed stats will only reflect good performance.',
+            'The 3 stats with the highest ranks among players in the same position in the selected league and season.',
       ),
       child: PlayerSurface(
         key: const ValueKey('player-top-stats-card'),

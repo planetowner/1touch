@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from one_touch_loader.core.player_detail import (
-    build_career, current_player_team, dominant_position, match_cards, rank_categories, season_categories,
+    build_career, current_player_team, match_cards, rank_categories, season_categories,
     minimum_reference_minutes, stat_index, summarize,
 )
 from one_touch_loader.core.player_match_metrics import SUMMARY_METRICS
@@ -55,18 +55,6 @@ class PlayerDetailMathTests(unittest.TestCase):
             with self.subTest(matches=matches):
                 self.assertIs(current_player_team(roster, matches), roster[0])
         self.assertIsNone(current_player_team(roster[2:], [match()]))
-
-    def test_all_competition_appearances_decide_position_before_minutes(self):
-        rows = [match(fixture=1, position=26, minutes_played=90),
-                match(fixture=2, position=27, minutes_played=5),
-                match(fixture=3, position=27, minutes_played=5, competition_id=2),
-                match(fixture=4, position=25, state_id=2)]
-        self.assertEqual(dominant_position(rows), 27)
-        self.assertIsNone(dominant_position([]))
-
-    def test_position_ties_use_minutes_then_latest_appearance(self):
-        self.assertEqual(dominant_position([match(position=25), match(fixture=2, position=26)]), 26)
-        self.assertEqual(dominant_position([match(position=25), match(fixture=2, position=26, minutes_played=20)]), 25)
 
     def test_summary_metrics_are_shared_for_every_position(self):
         for pos, expected in SUMMARY_METRICS.items():
@@ -337,7 +325,8 @@ class PlayerDetailRepositoryTests(unittest.TestCase):
                 self.assertNotIn('player_id IN', sql)
                 return [dict(fixture_id=1, stat_type_id=27271)]
             if sql.startswith(repo.MATCH_SELECT): return own + peer + short_peer
-            if sql.startswith('SELECT fl.player_id'): return own + peer + short_peer
+            if sql.startswith('SELECT sm.player_id'):
+                return [dict(player_id=pid,team_id=8,position_group_id=27) for pid in (1,2,3)]
             if 'FROM team_seasons' in sql:
                 self.assertEqual(params, (1,))
                 return [dict(team_count=2)]
@@ -371,7 +360,9 @@ class PlayerDetailRepositoryTests(unittest.TestCase):
                 self.assertIn('f.starting_at<=%s', sql)
                 return fixtures
             if 'FROM team_seasons' in sql: return [dict(team_count=2)]
-            if sql.startswith(repo.MATCH_SELECT) or sql.startswith('SELECT fl.player_id'): return rows
+            if sql.startswith(repo.MATCH_SELECT): return rows
+            if sql.startswith('SELECT sm.player_id'):
+                return [dict(player_id=pid,team_id=8,position_group_id=26 if pid==4 else 27) for pid in (1,2,3,4)]
             if sql.startswith('SELECT DISTINCT fixture_id,stat_type_id'): return []
             if 'FROM fixture_player_stats' in sql:
                 self.assertEqual(params, (1, 1, 2))

@@ -9,13 +9,13 @@ from ..db import get_conn
 from .transfers_repo import get_player_club_history
 from ...core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ...core.player_detail import (
-    build_career, current_player_team, dominant_position, match_cards,
+    build_career, current_player_team, match_cards,
     minimum_reference_minutes, rank_categories, season_categories, stat_index, summarize,
 )
 from ...core.player_match_metrics import COVERAGE_COUNT_TYPES, POSITION_GROUPS
 from ...core.football_names import korean_name_ids
 from ...core.player_appearances import APPEARED, MATCH_FROM
-from ...core.player_ranking import season_player_positions
+from ...core.player_positions import season_player_position_ids, season_player_positions
 
 COMPLETED = ','.join(map(str, COMPLETED_STATE_IDS))
 DISPLAY_STATES = ','.join(map(str, (*COMPLETED_STATE_IDS, *LIVE_STATE_IDS)))
@@ -96,8 +96,8 @@ def get_player_detail(player_id: int, season_id: int | None = None) -> dict | No
                 history = fetch(MATCH_SELECT + f" WHERE fl.player_id=%s AND f.state_id IN ({DISPLAY_STATES}) AND f.starting_at<=%s AND {APPEARED}", (player_id, now))
                 current_name = fetch(CURRENT_LEAGUE_SEASON)[0]["name"]
                 current = [r for r in history if r["season_name"] == current_name]
-                position = dominant_position(current)
                 team = current_player_team(roster, current)
+                position = team['position_group_id'] if team is not None else None
                 profile.update(team_id=team["team_id"] if team else None,
                                team_name=team["team_name"] if team else None,
                                team_image=team["team_image"] if team else None,
@@ -142,9 +142,14 @@ def get_player_detail(player_id: int, season_id: int | None = None) -> dict | No
                     LEFT JOIN seasons s ON s.season_id=h.season_id WHERE h.player_id=%s
                     ORDER BY COALESCE(s.name,h.season_name) DESC,h.team_id,h.competition_id""", (player_id,))
                 analysis = _analysis(fetch, player_id, selected, clubs, roster, now) if selected else None
+                # 과거 경기 카드도 분석과 같은 시즌 원본 포지션의 지표를 보여줘요.
+                match_position = position
+                if analysis is not None:
+                    match_position = next((pid for pid, group in POSITION_GROUPS.items()
+                                           if group == analysis['position_group']), None)
                 return {"player_id": player_id, "profile": profile, "current_season_name": current_name,
                         "current_position": POSITION_GROUPS.get(position), "seasons": seasons, "selected_season": selected,
-                        "competitions": list(comp_map.values()), "matches": match_cards(displayed, position, stats, recorded_types),
+                        "competitions": list(comp_map.values()), "matches": match_cards(displayed, match_position, stats, recorded_types),
                         "analysis": analysis, "career": build_career(completed), "clubs": clubs, "honours": honours}
         finally:
             conn.rollback()
@@ -158,17 +163,13 @@ def _analysis(fetch, player_id, season, clubs, roster, now):
                        (season["season_id"],))[0]["team_count"]
     minimum_minutes = minimum_reference_minutes(len(fixtures), team_count)
     league = fetch(MATCH_SELECT + f" WHERE s.season_id=%s AND f.state_id IN ({COMPLETED}) AND f.starting_at<=%s AND {APPEARED}", (season["season_id"], now))
-    position_rows = fetch("SELECT fl.player_id,fl.match_position_id,fl.minutes_played,f.starting_at,f.state_id " + MATCH_FROM
-                          + f" WHERE s.name=%s AND f.state_id IN ({COMPLETED}) AND f.starting_at<=%s AND {APPEARED}", (season["season_name"], now))
-    positions = defaultdict(list)
-    for row in position_rows:
-        positions[row["player_id"]].append(row)
-    position = dominant_position(positions[player_id])
+    positions = season_player_position_ids(fetch, season['season_name'], now, season_id=season['season_id'])
+    position = positions.get(player_id)
     by_player = defaultdict(list)
     for row in league:
         by_player[row["player_id"]].append(row)
     eligible = {pid for pid, rows in by_player.items()
-                if dominant_position(positions[pid]) == position and summarize(rows)["minutes"] >= minimum_minutes}
+                if positions.get(pid) == position and summarize(rows)["minutes"] >= minimum_minutes}
     stat_players = sorted(eligible | {player_id})
     # 전체 리그의 원시 스탯 전송이 느려 실제 순위 비교 대상과 조회 선수만 읽어요.
     stat_rows = fetch("""SELECT ps.fixture_id,ps.team_id,ps.player_id,ps.stat_type_id,ps.stat_value AS value
@@ -240,7 +241,8 @@ def get_player_comparison_candidates(query: str, *, position=None, excluded_id=N
                         return cur.fetchall()
 
                     season_name = fetch(CURRENT_LEAGUE_SEASON)[0]['name']
-                    positions = season_player_positions(fetch, season_name, now)
+                    positions = season_player_positions(fetch, season_name, now,
+                                                        player_ids=[r['player_id'] for r in candidates])
                     filtered = [row for row in candidates if row['player_id'] != excluded_id
                                 and (position is None or positions.get(row['player_id']) == position)]
                     total = len(filtered)

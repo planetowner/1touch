@@ -148,6 +148,32 @@ def _require_date(value, field_name: str) -> date:
     raise ValueError(f"Missing or invalid date: {field_name}={value!r}")
 
 
+def _squad_position_group_id(squad_item: Dict, index: int) -> Optional[int]:
+    # 시즌 스쿼드가 기본 포지션 자리에 스태프 ID를 섞어 준 경우에만
+    # 같은 응답의 선수 프로필로 보완해요. 미제공 값은 NULL로 유지해요.
+    position_group_id = _optional_int(
+        squad_item.get("position_id"), f"squad[{index}].position_id",
+    )
+    if position_group_id is not None and position_group_id not in SPORTMONKS_POSITION_GROUP_IDS:
+        player = _require_dict(squad_item.get("player"), f"squad[{index}].player")
+        embedded_position_group_id = _optional_int(
+            player.get("position_id"), f"squad[{index}].player.position_id",
+        )
+        position_group_id = (
+            embedded_position_group_id
+            if embedded_position_group_id in SPORTMONKS_POSITION_GROUP_IDS else None
+        )
+    return position_group_id
+
+
+def season_squad_position_ids(sm: SportmonksClient, team_id: int, season_id: int) -> Dict[int, Optional[int]]:
+    squad = sm.get_team_season_squad(team_id, season_id)
+    if not squad:
+        raise ValueError(f"Sportmonks returned an empty season squad: team_id={team_id}, season_id={season_id}")
+    return {_require_int(item.get("player_id"), f"squad[{index}].player_id"):
+            _squad_position_group_id(item, index) for index, item in enumerate(squad)}
+
+
 def _normalize_squad_item(
     item,
     team_id: int,
@@ -174,25 +200,7 @@ def _normalize_squad_item(
         f"squad[{index}].Sportmonks detailed_position_id",
     )
 
-    # Sportmonks 시즌 스쿼드가 기본 포지션 자리에 스태프 ID를 섞어 준 사례가 있어요.
-    # 이때만 내장 선수 프로필을 확인하고, 둘 다 유효하지 않으면 추정하지 않아요.
-    position_group_id = _optional_int(
-        squad_item.get("position_id"),
-        f"squad[{index}].position_id",
-    )
-    if (
-        position_group_id is not None
-        and position_group_id not in SPORTMONKS_POSITION_GROUP_IDS
-    ):
-        embedded_position_group_id = _optional_int(
-            player.get("position_id"),
-            f"squad[{index}].player.position_id",
-        )
-        position_group_id = (
-            embedded_position_group_id
-            if embedded_position_group_id in SPORTMONKS_POSITION_GROUP_IDS
-            else None
-        )
+    position_group_id = _squad_position_group_id(squad_item, index)
     jersey_number = _optional_int(
         squad_item.get("jersey_number"),
         f"squad[{index}].jersey_number",
@@ -604,6 +612,11 @@ def _reconstruct_current_team_season_squad(
     filtered_squad, excluded_duplicate_player_ids = (
         _exclude_sportmonks_duplicate_players(filtered_squad)
     )
+    # 현재 명단·등번호·계약은 현재 스쿼드를 유지하고, 포지션만 시즌 스쿼드에서 읽어요.
+    # 두 API의 포지션이 실제로 달라 현재 스쿼드 값을 시즌 포지션으로 쓰면 안 돼요.
+    positions = season_squad_position_ids(sm, team_id, season_id)
+    filtered_squad = [{**item, "position_id": positions[item["player_id"]]}
+                      for item in filtered_squad]
     return filtered_squad, {
         "team_id": team_id,
         "season_id": season_id,
