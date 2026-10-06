@@ -404,7 +404,7 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                         roundWindow.contentWidth(viewportSize.width),
                         viewportSize.height - RoundChartSelectionHandle.height,
                       );
-                      final axisLabel = tr(context, 'PERFORMANCE');
+                      final axisLabel = trUpper(context, 'Rating');
                       final axisLabelStyle = Body2_b.style;
                       final insetLineCount = roundChartInsetLineCount(
                         context,
