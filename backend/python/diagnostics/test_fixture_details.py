@@ -315,6 +315,48 @@ class FixtureDetailsLoaderTests(unittest.TestCase):
 
 
 class FixtureDetailsRepositoryTests(unittest.TestCase):
+    def test_lineups_include_nationality_without_dropping_unknown_countries(self):
+        with sqlite3.connect(':memory:') as connection:
+            connection.row_factory = sqlite3.Row
+            connection.executescript('''
+                CREATE TABLE countries (country_id INTEGER PRIMARY KEY, name TEXT);
+                CREATE TABLE players (
+                    player_id INTEGER PRIMARY KEY, display_name TEXT, image_path TEXT,
+                    position_id INTEGER, nationality_id INTEGER
+                );
+                CREATE TABLE fixture_lineups (
+                    fixture_id INTEGER, team_id INTEGER, player_id INTEGER,
+                    match_position_id INTEGER, lineup_type_id INTEGER, formation_field TEXT,
+                    jersey_number INTEGER, minutes_played INTEGER, rating REAL
+                );
+                INSERT INTO countries VALUES (11, 'Germany');
+                INSERT INTO players VALUES (100, 'Known country', NULL, 24, 11),
+                    (101, 'Missing country', NULL, 24, NULL);
+                INSERT INTO fixture_lineups VALUES
+                    (500, 10, 100, 24, 11, '1:1', 1, 90, 7),
+                    (500, 20, 101, 24, 11, '1:1', 1, 90, 7);
+            ''')
+
+            def read(sql, params):
+                if 'FROM fixture_lineups fl' in sql:
+                    return [dict(row) for row in connection.execute(sql.replace('%s', '?'), params)]
+                return []
+
+            with (
+                patch.object(fixtures_repo, 'get_fixture', return_value={
+                    'fixture_id': 500, 'home_team_id': 10, 'away_team_id': 20}),
+                patch.object(fixtures_repo, 'fetch_all_dict', side_effect=read) as fetch,
+                patch.object(fixtures_repo, 'get_fixture_expected_goals', return_value=None),
+                patch.object(fixtures_repo, 'list_fixture_player_expected_goals', return_value=[]),
+                patch.object(fixtures_repo, 'list_fixture_shots', return_value=[]),
+                patch.object(fixtures_repo, 'get_fixture_clock', return_value=None),
+            ):
+                result = fixtures_repo.get_fixture_detail(500)
+
+            self.assertEqual([(row['player_id'], row['nationality_id'], row['nationality'])
+                              for row in result['lineups']], [(100, 11, 'Germany'), (101, None, None)])
+            self.assertEqual(fetch.call_count, 7)
+
     @patch("one_touch_loader.api.repos.fixtures_repo.fetch_all_dict")
     @patch("one_touch_loader.api.repos.fixtures_repo.get_fixture")
     def test_adds_detail_collections_to_base_fixture(

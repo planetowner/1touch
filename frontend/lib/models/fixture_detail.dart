@@ -216,6 +216,8 @@ class FixtureLineupEntry {
     required this.playerId,
     required this.playerName,
     required this.playerImage,
+    this.nationalityId,
+    this.nationality,
     required this.positionId,
     required this.lineupTypeId,
     required this.formationField,
@@ -228,6 +230,8 @@ class FixtureLineupEntry {
   final int playerId;
   final String playerName;
   final String? playerImage;
+  final int? nationalityId;
+  final String? nationality;
   final int? positionId;
   final int lineupTypeId;
   final String? formationField;

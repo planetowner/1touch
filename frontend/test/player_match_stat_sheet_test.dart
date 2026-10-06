@@ -7,6 +7,7 @@ import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/features/kane_rest.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/l10n/football_name_labels.dart';
+import 'package:onetouch/models/player_detail.dart';
 
 import 'support/player_directory_fixture.dart';
 import 'support/player_detail_fixture.dart';
@@ -205,7 +206,7 @@ void main() {
         GoRoute(
           path: '/compare',
           builder: (_, state) => Scaffold(
-            body: Text('Compare ${state.extra}'),
+            body: Text('Compare ${(state.extra as PlayerCandidate).id}'),
           ),
         ),
       ],
@@ -311,7 +312,7 @@ void main() {
           builder: (_, state) => Scaffold(
             body: TextButton(
               onPressed: () {},
-              child: Text('Compare ${state.extra}'),
+              child: Text('Compare ${(state.extra as PlayerCandidate).id}'),
             ),
           ),
         ),
