@@ -877,8 +877,13 @@ class MatchStatsHeader extends StatelessWidget {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                tr(context,
-                                    ['W', 'D', 'L'][options[index].outcome.index]),
+                                tr(
+                                    context,
+                                    [
+                                      'W',
+                                      'D',
+                                      'L'
+                                    ][options[index].outcome.index]),
                               ),
                             ],
                           ),
@@ -1407,18 +1412,23 @@ class _LabeledTeam extends StatelessWidget {
   const _LabeledTeam({required this.team});
   final Team team;
   @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          _TeamLogo(team: team),
+  Widget build(BuildContext context) {
+    final label = _teamBettingLabel(team);
+    return Column(
+      children: [
+        _TeamLogo(team: team),
+        if (label.isNotEmpty) ...[
           const SizedBox(height: 6),
           Text(
-            team.shortCode ?? teamNameLabel(context, team.teamId, team.name),
+            label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Body1_b.style,
           ),
         ],
-      );
+      ],
+    );
+  }
 }
 
 Color _surface(BuildContext context) =>
@@ -1427,17 +1437,22 @@ Color _surface(BuildContext context) =>
         : AppPalette.white;
 String _pointsUnit(BuildContext context) =>
     tr(context, '{points} pts', {'points': ''}).trim();
+// 베팅 화면에서는 팀 코드나 짧은 이름만 표시해요.
+String _teamBettingLabel(Team team) {
+  final shortCode = team.shortCode?.trim();
+  if (shortCode != null && shortCode.isNotEmpty) return shortCode;
+  final shortName = team.shortName?.trim();
+  if (shortName != null && shortName.isNotEmpty) return shortName;
+  return '';
+}
+
 String _label(BuildContext context, BetOutcome outcome, Team home, Team away) =>
     switch (outcome) {
-      BetOutcome.homeWin => tr(context, '{team} Win', {
-          'team':
-              home.shortCode ?? teamNameLabel(context, home.teamId, home.name)
-        }),
+      BetOutcome.homeWin =>
+        tr(context, '{team} Win', {'team': _teamBettingLabel(home)}).trim(),
       BetOutcome.draw => tr(context, 'Draw'),
-      BetOutcome.awayWin => tr(context, '{team} Win', {
-          'team':
-              away.shortCode ?? teamNameLabel(context, away.teamId, away.name)
-        }),
+      BetOutcome.awayWin =>
+        tr(context, '{team} Win', {'team': _teamBettingLabel(away)}).trim(),
     };
 String _unavailable(String? reason) => switch (reason) {
       'unsupported_competition' =>
