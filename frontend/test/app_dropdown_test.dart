@@ -60,6 +60,7 @@ void main() {
       find.byKey(const ValueKey('content-below')),
     );
 
+    expect(tester.getSize(trigger).height, AppDropdownTokens.height);
     expect(tester.getRect(trigger).right - tester.getRect(chevron).right, 8);
 
     await tester.tap(dropdown);
@@ -93,6 +94,43 @@ void main() {
       isTrue,
     );
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('custom-height trigger keeps its chevron centered at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(24),
+            child: AppDropdown<int>(
+              triggerKey: const ValueKey('tall-trigger'),
+              chevronKey: const ValueKey('tall-chevron'),
+              width: double.infinity,
+              triggerHeight: 48,
+              value: 1,
+              options: const [
+                AppDropdownOption(value: 1, label: '22/23 SEASON')
+              ],
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      ));
+
+      final trigger =
+          tester.getRect(find.byKey(const ValueKey('tall-trigger')));
+      final chevron =
+          tester.getRect(find.byKey(const ValueKey('tall-chevron')));
+      expect(trigger.height, 48);
+      expect(chevron.height, 24);
+      expect(chevron.top - trigger.top, 12);
+      expect(trigger.right - chevron.right, 8);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('keeps compact season options readable in a narrow trigger',
       (tester) async {

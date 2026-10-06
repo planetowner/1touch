@@ -54,6 +54,7 @@ class AppDropdown<T> extends StatefulWidget {
     this.triggerKey,
     this.chevronKey,
     this.width,
+    this.triggerHeight,
     this.minWidth,
     this.maxMenuHeight,
     this.matchMenuWidth = false,
@@ -72,6 +73,7 @@ class AppDropdown<T> extends StatefulWidget {
   final Key? triggerKey;
   final Key? chevronKey;
   final double? width;
+  final double? triggerHeight;
   final double? minWidth;
   final double? maxMenuHeight;
   final bool matchMenuWidth;
@@ -224,6 +226,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final triggerHeight = widget.triggerHeight ?? AppDropdownTokens.height;
     final foreground =
         widget.foregroundColor ?? Theme.of(context).colorScheme.onSurface;
     final background =
@@ -273,7 +276,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
         child: Container(
           key: widget.triggerKey,
           width: triggerWidth,
-          height: AppDropdownTokens.height,
+          height: triggerHeight,
           constraints: BoxConstraints(minWidth: widget.minWidth ?? 0),
           decoration: BoxDecoration(
             color: background,
@@ -301,7 +304,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
               ),
               Positioned(
                 right: 8,
-                top: 8,
+                top: (triggerHeight - AppDropdownTokens.iconSize) / 2,
                 child: SizedBox(
                   key: widget.chevronKey,
                   width: AppDropdownTokens.iconSize,
