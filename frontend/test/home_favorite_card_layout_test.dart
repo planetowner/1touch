@@ -114,7 +114,7 @@ void main() {
         expect(finder, findsOneWidget);
         final paragraph = tester.renderObject<RenderParagraph>(finder);
         expect(paragraph.maxLines, 1);
-        expect(paragraph.didExceedMaxLines, isFalse);
+        expect(paragraph.didExceedMaxLines, isFalse, reason: label);
         final rect = tester.getRect(finder);
         expect(rect.left, greaterThanOrEqualTo(24));
         expect(rect.right, lessThanOrEqualTo(width - 24));
