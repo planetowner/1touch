@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/number_display.dart';
@@ -105,16 +106,22 @@ class MatchBettingSection extends StatelessWidget {
                     child: Text(
                         tr(context, _unavailable(market.unavailableReason))),
                   ),
-                if (market != null) ...[
+                if (market != null && bet == null) ...[
                   const SizedBox(height: 20),
                   Text(tr(context, "You’ve got {points} pts!",
                       {'points': market.wallet.balance})),
                 ],
-                if (bet != null)
-                  _BetReceipt(
-                    bet: bet,
-                    label: _label(context, bet.outcome, homeTeam, awayTeam),
+                if (bet?.isOpen == true) ...[
+                  const SizedBox(height: 24),
+                  Opacity(
+                    opacity: .7,
+                    child: Text(
+                      tr(context, 'You’ve already placed a bet.'),
+                      style: Body2.style,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
+                ],
                 if (controller.error != null) ...[
                   const SizedBox(height: 12),
                   Text(tr(context, controller.error!),
@@ -128,7 +135,7 @@ class MatchBettingSection extends StatelessWidget {
                   const SizedBox(height: 20),
                   _BetButton(
                     text: bet?.isOpen == true
-                        ? tr(context, 'EDIT BET')
+                        ? tr(context, 'EDIT MY BET')
                         : tr(context, 'PLACE A BET'),
                     onPressed: controller.spendingLimit < market!.stakeUnit
                         ? null
@@ -153,33 +160,6 @@ class MatchBettingSection extends StatelessWidget {
                           {'points': market.stakeUnit})),
                     ),
                 ],
-                if (controller.canCancel)
-                  TextButton(
-                    onPressed: () async {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(tr(context, 'Cancel your bet?')),
-                          content: Text(tr(
-                              context,
-                              '{points} pts will be returned.',
-                              {'points': bet!.stake})),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: Text(tr(context, 'KEEP BET')),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: Text(tr(context, 'CANCEL BET')),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (confirmed == true) await controller.cancel();
-                    },
-                    child: Text(tr(context, 'CANCEL BET')),
-                  ),
                 if (controller.saving) const LinearProgressIndicator(),
               ],
             ),
@@ -204,11 +184,12 @@ class BettingFlowModal extends StatefulWidget {
   State<BettingFlowModal> createState() => _BettingFlowModalState();
 }
 
+enum _BettingFlowStep { selection, amount, review, submitted }
+
 class _BettingFlowModalState extends State<BettingFlowModal> {
   BetOutcome? _selected;
   int _amount = 100;
-  bool _choosingAmount = false;
-  bool _submitted = false;
+  _BettingFlowStep _step = _BettingFlowStep.selection;
 
   @override
   void initState() {
@@ -236,14 +217,19 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
               .where((option) => option.outcome == _selected)
               .firstOrNull;
           final total = selectedOption?.totalReturn(_amount);
+          final estimatedWin = total == null ? null : total - _amount;
           final optionDividerColor =
               Theme.of(context).brightness == Brightness.dark
                   ? AppPalette.lightGrey
                   : AppColors.of(context).divider;
-          final closeButton = GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Icon(
+          final closeButton = IconButton(
+            key: const ValueKey('bet-flow-close'),
+            onPressed: () => Navigator.pop(context),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 24, height: 24),
+            icon: Icon(
               Icons.close,
+              size: 24,
               color: Theme.of(context).colorScheme.onSurface,
             ),
           );
@@ -269,20 +255,20 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (_submitted) ...[
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: closeButton,
-                      ),
-                      const SizedBox(height: 16),
-                      const Icon(Icons.check_circle_outline, size: 80),
+                    _BetFlowHeader(
+                      onBack: controller.saving ? null : _goBack,
+                      closeButton: closeButton,
+                      showBack: _step != _BettingFlowStep.submitted,
+                    ),
+                    if (_step == _BettingFlowStep.submitted) ...[
+                      const SizedBox(height: 32),
+                      const Icon(Icons.check_circle_outline, size: 56),
                       const SizedBox(height: 24),
                       Text(tr(context, 'Bet Submitted!'),
                           style: Heading3.style),
                       const SizedBox(height: 16),
                       Text(
-                        tr(context,
-                            'Check back after the final whistle for the result.'),
+                        tr(context, 'Check back after the final whistle…'),
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: Colors.grey),
                       ),
@@ -292,24 +278,17 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                         onPressed: () => Navigator.pop(context),
                       ),
                     ] else ...[
-                      Stack(
-                        children: [
-                          Center(
-                            child: Text(tr(context, 'Bets'),
-                                style: Heading3.style),
-                          ),
-                          Positioned(right: 0, top: 0, child: closeButton),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      MatchStatsHeader(
-                        homeTeam: widget.homeTeam,
-                        awayTeam: widget.awayTeam,
-                        options: market.options,
-                        anchorTeamId: widget.anchorTeamId,
-                      ),
-                      const SizedBox(height: 24),
-                      if (!_choosingAmount)
+                      if (_step != _BettingFlowStep.review) ...[
+                        const SizedBox(height: 24),
+                        MatchStatsHeader(
+                          homeTeam: widget.homeTeam,
+                          awayTeam: widget.awayTeam,
+                          options: market.options,
+                          anchorTeamId: widget.anchorTeamId,
+                        ),
+                      ],
+                      if (_step == _BettingFlowStep.selection) ...[
+                        const SizedBox(height: 32),
                         ...market.options.map(
                           (option) => Column(
                             children: [
@@ -317,6 +296,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                                 type: MaterialType.transparency,
                                 child: ListTile(
                                   contentPadding: EdgeInsets.zero,
+                                  titleAlignment: ListTileTitleAlignment.center,
                                   leading: SizedBox.square(
                                     dimension: 48,
                                     child: option.outcome == BetOutcome.draw
@@ -340,9 +320,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                                       widget.homeTeam,
                                       widget.awayTeam,
                                     ),
-                                  ),
-                                  subtitle: Text(
-                                    '${formatDisplayNumber(option.decimalOdds)}×',
+                                    style: Heading5.style,
                                   ),
                                   trailing: Icon(
                                     _selected == option.outcome
@@ -366,11 +344,15 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                             ],
                           ),
                         ),
-                      if (_choosingAmount) ...[
-                        Text(
-                          _label(context, _selected!, widget.homeTeam,
-                              widget.awayTeam),
-                          style: Heading5.style,
+                      ],
+                      if (_step == _BettingFlowStep.amount) ...[
+                        const SizedBox(height: 32),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            tr(context, 'You’re betting'),
+                            style: Body2.style,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         _BetAmountInput(
@@ -387,31 +369,56 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                               : () =>
                                   setState(() => _amount += market.stakeUnit),
                         ),
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Opacity(
+                            opacity: .7,
+                            child: Text(
+                              tr(context, 'You can use up to {points} pts!', {
+                                'points': NumberFormat.decimalPattern()
+                                    .format(controller.spendingLimit),
+                              }),
+                              style: Body2.style,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        if (total != null && estimatedWin != null)
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: _BetValueBox(
+                                  label: tr(context, 'Your estimated win'),
+                                  value: estimatedWin,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _BetValueBox(
+                                  label:
+                                      tr(context, 'Total you’re getting back'),
+                                  value: total,
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                      if (_step == _BettingFlowStep.review) ...[
+                        const SizedBox(height: 32),
+                        Text(
+                          tr(context, 'You’re about to place a bet of'),
+                          textAlign: TextAlign.center,
+                          style: Body2.style,
+                        ),
+                        const SizedBox(height: 16),
+                        _BetReviewAmount(amount: _amount),
                         const SizedBox(height: 16),
                         Text(
-                            tr(context, 'Available: {points} pts',
-                                {'points': controller.spendingLimit}),
-                            style: const TextStyle(color: Colors.grey)),
-                        const SizedBox(height: 16),
-                        if (total != null) ...[
-                          Text(
-                            tr(context, 'If correct: +{points} pts',
-                                {'points': total - _amount}),
-                            style: Heading5.style,
-                          ),
-                          Text(
-                            tr(
-                                context,
-                                'Total return: {points} pts, including your stake.',
-                                {'points': total}),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                        TextButton(
-                          onPressed: controller.saving
-                              ? null
-                              : () => setState(() => _choosingAmount = false),
-                          child: Text(tr(context, 'CHANGE PICK')),
+                          tr(context, 'Would you like to proceed?'),
+                          textAlign: TextAlign.center,
+                          style: Body2.style,
                         ),
                       ],
                       if (controller.error != null)
@@ -428,7 +435,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                       _BetButton(
                         text: controller.saving
                             ? tr(context, 'SUBMITTING…')
-                            : _choosingAmount
+                            : _step == _BettingFlowStep.review
                                 ? tr(context, 'CONFIRM BET')
                                 : trUpper(context, 'Continue'),
                         onPressed: _selected == null ||
@@ -436,8 +443,14 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                                 _amount > controller.spendingLimit
                             ? null
                             : () async {
-                                if (!_choosingAmount) {
-                                  setState(() => _choosingAmount = true);
+                                if (_step == _BettingFlowStep.selection) {
+                                  setState(
+                                      () => _step = _BettingFlowStep.amount);
+                                  return;
+                                }
+                                if (_step == _BettingFlowStep.amount) {
+                                  setState(
+                                      () => _step = _BettingFlowStep.review);
                                   return;
                                 }
                                 final saved = await controller.save(
@@ -445,7 +458,8 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                                   _amount,
                                 );
                                 if (mounted && saved) {
-                                  setState(() => _submitted = true);
+                                  setState(
+                                      () => _step = _BettingFlowStep.submitted);
                                 }
                               },
                       ),
@@ -456,6 +470,155 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
             ),
           );
         },
+      );
+
+  void _goBack() {
+    switch (_step) {
+      case _BettingFlowStep.selection:
+        Navigator.pop(context);
+        return;
+      case _BettingFlowStep.amount:
+        setState(() => _step = _BettingFlowStep.selection);
+        return;
+      case _BettingFlowStep.review:
+        setState(() => _step = _BettingFlowStep.amount);
+        return;
+      case _BettingFlowStep.submitted:
+        return;
+    }
+  }
+}
+
+class _BetFlowHeader extends StatelessWidget {
+  const _BetFlowHeader({
+    required this.onBack,
+    required this.closeButton,
+    required this.showBack,
+  });
+
+  final VoidCallback? onBack;
+  final Widget closeButton;
+  final bool showBack;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        key: const ValueKey('bet-flow-header'),
+        height: 32,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Center(child: Text(tr(context, 'Bets'), style: Heading5.style)),
+            if (showBack)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  key: const ValueKey('bet-flow-back'),
+                  onPressed: onBack,
+                  padding: EdgeInsets.zero,
+                  alignment: Alignment.centerLeft,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 32,
+                    height: 32,
+                  ),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                ),
+              ),
+            Align(alignment: Alignment.centerRight, child: closeButton),
+          ],
+        ),
+      );
+}
+
+class _BetValueBox extends StatelessWidget {
+  const _BetValueBox({required this.label, required this.value});
+
+  final String label;
+  final int value;
+
+  @override
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: Body2.style),
+          const SizedBox(height: 12),
+          Container(
+            key: ValueKey('bet-value-$label'),
+            width: double.infinity,
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppPalette.lightGrey
+                  : AppPalette.lightGreyBox,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.scaleDown,
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(text: '$value', style: Heading5.style),
+                    TextSpan(
+                      text: ' ${_pointsUnit(context)}',
+                      style: Heading5.style.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: .5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+}
+
+class _BetReviewAmount extends StatelessWidget {
+  const _BetReviewAmount({required this.amount});
+
+  final int amount;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        key: const ValueKey('bet-review-amount'),
+        width: double.infinity,
+        height: 64,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppPalette.lightGrey
+              : AppPalette.lightGreyBox,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: '$amount',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextSpan(
+                text: ' ${_pointsUnit(context)}',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ).copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: .5),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
 }
 
@@ -477,12 +640,12 @@ class _BetAmountInput extends StatelessWidget {
     // 서버의 금액 규칙은 유지하고, 기존 금액 박스와 오른쪽 버튼 배치를 복원해요.
     return Container(
       key: const ValueKey('match-betting-amount-input'),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(top: 12, left: 16, right: 12, bottom: 12),
       decoration: BoxDecoration(
         color: theme.brightness == Brightness.dark
             ? AppPalette.lightGrey
             : AppPalette.lightGreyBox,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -502,7 +665,7 @@ class _BetAmountInput extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
                     child: Text(
-                      tr(context, '{points} pts', {'points': ''}).trim(),
+                      _pointsUnit(context),
                       style: TextStyle(
                           color: foreground,
                           fontSize: 18,
@@ -517,13 +680,13 @@ class _BetAmountInput extends StatelessWidget {
             children: [
               _BetAmountButton(
                 buttonKey: const ValueKey('bet-decrease'),
-                icon: Icons.remove,
+                action: _BetAmountAction.decrease,
                 onPressed: onDecrease,
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               _BetAmountButton(
                 buttonKey: const ValueKey('bet-increase'),
-                icon: Icons.add,
+                action: _BetAmountAction.increase,
                 onPressed: onIncrease,
               ),
             ],
@@ -534,41 +697,83 @@ class _BetAmountInput extends StatelessWidget {
   }
 }
 
+enum _BetAmountAction { decrease, increase }
+
 class _BetAmountButton extends StatelessWidget {
   const _BetAmountButton({
     required this.buttonKey,
-    required this.icon,
+    required this.action,
     required this.onPressed,
   });
 
   final Key buttonKey;
-  final IconData icon;
+  final _BetAmountAction action;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final foreground =
+        onPressed == null ? theme.disabledColor : theme.colorScheme.onSurface;
     return SizedBox.square(
       dimension: 32,
       child: IconButton(
         key: buttonKey,
         onPressed: onPressed,
-        icon: Icon(icon, size: 20),
+        icon: CustomPaint(
+          size: const Size.square(20),
+          painter: _BetAmountGlyphPainter(
+            color: foreground,
+            showVerticalLine: action == _BetAmountAction.increase,
+          ),
+        ),
         style: IconButton.styleFrom(
           padding: EdgeInsets.zero,
           minimumSize: const Size.square(32),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          foregroundColor: theme.colorScheme.onSurface,
+          foregroundColor: foreground,
           shape: const CircleBorder(),
-          side: BorderSide(
-            color: onPressed == null
-                ? theme.disabledColor
-                : theme.colorScheme.onSurface,
-          ),
+          side: BorderSide(color: foreground, width: 2),
         ),
       ),
     );
   }
+}
+
+class _BetAmountGlyphPainter extends CustomPainter {
+  const _BetAmountGlyphPainter({
+    required this.color,
+    required this.showVerticalLine,
+  });
+
+  final Color color;
+  final bool showVerticalLine;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.square;
+    final center = size.center(Offset.zero);
+    canvas.drawLine(
+      Offset(4, center.dy),
+      Offset(size.width - 4, center.dy),
+      paint,
+    );
+    if (showVerticalLine) {
+      canvas.drawLine(
+        Offset(center.dx, 4),
+        Offset(center.dx, size.height - 4),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_BetAmountGlyphPainter oldDelegate) =>
+      color != oldDelegate.color ||
+      showVerticalLine != oldDelegate.showVerticalLine;
 }
 
 class MatchStatsHeader extends StatelessWidget {
@@ -592,6 +797,11 @@ class MatchStatsHeader extends StatelessWidget {
       background: _surface(context),
       anchorTeamId: anchorTeamId,
     );
+    final oddsLabels = [
+      for (final option in options)
+        '${formatDisplayNumber(option.decimalOdds)}×',
+    ];
+    final oddsTextStyle = Heading4.style.copyWith(color: AppPalette.white);
 
     return Column(
       children: [
@@ -602,47 +812,83 @@ class MatchStatsHeader extends StatelessWidget {
               width: 40,
               child: _LabeledTeam(team: homeTeam),
             ),
-            const Spacer(),
-            Row(
-              key: const ValueKey('match-betting-outcome-group'),
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var index = 0; index < options.length; index++) ...[
-                  if (index > 0) const SizedBox(width: 8),
-                  Column(
+            const SizedBox(width: 8),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (options.isEmpty) return const SizedBox.shrink();
+                  const gap = 8.0;
+                  const horizontalPadding = 8.0;
+                  const textSafetyInset = 2.0;
+                  final boxWidth =
+                      (constraints.maxWidth - gap * (options.length - 1)) /
+                          options.length;
+                  final textWidths = oddsLabels.map((label) {
+                    final painter = TextPainter(
+                      text: TextSpan(text: label, style: oddsTextStyle),
+                      textDirection: Directionality.of(context),
+                      textScaler: MediaQuery.textScalerOf(context),
+                      maxLines: 1,
+                    )..layout();
+                    final width = painter.width;
+                    painter.dispose();
+                    return width;
+                  });
+                  final longestTextWidth = textWidths.fold<double>(0, math.max);
+                  final availableTextWidth = math.max(
+                    0,
+                    boxWidth - horizontalPadding * 2 - textSafetyInset * 2,
+                  );
+                  // 가장 긴 배당을 기준으로 모든 숫자를 같은 비율로 줄여요.
+                  final commonScale = longestTextWidth <= availableTextWidth
+                      ? 1.0
+                      : availableTextWidth / longestTextWidth;
+                  final responsiveOddsStyle = oddsTextStyle.copyWith(
+                    fontSize: oddsTextStyle.fontSize! * commonScale,
+                  );
+
+                  return Row(
+                    key: const ValueKey('match-betting-outcome-group'),
                     children: [
-                      Container(
-                        key: ValueKey('match-betting-odds-box-$index'),
-                        width: 48,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppPalette.black,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            '${formatDisplayNumber(options[index].decimalOdds)}×',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      for (var index = 0; index < options.length; index++) ...[
+                        if (index > 0) const SizedBox(width: gap),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              Container(
+                                key: ValueKey('match-betting-odds-box-$index'),
+                                height: 32,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: horizontalPadding,
+                                  vertical: 4,
+                                ),
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: AppPalette.black,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  oddsLabels[index],
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  textAlign: TextAlign.center,
+                                  style: responsiveOddsStyle,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                ['W', 'D', 'L'][options[index].outcome.index],
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        ['W', 'D', 'L'][options[index].outcome.index],
-                      ),
+                      ],
                     ],
-                  ),
-                ],
-              ],
+                  );
+                },
+              ),
             ),
-            const Spacer(),
+            const SizedBox(width: 8),
             SizedBox(
               key: const ValueKey('match-betting-away-team'),
               width: 40,
@@ -883,17 +1129,18 @@ class BettingProbabilityBar extends StatelessWidget {
         ];
         final minimums = <int, double>{};
         for (final index in active) {
-          final painter = TextPainter(
+          final percentagePainter = TextPainter(
             text: TextSpan(text: labels[index], style: Heading5.style),
             textDirection: Directionality.of(context),
             textScaler: MediaQuery.textScalerOf(context),
             maxLines: 1,
           )..layout();
-          minimums[index] = painter.width.ceilToDouble() +
+          final percentageMinimum = percentagePainter.width.ceilToDouble() +
               horizontalPadding * 2 +
-              3 +
               (selected?.index == index ? 14 : 0);
-          painter.dispose();
+          percentagePainter.dispose();
+
+          minimums[index] = percentageMinimum;
         }
         final minimumWidth = minimums.values.fold<double>(0, (a, b) => a + b);
         final contentWidth = math.max(constraints.maxWidth, minimumWidth);
@@ -921,42 +1168,43 @@ class BettingProbabilityBar extends StatelessWidget {
           children: [
             for (final index in active)
               SizedBox(
+                key: ValueKey('betting-probability-segment-$index'),
                 width: widths[index],
                 child: Container(
                   color: segmentColors[index],
                   padding: const EdgeInsets.symmetric(
                     horizontal: horizontalPadding,
                   ),
-                  alignment: index == 0
-                      ? Alignment.centerLeft
-                      : index == 2
-                          ? Alignment.centerRight
-                          : Alignment.center,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (selected?.index == index && index == 2)
-                        Icon(
-                          Icons.check_circle,
-                          size: 14,
-                          color: _foregroundFor(segmentColors[index]),
+                  alignment:
+                      index == 0 ? Alignment.centerLeft : Alignment.center,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (selected?.index == index && index == 2)
+                          Icon(
+                            Icons.check_circle,
+                            size: 14,
+                            color: _foregroundFor(segmentColors[index]),
+                          ),
+                        Text(
+                          labels[index],
+                          maxLines: 1,
+                          softWrap: false,
+                          style: Heading5.style.copyWith(
+                            color: _foregroundFor(segmentColors[index]),
+                          ),
                         ),
-                      Text(
-                        labels[index],
-                        maxLines: 1,
-                        softWrap: false,
-                        style: Heading5.style.copyWith(
-                          color: _foregroundFor(segmentColors[index]),
-                        ),
-                      ),
-                      if (selected?.index == index && index != 2)
-                        Icon(
-                          Icons.check_circle,
-                          size: 14,
-                          color: _foregroundFor(segmentColors[index]),
-                        ),
-                    ],
+                        if (selected?.index == index && index != 2)
+                          Icon(
+                            Icons.check_circle,
+                            size: 14,
+                            color: _foregroundFor(segmentColors[index]),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -977,9 +1225,10 @@ class BettingProbabilityBar extends StatelessWidget {
                     SizedBox(
                       width: widths[index],
                       child: Text(
+                        key: ValueKey('betting-outcome-label-$index'),
                         outcomeLabels![index],
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
                         textAlign: switch (index) {
                           0 => TextAlign.left,
                           2 => TextAlign.right,
@@ -1175,13 +1424,19 @@ Color _surface(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark
         ? AppPalette.darkGrey
         : AppPalette.white;
+String _pointsUnit(BuildContext context) =>
+    tr(context, '{points} pts', {'points': ''}).trim();
 String _label(BuildContext context, BetOutcome outcome, Team home, Team away) =>
     switch (outcome) {
-      BetOutcome.homeWin =>
-        '${home.shortCode ?? teamNameLabel(context, home.teamId, home.name)} Win',
-      BetOutcome.draw => 'Draw',
-      BetOutcome.awayWin =>
-        '${away.shortCode ?? teamNameLabel(context, away.teamId, away.name)} Win',
+      BetOutcome.homeWin => tr(context, '{team} Win', {
+          'team':
+              home.shortCode ?? teamNameLabel(context, home.teamId, home.name)
+        }),
+      BetOutcome.draw => tr(context, 'Draw'),
+      BetOutcome.awayWin => tr(context, '{team} Win', {
+          'team':
+              away.shortCode ?? teamNameLabel(context, away.teamId, away.name)
+        }),
     };
 String _unavailable(String? reason) => switch (reason) {
       'unsupported_competition' =>

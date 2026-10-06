@@ -232,7 +232,7 @@ class MockLiveChatSession implements ChatSocketSession {
 class MockLiveBettingRepository implements BettingRepository {
   @override
   Future<PointWallet> initializeWallet() async =>
-      PointWallet(balance: 0, initialized: true);
+      const PointWallet(balance: 0, initialized: true);
 
   @override
   Future<BettingMarket> loadMarket(int fixtureId) async => BettingMarket(
@@ -247,7 +247,7 @@ class MockLiveBettingRepository implements BettingRepository {
         predictionRunId: null,
         predictionAsOf: null,
         options: const [],
-        wallet: PointWallet(balance: 0, initialized: true),
+        wallet: const PointWallet(balance: 0, initialized: true),
         bet: null,
         participantCount: 0,
         userProbabilities: null,

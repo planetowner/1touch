@@ -156,6 +156,15 @@ void main() {
     expect(homeTeam.width, 72);
     expect(awayTeam.width, 72);
     expect(awayTeam.right, 320 - 24);
+    for (final key in [
+      const ValueKey('match-preview-round-label'),
+      const ValueKey('match-preview-date-label'),
+      const ValueKey('match-preview-time-label'),
+    ]) {
+      final text = tester.widget<Text>(find.byKey(key));
+      expect(text.style!.fontSize, Body2.style.fontSize);
+      expect(text.style!.fontWeight, Body2.style.fontWeight);
+    }
     expect(
       decorationColor(tester, const ValueKey('match-betting-card')),
       app_style.AppPalette.white,

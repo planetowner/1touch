@@ -249,8 +249,12 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           width: 104,
           child: Column(
             children: [
-              Text(roundLabel,
-                  style: Body2_b.style, textAlign: TextAlign.center),
+              Text(
+                roundLabel,
+                key: const ValueKey('match-preview-round-label'),
+                style: Body2.style,
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 8),
               Container(
                 width: 24,
@@ -258,8 +262,17 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 color: foreground,
               ),
               const SizedBox(height: 8),
-              Text(date, style: Body2_b.style, textAlign: TextAlign.center),
-              Text(time, style: Body2_b.style),
+              Text(
+                date,
+                key: const ValueKey('match-preview-date-label'),
+                style: Body2.style,
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                time,
+                key: const ValueKey('match-preview-time-label'),
+                style: Body2.style,
+              ),
             ],
           ),
         ),

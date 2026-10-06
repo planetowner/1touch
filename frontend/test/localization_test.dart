@@ -66,6 +66,30 @@ void main() {
     }
   });
 
+  test('betting copy reuses dynamic team and point translations', () {
+    expect(
+      translateMessage(const Locale('ko'), '{team} Win', {'team': 'CAS'}),
+      'CAS 승',
+    );
+    expect(
+      translateMessage(const Locale('ja'), '{team} Win', {'team': 'CEU'}),
+      'CEU 勝利',
+    );
+    expect(
+      translateMessage(const Locale('zh'), '{team} Win', {'team': 'CEU'}),
+      'CEU 胜',
+    );
+    expect(
+      translateMessage(const Locale('ko'), '{points} pts', {'points': 120}),
+      '120 포인트',
+    );
+    expect(
+      translateMessage(const Locale('ko'), 'You can use up to {points} pts!',
+          {'points': '1,200'}),
+      '최대 1,200P를 쓸 수 있어요',
+    );
+  });
+
   test('preferred language resolves separately from country, including Chinese',
       () {
     for (final entry in {

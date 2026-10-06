@@ -28,11 +28,22 @@ import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
 import 'package:onetouch/data/auth/registration_field.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart';
+import 'package:onetouch/debug/mock_betting_match.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 String? _readyToken;
 bool get isAppSessionReady =>
     _readyToken != null && _readyToken == authSession.accessToken;
+
+@visibleForTesting
+String resolveSessionReadyDestination({
+  String? communityDestination,
+  String? notificationDestination,
+  bool bettingDebugEnabled = mockBettingMatchEnabled,
+}) {
+  if (bettingDebugEnabled) return '/debug/betting';
+  return communityDestination ?? notificationDestination ?? '/home';
+}
 
 /// Promote the selected team's disk snapshots before its screens build.
 /// No API call is started here; the screens own TTL revalidation on entry.
@@ -199,7 +210,10 @@ class _SessionScreenState extends State<SessionScreen> {
     final notificationDestination = notificationNavigation.take(
       sessionToken: sessionToken,
     );
-    context.go(communityDestination ?? notificationDestination ?? '/home');
+    context.go(resolveSessionReadyDestination(
+      communityDestination: communityDestination,
+      notificationDestination: notificationDestination,
+    ));
   }
 
   Future<void> _leaveSocialSetup() async {

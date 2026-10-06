@@ -38,6 +38,14 @@ void main() {
     expect(repository.cachedDetail(mockLiveMatchId), same(fifth));
   });
 
+  test('live test match keeps betting unavailable', () async {
+    final repository = MockLiveBettingRepository();
+    final market = await repository.loadMarket(mockLiveMatchId);
+    expect(market.available, isFalse);
+    expect(market.canBet, isFalse);
+    expect(market.options, isEmpty);
+  });
+
   for (final size in [const Size(320, 700), const Size(430, 932)]) {
     testWidgets('live match refreshes without overflow at $size',
         (tester) async {
