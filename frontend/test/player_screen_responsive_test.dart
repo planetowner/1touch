@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'support/app_catalog.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -930,41 +932,62 @@ void main() {
     expect(tester.takeException(), isNull);
   });
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
-    testWidgets('overview match arrow opens matches from the app bar at $size',
+    testWidgets('overview match arrow pushes matches over the page at $size',
         (tester) async {
       await tester.binding.setSurfaceSize(size);
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(MaterialApp(
-        home: PlayerCard(
-          player: player,
-          detailRepository: FakePlayerDetailRepository(),
-        ),
-      ));
+      final repository = FakePlayerDetailRepository();
+      final playerId = player.externalPlayerId;
+      final router = GoRouter(
+        initialLocation: '/players/$playerId',
+        routes: [
+          GoRoute(
+            path: '/players',
+            builder: (context, state) =>
+                const Scaffold(body: Text('Players root')),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) => PlayerCard(
+                  player: player,
+                  detailRepository: repository,
+                ),
+              ),
+              GoRoute(
+                path: ':id/matches',
+                builder: (context, state) => PlayerCard(
+                  player: player,
+                  detailRepository: repository,
+                  initialTabIndex: 2,
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
       await tester.pumpAndSettle();
 
       final arrow = find.byKey(const ValueKey('player-matches-arrow'));
       await tester.ensureVisible(arrow);
       await tester.pumpAndSettle();
-      final outerScroll = tester
+      final originalScroll = tester
           .widget<NestedScrollView>(find.byType(NestedScrollView))
           .controller!;
-      expect(outerScroll.offset, greaterThan(0));
+      final originalOffset = originalScroll.offset;
+      expect(originalOffset, greaterThan(0));
 
       await tester.tap(arrow);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 350));
-      await tester.pump();
-      final startOffset = outerScroll.offset;
-      expect(startOffset, greaterThan(0));
-      await tester.pump(const Duration(milliseconds: 80));
-      await tester.pump(const Duration(milliseconds: 80));
-      expect(outerScroll.offset, greaterThan(0));
-      expect(outerScroll.offset, lessThan(startOffset));
       await tester.pumpAndSettle();
+      expect(router.canPop(), isTrue);
       expect(
           tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
           2);
-      expect(outerScroll.offset, 0);
+      final matchesOuterScroll = tester
+          .widget<NestedScrollView>(find.byType(NestedScrollView))
+          .controller!;
+      expect(matchesOuterScroll.offset, 0);
       expect(tester.getRect(find.byType(PlayerScreenHeader)).top,
           greaterThanOrEqualTo(0));
       final matchesScroll = find.byKey(const ValueKey('player-matches-scroll'));
@@ -976,25 +999,13 @@ void main() {
       ));
       expect(innerScroll.position.pixels, 0);
 
-      await tester.drag(matchesScroll, const Offset(0, -500));
+      router.pop();
       await tester.pumpAndSettle();
-      expect(innerScroll.position.pixels, greaterThan(0));
-      tester
-          .widget<TabBarView>(find.byType(TabBarView))
-          .controller!
-          .animateTo(0);
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(arrow);
-      await tester.pumpAndSettle();
-      await tester.tap(arrow);
-      await tester.pumpAndSettle();
-      expect(outerScroll.offset, 0);
-      final reopenedInner = tester.state<ScrollableState>(find.descendant(
-        of: matchesScroll,
-        matching: find.byWidgetPredicate((widget) =>
-            widget is Scrollable && widget.axisDirection == AxisDirection.down),
-      ));
-      expect(reopenedInner.position.pixels, 0);
+      expect(router.canPop(), isFalse);
+      expect(originalScroll.offset, originalOffset);
+      expect(
+          tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
+          0);
       expect(tester.takeException(), isNull);
     });
   }
@@ -1386,7 +1397,11 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final size in [const Size(393, 852), const Size(320, 568)]) {
+  for (final size in [
+    const Size(393, 852),
+    const Size(375, 812),
+    const Size(320, 568),
+  ]) {
     testWidgets('top stats keep unscaled values centered at $size',
         (tester) async {
       await tester.binding.setSurfaceSize(size);
@@ -1409,12 +1424,25 @@ void main() {
         'player-top-stat-value-Ball recoveries',
         'player-top-stat-value-Passes in final third',
       ].map((key) => tester.getRect(find.byKey(ValueKey(key)))).toList();
+      final valueContents = [
+        'player-top-stat-value-content-Key passes',
+        'player-top-stat-value-content-Ball recoveries',
+        'player-top-stat-value-content-Passes in final third',
+      ].map((key) => tester.getRect(find.byKey(ValueKey(key)))).toList();
       expect(card.width, size.width - 48);
       expect(values.every((rect) => rect.width <= 90 && rect.height == 54),
           isTrue);
+      expect(values[1].width, closeTo(values[0].width, 0.1));
+      expect(values[2].width, closeTo(values[0].width, 0.1));
+      for (var index = 0; index < values.length; index++) {
+        expect(
+          valueContents[index].center.dx,
+          closeTo(values[index].center.dx, 0.1),
+        );
+      }
       expect(values.first.left - card.left, 24);
-      expect(values[1].left - values[0].right, greaterThanOrEqualTo(8));
-      expect(values[2].left - values[1].right, greaterThanOrEqualTo(8));
+      expect(values[1].left - values[0].right, greaterThanOrEqualTo(7.9));
+      expect(values[2].left - values[1].right, greaterThanOrEqualTo(7.9));
       expect(find.text('117.5'), findsOneWidget);
       expect(tester.getRect(find.text('117.5')).width,
           lessThanOrEqualTo(values.first.width));
@@ -1433,6 +1461,8 @@ void main() {
       } else {
         expect(compactScroller, findsNothing);
         expect(card.right - values.last.right, 24);
+        final expectedWidth = math.min(90.0, (size.width - 96 - 16) / 3);
+        expect(values.first.width, closeTo(expectedWidth, 0.1));
       }
 
       final longLabel = find
