@@ -38,7 +38,9 @@ class _PlayersState extends State<Players> {
 
   void _handleMainTabAction() {
     if (!_scrollController.hasClients) return;
-    _scrollController.jumpTo(_scrollController.position.minScrollExtent);
+    final position = _scrollController.position;
+    if (!position.hasContentDimensions) return;
+    _scrollController.jumpTo(position.minScrollExtent);
   }
 
   Future<void> _refreshPlayers() async {
