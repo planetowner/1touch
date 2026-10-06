@@ -6,16 +6,20 @@ import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/models/team.dart';
 import 'rank_fav_teams.dart';
+import 'welcome_loading_screen.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class SelectFavoriteTeamsScreen extends StatefulWidget {
-  const SelectFavoriteTeamsScreen({super.key});
+  const SelectFavoriteTeamsScreen({super.key, this.preferences});
+
+  final CurrentUserPreferences? preferences;
 
   @override
   State<SelectFavoriteTeamsScreen> createState() =>
@@ -32,6 +36,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
       _leagues.firstWhere((l) => l.name == selectedLeague).competitionId;
 
   final Map<int, Team> _selectedTeams = {};
+  bool _isSaving = false;
 
   late final PageController _pageController;
   int _focusedIndex = 0;
@@ -67,6 +72,39 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
     _overlayEntry = null;
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _continue() async {
+    if (_isSaving || _selectedTeams.isEmpty) return;
+    final teams = _selectedTeams.values.toList();
+    if (teams.length > 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => RankFavoriteTeamsScreen(selectedTeams: teams),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      await (widget.preferences ?? currentUserPreferences)
+          .updateTeamSelection([teams.single.teamId]);
+      if (!mounted) return;
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const WelcomeLoadingScreen()),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(tr(context, 'Unable to save teams. Please try again.')),
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   List<Team> get _currentTeams => _leagueTeams[_selectedLeagueId] ?? [];
@@ -505,20 +543,10 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: ElevatedButton(
-                              onPressed: _selectedTeams.isEmpty
+                              key: const ValueKey('select-favorites-continue'),
+                              onPressed: _selectedTeams.isEmpty || _isSaving
                                   ? null
-                                  : () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              RankFavoriteTeamsScreen(
-                                            selectedTeams:
-                                                _selectedTeams.values.toList(),
-                                          ),
-                                        ),
-                                      );
-                                    },
+                                  : _continue,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: colors.onSurface,
                                 minimumSize: const Size(double.infinity, 56),
@@ -527,9 +555,18 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                 disabledBackgroundColor:
                                     appColors.subtleBackground,
                               ),
-                              child: Text(trUpper(context, "Continue"),
-                                  style: Body2_b.style
-                                      .copyWith(color: colors.surface)),
+                              child: _isSaving
+                                  ? SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: colors.surface,
+                                      ),
+                                    )
+                                  : Text(trUpper(context, "Continue"),
+                                      style: Body2_b.style
+                                          .copyWith(color: colors.surface)),
                             ),
                           ),
                           const SizedBox(height: 16),
