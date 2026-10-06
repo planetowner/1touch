@@ -128,6 +128,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: colors.pageBackground,
+        resizeToAvoidBottomInset: false,
         body: LayoutBuilder(
           builder: (context, constraints) {
             final contentWidth =

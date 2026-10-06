@@ -15,6 +15,7 @@ class EmailSignInScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: AuthStyles.background(context),
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(title: Text(tr(context, 'Sign in'))),
         body: SafeArea(
             child: SingleChildScrollView(
