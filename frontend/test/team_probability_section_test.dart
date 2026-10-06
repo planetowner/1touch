@@ -59,6 +59,8 @@ void main() {
         expect(prefixText.style?.fontSize, 24);
         final number = find.byKey(ValueKey('team-probability-value-$event'));
         expect(tester.widget<Text>(number).style?.fontSize, 48);
+        expect(tester.getRect(prefixFinder).center.dy,
+            closeTo(tester.getRect(number).center.dy, 0.1));
         final percent = find.byKey(ValueKey('team-probability-percent-$event'));
         expect(tester.widget<Text>(percent).style?.fontSize, 24);
         final surface = tester
