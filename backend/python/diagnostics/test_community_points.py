@@ -16,6 +16,7 @@ with patch('mysql.connector.pooling.MySQLConnectionPool'):
     from one_touch_loader.api.repos import posts_repo, points_repo, betting_repo
     from one_touch_loader.api.routes import betting
     from one_touch_loader.api.deps import get_user_id
+    from one_touch_loader.api.services.request_country import get_request_country
 
 
 class CommunityPointRepositoryTests(unittest.TestCase):
@@ -53,6 +54,8 @@ class CommunityPointRepositoryTests(unittest.TestCase):
         app = FastAPI()
         app.include_router(betting.router, prefix='/v1')
         app.dependency_overrides[get_user_id] = lambda: 1
+        self.country = None
+        app.dependency_overrides[get_request_country] = lambda: self.country
         self.client = TestClient(app)
         self.addCleanup(self.client.close)
 
@@ -275,17 +278,23 @@ class CommunityPointRepositoryTests(unittest.TestCase):
         self.assertEqual(self.balance(), 0)
         self.assertEqual(self.entries(), [])
 
-    def test_wallet_and_history_api_and_country_validation(self):
-        self.assertEqual(self.client.post('/v1/users/me/points/initialize', json={'country_code': 'kr'}).status_code, 200)
+    def test_wallet_uses_request_country_and_preserves_balance_history_and_unknown_country(self):
+        self.country = 'KR'
+        self.assertEqual(self.client.post('/v1/users/me/points/initialize', json={'country_code': 'US'}).status_code, 200)
         self.assertEqual(self.raw.execute('SELECT country_code FROM user_point_wallets WHERE user_id=1').fetchone()[0], 'KR')
         self.post()
         response = self.client.get('/v1/users/me/points/entries').json()
         self.assertEqual(response['items'][0]['kind'], 'community_post')
         self.assertEqual(response['items'][0]['post_id'], 1)
         self.assertEqual(self.client.get('/v1/users/me/points').json()['balance'], 1100)
+        before = self.entries()
+        self.country = 'JP'
         self.assertEqual(self.client.post('/v1/users/me/points/initialize').json()['balance'], 1100)
-        for invalid in ('K', 'KOR', '12', ''):
-            self.assertEqual(self.client.post('/v1/users/me/points/initialize', json={'country_code': invalid}).status_code, 422)
+        self.assertEqual(self.raw.execute('SELECT country_code FROM user_point_wallets WHERE user_id=1').fetchone()[0], 'JP')
+        self.country = None
+        self.assertEqual(self.client.post('/v1/users/me/points/initialize').json()['balance'], 1100)
+        self.assertEqual(self.raw.execute('SELECT country_code FROM user_point_wallets WHERE user_id=1').fetchone()[0], 'JP')
+        self.assertEqual(self.entries(), before)
 
 
 if __name__ == '__main__':

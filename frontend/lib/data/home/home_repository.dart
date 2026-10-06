@@ -14,10 +14,13 @@ abstract interface class HomeRepository {
 
 /// An already loaded Home response, including when it is due for refresh.
 class HomeSnapshot {
-  const HomeSnapshot(this.data, this.savedAt);
+  const HomeSnapshot(this.data, this.savedAt, {this.requiresRefresh = false});
 
   final HomeData data;
   final DateTime savedAt;
+
+  /// 접속 국가에 따라 달라지는 영상은 캐시가 최신이어도 다시 확인해요.
+  final bool requiresRefresh;
 }
 
 /// Optional synchronous read for screens that can display cached Home data.

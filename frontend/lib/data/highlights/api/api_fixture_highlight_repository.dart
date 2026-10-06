@@ -9,7 +9,7 @@ class ApiFixtureHighlightRepository implements FixtureHighlightRepository {
 
   @override
   Future<FixtureHighlight?> loadForFixture(int fixtureId) async {
-    // 실제 시청 국가를 추정하지 않고 외부 YouTube에서 재생 제한을 처리해요.
+    // 서버가 접속 IP의 국가로 필터링해요. 앱 언어나 빌드 국가를 보내지 않아요.
     final uri = _api.baseUri.resolve('fixtures/$fixtureId/highlights');
     final response = await _api.get(
       uri,

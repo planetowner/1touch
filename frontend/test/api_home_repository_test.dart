@@ -9,6 +9,33 @@ import 'package:onetouch/data/home/api/api_home_repository.dart';
 import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
+  test('returns current highlights but never reuses them from memory or disk',
+      () async {
+    final store = MemoryLocalCacheStore();
+    final repository = ApiHomeRepository(
+      api: ApiClient(
+        client: MockClient((_) async =>
+            http.Response(jsonEncode(_homeJson(calendar: const [])), 200)),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+    final month = DateTime(2026, 9);
+    final result = await repository.load(
+      teamId: 8,
+      start: month,
+      end: DateTime(2026, 9, 30),
+    );
+    expect(result.highlights, hasLength(1));
+    final snapshot = repository.snapshotFor(teamId: 8, month: month)!;
+    expect(snapshot.data.highlights, isEmpty);
+    expect(snapshot.requiresRefresh, isTrue);
+    final stored = await store.read(LocalCacheKeys.home(8, month),
+        scope: LocalCacheScopes.authenticatedUser);
+    expect((stored!.payload as Map)['highlights'], isNull);
+  });
+
   test('maps the viewed team position and signed movement from Home', () async {
     final payload = _homeJson(calendar: const []);
     payload['standing'] = {
@@ -34,7 +61,6 @@ void main() {
         baseUri: Uri.parse('https://api.example.test/v1/'),
         requestHeaders: () => const {},
       ),
-      viewerCountry: 'US',
     );
     final home = await repository.load();
     expect(home.leaguePosition, 2);
@@ -55,7 +81,6 @@ void main() {
         baseUri: Uri.parse('https://api.example.test/v1/'),
         requestHeaders: () => const {},
       ),
-      viewerCountry: 'KR',
     );
 
     final home = await repository.load(teamId: 19);
@@ -63,8 +88,7 @@ void main() {
     expect(requests, hasLength(1));
     expect(requests.single.method, 'GET');
     expect(requests.single.url.path, '/v1/home');
-    expect(requests.single.url.queryParameters,
-        {'viewer_country': 'KR', 'team_id': '19'});
+    expect(requests.single.url.queryParameters, {'team_id': '19'});
     expect(home.favoriteTeam.teamId, 19);
   });
 
@@ -76,7 +100,6 @@ void main() {
             expect(request.method, 'GET');
             expect(request.url.path, '/v1/home');
             expect(request.url.queryParameters, {
-              'viewer_country': 'US',
               'start': '2026-08-31',
               'end': '2026-10-01',
             });
@@ -88,7 +111,6 @@ void main() {
           requestHeaders: () => const {
                 'Authorization': 'Bearer session-token',
               }),
-      viewerCountry: 'us',
     );
 
     final home = await repository.load(
@@ -110,13 +132,12 @@ void main() {
       api: ApiClient(
           client: MockClient((request) async {
             expect(request.url.path, '/v1/home');
-            expect(request.url.queryParameters, {'viewer_country': 'US'});
+            expect(request.url.queryParameters, isEmpty);
             return http.Response(
                 jsonEncode(_homeJson(calendar: const [])), 200);
           }),
           baseUri: Uri.parse('http://localhost:8000/v1/'),
           requestHeaders: () => const {}),
-      viewerCountry: 'US',
     );
 
     final home = await repository.load();
@@ -133,15 +154,14 @@ void main() {
             expect(
               request.url.queryParameters,
               requestCount == 1
-                  ? {'viewer_country': 'US', 'start': '2026-08-31'}
-                  : {'viewer_country': 'US', 'end': '2026-10-01'},
+                  ? {'start': '2026-08-31'}
+                  : {'end': '2026-10-01'},
             );
             return http.Response(
                 jsonEncode(_homeJson(calendar: const [])), 200);
           }),
           baseUri: Uri.parse('http://localhost:8000/v1'),
           requestHeaders: () => const {}),
-      viewerCountry: 'US',
     );
 
     await repository.load(start: DateTime(2026, 9, 1));
@@ -162,7 +182,6 @@ void main() {
         baseUri: Uri.parse('https://api.example.test/v1/'),
         requestHeaders: () => const {},
       ),
-      viewerCountry: 'US',
     );
 
     final september = DateTime(2026, 9);
@@ -202,7 +221,6 @@ void main() {
             baseUri: Uri.parse('https://api.example.test/v1/'),
             requestHeaders: () => const {},
           ),
-          viewerCountry: 'US',
           cacheStore: store,
         );
     final month = DateTime(2026, 9);
@@ -214,6 +232,8 @@ void main() {
     final restored = await repository().restoreFor(teamId: 8, month: month);
 
     expect(restored?.data.favoriteTeam.teamId, 8);
+    expect(restored?.data.highlights, isEmpty);
+    expect(restored?.requiresRefresh, isTrue);
     expect(restored?.savedAt.isAfter(DateTime(2026)), isTrue);
     expect(requests, 1);
     expect(await repository().restoreFor(teamId: 8, month: DateTime(2026, 10)),
@@ -226,7 +246,7 @@ void main() {
   test('drops a malformed stored Home response', () async {
     final store = MemoryLocalCacheStore();
     final month = DateTime(2026, 9);
-    final key = LocalCacheKeys.home(8, month, 'US');
+    final key = LocalCacheKeys.home(8, month);
     await store.write(key, {'favorite_team': null},
         scope: LocalCacheScopes.authenticatedUser);
     final repository = ApiHomeRepository(
@@ -235,7 +255,6 @@ void main() {
         baseUri: Uri.parse('https://api.example.test/v1/'),
         requestHeaders: () => const {},
       ),
-      viewerCountry: 'US',
       cacheStore: store,
     );
 
@@ -253,7 +272,6 @@ void main() {
         baseUri: Uri.parse('https://api.example.test/v1/'),
         requestHeaders: () => const {},
       ),
-      viewerCountry: 'US',
     );
     final month = DateTime(2026, 9);
     final request = repository.load(
@@ -279,14 +297,13 @@ void main() {
           client: MockClient((_) async => responses[requestCount++]),
           baseUri: Uri.parse('http://localhost:8000/v1'),
           requestHeaders: () => const {}),
-      viewerCountry: 'US',
     );
 
     await expectLater(repository.load(), throwsA(isA<http.ClientException>()));
     await expectLater(repository.load(), throwsFormatException);
   });
 
-  test('rejects a highlight response for a different viewer country', () async {
+  test('accepts the country determined by the server', () async {
     final payload = _homeJson();
     (payload['highlights'] as Map<String, dynamic>)['viewer_country'] = 'KR';
     final repository = ApiHomeRepository(
@@ -295,10 +312,10 @@ void main() {
               MockClient((_) async => http.Response(jsonEncode(payload), 200)),
           baseUri: Uri.parse('https://api.example.test/v1/'),
           requestHeaders: () => const {}),
-      viewerCountry: 'US',
     );
 
-    await expectLater(repository.load(), throwsFormatException);
+    expect((await repository.load()).highlights.single.title,
+        'Liverpool highlights');
   });
 }
 

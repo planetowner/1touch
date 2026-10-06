@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -55,16 +57,18 @@ import 'package:onetouch/SignComps/other_login_methods.dart';
 import 'package:onetouch/select_favorite_teams.dart';
 import 'package:onetouch/welcome_screen.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+Future<void> main() => runOneTouchApp(
+      initializePlatform: _initializeFirebase,
+      startPushServices: _startPushServices,
+    );
+
+Future<void> _initializeFirebase() async {
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  await firebasePushMessagingService.initialize();
-  await runOneTouchApp();
-  // 첫 화면이 열린 뒤 동의 창을 표시해 앱 시작이 동의 응답을 기다리지 않게 해요.
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    MobileAdsService.initialize();
-  });
+}
+
+Future<void> _startPushServices() async {
+  unawaited(MobileAdsService.initialize());
   await firebasePushNotificationHandler.start(
     onDestination: _openNotificationPayload,
     onCommunityNotification: () => notificationUnreadController.refresh(),
@@ -72,31 +76,56 @@ Future<void> main() async {
   final pushDestination =
       firebasePushNotificationHandler.takeInitialDestination();
   if (pushDestination != null) {
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _openNotificationPayload(pushDestination),
-    );
+    _openNotificationPayload(pushDestination);
   }
+  // 알림으로 들어온 목적지를 먼저 보관하고, 토큰 조회는 화면 이동을 막지 않아요.
+  await firebasePushMessagingService.initialize();
   await pushDeviceRegistrationService.start();
 }
 
+Future<String> Function()? _prepareStartup;
+bool _startupCompleted = true;
+
 Future<void> runOneTouchApp({
   Future<bool> Function()? restoreSession,
+  Future<void> Function()? initializePlatform,
+  Future<void> Function()? startPushServices,
 }) async {
   WidgetsFlutterBinding.ensureInitialized();
-  await appThemeController.initialize();
-  await appLocaleController.initialize();
-  await (restoreSession ?? auth_provider.authService.restoreSession)();
+  _startupCompleted = false;
+  // 시작 화면이 그려진 뒤 호출해 초기화 시간이 빈 화면으로 보이지 않게 해요.
+  _prepareStartup = () async {
+    await initializePlatform?.call();
+    await appThemeController.initialize();
+    await appLocaleController.initialize();
+    await (restoreSession ?? auth_provider.authService.restoreSession)();
+    unawaited(_startNotificationServices(startPushServices));
+    return _startupDestination();
+  };
+  runApp(const MyApp());
+}
+
+String _startupDestination() =>
+    ApiConfig.skipOnboardingForDevelopment || authSession.isAuthenticated
+        ? '/session'
+        : '/onboarding';
+
+Future<void> _startNotificationServices(
+  Future<void> Function()? startPushServices,
+) async {
   try {
     await deviceNotificationService.initialize(
         onPayload: _openNotificationPayload);
+    final payload = deviceNotificationService.takeInitialPayload();
+    if (payload != null) _openNotificationPayload(payload);
   } on Object catch (error) {
     debugPrint('Unable to initialize device notifications: $error');
   }
-  runApp(const MyApp());
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    final payload = deviceNotificationService.takeInitialPayload();
-    if (payload != null) _openNotificationPayload(payload);
-  });
+  try {
+    await startPushServices?.call();
+  } on Object catch (error) {
+    debugPrint('Unable to initialize push notifications: $error');
+  }
 }
 
 void _openNotificationPayload(String payload) {
@@ -159,6 +188,13 @@ final GoRouter _router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   redirect: (context, state) {
     final path = state.uri.path;
+    // 앱 링크로 켜도 로그인 복원 전에 시작 화면을 건너뛰지 않아요.
+    if (!_startupCompleted && path != '/') {
+      if (isCommunityPostDestination(path)) {
+        communityLinkNavigation.queue(path);
+      }
+      return '/';
+    }
     if (path == '/' ||
         path == '/session' ||
         path == '/onboarding' ||
@@ -189,10 +225,9 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => SplashScreen(
-        nextLocation: ApiConfig.skipOnboardingForDevelopment ||
-                authSession.isAuthenticated
-            ? '/session'
-            : '/onboarding',
+        prepareNextLocation: _prepareStartup,
+        nextLocation: _startupDestination(),
+        onComplete: () => _startupCompleted = true,
       ),
     ),
 
@@ -773,6 +808,11 @@ class MyApp extends StatelessWidget {
                           builder: (context, _) => FootballNamesLoader(
                             repository: _footballNames,
                             enabled: authSession.isAuthenticated,
+                            // 번역은 미리 불러오되 이름 표기가 없는 시작 로고는 가리지 않아요.
+                            blockContent: _startupCompleted &&
+                                _router.routeInformationProvider.value.uri
+                                        .path !=
+                                    '/',
                             child: FullScreenBackGesture(
                               canGoBack: _router.canPop,
                               goBack: _router.routerDelegate.popRoute,
