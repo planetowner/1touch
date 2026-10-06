@@ -230,7 +230,9 @@ void main() {
           find.byKey(const ValueKey('social-nickname-field')), 'Supporter');
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(translateMessage(locale, 'CONTINUE')));
+      await tester.tap(find.text(
+        trUpper(tester.element(find.byType(SessionScreen)), 'Continue'),
+      ));
       await tester.pumpAndSettle();
       expect(find.text('Select Teams Next'), findsOneWidget);
       final update = requests.singleWhere((r) => r.method == 'PUT');

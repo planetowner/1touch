@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
@@ -146,7 +147,12 @@ class _SessionScreenState extends State<SessionScreen> {
       );
       if (!mounted) return;
       await _handle(fresh);
-    } catch (error) {
+    } catch (error, stackTrace) {
+      // 서버 응답이 정상이어도 앱 내부 처리에서 실패할 수 있어 발생 위치를 남겨요.
+      if (kDebugMode) {
+        debugPrint('Session loading failed: $error');
+        debugPrintStack(stackTrace: stackTrace);
+      }
       if (mounted) setState(() => _error = error);
     }
   }
