@@ -42,14 +42,16 @@ class _MatchesTabState extends State<MatchesTab> {
       builder: (context, detail) => SingleChildScrollView(
           key: const ValueKey('player-matches-scroll'),
           physics: const ClampingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
           child: Column(children: [
-            PlayerSeasonSelector(
-                key: ValueKey(
-                    'player-matches-season-${detail.selectedSeason?.id}'),
-                detail: detail,
-                width: double.infinity,
-                onChanged: (id) => setState(() => _seasonId = id)),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: PlayerSeasonSelector(
+                  key: ValueKey(
+                      'player-matches-season-${detail.selectedSeason?.id}'),
+                  detail: detail,
+                  onChanged: (id) => setState(() => _seasonId = id)),
+            ),
             const SizedBox(height: 32),
             if (detail.matches.any((m) => m.live)) ...[
               PlayerSection(

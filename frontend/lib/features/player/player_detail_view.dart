@@ -151,24 +151,26 @@ class _PlayerDetailViewState extends State<PlayerDetailView> {
 
 class PlayerSeasonSelector extends StatelessWidget {
   const PlayerSeasonSelector(
-      {super.key, required this.detail, required this.onChanged, this.width});
+      {super.key, required this.detail, required this.onChanged});
   final PlayerDetail detail;
   final ValueChanged<int?> onChanged;
-  final double? width;
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final foreground = Theme.of(context).colorScheme.onSurface;
+    final selectedSeason = detail.selectedSeason;
     return AppDropdown<int>(
       value: detail.selectedSeason?.id,
-      width: width,
+      width: 86,
       triggerHeight: 48,
-      matchMenuWidth: width != null,
+      selectedLabel: selectedSeason == null
+          ? null
+          : compactSeasonLabel(selectedSeason.name),
       hintText: tr(context, 'SELECT A SEASON'),
       backgroundColor: surface,
       foregroundColor: foreground,
-      textStyle: Body2_b.style,
+      textStyle: Body2_b.style.copyWith(height: 1.3),
       boxShadow: appCardShadows(context),
       options: detail.seasons
           .map(
