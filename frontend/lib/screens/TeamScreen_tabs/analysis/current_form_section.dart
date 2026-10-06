@@ -437,9 +437,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         .map((point) => point.roundNo)
         .toList()
       ..sort();
-    final initialRound =
-        availableRounds.where((round) => round <= 7).lastOrNull ??
-            availableRounds.firstOrNull;
+    final initialRound = availableRounds.lastOrNull;
     final selectedRound = availableRounds.contains(_selectedFormRound)
         ? _selectedFormRound
         : initialRound;

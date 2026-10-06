@@ -4,18 +4,19 @@ import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/round_chart_visuals.dart';
 
 void main() {
-  test('centers a selected round within seven visible round positions', () {
-    final window = RoundChartWindow.centeredThrough(13);
+  test('centers the latest round with seven earlier rounds to its left', () {
+    final window = RoundChartWindow.centeredThrough(20);
     const viewportWidth = 140.0;
-    const roundWidth = viewportWidth / 6;
-    expect((window.firstRound, window.lastRound), (-2, 16));
-    expect(window.centeredScrollOffset(7, viewportWidth), roundWidth * 6);
-    expect(window.centeredScrollOffset(8, viewportWidth),
-        closeTo(roundWidth * 7, 0.0001));
-    expect(window.centeredScrollOffset(13, viewportWidth), roundWidth * 12);
+    const roundWidth = viewportWidth / RoundChartWindow.visibleIntervalCount;
+    expect((window.firstRound, window.lastRound), (0, 27));
+    expect((window.firstVisibleRound, window.centerRound), (13, 20));
+    expect(window.centeredScrollOffset(20, viewportWidth), roundWidth * 13);
+    expect(window.centeredScrollOffset(19, viewportWidth), roundWidth * 12);
+    expect(window.centeredScrollOffset(1, viewportWidth), 0);
+    expect(window.centeredScrollOffset(7, viewportWidth), 0);
   });
 
-  test('keeps a full round box inside the seven-round viewport', () {
+  test('keeps a full round box inside the viewport', () {
     final window = RoundChartWindow.centeredThrough(13);
     const viewportWidth = 288.0;
     const tooltipWidth = 155.0;
@@ -72,35 +73,61 @@ void main() {
       find.descendant(
           of: viewport, matching: find.byType(SingleChildScrollView)),
     );
-    expect(scroll.controller!.offset, closeTo(140, 0.01));
+    expect(scroll.controller!.offset, 0);
     expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
         closeTo(viewportRect.center.dx, 0.1));
+
+    final towardFirst = await tester.startGesture(tester.getCenter(handle));
+    await towardFirst.moveBy(const Offset(-140 / 14, 0));
+    await towardFirst.up();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 70));
+    final movingTip =
+        tester.getRect(handle).left + RoundChartSelectionHandle.tipInset;
+    expect(movingTip, greaterThan(viewportRect.left + 6 * 140 / 14));
+    expect(movingTip, lessThan(viewportRect.center.dx));
+    await tester.pumpAndSettle();
+    expect(selectedRound, 6);
+    expect(scroll.controller!.offset, 0);
+    expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
+        closeTo(viewportRect.left + 6 * 140 / 14, 0.1));
+
+    final returnToCenter = await tester.startGesture(tester.getCenter(handle));
+    await returnToCenter.moveBy(const Offset(140 / 14, 0));
+    await returnToCenter.up();
+    await tester.pumpAndSettle();
+    expect(selectedRound, 7);
 
     await tester.tapAt(Offset(viewportRect.center.dx, viewportRect.top + 15));
     await tester.pump();
     expect(selectedRound, 7);
 
     final gesture = await tester.startGesture(tester.getCenter(handle));
-    await gesture.moveBy(const Offset(140 / 6, 0));
+    await gesture.moveBy(const Offset(140 / 14, 0));
     await gesture.up();
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 70));
+    expect(scroll.controller!.offset, greaterThan(0));
+    expect(scroll.controller!.offset, lessThan(10));
     await tester.pumpAndSettle();
     expect(selectedRound, 8);
-    expect(scroll.controller!.offset, closeTo(140 + 140 / 6, 0.01));
+    expect(scroll.controller!.offset, closeTo(10, 0.01));
     expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
         closeTo(viewportRect.center.dx, 0.1));
 
     final continuousDrag = await tester.startGesture(tester.getCenter(handle));
-    await continuousDrag.moveBy(const Offset(140 / 6, 0));
+    await continuousDrag.moveBy(const Offset(140 / 14, 0));
     await tester.pumpAndSettle();
     expect(selectedRound, 9);
-    await continuousDrag.moveBy(const Offset(140 / 6, 0));
+    await continuousDrag.moveBy(const Offset(140 / 14, 0));
     await tester.pumpAndSettle();
     expect(selectedRound, 10);
-    await continuousDrag.moveBy(const Offset(-140 / 6, 0));
+    await continuousDrag.moveBy(const Offset(-140 / 14, 0));
     await continuousDrag.up();
     await tester.pumpAndSettle();
     expect(selectedRound, 9);
-    expect(scroll.controller!.offset, closeTo(140 + 2 * 140 / 6, 0.01));
+    expect(scroll.controller!.offset, closeTo(20, 0.01));
     expect(tester.takeException(), isNull);
   });
 
@@ -132,7 +159,7 @@ void main() {
 
     final handle = find.byKey(const ValueKey('round-chart-selection-handle'));
     final gesture = await tester.startGesture(tester.getCenter(handle));
-    await gesture.moveBy(const Offset(140 / 6 * 1.2, 0));
+    await gesture.moveBy(const Offset(140 / 14 * 1.2, 0));
     await gesture.up();
     await tester.pumpAndSettle();
     expect(selectedRound, 3);

@@ -1341,8 +1341,8 @@ void main() {
       find.byKey(const ValueKey('player-performance-axis-label')),
     );
     expect(tester.getSize(card).height, 346);
-    expect(lineChart.data.minX, -2);
-    expect(lineChart.data.maxX, 10);
+    expect(lineChart.data.minX, 0);
+    expect(lineChart.data.maxX, 14);
     expect(lineChart.data.minY, 6);
     expect(lineChart.data.maxY, 9.5);
     expect(lineChart.data.lineBarsData.single.dotData.show, isFalse);
@@ -1396,7 +1396,7 @@ void main() {
     await tester.pump();
     expect(find.text('Round 7'), findsOneWidget);
     final drag = await tester.startGesture(tester.getCenter(performanceHandle));
-    await drag.moveBy(Offset(-chartRect.width / 6, 0));
+    await drag.moveBy(Offset(-chartRect.width / 14, 0));
     await drag.up();
     await tester.pumpAndSettle();
     expect(find.text('Round 6'), findsOneWidget);
@@ -1414,7 +1414,7 @@ void main() {
     expect(
         tester.getRect(performanceHandle).left +
             RoundChartSelectionHandle.tipInset,
-        closeTo(chartRect.center.dx, 0.1));
+        closeTo(chartRect.left + chartRect.width * 6 / 14, 0.1));
     expect(tester.takeException(), isNull);
   });
 
@@ -1432,7 +1432,7 @@ void main() {
     ));
 
     final chart = tester.widget<LineChart>(find.byType(LineChart));
-    expect((chart.data.minX, chart.data.maxX), (-2, 23));
+    expect((chart.data.minX, chart.data.maxX), (0, 27));
     expect(chart.data.lineBarsData.single.spots.length, 20);
     final viewport = find.byKey(const ValueKey('player-performance-viewport'));
     final scroll = tester.widget<SingleChildScrollView>(
@@ -1440,17 +1440,17 @@ void main() {
           of: viewport, matching: find.byType(SingleChildScrollView)),
     );
     expect(scroll.controller!.offset,
-        closeTo(tester.getSize(viewport).width * 16 / 6, 0.1));
-    expect(find.text('Round 17'), findsOneWidget);
+        closeTo(tester.getSize(viewport).width * 13 / 14, 0.1));
+    expect(find.text('Round 20'), findsOneWidget);
     final handle = find.descendant(
       of: viewport,
       matching: find.byKey(const ValueKey('round-chart-selection-handle')),
     );
     final drag = await tester.startGesture(tester.getCenter(handle));
-    await drag.moveBy(Offset(-tester.getSize(viewport).width / 6, 0));
+    await drag.moveBy(Offset(-tester.getSize(viewport).width / 14, 0));
     await drag.up();
     await tester.pumpAndSettle();
-    expect(find.text('Round 16'), findsOneWidget);
+    expect(find.text('Round 19'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('performance shows all four completed rounds before round eight',
@@ -1467,7 +1467,7 @@ void main() {
     ));
 
     final chart = tester.widget<LineChart>(find.byType(LineChart));
-    expect((chart.data.minX, chart.data.maxX), (-2, 10));
+    expect((chart.data.minX, chart.data.maxX), (0, 14));
     expect(chart.data.lineBarsData.single.spots.map((spot) => spot.x),
         [1, 2, 3, 4]);
     final viewport = find.byKey(const ValueKey('player-performance-viewport'));
@@ -1477,8 +1477,7 @@ void main() {
         matching: find.byType(SingleChildScrollView),
       ),
     );
-    expect(scroll.controller!.offset,
-        closeTo(tester.getSize(viewport).width / 2, 0.1));
+    expect(scroll.controller!.offset, 0);
     expect(find.text('Round 4'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

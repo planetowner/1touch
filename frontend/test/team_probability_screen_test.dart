@@ -182,13 +182,13 @@ void main() {
     expect(historyCard.right - historyGrid.right, 16);
     expect(historyViewport.left, historyGrid.left);
     expect(historyViewport.right, historyGrid.right);
-    expect(historyLineChart.width, historyViewport.width * 2);
+    expect(historyLineChart.width, closeTo(historyViewport.width, 0.1));
     final historyData = tester
         .widget<LineChart>(
           find.byKey(const ValueKey('probability-history-line-chart')),
         )
         .data;
-    expect((historyData.minX, historyData.maxX), (-2, 10));
+    expect((historyData.minX, historyData.maxX), (0, 14));
     expect(historyData.lineBarsData.single.spots.map((spot) => spot.x), [4, 5]);
     expect((historyData.minY, historyData.maxY), (20, 40));
     final historyCardFinder =
@@ -249,11 +249,11 @@ void main() {
     );
     expect(
         tester.getRect(historyHandle).left + RoundChartSelectionHandle.tipInset,
-        closeTo(historyViewport.center.dx, 0.1));
+        closeTo(historyViewport.left + historyViewport.width * 5 / 14, 0.1));
     expect(tester.getRect(historyHandle).top,
         historyViewport.bottom - RoundChartSelectionHandle.height);
     final drag = await tester.startGesture(tester.getCenter(historyHandle));
-    await drag.moveBy(Offset(-historyViewport.width / 6, 0));
+    await drag.moveBy(Offset(-historyViewport.width / 14, 0));
     await drag.up();
     await tester.pumpAndSettle();
     expect(find.text('Round 4'), findsOneWidget);
@@ -271,7 +271,7 @@ void main() {
     expect(tooltipRect.right, lessThanOrEqualTo(historyViewport.right));
     expect(
         tester.getRect(historyHandle).left + RoundChartSelectionHandle.tipInset,
-        closeTo(historyViewport.center.dx, 0.1));
+        closeTo(historyViewport.left + historyViewport.width * 4 / 14, 0.1));
     expect(
       tester
           .getRect(find.byKey(const ValueKey('probability-history-tooltip')))
@@ -280,13 +280,13 @@ void main() {
       closeTo(historyChart.top + historyChart.height * 0.7, 1),
     );
     final nextDrag = await tester.startGesture(tester.getCenter(historyHandle));
-    await nextDrag.moveBy(Offset(historyViewport.width / 6, 0));
+    await nextDrag.moveBy(Offset(historyViewport.width / 14, 0));
     await nextDrag.up();
     await tester.pumpAndSettle();
     expect(find.text('Round 5'), findsOneWidget);
     expect(
         tester.getRect(historyHandle).left + RoundChartSelectionHandle.tipInset,
-        closeTo(historyViewport.center.dx, 0.1));
+        closeTo(historyViewport.left + historyViewport.width * 5 / 14, 0.1));
     expect(find.text('PROJECTED FINAL POSITION'), findsOneWidget);
     expect(
       tester

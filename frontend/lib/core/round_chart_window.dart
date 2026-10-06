@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// Up to thirteen completed rounds, with the latest seven visible on entry.
+/// The latest round starts at the center; the chart stops at round one.
 class RoundChartWindow {
   const RoundChartWindow._(this.firstRound, this.lastRound);
+
+  static const int visibleIntervalCount = 14;
+  static const int centerIntervalCount = visibleIntervalCount ~/ 2;
 
   factory RoundChartWindow.endingAt(int latestRound) {
     final lastCompletedRound = math.max(1, latestRound);
@@ -15,20 +19,25 @@ class RoundChartWindow {
     );
   }
 
-  /// Adds three empty round slots at either end so any round can be centered.
+  /// Leaves future slots to center the latest round without scrolling past one.
   factory RoundChartWindow.centeredThrough(int latestRound) =>
-      RoundChartWindow._(-2, math.max(7, latestRound) + 3);
+      RoundChartWindow._(
+        0,
+        math.max(visibleIntervalCount,
+            math.max(1, latestRound) + centerIntervalCount),
+      );
 
   final int firstRound;
   final int lastRound;
 
-  int get firstVisibleRound => math.max(firstRound, lastRound - 6);
+  int get firstVisibleRound =>
+      math.max(firstRound, lastRound - visibleIntervalCount);
   int get lastVisibleRound => lastRound;
-  int get centerRound => firstVisibleRound + 3;
+  int get centerRound => firstVisibleRound + centerIntervalCount;
   int get intervalCount => lastRound - firstRound;
 
   double contentWidth(double viewportWidth) =>
-      viewportWidth * intervalCount / 6;
+      viewportWidth * intervalCount / visibleIntervalCount;
 
   double initialScrollOffset(double viewportWidth) =>
       contentWidth(viewportWidth) - viewportWidth;
@@ -84,7 +93,9 @@ class _RoundChartViewportState extends State<RoundChartViewport> {
     }
     final rounds = widget.selectableRounds;
     final draggedRound = (_dragStartRound! +
-            (globalX - _dragStartX!) / (widget.viewportSize.width / 6))
+            (globalX - _dragStartX!) /
+                (widget.viewportSize.width /
+                    RoundChartWindow.visibleIntervalCount))
         .clamp(rounds.first.toDouble(), rounds.last.toDouble());
     var nearest = rounds.first;
     for (final round in rounds.skip(1)) {
@@ -121,18 +132,28 @@ class _RoundChartViewportState extends State<RoundChartViewport> {
         _initialFirstRound != widget.roundWindow.firstRound ||
         _initialLastRound != widget.roundWindow.lastRound ||
         _centeredRound != widget.selectedRound) {
+      final geometryChanged = _initialWidth != viewportWidth ||
+          _initialFirstRound != widget.roundWindow.firstRound ||
+          _initialLastRound != widget.roundWindow.lastRound;
       _initialWidth = viewportWidth;
       _initialFirstRound = widget.roundWindow.firstRound;
       _initialLastRound = widget.roundWindow.lastRound;
       _centeredRound = widget.selectedRound;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _controller!.hasClients) {
-          _controller!.jumpTo(
-            widget.selectedRound == null
-                ? 0
-                : widget.roundWindow
-                    .centeredScrollOffset(widget.selectedRound!, viewportWidth),
-          );
+          final target = widget.selectedRound == null
+              ? 0.0
+              : widget.roundWindow
+                  .centeredScrollOffset(widget.selectedRound!, viewportWidth);
+          if (geometryChanged) {
+            _controller!.jumpTo(target);
+          } else {
+            unawaited(_controller!.animateTo(
+              target,
+              duration: const Duration(milliseconds: 140),
+              curve: Curves.easeOutCubic,
+            ));
+          }
         }
       });
     }
@@ -194,11 +215,13 @@ class RoundChartSelectionHandle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
+    return AnimatedPositioned(
       left: x - (onDrag == null ? tipInset : 22),
       bottom: 0,
       width: onDrag == null ? width : 44,
       height: onDrag == null ? height : 44,
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOutCubic,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onHorizontalDragDown: onDrag == null

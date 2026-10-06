@@ -492,11 +492,11 @@ void main() {
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets(
-        'keeps round seven centered and advances only by the handle at $size',
+        'centers the latest round and selects older rounds only by the handle at $size',
         (tester) async {
       useScreen(tester, size);
       final points = [
-        for (var round = 0; round <= 13; round++)
+        for (var round = 0; round <= 20; round++)
           CurrentFormPoint(roundNo: round, cumulativePoints: round * 2),
       ];
       final repository = _TestCurrentFormRepository(
@@ -526,11 +526,11 @@ void main() {
         find.descendant(
             of: viewport, matching: find.byType(SingleChildScrollView)),
       );
-      final roundWidth = viewportRect.width / 6;
-      expect(scroll.controller!.offset, closeTo(roundWidth * 6, 0.1));
+      final roundWidth = viewportRect.width / 14;
+      expect(scroll.controller!.offset, closeTo(roundWidth * 13, 0.1));
       expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
           closeTo(viewportRect.center.dx, 0.1));
-      expect(find.text('Round 7'), findsOneWidget);
+      expect(find.text('Round 20'), findsOneWidget);
       expect(
           find.byKey(const ValueKey('analysis-current-form-selection-guide')),
           findsOneWidget);
@@ -543,31 +543,31 @@ void main() {
       final dynamic painter = grid.painter;
       expect(painter.divisionCount, 11);
       final line = tester.widget<LineChart>(find.byType(LineChart));
-      expect((line.data.minX, line.data.maxX), (-2, 16));
+      expect((line.data.minX, line.data.maxX), (0, 27));
 
       await tester.tapAt(tester.getRect(chart).center);
       await tester.pump();
-      expect(find.text('Round 7'), findsOneWidget);
+      expect(find.text('Round 20'), findsOneWidget);
       final chartDrag = await tester.startGesture(
         Offset(viewportRect.center.dx, viewportRect.top + 48),
       );
       await chartDrag.moveBy(Offset(roundWidth, 0));
       await chartDrag.up();
       await tester.pumpAndSettle();
-      expect(find.text('Round 7'), findsOneWidget);
+      expect(find.text('Round 20'), findsOneWidget);
 
       final gesture = await tester.startGesture(tester.getCenter(handle));
-      await gesture.moveBy(Offset(roundWidth, 0));
+      await gesture.moveBy(Offset(-roundWidth, 0));
       await gesture.up();
       await tester.pumpAndSettle();
-      expect(find.text('Round 8'), findsOneWidget);
-      expect(scroll.controller!.offset, closeTo(roundWidth * 7, 0.1));
+      expect(find.text('Round 19'), findsOneWidget);
+      expect(scroll.controller!.offset, closeTo(roundWidth * 12, 0.1));
       expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
           closeTo(viewportRect.center.dx, 0.1));
 
-      final toLast = await tester.startGesture(tester.getCenter(handle));
-      await toLast.moveBy(Offset(roundWidth * 5, 0));
-      await toLast.up();
+      final toOlder = await tester.startGesture(tester.getCenter(handle));
+      await toOlder.moveBy(Offset(-roundWidth * 6, 0));
+      await toOlder.up();
       await tester.pumpAndSettle();
       expect(find.text('Round 13'), findsOneWidget);
       expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
@@ -577,6 +577,23 @@ void main() {
       ));
       expect(tooltipRect.left, greaterThanOrEqualTo(viewportRect.left));
       expect(tooltipRect.right, lessThanOrEqualTo(viewportRect.right));
+      final toEarlierHistory =
+          await tester.startGesture(tester.getCenter(handle));
+      await toEarlierHistory.moveBy(Offset(-roundWidth * 6, 0));
+      await toEarlierHistory.up();
+      await tester.pumpAndSettle();
+      expect(find.text('Round 7'), findsOneWidget);
+      expect(scroll.controller!.offset, 0);
+      expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
+          closeTo(viewportRect.center.dx, 0.1));
+      final toFirst = await tester.startGesture(tester.getCenter(handle));
+      await toFirst.moveBy(Offset(-roundWidth * 6, 0));
+      await toFirst.up();
+      await tester.pumpAndSettle();
+      expect(find.text('Round 1'), findsOneWidget);
+      expect(scroll.controller!.offset, 0);
+      expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
+          closeTo(viewportRect.left + roundWidth, 0.1));
       expect(tester.takeException(), isNull);
     });
   }
@@ -700,7 +717,8 @@ void main() {
         final chartRect = tester.getRect(
           find.byKey(const ValueKey('analysis-current-form-chart')),
         );
-        final selectedPointX = tester.getRect(viewport).center.dx;
+        final viewportRect = tester.getRect(viewport);
+        final selectedPointX = viewportRect.left + viewportRect.width * 2 / 14;
 
         final formHandle = find.descendant(
           of: viewport,
@@ -721,8 +739,8 @@ void main() {
           expect((box.decoration! as BoxDecoration).color, expectedBoxColor);
         }
         final lineChart = tester.widget<LineChart>(find.byType(LineChart));
-        expect(lineChart.data.minX, -2);
-        expect(lineChart.data.maxX, 10);
+        expect(lineChart.data.minX, 0);
+        expect(lineChart.data.maxX, 14);
         expect(lineChart.data.minY, 0);
         expect(lineChart.data.maxY, 9);
         final comparisonTooltipRect = tester.getRect(
@@ -735,7 +753,6 @@ void main() {
             const ValueKey('analysis-current-form-current-tooltip'),
           ),
         );
-        final viewportRect = tester.getRect(viewport);
         for (final box in [
           comparisonTooltipRect,
           currentTooltipRect,

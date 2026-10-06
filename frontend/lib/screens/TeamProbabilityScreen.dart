@@ -437,11 +437,7 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
     final gridColor = Theme.of(context).colorScheme.onSurface.withValues(
           alpha: Theme.of(context).brightness == Brightness.dark ? 0.32 : 0.18,
         );
-    final targetRound = latestRound <= 7 ? latestRound : latestRound - 3;
-    final initialPoint = visiblePoints
-            .where((point) => point.played <= targetRound)
-            .lastOrNull ??
-        visiblePoints.first;
+    final initialPoint = visiblePoints.last;
     final selectedPoint = visiblePoints
             .where((point) => point.played == _selectedRound)
             .firstOrNull ??
