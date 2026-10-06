@@ -31,6 +31,8 @@ class PlayerProfile(PlayerCandidate):
     date_of_birth: date | None
     nationality_id: int | None
     nationality: str | None
+    # 영국 구성국 코드(GB-ENG 등)를 그대로 전달해 프런트에서 국기를 구분해요.
+    nationality_code: str | None
     nationality_image: str | None
     team_id: int | None
     team_name: str | None
