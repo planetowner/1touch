@@ -180,7 +180,7 @@ class _H2HTabState extends State<H2HTab> {
             _buildBetsCard(),
             Padding(
               padding: EdgeInsets.only(bottom: 8, top: 40),
-              child: Text(tr(context, 'PAST MATCHES'), style: Body2_b.style),
+              child: Text(tr(context, 'LATEST H2H'), style: Body2_b.style),
             ),
             if (_h2hMatches.isEmpty)
               Padding(

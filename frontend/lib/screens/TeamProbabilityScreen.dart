@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/number_display.dart';
 import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/round_chart_visuals.dart';
 import 'package:onetouch/core/probability_display.dart';
@@ -323,7 +324,10 @@ class _ProbabilityHero extends StatelessWidget {
                           size: 24,
                         ),
                       ),
-                      Text('${_compact(delta.abs())}%', style: Heading5.style),
+                      Text(
+                        '${formatDisplayNumber(delta.abs(), trimTrailingZeros: true)}%',
+                        style: Heading5.style,
+                      ),
                     ],
                   ],
                 ),
@@ -874,7 +878,10 @@ class _ProjectedPointsCard extends StatelessWidget {
                   delta > 0 ? Icons.arrow_drop_up : Icons.arrow_drop_down,
                   color: color,
                 ),
-                Text('${_compact(delta.abs())}%', style: Heading5.style),
+                Text(
+                  '${formatDisplayNumber(delta.abs(), trimTrailingZeros: true)}%',
+                  style: Heading5.style,
+                ),
               ],
             ),
           ],
@@ -1024,11 +1031,4 @@ String _ordinal(int value) {
   return '$value$suffix';
 }
 
-String _compact(double value) {
-  var fixed = value.toStringAsFixed(2);
-  while (fixed.endsWith('0')) {
-    fixed = fixed.substring(0, fixed.length - 1);
-  }
-  return fixed.endsWith('.') ? fixed.substring(0, fixed.length - 1) : fixed;
-}
 // ignore_for_file: file_names

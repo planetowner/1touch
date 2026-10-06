@@ -104,9 +104,9 @@ void main() {
         _SeasonStatsRepository().detail(1).analysis!.categories[0].metrics;
     final passes = playerSeasonStat(rows[0]);
     expect(passes.label, 'Accurate passes');
-    expect(passes.text, '70.24');
+    expect(passes.text, '70.2');
     expect(passes.unit, 'per 90');
-    expect(playerSeasonStat(rows[1]).text, '2.69');
+    expect(playerSeasonStat(rows[1]).text, '2.7');
     expect(playerSeasonStat(rows[2]).text, '75%');
     expect(playerSeasonStat(rows[3]).text, '—');
     for (final row in rows.skip(4)) {
@@ -148,10 +148,10 @@ void main() {
         Finder value(String text) =>
             find.descendant(of: card, matching: find.text(text));
         for (final text in [
-          '70.24',
-          '37.43',
-          '2.69',
-          '2.89',
+          '70.2',
+          '37.4',
+          '2.7',
+          '2.9',
           '75%',
           '50%',
           '—',
@@ -228,7 +228,7 @@ void main() {
         final card = find.byKey(const ValueKey('player-top-stats-card'));
         expect(find.descendant(of: card, matching: find.text('1')),
             findsNWidgets(2));
-        expect(find.descendant(of: card, matching: find.text('2.69')),
+        expect(find.descendant(of: card, matching: find.text('2.7')),
             findsOneWidget);
         expect(
             find.descendant(

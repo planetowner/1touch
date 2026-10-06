@@ -450,8 +450,8 @@ void main() {
         } else {
           expect(find.text('Draw'), findsNothing);
           expect(find.text('D'), findsNothing);
-          expect(find.text('1.25×'), findsWidgets);
-          expect(find.text('5.00×'), findsWidgets);
+          expect(find.text('1.3×'), findsWidgets);
+          expect(find.text('5.0×'), findsWidgets);
         }
         final selection = find.byType(ListTile).at(1);
         await tester.ensureVisible(selection);

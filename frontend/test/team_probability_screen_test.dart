@@ -115,6 +115,7 @@ void main() {
 
     expect(find.text('Probability'), findsOneWidget);
     expect(find.text('32.4'), findsOneWidget);
+    expect(find.text('2.4%'), findsOneWidget);
     expect(find.text('Chances to Win\nLeague Trophy'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('team-probability-gradient')),
@@ -314,6 +315,7 @@ void main() {
       ),
     );
     expect(find.text('82.4'), findsOneWidget);
+    expect(find.text('1.3%'), findsOneWidget);
     expect(find.text('Likely range of 75–90 pts'), findsOneWidget);
     expect(
       tester
@@ -634,7 +636,7 @@ TeamProbabilitySnapshot _snapshot(
     competitionId: 564,
     category: 'TITLE',
     probability: 0.324,
-    changePercentagePoints: 2.4,
+    changePercentagePoints: 2.44,
     entropy: 0.9,
   );
   final relegationCard = TeamProbabilityCard(
@@ -668,7 +670,7 @@ TeamProbabilitySnapshot _snapshot(
     projectedPoints: const TeamProjectedPoints(
       mean: 82.4,
       likelyRange: TeamPointsInterval(lower: 75, upper: 90),
-      changePoints: 1.2,
+      changePoints: 1.26,
     ),
     comparison: TeamProbabilityComparison(
       available: true,
