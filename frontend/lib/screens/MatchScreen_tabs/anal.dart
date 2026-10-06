@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/number_display.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/core/app_info_button.dart';
@@ -277,7 +278,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    expectedGoals.homeXg.toStringAsFixed(2),
+                    formatDisplayNumber(expectedGoals.homeXg),
                     style: Body2_b.style.copyWith(
                       color: ColorUtils.monochromeTextColor(homeColor),
                     ),
@@ -301,7 +302,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(expectedGoals.awayXg.toStringAsFixed(2),
+                  Text(formatDisplayNumber(expectedGoals.awayXg),
                       style: Body2_b.style.copyWith(
                         color: ColorUtils.monochromeTextColor(awayColor),
                       )),
@@ -917,13 +918,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   String _formatNumber(num? value, {String suffix = ''}) {
     if (value == null) return '—';
-    final number = value.toDouble();
-    final text = number == number.roundToDouble()
-        ? number.toInt().toString()
-        : number
-            .toStringAsFixed(2)
-            .replaceFirst(RegExp(r'0+$'), '')
-            .replaceFirst(RegExp(r'\.$'), '');
+    final text = formatDisplayNumber(value, trimTrailingZeros: true);
     return '$text$suffix';
   }
 }

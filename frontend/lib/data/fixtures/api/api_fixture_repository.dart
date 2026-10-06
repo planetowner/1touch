@@ -19,6 +19,9 @@ class ApiFixtureRepository implements FixtureRepository {
       : _api = api,
         _cacheStore = cacheStore;
 
+  // 라인업 지표 구성이 바뀌어 종료 경기의 7일 캐시도 새로 받아야 해요.
+  static const _detailCacheSchemaVersion = 2;
+
   final ApiClient _api;
   final LocalCacheStore? _cacheStore;
   final ValueNotifier<List<Fixture>> _fixtures = ValueNotifier(const []);
@@ -112,7 +115,7 @@ class ApiFixtureRepository implements FixtureRepository {
     final key = LocalCacheKeys.fixtureDetail(fixtureId);
     LocalCacheRecord? record;
     try {
-      record = await store.read(key);
+      record = await store.read(key, schemaVersion: _detailCacheSchemaVersion);
     } on Object {
       return null;
     }
@@ -152,7 +155,10 @@ class ApiFixtureRepository implements FixtureRepository {
     _publishDetail(fixtureId, detail, DateTime.now().toUtc());
     try {
       await _cacheStore?.write(
-          LocalCacheKeys.fixtureDetail(fixtureId), decoded);
+        LocalCacheKeys.fixtureDetail(fixtureId),
+        decoded,
+        schemaVersion: _detailCacheSchemaVersion,
+      );
     } on Object {
       // A storage failure should not hide a valid detail response.
     }

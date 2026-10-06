@@ -510,8 +510,8 @@ void main() {
     expect(coaches.subsB.single.minute, 75);
     expect(find.byKey(const ValueKey('match-player-of-the-match-card')),
         findsNothing);
-    expect(find.text('0.52'), findsNothing);
-    expect(find.text('4.77'), findsNothing);
+    expect(find.text('0.5'), findsNothing);
+    expect(find.text('4.8'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -707,7 +707,7 @@ void main() {
       expect(find.text(translateMessage(locale, 'Goals')), findsOneWidget);
       expect(find.text('1'), findsWidgets);
       expect(find.text('xG'), findsOneWidget);
-      expect(find.text('0.52'), findsOneWidget);
+      expect(find.text('0.5'), findsOneWidget);
       expect(find.text('Unavailable metric'), findsNothing);
       expect(
         tester
@@ -1007,14 +1007,14 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('match-analysis-xg')),
-        matching: find.text('1.23'),
+        matching: find.text('1.2'),
       ),
       findsOneWidget,
     );
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('match-analysis-xg')),
-        matching: find.text('0.57'),
+        matching: find.text('0.6'),
       ),
       findsOneWidget,
     );
@@ -1031,12 +1031,12 @@ void main() {
       (
         'match-analysis-home-xg-box',
         xgColors.anchor,
-        '1.23',
+        '1.2',
       ),
       (
         'match-analysis-away-xg-box',
         xgColors.opponent,
-        '0.57',
+        '0.6',
       ),
     ]) {
       final box = find.byKey(ValueKey(key));
