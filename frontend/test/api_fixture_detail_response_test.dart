@@ -77,6 +77,10 @@ void main() {
 
       final lineup = response.lineups.single;
       expect(lineup.playerName, 'Home Player');
+      final mappedLineup =
+          fixtureDetailFromApiResponse(response).lineups.single;
+      expect(mappedLineup.nationalityId, 11);
+      expect(mappedLineup.nationality, 'Germany');
       expect(lineup.positionId, 24);
       expect(lineup.rating, 7.45);
 
@@ -334,6 +338,8 @@ Map<String, dynamic> _detailJson({
       'player_name': 'Home Player',
       'player_image': 'https://cdn.example/home-player.png',
       'position_id': 24,
+      'nationality_id': 11,
+      'nationality': 'Germany',
       'lineup_type_id': 1,
       'formation_field': '1:4',
       'jersey_number': 9,

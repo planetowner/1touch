@@ -37,7 +37,8 @@ void main() {
   );
 
   Future<void> showSheet(
-      WidgetTester tester, _CachedDetailRepository repository) async {
+      WidgetTester tester, _CachedDetailRepository repository,
+      {PlayerMatchStatData? initialPlayer}) async {
     final following = PlayerFollowingController(
       repository: FakeFollowingPlayersRepository(),
     );
@@ -45,13 +46,33 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
         body: PlayerMatchStatSheet(
-          player: player,
+          player: initialPlayer ?? player,
           detailRepository: repository,
           followingController: following,
         ),
       ),
     ));
   }
+
+  testWidgets('fixture nationality is visible without loading player detail',
+      (tester) async {
+    final repository = _CachedDetailRepository()..fail = true;
+    await showSheet(tester, repository,
+        initialPlayer: const PlayerMatchStatData(
+          playerId: 2,
+          teamPrimaryColor: 0xFFA50044,
+          name: 'Test Player',
+          jerseyNumber: 7,
+          positions: ['FW'],
+          club: 'Barcelona',
+          nationalityId: 11,
+          nationality: 'Germany',
+          sections: [],
+        ));
+    expect(find.text('Germany'), findsOneWidget);
+    expect(repository.restoreCalls, 0);
+    expect(repository.calls, isEmpty);
+  });
 
   testWidgets('memory-cached country is visible on the first frame',
       (tester) async {

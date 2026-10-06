@@ -404,6 +404,8 @@ class ApiFixtureLineupResponse {
     required this.playerId,
     required this.playerName,
     required this.playerImage,
+    this.nationalityId,
+    this.nationality,
     required this.positionId,
     required this.lineupTypeId,
     required this.formationField,
@@ -416,6 +418,8 @@ class ApiFixtureLineupResponse {
   final int playerId;
   final String playerName;
   final String? playerImage;
+  final int? nationalityId;
+  final String? nationality;
   final int? positionId;
   final int lineupTypeId;
   final String? formationField;
@@ -429,6 +433,8 @@ class ApiFixtureLineupResponse {
       playerId: _requiredInt(json, 'player_id'),
       playerName: _requiredString(json, 'player_name'),
       playerImage: _optionalString(json, 'player_image'),
+      nationalityId: _optionalInt(json, 'nationality_id'),
+      nationality: _optionalString(json, 'nationality'),
       positionId: _optionalInt(json, 'position_id'),
       lineupTypeId: _requiredInt(json, 'lineup_type_id'),
       formationField: _optionalString(json, 'formation_field'),

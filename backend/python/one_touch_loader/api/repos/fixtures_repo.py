@@ -158,6 +158,7 @@ def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
         """,
         (fixture_id,),
     )
+    # 경기 팝업의 국적 때문에 선수 상세 전체를 다시 조회하지 않도록 함께 내려줘요.
     fixture["lineups"] = fetch_all_dict(
         """
         SELECT
@@ -165,6 +166,8 @@ def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
           fl.player_id,
           p.display_name AS player_name,
           p.image_path AS player_image,
+          p.nationality_id,
+          n.name AS nationality,
           p.position_id,
           fl.match_position_id,
           fl.lineup_type_id,
@@ -174,6 +177,7 @@ def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
           fl.rating
         FROM fixture_lineups fl
         JOIN players p ON p.player_id = fl.player_id
+        LEFT JOIN countries n ON n.country_id = p.nationality_id
         WHERE fl.fixture_id = %s
         ORDER BY fl.team_id, fl.lineup_type_id, fl.formation_field, fl.player_id
         """,
