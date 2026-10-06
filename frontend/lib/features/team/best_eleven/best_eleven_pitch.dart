@@ -62,16 +62,37 @@ class BestElevenPitch extends StatelessWidget {
                     .onSurface
                     .withValues(alpha: 0.15),
               ),
-              child: FormationPlayerPositions<_BestElevenPitchPlayer>(
-                players: _players,
-                positionOf: (player) => layout.positionForSlot(
-                  formationLayoutSlotKey(formation, player.slotKey),
-                ),
-                playerWidth: 62,
-                playerBuilder: (player) => _BestElevenPlayerDot(
-                  player: player,
-                  circleColor: playerCircleColor,
-                  jerseyNumberColor: jerseyNumberColor,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final scaleY = constraints.maxHeight /
+                        FormationLayout.designSize.height;
+                    final labelHeight = (Eyebrow.style.fontSize ?? 12) *
+                        (Eyebrow.style.height ?? 1);
+                    // 작은 화면에서도 키퍼 이름 아래 24px 여백을 지켜요.
+                    final maxKeeperY =
+                        (constraints.maxHeight - 16 - 6 - labelHeight) / scaleY;
+                    return FormationPlayerPositions<_BestElevenPitchPlayer>(
+                      players: _players,
+                      positionOf: (player) {
+                        final position = layout.positionForSlot(
+                          formationLayoutSlotKey(formation, player.slotKey),
+                        );
+                        if (position == null || player.slotKey != '1:1') {
+                          return position;
+                        }
+                        return Offset(
+                            position.dx, position.dy.clamp(0.0, maxKeeperY));
+                      },
+                      playerWidth: 62,
+                      playerBuilder: (player) => _BestElevenPlayerDot(
+                        player: player,
+                        circleColor: playerCircleColor,
+                        jerseyNumberColor: jerseyNumberColor,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
