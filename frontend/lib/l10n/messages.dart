@@ -1847,6 +1847,12 @@ const appMessages = <String, MessageTranslations>{
   "Coming soon": (ko: "아직 준비 중이에요", ja: "準備中です", zh: "敬请期待"),
   "SWITCH": (ko: "선택한 팀으로 바꾸기", ja: "切り替え", zh: "切换"),
   "Ad": (ko: "광고", ja: "広告", zh: "广告"),
+  "Ad privacy choices": (ko: "광고 개인정보 설정", ja: "広告のプライバシー設定", zh: "广告隐私设置"),
+  "Unable to open ad privacy choices. Please try again.": (
+    ko: "광고 개인정보 설정을 열지 못했어요. 다시 시도해주세요.",
+    ja: "広告のプライバシー設定を開けませんでした。もう一度お試しください。",
+    zh: "无法打开广告隐私设置，请重试。"
+  ),
   "USER": (ko: "사용자", ja: "ユーザー", zh: "用户"),
   "January": (ko: "1월", ja: "1月", zh: "1月"),
   "February": (ko: "2월", ja: "2月", zh: "2月"),

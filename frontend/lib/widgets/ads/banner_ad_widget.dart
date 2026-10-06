@@ -23,11 +23,12 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   @override
   void initState() {
     super.initState();
+    MobileAdsService.adRequestsAllowed.addListener(_refreshAd);
     _loadAd();
   }
 
   void _loadAd() {
-    if (!MobileAdsService.isInitialized) return;
+    if (!MobileAdsService.adRequestsAllowed.value) return;
 
     final adUnitId = AdConfig.bannerAdUnitId;
     if (adUnitId == null) {
@@ -45,7 +46,8 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     final ad = BannerAd(
       adUnitId: adUnitId,
       size: widget.adSize,
-      request: const AdRequest(),
+      // 출시 광고 정책에 따라 모든 배너는 비맞춤형으로 요청해요.
+      request: const AdRequest(nonPersonalizedAds: true),
       listener: BannerAdListener(
         onAdLoaded: (loadedAd) {
           if (!mounted || _bannerAd != loadedAd) {
@@ -77,9 +79,15 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   void didUpdateWidget(BannerAdWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.adSize == widget.adSize) return;
+    _refreshAd();
+  }
+
+  void _refreshAd() {
     _bannerAd?.dispose();
-    _bannerAd = null;
-    _isAdLoaded = false;
+    setState(() {
+      _bannerAd = null;
+      _isAdLoaded = false;
+    });
     _loadAd();
   }
 
@@ -99,6 +107,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   @override
   void dispose() {
+    MobileAdsService.adRequestsAllowed.removeListener(_refreshAd);
     _bannerAd?.dispose();
     super.dispose();
   }

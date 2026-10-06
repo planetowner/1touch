@@ -60,8 +60,11 @@ Future<void> main() async {
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   await firebasePushMessagingService.initialize();
-  await MobileAdsService.initialize();
   await runOneTouchApp();
+  // 첫 화면이 열린 뒤 동의 창을 표시해 앱 시작이 동의 응답을 기다리지 않게 해요.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    MobileAdsService.initialize();
+  });
   await firebasePushNotificationHandler.start(
     onDestination: _openNotificationPayload,
     onCommunityNotification: () => notificationUnreadController.refresh(),
