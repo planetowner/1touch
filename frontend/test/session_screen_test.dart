@@ -117,17 +117,21 @@ void main() {
     }
   }
 
-  test('debug betting preview becomes the session destination', () {
+  test('session destination prefers community, then notification, then Home',
+      () {
     expect(
       resolveSessionReadyDestination(
         communityDestination: '/community/1',
         notificationDestination: '/match/2',
-        bettingDebugEnabled: true,
       ),
-      '/debug/betting',
+      '/community/1',
     );
     expect(
-      resolveSessionReadyDestination(bettingDebugEnabled: false),
+      resolveSessionReadyDestination(notificationDestination: '/match/2'),
+      '/match/2',
+    );
+    expect(
+      resolveSessionReadyDestination(),
       '/home',
     );
   });

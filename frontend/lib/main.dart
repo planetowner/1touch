@@ -12,8 +12,6 @@ import 'package:onetouch/services/firebase_push_messaging_service.dart';
 import 'package:onetouch/services/firebase_push_notification_handler.dart';
 import 'package:onetouch/services/push_device_registration_service_provider.dart';
 import 'package:onetouch/data/notifications/notification_unread_controller_provider.dart';
-import 'package:onetouch/debug/mock_live_match.dart';
-import 'package:onetouch/debug/mock_betting_match.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
@@ -156,7 +154,7 @@ CustomTransitionPage<void> _detailSlidePage(
     );
 
 final GoRouter _router = GoRouter(
-  initialLocation: mockBettingMatchEnabled ? '/debug/betting' : '/',
+  initialLocation: '/',
   navigatorKey: _rootNavigatorKey,
   redirect: (context, state) {
     final path = state.uri.path;
@@ -359,40 +357,6 @@ final GoRouter _router = GoRouter(
         ]),
       ],
     ),
-
-    if (mockLiveMatchEnabled)
-      GoRoute(
-        path: '/debug/live-match',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final mock = MockLiveMatch();
-          return MatchScreen(
-            matchId: '$mockLiveMatchId',
-            matchStatus: 'live',
-            initialFixture: mock.fixtures.findById(mockLiveMatchId),
-            repository: mock.fixtures,
-            bettingRepository: mock.betting,
-            chatRepository: mock.chat,
-            chatSocket: mock.socket,
-          );
-        },
-      ),
-
-    if (mockBettingMatchEnabled)
-      GoRoute(
-        path: '/debug/betting',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final mock = MockBettingMatch();
-          return MatchScreen(
-            matchId: '$mockBettingMatchId',
-            matchStatus: 'upcoming',
-            initialFixture: mock.fixtures.findById(mockBettingMatchId),
-            repository: mock.fixtures,
-            bettingRepository: mock.betting,
-          );
-        },
-      ),
 
     // 기타 단일 화면 (기존 그대로)
     GoRoute(
