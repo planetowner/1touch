@@ -82,7 +82,8 @@ abstract final class LocalCacheKeys {
       'current-player-ranking:${league ?? 'all'}:${position ?? 'all'}:'
       '$limit:$offset';
 
-  static const onesToWatch = 'players-ones-to-watch';
+  // 5+5경기로 선정한 캐시가 새 3+3경기 결과에 섞이지 않게 해요.
+  static const onesToWatch = 'players-ones-to-watch:v2';
 
   static String communityFeed(
     int teamId,
