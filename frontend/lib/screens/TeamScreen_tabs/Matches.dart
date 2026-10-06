@@ -17,6 +17,7 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/features/match_info/live_match_motion.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/date_labels.dart';
@@ -820,12 +821,12 @@ class _MatchesTabState extends State<MatchesTab> {
             SizedBox(
               key: ValueKey('match-competition-round-${fixture.fixtureId}'),
               width: double.infinity,
-              child: Text(
-                competitionAndRound,
-                style: Body2.style,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
+              child: Center(
+                child: CompetitionLabel(
+                  competitionId: fixture.competitionId,
+                  label: competitionAndRound,
+                  style: Body2.style,
+                ),
               ),
             ),
           ],

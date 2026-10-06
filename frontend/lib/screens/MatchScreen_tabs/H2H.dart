@@ -17,6 +17,7 @@ import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -229,6 +230,7 @@ class _H2HTabState extends State<H2HTab> {
                     f.homeScore?.toString() ?? '-',
                     f.awayScore?.toString() ?? '-',
                     competitionAndRound,
+                    f.competitionId,
                   ),
                 );
               }),
@@ -418,6 +420,7 @@ class _H2HTabState extends State<H2HTab> {
     String homeScore,
     String awayScore,
     String league,
+    int competitionId,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final home = int.tryParse(homeScore);
@@ -495,7 +498,11 @@ class _H2HTabState extends State<H2HTab> {
             ],
           ),
           const SizedBox(height: 6),
-          Text(league, style: Body2.style),
+          CompetitionLabel(
+            competitionId: competitionId,
+            label: league,
+            style: Body2.style,
+          ),
         ],
       ),
     );
