@@ -24,13 +24,22 @@ Future<void> showCommunityAttachmentViewer(
   );
 }
 
-class CommunityAttachmentViewer extends StatelessWidget {
+class CommunityAttachmentViewer extends StatefulWidget {
   const CommunityAttachmentViewer({
     super.key,
     required this.mediaUrl,
   });
 
   final String mediaUrl;
+
+  @override
+  State<CommunityAttachmentViewer> createState() =>
+      _CommunityAttachmentViewerState();
+}
+
+class _CommunityAttachmentViewerState extends State<CommunityAttachmentViewer> {
+  double _scale = 1;
+  double _gestureStartScale = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -41,20 +50,34 @@ class CommunityAttachmentViewer extends StatelessWidget {
         child: Stack(
           children: [
             Positioned.fill(
-              child: InteractiveViewer(
-                minScale: 0.8,
-                maxScale: 4,
-                boundaryMargin: const EdgeInsets.all(40),
-                child: Center(
-                  child: Image.network(
-                    mediaUrl,
-                    key: const ValueKey('community-attachment-full-image'),
-                    headers: apiImageHeaders(mediaUrl),
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.image_not_supported_outlined,
-                      color: Colors.white54,
-                      size: 48,
+              child: ClipRect(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onScaleStart: (_) => _gestureStartScale = _scale,
+                  onScaleUpdate: (details) {
+                    // 사진의 중심을 고정하고 핀치 배율만 반영해요.
+                    final nextScale =
+                        (_gestureStartScale * details.scale).clamp(1.0, 4.0);
+                    if (nextScale != _scale) {
+                      setState(() => _scale = nextScale);
+                    }
+                  },
+                  child: Transform.scale(
+                    key: const ValueKey('community-attachment-image-transform'),
+                    scale: _scale,
+                    alignment: Alignment.center,
+                    child: Image.network(
+                      widget.mediaUrl,
+                      key: const ValueKey('community-attachment-full-image'),
+                      headers: apiImageHeaders(widget.mediaUrl),
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.image_not_supported_outlined,
+                        color: Colors.white54,
+                        size: 48,
+                      ),
                     ),
                   ),
                 ),
