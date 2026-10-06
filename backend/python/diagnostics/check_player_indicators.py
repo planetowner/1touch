@@ -16,6 +16,7 @@ from one_touch_loader.api.repos.player_indicators_repo import (
 from one_touch_loader.api.schemas.player_indicators import PlayerIndicatorsResponse
 from one_touch_loader.core.db import get_conn
 from one_touch_loader.core.db_json import decoded
+from one_touch_loader.core.player_indicator_grades import with_current_grade_labels
 from one_touch_loader.core.player_rating_percentile import RATING_COMPETITION_IDS
 
 
@@ -47,7 +48,9 @@ def check(*, player_id: int | None = None, samples: int = 50) -> dict:
         )
     leagues = set()
     for row in rows:
-        result = PlayerIndicatorsResponse.model_validate(decoded(row["payload"]))
+        result = PlayerIndicatorsResponse.model_validate(
+            with_current_grade_labels(decoded(row["payload"]))
+        )
         if (result.player_id, result.team_id, result.season_id) != (
             row["player_id"],
             row["team_id"],

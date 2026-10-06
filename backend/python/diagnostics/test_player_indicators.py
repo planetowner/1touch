@@ -574,12 +574,21 @@ class SnapshotRepositoryTests(unittest.TestCase):
             )
         self.db.commit()
         loader.refresh(apply=True)
+        self.change(
+            "UPDATE player_indicator_snapshots SET payload=json_set(payload,'$.form.grade','Excellent','$.form.band',4) WHERE player_id=1"
+        )
+        saved = self.db.execute(
+            "SELECT payload FROM player_indicator_snapshots WHERE player_id=1"
+        ).fetchone()["payload"]
         with patch.object(checker, "get_conn", side_effect=self.connection):
             result = checker.check(player_id=1, samples=3)
             self.assertTrue(result["check"])
             self.assertEqual(result["snapshot"]["player_count"], 5)
             self.assertEqual(result["samples"], 3)
             self.assertGreaterEqual(result["max_ms"], result["p50_ms"])
+            self.assertEqual(self.db.execute(
+                "SELECT payload FROM player_indicator_snapshots WHERE player_id=1"
+            ).fetchone()["payload"], saved)
             self.change(
                 "UPDATE player_indicator_snapshots SET payload=json_set(payload,'$.player_id',999) WHERE player_id=1"
             )
