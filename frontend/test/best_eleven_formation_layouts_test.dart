@@ -9,43 +9,84 @@ import 'support/app_catalog.dart';
 void main() {
   setUpAppCatalog();
 
-  test('every Figma formation maps all eleven slots', () {
-    for (final entry in formationLayouts.entries) {
-      final counts = entry.key.split('-').map(int.parse).toList();
-      expect(
-        counts.fold<int>(0, (total, count) => total + count),
-        10,
-        reason: entry.key,
-      );
-      expect(entry.value.positionForSlot('1:1'), isNotNull, reason: entry.key);
-      for (var row = 0; row < counts.length; row += 1) {
-        for (var column = 1; column <= counts[row]; column += 1) {
+  test('formations put every player on symmetric, evenly spaced rows', () {
+    for (final formation in [
+      '4-3-3',
+      '4-2-3-1',
+      '3-5-2',
+      '5-4-1',
+      '2-2-2-2-2',
+    ]) {
+      final counts =
+          formationLayoutCode(formation).split('-').map(int.parse).toList();
+      final layout = FormationLayout.forFormation(formation);
+      final centerX = FormationLayout.designSize.width / 2;
+      expect(counts.reduce((a, b) => a + b), 10, reason: formation);
+      expect(layout.positionForSlot('1:1')!.dx, centerX);
+      final rowYs = <double>[FormationLayout.goalkeeper.dy];
+
+      for (var row = 0; row < counts.length; row++) {
+        final rowNumber = row + 2;
+        final positions = [
+          for (var column = 1; column <= counts[row]; column++)
+            layout.positionForSlot('$rowNumber:$column')!,
+        ];
+        rowYs.add(
+          positions.map((position) => position.dy).reduce((a, b) => a + b) /
+              positions.length,
+        );
+        for (var column = 0; column < positions.length; column++) {
+          final opposite = positions[positions.length - column - 1];
           expect(
-            entry.value.positionForSlot('${row + 2}:$column'),
-            isNotNull,
-            reason: '${entry.key} row ${row + 2}, column $column',
-          );
+              positions[column].dx + opposite.dx, closeTo(2 * centerX, 0.001),
+              reason: '$formation row $rowNumber');
+          expect(positions[column].dy, opposite.dy);
+          if (column > 1) {
+            expect(
+              positions[column].dx - positions[column - 1].dx,
+              closeTo(positions[1].dx - positions[0].dx, 0.001),
+            );
+          }
         }
+      }
+      for (var row = 1; row < rowYs.length; row++) {
+        expect(rowYs[row], lessThan(rowYs[row - 1]));
       }
     }
   });
 
-  test('4-3-3 uses the 4-1-2-3 layout without becoming a layout code', () {
-    expect(formationLayouts.containsKey('4-3-3'), isFalse);
+  test('defense, attack, and five-player midfield retain curved shapes', () {
+    final threeForwards = FormationLayout.forFormation('4-1-2-3');
+    expect(
+      threeForwards.positionForSlot('2:1')!.dy,
+      lessThan(threeForwards.positionForSlot('2:2')!.dy),
+    );
+    expect(
+      threeForwards.positionForSlot('5:1')!.dy,
+      greaterThan(threeForwards.positionForSlot('5:2')!.dy),
+    );
+
+    final fourMidfielders = FormationLayout.forFormation('4-4-2');
+    expect(
+      fourMidfielders.positionForSlot('3:1')!.dy,
+      lessThan(fourMidfielders.positionForSlot('3:2')!.dy),
+    );
+
+    final fiveMidfielders = FormationLayout.forFormation('3-5-2');
+    expect(
+      fiveMidfielders.positionForSlot('3:2')!.dy,
+      greaterThan(fiveMidfielders.positionForSlot('3:3')!.dy),
+    );
+    expect(
+      fiveMidfielders.positionForSlot('3:4')!.dy,
+      fiveMidfielders.positionForSlot('3:2')!.dy,
+    );
+  });
+
+  test('4-3-3 uses the 4-1-2-3 shape without changing slot mapping', () {
     expect(formationLayoutCode('4-3-3'), '4-1-2-3');
     expect(formationLayoutCode('433'), '4-1-2-3');
     expect(formationLayoutCode('4-1-2-3'), '4-1-2-3');
-
-    final layout = formationLayouts['4-1-2-3']!;
-
-    expect(layout.positionForSlot('1:1'), const Offset(173, 340));
-    expect(layout.positionForSlot('2:1'), const Offset(48, 220));
-    expect(layout.positionForSlot('2:2'), const Offset(132, 252));
-    expect(layout.positionForSlot('3:1'), const Offset(173, 192));
-    expect(layout.positionForSlot('4:1'), const Offset(124, 128));
-    expect(layout.positionForSlot('5:1'), const Offset(48, 72));
-    expect(layout.positionForSlot('5:2'), const Offset(173, 44));
-
     expect(formationLayoutSlotKey('4-3-3', '3:1'), '4:1');
     expect(formationLayoutSlotKey('4-3-3', '3:2'), '3:1');
     expect(formationLayoutSlotKey('4-3-3', '3:3'), '4:2');
@@ -60,77 +101,100 @@ void main() {
     }
   });
 
-  test('unknown valid formations receive a complete fallback layout', () {
-    final layout = buildFallbackFormationLayout('2-2-2-2-2');
+  test('invalid formations use a complete 4-1-2-3 layout', () {
+    final layout = FormationLayout.forFormation('invalid');
 
     expect(layout.positionForSlot('1:1'), isNotNull);
-    for (var row = 2; row <= 6; row += 1) {
-      expect(layout.positionForSlot('$row:1'), isNotNull);
-      expect(layout.positionForSlot('$row:2'), isNotNull);
+    for (final (row, count) in [4, 1, 2, 3].indexed) {
+      final rowNumber = row + 2;
+      for (var column = 1; column <= count; column++) {
+        expect(layout.positionForSlot('$rowNumber:$column'), isNotNull);
+      }
     }
   });
 
-  testWidgets('393px pitch renders player circles at the Figma coordinates',
-      (tester) async {
-    tester.view.physicalSize = const Size(393, 852);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  for (final size in [
+    const Size(320, 568),
+    const Size(393, 852),
+    const Size(430, 932),
+  ]) {
+    testWidgets('pitch centers and mirrors player circles at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    const slots = [
-      '1:1',
-      '2:1',
-      '2:2',
-      '2:3',
-      '2:4',
-      '3:1',
-      '3:2',
-      '3:3',
-      '4:1',
-      '4:2',
-      '4:3',
-    ];
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: BestElevenPitch(
-              teamId: 503,
-              formation: '4-3-3',
-              players: [
-                for (var index = 0; index < slots.length; index += 1)
-                  BestElevenEntry(
-                    slotKey: slots[index],
-                    slotIndex: index,
-                    playerId: index + 1,
-                    playerName: 'Player $index',
-                    starts: 1,
-                    jerseyNumber: index + 1,
-                  ),
-              ],
+      const slots = [
+        '1:1',
+        '2:1',
+        '2:2',
+        '2:3',
+        '2:4',
+        '3:1',
+        '3:2',
+        '3:3',
+        '4:1',
+        '4:2',
+        '4:3',
+      ];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: BestElevenPitch(
+                teamId: 503,
+                formation: '4-3-3',
+                players: [
+                  for (var index = 0; index < slots.length; index += 1)
+                    BestElevenEntry(
+                      slotKey: slots[index],
+                      slotIndex: index,
+                      playerId: index + 1,
+                      playerName: 'Player $index',
+                      starts: 1,
+                      jerseyNumber: index + 1,
+                    ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    final cardOrigin = tester.getTopLeft(
-      find.byKey(const ValueKey('team-best-eleven-card')),
-    );
-    Offset relativeCircleCenter(String slot) =>
-        tester.getCenter(
-          find.byKey(ValueKey('best-eleven-player-dot-$slot')),
-        ) -
-        cardOrigin;
+      final cardOrigin = tester.getTopLeft(
+        find.byKey(const ValueKey('team-best-eleven-card')),
+      );
+      Offset relativeCircleCenter(String slot) =>
+          tester.getCenter(
+            find.byKey(ValueKey('best-eleven-player-dot-$slot')),
+          ) -
+          cardOrigin;
 
-    expect(relativeCircleCenter('1:1'), const Offset(173, 340));
-    expect(relativeCircleCenter('2:1'), const Offset(48, 220));
-    expect(relativeCircleCenter('2:2'), const Offset(132, 252));
-    expect(relativeCircleCenter('3:1'), const Offset(124, 128));
-    expect(relativeCircleCenter('3:2'), const Offset(173, 192));
-    expect(relativeCircleCenter('3:3'), const Offset(222, 128));
-    expect(relativeCircleCenter('4:2'), const Offset(173, 44));
-    expect(tester.takeException(), isNull);
-  });
+      final center = tester
+              .getSize(find.byKey(const ValueKey('team-best-eleven-card')))
+              .width /
+          2;
+      for (final slot in ['1:1', '3:2', '4:2']) {
+        expect(relativeCircleCenter(slot).dx, closeTo(center, 0.001));
+      }
+      for (final (left, right) in [
+        ('2:1', '2:4'),
+        ('2:2', '2:3'),
+        ('3:1', '3:3'),
+        ('4:1', '4:3'),
+      ]) {
+        expect(
+          relativeCircleCenter(left).dx + relativeCircleCenter(right).dx,
+          closeTo(2 * center, 0.001),
+        );
+        expect(
+          relativeCircleCenter(left).dy,
+          closeTo(relativeCircleCenter(right).dy, 0.001),
+        );
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
