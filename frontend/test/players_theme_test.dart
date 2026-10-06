@@ -805,6 +805,48 @@ void main() {
     expect(controller.offset, controller.position.minScrollExtent);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('players tab action before scroll layout does not throw',
+      (tester) async {
+    final behavior = _SelectTabBeforeScrollLayout();
+    addTearDown(behavior.didSelect.dispose);
+    final followingController = PlayerFollowingController(
+      repository: FakeFollowingPlayersRepository(),
+    );
+    addTearDown(followingController.dispose);
+
+    await tester.pumpWidget(MaterialApp(
+      home: ScrollConfiguration(
+        behavior: behavior,
+        child: Players(
+          repository: FakePlayerDirectoryRepository(),
+          detailRepository: FakePlayerDetailRepository(),
+          followingController: followingController,
+        ),
+      ),
+    ));
+
+    expect(behavior.didSelect.value, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+class _SelectTabBeforeScrollLayout extends MaterialScrollBehavior {
+  final didSelect = ValueNotifier(false);
+
+  @override
+  Widget buildScrollbar(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    final controller = details.controller;
+    if (!didSelect.value &&
+        controller != null &&
+        controller.hasClients &&
+        !controller.position.hasContentDimensions) {
+      didSelect.value = true;
+      mainTabActions.select(2);
+    }
+    return super.buildScrollbar(context, child, details);
+  }
 }
 
 class _PendingCachedRankingRepository extends FakePlayerDirectoryRepository {
