@@ -583,7 +583,7 @@ const appMessages = <String, MessageTranslations>{
   "Back": (ko: "뒤로", ja: "戻る", zh: "返回"),
   "UPDATE": (ko: "저장하기", ja: "保存", zh: "保存"),
   "Accept": (ko: "동의", ja: "同意する", zh: "同意"),
-  "See all": (ko: "모두 보기", ja: "すべて見る", zh: "查看全部"),
+  "See all": (ko: "더보기", ja: "すべて見る", zh: "查看全部"),
   "Loading": (ko: "불러오는 중", ja: "読み込み中", zh: "加载中"),
   "Loading…": (ko: "불러오는 중…", ja: "読み込み中…", zh: "加载中…"),
   "Unavailable": (ko: "정보 없음", ja: "データなし", zh: "暂无数据"),
@@ -770,7 +770,6 @@ const appMessages = <String, MessageTranslations>{
   "LAST MATCH": (ko: "지난 경기", ja: "前の試合", zh: "上一场比赛"),
   "LIVE MATCH": (ko: "진행 중인 경기", ja: "ライブ中の試合", zh: "进行中的比赛"),
   "Live": (ko: "라이브", ja: "ライブ", zh: "直播"),
-  "• LIVE": (ko: "● 진행 중인 경기", ja: "• ライブ", zh: "• 直播"),
   "FIXTURE": (ko: "경기 일정", ja: "試合日程", zh: "赛程"),
   "CALENDAR": (ko: "캘린더", ja: "カレンダー", zh: "日历"),
   "RECENT MATCHES": (ko: "최근 경기", ja: "最近の試合", zh: "近期比赛"),
@@ -891,12 +890,12 @@ const appMessages = <String, MessageTranslations>{
   "BEST ELEVEN": (ko: "베스트 11", ja: "ベストイレブン", zh: "最佳十一人"),
   "BEST XI": (ko: "베스트 11", ja: "ベストイレブン", zh: "最佳十一人"),
   "No best eleven available": (
-    ko: "베스트 일레븐 정보가 없어요",
+    ko: "베스트 11 정보가 없어요",
     ja: "ベストイレブンの情報がありません",
     zh: "暂无最佳阵容"
   ),
   "Unable to load best eleven": (
-    ko: "베스트 일레븐을 불러오지 못했어요",
+    ko: "베스트 11을 불러오지 못했어요",
     ja: "ベストイレブンを読み込めませんでした",
     zh: "无法加载最佳阵容"
   ),
@@ -1120,7 +1119,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "この条件に合うランキングがありません",
     zh: "没有符合筛选条件的排名数据"
   ),
-  "ONES TO WATCH": (ko: "주목할 선수", ja: "注目の選手", zh: "值得关注的球员"),
+  "ONES TO WATCH": (ko: "눈여겨볼 선수", ja: "注目の選手", zh: "值得关注的球员"),
   "No players with 10 rated appearances and an improved average": (
     ko: "평점이 있는 10경기 출전과 평균 상승 조건을 충족한 선수가 없어요",
     ja: "評価付き10試合出場と平均上昇の条件を満たす選手はいません",
@@ -2006,12 +2005,11 @@ const appMessages = <String, MessageTranslations>{
   "Long balls completed": (ko: "롱패스 성공", ja: "ロングパス成功", zh: "长传成功"),
   "Accurate passes": (ko: "패스 성공", ja: "パス成功", zh: "成功传球"),
   "Goals conceded": (ko: "실점", ja: "失点", zh: "失球"),
-  "Very Poor": (ko: "매우 낮음", ja: "非常に低い", zh: "很差"),
-  "Poor": (ko: "낮음", ja: "低い", zh: "较差"),
+  "Very Poor": (ko: "아주 나쁨", ja: "非常に低い", zh: "很差"),
+  "Poor": (ko: "나쁨", ja: "低い", zh: "较差"),
   "Fair": (ko: "보통", ja: "標準", zh: "一般"),
   "Good": (ko: "좋음", ja: "良い", zh: "良好"),
-  "Very Good": (ko: "매우 좋음", ja: "とても良い", zh: "很好"),
-  "Excellent": (ko: "뛰어남", ja: "優秀", zh: "出色"),
+  "Very Good": (ko: "아주 좋음", ja: "とても良い", zh: "很好"),
   "Crucial": (ko: "핵심 선수", ja: "中心選手", zh: "核心球员"),
   "Important": (ko: "주요 선수", ja: "主力選手", zh: "重要球员"),
   "Rotation": (ko: "로테이션", ja: "ローテーション", zh: "轮换球员"),

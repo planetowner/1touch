@@ -12,7 +12,9 @@ import 'package:onetouch/data/players/api/api_player_indicators_response.dart';
 import 'package:onetouch/data/players/player_indicators_repository.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/models/player_indicators.dart';
+import 'package:onetouch/features/player/player_indicator_value.dart';
 import 'package:onetouch/features/player/rating_level_ring.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/Overview.dart';
 
 Map<String, Object?> _scoreJson({String? grade = 'Fair', int? band = 2}) => {
@@ -66,6 +68,53 @@ class _Repository implements PlayerIndicatorsRepository {
 }
 
 void main() {
+  testWidgets(
+      'both indicators show the same five Korean grades and ring levels',
+      (tester) async {
+    const grades = [
+      ('Very Poor', '아주 나쁨'),
+      ('Poor', '나쁨'),
+      ('Fair', '보통'),
+      ('Good', '좋음'),
+      ('Very Good', '아주 좋음'),
+    ];
+    for (var band = 0; band < grades.length; band++) {
+      final (grade, label) = grades[band];
+      final payload = _response()
+        ..['form'] = _scoreJson(grade: grade, band: band)
+        ..['cost_effectiveness'] =
+            (_scoreJson(grade: grade, band: band)..['percentile'] = null);
+      final indicators =
+          ApiPlayerIndicatorsResponse.fromJson(payload).indicators;
+      await tester.pumpWidget(MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        home: Scaffold(
+          body: Column(children: [
+            for (final score in [indicators.form, indicators.costEffectiveness])
+              PlayerIndicatorValue(
+                score: score,
+                loading: false,
+                failed: false,
+                explanation: '',
+                onRetry: () {},
+              ),
+          ]),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text(label), findsNWidgets(2));
+      expect(
+        tester
+            .widgetList<RatingLevelRing>(find.byType(RatingLevelRing))
+            .map((ring) => ring.level),
+        [band + 1, band + 1],
+      );
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   test(
     'all five squad roles are mapped and missing roles stay unavailable',
     () {

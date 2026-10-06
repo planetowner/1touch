@@ -5,23 +5,12 @@ import 'package:flutter/material.dart';
 /// Five separated, flat-ended arcs showing an existing qualitative rating.
 class RatingLevelRing extends StatelessWidget {
   const RatingLevelRing(
-      {super.key, required this.rating, this.size = 18, this.levelOverride});
+      {super.key, required this.rating, required this.level, this.size = 18});
 
   final String rating;
   final double size;
-  // 폼과 가성비는 최고 등급 이름이 달라 서버가 정한 단계를 그대로 표시해요.
-  final int? levelOverride;
-
-  int get level =>
-      levelOverride ??
-      switch (rating.trim().toLowerCase()) {
-        'poor' => 1,
-        'fair' || 'average' => 2,
-        'good' => 3,
-        'very good' => 4,
-        'excellent' => 5,
-        _ => 0,
-      };
+  // 등급명으로 단계를 다시 판단하지 않고 서버가 정한 1~5단계를 표시해요.
+  final int level;
 
   @override
   Widget build(BuildContext context) => Semantics(

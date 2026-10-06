@@ -68,7 +68,7 @@ class PlayerIndicatorValue extends StatelessWidget {
               child: ExcludeSemantics(
                 child: RatingLevelRing(
                   rating: score!.grade!,
-                  levelOverride: score!.band! + 1,
+                  level: score!.band! + 1,
                   size: 20,
                 ),
               ),
