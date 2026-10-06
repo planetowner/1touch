@@ -55,6 +55,7 @@ class AppDropdown<T> extends StatefulWidget {
     this.chevronKey,
     this.width,
     this.triggerHeight,
+    this.triggerPadding,
     this.minWidth,
     this.maxMenuHeight,
     this.matchMenuWidth = false,
@@ -74,6 +75,7 @@ class AppDropdown<T> extends StatefulWidget {
   final Key? chevronKey;
   final double? width;
   final double? triggerHeight;
+  final EdgeInsets? triggerPadding;
   final double? minWidth;
   final double? maxMenuHeight;
   final bool matchMenuWidth;
@@ -239,7 +241,9 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
       textScaler: MediaQuery.textScalerOf(context),
       maxLines: 1,
     )..layout();
-    const triggerChromeWidth = 16.0 + 40.0 + AppDropdownTokens.gap;
+    final triggerChromeWidth = widget.triggerPadding == null
+        ? 16.0 + 40.0 + AppDropdownTokens.gap
+        : widget.triggerPadding!.horizontal + AppDropdownTokens.iconSize;
     var intrinsicWidth = labelPainter.width + triggerChromeWidth;
     if (widget.matchMenuWidth) {
       var longestOptionWidth = 0.0;
@@ -286,24 +290,37 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
           child: Stack(
             children: [
               Positioned(
-                left: 16,
-                right: 40,
-                top: 0,
-                bottom: 0,
+                left: widget.triggerPadding?.left ?? 16,
+                right: widget.triggerPadding == null
+                    ? 40
+                    : widget.triggerPadding!.right + AppDropdownTokens.iconSize,
+                top: widget.triggerPadding?.top ?? 0,
+                bottom: widget.triggerPadding?.bottom ?? 0,
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                    _label,
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.left,
-                    style: textStyle,
-                  ),
+                  child: widget.triggerPadding == null
+                      ? Text(
+                          _label,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.left,
+                          style: textStyle,
+                        )
+                      : FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _label,
+                            maxLines: 1,
+                            softWrap: false,
+                            style: textStyle,
+                          ),
+                        ),
                 ),
               ),
               Positioned(
-                right: 8,
+                right: widget.triggerPadding?.right ?? 8,
                 top: (triggerHeight - AppDropdownTokens.iconSize) / 2,
                 child: SizedBox(
                   key: widget.chevronKey,
