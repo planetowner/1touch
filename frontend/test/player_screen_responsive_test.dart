@@ -1510,8 +1510,8 @@ void main() {
     expect(tester.getSize(card).height, 346);
     expect(lineChart.data.minX, 0);
     expect(lineChart.data.maxX, 14);
-    expect(lineChart.data.minY, 6);
-    expect(lineChart.data.maxY, 9.5);
+    expect(lineChart.data.minY, 0);
+    expect(lineChart.data.maxY, 10);
     expect(lineChart.data.lineBarsData.single.dotData.show, isFalse);
     expect(
       find.byKey(const ValueKey('player-performance-grid')),
@@ -1522,7 +1522,7 @@ void main() {
           find.byKey(const ValueKey('player-performance-grid')),
         )
         .painter! as RoundChartGridPainter;
-    expect(gridPainter.divisionCount + 1, 12);
+    expect(gridPainter.divisionCount + 1, 11);
     expect(
       tester
               .getTopLeft(
@@ -1581,7 +1581,13 @@ void main() {
     expect(
         tester.getRect(performanceHandle).left +
             RoundChartSelectionHandle.tipInset,
-        closeTo(chartRect.left + chartRect.width * 6 / 14, 0.1));
+        closeTo(
+            tester
+                    .getRect(find
+                        .byKey(const ValueKey('player-performance-viewport')))
+                    .left +
+                chartRect.width * 6 / 14,
+            0.1));
     expect(tester.takeException(), isNull);
   });
 
@@ -1648,6 +1654,61 @@ void main() {
     expect(find.text('Round 4'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final size in [const Size(360, 780), const Size(430, 932)]) {
+    testWidgets('performance reveals its leading line at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: PlayerPerformanceChart(
+            points: [
+              for (var round = 1; round <= 7; round++)
+                (fixtureId: round, round: round, rating: 10.0),
+            ],
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final viewport =
+          find.byKey(const ValueKey('player-performance-viewport'));
+      final clip = find.byKey(const ValueKey('player-performance-plot-clip'));
+      final mask = find.byKey(const ValueKey('player-performance-axis-mask'));
+      final lineChart = tester.widget<LineChart>(find.byType(LineChart));
+      final gridPainter = tester
+          .widget<CustomPaint>(
+            find.byKey(const ValueKey('player-performance-grid')),
+          )
+          .painter! as RoundChartGridPainter;
+      expect((lineChart.data.minY, lineChart.data.maxY), (0, 10));
+      expect(gridPainter.divisionCount + 1, 11);
+      expect(tester.getSize(mask).width, RoundChartVisuals.axisLineInset);
+      expect(tester.widget<ClipRect>(clip).clipBehavior, Clip.hardEdge);
+      final fixedClip = tester.getRect(clip);
+      expect(tester.getRect(viewport).left, fixedClip.left);
+      final handle = find.descendant(
+        of: viewport,
+        matching: find.byKey(const ValueKey('round-chart-selection-handle')),
+      );
+      final drag = await tester.startGesture(tester.getCenter(handle));
+      await drag.moveBy(Offset(-tester.getSize(viewport).width * 6 / 14, 0));
+      await drag.up();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Round 1'), findsOneWidget);
+      expect(tester.getRect(clip), fixedClip);
+      expect(
+          tester.getRect(viewport).left,
+          closeTo(
+              fixedClip.left + RoundChartVisuals.axisLineInset * 6 / 7, 0.1));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('failed detail has retry without mock competitions',
       (tester) async {
     final repository = FakePlayerDetailRepository()..fail = true;

@@ -51,8 +51,9 @@ int roundChartInsetLineCount(
   BuildContext context,
   Size plotSize,
   String axisLabel,
-  TextStyle axisLabelStyle,
-) {
+  TextStyle axisLabelStyle, {
+  int lineCount = RoundChartVisuals.horizontalLineCount,
+}) {
   if (Localizations.localeOf(context).languageCode == 'ko') return 2;
   final painter = TextPainter(
     text: TextSpan(text: axisLabel, style: axisLabelStyle),
@@ -60,10 +61,9 @@ int roundChartInsetLineCount(
     textScaler: MediaQuery.textScalerOf(context),
     maxLines: 1,
   )..layout();
-  final cellHeight =
-      plotSize.height / (RoundChartVisuals.horizontalLineCount - 1);
+  final cellHeight = plotSize.height / (lineCount - 1);
   return (math.max(1, (painter.width / cellHeight).ceil()) + 1)
-      .clamp(0, RoundChartVisuals.horizontalLineCount);
+      .clamp(0, lineCount);
 }
 
 class RoundChartGridPainter extends CustomPainter {
@@ -71,12 +71,14 @@ class RoundChartGridPainter extends CustomPainter {
     required this.color,
     required this.insetLineCount,
     this.insetLineIndices = const {},
+    this.lineCount = RoundChartVisuals.horizontalLineCount,
   });
 
   final Color color;
   final int insetLineCount;
   final Set<int> insetLineIndices;
-  int get divisionCount => RoundChartVisuals.horizontalLineCount - 1;
+  final int lineCount;
+  int get divisionCount => lineCount - 1;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -102,5 +104,6 @@ class RoundChartGridPainter extends CustomPainter {
   bool shouldRepaint(RoundChartGridPainter oldDelegate) =>
       oldDelegate.color != color ||
       oldDelegate.insetLineCount != insetLineCount ||
+      oldDelegate.lineCount != lineCount ||
       !setEquals(oldDelegate.insetLineIndices, insetLineIndices);
 }
