@@ -443,6 +443,43 @@ void main() {
     });
   }
 
+  for (final width in [320.0, 430.0]) {
+    testWidgets('selected what-if bars share one color at ${width.toInt()}px',
+        (tester) async {
+      tester.view.physicalSize = Size(width, 932);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      const teamColor = Color(0xFFA50044);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: TeamProbabilityWhatIfScreen(
+          snapshot: _snapshot(),
+          event: 'league_winner',
+          teamPrimaryColor: teamColor,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      Color barColor(String outcome) => (tester
+              .widget<DecoratedBox>(
+                  find.byKey(ValueKey('what-if-scenario-bar-$outcome')))
+              .decoration as BoxDecoration)
+          .color!;
+
+      const outcomes = ['win', 'draw', 'loss'];
+      expect({for (final outcome in outcomes) barColor(outcome)}.length, 3);
+      for (final selected in outcomes) {
+        await tester.tap(find.byKey(ValueKey('what-if-outcome-$selected')));
+        await tester.pump();
+        expect([for (final outcome in outcomes) barColor(outcome)],
+            everyElement(teamColor));
+        expect(tester.takeException(), isNull);
+      }
+    });
+  }
+
   testWidgets('keeps a 100% line behind the Y-axis label background',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
