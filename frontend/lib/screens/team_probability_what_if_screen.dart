@@ -354,7 +354,12 @@ class _OutcomeOption extends StatelessWidget {
         : fixture.awayTeamId;
     final label = outcome == 'draw'
         ? teamScreenLabel(context, 'Draw')
-        : '${teamNameLabel(context, selectedTeamId, selectedTeam?.displayName ?? tr(context, 'Team'), short: true)} ${tr(context, 'Win')}';
+        : tr(context, '{team} Win', {
+            'team': selectedTeam?.shortCode ??
+                teamNameLabel(context, selectedTeamId,
+                    selectedTeam?.displayName ?? tr(context, 'Team'),
+                    short: true),
+          });
     return InkWell(
       key: ValueKey('what-if-outcome-$outcome'),
       onTap: () => onTap(outcome),
@@ -673,6 +678,6 @@ String _eventSectionTitle(BuildContext context, String event) =>
       'league_winner' => tr(context, 'LEAGUE WINNER PROBABILITY'),
       'top_four' || 'top_4' => tr(context, 'TOP 4 PROBABILITY'),
       'direct_relegation' => tr(context, 'RELEGATION PROBABILITY'),
-      'relegation_playoff' => tr(context, 'RELEGATION PLAYOFF PROBABILITY'),
+      'relegation_playoff' => trUpper(context, 'relegation playoff probability'),
       _ => trUpper(context, 'Probability'),
     };

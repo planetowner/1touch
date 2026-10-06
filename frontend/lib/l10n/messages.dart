@@ -980,7 +980,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "title probability": (ko: "우승 확률", ja: "優勝確率", zh: "夺冠概率"),
   "relegation playoff probability": (
-    ko: "강등 PO 확률",
+    ko: "강등 플레이오프 확률",
     ja: "降格プレーオフ確率",
     zh: "降级附加赛概率"
   ),
@@ -1026,8 +1026,8 @@ const appMessages = <String, MessageTranslations>{
     zh: "进入前六的\n概率"
   ),
   "Chances of\nRelegation": (ko: "강등 확률", ja: "降格の\n確率", zh: "降级的\n概率"),
-  "Chances of Relegation\nPlayoff": (
-    ko: "강등 PO 확률",
+  "Chances to\nRelegation Playoff": (
+    ko: "강등 플레이오프 확률",
     ja: "降格プレーオフの\n確率",
     zh: "参加保级附加赛的\n概率"
   ),
