@@ -7,6 +7,7 @@
     464996,
     466802,
     1500238,
+    5283476,
     10966289,
     10995347,
     18219447,
@@ -33,7 +34,6 @@
     530681,
     1477272,
     3876677,
-    5283476,
     10644819,
     21803155,
     37257795,
@@ -473,6 +473,40 @@
           "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
           "database_name_ko_at_review": null,
           "additional_review": true
+        }
+      },
+      {
+        "coach_id": 5283476,
+        "identity": {
+          "name": "Yuri Vasev"
+        },
+        "ko": "유리 바세프",
+        "review": {
+          "coach_id": 5283476,
+          "name": "Yuri Vasev",
+          "source_row": 603,
+          "status": "rule_proposal",
+          "proposed_ko": "유리 바세프",
+          "identity_evidence": "CSKA 1948 공식 1군 페이지의 Юрий ВАСЕВ·Старши треньор를 확인했다. 읽기 전용 DB 조회에서 ID 5283476은 CSKA 1948의 2026-07-28 Spartak Trnava전과 08-11 Panathinaikos전에 연결되어 있으며, 전자의 VI 경기 명단도 Yuriy Vasev로 기록한다. 불가리아 통계 프로필의 Юрий Василев Васев·Pernik 출생·1962-01-01과 공급자 생일 1960-01-01의 충돌은 별도로 남겼다. 구단·경기·이름으로 인물을 대조했으며 생일을 수정하거나 일치한다고 간주하지 않는다.",
+          "provider_birth_date": "1960-01-01",
+          "provider_full_name": "Yuri Vasev",
+          "language_assessment": "구단이 실제 사용하는 불가리아어 원형 Юрий Васев를 기준으로 삼았다. Stefan Ilchev의 불가리아과학아카데미 인명 사전(1969), 103쪽 원본 이미지에서 성 Ва́сев의 첫 음절 강세를 확인했다. 같은 책은 Юри를 Юрий의 변형으로 설명한다. 이름의 어원이 러시아어라는 사전 설명과 현재 불가리아어 사용형을 구분했다.",
+          "rule_or_missing_evidence": "불가리아어 별도 세칙이 없어 국립국어원 제4장 제1절 제2항의 원지음 원칙과 표 1을 적용했다. 사전에서 확인한 강세 있는 а는 아, 표준어 е /ɛ/는 에, 어말 в는 불가리아어 무성음화에 따라 [f]→프로 옮겨 바세프, Юрий/Юри는 유리로 작성했다. 비강세 /ɛ/와 /i/의 구별은 Sabev·Andreeva(2024), 어말 무성음화는 Bishop 외(2019)로 대조했다. 사전 강세와 표준 음운 규칙에 따른 안이며, 해당 감독의 본인 음성을 청취하거나 개인별 심의를 확보한 결과는 아니다.",
+          "nikl_same_person": "공개 용례 검색의 원어 표기 조건에서 Vasev와 Васев는 결과 0건이었다. 같은 사람의 직접 심의 표기를 찾지 못했다는 뜻이며, 모든 과거 심의에 없다고 단정하지 않는다.",
+          "sources": [
+            "https://cska1948.bg/team/first-team",
+            "https://www.vi.nl/wedstrijden/2026-07-28/cska-1948-sofia-vs-spartak-trnava",
+            "https://bulgarian-football.com/coaches/yuriy-vasilev-vasev",
+            "https://djvu.online/file/aiPwzbnKLo5Ow",
+            "https://djvu.online/jpg/a/i/P/aiPwzbnKLo5Ow/103.webp",
+            "https://www.balgarskiezik.eu/p-2024/0_7_Mitko%20Sabev,%20Bistra%20Andreeva_str._106-123_BG.pdf",
+            "https://www.internationalphoneticassociation.org/icphs-proceedings/ICPhS2019/papers/ICPhS_701.pdf",
+            "https://www.korean.go.kr/kornorms/example/exampleList.do"
+          ],
+          "rules_url": "https://www.korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003&regltn_no=427",
+          "database_name_ko_at_review": null,
+          "additional_review": true,
+          "reviewed_on": "2026-10-05"
         }
       },
       {
@@ -1044,38 +1078,19 @@
     ]
   },
   "latest_review_ids": [
-    466802
+    5283476
   ],
   "latest_researched_ids": [
     94064,
-    97444,
     97499,
-    120315,
-    128124,
-    186071,
     345859,
-    456105,
-    460151,
-    462666,
-    466802,
-    530681,
     1477272,
-    3876677,
     5283476,
     10644819,
-    21803155,
     37257795,
     37347403,
-    37453040,
-    37523749,
     37524048,
     37552530,
-    37555912,
-    37613259,
-    37630747,
-    37646482,
-    37647434,
-    37928902,
-    37953834
+    37555912
   ]
 }
