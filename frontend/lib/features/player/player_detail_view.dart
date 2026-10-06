@@ -164,6 +164,7 @@ class PlayerSeasonSelector extends StatelessWidget {
       value: detail.selectedSeason?.id,
       width: 86,
       triggerHeight: 48,
+      triggerPadding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
       selectedLabel: selectedSeason == null
           ? null
           : compactSeasonLabel(selectedSeason.name),
@@ -176,8 +177,7 @@ class PlayerSeasonSelector extends StatelessWidget {
           .map(
             (season) => AppDropdownOption<int>(
               value: season.id,
-              label:
-                  '${compactSeasonLabel(season.name)} · ${competitionNameLabel(context, season.competitionId, season.competitionName)}',
+              label: compactSeasonLabel(season.name),
             ),
           )
           .toList(),

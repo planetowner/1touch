@@ -2,6 +2,8 @@ import 'support/app_catalog.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -11,6 +13,7 @@ import 'package:onetouch/core/overflow_scrolling_text.dart';
 import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/round_chart_visuals.dart';
 import 'package:onetouch/core/season_label.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
@@ -27,6 +30,50 @@ import 'support/player_detail_fixture.dart';
 
 void main() {
   setUpAppCatalog();
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    for (final dark in [false, true]) {
+      testWidgets('season filter shows the full label at $size dark=$dark',
+          (tester) async {
+        await tester.binding.setSurfaceSize(size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await tester.pumpWidget(MaterialApp(
+          theme: dark ? app_style.darktheme : app_style.whitetheme,
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
+          home: Scaffold(
+            body: PlayerSeasonSelector(
+              detail: detailFixture(seasonId: 19799),
+              onChanged: (_) {},
+            ),
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        final dropdown = tester.widget<AppDropdown<int>>(
+          find.byType(AppDropdown<int>),
+        );
+        expect(
+            dropdown.triggerPadding, const EdgeInsets.fromLTRB(16, 12, 8, 12));
+        final trigger = tester.getRect(find.byType(AppDropdown<int>));
+        final label = find.text('22/23');
+        final labelRect = tester.getRect(label);
+        final chevronRect = tester.getRect(find.byType(AppDropdownChevron));
+        expect(trigger.size, const Size(86, 48));
+        expect(
+            (tester.renderObject(label) as RenderParagraph).didExceedMaxLines,
+            isFalse);
+        expect(labelRect.left, greaterThanOrEqualTo(trigger.left + 16));
+        expect(labelRect.right, lessThanOrEqualTo(chevronRect.left));
+        expect(chevronRect.right, trigger.right - 8);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+  setUpAll(() async {
+    await (FontLoader('Archivo')
+          ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
+        .load();
+  });
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets(
         'match card preserves unknown counts and confirmed zero at $size',
@@ -644,6 +691,9 @@ void main() {
         find.byKey(const ValueKey('player-top-stat-value-Key passes')),
       );
       final topStatDecoration = topStatValue.decoration! as BoxDecoration;
+      final per90 = tester.widget<Text>(
+        find.byKey(const ValueKey('player-top-stat-unit-Key passes')),
+      );
       expect(
         topStatsSurface.color,
         testCase.name == 'dark'
@@ -655,6 +705,10 @@ void main() {
         testCase.name == 'dark'
             ? const Color(0xFF272828)
             : app_style.AppPalette.white,
+      );
+      expect(
+        per90.style?.color,
+        testCase.foreground.withValues(alpha: 0.7),
       );
       expect(
         find.byKey(const ValueKey('player-detail-overview-gradient')),
@@ -820,6 +874,14 @@ void main() {
     final matchesSelector = tester.widget<PlayerSeasonSelector>(
       find.byType(PlayerSeasonSelector),
     );
+    final matchesDropdown = tester.widget<AppDropdown<int>>(
+      find.byType(AppDropdown<int>),
+    );
+    expect(
+      matchesDropdown.options.map((option) => option.label),
+      matchesSelector.detail.seasons
+          .map((season) => compactSeasonLabel(season.name)),
+    );
     final matchesSelectorRect = tester.getRect(
       find.byKey(ValueKey(
           'player-matches-season-${matchesSelector.detail.selectedSeason?.id}')),
@@ -852,6 +914,20 @@ void main() {
         ['goals', 'assists', 'shots']);
     expect(find.text('LIVE'), findsNothing);
     expect(repository.calls.length, 1);
+    await tester.tap(find.byType(AppDropdown<int>));
+    await tester.pumpAndSettle();
+    final firstSeasonOption = find.byKey(ValueKey(
+        'app-dropdown-option-${matchesSelector.detail.seasons.first.id}'));
+    expect(
+      find.descendant(
+        of: firstSeasonOption,
+        matching: find.text(
+          compactSeasonLabel(matchesSelector.detail.seasons.first.name),
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets('overview match arrow opens matches from the app bar at $size',
@@ -1211,13 +1287,42 @@ void main() {
       of: find.byKey(const ValueKey('player-top-stat-rank-Key passes')),
       matching: find.byType(Text),
     ));
+    final topStatValueRect = tester.getRect(
+      find.byKey(const ValueKey('player-top-stat-value-Key passes')),
+    );
+    final topStatLabelRect = tester.getRect(
+      find.byKey(const ValueKey('player-top-stat-label-Key passes')),
+    );
+    final topStatUnitRect = tester.getRect(
+      find.byKey(const ValueKey('player-top-stat-unit-Key passes')),
+    );
+    final topStatRankFinder =
+        find.byKey(const ValueKey('player-top-stat-rank-Key passes'));
+    final topStatRankRect = tester.getRect(topStatRankFinder);
+    final topStatRankContainer = tester.widget<Container>(topStatRankFinder);
+    final topStatRankDecoration =
+        topStatRankContainer.decoration! as BoxDecoration;
     expect(topStatsSurface.color, app_style.AppPalette.lightGreyBox);
     expect(topStatsSurface.padding, const EdgeInsets.all(24));
     expect(topStatDecoration.color, app_style.AppPalette.white);
     expect(topStatLabel.heightFactor, isNull);
+    expect(topStatLabelRect.top - topStatValueRect.bottom, 8);
+    expect(topStatUnitRect.top - topStatLabelRect.bottom, 3);
+    expect(topStatRankRect.top - topStatUnitRect.bottom, 15);
+    expect(topStatRankContainer.padding,
+        const EdgeInsets.symmetric(horizontal: 8, vertical: 4));
+    expect(topStatRankDecoration.color, app_style.AppPalette.black);
+    expect(topStatRankDecoration.borderRadius, BorderRadius.circular(4));
     expect(topStatRank.data, '#1');
     final selector =
         tester.widget<PlayerSeasonSelector>(find.byType(PlayerSeasonSelector));
+    final analysisDropdown = tester.widget<AppDropdown<int>>(
+      find.byType(AppDropdown<int>),
+    );
+    expect(
+      analysisDropdown.options.map((option) => option.label),
+      selector.detail.seasons.map((season) => compactSeasonLabel(season.name)),
+    );
     final selectorRect = tester.getRect(
       find.byKey(ValueKey(
           'player-analysis-season-${selector.detail.selectedSeason?.id}')),
@@ -1282,8 +1387,7 @@ void main() {
   });
 
   for (final size in [const Size(393, 852), const Size(320, 568)]) {
-    testWidgets(
-        'top stats keep long values and names inside three columns at $size',
+    testWidgets('top stats keep unscaled values centered at $size',
         (tester) async {
       await tester.binding.setSurfaceSize(size);
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -1309,12 +1413,27 @@ void main() {
       expect(values.every((rect) => rect.width <= 90 && rect.height == 54),
           isTrue);
       expect(values.first.left - card.left, 24);
-      expect(card.right - values.last.right, 24);
       expect(values[1].left - values[0].right, greaterThanOrEqualTo(8));
       expect(values[2].left - values[1].right, greaterThanOrEqualTo(8));
       expect(find.text('117.5'), findsOneWidget);
       expect(tester.getRect(find.text('117.5')).width,
-          lessThanOrEqualTo(values.first.width - 32));
+          lessThanOrEqualTo(values.first.width));
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('player-top-stats-card')),
+          matching: find.byType(FittedBox),
+        ),
+        findsNothing,
+      );
+      final compactScroller =
+          find.byKey(const ValueKey('player-top-stats-scroll'));
+      if (size.width == 320) {
+        expect(compactScroller, findsOneWidget);
+        expect(values.last.right, greaterThan(card.right));
+      } else {
+        expect(compactScroller, findsNothing);
+        expect(card.right - values.last.right, 24);
+      }
 
       final longLabel = find
           .byKey(const ValueKey('player-top-stat-label-Passes in final third'));
