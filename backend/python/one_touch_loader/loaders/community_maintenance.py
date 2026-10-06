@@ -1,4 +1,4 @@
-"""만료된 인증 자료와 삭제 예약 파일을 정리해요. 기본 실행은 읽기 전용이에요."""
+"""보관 기간이 지난 자료와 삭제 예약 파일을 정리해요. 기본 실행은 읽기 전용이에요."""
 import argparse
 from datetime import timedelta
 import json
@@ -6,7 +6,7 @@ from contextlib import closing
 from ..core.db import get_conn, transaction
 from ..api.repos.media_repo import queue_deletion, remove_attachments
 from ..api.services.community_periods import utc_now
-from ..api.services.community_retention import UNPUBLISHED_RETENTION
+from ..api.services.community_retention import UNPUBLISHED_RETENTION, RESOLVED_REPORT_RETENTION
 from ..api.services.media_storage import object_operation
 
 
@@ -20,6 +20,8 @@ def maintain_community(*, check: bool, limit: int = 100) -> dict:
         "email_verification_codes": ("expires_at<=%s", now),
         # 현재 인증·업로드·채팅 제한 중 가장 긴 구간이 1시간이에요.
         "api_rate_limits": ("window_started_at<=%s", now - timedelta(hours=1)),
+        # 미처리 신고는 남기고, 처리 완료 시각부터 180일이 지난 신고 기록만 지워요.
+        "content_reports": ("resolved_at<=%s", now - RESOLVED_REPORT_RETENTION),
     }
     if check:
         with closing(get_conn()) as conn:
