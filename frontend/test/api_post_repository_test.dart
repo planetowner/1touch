@@ -11,6 +11,21 @@ import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/models/post.dart';
 
 void main() {
+  test('older cached responses without a preview still keep their original',
+      () async {
+    final json = _postJson();
+    (json['attachments'] as List).first.remove('preview_url');
+    final repository = ApiPostRepository(
+        api: ApiClient(
+      client: MockClient((_) async => http.Response(jsonEncode(json), 200)),
+      baseUri: Uri.parse('https://example.test/v1/'),
+      requestHeaders: () => const {},
+    ));
+    final post = await repository.loadPost(42);
+    expect(post.mediaUrl, 'https://example.test/v1/attachments/7/content');
+    expect(post.mediaPreviewUrl, isNull);
+  });
+
   test('loads the server attachment limit', () async {
     final repository = ApiPostRepository(
         api: ApiClient(
@@ -120,6 +135,9 @@ void main() {
     final post = await reader.loadPost(42);
     expect(feed!.single.postId, 42);
     expect(post.postId, 42);
+    expect(
+        post.mediaPreviewUrl, 'https://example.test/v1/attachments/7/preview');
+    expect(feed.single.mediaPreviewUrl, post.mediaPreviewUrl);
     expect(reader.cachedFeed(teamId: 83), same(feed));
     expect(reader.cachedPost(42), same(post));
     expect(requests, 2);
@@ -465,6 +483,7 @@ void main() {
           'position': 0,
           'link_url': 'https://example.com',
           'media_url': '/v1/attachments/7/content',
+          'preview_url': '/v1/attachments/7/preview',
           'content_type': 'image/jpeg',
           'byte_size': 2048,
         },
@@ -822,6 +841,7 @@ Map<String, dynamic> _postJson() => {
           'link_url': null,
           'media_url': '/v1/attachments/7/content',
           'content_type': 'image/jpeg',
+          'preview_url': '/v1/attachments/7/preview',
           'byte_size': 2048,
         },
       ],

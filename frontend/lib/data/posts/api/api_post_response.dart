@@ -87,6 +87,7 @@ class ApiPostAttachmentResponse {
     required this.position,
     required this.linkUrl,
     required this.mediaUrl,
+    this.previewUrl,
     required this.contentType,
     required this.byteSize,
   });
@@ -95,6 +96,7 @@ class ApiPostAttachmentResponse {
   final int position;
   final String? linkUrl;
   final String? mediaUrl;
+  final String? previewUrl;
   final String? contentType;
   final int? byteSize;
 
@@ -104,6 +106,7 @@ class ApiPostAttachmentResponse {
       position: _requiredInt(json, 'position'),
       linkUrl: _nullableString(json, 'link_url'),
       mediaUrl: _nullableString(json, 'media_url'),
+      previewUrl: json['preview_url'] as String?,
       contentType: _nullableString(json, 'content_type'),
       byteSize: _nullableInt(json, 'byte_size'),
     );

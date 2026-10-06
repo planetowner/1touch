@@ -11,6 +11,7 @@ import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
+import 'package:onetouch/features/community/community_post_image.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/features/community/community_delete_dialog.dart';
 import 'package:onetouch/features/community/community_post_share_link.dart';
@@ -211,7 +212,10 @@ class PostDetailContent extends StatelessWidget {
                     onRetry: onRetryMedia,
                   )
                 else if (hasMedia)
-                  _PostMediaPreview(mediaUrl: post.mediaUrl!),
+                  _PostMediaPreview(
+                    mediaUrl: post.mediaUrl!,
+                    previewUrl: post.mediaPreviewUrl,
+                  ),
                 if (showMediaStatus || hasMedia) const SizedBox(height: 16),
                 const SizedBox(height: 16),
                 Row(
@@ -570,9 +574,10 @@ class _PostMediaStatus extends StatelessWidget {
 }
 
 class _PostMediaPreview extends StatelessWidget {
-  const _PostMediaPreview({required this.mediaUrl});
+  const _PostMediaPreview({required this.mediaUrl, this.previewUrl});
 
   final String mediaUrl;
+  final String? previewUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -582,23 +587,17 @@ class _PostMediaPreview extends StatelessWidget {
       onTap: () => showCommunityAttachmentViewer(
         context,
         mediaUrl: mediaUrl,
+        previewUrl: previewUrl,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: AspectRatio(
           aspectRatio: 16 / 9,
-          child: Image.network(
-            mediaUrl,
-            headers: apiImageHeaders(mediaUrl),
+          child: CommunityPostImage(
+            mediaUrl: mediaUrl,
+            previewUrl: previewUrl,
+            prepareOriginal: true,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Container(
-              color: AppPalette.lightGrey,
-              child: Icon(
-                Icons.image_not_supported_outlined,
-                color: AppColors.of(context).mutedForeground,
-                size: 48,
-              ),
-            ),
           ),
         ),
       ),
