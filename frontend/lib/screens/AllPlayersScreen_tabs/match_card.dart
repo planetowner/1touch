@@ -3,6 +3,7 @@ import 'package:onetouch/core/overflow_scrolling_text.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/match_info/live_match_motion.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 String _singularMatchStatLabel(BuildContext context, String label) {
@@ -37,6 +38,7 @@ class PlayerMatchCard extends StatelessWidget {
   final String result; // e.g. "DEF" / "WIN" / "DRAW"
   final String score; // e.g. "0 - 2"
   final String competition; // e.g. "League / Round"
+  final int? competitionId;
   final String? againstLogo; // asset path, or null for the empty placeholder
   final List<PlayerMatchCardStat> stats;
   final String rating; // e.g. "8.4"
@@ -48,6 +50,7 @@ class PlayerMatchCard extends StatelessWidget {
     required this.result,
     required this.score,
     required this.competition,
+    this.competitionId,
     required this.stats,
     required this.rating,
     this.againstLogo,
@@ -140,13 +143,10 @@ class PlayerMatchCard extends StatelessWidget {
                 Expanded(
                   child: Align(
                     alignment: Alignment.centerRight,
-                    child: Text(
-                      normalizeCompetitionDisplayLabel(competition),
-                      key: const ValueKey('player-match-competition'),
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
+                    child: CompetitionLabel(
+                      competitionId: competitionId,
+                      label: normalizeCompetitionDisplayLabel(competition),
+                      textKey: const ValueKey('player-match-competition'),
                       style: Eyebrow.style,
                     ),
                   ),
