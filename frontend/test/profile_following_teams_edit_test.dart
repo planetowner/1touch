@@ -83,6 +83,35 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('shows a replacement second team on Home at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final repository = _RecordingFollowingTeamsRepository();
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.whitetheme,
+        home: _EditSheetHost(repository: repository),
+      ));
+      await tester.tap(find.text('OPEN'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Manchester City');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'Manchester City'));
+      await tester.pump();
+      await tester.ensureVisible(find.text('UPDATE'));
+      await tester.tap(find.text('UPDATE'));
+      await tester.pumpAndSettle();
+
+      expect(repository.savedTeamIds, [83, 9]);
+      expect(repository.savedFavoriteTeamId, 83);
+      expect(currentUserPreferences.favoriteTeamId.value, 83);
+      expect(currentUserPreferences.viewedTeamId.value, 9);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('keeps the sheet open when the backend rejects the update',
       (tester) async {
     final repository = _RecordingFollowingTeamsRepository(

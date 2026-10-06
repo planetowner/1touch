@@ -750,59 +750,62 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('uses the reordered first followed team and preserves its order',
-      (tester) async {
-    await _setScreenSize(tester, const Size(393, 852));
-    final repository = _ControlledHomeRepository();
-    const reorderedTeams = [
-      Team(teamId: 503, name: 'FC Bayern München'),
-      Team(teamId: 83, name: 'FC Barcelona'),
-    ];
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('Home picker follows profile team order at $size',
+        (tester) async {
+      await _setScreenSize(tester, size);
+      final repository = _ControlledHomeRepository();
+      const reorderedTeams = [
+        Team(teamId: 503, name: 'FC Bayern München'),
+        Team(teamId: 83, name: 'FC Barcelona'),
+      ];
 
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: HomeScreen(
-          repository: repository,
-          newsRepository: _RecordingNewsRepository(),
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: app_style.whitetheme,
+          home: HomeScreen(
+            repository: repository,
+            newsRepository: _RecordingNewsRepository(),
+          ),
         ),
-      ),
-    );
-    repository.calls.single.completer.complete(
-      _homeData(
-        favoriteTeam: const Team(teamId: 83, name: 'FC Barcelona'),
-        followingTeams: reorderedTeams.reversed.toList(),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      repository.calls.single.completer.complete(
+        _homeData(
+          favoriteTeam: const Team(teamId: 83, name: 'FC Barcelona'),
+          followingTeams: reorderedTeams.reversed.toList(),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
-      favoriteTeamId: 503,
-      followedTeamIds: [503, 83],
-    ));
-    currentUserPreferences.resetViewedTeam();
-    await tester.pump();
+      currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+        favoriteTeamId: 503,
+        followedTeamIds: [503, 83],
+      ));
+      currentUserPreferences.resetViewedTeam();
+      await tester.pump();
 
-    expect(repository.calls.last.teamId, 503);
-    repository.calls.last.completer.complete(
-      _homeData(
-        favoriteTeam: reorderedTeams.first,
-        followingTeams: reorderedTeams,
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('FC Bayern München'), findsOneWidget);
+      expect(repository.calls.last.teamId, 503);
+      repository.calls.last.completer.complete(
+        _homeData(
+          favoriteTeam: reorderedTeams.first,
+          followingTeams: reorderedTeams.reversed.toList(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('FC Bayern München'), findsOneWidget);
 
-    await tester.tap(find.byKey(const ValueKey('home-app-bar-team-picker')));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('home-app-bar-team-picker')));
+      await tester.pumpAndSettle();
 
-    final bayernTop =
-        tester.getTopLeft(find.byKey(const ValueKey('team-selection-503'))).dy;
-    final barcelonaTop =
-        tester.getTopLeft(find.byKey(const ValueKey('team-selection-83'))).dy;
-    expect(bayernTop, lessThan(barcelonaTop));
-    expect(tester.takeException(), isNull);
-  });
+      final bayernTop = tester
+          .getTopLeft(find.byKey(const ValueKey('team-selection-503')))
+          .dy;
+      final barcelonaTop =
+          tester.getTopLeft(find.byKey(const ValueKey('team-selection-83'))).dy;
+      expect(bayernTop, lessThan(barcelonaTop));
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('switches viewed teams repeatedly without changing preferences',
       (tester) async {
