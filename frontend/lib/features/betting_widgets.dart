@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/number_display.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
@@ -341,7 +342,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                                     ),
                                   ),
                                   subtitle: Text(
-                                    '${option.decimalOdds.toStringAsFixed(2)}×',
+                                    '${formatDisplayNumber(option.decimalOdds)}×',
                                   ),
                                   trailing: Icon(
                                     _selected == option.outcome
@@ -624,7 +625,7 @@ class MatchStatsHeader extends StatelessWidget {
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            '${options[index].decimalOdds.toStringAsFixed(2)}×',
+                            '${formatDisplayNumber(options[index].decimalOdds)}×',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,

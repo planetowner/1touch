@@ -505,7 +505,7 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
     final roundLabel = formatRoundLabel(
         roundName: '${point.round}', locale: Localizations.localeOf(context))!;
     final ratingLabel = tr(context, 'Rating {rating}', {
-      'rating': playerNumber(point.rating, decimals: 2),
+      'rating': playerNumber(point.rating),
     });
     final textScaler = MediaQuery.textScalerOf(context);
     final textDirection = Directionality.of(context);

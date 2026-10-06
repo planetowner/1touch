@@ -1,10 +1,11 @@
+import 'package:onetouch/core/number_display.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/player_detail.dart';
 
-String playerNumber(double? value, {int decimals = 2}) {
+String playerNumber(double? value, {int decimals = 1}) {
   if (value == null) return '—';
-  if (value == value.roundToDouble()) return value.toInt().toString();
-  return value.toStringAsFixed(decimals).replaceFirst(RegExp(r'\.?0+$'), '');
+  return formatDisplayNumber(value,
+      decimals: decimals, trimTrailingZeros: true);
 }
 
 String playerMetricValue(FixturePlayerStatMetric metric) {
