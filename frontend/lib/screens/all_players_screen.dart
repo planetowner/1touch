@@ -48,6 +48,7 @@ class PlayerCard extends StatefulWidget {
   final PlayerDetailRepository? detailRepository;
   final TeamContractRepository? contractRepository;
   final PlayerDetail? initialDetail;
+  final int initialTabIndex;
 
   const PlayerCard(
       {super.key,
@@ -55,7 +56,8 @@ class PlayerCard extends StatefulWidget {
       this.playerId,
       this.detailRepository,
       this.contractRepository,
-      this.initialDetail});
+      this.initialDetail,
+      this.initialTabIndex = 0});
 
   @override
   State<PlayerCard> createState() => _PlayerCardState();
@@ -67,7 +69,6 @@ class _PlayerCardState extends State<PlayerCard>
   late TabController _tabController;
   double _scrollOffset = 0.0;
   double _overviewTopBlockHeight = _playerDetailTopBlockHeight;
-  int _matchesScrollResetToken = 0;
   late PlayerDetailStore _detailStore;
 
   @override
@@ -84,7 +85,11 @@ class _PlayerCardState extends State<PlayerCard>
         });
       });
 
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(
+      length: 4,
+      initialIndex: widget.initialTabIndex,
+      vsync: this,
+    );
   }
 
   @override
@@ -107,27 +112,10 @@ class _PlayerCardState extends State<PlayerCard>
     super.dispose();
   }
 
-  void _openMatchesAtTop() {
-    setState(() => _matchesScrollResetToken++);
-    void resetHeaderWhenTabSettles() {
-      if (_tabController.indexIsChanging) return;
-      _tabController.removeListener(resetHeaderWhenTabSettles);
-      // Matches 목록의 스크롤을 먼저 초기화한 뒤 접힌 앱바를 맨 위로 펼쳐요.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && _scrollController.hasClients) {
-            _scrollController.animateTo(
-              0,
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOutCubic,
-            );
-          }
-        });
-      });
+  void _pushMatchesPage() {
+    if (widget.id case final playerId?) {
+      context.push('/players/$playerId/matches');
     }
-
-    _tabController.addListener(resetHeaderWhenTabSettles);
-    _tabController.animateTo(2);
   }
 
   @override
@@ -280,7 +268,7 @@ class _PlayerCardState extends State<PlayerCard>
                         player: widget.player,
                         playerId: widget.id,
                         contractRepository: widget.contractRepository,
-                        onMatches: _openMatchesAtTop,
+                        onMatches: _pushMatchesPage,
                         onTopBlockHeightChanged: (height) {
                           final nextHeight =
                               height < _playerDetailTopBlockHeight
@@ -296,7 +284,6 @@ class _PlayerCardState extends State<PlayerCard>
                     MatchesTab(
                       player: widget.player,
                       playerId: widget.id,
-                      scrollResetToken: _matchesScrollResetToken,
                     ),
                     CareerTab(player: widget.player, playerId: widget.id),
                   ],
