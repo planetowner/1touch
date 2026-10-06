@@ -14,7 +14,11 @@ import 'package:onetouch/services/mobile_ads_service.dart';
 import 'package:onetouch/widgets/ads/banner_ad_widget.dart';
 
 void main() {
-  testWidgets('consent gates ads and privacy changes replace previous requests',
+  const skipConsent = bool.fromEnvironment('SKIP_AD_CONSENT');
+  testWidgets(
+      skipConsent
+          ? 'debug option loads test ads without requesting consent'
+          : 'consent gates ads and privacy changes replace previous requests',
       (tester) async {
     final originalInformation = ConsentInformation.instance;
     final information = _ConsentInformation();
@@ -57,6 +61,27 @@ void main() {
     expect(find.text('Ad privacy choices'), findsNothing);
     final initialization = MobileAdsService.initialize();
     await tester.pump();
+    if (skipConsent) {
+      expect(information.updates, 0);
+      await initialization;
+      await MobileAdsService.initialize();
+      expect(MobileAdsService.adRequestsAllowed.value, isTrue);
+      expect(MobileAdsService.privacyOptionsRequired.value, isFalse);
+      expect(find.text('Ad privacy choices'), findsNothing);
+      expect(await MobileAdsService.showPrivacyOptions(), isFalse);
+      expect(privacyFormsShown, 0);
+      expect(adCalls.where((call) => call.method == 'MobileAds#initialize'),
+          hasLength(1));
+      final loads =
+          adCalls.where((call) => call.method == 'loadBannerAd').toList();
+      expect(loads, hasLength(1));
+      expect(loads.single.arguments['adUnitId'],
+          'ca-app-pub-3940256099942544/9214589741');
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      return;
+    }
     expect(information.updates, 1);
     expect(adCalls, isEmpty);
     expect(MobileAdsService.adRequestsAllowed.value, isFalse);

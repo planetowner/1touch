@@ -22,11 +22,17 @@ abstract final class MobileAdsService {
       return;
     }
 
-    await (_initialization ??= _initializeWithConsent());
+    await (_initialization ??= _initialize());
   }
 
-  static Future<void> _initializeWithConsent() async {
+  static Future<void> _initialize() async {
     try {
+      // 공식 테스트 광고만 쓰는 디버그 실행에서 동의 양식 없이 광고를 확인해요.
+      if (kDebugMode && const bool.fromEnvironment('SKIP_AD_CONSENT')) {
+        await _initializeAds();
+        return;
+      }
+
       final update = Completer<FormError?>();
       // 앱을 시작할 때마다 UMP가 동의의 유효성을 확인해요. 별도 동의 캐시는 두지 않아요.
       ConsentInformation.instance.requestConsentInfoUpdate(
@@ -58,6 +64,10 @@ abstract final class MobileAdsService {
       _adRequestsAllowed.value = false;
       return;
     }
+    await _initializeAds();
+  }
+
+  static Future<void> _initializeAds() async {
     if (!_isInitialized) {
       await MobileAds.instance.initialize();
       _isInitialized = true;
