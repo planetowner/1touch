@@ -21,6 +21,7 @@ import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/date_labels.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
 
 class Search extends StatelessWidget {
   const Search({
@@ -463,6 +464,9 @@ class _SearchContentState extends State<SearchContent> {
         imagePath: fixture.awayTeamLogo);
     final colors = Theme.of(context).colorScheme;
     final unavailable = const {10, 12}.contains(fixture.stateId);
+    final upcoming = fixture.status == FixtureStatus.upcoming;
+    final textStyle = (upcoming ? Body2.style : Body1.style)
+        .copyWith(color: colors.onSurface);
     final kickoff = matchKickoffLabels(fixture.kickoff,
         locale: Localizations.localeOf(context));
 
@@ -478,18 +482,25 @@ class _SearchContentState extends State<SearchContent> {
           ? _buildUnavailableEventCard(fixture, home, away)
           : Container(
               key: ValueKey('search-event-${fixture.fixtureId}'),
-              constraints: const BoxConstraints(minHeight: 112),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              constraints: BoxConstraints(minHeight: upcoming ? 96 : 112),
+              padding: EdgeInsets.symmetric(
+                  horizontal: 12, vertical: upcoming ? 12 : 16),
               decoration: _cardDecoration(context),
               child: Row(
                 children: [
-                  Expanded(child: _buildEventTeam(home)),
-                  _buildScore(fixture.homeScore),
+                  if (upcoming)
+                    SizedBox(
+                        width: 56, child: _buildEventTeam(home, logoSize: 48))
+                  else
+                    Expanded(child: _buildEventTeam(home)),
+                  if (!upcoming) _buildScore(fixture.homeScore),
                   Expanded(
-                    flex: 2,
+                    flex: upcoming ? 1 : 2,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: upcoming ? 0 : 6),
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
@@ -497,24 +508,46 @@ class _SearchContentState extends State<SearchContent> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
-                            style:
-                                Body1.style.copyWith(color: colors.onSurface),
+                            style: textStyle,
                           ),
-                          const SizedBox(height: 4),
+                          if (!upcoming) const SizedBox(height: 4),
                           Text(
                             kickoff.time,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
-                            style:
-                                Body1.style.copyWith(color: colors.onSurface),
+                            style: textStyle,
                           ),
+                          if (upcoming) ...[
+                            const SizedBox(height: 8),
+                            Container(
+                              width: 24,
+                              height: 1,
+                              color: colors.onSurface.withValues(alpha: 0.3),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              competitionRoundLabel(context,
+                                  competitionId: fixture.competitionId,
+                                  roundName: fixture.roundName,
+                                  stageName: fixture.stageName,
+                                  leg: fixture.leg),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: textStyle,
+                            ),
+                          ],
                         ],
                       ),
                     ),
                   ),
-                  _buildScore(fixture.awayScore),
-                  Expanded(child: _buildEventTeam(away)),
+                  if (!upcoming) _buildScore(fixture.awayScore),
+                  if (upcoming)
+                    SizedBox(
+                        width: 56, child: _buildEventTeam(away, logoSize: 48))
+                  else
+                    Expanded(child: _buildEventTeam(away)),
                 ],
               ),
             ),
@@ -636,12 +669,13 @@ class _SearchContentState extends State<SearchContent> {
         : 'TBD';
   }
 
-  Widget _buildEventTeam(Team team) {
+  Widget _buildEventTeam(Team team, {double logoSize = 44}) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildTeamLogo(team, size: 44),
-        const SizedBox(height: 6),
+        _buildTeamLogo(team, size: logoSize),
+        SizedBox(height: logoSize == 48 ? 4 : 6),
         Text(
           _eventTeamCode(team),
           maxLines: 1,
