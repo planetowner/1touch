@@ -349,34 +349,23 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   }
 
   Widget _buildComparisonPicker() {
-    final colors = Theme.of(context).colorScheme;
     final selectedOption = _selectedOption;
     final label = selectedOption == null
         ? trUpper(context, 'Season')
         : compactSeasonLabel(selectedOption.seasonName);
-
-    return InkWell(
-      key: const ValueKey('analysis-form-filter'),
+    final teamLabel = selectedOption == null
+        ? trUpper(context, 'Team')
+        : (selectedOption.teamShortCode?.trim().isNotEmpty == true
+                ? selectedOption.teamShortCode!
+                : teamNameLabel(context, selectedOption.teamId,
+                    selectedOption.teamName ?? ''))
+            .toUpperCase();
+    return _AnalysisComparisonFilterPill(
+      filterKey: const ValueKey('analysis-form-filter'),
+      dividerKey: const ValueKey('analysis-form-filter-divider'),
+      seasonLabel: tr(context, label),
+      teamLabel: teamLabel,
       onTap: _isLoading ? null : _openComparisonFilter,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: 165,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.of(context).subtleBackground,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-                child: Text(tr(context, label),
-                    style: Body2_b.style.copyWith(color: colors.onSurface),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis)),
-            Icon(Icons.keyboard_arrow_down, color: colors.onSurface, size: 20),
-          ],
-        ),
-      ),
     );
   }
 

@@ -120,11 +120,22 @@ void main() {
     );
     final filter = find.byKey(const ValueKey('analysis-form-filter'));
     expect(filter, findsOneWidget);
-    expect(tester.getSize(filter).width, 165);
+    expect(tester.getRect(filter).right, lessThanOrEqualTo(296));
+    expect(tester.getSize(filter).height, 42);
     expect(
       find.descendant(of: filter, matching: find.text('SEASON')),
       findsOneWidget,
     );
+    expect(
+      find.descendant(of: filter, matching: find.text('TEAM')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('analysis-form-filter-divider')),
+        findsOneWidget);
+    expect(
+        find.descendant(
+            of: filter, matching: find.byIcon(Icons.keyboard_arrow_down)),
+        findsNothing);
     final legend = find.byKey(const ValueKey('analysis-current-form-legend'));
     expect(find.descendant(of: legend, matching: find.text('MY TEAM')),
         findsOneWidget);
@@ -158,6 +169,87 @@ void main() {
     expect(queries.last.compareTeamId, 2);
     expect(queries.last.compareSeasonId, 200);
     expect(find.text('25/26 BETA'), findsOneWidget);
+  });
+
+  for (final (size, theme) in [
+    (const Size(320, 568), whitetheme),
+    (const Size(430, 932), darktheme),
+  ]) {
+    testWidgets(
+        'selected Current Form filter matches the compact chip at $size',
+        (tester) async {
+      useScreen(tester, size);
+      final repository = _TestCurrentFormRepository(
+        optionsLoader: (_) async => _optionsForTeam(1),
+        comparisonLoader: (query) async =>
+            _comparisonFor(query, comparisonShortCode: 'PREV'),
+      );
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(
+        buildSubject(teamId: 1, repository: repository, theme: theme),
+      );
+      await tester.pumpAndSettle();
+      await _chooseCurrentForm(tester, seasonId: 100, teamId: 1);
+
+      final filter = find.byKey(const ValueKey('analysis-form-filter'));
+      final season = find.descendant(of: filter, matching: find.text('24/25'));
+      final team = find.descendant(of: filter, matching: find.text('T1'));
+      final divider =
+          find.byKey(const ValueKey('analysis-form-filter-divider'));
+      final filterRect = tester.getRect(filter);
+      final seasonRect = tester.getRect(season);
+      final dividerRect = tester.getRect(divider);
+      final teamRect = tester.getRect(team);
+      expect(filterRect.height, 42);
+      expect(seasonRect.left - filterRect.left, 16);
+      expect(dividerRect.left - seasonRect.right, 8);
+      expect(teamRect.left - dividerRect.right, 8);
+      expect(filterRect.right - teamRect.right, 8);
+      expect((dividerRect.width, dividerRect.height), (1, 26));
+      expect(tester.widget<Text>(season).style?.fontSize, 14);
+      expect(tester.widget<Text>(season).style?.height, 1.30);
+      expect(find.descendant(of: filter, matching: find.byType(Icon)),
+          findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('filter truncates a team name when its short code is missing',
+      (tester) async {
+    useScreen(tester, const Size(320, 568));
+    const longTeamName = 'Very Long Football Club Name Without Short Code';
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (_) async => [
+        _option(teamId: 1, seasonId: 200, seasonName: '2025/26'),
+        const CurrentFormOption(
+          teamId: 999999,
+          teamName: longTeamName,
+          leagueId: 8,
+          seasonId: 200,
+          seasonName: '2025/26',
+          roundsAvailable: 2,
+          latestRound: 2,
+        ),
+      ],
+      comparisonLoader: (query) async =>
+          _comparisonFor(query, comparisonShortCode: 'LONG'),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+    await tester.pumpAndSettle();
+    await _chooseCurrentForm(tester, seasonId: 200, teamId: 999999);
+
+    final filter = find.byKey(const ValueKey('analysis-form-filter'));
+    final team = find.descendant(
+      of: filter,
+      matching: find.text(longTeamName.toUpperCase()),
+    );
+    expect(tester.widget<Text>(team).maxLines, 1);
+    expect(tester.widget<Text>(team).overflow, TextOverflow.ellipsis);
+    expect(tester.getRect(filter).right, lessThanOrEqualTo(296));
+    expect(tester.takeException(), isNull);
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
@@ -865,7 +957,7 @@ void main() {
               option.seasonId != baseline.seasonId,
         )
         .toList();
-    expect(closedFilterWidth, 165);
+    expect(closedFilterWidth, lessThanOrEqualTo(272));
 
     await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
     await tester.pumpAndSettle();
