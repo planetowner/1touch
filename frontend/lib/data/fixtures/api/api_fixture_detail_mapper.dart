@@ -122,6 +122,8 @@ FixtureDetail fixtureDetailFromApiResponse(
             playerId: item.playerId,
             playerName: item.playerName,
             playerImage: item.playerImage,
+            nationalityId: item.nationalityId,
+            nationality: item.nationality,
             positionId: item.positionId,
             lineupTypeId: item.lineupTypeId,
             formationField: item.formationField,

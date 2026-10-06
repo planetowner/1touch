@@ -80,7 +80,8 @@ class MatchInfoTab extends StatelessWidget {
           playerStatistic.positionGroup!,
       ],
       club: team.name,
-      nationality: null,
+      nationalityId: lineup?.nationalityId,
+      nationality: lineup?.nationality,
       playerImageUrl: lineup?.playerImage,
       sections: sections,
     );

@@ -80,8 +80,10 @@ void main() {
             repository: _ImagePlayerDetailRepository(url))));
     await tester.pumpAndSettle();
 
-    final image = tester.widget<CachedNetworkImage>(
-        find.byKey(const ValueKey('comparison-header-network-photo-1')));
+    final image = tester.widget<CachedNetworkImage>(find.descendant(
+      of: find.byKey(const ValueKey('comparison-header-network-photo-1')),
+      matching: find.byType(CachedNetworkImage),
+    ));
     expect(image.imageUrl, url);
     expect(image.cacheManager, isNotNull);
   });

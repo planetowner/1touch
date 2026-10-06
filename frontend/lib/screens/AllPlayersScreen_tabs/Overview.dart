@@ -176,10 +176,10 @@ class PlayerOverviewTab extends StatelessWidget {
                                   ],
                                   stops: [0, 0.78, 1],
                                 ).createShader(bounds),
-                                child: PlayerRemoteImage(
+                                child: PlayerRemoteImage.portrait(
                                   detail.profile.image,
                                   key: const ValueKey('player-overview-image'),
-                                  size: 160,
+                                  width: 160,
                                 ),
                               ),
                             ),
