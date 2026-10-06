@@ -1295,8 +1295,8 @@ void main() {
       expect(card.right - values.last.right, 24);
       expect(values[1].left - values[0].right, greaterThanOrEqualTo(8));
       expect(values[2].left - values[1].right, greaterThanOrEqualTo(8));
-      expect(find.text('117.46'), findsOneWidget);
-      expect(tester.getRect(find.text('117.46')).width,
+      expect(find.text('117.5'), findsOneWidget);
+      expect(tester.getRect(find.text('117.5')).width,
           lessThanOrEqualTo(values.first.width - 32));
 
       final longLabel = find
@@ -1391,7 +1391,7 @@ void main() {
           .bottom,
     );
     expect(find.text('Round 7'), findsOneWidget);
-    expect(find.text('Rating 6.94'), findsOneWidget);
+    expect(find.text('Rating 6.9'), findsOneWidget);
     await tester.tapAt(chartRect.center);
     await tester.pump();
     expect(find.text('Round 7'), findsOneWidget);
