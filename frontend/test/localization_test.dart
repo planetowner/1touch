@@ -132,7 +132,7 @@ void main() {
     expect(probabilityEventTitle('relegation_playoff'),
         'Chances to\nRelegation Playoff');
     expect(
-        translateMessage(const Locale('ko'), 'RELEGATION PLAYOFF PROBABILITY'),
+        translateMessage(const Locale('ko'), 'relegation playoff probability'),
         '강등 플레이오프 확률');
     for (final entry in expected.entries) {
       final translated = translateMessage(const Locale('ko'), entry.key);

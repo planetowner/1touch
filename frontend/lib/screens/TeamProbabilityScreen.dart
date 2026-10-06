@@ -934,21 +934,25 @@ class _ProjectedPointsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                projectedPoints.mean.toStringAsFixed(1),
-                style: const TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w700,
-                  height: 0.9,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  projectedPoints.mean.toStringAsFixed(1),
+                  style: const TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w700,
+                    height: 0.9,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              Text('pts', style: Heading4.style),
-            ],
+                const SizedBox(width: 4),
+                Text('pts', style: Heading4.style),
+              ],
+            ),
           ),
           if (delta != null && delta != 0) ...[
             const SizedBox(height: 8),

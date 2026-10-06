@@ -16,36 +16,49 @@ import 'package:onetouch/screens/TeamProbabilityScreen.dart';
 import 'package:onetouch/screens/team_probability_what_if_screen.dart';
 
 void main() {
-  for (final width in [360.0, 393.0, 430.0]) {
-    testWidgets('English relegation playoff title fits two lines at $width',
-        (tester) async {
-      tester.view.physicalSize = Size(width, 852);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  for (final locale in const [Locale('en'), Locale('ko')]) {
+    for (final width in [320.0, 360.0, 393.0, 430.0]) {
+      testWidgets(
+          '${locale.languageCode} relegation playoff title fits at $width',
+          (tester) async {
+        tester.view.physicalSize = Size(width, 852);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final previousLocale = appLocaleController.value;
+        appLocaleController.value = locale;
+        addTearDown(() => appLocaleController.value = previousLocale);
 
-      await tester.pumpWidget(MaterialApp(
-        theme: app_style.darktheme,
-        home: TeamProbabilityScreen(
-          teamId: 83,
-          event: 'relegation_playoff',
-          initialSnapshot: _snapshot(relegationEvent: 'relegation_playoff'),
-        ),
-      ));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(MaterialApp(
+          locale: locale,
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
+          theme: app_style.darkThemeForLocale(locale),
+          home: TeamProbabilityScreen(
+            teamId: 83,
+            event: 'relegation_playoff',
+            initialSnapshot: _snapshot(relegationEvent: 'relegation_playoff'),
+          ),
+        ));
+        await tester.pumpAndSettle();
 
-      final title = find.byKey(const ValueKey('probability-event-title'));
-      final titleWidget = tester.widget<Text>(title);
-      expect(titleWidget.data, 'Chances to\nRelegation Playoff');
-      expect(titleWidget.style?.fontSize, Body1.style.fontSize);
-      expect(find.ancestor(of: title, matching: find.byType(FittedBox)),
-          findsNothing);
-      final paragraph = tester.renderObject<RenderParagraph>(
-        find.descendant(of: title, matching: find.byType(RichText)),
-      );
-      expect(paragraph.didExceedMaxLines, isFalse);
-      expect(tester.takeException(), isNull);
-    });
+        final title = find.byKey(const ValueKey('probability-event-title'));
+        final titleWidget = tester.widget<Text>(title);
+        expect(
+            titleWidget.data,
+            locale.languageCode == 'ko'
+                ? '강등 플레이오프 확률'
+                : 'Chances to\nRelegation Playoff');
+        expect(titleWidget.style?.fontSize, Body1.style.fontSize);
+        expect(find.ancestor(of: title, matching: find.byType(FittedBox)),
+            findsNothing);
+        final paragraph = tester.renderObject<RenderParagraph>(
+          find.descendant(of: title, matching: find.byType(RichText)),
+        );
+        expect(paragraph.didExceedMaxLines, isFalse);
+        expect(tester.takeException(), isNull);
+      });
+    }
   }
 
   for (final size in [
@@ -826,16 +839,17 @@ void main() {
           lessThanOrEqualTo(tester
               .getRect(find.byKey(const ValueKey('what-if-search-button')))
               .left));
-      expect(find.text('바르셀로나 승'), findsOneWidget);
-      expect(find.text('헤타페 승'), findsOneWidget);
+      expect(find.text('BAR 승'), findsOneWidget);
+      expect(find.text('GET 승'), findsOneWidget);
       expect(find.text('무승부'), findsOneWidget);
-      for (final label in ['바르셀로나 승', '헤타페 승', '무승부']) {
+      for (final label in ['BAR 승', 'GET 승', '무승부']) {
         final paragraph = tester.renderObject<RenderParagraph>(find.descendant(
             of: find.text(label), matching: find.byType(RichText)));
         expect(paragraph.didExceedMaxLines, isFalse);
       }
       final winOption = find.byKey(const ValueKey('what-if-outcome-win'));
-      expect(find.descendant(of: winOption, matching: find.text('$team 승')),
+      final teamCode = testCase.teamId == 83 ? 'BAR' : 'GET';
+      expect(find.descendant(of: winOption, matching: find.text('$teamCode 승')),
           findsOneWidget);
       expect(find.descendant(of: winOption, matching: find.byType(Text)),
           findsOneWidget);

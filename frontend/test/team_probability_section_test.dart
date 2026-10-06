@@ -282,7 +282,7 @@ void main() {
 
   testWidgets('keeps every Korean probability card title on one line',
       (tester) async {
-    tester.view.physicalSize = const Size(393, 852);
+    tester.view.physicalSize = const Size(320, 852);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
