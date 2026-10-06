@@ -416,22 +416,6 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       (latest, point) => math.max(latest, point.roundNo),
     );
     final roundWindow = RoundChartWindow.centeredThrough(latestRound);
-    final chartPoints = [
-      ...current.points.where((point) => roundWindow.contains(point.roundNo)),
-      if (showComparison)
-        ...comparison.points
-            .where((point) => roundWindow.contains(point.roundNo)),
-    ];
-    final lowestPoints = chartPoints.fold<int>(
-      chartPoints.isEmpty ? 0 : chartPoints.first.cumulativePoints,
-      (lowest, point) => math.min(lowest, point.cumulativePoints),
-    );
-    final highestPoints = chartPoints.fold<int>(
-      0,
-      (highest, point) => math.max(highest, point.cumulativePoints),
-    );
-    final minPoints = math.max(0, (lowestPoints ~/ 3) * 3 - 3).toDouble();
-    final maxPoints = (((highestPoints / 3).ceil() + 1) * 3).toDouble();
     final availableRounds = current.points
         .where((point) => roundWindow.contains(point.roundNo))
         .map((point) => point.roundNo)
@@ -446,6 +430,19 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final comparisonPoint = !showComparison || selectedRound == null
         ? null
         : _pointAtRound(comparison, selectedRound);
+    // Twelve grid lines span eleven 3-point steps; follow the selected round.
+    const pointsPerStep = 3;
+    const visiblePointsSpan =
+        (RoundChartVisuals.horizontalLineCount - 1) * pointsPerStep;
+    final selectedHighest = math.max(
+      currentPoint?.cumulativePoints ?? 0,
+      comparisonPoint?.cumulativePoints ?? 0,
+    );
+    final maxPoints = math
+        .max(visiblePointsSpan,
+            (selectedHighest / pointsPerStep).ceil() * pointsPerStep)
+        .toDouble();
+    final minPoints = maxPoints - visiblePointsSpan;
     final gridColor = colorScheme.onSurface.withValues(
       alpha: isDark ? 0.32 : 0.18,
     );

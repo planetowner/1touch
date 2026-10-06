@@ -544,6 +544,7 @@ void main() {
       expect(painter.divisionCount, 11);
       final line = tester.widget<LineChart>(find.byType(LineChart));
       expect((line.data.minX, line.data.maxX), (0, 27));
+      expect((line.data.minY, line.data.maxY), (9, 42));
 
       await tester.tapAt(tester.getRect(chart).center);
       await tester.pump();
@@ -562,6 +563,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Round 19'), findsOneWidget);
       expect(scroll.controller!.offset, closeTo(roundWidth * 12, 0.1));
+      final round19 = tester.widget<LineChart>(find.byType(LineChart));
+      expect((round19.data.minY, round19.data.maxY), (6, 39));
       expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
           closeTo(viewportRect.center.dx, 0.1));
 
@@ -570,6 +573,8 @@ void main() {
       await toOlder.up();
       await tester.pumpAndSettle();
       expect(find.text('Round 13'), findsOneWidget);
+      final round13 = tester.widget<LineChart>(find.byType(LineChart));
+      expect((round13.data.minY, round13.data.maxY), (0, 33));
       expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
           closeTo(viewportRect.center.dx, 0.1));
       final tooltipRect = tester.getRect(find.byKey(
@@ -597,6 +602,52 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('comparison points set the selected 33-point window',
+      (tester) async {
+    useScreen(tester, const Size(393, 852));
+    const currentPoints = [
+      CurrentFormPoint(roundNo: 0, cumulativePoints: 0),
+      CurrentFormPoint(roundNo: 1, cumulativePoints: 18),
+      CurrentFormPoint(roundNo: 2, cumulativePoints: 30),
+    ];
+    const comparisonPoints = [
+      CurrentFormPoint(roundNo: 0, cumulativePoints: 0),
+      CurrentFormPoint(roundNo: 1, cumulativePoints: 35),
+      CurrentFormPoint(roundNo: 2, cumulativePoints: 40),
+    ];
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (_) async => _optionsForTeam(1),
+      comparisonLoader: (query) async => _comparisonFor(
+        query,
+        comparisonShortCode: 'PREV',
+        points: currentPoints,
+        comparisonPoints: comparisonPoints,
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+    await tester.pumpAndSettle();
+    var chart = tester.widget<LineChart>(find.byType(LineChart));
+    expect((chart.data.minY, chart.data.maxY), (0, 33));
+
+    await _chooseCurrentForm(tester, seasonId: 100, teamId: 1);
+    chart = tester.widget<LineChart>(find.byType(LineChart));
+    expect((chart.data.minY, chart.data.maxY), (9, 42));
+
+    final viewport = tester.getRect(
+      find.byKey(const ValueKey('analysis-current-form-viewport')),
+    );
+    final handle = find.byKey(const ValueKey('round-chart-selection-handle'));
+    final drag = await tester.startGesture(tester.getCenter(handle));
+    await drag.moveBy(Offset(-viewport.width / 14, 0));
+    await drag.up();
+    await tester.pumpAndSettle();
+    chart = tester.widget<LineChart>(find.byType(LineChart));
+    expect((chart.data.minY, chart.data.maxY), (3, 36));
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('uses one grid cell for the Korean points axis label',
       (tester) async {
@@ -637,7 +688,7 @@ void main() {
     expect(painter.divisionCount, 11);
     expect(painter.insetLineCount, 2);
     final lineChart = tester.widget<LineChart>(find.byType(LineChart));
-    expect((lineChart.data.minY, lineChart.data.maxY), (0, 9));
+    expect((lineChart.data.minY, lineChart.data.maxY), (0, 33));
     expect(lineChart.data.lineBarsData.first.spots.first.y, 0);
     expect(tester.takeException(), isNull);
   });
@@ -742,7 +793,7 @@ void main() {
         expect(lineChart.data.minX, 0);
         expect(lineChart.data.maxX, 14);
         expect(lineChart.data.minY, 0);
-        expect(lineChart.data.maxY, 9);
+        expect(lineChart.data.maxY, 33);
         final comparisonTooltipRect = tester.getRect(
           find.byKey(
             const ValueKey('analysis-current-form-comparison-tooltip'),
@@ -1108,6 +1159,7 @@ CurrentFormComparison _comparisonFor(
   String? currentTeamName,
   String? comparisonTeamName,
   List<CurrentFormPoint>? points,
+  List<CurrentFormPoint>? comparisonPoints,
 }) {
   return CurrentFormComparison(
     current: _series(
@@ -1126,7 +1178,7 @@ CurrentFormComparison _comparisonFor(
       shortCode: comparisonShortCode,
       teamName: comparisonTeamName,
       isCurrent: false,
-      points: points,
+      points: comparisonPoints ?? points,
     ),
     maxRound: points?.last.roundNo ?? 2,
     maxPoints: points?.last.cumulativePoints ?? 4,
