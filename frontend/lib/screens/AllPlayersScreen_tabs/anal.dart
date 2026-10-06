@@ -42,7 +42,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         builder: (context, detail) => SingleChildScrollView(
           key: const ValueKey('player-analysis-scroll'),
           physics: const ClampingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -50,7 +50,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 key: ValueKey(
                     'player-analysis-season-${detail.selectedSeason?.id}'),
                 detail: detail,
-                width: double.infinity,
                 onChanged: (id) => setState(() => _seasonId = id),
               ),
               const SizedBox(height: 32),

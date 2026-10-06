@@ -10,6 +10,7 @@ import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/overflow_scrolling_text.dart';
 import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/round_chart_visuals.dart';
+import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
@@ -20,7 +21,6 @@ import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
-import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/anal.dart';
 import 'support/player_detail_fixture.dart';
@@ -824,12 +824,20 @@ void main() {
       find.byKey(ValueKey(
           'player-matches-season-${matchesSelector.detail.selectedSeason?.id}')),
     );
-    expect(matchesSelector.width, double.infinity);
+    expect(matchesSelectorRect.width, 86);
     expect(matchesSelectorRect.height, 48);
     expect(matchesSelectorRect.left, 24);
     expect(
-      matchesSelectorRect.right,
-      tester.getSize(find.byType(MaterialApp)).width - 24,
+      matchesSelectorRect.top -
+          tester
+              .getRect(find.byKey(const ValueKey('player-matches-scroll')))
+              .top,
+      24,
+    );
+    expect(
+      find.text(
+          compactSeasonLabel(matchesSelector.detail.selectedSeason!.name)),
+      findsOneWidget,
     );
     expect(
       tester.getTopLeft(find.text('RECENT MATCHES')).dy -
@@ -1214,11 +1222,20 @@ void main() {
       find.byKey(ValueKey(
           'player-analysis-season-${selector.detail.selectedSeason?.id}')),
     );
-    expect(selector.width, double.infinity);
+    expect(selectorRect.width, 86);
     expect(selectorRect.height, 48);
     expect(selectorRect.left, 24);
-    expect(selectorRect.right,
-        tester.getSize(find.byType(MaterialApp)).width - 24);
+    expect(
+      selectorRect.top -
+          tester
+              .getRect(find.byKey(const ValueKey('player-analysis-scroll')))
+              .top,
+      24,
+    );
+    expect(
+      find.text(compactSeasonLabel(selector.detail.selectedSeason!.name)),
+      findsOneWidget,
+    );
     selector.onChanged(selector.detail.seasons.last.id);
     await tester.pumpAndSettle();
     expect(repository.calls.last.seasonId, selector.detail.seasons.last.id);
