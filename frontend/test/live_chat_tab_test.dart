@@ -98,6 +98,155 @@ void main() {
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('keeps older messages in place and offers latest at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final session = _ChatSession();
+      await tester.pumpWidget(_app(
+        repository: _ChatRepository([
+          for (var id = 10; id <= 70; id++) _message(messageId: id, userId: 8),
+        ]),
+        socket: _ChatSocket(session: session),
+      ));
+      await tester.pumpAndSettle();
+      final list = find.byKey(const ValueKey('live-chat-message-list'));
+      final position = tester
+          .state<ScrollableState>(
+              find.descendant(of: list, matching: find.byType(Scrollable)))
+          .position;
+      expect(position.pixels, closeTo(position.maxScrollExtent, 1));
+
+      final drag = await tester.startGesture(tester.getCenter(list));
+      await drag.moveBy(const Offset(0, 24));
+      await tester.pump();
+      await drag.moveBy(const Offset(0, 24));
+      await tester.pump();
+      final positionDuringDrag = position.pixels;
+      expect(positionDuringDrag, lessThan(position.maxScrollExtent));
+      session.add(_message(messageId: 71, userId: 8));
+      await tester.pumpAndSettle();
+      expect(position.pixels, closeTo(positionDuringDrag, 1));
+      expect(find.byKey(const ValueKey('live-chat-latest-button')),
+          findsOneWidget);
+      final latestButton =
+          find.byKey(const ValueKey('live-chat-latest-button'));
+      expect(tester.getCenter(latestButton).dx, closeTo(size.width / 2, 1));
+
+      await drag.moveBy(Offset(0, size.height * 1.5));
+      await drag.up();
+      await tester.pumpAndSettle();
+      final olderOffset = position.pixels;
+      expect(find.byKey(const ValueKey('live-chat-latest-button')),
+          findsOneWidget);
+      session.add(_message(messageId: 72, userId: 8));
+      await tester.pumpAndSettle();
+      expect(position.pixels, closeTo(olderOffset, 1));
+
+      await tester.tap(find.byKey(const ValueKey('live-chat-latest-button')));
+      await tester.pumpAndSettle();
+      expect(position.pixels, closeTo(position.maxScrollExtent, 1));
+      expect(
+          find.byKey(const ValueKey('live-chat-latest-button')), findsNothing);
+      session.add(_message(messageId: 73, userId: 8));
+      await tester.pumpAndSettle();
+      expect(position.pixels, closeTo(position.maxScrollExtent, 1));
+    });
+  }
+
+  testWidgets('keyboard resize follows latest but preserves older position',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpWidget(_app(
+      repository: _ChatRepository([
+        for (var id = 10; id <= 70; id++) _message(messageId: id, userId: 8),
+      ]),
+      socket: _ChatSocket(session: _ChatSession()),
+    ));
+    await tester.pumpAndSettle();
+    final list = find.byKey(const ValueKey('live-chat-message-list'));
+    final position = tester
+        .state<ScrollableState>(
+            find.descendant(of: list, matching: find.byType(Scrollable)))
+        .position;
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+    expect(position.pixels, closeTo(position.maxScrollExtent, 1));
+
+    tester.view.viewInsets = FakeViewPadding.zero;
+    await tester.pumpAndSettle();
+    await tester.drag(list, const Offset(0, 750));
+    await tester.pumpAndSettle();
+    final olderOffset = position.pixels;
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+    expect(position.pixels, closeTo(olderOffset, 1));
+  });
+
+  testWidgets('reconnects after network loss and loads missed messages',
+      (tester) async {
+    final repository = _ChatRepository([
+      _message(messageId: 10, userId: 8),
+    ]);
+    final first = _ChatSession();
+    final second = _ChatSession();
+    final socket = _SequenceChatSocket([first, second]);
+    await tester.pumpWidget(_app(repository: repository, socket: socket));
+    await tester.pumpAndSettle();
+
+    first.addError(const ChatSocketException(message: 'Network lost'));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('History message 10'), findsOneWidget);
+    expect(find.text('Reconnecting to chat…'), findsOneWidget);
+    expect(find.text('Retry'), findsNothing);
+
+    repository.history.addAll([
+      for (var id = 11; id <= 111; id++) _message(messageId: id, userId: 8),
+    ]);
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+    expect(socket.connectCalls, 2);
+    expect(
+        tester
+            .widget<ListView>(
+                find.byKey(const ValueKey('live-chat-message-list')))
+            .childrenDelegate
+            .estimatedChildCount,
+        102);
+    expect(find.text('History message 111'), findsOneWidget);
+    expect(find.text('Reconnecting to chat…'), findsNothing);
+  });
+
+  for (final closeCode in [4400, 4403]) {
+    testWidgets('does not reconnect after terminal code $closeCode',
+        (tester) async {
+      final first = _ChatSession();
+      final socket = _SequenceChatSocket([first, _ChatSession()]);
+      await tester.pumpWidget(_app(
+        repository: _ChatRepository([_message(messageId: 10, userId: 8)]),
+        socket: socket,
+      ));
+      await tester.pumpAndSettle();
+      first.addError(ChatSocketException(
+        message: 'Server rejected chat',
+        closeCode: closeCode,
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('Reconnecting to chat…'), findsNothing);
+      expect(find.text('Retry'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 35));
+      expect(socket.connectCalls, 1);
+    });
+  }
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets('centers the empty chat prompt with designed spacing at $size',
         (tester) async {
       tester.view.physicalSize = size;
@@ -589,7 +738,13 @@ class _ChatRepository implements ChatRepository {
     int limit = 50,
   }) async {
     if (error != null) throw error!;
-    return List.unmodifiable(history);
+    if (afterId == null) {
+      return List.unmodifiable(history.length <= limit
+          ? history
+          : history.skip(history.length - limit));
+    }
+    return List.unmodifiable(
+        history.where((message) => message.messageId > afterId).take(limit));
   }
 
   @override
@@ -622,6 +777,17 @@ class _PendingChatSocket implements ChatSocket {
 
   @override
   Future<ChatSocketSession> connect(int fixtureId) => connection;
+}
+
+class _SequenceChatSocket implements ChatSocket {
+  _SequenceChatSocket(this.sessions);
+
+  final List<_ChatSession> sessions;
+  int connectCalls = 0;
+
+  @override
+  Future<ChatSocketSession> connect(int fixtureId) async =>
+      sessions[connectCalls++];
 }
 
 class _ChatSession implements ChatSocketSession {
