@@ -1411,7 +1411,7 @@ class _LabeledTeam extends StatelessWidget {
           _TeamLogo(team: team),
           const SizedBox(height: 6),
           Text(
-            team.shortCode ?? teamNameLabel(context, team.teamId, team.name),
+            _teamBettingLabel(context, team),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Body1_b.style,
@@ -1426,17 +1426,22 @@ Color _surface(BuildContext context) =>
         : AppPalette.white;
 String _pointsUnit(BuildContext context) =>
     tr(context, '{points} pts', {'points': ''}).trim();
+// 팀 목록이 없는 테스트 경기에서는 세 글자 짧은 이름을 코드로 사용해요.
+String _teamBettingLabel(BuildContext context, Team team) {
+  final shortName = team.shortName?.trim();
+  return team.shortCode ??
+      (shortName != null && shortName.length == 3
+          ? shortName
+          : teamNameLabel(context, team.teamId, team.name));
+}
+
 String _label(BuildContext context, BetOutcome outcome, Team home, Team away) =>
     switch (outcome) {
-      BetOutcome.homeWin => tr(context, '{team} Win', {
-          'team':
-              home.shortCode ?? teamNameLabel(context, home.teamId, home.name)
-        }),
+      BetOutcome.homeWin =>
+        tr(context, '{team} Win', {'team': _teamBettingLabel(context, home)}),
       BetOutcome.draw => tr(context, 'Draw'),
-      BetOutcome.awayWin => tr(context, '{team} Win', {
-          'team':
-              away.shortCode ?? teamNameLabel(context, away.teamId, away.name)
-        }),
+      BetOutcome.awayWin =>
+        tr(context, '{team} Win', {'team': _teamBettingLabel(context, away)}),
     };
 String _unavailable(String? reason) => switch (reason) {
       'unsupported_competition' =>

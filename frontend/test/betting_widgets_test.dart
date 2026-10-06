@@ -12,10 +12,57 @@ import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/betting.dart';
+import 'package:onetouch/models/team.dart';
 
 import 'support/fake_betting_repository.dart';
 
 void main() {
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('uses three letter fixture names without catalog at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final controller = BettingController(
+        fixtureId: 1,
+        repository: FakeBettingRepository(),
+      );
+      await controller.load();
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: MatchBettingSection(
+              controller: controller,
+              homeTeam: const Team(
+                teamId: 83,
+                name: 'FC Barcelona',
+                shortName: 'FCB',
+              ),
+              awayTeam: const Team(
+                teamId: 676,
+                name: 'Girona',
+                shortName: 'GIR',
+              ),
+            ),
+          ),
+        ),
+      ));
+      expect(find.text('FCB'), findsOneWidget);
+      expect(find.text('GIR'), findsOneWidget);
+      expect(find.text('FC Barcelona'), findsNothing);
+      expect(find.text('Girona'), findsNothing);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('PLACE A BET'));
+      await tester.pumpAndSettle();
+      expect(find.text('FCB Win'), findsWidgets);
+      expect(find.text('GIR Win'), findsWidgets);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
+    });
+  }
+
   for (final barWidth in [280.0, 390.0, 110.0]) {
     testWidgets('probability labels retain Heading5 at width $barWidth',
         (tester) async {
