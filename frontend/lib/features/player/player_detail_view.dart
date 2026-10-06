@@ -163,6 +163,7 @@ class PlayerSeasonSelector extends StatelessWidget {
     return AppDropdown<int>(
       value: detail.selectedSeason?.id,
       width: width,
+      triggerHeight: 48,
       matchMenuWidth: width != null,
       hintText: tr(context, 'SELECT A SEASON'),
       backgroundColor: surface,

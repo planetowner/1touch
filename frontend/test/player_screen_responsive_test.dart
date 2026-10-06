@@ -825,6 +825,7 @@ void main() {
           'player-matches-season-${matchesSelector.detail.selectedSeason?.id}')),
     );
     expect(matchesSelector.width, double.infinity);
+    expect(matchesSelectorRect.height, 48);
     expect(matchesSelectorRect.left, 24);
     expect(
       matchesSelectorRect.right,
@@ -1214,6 +1215,7 @@ void main() {
           'player-analysis-season-${selector.detail.selectedSeason?.id}')),
     );
     expect(selector.width, double.infinity);
+    expect(selectorRect.height, 48);
     expect(selectorRect.left, 24);
     expect(selectorRect.right,
         tester.getSize(find.byType(MaterialApp)).width - 24);
