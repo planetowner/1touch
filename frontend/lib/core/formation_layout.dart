@@ -1,17 +1,20 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
-/// 베스트 11과 경기 라인업이 같은 345 × 392 디자인 좌표를 사용해요.
-/// 수비부터 공격 순서로 저장하고, 골키퍼 위치는 한 번만 정의해요.
+/// 베스트 11과 경기 라인업이 같은 기준 좌표를 사용해요.
+/// 선수 간격은 줄의 인원수로 계산하고, 실제 화면 크기에 맞춰 조정해요.
 class FormationLayout {
   const FormationLayout(this.rows);
 
   factory FormationLayout.forFormation(String formation) {
-    final code = formationLayoutCode(formation);
-    return formationLayouts[code] ?? buildFallbackFormationLayout(code);
+    return buildFormationLayout(formationLayoutCode(formation));
   }
 
   static const Size designSize = Size(345, 392);
-  static const Offset goalkeeper = Offset(173, 340);
+  static final Offset goalkeeper = Offset(
+    designSize.width / 2,
+    designSize.height * 7 / 8,
+  );
 
   final List<List<Offset>> rows;
 
@@ -31,247 +34,63 @@ class FormationLayout {
   }
 }
 
-const Map<String, FormationLayout> formationLayouts = {
-  '2-3-2-1-2': FormationLayout([
-    [Offset(124, 264), Offset(222, 264)],
-    [Offset(48, 200), Offset(173, 200), Offset(298, 200)],
-    [Offset(112, 136), Offset(234, 136)],
-    [Offset(173, 80)],
-    [Offset(112, 32), Offset(234, 32)],
-  ]),
-  '3-4-2-1': FormationLayout([
-    [Offset(80, 264), Offset(173, 264), Offset(266, 264)],
-    [Offset(52, 176), Offset(134, 184), Offset(209.5, 184), Offset(293, 176)],
-    [Offset(120, 111), Offset(226, 111)],
-    [Offset(173, 44)],
-  ]),
-  '4-2-1-3': FormationLayout([
-    [Offset(48, 232), Offset(128, 264), Offset(218, 264), Offset(298, 232)],
-    [Offset(128, 184), Offset(218, 184)],
-    [Offset(173, 120)],
-    [Offset(56, 64), Offset(173, 44), Offset(290, 64)],
-  ]),
-  '4-4-1-1': FormationLayout([
-    [Offset(48, 220), Offset(132, 252), Offset(214, 252), Offset(298, 220)],
-    [Offset(52, 152), Offset(132, 176), Offset(214, 176), Offset(294, 152)],
-    [Offset(173, 108)],
-    [Offset(173, 44)],
-  ]),
-  '3-3-1-3': FormationLayout([
-    [Offset(74, 264), Offset(173, 264), Offset(269.5, 264)],
-    [Offset(96, 192), Offset(173, 192), Offset(250, 192)],
-    [Offset(173, 120)],
-    [Offset(48, 56), Offset(173, 44), Offset(298, 56)],
-  ]),
-  '4-1-2-1-2': FormationLayout([
-    [Offset(48, 236), Offset(132, 268), Offset(214, 268), Offset(298, 236)],
-    [Offset(173, 200)],
-    [Offset(99.5, 152), Offset(247, 152)],
-    [Offset(173, 112)],
-    [Offset(124, 48), Offset(222, 48)],
-  ]),
-  '4-3-1-2': FormationLayout([
-    [Offset(48, 236), Offset(132, 260), Offset(214, 260), Offset(298, 236)],
-    [Offset(88, 168), Offset(173, 184), Offset(258, 168)],
-    [Offset(173, 108)],
-    [Offset(124, 48), Offset(222, 48)],
-  ]),
-  '5-3-1-1': FormationLayout([
-    [
-      Offset(48, 224),
-      Offset(107, 256),
-      Offset(173, 256),
-      Offset(239, 256),
-      Offset(298, 224)
-    ],
-    [Offset(94, 160), Offset(173, 184), Offset(249.5, 160)],
-    [Offset(173, 108)],
-    [Offset(173, 44)],
-  ]),
-  '3-1-4-2': FormationLayout([
-    [Offset(80, 264), Offset(173, 264), Offset(266, 264)],
-    [Offset(173, 192)],
-    [Offset(62, 128), Offset(136, 128), Offset(210, 128), Offset(284, 128)],
-    [Offset(132, 48), Offset(214, 48)],
-  ]),
-  '3-4-3': FormationLayout([
-    [Offset(80, 256), Offset(173, 264), Offset(266, 256)],
-    [Offset(49.5, 160), Offset(133, 176), Offset(215, 176), Offset(297, 160)],
-    [Offset(80, 76), Offset(173, 44), Offset(266, 76)],
-  ]),
-  '4-2-2-2': FormationLayout([
-    [Offset(48, 220), Offset(132, 252), Offset(214, 252), Offset(298, 220)],
-    [Offset(120, 184), Offset(226, 184)],
-    [Offset(120, 116), Offset(226, 116)],
-    [Offset(120, 48), Offset(226, 48)],
-  ]),
-  '4-4-2': FormationLayout([
-    [Offset(48, 220), Offset(132, 252), Offset(214, 252), Offset(298, 220)],
-    [Offset(52, 120), Offset(132, 168), Offset(214, 168), Offset(294, 120)],
-    [Offset(124, 48), Offset(222, 48)],
-  ]),
-  '3-3-2-2': FormationLayout([
-    [Offset(62, 264), Offset(173, 264), Offset(281.5, 264)],
-    [Offset(96, 192), Offset(173, 192), Offset(250, 192)],
-    [Offset(132, 120), Offset(214, 120)],
-    [Offset(124, 48), Offset(222, 48)],
-  ]),
-  '4-1-2-3': FormationLayout([
-    [Offset(48, 220), Offset(132, 252), Offset(214, 252), Offset(298, 220)],
-    [Offset(173, 192)],
-    [Offset(124, 128), Offset(222, 128)],
-    [Offset(48, 72), Offset(173, 44), Offset(298, 72)],
-  ]),
-  '4-3-2-1': FormationLayout([
-    [Offset(48, 236), Offset(132, 268), Offset(214, 268), Offset(298, 236)],
-    [Offset(90, 172), Offset(173, 200), Offset(253.5, 172)],
-    [Offset(131.5, 112), Offset(215, 112)],
-    [Offset(173, 44)],
-  ]),
-  '5-3-2': FormationLayout([
-    [
-      Offset(48, 226),
-      Offset(104, 256),
-      Offset(171, 256),
-      Offset(242, 256),
-      Offset(298, 226)
-    ],
-    [Offset(90, 128), Offset(173, 168), Offset(253.5, 128)],
-    [Offset(124, 48), Offset(222, 48)],
-  ]),
-  '3-2-3-2': FormationLayout([
-    [Offset(78, 264), Offset(173, 264), Offset(265.5, 264)],
-    [Offset(124, 192), Offset(222, 192)],
-    [Offset(56, 112), Offset(173, 128), Offset(290, 112)],
-    [Offset(124, 48), Offset(222, 48)],
-  ]),
-  '3-5-1-1': FormationLayout([
-    [Offset(76, 264), Offset(173, 264), Offset(270, 264)],
-    [
-      Offset(48, 144),
-      Offset(108, 190),
-      Offset(173, 190),
-      Offset(238, 190),
-      Offset(298, 144)
-    ],
-    [Offset(173, 108)],
-    [Offset(173, 44)],
-  ]),
-  '4-2-3-1': FormationLayout([
-    [Offset(48, 220), Offset(132, 252), Offset(214, 252), Offset(298, 220)],
-    [Offset(116, 176), Offset(230, 176)],
-    [Offset(48, 104), Offset(173, 120), Offset(298, 104)],
-    [Offset(173, 44)],
-  ]),
-  '4-5-1': FormationLayout([
-    [Offset(48, 220), Offset(132, 252), Offset(214, 252), Offset(298, 220)],
-    [
-      Offset(46, 112),
-      Offset(105, 160),
-      Offset(173, 136),
-      Offset(240, 160),
-      Offset(299, 112)
-    ],
-    [Offset(173, 44)],
-  ]),
-  '3-3-3-1': FormationLayout([
-    [Offset(78, 264), Offset(173, 264), Offset(265.5, 264)],
-    [Offset(100, 188), Offset(173, 188), Offset(246, 188)],
-    [Offset(72, 108), Offset(173, 116), Offset(274, 108)],
-    [Offset(173, 44)],
-  ]),
-  '4-1-3-2': FormationLayout([
-    [Offset(48, 236), Offset(132, 268), Offset(214, 268), Offset(298, 236)],
-    [Offset(173, 200)],
-    [Offset(48, 108), Offset(173, 124), Offset(298, 108)],
-    [Offset(124, 48), Offset(222, 48)],
-  ]),
-  '5-4-1': FormationLayout([
-    [
-      Offset(48, 224),
-      Offset(107, 256),
-      Offset(173, 256),
-      Offset(239, 256),
-      Offset(298, 224)
-    ],
-    [Offset(50, 128), Offset(132, 160), Offset(214, 160), Offset(295, 128)],
-    [Offset(173, 44)],
-  ]),
-  '3-2-4-1': FormationLayout([
-    [Offset(78, 264), Offset(173, 264), Offset(265.5, 264)],
-    [Offset(132, 192), Offset(214, 192)],
-    [Offset(50, 100), Offset(132, 116), Offset(214, 116), Offset(296, 100)],
-    [Offset(173, 44)],
-  ]),
-  '3-5-2': FormationLayout([
-    [Offset(80, 264), Offset(173, 264), Offset(266, 264)],
-    [
-      Offset(48, 144),
-      Offset(116, 176),
-      Offset(173, 136),
-      Offset(230, 176),
-      Offset(298, 144)
-    ],
-    [Offset(124, 48), Offset(222, 48)],
-  ]),
-  '4-2-4': FormationLayout([
-    [Offset(48, 220), Offset(132, 252), Offset(214, 252), Offset(298, 220)],
-    [Offset(132, 152), Offset(214, 152)],
-    [Offset(48, 88), Offset(124, 48), Offset(222, 48), Offset(298, 88)],
-  ]),
-  '5-2-3': FormationLayout([
-    [
-      Offset(45, 224),
-      Offset(107, 256),
-      Offset(173, 256),
-      Offset(239, 256),
-      Offset(295, 224)
-    ],
-    [Offset(120, 152), Offset(226, 152)],
-    [Offset(48, 72), Offset(173, 44), Offset(298, 72)],
-  ]),
-  '3-4-1-2': FormationLayout([
-    [Offset(78, 264), Offset(173, 264), Offset(265.5, 264)],
-    [Offset(47, 180), Offset(132, 188), Offset(214, 188), Offset(298, 180)],
-    [Offset(173, 120)],
-    [Offset(124, 48), Offset(222, 48)],
-  ]),
-  '4-1-4-1': FormationLayout([
-    [Offset(48, 220), Offset(132, 252), Offset(214, 252), Offset(298, 220)],
-    [Offset(173, 188)],
-    [Offset(48, 104), Offset(132, 120), Offset(214, 120), Offset(298, 104)],
-    [Offset(173, 44)],
-  ]),
-};
-
-FormationLayout buildFallbackFormationLayout(String formation) {
-  final counts = formation
+FormationLayout buildFormationLayout(String formation) {
+  var counts = formation
       .split('-')
       .map(int.tryParse)
       .whereType<int>()
       .where((count) => count > 0)
       .toList();
   if (counts.fold<int>(0, (sum, count) => sum + count) != 10) {
-    return formationLayouts['4-1-2-3']!;
+    counts = [4, 1, 2, 3];
   }
 
-  const bottom = 252.0;
-  const top = 52.0;
-  final gap = counts.length == 1 ? 0.0 : (bottom - top) / (counts.length - 1);
-  return FormationLayout([
-    for (var row = 0; row < counts.length; row += 1)
-      _evenlySpacedRow(counts[row], bottom - gap * row),
-  ]);
-}
+  final centerX = FormationLayout.designSize.width / 2;
+  final sideInset = FormationLayout.designSize.width / 8;
+  final usableWidth = FormationLayout.designSize.width - 2 * sideInset;
+  final attackerY = FormationLayout.designSize.height / 8;
+  final defenderY = FormationLayout.designSize.height * 0.65;
+  final rowGap =
+      counts.length == 1 ? 0.0 : (defenderY - attackerY) / (counts.length - 1);
 
-List<Offset> _evenlySpacedRow(int count, double y) {
-  if (count == 1) return [Offset(173, y)];
-  const left = 48.0;
-  const right = 298.0;
-  final gap = (right - left) / (count - 1);
-  return [
-    for (var index = 0; index < count; index += 1) Offset(left + gap * index, y)
-  ];
+  Offset position(int row, int column) {
+    final count = counts[row];
+    final middle = (count - 1) / 2;
+    final distance = middle == 0 ? 0.0 : (column - middle).abs() / middle;
+    final curve = distance * distance;
+    final baseY = defenderY - rowGap * row;
+    final height = FormationLayout.designSize.height;
+    double y;
+    if (count == 5 && row == 1 && counts.length == 3) {
+      // 미드필더가 5명일 때 중앙과 양쪽 윙백을 안쪽 미드필더보다 앞에 둬요.
+      final outerShift = counts.first == 3 ? height * 0.02 : -height * 0.06;
+      final wave = math.sin(math.pi * distance);
+      y = baseY -
+          height * 0.04 +
+          height * 0.10 * wave * wave +
+          outerShift * curve;
+    } else if (row == counts.length - 1 && count >= 3) {
+      final bend = height * math.min(0.10, 0.07 + 0.03 * (count - 3));
+      y = baseY + bend * curve;
+    } else {
+      final bend = row == 0
+          ? height * math.min(0.08, 0.02 + 0.06 * (count - 3))
+          : height * math.min(0.08, 0.04 * (count - 2));
+      y = baseY - math.max(0.0, bend) * curve;
+    }
+    return Offset(
+      centerX + (column - middle) * usableWidth / math.max(2, count - 1),
+      y,
+    );
+  }
+
+  return FormationLayout([
+    for (var row = 0; row < counts.length; row++)
+      [
+        for (var column = 0; column < counts[row]; column++)
+          position(row, column),
+      ],
+  ]);
 }
 
 /// 포메이션 이름은 유지하고, 4-3-3의 그림만 4-1-2-3으로 배치해요.
