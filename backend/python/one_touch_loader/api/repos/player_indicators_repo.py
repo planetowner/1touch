@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from ..db import fetch_one_dict
 from ...core.db_json import decoded
-from ...core.player_indicator_grades import GRADE_LABELS
+from ...core.player_indicator_grades import with_current_grade_labels
 from ...core.player_rating_percentile import RATING_COMPETITION_IDS
 
 
@@ -32,11 +32,6 @@ def get_current_player_indicators(player_id: int) -> dict | None:
         raise IndicatorsNotReadyError(
             "Current player indicators have not been calculated yet"
         )
-    result = dict(decoded(row["payload"]))
-    # 저장 당시의 등급명 대신 현재 공통 이름을 써요. 점수와 단계는 다시 계산하지 않아요.
-    for key in ("form", "cost_effectiveness"):
-        score = result[key]
-        band = score["band"]
-        result[key] = {**score, "grade": GRADE_LABELS[band] if band is not None else None}
+    result = with_current_grade_labels(decoded(row["payload"]))
     # 역할 변경은 모델 입력이 아니에요. 점수를 다시 계산하지 않고 최신 값을 보여 줘요.
     return {**result, "squad_role": row["squad_role"]}
