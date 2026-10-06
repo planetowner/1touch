@@ -894,6 +894,12 @@ const appMessages = <String, MessageTranslations>{
   "DESCENDING": (ko: "내림차순", ja: "降順", zh: "降序"),
   "BEST ELEVEN": (ko: "베스트 11", ja: "ベストイレブン", zh: "最佳十一人"),
   "BEST XI": (ko: "베스트 11", ja: "ベストイレブン", zh: "最佳十一人"),
+  "Shows the players who have played the most minutes in each position this season. Together they make up the team's most-used lineup.":
+      (
+    ko: "이번 시즌 포지션별로 가장 많은 시간을 뛴 선수들을 보여줘요. 이 선수들이 팀에서 가장 자주 사용한 라인업을 이뤄요.",
+    ja: "今シーズン、各ポジションで最も長くプレーした選手を表示します。この選手たちがチームで最も多く起用されたラインアップを構成します。",
+    zh: "展示本赛季各位置出场时间最多的球员。他们组成了球队最常使用的阵容。"
+  ),
   "No best eleven available": (
     ko: "베스트 11 정보가 없어요",
     ja: "ベストイレブンの情報がありません",
@@ -1557,6 +1563,16 @@ const appMessages = <String, MessageTranslations>{
     ko: "채팅 연결이 끊겼어요. 다시 시도해 주세요.",
     ja: "チャットが切断されました。もう一度お試しください。",
     zh: "聊天已断开，请重试。"
+  ),
+  "Reconnecting to chat…": (
+    ko: "채팅에 다시 연결하는 중…",
+    ja: "チャットに再接続中…",
+    zh: "正在重新连接聊天…"
+  ),
+  "Jump to latest messages": (
+    ko: "최신 메시지로 이동",
+    ja: "最新のメッセージに移動",
+    zh: "跳转到最新消息"
   ),
   "Chat unavailable": (ko: "지금은 채팅할 수 없어요", ja: "現在チャットは利用できません", zh: "当前无法聊天"),
   "Live chat is only available during the match.": (

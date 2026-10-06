@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
 import 'package:onetouch/data/injuries/team_injury_repository.dart';
@@ -101,7 +102,14 @@ class _OverviewTabState extends State<OverviewTab> {
 
               if (_showBestElevenSection) ...[
                 const SizedBox(height: 32),
-                SectionHeader(title: tr(context, "BEST XI")),
+                SectionHeader(
+                  title: tr(context, "BEST XI"),
+                  accessory: const AppInfoButton(
+                    key: ValueKey('best-xi-info'),
+                    message:
+                        "Shows the players who have played the most minutes in each position this season. Together they make up the team's most-used lineup.",
+                  ),
+                ),
                 TeamBestElevenSection(
                   teamId: _teamId,
                   variant: TeamBestElevenVariant.overview,
@@ -150,14 +158,22 @@ class _OverviewTabState extends State<OverviewTab> {
 
 class SectionHeader extends StatelessWidget {
   final String title;
-  const SectionHeader({super.key, required this.title});
+  final Widget? accessory;
+  const SectionHeader({super.key, required this.title, this.accessory});
 
   @override
   Widget build(BuildContext context) {
+    final label = Text(tr(context, title),
+        style: Body1_b.style, textAlign: TextAlign.start);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Text(tr(context, title),
-          style: Body1_b.style, textAlign: TextAlign.start),
+      child: accessory == null
+          ? label
+          : Row(children: [
+              Flexible(child: label),
+              const SizedBox(width: 4),
+              accessory!,
+            ]),
     );
   }
 }
