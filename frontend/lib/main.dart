@@ -160,6 +160,11 @@ final GoRouter _router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   redirect: (context, state) {
     final path = state.uri.path;
+    // 활성화된 테스트 경기만 계정 동기화 없이 바로 열어요.
+    if ((mockBettingMatchEnabled && path == '/debug/betting') ||
+        (mockLiveMatchEnabled && path == '/debug/live-match')) {
+      return null;
+    }
     if (path == '/' ||
         path == '/session' ||
         path == '/onboarding' ||
@@ -366,10 +371,12 @@ final GoRouter _router = GoRouter(
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) {
           final mock = MockLiveMatch();
+          final fixture = mock.fixtures.findById(mockLiveMatchId)!;
           return MatchScreen(
             matchId: '$mockLiveMatchId',
             matchStatus: 'live',
-            initialFixture: mock.fixtures.findById(mockLiveMatchId),
+            initialFixture: fixture,
+            perspectiveTeamId: fixture.homeTeamId,
             repository: mock.fixtures,
             bettingRepository: mock.betting,
             chatRepository: mock.chat,
@@ -384,10 +391,12 @@ final GoRouter _router = GoRouter(
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) {
           final mock = MockBettingMatch();
+          final fixture = mock.fixtures.findById(mockBettingMatchId)!;
           return MatchScreen(
             matchId: '$mockBettingMatchId',
             matchStatus: 'upcoming',
-            initialFixture: mock.fixtures.findById(mockBettingMatchId),
+            initialFixture: fixture,
+            perspectiveTeamId: fixture.homeTeamId,
             repository: mock.fixtures,
             bettingRepository: mock.betting,
           );

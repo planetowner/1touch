@@ -57,6 +57,7 @@ class MatchPreviewTab extends StatefulWidget {
   final BettingController bettingController;
   final TeamAttributeRepository? attributeRepository;
   final StandingRepository? standingRepository;
+  final int? perspectiveTeamId;
 
   const MatchPreviewTab({
     super.key,
@@ -65,6 +66,7 @@ class MatchPreviewTab extends StatefulWidget {
     this.fixtureRepository,
     this.attributeRepository,
     this.standingRepository,
+    this.perspectiveTeamId,
   });
 
   @override
@@ -87,15 +89,19 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   @override
   void initState() {
     super.initState();
-    currentUserPreferences.favoriteTeamId.addListener(_handleFavoriteChanged);
+    if (widget.perspectiveTeamId == null) {
+      currentUserPreferences.favoriteTeamId.addListener(_handleFavoriteChanged);
+    }
     _loadLatestHeadToHead();
     _loadCurrentStandings();
   }
 
   @override
   void dispose() {
-    currentUserPreferences.favoriteTeamId
-        .removeListener(_handleFavoriteChanged);
+    if (widget.perspectiveTeamId == null) {
+      currentUserPreferences.favoriteTeamId
+          .removeListener(_handleFavoriteChanged);
+    }
     super.dispose();
   }
 
@@ -106,6 +112,14 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   @override
   void didUpdateWidget(MatchPreviewTab oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.perspectiveTeamId == null &&
+        widget.perspectiveTeamId != null) {
+      currentUserPreferences.favoriteTeamId
+          .removeListener(_handleFavoriteChanged);
+    } else if (oldWidget.perspectiveTeamId != null &&
+        widget.perspectiveTeamId == null) {
+      currentUserPreferences.favoriteTeamId.addListener(_handleFavoriteChanged);
+    }
     if (widget.fixture.competitionId != oldWidget.fixture.competitionId ||
         widget.standingRepository != oldWidget.standingRepository) {
       _loadCurrentStandings();
@@ -173,7 +187,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   Widget build(BuildContext context) {
     final homeTeam = fixtureHomeTeam(widget.fixture, teamRepository);
     final awayTeam = fixtureAwayTeam(widget.fixture, teamRepository);
-    final favoriteTeamId = currentUserPreferences.favoriteTeamId.value;
+    final favoriteTeamId =
+        widget.perspectiveTeamId ?? currentUserPreferences.favoriteTeamId.value;
     final bettingAnchorTeamId =
         favoriteTeamId == homeTeam.teamId || favoriteTeamId == awayTeam.teamId
             ? favoriteTeamId

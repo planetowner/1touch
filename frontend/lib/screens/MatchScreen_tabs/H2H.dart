@@ -26,12 +26,14 @@ class H2HTab extends StatefulWidget {
   final Fixture fixture;
   final FixtureRepository? fixtureRepository;
   final BettingController bettingController;
+  final int? perspectiveTeamId;
 
   const H2HTab({
     super.key,
     required this.fixture,
     required this.bettingController,
     this.fixtureRepository,
+    this.perspectiveTeamId,
   });
 
   @override
@@ -52,14 +54,18 @@ class _H2HTabState extends State<H2HTab> {
   @override
   void initState() {
     super.initState();
-    currentUserPreferences.favoriteTeamId.addListener(_handleFavoriteChanged);
+    if (widget.perspectiveTeamId == null) {
+      currentUserPreferences.favoriteTeamId.addListener(_handleFavoriteChanged);
+    }
     _loadHeadToHead();
   }
 
   @override
   void dispose() {
-    currentUserPreferences.favoriteTeamId
-        .removeListener(_handleFavoriteChanged);
+    if (widget.perspectiveTeamId == null) {
+      currentUserPreferences.favoriteTeamId
+          .removeListener(_handleFavoriteChanged);
+    }
     super.dispose();
   }
 
@@ -70,6 +76,14 @@ class _H2HTabState extends State<H2HTab> {
   @override
   void didUpdateWidget(H2HTab oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.perspectiveTeamId == null &&
+        widget.perspectiveTeamId != null) {
+      currentUserPreferences.favoriteTeamId
+          .removeListener(_handleFavoriteChanged);
+    } else if (oldWidget.perspectiveTeamId != null &&
+        widget.perspectiveTeamId == null) {
+      currentUserPreferences.favoriteTeamId.addListener(_handleFavoriteChanged);
+    }
     if (widget.fixture.fixtureId != oldWidget.fixture.fixtureId ||
         widget.fixtureRepository != oldWidget.fixtureRepository) {
       _selectedMatches = 5;
@@ -106,7 +120,8 @@ class _H2HTabState extends State<H2HTab> {
   }
 
   int get _perspectiveTeamId {
-    final favoriteId = currentUserPreferences.favoriteTeamId.value;
+    final favoriteId =
+        widget.perspectiveTeamId ?? currentUserPreferences.favoriteTeamId.value;
     if (favoriteId == widget.fixture.homeTeamId ||
         favoriteId == widget.fixture.awayTeamId) {
       return favoriteId;

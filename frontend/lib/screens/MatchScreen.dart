@@ -31,6 +31,7 @@ class MatchScreen extends StatefulWidget {
   final StandingRepository? standingRepository;
   final ChatRepository? chatRepository;
   final ChatSocket? chatSocket;
+  final int? perspectiveTeamId;
 
   const MatchScreen({
     super.key,
@@ -43,6 +44,7 @@ class MatchScreen extends StatefulWidget {
     this.standingRepository,
     this.chatRepository,
     this.chatSocket,
+    this.perspectiveTeamId,
   });
 
   @override
@@ -385,6 +387,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
         );
       case 'MATCH PREVIEW':
         return MatchPreviewTab(
+          perspectiveTeamId: widget.perspectiveTeamId,
           standingRepository: widget.standingRepository,
           fixture: fixture!,
           fixtureRepository: _repository,
@@ -392,6 +395,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
         );
       case 'HEAD TO HEAD':
         return H2HTab(
+          perspectiveTeamId: widget.perspectiveTeamId,
           fixture: fixture!,
           fixtureRepository: _repository,
           bettingController: _betting!,

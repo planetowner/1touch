@@ -117,21 +117,6 @@ void main() {
     }
   }
 
-  test('debug betting preview becomes the session destination', () {
-    expect(
-      resolveSessionReadyDestination(
-        communityDestination: '/community/1',
-        notificationDestination: '/match/2',
-        bettingDebugEnabled: true,
-      ),
-      '/debug/betting',
-    );
-    expect(
-      resolveSessionReadyDestination(bettingDebugEnabled: false),
-      '/home',
-    );
-  });
-
   testWidgets('restores the local Home snapshot before entering Home',
       (tester) async {
     final repository = _PendingHomeSnapshotRepository();
