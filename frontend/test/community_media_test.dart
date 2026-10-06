@@ -98,6 +98,7 @@ void main() {
     });
     final mediaUrl =
         apiClient.baseUri.resolve('attachments/7/content').toString();
+    var openedPosts = 0;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -115,7 +116,7 @@ void main() {
                 createdAt: '2026-09-27T12:00:00Z',
               ),
             ],
-            onPostTap: (_) {},
+            onPostTap: (_) => openedPosts++,
           ),
         ),
       ),
@@ -149,6 +150,7 @@ void main() {
       find.byKey(const ValueKey('community-attachment-viewer')),
       findsNothing,
     );
+    expect(openedPosts, 0);
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {

@@ -125,6 +125,33 @@ void main() {
     expect(requests, 0);
   });
 
+  test(
+      'watch list fetches new results instead of restoring the five-match cache',
+      () async {
+    final store = MemoryLocalCacheStore();
+    await store.write('players-ones-to-watch', _watchJson(name: 'Old player'));
+    var requests = 0;
+    final repository = ApiPlayerDirectoryRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response(
+            jsonEncode(_watchJson(name: 'New player')),
+            200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          );
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    expect(await repository.restoreCachedWatch(), isNull);
+    expect((await repository.watch()).single.name, 'New player');
+    expect(requests, 1);
+  });
+
   test('stale watch list remains visible during one background refresh',
       () async {
     final store = _AgedRankingStore();
