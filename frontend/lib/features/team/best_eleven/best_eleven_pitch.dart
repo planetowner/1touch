@@ -42,13 +42,13 @@ class BestElevenPitch extends StatelessWidget {
     return Container(
       key: const ValueKey('team-best-eleven-card'),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: appCardShadows(context),
       ),
       child: Material(
         color: pitchBackground,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         clipBehavior: Clip.antiAlias,
         child: SizedBox(
           width: double.infinity,
