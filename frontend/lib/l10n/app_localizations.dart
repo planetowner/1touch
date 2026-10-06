@@ -138,9 +138,16 @@ String appStatLabel(BuildContext context, String label) =>
 String playerMetricLabel(BuildContext context, String label) =>
     appStatLabel(context, label);
 
-String teamScreenLabel(BuildContext context, String message) {
+String teamScreenLabel(BuildContext context, String message) =>
+    _koreanContextLabel(context, message, teamScreenKoreanMessages);
+
+String playerTabLabel(BuildContext context, String message) =>
+    _koreanContextLabel(context, message, playerTabKoreanMessages);
+
+String _koreanContextLabel(
+    BuildContext context, String message, Map<String, String> messages) {
   if (Localizations.localeOf(context).languageCode == 'ko') {
-    return teamScreenKoreanMessages[message] ?? tr(context, message);
+    return messages[message] ?? tr(context, message);
   }
   return tr(context, message);
 }
