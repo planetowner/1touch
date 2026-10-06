@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/onboarding.dart';
+import 'package:onetouch/SignComps/sign_in.dart';
 import 'package:onetouch/SignComps/other_login_methods.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -299,6 +300,86 @@ void main() {
       final username = tester
           .widget<TextField>(find.byKey(const ValueKey('sign-in-username')));
       expect(username.decoration!.fillColor, app_style.AppPalette.lightGreyBox);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('keyboard keeps the onboarding layout in place', (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpWidget(MaterialApp(
+      home: OnboardingScreen(
+        loadOptions: () async => const LoginOptions(
+          recommended: [LoginProvider.google, LoginProvider.email],
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final logo = find.byKey(const ValueKey('onboarding-logo'));
+    final password = find.byKey(const ValueKey('sign-in-password'));
+    final logoBefore = tester.getRect(logo);
+    final passwordBefore = tester.getRect(password);
+    await tester.tap(password);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+
+    expect(
+        tester.widget<Scaffold>(find.byType(Scaffold)).resizeToAvoidBottomInset,
+        isFalse);
+    expect(tester.getRect(logo), logoBefore);
+    expect(tester.getRect(password), passwordBefore);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keyboard keeps the email login form in place', (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpWidget(const MaterialApp(home: EmailSignInScreen()));
+    await tester.pumpAndSettle();
+
+    final password = find.byKey(const ValueKey('sign-in-password'));
+    final passwordBefore = tester.getRect(password);
+    await tester.tap(password);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+
+    expect(
+        tester.widget<Scaffold>(find.byType(Scaffold)).resizeToAvoidBottomInset,
+        isFalse);
+    expect(tester.getRect(password), passwordBefore);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('login stays overflow-free with the keyboard at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      await tester.pumpWidget(MaterialApp(
+        home: OnboardingScreen(
+          loadOptions: () async => const LoginOptions(
+            recommended: [LoginProvider.google, LoginProvider.email],
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('sign-in-password')));
+      tester.view.viewInsets = const FakeViewPadding(bottom: 280);
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('onboarding-logo')), findsOneWidget);
+      expect(find.byKey(const ValueKey('sign-in-password')), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
