@@ -170,6 +170,34 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  test('spending limit rounds balances and adds the editable stake', () async {
+    final repository = FakeBettingRepository();
+    final controller = BettingController(fixtureId: 1, repository: repository);
+    addTearDown(controller.dispose);
+    expect(controller.spendingLimit, 0);
+    for (final entry in {9: 0, 10: 10, 19: 10, 1207: 1200}.entries) {
+      repository.balance = entry.key;
+      await controller.load();
+      expect(controller.spendingLimit, entry.value);
+      expect(controller.market!.wallet.balance, entry.key);
+    }
+    repository.bet = const FixtureBet(
+      betId: 1,
+      fixtureId: 1,
+      outcome: BetOutcome.draw,
+      stake: 100,
+      probabilityText: '0.1',
+      decimalOdds: 10,
+      potentialReturn: 1000,
+      status: 'open',
+      revision: 1,
+      payout: 0,
+    );
+    await controller.load();
+    expect(controller.spendingLimit, 1300);
+    expect(controller.market!.wallet.balance, 1207);
+  });
+
   testWidgets('uses the server stake unit for minimum and amount buttons',
       (tester) async {
     final repository = FakeBettingRepository()
@@ -195,6 +223,7 @@ void main() {
     repository.balance = 85;
     await controller.load();
     await tester.pump();
+    expect(find.text('You’ve got 85 pts!'), findsOneWidget);
     await tester.tap(find.text('PLACE A BET'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Draw').last);
@@ -203,6 +232,7 @@ void main() {
     await tester.tap(find.text('CONTINUE'));
     await tester.pumpAndSettle();
     expect(find.text('75'), findsOneWidget);
+    expect(find.text('You can use up to 75 pts!'), findsOneWidget);
     expect(
       tester
           .widget<IconButton>(find.byKey(const ValueKey('bet-decrease')))
@@ -252,7 +282,7 @@ void main() {
 
   testWidgets('uses the localized point unit throughout the amount flow',
       (tester) async {
-    final repository = FakeBettingRepository();
+    final repository = FakeBettingRepository()..balance = 1207;
     final controller = BettingController(fixtureId: 1, repository: repository);
     await controller.load();
     final teams = MockTeamRepository();
@@ -268,6 +298,7 @@ void main() {
         ),
       ),
     ));
+    expect(find.text('1,207P를 가지고 있어요'), findsOneWidget);
     await tester.tap(find.text('예측하기'));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(ListTile).first);
@@ -276,6 +307,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('사용할 포인트'), findsOneWidget);
+    expect(find.text('최대 1,200P를 쓸 수 있어요'), findsOneWidget);
+    expect(find.text('100'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const ValueKey('bet-decrease')));
+    await tester.tap(find.byKey(const ValueKey('bet-decrease')));
+    await tester.pump();
+    expect(find.text('90'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('bet-increase')));
+    await tester.pump();
+    expect(find.text('100'), findsOneWidget);
     expect(find.textContaining('포인트', findRichText: true), findsWidgets);
     expect(find.textContaining('pts', findRichText: true), findsNothing);
     expect(tester.takeException(), isNull);
@@ -668,8 +708,8 @@ void main() {
         await tester.tap(find.text('CONTINUE'));
         await tester.pumpAndSettle();
         repository.submitGate = Completer<void>();
-        await tester.ensureVisible(find.text('CONFIRM BET'));
-        await tester.tap(find.text('CONFIRM BET'));
+        await tester.ensureVisible(find.text('CONTINUE'));
+        await tester.tap(find.text('CONTINUE'));
         await tester.pump();
         expect(find.text('Bet Submitted!'), findsNothing);
         expect(repository.saveCalls, 1);
@@ -723,8 +763,8 @@ void main() {
         await tester.ensureVisible(find.text('CONTINUE'));
         await tester.tap(find.text('CONTINUE'));
         await tester.pumpAndSettle();
-        await tester.ensureVisible(find.text('CONFIRM BET'));
-        await tester.tap(find.text('CONFIRM BET'));
+        await tester.ensureVisible(find.text('CONTINUE'));
+        await tester.tap(find.text('CONTINUE'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('DONE'));
         await tester.pumpAndSettle();

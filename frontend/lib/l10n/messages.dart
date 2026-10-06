@@ -1721,13 +1721,12 @@ const appMessages = <String, MessageTranslations>{
   "YES, SYNC IT!": (ko: "네, 동기화할게요", ja: "同期する", zh: "立即同步"),
   "PLACE A BET": (ko: "예측하기", ja: "予想する", zh: "预测"),
   "{team} Win": (ko: "{team} 승", ja: "{team} 勝利", zh: "{team} 胜"),
-  "CONFIRM BET": (ko: "베팅 확정", ja: "予想を確定", zh: "确认竞猜"),
   "EDIT BET": (ko: "베팅 수정", ja: "予想を編集", zh: "修改竞猜"),
-  "EDIT MY BET": (ko: "베팅 수정하기", ja: "予想を編集", zh: "修改竞猜"),
+  "EDIT MY BET": (ko: "예측 바꾸기", ja: "予想を変える", zh: "修改预测"),
   "You’ve already placed a bet.": (
-    ko: "이미 승부 예측을 완료했어요.",
-    ja: "すでに予想を送信しています。",
-    zh: "你已经提交了竞猜。"
+    ko: "이미 예측했어요",
+    ja: "すでに予想しました",
+    zh: "已经预测了"
   ),
   "CANCEL BET": (ko: "베팅 취소", ja: "予想をキャンセル", zh: "取消竞猜"),
   "KEEP BET": (ko: "베팅 유지", ja: "予想を維持", zh: "保留竞猜"),
@@ -1915,9 +1914,9 @@ const appMessages = <String, MessageTranslations>{
     zh: "这次投注已退还{points}。"
   ),
   "You’ve got {points} pts!": (
-    ko: "{points}포인트가 있어요!",
-    ja: "{points}ポイントあります！",
-    zh: "你有{points}积分！"
+    ko: "{points}P를 가지고 있어요",
+    ja: "{points}Pあります",
+    zh: "你有{points}P"
   ),
   "You’re betting": (ko: "사용할 포인트", ja: "使用するポイント", zh: "使用的积分"),
   "You can use up to {points} pts!": (

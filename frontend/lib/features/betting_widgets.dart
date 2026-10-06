@@ -108,8 +108,10 @@ class MatchBettingSection extends StatelessWidget {
                   ),
                 if (market != null && bet == null) ...[
                   const SizedBox(height: 20),
-                  Text(tr(context, "You’ve got {points} pts!",
-                      {'points': market.wallet.balance})),
+                  Text(tr(context, "You’ve got {points} pts!", {
+                    'points': NumberFormat.decimalPattern()
+                        .format(market.wallet.balance),
+                  })),
                 ],
                 if (bet?.isOpen == true) ...[
                   const SizedBox(height: 24),
@@ -435,9 +437,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                       _BetButton(
                         text: controller.saving
                             ? tr(context, 'SUBMITTING…')
-                            : _step == _BettingFlowStep.review
-                                ? tr(context, 'CONFIRM BET')
-                                : trUpper(context, 'Continue'),
+                            : trUpper(context, 'Continue'),
                         onPressed: _selected == null ||
                                 !controller.canBet ||
                                 _amount > controller.spendingLimit
@@ -877,7 +877,8 @@ class MatchStatsHeader extends StatelessWidget {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                ['W', 'D', 'L'][options[index].outcome.index],
+                                tr(context,
+                                    ['W', 'D', 'L'][options[index].outcome.index]),
                               ),
                             ],
                           ),
