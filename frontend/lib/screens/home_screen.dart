@@ -18,7 +18,6 @@ import 'package:onetouch/data/home/news_repository_provider.dart'
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_provider;
-import 'package:onetouch/debug/mock_live_match.dart';
 import 'package:onetouch/features/home/screen/live_match_ball_button.dart';
 import 'package:onetouch/features/home/home_content_image.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -628,15 +627,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       team: viewedTeam,
                       liveMatchClock: _liveMatchClock,
                     ),
-                    if (mockLiveMatchEnabled)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: OutlinedButton(
-                          key: const ValueKey('open-mock-live-match'),
-                          onPressed: () => context.push('/debug/live-match'),
-                          child: const Text('Test live match'),
-                        ),
-                      ),
                     const SizedBox(height: 32),
                     Row(
                       key: const ValueKey('home-calendar-title-row'),
