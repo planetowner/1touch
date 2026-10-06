@@ -128,6 +128,8 @@ void main() {
           awayTeamId: 90,
           homeTeamName: 'Nantes',
           awayTeamName: 'Nîmes',
+          homeTeamShortName: 'ABC',
+          awayTeamShortName: 'DEF',
           competitionType: CompetitionType.league,
           status: status,
           stateId: stateId,
@@ -140,6 +142,19 @@ void main() {
     for (final id in [101, 102]) {
       final card = find.byKey(ValueKey('search-event-$id'));
       await tester.ensureVisible(card);
+      expect(
+        find.descendant(
+          of: card,
+          matching: find.text(id == 101 ? 'Postponed' : 'Cancelled'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.descendant(of: card, matching: find.text('ABC')),
+          findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('DEF')),
+          findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('Sat, Mar 14')),
+          findsNothing);
       final inkWell = tester.widget<InkWell>(find.ancestor(
         of: card,
         matching: find.byType(InkWell),
@@ -152,11 +167,75 @@ void main() {
 
     final scheduledCard = find.byKey(const ValueKey('search-event-103'));
     await tester.ensureVisible(scheduledCard);
+    expect(find.descendant(of: scheduledCard, matching: find.text('ABC')),
+        findsOneWidget);
+    expect(find.descendant(of: scheduledCard, matching: find.text('DEF')),
+        findsOneWidget);
     await tester.tap(scheduledCard);
     await tester.pumpAndSettle();
     expect(find.text('Match ID 103'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final dark in [false, true]) {
+    testWidgets(
+        'unavailable search card fits compact and tall ${dark ? 'dark' : 'light'} screens',
+        (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(320, 568);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      final repo = _Search();
+      await _pump(tester, repo, dark: dark);
+      await _query(tester, 'Nantes');
+      repo.pending.single.complete(SearchResults(fixtures: [
+        Fixture(
+          fixtureId: 104,
+          seasonId: 1,
+          competitionId: 564,
+          homeTeamId: 99991,
+          awayTeamId: 99992,
+          homeTeamName: 'Marseille',
+          awayTeamName: 'Nîmes',
+          homeTeamShortName: 'OM',
+          awayTeamShortName: 'Nîmes',
+          competitionType: CompetitionType.league,
+          status: FixtureStatus.upcoming,
+          stateId: 10,
+          roundName: '8',
+          startingAt: DateTime(2026, 3, 14).toIso8601String(),
+        ),
+      ]));
+      await tester.pumpAndSettle();
+
+      final card = find.byKey(const ValueKey('search-event-104'));
+      final container = tester.widget<Container>(card);
+      final decoration = container.decoration! as BoxDecoration;
+      expect(container.padding, const EdgeInsets.all(16));
+      expect(decoration.borderRadius, BorderRadius.circular(24));
+      expect(decoration.color,
+          dark ? app_style.AppPalette.darkGrey : app_style.AppPalette.white);
+      expect(find.descendant(of: card, matching: find.text('Postponed')),
+          findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('MAR')),
+          findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('NÎM')),
+          findsOneWidget);
+      expect(
+        find
+            .descendant(of: card, matching: find.byType(Opacity))
+            .evaluate()
+            .where((element) => (element.widget as Opacity).opacity == 0.3)
+            .length,
+        2,
+      );
+      expect(tester.takeException(), isNull);
+
+      tester.view.physicalSize = const Size(430, 932);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets(
       'empty input shows a prompt without fabricated recents or a request',

@@ -462,55 +462,135 @@ class _SearchContentState extends State<SearchContent> {
         shortName: fixture.awayTeamShortName,
         imagePath: fixture.awayTeamLogo);
     final colors = Theme.of(context).colorScheme;
+    final unavailable = const {10, 12}.contains(fixture.stateId);
     final kickoff = matchKickoffLabels(fixture.kickoff,
         locale: Localizations.localeOf(context));
 
     return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: const {10, 12}.contains(fixture.stateId)
+      borderRadius: BorderRadius.circular(unavailable ? 24 : 16),
+      onTap: unavailable
           ? null
           : () => context.push(
                 '/match/${fixture.fixtureId}?status=${fixture.status.name}',
                 extra: fixture,
               ),
-      child: Container(
-        key: ValueKey('search-event-${fixture.fixtureId}'),
-        constraints: const BoxConstraints(minHeight: 112),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-        decoration: _cardDecoration(context),
-        child: Row(
-          children: [
-            Expanded(child: _buildEventTeam(home)),
-            _buildScore(fixture.homeScore),
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      kickoff.date,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: Body1.style.copyWith(color: colors.onSurface),
+      child: unavailable
+          ? _buildUnavailableEventCard(fixture, home, away)
+          : Container(
+              key: ValueKey('search-event-${fixture.fixtureId}'),
+              constraints: const BoxConstraints(minHeight: 112),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              decoration: _cardDecoration(context),
+              child: Row(
+                children: [
+                  Expanded(child: _buildEventTeam(home)),
+                  _buildScore(fixture.homeScore),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            kickoff.date,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style:
+                                Body1.style.copyWith(color: colors.onSurface),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            kickoff.time,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style:
+                                Body1.style.copyWith(color: colors.onSurface),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      kickoff.time,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: Body1.style.copyWith(color: colors.onSurface),
-                    ),
-                  ],
-                ),
+                  ),
+                  _buildScore(fixture.awayScore),
+                  Expanded(child: _buildEventTeam(away)),
+                ],
               ),
             ),
-            _buildScore(fixture.awayScore),
-            Expanded(child: _buildEventTeam(away)),
-          ],
+    );
+  }
+
+  Widget _buildUnavailableEventCard(Fixture fixture, Team home, Team away) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    return Container(
+      key: ValueKey('search-event-${fixture.fixtureId}'),
+      constraints: const BoxConstraints(minHeight: 76),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.of(context).cardBackground,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _buildUnavailableEventTeam(home)),
+          SizedBox(
+            width: 76,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 36,
+                  child: Center(
+                    child: Text(
+                      tr(context,
+                          fixture.stateId == 10 ? 'Postponed' : 'Cancelled'),
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: Body2.style.copyWith(
+                        color: foreground,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: 24,
+                  height: 1,
+                  color: foreground.withValues(alpha: 0.3),
+                ),
+              ],
+            ),
+          ),
+          Expanded(child: _buildUnavailableEventTeam(away, reverse: true)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUnavailableEventTeam(Team team, {bool reverse = false}) {
+    final logo = _buildTeamLogo(team, size: 40);
+    final name = Expanded(
+      child: Text(
+        _eventTeamCode(team),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: reverse ? TextAlign.right : TextAlign.left,
+        style: Heading5.style.copyWith(
+          color: Theme.of(context).colorScheme.onSurface,
+          height: 1.1,
+        ),
+      ),
+    );
+    return Opacity(
+      opacity: 0.3,
+      child: SizedBox(
+        height: 44,
+        child: Row(
+          children: reverse
+              ? [name, const SizedBox(width: 8), logo]
+              : [logo, const SizedBox(width: 8), name],
         ),
       ),
     );
@@ -539,6 +619,23 @@ class _SearchContentState extends State<SearchContent> {
     );
   }
 
+  String _eventTeamCode(Team team) {
+    final code = team_providers.teamRepository.findById(team.teamId)?.shortCode;
+    if (code != null && code.trim().runes.length == 3) {
+      return code.trim().toUpperCase();
+    }
+
+    // 검색 경기 카드에는 공식 세 글자 코드가 없더라도 세 글자만 표시해요.
+    final shortName = team.shortName?.replaceAll(RegExp(r'[\s._-]+'), '');
+    final name = team.name.replaceAll(RegExp(r'[\s._-]+'), '');
+    final source =
+        shortName != null && shortName.runes.length >= 3 ? shortName : name;
+    final letters = source.runes.take(3).toList();
+    return letters.length == 3
+        ? String.fromCharCodes(letters).toUpperCase()
+        : 'TBD';
+  }
+
   Widget _buildEventTeam(Team team) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -546,7 +643,7 @@ class _SearchContentState extends State<SearchContent> {
         _buildTeamLogo(team, size: 44),
         const SizedBox(height: 6),
         Text(
-          team.shortCode ?? teamNameLabel(context, team.teamId, team.name),
+          _eventTeamCode(team),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
