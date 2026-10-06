@@ -83,6 +83,26 @@ class PlayerDetailMathTests(unittest.TestCase):
         self.assertIsNone(goal["rank_value"])
         self.assertEqual(goal["observed_matches"], 1)
 
+    def test_lineup_pairs_do_not_replace_season_ranking_metrics(self):
+        stats = defaultdict(dict, {(1, 8, 1): {
+            120: 40, 123: 2, 122: 5, 106: 4, 105: 7, 109: 2, 108: 3,
+        }})
+        for position in (24, 25, 27):
+            with self.subTest(position=position):
+                result = metrics(season_categories(position, [match(position=position)], stats))
+                self.assertNotIn("long_balls_pair", result)
+                self.assertNotIn("dribbles", result)
+                if position in (24, 25):
+                    self.assertEqual(result["long_ball_success_rate"]["value"], 40)
+                if position == 24:
+                    self.assertEqual(result["long_balls"]["per90"], 5)
+                elif position == 25:
+                    self.assertEqual(result["duels"]["kind"], "pair")
+                    self.assertEqual(result["duels"]["per90"], 4)
+                else:
+                    self.assertEqual(result["dribble_attempts"]["per90"], 3)
+                    self.assertEqual(result["dribble_success_rate"]["value"], 66.7)
+
     def test_per90_keeps_minutes_from_zero_event_matches(self):
         minutes = [45, 85, 77, 81, 66, 61, 86]
         values = [1, 3, 2, None, None, 5, 4]
@@ -382,6 +402,10 @@ class PlayerDetailRepositoryTests(unittest.TestCase):
             self.assertEqual(response['player_id'], 1)
             self.assertEqual(response['profile']['nationality_id'], 712)
             self.assertEqual(response['profile']['nationality'], 'South Korea')
+            self.assertEqual(
+                [row['competition_id'] for row in response['matches']],
+                [row['competition_id'] for row in get.return_value['matches']],
+            )
             get.assert_called_with(1,5)
             get.side_effect=ValueError('Player has no record for this league season')
             self.assertEqual(client.get('/players/1/detail?season_id=6').status_code,404)

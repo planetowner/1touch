@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/formation_layout.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -24,10 +25,15 @@ void main() {
         .load();
   });
 
-  for (final width in [320.0, 393.0, 430.0]) {
-    testWidgets('keeps Korean formations inside the original pitch at $width',
+  for (final (width, height) in [
+    (320.0, 700.0),
+    (393.0, 940.0),
+    (430.0, 1100.0)
+  ]) {
+    testWidgets(
+        'keeps Korean formations inside the original pitch at ${width}x$height',
         (tester) async {
-      tester.view.physicalSize = Size(width, 940);
+      tester.view.physicalSize = Size(width, height);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -71,13 +77,19 @@ void main() {
           body: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: RepaintBoundary(
-                key: boundaryKey,
-                child: LineupPitch(
-                  awayRows: away,
-                  homeRows: home,
-                  awayColor: const Color(0xFF1E70BF),
-                  homeColor: const Color(0xFFEF1935),
+              child: FootballNamesScope(
+                names: const FootballNames(
+                  players: {10002: '전체 이름'},
+                  playerShortNames: {10002: 'A. 카스트린'},
+                ),
+                child: RepaintBoundary(
+                  key: boundaryKey,
+                  child: LineupPitch(
+                    awayRows: away,
+                    homeRows: home,
+                    awayColor: const Color(0xFF1E70BF),
+                    homeColor: const Color(0xFFEF1935),
+                  ),
                 ),
               ),
             ),
@@ -100,9 +112,14 @@ void main() {
         expect(rect.right, lessThanOrEqualTo(pitch.right));
         expect(rect.top, greaterThanOrEqualTo(pitch.top));
         expect(rect.bottom, lessThanOrEqualTo(pitch.bottom));
-        nameRects.add(tester.getRect(
-          find.descendant(of: finder, matching: find.byType(Text)).last,
-        ));
+        final expectedName = player.playerId == 10002 ? 'A. 카스트린' : player.name;
+        final name =
+            find.descendant(of: finder, matching: find.text(expectedName));
+        expect(name, findsOneWidget);
+        final nameText = tester.widget<Text>(name);
+        expect(nameText.maxLines, 1);
+        expect(nameText.overflow, TextOverflow.ellipsis);
+        nameRects.add(tester.getRect(name));
       }
       for (var i = 0; i < nameRects.length; i++) {
         for (var j = i + 1; j < nameRects.length; j++) {
@@ -110,6 +127,13 @@ void main() {
               reason: 'player names $i and $j');
         }
       }
+      final scrollingNames = find.descendant(
+        of: find.byKey(const ValueKey('match-lineup-card')),
+        matching: find.byWidgetPredicate((widget) =>
+            widget is SingleChildScrollView &&
+            widget.scrollDirection == Axis.horizontal),
+      );
+      expect(scrollingNames, findsNothing);
       expect(tester.takeException(), isNull);
 
       final boundary = boundaryKey.currentContext!.findRenderObject()!
@@ -120,7 +144,8 @@ void main() {
             (await picture.toByteData(format: ui.ImageByteFormat.png))!
                 .buffer
                 .asUint8List();
-        final file = File('build/lineup-pitch-ko-${width.toInt()}.png');
+        final file = File(
+            'build/lineup-pitch-ko-${width.toInt()}x${height.toInt()}.png');
         await file.parent.create(recursive: true);
         await file.writeAsBytes(bytes);
         picture.dispose();

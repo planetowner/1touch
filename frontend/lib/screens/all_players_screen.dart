@@ -67,6 +67,7 @@ class _PlayerCardState extends State<PlayerCard>
   late TabController _tabController;
   double _scrollOffset = 0.0;
   double _overviewTopBlockHeight = _playerDetailTopBlockHeight;
+  int _matchesScrollResetToken = 0;
   late PlayerDetailStore _detailStore;
 
   @override
@@ -104,6 +105,29 @@ class _PlayerCardState extends State<PlayerCard>
     _tabController.dispose();
 
     super.dispose();
+  }
+
+  void _openMatchesAtTop() {
+    setState(() => _matchesScrollResetToken++);
+    void resetHeaderWhenTabSettles() {
+      if (_tabController.indexIsChanging) return;
+      _tabController.removeListener(resetHeaderWhenTabSettles);
+      // Matches 목록의 스크롤을 먼저 초기화한 뒤 접힌 앱바를 맨 위로 펼쳐요.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _scrollController.hasClients) {
+            _scrollController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+            );
+          }
+        });
+      });
+    }
+
+    _tabController.addListener(resetHeaderWhenTabSettles);
+    _tabController.animateTo(2);
   }
 
   @override
@@ -256,7 +280,7 @@ class _PlayerCardState extends State<PlayerCard>
                         player: widget.player,
                         playerId: widget.id,
                         contractRepository: widget.contractRepository,
-                        onMatches: () => _tabController.animateTo(2),
+                        onMatches: _openMatchesAtTop,
                         onTopBlockHeightChanged: (height) {
                           final nextHeight =
                               height < _playerDetailTopBlockHeight
@@ -269,7 +293,11 @@ class _PlayerCardState extends State<PlayerCard>
                           setState(() => _overviewTopBlockHeight = nextHeight);
                         }),
                     AnalysisTab(player: widget.player, playerId: widget.id),
-                    MatchesTab(player: widget.player, playerId: widget.id),
+                    MatchesTab(
+                      player: widget.player,
+                      playerId: widget.id,
+                      scrollResetToken: _matchesScrollResetToken,
+                    ),
                     CareerTab(player: widget.player, playerId: widget.id),
                   ],
                 ),

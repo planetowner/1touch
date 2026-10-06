@@ -20,14 +20,16 @@ String? fixtureCompetitionLabel(BuildContext context, Fixture? fixture,
       leg: fixture.leg);
 }
 
-// 확률 예측의 다음 경기도 일반 경기와 같은 대회·라운드 표기를 써요.
+// 선수 기록과 확률 예측도 일반 경기와 같은 대회·라운드 표기를 써요.
 String competitionRoundLabel(BuildContext context,
-    {required int competitionId,
+    {required int? competitionId,
     String? competitionName,
     String? roundName,
     String? stageName,
     String? leg}) {
-  final competition = competitionRepository.findById(competitionId);
+  final competition = competitionId == null
+      ? null
+      : competitionRepository.findById(competitionId);
   return _formatCompetitionRoundLabel(
     competitionId: competitionId,
     roundName: roundName,
@@ -57,7 +59,7 @@ String formatFixtureCompetitionLabel(
     );
 
 String _formatCompetitionRoundLabel({
-  required int competitionId,
+  required int? competitionId,
   String? roundName,
   String? stageName,
   String? leg,
@@ -119,7 +121,7 @@ String _phaseLabel(String phase, Locale locale) {
       RegExp(r'^(\d+)(?:st|nd|rd|th) Round$').firstMatch(phase);
   if (numberedRound != null) {
     final number = numberedRound.group(1)!;
-    return korean ? '${number}R' : 'Round $number';
+    return translateMessage(locale, 'Round {round}', {'round': number});
   }
 
   final roundOf = RegExp(r'^Round of (\d+)$').firstMatch(phase);

@@ -2146,6 +2146,20 @@ SPORTMONKS_FIXTURE_TEAM_ID_OVERRIDES = {
 }
 
 
+# UEFA·구단 경기표와 생일을 대조했어요. 선수 이름이 섞인 감독 표시명만 고쳐요.
+# 근거: diagnostics/fixtures/sportmonks_coach_identity_errors.json
+SPORTMONKS_COACH_NAME_OVERRIDES = {
+    29935: 'Aleksandar Vasoski',
+    457103: 'Patrice Garande',
+    462010: 'Ilir Daja',
+}
+
+# Celta–Sevilla의 감독은 Carlos Carvalhal이에요. 브라질 선수 Jefferson은 별개로 남겨요.
+SPORTMONKS_FIXTURE_COACH_ID_OVERRIDES = {
+    (18545231, 36, 224127): 523914,
+}
+
+
 def correct_event_metadata(events):
     """경기 저장과 UEFA 징계 계산에 같은 검증된 이벤트 정정을 적용해요."""
     result = [event for event in events if event['id'] not in SPORTMONKS_DUPLICATE_EVENT_IDS]
@@ -2460,8 +2474,9 @@ class SportmonksClient:
         )["data"]
 
     def correct_fixture_details(self, fixture: Dict) -> Dict:
-        # 라이브에서도 기존에 검증한 선수·이벤트 ID 보정만 공유해요.
+        # 단건·배치·라이브 적재가 검증된 선수·감독·이벤트 보정을 함께 써요.
         self._correct_fixture_teams(fixture)
+        self._correct_fixture_coaches(fixture)
         coach_actors = {
             (coach.get("player_id", coach["id"]), coach["meta"]["participant_id"])
             for coach in fixture.get("coaches", [])
@@ -2480,6 +2495,21 @@ class SportmonksClient:
                 # 이벤트 선수 전체를 자동 추가하면 잘못 연결된 선수·감독까지 저장돼요.
                 event["verified_player_profiles"] = [self._get(f"players/{player_id}")["data"] for player_id in player_ids]
         return self._correct_lineup_players(fixture)
+
+    def _correct_fixture_coaches(self, fixture: Dict) -> None:
+        for coach in fixture.get('coaches', []):
+            meta = coach['meta']
+            key = (fixture['id'], meta['participant_id'], coach['id'])
+            coach_id = SPORTMONKS_FIXTURE_COACH_ID_OVERRIDES.get(key)
+            if coach_id is not None:
+                # ID만 옮기면 다른 사람의 생일·선수 연결이 남아서 전체 프로필도 교체해요.
+                profile = self._get(f'coaches/{coach_id}')['data']
+                coach.clear()
+                coach.update(profile)
+                coach['meta'] = {**meta, 'coach_id': coach_id}
+            name = SPORTMONKS_COACH_NAME_OVERRIDES.get(coach['id'])
+            if name is not None:
+                coach['display_name'] = name
 
     @staticmethod
     def _correct_fixture_teams(fixture: Dict) -> None:

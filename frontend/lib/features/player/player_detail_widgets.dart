@@ -8,6 +8,18 @@ import 'package:onetouch/features/player/player_image_cache.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
+
+// 선수 기록의 MP는 팀 경기 수가 아닌 출전 횟수예요. 영어 표의 짧은 표기는 유지해요.
+String playerRecordHeaderLabel(BuildContext context, String label) {
+  if (Localizations.localeOf(context).languageCode == 'en') return label;
+  return tr(context, switch (label) {
+    'League' => 'COMPETITION',
+    'MP' => 'Appearances',
+    'WR' => 'Win Rate',
+    _ => label,
+  });
+}
 
 class PlayerRemoteImage extends StatelessWidget {
   const PlayerRemoteImage(
@@ -119,9 +131,11 @@ class PlayerRecordRow extends StatelessWidget {
       child: Row(children: [
         Expanded(flex: 4, child: label),
         for (final text in [
-          header ? tr(context, 'MP') : '${record!.appearances}',
           header
-              ? 'WR'
+              ? playerRecordHeaderLabel(context, 'MP')
+              : '${record!.appearances}',
+          header
+              ? playerRecordHeaderLabel(context, 'WR')
               : record!.winRate == null
                   ? '—'
                   : '${playerNumber(record!.winRate, decimals: 1)}%',
@@ -187,16 +201,17 @@ class PlayerCompetitionTable extends StatelessWidget {
               Expanded(
                   flex: 3,
                   child: Text(
-                    tr(context, 'League'),
+                    playerRecordHeaderLabel(context, 'League'),
                     key: const ValueKey('player-competition-league-header'),
                     textAlign: TextAlign.left,
                     style: headerStyle,
                   )),
               _statColumns(
                 'header',
-                Text(tr(context, 'MP'),
+                Text(playerRecordHeaderLabel(context, 'MP'),
                     textAlign: TextAlign.center, style: headerStyle),
-                Text('WR', textAlign: TextAlign.center, style: headerStyle),
+                Text(playerRecordHeaderLabel(context, 'WR'),
+                    textAlign: TextAlign.center, style: headerStyle),
                 Text(tr(context, 'Rating'),
                     textAlign: TextAlign.center, style: headerStyle),
               ),
@@ -280,11 +295,20 @@ class PlayerDetailMatchCard extends StatelessWidget {
               '/match/${match.id}?status=${match.live ? 'live' : 'past'}'),
           child: PlayerMatchCard(
               live: match.live,
-              result:
-                  match.live ? trUpper(context, 'Live') : match.result ?? '—',
+              result: match.live
+                  ? trUpper(context, 'Live')
+                  : trUpper(context, switch (match.result) {
+                      'WIN' => 'Win',
+                      'DRAW' => 'Draw',
+                      // 서버는 패배를 DEF로 내려줘요.
+                      'DEF' || 'LOSE' => 'Lose',
+                      _ => match.result ?? '—',
+                    }),
               score: '${match.homeScore ?? '—'} - ${match.awayScore ?? '—'}',
-              competition:
-                  '${competitionNameLabel(context, match.competitionId, match.competition)}${match.round == null ? '' : ' / ${match.round}'}',
+              competition: competitionRoundLabel(context,
+                  competitionId: match.competitionId,
+                  competitionName: match.competition,
+                  roundName: match.round),
               againstLogo: match.opponentImage,
               remoteLogo: true,
               stats: [

@@ -582,7 +582,7 @@ class _StatSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          trUpper(context, section.category),
+          playerCategoryLabel(context, section.category).toUpperCase(),
           style: Body2_b.style,
         ),
         const SizedBox(height: 10),
@@ -643,35 +643,35 @@ final mockRashfordStats = PlayerMatchStatData(
   playerImageAsset: 'assets/playerAvatar.png',
   sections: const [
     PlayerMatchStatSection(
-      category: 'FINISH',
+      category: 'Finish',
       rows: [
         PlayerMatchStatRow(label: 'Goals', value: '1'),
         PlayerMatchStatRow(label: 'xG', value: '0.7'),
       ],
     ),
     PlayerMatchStatSection(
-      category: 'PLAY-MAKING',
+      category: 'Playmaking',
       rows: [
         PlayerMatchStatRow(label: 'Key passes', value: '4'),
         PlayerMatchStatRow(label: 'Passes into Pen. Area', value: '5'),
       ],
     ),
     PlayerMatchStatSection(
-      category: 'DEFENSE',
+      category: 'Defence',
       rows: [
         PlayerMatchStatRow(label: 'Distance Covered', value: '10.1 km'),
         PlayerMatchStatRow(label: 'Recoveries', value: '7'),
       ],
     ),
     PlayerMatchStatSection(
-      category: 'DRIBBLE',
+      category: 'Dribble',
       rows: [
         PlayerMatchStatRow(label: 'Attempts', value: '6'),
         PlayerMatchStatRow(label: 'Succ. Rate (Take-Ons)', value: '89%'),
       ],
     ),
     PlayerMatchStatSection(
-      category: 'LINK-UP',
+      category: 'Link Up',
       rows: [
         PlayerMatchStatRow(label: 'Touches', value: '9'),
         PlayerMatchStatRow(label: 'Passes (Succ. / Attempts)', value: '13'),
