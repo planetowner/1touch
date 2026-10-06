@@ -56,6 +56,8 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
         "API_DOMAIN": "api.example.test",
         "COLLAB_USER": "developer",
         "COLLAB_PASSWORD_HASH": hashed,
+        "MAXMIND_ACCOUNT_ID": "123456",
+        "MAXMIND_LICENSE_KEY": "test-only-license-key",
         "XDG_DATA_HOME": str(root / "data"),
         "XDG_CONFIG_HOME": str(root / "config"),
     }
@@ -76,6 +78,11 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
     assert api["environment"]["ANDROID_APP_LINK_SHA256_FINGERPRINTS"] == fingerprint
     assert api["environment"]["IOS_APP_LINK_APP_ID"] == "TESTTEAM12.com.onetouch.football"
     assert not any(mount["target"] == "/app/python" for mount in api["volumes"])
+    assert api["environment"]["GEOIP_COUNTRY_DATABASE"] == "/usr/share/GeoIP/GeoLite2-Country.mmdb"
+    assert "MAXMIND_LICENSE_KEY" not in api["environment"]
+    assert any(mount["target"] == "/usr/share/GeoIP" and mount["read_only"] for mount in api["volumes"])
+    assert api["depends_on"]["geoipupdate"]["condition"] == "service_healthy"
+    assert model["services"]["geoipupdate"]["environment"]["GEOIPUPDATE_EDITION_IDS"] == "GeoLite2-Country"
     assert "--reload" not in api["command"] and api["user"] == "1001:1001"
     assert {port["published"] for port in model["services"]["proxy"]["ports"]} == {"80", "443"}
     website_mount = next(mount for mount in model["services"]["proxy"]["volumes"] if mount["target"] == "/srv/1touch")

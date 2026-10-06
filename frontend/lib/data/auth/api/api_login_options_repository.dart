@@ -5,10 +5,9 @@ class ApiLoginOptionsRepository {
   const ApiLoginOptionsRepository({required this.api});
   final ApiClient api;
 
-  Future<LoginOptions> load({required String platform, String? country}) async {
+  Future<LoginOptions> load({required String platform}) async {
     final uri = api.baseUri.resolve('auth/providers').replace(queryParameters: {
       'platform': platform,
-      if (country != null && country.isNotEmpty) 'country_code': country,
     });
     final response = await api.get(uri);
     return LoginOptions.fromJson(

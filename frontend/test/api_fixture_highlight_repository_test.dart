@@ -7,7 +7,7 @@ import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/highlights/api/api_fixture_highlight_repository.dart';
 
 void main() {
-  test('requests the exact fixture without guessing the viewer country',
+  test('requests the exact fixture and lets the server determine the country',
       () async {
     final repository = ApiFixtureHighlightRepository(
       api: ApiClient(
@@ -79,7 +79,7 @@ void main() {
 
 Map<String, dynamic> _response() => {
       'fixture_id': 19722166,
-      'viewer_country': null,
+      'viewer_country': 'KR',
       'updated_at': '2026-09-19T18:00:48Z',
       'items': [
         <String, dynamic>{

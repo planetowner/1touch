@@ -60,10 +60,10 @@ class HighlightSelectionTests(unittest.TestCase):
         self.assertEqual(len(select_latest_matches([candidate("one", 1)], "JP")), 1)
         self.assertEqual(select_latest_matches([candidate("none", 1, restriction={"allowed": []})], "JP"), [])
 
-    def test_external_playback_leaves_country_restrictions_to_youtube(self):
+    def test_unknown_country_never_returns_unverified_videos(self):
         videos = [candidate("club", 8, restriction={"allowed": ["GB"]}),
                   candidate("competition", 8, source="competition")]
-        self.assertEqual(select_latest_matches(videos, None)[0]["video_id"], "club")
+        self.assertEqual(select_latest_matches(videos, None), [])
         self.assertEqual(select_latest_matches(videos, "KR")[0]["video_id"], "competition")
 
     def test_actual_description_wording_does_not_exclude_match_highlights(self):
@@ -236,12 +236,13 @@ class HighlightAPITests(unittest.TestCase):
         with TestClient(app) as client:
             self.assertEqual(client.get(path + "?viewer_country=KR").status_code, 401)
         app.dependency_overrides[fixture_routes.get_user_id] = lambda: 1
+        app.dependency_overrides[fixture_routes.get_request_country] = lambda: "KR"
         payload = {"fixture_id": 19722166, "viewer_country": "KR", "updated_at": None, "items": []}
         with TestClient(app) as client, \
              patch.object(fixture_routes, "get_fixture", return_value={"fixture_id": 19722166}) as fixture, \
              patch.object(fixture_routes, "get_fixture_highlights", return_value=payload) as highlights:
-            self.assertEqual(client.get(path + "?viewer_country=KOR").status_code, 422)
-            response = client.get(path + "?viewer_country=KR")
+            # 구버전 앱의 국가값도 접속 국가를 덮어쓰지 못해요.
+            response = client.get(path + "?viewer_country=US")
             self.assertEqual(response.status_code, 200, response.text)
             self.assertEqual(response.json(), payload)
             highlights.assert_called_once_with(19722166, "KR")
@@ -249,19 +250,20 @@ class HighlightAPITests(unittest.TestCase):
             self.assertEqual(client.get(path + "?viewer_country=KR").status_code, 404)
             highlights.assert_called_once()
 
-    def test_fixture_endpoint_allows_external_playback_without_country(self):
+    def test_fixture_endpoint_returns_no_videos_for_unknown_country(self):
         app = FastAPI()
         app.include_router(fixture_routes.router, prefix="/v1")
         app.dependency_overrides[fixture_routes.get_user_id] = lambda: 1
+        app.dependency_overrides[fixture_routes.get_request_country] = lambda: None
         payload = {"fixture_id": 19722166, "viewer_country": None, "updated_at": None,
-                   "items": [candidate("official", 13)]}
+                   "items": []}
         with TestClient(app) as client, \
              patch.object(fixture_routes, "get_fixture", return_value={"fixture_id": 19722166}), \
              patch.object(fixture_routes, "get_fixture_highlights", return_value=payload) as highlights:
             response = client.get("/v1/fixtures/19722166/highlights")
             self.assertEqual(response.status_code, 200, response.text)
             self.assertIsNone(response.json()["viewer_country"])
-            self.assertNotIn("region_restriction", response.json()["items"][0])
+            self.assertEqual(response.json()["items"], [])
             highlights.assert_called_once_with(19722166, None)
 
     def test_repository_reads_json_and_uses_shared_selector(self):
@@ -277,15 +279,16 @@ class HighlightAPITests(unittest.TestCase):
         self.assertEqual([v.video_id for v in response.items], ["new", "c", "b"])
         self.assertEqual(response.updated_at.tzinfo, timezone.utc)
 
-    def test_endpoint_requires_country_and_excludes_internal_metadata(self):
+    def test_team_endpoint_uses_server_country_and_excludes_internal_metadata(self):
         app = FastAPI()
         app.include_router(team_routes.router, prefix="/v1")
         app.dependency_overrides[team_routes.get_user_id] = lambda: 1
+        app.dependency_overrides[team_routes.get_request_country] = lambda: "KR"
         payload = {"team_id": 68, "viewer_country": "KR", "updated_at": None, "items": [candidate("new", 8)]}
         with TestClient(app) as client, patch.object(team_routes, "get_team", return_value={"team_id": 68}), \
-             patch.object(team_routes, "get_team_highlights", return_value=payload):
-            self.assertEqual(client.get("/v1/teams/68/highlights").status_code, 422)
-            response = client.get("/v1/teams/68/highlights?viewer_country=KR")
+             patch.object(team_routes, "get_team_highlights", return_value=payload) as highlights:
+            response = client.get("/v1/teams/68/highlights?viewer_country=US")
+            highlights.assert_called_once_with(68, "KR")
             self.assertEqual(response.status_code, 200, response.text)
             self.assertNotIn("region_restriction", response.json()["items"][0])
             self.assertNotIn("description", response.json()["items"][0])

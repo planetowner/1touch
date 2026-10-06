@@ -47,8 +47,8 @@ def initialize_wallet(user_id, country_code=None):
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
         lock_user(cur, user_id)
         wallet = initialize_locked_wallet(cur, user_id, utc_now())
-        # 현재는 기기 지역을 저장해요. 앱 지역 설정도 같은 국가 코드로 연결할 수 있어요.
-        # 국가를 보내지 않는 기존 클라이언트는 이미 저장한 지역을 지우지 않아요.
+        # 접속 IP로 확인한 국가를 저장해요. 판별하지 못한 요청은 기존 국가를 지우지 않아요.
+        # 작성자가 오프라인일 때 받은 반응도 마지막으로 확인한 국가 기준으로 적립해요.
         if country_code is not None and country_code != wallet['country_code']:
             cur.execute('UPDATE user_point_wallets SET country_code=%s WHERE user_id=%s', (country_code, user_id))
         return wallet_response(wallet)
