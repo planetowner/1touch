@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/api_image_headers.dart';
+import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
 import 'package:onetouch/models/post.dart';
@@ -99,7 +100,7 @@ void main() {
       find.byKey(const ValueKey('community-attachment-viewer')),
       findsOneWidget,
     );
-    expect(find.byType(InteractiveViewer), findsOneWidget);
+    expect(find.byType(InteractiveViewer), findsNothing);
 
     await tester.tap(
       find.byKey(const ValueKey('community-attachment-close')),
@@ -110,6 +111,69 @@ void main() {
       findsNothing,
     );
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets(
+        'attachment stays centered while pinching and dragging at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(const MaterialApp(
+        home: CommunityAttachmentViewer(
+          mediaUrl: 'https://example.com/photo.jpg',
+        ),
+      ));
+      await tester.pump();
+
+      final image =
+          find.byKey(const ValueKey('community-attachment-full-image'));
+      final transform =
+          find.byKey(const ValueKey('community-attachment-image-transform'));
+      final imageWidget = tester.widget<Image>(image);
+      expect(imageWidget.fit, BoxFit.contain);
+      expect(tester.getSize(image), size);
+      expect(
+          tester.widget<Transform>(transform).transform.getMaxScaleOnAxis(), 1);
+
+      final center = size.center(Offset.zero);
+      final left =
+          await tester.startGesture(center + const Offset(-40, 0), pointer: 1);
+      final right =
+          await tester.startGesture(center + const Offset(40, 0), pointer: 2);
+      await left.moveBy(const Offset(-40, 0));
+      await right.moveBy(const Offset(40, 0));
+      await tester.pump();
+      final zoomedScale =
+          tester.widget<Transform>(transform).transform.getMaxScaleOnAxis();
+      expect(zoomedScale, greaterThan(1));
+      expect(tester.getCenter(image), center);
+      await left.up();
+      await right.up();
+
+      final drag = await tester.startGesture(center, pointer: 3);
+      await drag.moveBy(const Offset(70, 60));
+      await drag.up();
+      await tester.pump();
+      expect(tester.widget<Transform>(transform).transform.getMaxScaleOnAxis(),
+          closeTo(zoomedScale, 0.001));
+      expect(tester.getCenter(image), center);
+
+      final inwardLeft =
+          await tester.startGesture(center + const Offset(-80, 0), pointer: 4);
+      final inwardRight =
+          await tester.startGesture(center + const Offset(80, 0), pointer: 5);
+      await inwardLeft.moveBy(const Offset(40, 0));
+      await inwardRight.moveBy(const Offset(-40, 0));
+      await tester.pump();
+      final reducedScale =
+          tester.widget<Transform>(transform).transform.getMaxScaleOnAxis();
+      expect(reducedScale, lessThan(zoomedScale));
+      expect(reducedScale, greaterThanOrEqualTo(1));
+      expect(tester.getCenter(image), center);
+      await inwardLeft.up();
+      await inwardRight.up();
+    });
+  }
 
   test('does not send the session token to an external media host', () {
     final previousToken = authSession.accessToken;
