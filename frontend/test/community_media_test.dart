@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/api_image_headers.dart';
@@ -44,6 +45,44 @@ void main() {
           .first;
       final bounds = tester.getRect(card);
       await tester.tapAt(Offset(bounds.right - 8, bounds.top + 42));
+      expect(opens, 1);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('post link opens the post at width $width', (tester) async {
+      await tester.binding.setSurfaceSize(Size(width, 700));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      var opens = 0;
+      const body = 'Read https://example.com/path';
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: CommunityPostList(
+            posts: [
+              Post(
+                postId: 8,
+                teamId: 9,
+                userId: 1,
+                category: PostCategory.general,
+                title: 'Link post',
+                body: body,
+                createdAt: '2026-09-27T12:00:00Z',
+              ),
+            ],
+            onPostTap: (_) => opens++,
+          ),
+        ),
+      ));
+
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.descendant(of: find.text(body), matching: find.byType(RichText)),
+      );
+      final urlStart = body.indexOf('https://');
+      final linkBounds = paragraph
+          .getBoxesForSelection(
+            TextSelection(baseOffset: urlStart, extentOffset: urlStart + 5),
+          )
+          .first;
+      await tester.tapAt(paragraph.localToGlobal(linkBounds.toRect().center));
       expect(opens, 1);
       expect(tester.takeException(), isNull);
     });
