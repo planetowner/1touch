@@ -7,6 +7,7 @@ import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
+import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -230,8 +231,8 @@ class _PostCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(post.title, style: Body1_b.style),
                   const SizedBox(height: 4),
-                  Text(
-                    post.body,
+                  CommunityLinkedText(
+                    text: post.body,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: Body2.style,
