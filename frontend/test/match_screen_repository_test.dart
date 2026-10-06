@@ -677,6 +677,8 @@ void main() {
       await tester.tap(player);
       await tester.pumpAndSettle();
 
+      expect(find.text('Germany'), findsOneWidget);
+
       expect(
         find.byKey(const ValueKey('player-match-stat-sheet')),
         findsOneWidget,
@@ -1323,6 +1325,8 @@ final List<FixtureLineupEntry> _lineups = [
     playerName: 'Home Starter',
     formationField: '4:1',
     jerseyNumber: 9,
+    nationalityId: 11,
+    nationality: 'Germany',
   ),
   _lineupEntry(
     teamId: _fixture.homeTeamId,
@@ -1367,12 +1371,16 @@ FixtureLineupEntry _lineupEntry({
   required String playerName,
   required String? formationField,
   required int jerseyNumber,
+  int? nationalityId,
+  String? nationality,
 }) {
   return FixtureLineupEntry(
     teamId: teamId,
     playerId: playerId,
     playerName: playerName,
     playerImage: null,
+    nationalityId: nationalityId,
+    nationality: nationality,
     positionId: null,
     lineupTypeId: formationField == null ? 12 : 11,
     formationField: formationField,

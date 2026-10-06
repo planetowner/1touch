@@ -26,6 +26,20 @@ class PlayerDetailStore extends ChangeNotifier {
   final _requests = <int?, Future<PlayerDetail>>{};
   final _visible = <int?, PlayerDetail>{};
   final _refreshing = <int?>{};
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  void _show(int? seasonId, PlayerDetail detail) {
+    // 화면을 닫거나 비교 선수를 바꾼 뒤 도착한 응답은 이전 화면에 알리지 않아요.
+    if (_disposed) return;
+    _visible[seasonId] = detail;
+    notifyListeners();
+  }
 
   PlayerDetail? snapshot(int? seasonId) =>
       _visible[seasonId] ??
@@ -49,15 +63,13 @@ class PlayerDetailStore extends ChangeNotifier {
       }
       final restored = await source.restoreFor(playerId!, seasonId: seasonId);
       if (restored != null) {
-        _visible[seasonId] = restored.data;
-        notifyListeners();
-        _refreshIfStale(source, seasonId, restored.savedAt);
+        _show(seasonId, restored.data);
+        if (!_disposed) _refreshIfStale(source, seasonId, restored.savedAt);
         return restored.data;
       }
     }
     final fresh = await source.load(playerId!, seasonId: seasonId);
-    _visible[seasonId] = fresh;
-    notifyListeners();
+    _show(seasonId, fresh);
     return fresh;
   }
 
@@ -72,9 +84,8 @@ class PlayerDetailStore extends ChangeNotifier {
       return;
     }
     unawaited(source.load(playerId!, seasonId: seasonId).then((fresh) {
-      _visible[seasonId] = fresh;
       _requests[seasonId] = Future.value(fresh);
-      notifyListeners();
+      _show(seasonId, fresh);
     }).catchError((Object _) {
       // Keep the restored detail visible while offline.
     }).whenComplete(() => _refreshing.remove(seasonId)));

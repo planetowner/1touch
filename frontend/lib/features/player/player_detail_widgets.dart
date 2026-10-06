@@ -29,10 +29,26 @@ class PlayerRemoteImage extends StatelessWidget {
     this.size = 28,
     this.fit = BoxFit.contain,
     this.placeholder = const Icon(Icons.person_outline),
-  });
+  })  : width = size,
+        height = size,
+        alignment = Alignment.center;
+
+  // 팝업·상세·비교에서 같은 크기로 디코딩해 메모리의 사진도 재사용해요.
+  const PlayerRemoteImage.portrait(
+    this.url, {
+    super.key,
+    this.width,
+    this.height = 160,
+    this.fit = BoxFit.contain,
+    this.alignment = Alignment.center,
+    this.placeholder = const Icon(Icons.person_outline),
+  }) : size = 160;
 
   final String? url;
   final double size;
+  final double? width;
+  final double height;
+  final Alignment alignment;
   final BoxFit fit;
   final Widget placeholder;
   @override
@@ -40,14 +56,15 @@ class PlayerRemoteImage extends StatelessWidget {
     final imageUrl = url?.trim();
     final cacheWidth = (size * MediaQuery.devicePixelRatioOf(context)).ceil();
     return SizedBox(
-      width: size,
-      height: size,
+      width: width,
+      height: height,
       child: imageUrl == null || imageUrl.isEmpty
           ? placeholder
           : CachedNetworkImage(
               imageUrl: imageUrl,
               cacheManager: PlayerImageCache.manager,
               fit: fit,
+              alignment: alignment,
               memCacheWidth: cacheWidth,
               placeholder: (_, __) => placeholder,
               errorWidget: (_, __, ___) => placeholder,

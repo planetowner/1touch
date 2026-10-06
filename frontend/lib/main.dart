@@ -39,6 +39,7 @@ import 'package:onetouch/features/app_error_view.dart';
 import 'package:onetouch/features/betting/bet_settlement_notifications.dart';
 import 'package:onetouch/features/community/notification_post_page.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/comm_pages/profile_activity_screen.dart';
 
@@ -535,7 +536,10 @@ final GoRouter _router = GoRouter(
       path: '/compare',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => PlayerComparisonScreen(
-        initialPlayerId: state.extra as String?,
+        initialPlayerId: state.extra is String ? state.extra as String : null,
+        initialPlayer: state.extra is PlayerCandidate
+            ? state.extra as PlayerCandidate
+            : null,
       ),
     ),
   ],

@@ -12,6 +12,7 @@ import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
+import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/player_detail.dart';
 
 class PlayerMatchStatRow {
@@ -248,7 +249,11 @@ class _Header extends StatelessWidget {
                         icon: Icons.safety_divider,
                         onTap: () => context.push(
                           '/compare',
-                          extra: '${player.playerId}',
+                          extra: (
+                            id: player.playerId!,
+                            name: player.name,
+                            image: player.playerImageUrl,
+                          ),
                         ),
                       ),
                     _HeaderIconBtn(
@@ -319,11 +324,10 @@ class _Header extends StatelessWidget {
                                   height: 140,
                                   fit: BoxFit.contain,
                                 )
-                              : Image.network(
+                              : PlayerRemoteImage.portrait(
                                   player.playerImageUrl!,
                                   height: 140,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (_, __, ___) => const SizedBox(
+                                  placeholder: const SizedBox(
                                     width: 90,
                                     height: 140,
                                   ),

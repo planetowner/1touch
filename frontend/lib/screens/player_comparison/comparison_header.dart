@@ -4,6 +4,7 @@ class _HeaderArea extends StatelessWidget {
   const _HeaderArea({
     required this.p1,
     required this.p2,
+    this.initialPlayer,
     required this.onBack,
     required this.onSearch,
     required this.onTap1,
@@ -11,6 +12,7 @@ class _HeaderArea extends StatelessWidget {
   });
 
   final PlayerDetail? p1, p2;
+  final PlayerCandidate? initialPlayer;
   final VoidCallback onBack, onSearch;
   final VoidCallback? onTap1, onTap2;
 
@@ -108,6 +110,7 @@ class _HeaderArea extends StatelessWidget {
                 Expanded(
                   child: _PlayerChip(
                     player: p1,
+                    initialPlayer: initialPlayer,
                     slot: 1,
                     onTap: onTap1,
                   ),
@@ -128,7 +131,8 @@ class _HeaderArea extends StatelessWidget {
             top: 167,
             width: 130,
             height: 128,
-            child: _PlayerPhoto(player: p1, slot: 1),
+            child:
+                _PlayerPhoto(player: p1, slot: 1, initialPlayer: initialPlayer),
           ),
           Positioned(
             right: 24,
@@ -176,10 +180,12 @@ class _HeaderTeamLogo extends StatelessWidget {
 class _PlayerChip extends StatelessWidget {
   const _PlayerChip({
     required this.player,
+    this.initialPlayer,
     required this.slot,
     required this.onTap,
   });
   final PlayerDetail? player;
+  final PlayerCandidate? initialPlayer;
   final int slot;
   final VoidCallback? onTap;
 
@@ -188,6 +194,11 @@ class _PlayerChip extends StatelessWidget {
     final season = player?.selectedSeason?.name;
     final shortSeason = season == null ? '' : compactSeasonLabel(season);
     final prefix = shortSeason.substring(0, math.min(2, shortSeason.length));
+    final name = player != null
+        ? playerNameLabel(context, player!.playerId, player!.profile.name)
+        : initialPlayer != null
+            ? playerNameLabel(context, initialPlayer!.id, initialPlayer!.name)
+            : tr(context, 'PLAYER {slot}', {'slot': slot});
     return Opacity(
       opacity: .8,
       child: GestureDetector(
@@ -217,30 +228,19 @@ class _PlayerChip extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppDropdownTokens.gap),
-                Expanded(
-                  child: Text(
-                    playerNameLabel(
-                        context, player!.playerId, player!.profile.name),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF0A0A0A),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
+              ],
+              Expanded(
+                child: Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0A0A0A),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ] else
-                Expanded(
-                  child: Text(
-                    tr(context, 'PLAYER {slot}', {'slot': slot}),
-                    style: const TextStyle(
-                      color: Color(0xFF0A0A0A),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+              ),
               const AppDropdownChevron(color: Color(0xFF0A0A0A)),
             ],
           ),
@@ -251,31 +251,31 @@ class _PlayerChip extends StatelessWidget {
 }
 
 class _PlayerPhoto extends StatelessWidget {
-  const _PlayerPhoto({required this.player, required this.slot});
+  const _PlayerPhoto(
+      {required this.player, required this.slot, this.initialPlayer});
   static const _placeholderAsset =
       'assets/player_comparison/player_placeholder.png';
   final PlayerDetail? player;
+  final PlayerCandidate? initialPlayer;
   final int slot;
 
   @override
   Widget build(BuildContext context) {
-    final image = player?.profile.image;
+    final image = player == null ? initialPlayer?.image : player!.profile.image;
     return SizedBox(
       key: Key('comparison-header-photo-$slot'),
       width: 130,
       height: 128,
       child: image == null
           ? _placeholder()
-          : CachedNetworkImage(
-              imageUrl: image,
+          : PlayerRemoteImage.portrait(
+              image,
               key: Key('comparison-header-network-photo-$slot'),
-              cacheManager: PlayerImageCache.manager,
+              width: 130,
+              height: 128,
               fit: BoxFit.cover,
               alignment: Alignment.topCenter,
-              placeholder: (_, __) => _placeholder(),
-              errorWidget: (_, __, ___) => _placeholder(),
-              fadeInDuration: Duration.zero,
-              fadeOutDuration: Duration.zero,
+              placeholder: _placeholder(),
             ),
     );
   }

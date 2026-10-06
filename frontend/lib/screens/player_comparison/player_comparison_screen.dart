@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -14,7 +13,7 @@ import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
-import 'package:onetouch/features/player/player_image_cache.dart';
+import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/models/player_detail.dart';
@@ -26,8 +25,9 @@ part 'comparison_stats.dart';
 
 class PlayerComparisonScreen extends StatefulWidget {
   const PlayerComparisonScreen(
-      {super.key, this.initialPlayerId, this.repository});
+      {super.key, this.initialPlayerId, this.initialPlayer, this.repository});
   final String? initialPlayerId;
+  final PlayerCandidate? initialPlayer;
   final PlayerDetailRepository? repository;
 
   @override
@@ -36,6 +36,7 @@ class PlayerComparisonScreen extends StatefulWidget {
 
 class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
   final List<PlayerDetail?> _players = [null, null];
+  final List<PlayerDetailStore?> _detailStores = [null, null];
   bool _loading = false;
   String? _error;
   int _request = 0;
@@ -51,20 +52,32 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
   void initState() {
     super.initState();
     final raw = widget.initialPlayerId;
-    final id = raw == null ? null : int.tryParse(raw);
+    final id =
+        widget.initialPlayer?.id ?? (raw == null ? null : int.tryParse(raw));
     if (id != null) _load(0, id);
   }
 
   Future<void> _load(int slot, int id, {int? seasonId}) async {
     final request = ++_request;
+    _detailStores[slot]?.dispose();
+    final store = PlayerDetailStore(playerId: id, repository: _repository);
+    _detailStores[slot] = store;
+    store.addListener(() {
+      if (!mounted || _detailStores[slot] != store) return;
+      final player = store.snapshot(seasonId);
+      if (player != null) _applyPlayer(slot, player, source: store);
+    });
     setState(() {
       _loading = true;
       _error = null;
     });
+    // 상세 화면에서 받은 정보는 첫 프레임부터 보여주고 같은 캐시 정책으로 갱신해요.
+    final cached = store.snapshot(seasonId);
+    if (cached != null) _applyPlayer(slot, cached, source: store);
     try {
-      final player = await _repository.load(id, seasonId: seasonId);
+      final player = await store.load(seasonId);
       if (!mounted || request != _request) return;
-      _applyPlayer(slot, player);
+      _applyPlayer(slot, player, source: store);
     } on Object {
       if (mounted && request == _request) {
         setState(() => _error = tr(context,
@@ -75,7 +88,12 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
     }
   }
 
-  void _applyPlayer(int slot, PlayerDetail player) {
+  void _applyPlayer(int slot, PlayerDetail player,
+      {PlayerDetailStore? source}) {
+    if (_detailStores[slot] != source) {
+      _detailStores[slot]?.dispose();
+      _detailStores[slot] = source;
+    }
     final other = _players[1 - slot];
     final position = player.analysis?.position;
     setState(() {
@@ -125,6 +143,8 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
 
   void _back() {
     if (_ready) {
+      _detailStores[1]?.dispose();
+      _detailStores[1] = null;
       setState(() {
         _request++;
         _loading = false;
@@ -138,6 +158,14 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
     } else {
       context.go('/players');
     }
+  }
+
+  @override
+  void dispose() {
+    for (final store in _detailStores) {
+      store?.dispose();
+    }
+    super.dispose();
   }
 
   @override
@@ -156,6 +184,7 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
                 _HeaderArea(
                   p1: _players[0],
                   p2: _players[1],
+                  initialPlayer: widget.initialPlayer,
                   onBack: _back,
                   onSearch: () => context.push('/search'),
                   onTap1: _loading ? null : () => _pickPlayer(0),
