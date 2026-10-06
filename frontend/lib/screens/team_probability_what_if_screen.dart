@@ -497,10 +497,11 @@ class _ScenarioChart extends StatelessWidget {
                     ? 0
                     : scenarios[index].probability / maxProbability,
                 color: color.withValues(
-                  alpha: selectedOutcome == null ||
-                          selectedOutcome == scenarios[index].outcome
-                      ? (1 - index * .25)
-                      : .18,
+                  alpha: selectedOutcome == null
+                      ? 1 - index * .25
+                      : selectedOutcome == scenarios[index].outcome
+                          ? 1
+                          : .18,
                 ),
               ),
             ),
@@ -537,6 +538,7 @@ class _ScenarioBar extends StatelessWidget {
               heightFactor: heightFactor.clamp(.04, 1),
               widthFactor: 1,
               child: DecoratedBox(
+                key: ValueKey('what-if-scenario-bar-${data.outcome}'),
                 decoration: BoxDecoration(
                   color: color,
                   borderRadius:
