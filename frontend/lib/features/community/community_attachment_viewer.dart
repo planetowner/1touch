@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/api_image_headers.dart';
+import 'package:onetouch/features/community/community_post_image.dart';
 
 Future<void> showCommunityAttachmentViewer(
   BuildContext context, {
   required String mediaUrl,
+  String? previewUrl,
 }) {
   return Navigator.of(context, rootNavigator: true).push<void>(
     PageRouteBuilder<void>(
@@ -12,6 +13,7 @@ Future<void> showCommunityAttachmentViewer(
       reverseTransitionDuration: const Duration(milliseconds: 140),
       pageBuilder: (_, __, ___) => CommunityAttachmentViewer(
         mediaUrl: mediaUrl,
+        previewUrl: previewUrl,
       ),
       transitionsBuilder: (_, animation, __, child) => FadeTransition(
         opacity: CurvedAnimation(
@@ -28,9 +30,11 @@ class CommunityAttachmentViewer extends StatelessWidget {
   const CommunityAttachmentViewer({
     super.key,
     required this.mediaUrl,
+    this.previewUrl,
   });
 
   final String mediaUrl;
+  final String? previewUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -46,16 +50,12 @@ class CommunityAttachmentViewer extends StatelessWidget {
                 maxScale: 4,
                 boundaryMargin: const EdgeInsets.all(40),
                 child: Center(
-                  child: Image.network(
-                    mediaUrl,
-                    key: const ValueKey('community-attachment-full-image'),
-                    headers: apiImageHeaders(mediaUrl),
+                  child: CommunityPostImage(
+                    mediaUrl: mediaUrl,
+                    previewUrl: previewUrl,
+                    showOriginal: true,
+                    imageKey: const ValueKey('community-attachment-full-image'),
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.image_not_supported_outlined,
-                      color: Colors.white54,
-                      size: 48,
-                    ),
                   ),
                 ),
               ),

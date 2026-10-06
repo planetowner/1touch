@@ -12,12 +12,12 @@ class _TeamPlayerAvatar extends StatelessWidget {
         radius: radius,
         backgroundColor: AppColors.of(context).subtleBackground,
         child: ClipOval(
-          // 부상·이적 목록도 선수 화면의 디스크 캐시를 함께 써요.
-          child: PlayerRemoteImage(
+          // 홈에서 준비한 사진을 선수 상세와 같은 크기로 디코딩해 재사용해요.
+          child: PlayerRemoteImage.portrait(
             url,
-            size: size,
+            width: size,
+            height: size,
             fit: BoxFit.cover,
-            placeholder: Image.asset('assets/messi.png', fit: BoxFit.cover),
           ),
         ),
       );

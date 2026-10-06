@@ -31,6 +31,7 @@ Post postFromApiResponse(ApiPostResponse response, {required Uri apiBaseUri}) {
           position: item.position,
           linkUrl: _resolveOptionalUri(apiBaseUri, item.linkUrl),
           mediaUrl: _resolveOptionalUri(apiBaseUri, item.mediaUrl),
+          previewUrl: _resolveOptionalUri(apiBaseUri, item.previewUrl),
           contentType: item.contentType,
           byteSize: item.byteSize,
         ),

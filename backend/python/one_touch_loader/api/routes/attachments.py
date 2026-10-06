@@ -8,7 +8,7 @@ from ..repos.media_repo import queue_deletion
 from ..repos.users_repo import get_user, lock_user, require_profile
 from ..services.community_periods import utc_now
 from ..services.community_retention import UNPUBLISHED_RETENTION
-from ..services.media_storage import private_content, stored_upload
+from ..services.media_storage import private_content, private_post_preview, stored_upload
 
 router = APIRouter()
 
@@ -81,6 +81,15 @@ def content(attachment_id: int, range_header: str | None = Header(default=None, 
     if item["object_key"] is None:
         raise HTTPException(404, "This attachment is a link")
     return private_content(item, range_header)
+
+
+@router.get("/attachments/{attachment_id}/preview")
+def preview(attachment_id: int, user_id: int = Depends(get_user_id)):
+    # 축소 사진도 원본과 같은 게시글·작성자 접근 규칙을 적용해요.
+    item = _accessible_attachment(attachment_id, user_id)
+    if item["object_key"] is None:
+        raise HTTPException(404, "This attachment is a link")
+    return private_post_preview(item)
 
 
 @router.delete("/attachments/{attachment_id}")

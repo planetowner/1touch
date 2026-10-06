@@ -58,6 +58,7 @@ void main() {
     });
     final mediaUrl =
         apiClient.baseUri.resolve('attachments/7/content').toString();
+    var openedPosts = 0;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -75,7 +76,7 @@ void main() {
                 createdAt: '2026-09-27T12:00:00Z',
               ),
             ],
-            onPostTap: (_) {},
+            onPostTap: (_) => openedPosts++,
           ),
         ),
       ),
@@ -97,18 +98,9 @@ void main() {
 
     expect(
       find.byKey(const ValueKey('community-attachment-viewer')),
-      findsOneWidget,
-    );
-    expect(find.byType(InteractiveViewer), findsOneWidget);
-
-    await tester.tap(
-      find.byKey(const ValueKey('community-attachment-close')),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const ValueKey('community-attachment-viewer')),
       findsNothing,
     );
+    expect(openedPosts, 1);
   });
 
   test('does not send the session token to an external media host', () {

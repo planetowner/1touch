@@ -1,12 +1,11 @@
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/api_image_headers.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
-import 'package:onetouch/features/community/community_attachment_viewer.dart';
+import 'package:onetouch/features/community/community_post_image.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -268,10 +267,7 @@ class _PostCard extends StatelessWidget {
                       'community-post-${post.postId}-media-open',
                     ),
                     behavior: HitTestBehavior.opaque,
-                    onTap: () => showCommunityAttachmentViewer(
-                      context,
-                      mediaUrl: post.mediaUrl!,
-                    ),
+                    onTap: onTap,
                     child: Container(
                       width: size * 0.8,
                       height: size,
@@ -281,21 +277,15 @@ class _PostCard extends StatelessWidget {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          post.mediaUrl!,
-                          key: ValueKey(
+                        child: CommunityPostImage(
+                          mediaUrl: post.mediaUrl!,
+                          previewUrl: post.mediaPreviewUrl,
+                          imageKey: ValueKey(
                             'community-post-${post.postId}-media',
                           ),
-                          headers: apiImageHeaders(post.mediaUrl!),
                           width: double.infinity,
                           height: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Center(
-                            child: Icon(
-                              Icons.image_not_supported_outlined,
-                              color: appColors.mutedForeground,
-                            ),
-                          ),
                         ),
                       ),
                     ),

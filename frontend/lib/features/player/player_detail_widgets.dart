@@ -33,7 +33,7 @@ class PlayerRemoteImage extends StatelessWidget {
         height = size,
         alignment = Alignment.center;
 
-  // 팝업·상세·비교에서 같은 크기로 디코딩해 메모리의 사진도 재사용해요.
+  // 목록·팝업·상세·비교에서 같은 크기로 디코딩해 준비된 사진을 재사용해요.
   const PlayerRemoteImage.portrait(
     this.url, {
     super.key,
@@ -42,7 +42,7 @@ class PlayerRemoteImage extends StatelessWidget {
     this.fit = BoxFit.contain,
     this.alignment = Alignment.center,
     this.placeholder = const Icon(Icons.person_outline),
-  }) : size = 160;
+  }) : size = PlayerImageCache.portraitSize;
 
   final String? url;
   final double size;
@@ -54,7 +54,8 @@ class PlayerRemoteImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageUrl = url?.trim();
-    final cacheWidth = (size * MediaQuery.devicePixelRatioOf(context)).ceil();
+    final cacheWidth = PlayerImageCache.decodeWidth(
+        size, MediaQuery.devicePixelRatioOf(context));
     return SizedBox(
       width: width,
       height: height,
