@@ -768,7 +768,6 @@ const appMessages = <String, MessageTranslations>{
   "LAST MATCH": (ko: "지난 경기", ja: "前の試合", zh: "上一场比赛"),
   "LIVE MATCH": (ko: "진행 중인 경기", ja: "ライブ中の試合", zh: "进行中的比赛"),
   "Live": (ko: "라이브", ja: "ライブ", zh: "直播"),
-  "• LIVE": (ko: "● 진행 중인 경기", ja: "• ライブ", zh: "• 直播"),
   "FIXTURE": (ko: "경기 일정", ja: "試合日程", zh: "赛程"),
   "CALENDAR": (ko: "캘린더", ja: "カレンダー", zh: "日历"),
   "RECENT MATCHES": (ko: "최근 경기", ja: "最近の試合", zh: "近期比赛"),
@@ -889,12 +888,12 @@ const appMessages = <String, MessageTranslations>{
   "BEST ELEVEN": (ko: "베스트 11", ja: "ベストイレブン", zh: "最佳十一人"),
   "BEST XI": (ko: "베스트 11", ja: "ベストイレブン", zh: "最佳十一人"),
   "No best eleven available": (
-    ko: "베스트 일레븐 정보가 없어요",
+    ko: "베스트 11 정보가 없어요",
     ja: "ベストイレブンの情報がありません",
     zh: "暂无最佳阵容"
   ),
   "Unable to load best eleven": (
-    ko: "베스트 일레븐을 불러오지 못했어요",
+    ko: "베스트 11을 불러오지 못했어요",
     ja: "ベストイレブンを読み込めませんでした",
     zh: "无法加载最佳阵容"
   ),
