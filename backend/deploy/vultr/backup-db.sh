@@ -19,8 +19,16 @@ docker compose exec -T db sh -c \
   | gzip > "$temporary_path"
 gzip --test -- "$temporary_path"
 mv -- "$temporary_path" "$backup_path"
-# 자동 백업만 14일 보관해요. 변경 전에 직접 만든 백업은 그대로 남겨요.
+prune_backups() {
+  local backup_directory="$1"
+  local retention_days="$2"
+  find "$backup_directory" -maxdepth 1 -type f -name '20?????????????Z.sql.gz' \
+    -mtime "+$((retention_days - 1))" -delete
+}
+
+# 새 백업을 검증한 뒤 정리해요. 일일 백업은 14일, 수동·배포 백업은 30일 보관해요.
 if [[ "${1:-}" == --daily ]]; then
-  find "$PWD/backups/daily" -maxdepth 1 -type f -name '20?????????????Z.sql.gz' -mtime +13 -delete
+  prune_backups "$PWD/backups/daily" 14
 fi
+prune_backups "$PWD/backups" 30
 echo "Backup created: $PWD/$backup_path"
