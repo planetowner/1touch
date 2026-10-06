@@ -13,6 +13,7 @@ import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/app_segmented_toggle.dart';
 import "package:onetouch/features/helper.dart";
+import 'package:onetouch/features/competition/competition_label.dart';
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';

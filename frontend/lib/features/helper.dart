@@ -13,6 +13,7 @@ import 'package:onetouch/models/fixture_clock.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/match_status_labels.dart';
 import 'package:onetouch/features/match_info/live_match_motion.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/core/overflow_scrolling_text.dart';
 
 // Maps a team's id to its local crest file in TeamLogos/, used as the
@@ -55,31 +56,6 @@ String? teamLogoAsset(int teamId) {
 /// one, otherwise a generic shield icon rather than guessing wrong.
 Widget teamLogoFallback(int teamId, {double size = 32}) {
   final asset = teamLogoAsset(teamId);
-  if (asset == null) {
-    return Builder(
-      builder: (context) => Icon(
-        Icons.shield,
-        color: AppColors.of(context).mutedForeground,
-        size: size,
-      ),
-    );
-  }
-  return Image.asset(asset, width: size, height: size, fit: BoxFit.contain);
-}
-
-// Local crests for the Big 5 domestic leagues, used as the errorBuilder
-// fallback when a league's network logo fails to load. No local asset
-// exists for UCL/Europa/cups, so those fall back to a generic icon.
-const _competitionLogoFiles = <int, String>{
-  8: 'assets/epl.png',
-  564: 'assets/laliga.png',
-  82: 'assets/bundesliga.png',
-  384: 'assets/seriea.png',
-  301: 'assets/league1.png',
-};
-
-Widget competitionLogoFallback(int competitionId, {double size = 24}) {
-  final asset = _competitionLogoFiles[competitionId];
   if (asset == null) {
     return Builder(
       builder: (context) => Icon(
@@ -183,18 +159,16 @@ class MatchCard extends StatelessWidget {
             builder: (context, constraints) {
               final compact = constraints.maxWidth < 300;
               final infoGap = compact ? 0.0 : 8.0;
-              final compactLive =
-                  compact && match!.status == FixtureStatus.live;
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SizedBox(
-                    width: compactLive ? 64 : (compact ? 72 : 81),
+                    width: compact ? 64 : 81,
                     child: _TeamDisplay(
                       teamId: homeTeam.teamId,
                       teamName: homeTeam.displayName,
                       teamLogo: homeTeam.imagePath ?? '',
-                      logoSize: compactLive ? 64 : 72,
+                      logoSize: compact ? 64 : 72,
                       logoKey: const ValueKey('next-match-home-logo'),
                     ),
                   ),
@@ -211,12 +185,12 @@ class MatchCard extends StatelessWidget {
                   ),
                   SizedBox(width: infoGap),
                   SizedBox(
-                    width: compactLive ? 64 : (compact ? 72 : 76),
+                    width: compact ? 64 : 76,
                     child: _TeamDisplay(
                       teamId: awayTeam.teamId,
                       teamName: awayTeam.displayName,
                       teamLogo: awayTeam.imagePath ?? '',
-                      logoSize: compactLive ? 64 : 72,
+                      logoSize: compact ? 64 : 72,
                       logoKey: const ValueKey('next-match-away-logo'),
                     ),
                   ),
@@ -667,13 +641,11 @@ class _MatchInfo extends StatelessWidget {
           color: AppColors.of(context).divider,
         ),
         const SizedBox(height: 8),
-        Text(
-          competitionAndRound,
-          maxLines: 1,
-          softWrap: false,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
+        CompetitionLabel(
+          competitionId: match!.competitionId,
+          label: competitionAndRound,
           style: Body2.style,
+          gap: 4,
         ),
         const SizedBox(height: 4),
         // Text('Venue ID ${match?.venueId}', style: .style),
@@ -727,13 +699,11 @@ class _LiveMatchInfo extends StatelessWidget {
         const SizedBox(height: 8),
         LiveTrimLine(color: AppColors.of(context).divider),
         const SizedBox(height: 8),
-        Text(
-          competitionAndRound,
-          maxLines: 1,
-          softWrap: false,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
+        CompetitionLabel(
+          competitionId: match.competitionId,
+          label: competitionAndRound,
           style: Body2.style,
+          gap: 4,
         ),
       ],
     );

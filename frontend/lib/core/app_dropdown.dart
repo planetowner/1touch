@@ -51,6 +51,8 @@ class AppDropdown<T> extends StatefulWidget {
     required this.onChanged,
     this.selectedLabel,
     this.hintText,
+    this.leading,
+    this.leadingSize = 12,
     this.triggerKey,
     this.chevronKey,
     this.width,
@@ -71,6 +73,9 @@ class AppDropdown<T> extends StatefulWidget {
   final ValueChanged<T> onChanged;
   final String? selectedLabel;
   final String? hintText;
+  // 아이콘이 숨겨질 때 간격도 사라지도록 leading에 오른쪽 간격을 포함해요.
+  final Widget? leading;
+  final double leadingSize;
   final Key? triggerKey;
   final Key? chevronKey;
   final double? width;
@@ -244,7 +249,10 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
     final triggerChromeWidth = widget.triggerPadding == null
         ? 16.0 + 40.0 + AppDropdownTokens.gap
         : widget.triggerPadding!.horizontal + AppDropdownTokens.iconSize;
-    var intrinsicWidth = labelPainter.width + triggerChromeWidth;
+    final leadingWidth = widget.leading == null
+        ? 0.0
+        : widget.leadingSize + AppDropdownTokens.gap;
+    var intrinsicWidth = labelPainter.width + triggerChromeWidth + leadingWidth;
     if (widget.matchMenuWidth) {
       var longestOptionWidth = 0.0;
       for (final option in widget.options) {
@@ -296,27 +304,31 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
                     : widget.triggerPadding!.right + AppDropdownTokens.iconSize,
                 top: widget.triggerPadding?.top ?? 0,
                 bottom: widget.triggerPadding?.bottom ?? 0,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: widget.triggerPadding == null
-                      ? Text(
-                          _label,
-                          maxLines: 1,
-                          softWrap: false,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.left,
-                          style: textStyle,
-                        )
-                      : FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            _label,
-                            maxLines: 1,
-                            softWrap: false,
-                            style: textStyle,
-                          ),
-                        ),
+                child: Row(
+                  children: [
+                    if (widget.leading != null) widget.leading!,
+                    Flexible(
+                      child: widget.triggerPadding == null
+                          ? Text(
+                              _label,
+                              maxLines: 1,
+                              softWrap: false,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.left,
+                              style: textStyle,
+                            )
+                          : FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                _label,
+                                maxLines: 1,
+                                softWrap: false,
+                                style: textStyle,
+                              ),
+                            ),
+                    ),
+                  ],
                 ),
               ),
               Positioned(

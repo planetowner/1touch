@@ -98,10 +98,8 @@ flutter:
     - assets/round_chart_selection_handle.svg
     - assets/community_activity.svg
     - assets/sports_and_outdoors.svg
-    - assets/messi.png
     - assets/google.svg
     - assets/apple.svg
-    - assets/HeungminSon.png
     - assets/addpost_icon.svg
     - assets/flag_video.mp4
     - assets/error_offside.png
@@ -111,13 +109,12 @@ flutter:
     - assets/onboarding_dark.mp4
     - assets/onboarding_light.mp4
     - assets/player_comparison/
-    - assets/epl.png
+    - assets/EPL.png
     - assets/seriea.png
     - assets/league1.png
     - assets/bundesliga.png
     - assets/laliga.png
     - TeamLogos/
-    - assets/onetouch_mark.png
     - assets/animations/onetouch_logo_dark.json
     - assets/animations/onetouch_logo_light.json
     - assets/match_info/

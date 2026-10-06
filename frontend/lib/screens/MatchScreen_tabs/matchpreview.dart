@@ -22,6 +22,7 @@ import 'package:onetouch/features/match_info/relevant_standings.dart';
 import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
 
@@ -514,16 +515,11 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                     // League logo + name
                     Row(
                       children: [
-                        Image.network(
-                          league?.imagePath ?? '',
-                          width: 24,
-                          height: 24,
-                          errorBuilder: (_, __, ___) => competitionLogoFallback(
-                            widget.fixture.competitionId,
-                            size: 24,
-                          ),
+                        CompetitionLogo(
+                          competitionId: widget.fixture.competitionId,
+                          size: 24,
+                          trailingGap: 10,
                         ),
-                        const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             competitionNameLabel(context, league?.competitionId,

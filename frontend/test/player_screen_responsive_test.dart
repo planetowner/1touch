@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'support/app_catalog.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/screens/all_players_screen.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/player_detail.dart';
@@ -102,7 +104,7 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     for (final (result, label) in [
       ('WIN', '승'),
-      ('DRAW', '무'),
+      ('DRAW', '무승부'),
       ('DEF', '패'),
       ('LOSE', '패'),
     ]) {
@@ -596,6 +598,72 @@ void main() {
     expect(topBlock.bottom - country.bottom, 16);
   });
 
+  for (final (code, flag) in [
+    ('KR', '🇰🇷'),
+    ('GB-ENG', '🏴󠁧󠁢󠁥󠁮󠁧󠁿'),
+    ('GB-SCT', '🏴󠁧󠁢󠁳󠁣󠁴󠁿'),
+    ('GB-WLS', '🏴󠁧󠁢󠁷󠁬󠁳󠁿'),
+  ]) {
+    testWidgets('iOS overview renders $code as a text flag', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      await tester.binding.setSurfaceSize(const Size(320, 568));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: PlayerCard(
+          player: player,
+          detailRepository: FakePlayerDetailRepository(nationalityCode: code),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      debugDefaultTargetPlatformOverride = null;
+
+      final country = tester.widget<Text>(
+        find.byKey(const ValueKey('player-overview-country')),
+      );
+      expect(country.data, 'South Korea $flag');
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final (platform, code, size) in [
+    (TargetPlatform.android, 'KR', const Size(320, 568)),
+    (TargetPlatform.android, 'GB-ENG', const Size(430, 932)),
+    (TargetPlatform.android, 'GB-SCT', const Size(430, 932)),
+    (TargetPlatform.android, 'GB-WLS', const Size(430, 932)),
+    (TargetPlatform.android, 'GB-NIR', const Size(430, 932)),
+    (TargetPlatform.iOS, 'GB-NIR', const Size(320, 568)),
+  ]) {
+    testWidgets('$platform overview renders $code as an image at $size',
+        (tester) async {
+      debugDefaultTargetPlatformOverride = platform;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: PlayerCard(
+          player: player,
+          detailRepository: FakePlayerDetailRepository(nationalityCode: code),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      debugDefaultTargetPlatformOverride = null;
+
+      final country = find.byKey(const ValueKey('player-overview-country'));
+      final flag = tester.widget<CachedNetworkImage>(find.descendant(
+        of: country,
+        matching: find.byType(CachedNetworkImage),
+      ));
+      expect(
+          flag.imageUrl, 'https://flagcdn.com/48x36/${code.toLowerCase()}.png');
+      expect(flag.width, 16);
+      expect(flag.height, 12);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('Korean profile metrics expand without vertical overflow',
       (tester) async {
     appLocaleController.value = const Locale('ko');
@@ -1080,6 +1148,30 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final dark in [false, true]) {
+    testWidgets('EPL logo contrast follows dark=$dark', (tester) async {
+      await tester.pumpWidget(MaterialApp(
+        theme: dark ? app_style.darktheme : app_style.whitetheme,
+        home: const Scaffold(
+          body: CompetitionLogo(competitionId: 8, trailingGap: 8),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final logo = find.byType(CompetitionLogo);
+      final image = find.descendant(
+        of: logo,
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Image && widget.image is AssetImage,
+        ),
+      );
+      expect(image, findsOneWidget);
+      expect(tester.widget<Image>(image).color, dark ? Colors.white : null);
+      expect(tester.getSize(logo).width, 20);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('competition stats put leagues before the shared calendar order',
       (tester) async {
     const inputIds = [27, 570, 2, 2286, 24, 5, 564, 8];
@@ -1181,6 +1273,18 @@ void main() {
         final row = tester.getRect(
           find.byKey(const ValueKey('player-competition-row-2')),
         );
+        final logo = tester.getRect(find.descendant(
+          of: find.byKey(const ValueKey('player-competition-row-2')),
+          matching: find.byType(CompetitionLogo),
+        ));
+        final uclLabel = tester.getRect(find.descendant(
+          of: find.byKey(const ValueKey('player-competition-row-2')),
+          matching: find.text('UCL'),
+        ));
+        final localLogo = tester.getRect(find.descendant(
+          of: find.byKey(const ValueKey('player-competition-row-564')),
+          matching: find.byType(CompetitionLogo),
+        ));
         final ratingColumn = tester.getRect(
           find.byKey(const ValueKey('player-competition-row-2-rating')),
         );
@@ -1188,6 +1292,11 @@ void main() {
           find.byKey(const ValueKey('player-competition-rating-2')),
         );
         expect(card.right - row.right, closeTo(16, 0.1));
+        expect(logo.left - card.left, closeTo(16, 0.1));
+        expect(logo.width, 0);
+        expect(uclLabel.left - card.left, closeTo(16, 0.1));
+        expect(localLogo.width, 20);
+        expect(logo.left, closeTo(tester.getRect(headerTexts.first).left, 0.1));
         expect(card.right - ratingColumn.right, closeTo(16, 0.1));
         expect(ratingBox.width, lessThan(ratingColumn.width));
         expect(ratingBox.center.dx, closeTo(ratingColumn.center.dx, 0.1));

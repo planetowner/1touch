@@ -14,6 +14,7 @@ import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/features/standing_features.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
 import 'package:onetouch/data/competitions/tournament_bracket_repository.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -630,6 +631,10 @@ class _StandingTabState extends State<StandingTab> {
       key: const ValueKey('standing-league-filter-shell'),
       triggerKey: const ValueKey('standing-league-filter'),
       value: selectedLeagueId,
+      leading: CompetitionLogo(
+        competitionId: selectedLeagueId,
+        trailingGap: AppDropdownTokens.gap,
+      ),
       backgroundColor: appColors.subtleBackground,
       foregroundColor: colors.onSurface,
       textStyle: Body2_b.style,
