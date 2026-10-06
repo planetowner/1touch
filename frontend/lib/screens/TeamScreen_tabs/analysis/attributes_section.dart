@@ -223,8 +223,11 @@ class _AttributesSectionState extends State<AttributesSection> {
           //   Header: title + comparison picker
           _AnalysisSectionHeader(
             title: teamScreenLabel(context, 'ATTRIBUTES'),
-            trailing:
-                _comparisonOptions.isNotEmpty ? _buildComparisonPill() : null,
+            trailing: footballCatalog.seasons.value.any((season) =>
+                    TeamPageEligibility.domesticBigFiveCompetitionIds
+                        .contains(season.competitionId))
+                ? _buildComparisonPill()
+                : null,
           ),
           if (_isComparisonLoading) ...[
             const SizedBox(height: 8),
@@ -297,11 +300,16 @@ class _AttributesSectionState extends State<AttributesSection> {
             .add(membership.teamId);
       }
     }
+    // The current team's stored scores must not restrict seasons available
+    // for other Big Five teams, including the current season.
     final seasons = footballCatalog.seasons.value.where(
       (season) =>
           TeamPageEligibility.domesticBigFiveCompetitionIds
               .contains(season.competitionId) &&
-          _comparisonOptions.any((option) => option.seasonName == season.name),
+          (eligibleTeamIds[season.seasonId]?.any(
+                (teamId) => teamRepository.findById(teamId) != null,
+              ) ??
+              false),
     );
     final options = <_AnalysisFilterOption<({int teamId, int seasonId})>>[
       for (final season in seasons)
@@ -326,6 +334,19 @@ class _AttributesSectionState extends State<AttributesSection> {
               teamName: teamNameLabel(context, team.teamId, team.name),
             ),
     ];
+    if (options.isEmpty) return;
+    final initialValue = _selectedComparisonSeasonId == null
+        ? options
+                .where((option) =>
+                    option.teamId == ownTeamId &&
+                    option.seasonId == _comparisonOptions.firstOrNull?.seasonId)
+                .firstOrNull
+                ?.value ??
+            options.first.value
+        : (
+            teamId: _selectedComparisonTeamId ?? ownTeamId,
+            seasonId: _selectedComparisonSeasonId!,
+          );
     final selected = await showModalBottomSheet<({int teamId, int seasonId})>(
       context: context,
       isScrollControlled: true,
@@ -333,12 +354,7 @@ class _AttributesSectionState extends State<AttributesSection> {
       builder: (context) =>
           _AnalysisComparisonFilterSheet<({int teamId, int seasonId})>(
         options: options,
-        initialValue: _selectedComparisonSeasonId == null
-            ? (teamId: ownTeamId, seasonId: _comparisonOptions.first.seasonId)
-            : (
-                teamId: _selectedComparisonTeamId ?? ownTeamId,
-                seasonId: _selectedComparisonSeasonId!
-              ),
+        initialValue: initialValue,
         optionKey: (value) =>
             'analysis-attributes-option-${value.teamId}-${value.seasonId}',
       ),
@@ -349,8 +365,6 @@ class _AttributesSectionState extends State<AttributesSection> {
   }
 
   Widget _buildComparisonPill() {
-    final colors = Theme.of(context).colorScheme;
-
     TeamAttributeSeasonOption? selectedSeason;
     for (final season in _comparisonOptions) {
       if (season.seasonId == _selectedComparisonSeasonId) {
@@ -359,31 +373,34 @@ class _AttributesSectionState extends State<AttributesSection> {
       }
     }
 
-    final label = selectedSeason == null
+    // Cross-league selections have different season IDs from this team's options.
+    final selectedSeasonName = selectedSeason?.seasonName ??
+        (_comparisonScores?.seasonId == _selectedComparisonSeasonId
+            ? _comparisonScores?.seasonLabel
+            : null);
+    final label = selectedSeasonName == null
         ? trUpper(context, 'Season')
-        : compactSeasonLabel(selectedSeason.seasonName);
+        : compactSeasonLabel(selectedSeasonName);
+    final selectedTeamId = _selectedComparisonTeamId;
+    final selectedTeam =
+        selectedTeamId == null ? null : teamRepository.findById(selectedTeamId);
+    final teamLabel = selectedTeamId == null
+        ? trUpper(context, 'Team')
+        : (selectedTeam?.shortCode?.trim().isNotEmpty == true
+                ? selectedTeam!.shortCode!
+                : teamNameLabel(
+                    context,
+                    selectedTeamId,
+                    selectedTeam?.name ?? 'Unknown Team',
+                  ))
+            .toUpperCase();
 
-    return InkWell(
-      key: const ValueKey('analysis-attributes-filter'),
+    return _AnalysisComparisonFilterPill(
+      filterKey: const ValueKey('analysis-attributes-filter'),
+      dividerKey: const ValueKey('analysis-attributes-filter-divider'),
+      seasonLabel: tr(context, label),
+      teamLabel: teamLabel,
       onTap: _openComparisonFilter,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        constraints: const BoxConstraints(minWidth: 86),
-        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-        decoration: BoxDecoration(
-          color: AppColors.of(context).subtleBackground,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(tr(context, label),
-                style: Body2_b.style.copyWith(color: colors.onSurface)),
-            const SizedBox(width: 8),
-            Icon(Icons.keyboard_arrow_down, color: colors.onSurface, size: 20),
-          ],
-        ),
-      ),
     );
   }
 

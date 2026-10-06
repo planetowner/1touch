@@ -243,7 +243,7 @@ void main() {
       tester
           .getSize(find.byKey(const ValueKey('analysis-attributes-filter')))
           .width,
-      lessThan(160),
+      lessThan(220),
     );
     final filterRight = tester.getTopRight(
       find.byKey(const ValueKey('analysis-attributes-filter')),
@@ -251,20 +251,77 @@ void main() {
     expect(filterRight.dx, closeTo(369, 1));
     final filter = find.byKey(const ValueKey('analysis-attributes-filter'));
     final season = find.descendant(of: filter, matching: find.text('SEASON'));
-    final chevron = find.descendant(
+    final team = find.descendant(of: filter, matching: find.text('TEAM'));
+    final divider = find.descendant(
       of: filter,
-      matching: find.byIcon(Icons.keyboard_arrow_down),
+      matching: find.byKey(
+        const ValueKey('analysis-attributes-filter-divider'),
+      ),
     );
+    expect(tester.getSize(filter).height, 42);
+    expect(tester.getSize(divider), const Size(1, 26));
     expect(
-      (tester.getCenter(season).dy - tester.getCenter(chevron).dy).abs(),
+      (tester.getCenter(season).dy - tester.getCenter(team).dy).abs(),
       lessThan(1),
     );
+    expect(tester.getRect(divider).left - tester.getRect(season).right,
+        closeTo(8, 0.1));
+    expect(tester.getRect(team).left - tester.getRect(divider).right,
+        closeTo(8, 0.1));
     expect(
-      tester.getRect(filter).right - tester.getRect(chevron).right,
+      tester.getRect(filter).right - tester.getRect(team).right,
       closeTo(8, 0.1),
     );
     expect(tester.renderObject<RenderParagraph>(season).didExceedMaxLines,
         isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('shows all available seasons even with only current scores',
+      (tester) async {
+    final repository = _repository(
+      (request) async => http.Response(
+        jsonEncode(_attributeJson(
+          teamId: request.url.path.contains('/teams/3468/') ? 3468 : 83,
+        )),
+        200,
+      ),
+      optionsHandler: (_) async => http.Response(
+        jsonEncode({
+          'team_id': 83,
+          'items': [_optionsJson()['items'][0]],
+        }),
+        200,
+      ),
+    );
+    await _pumpAttributes(tester, repository);
+
+    expect(find.byKey(const ValueKey('analysis-attributes-filter')),
+        findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('analysis-attributes-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('analysis-filter-season-2026/2027')),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('analysis-filter-season-2025/2026')),
+        findsOneWidget);
+    await tester
+        .tap(find.byKey(const ValueKey('analysis-filter-season-2026/2027')));
+    await tester.pump();
+    await tester.enterText(
+        find.byKey(const ValueKey('analysis-filter-team-search')), 'Real');
+    await tester.pump();
+    await tester.tap(
+        find.byKey(const ValueKey('analysis-attributes-option-3468-27965')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analysis-filter-update')));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<RadarChart>(find.byType(RadarChart)).data.dataSets,
+        hasLength(3));
+    expect(find.text('26/27'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -328,19 +385,17 @@ void main() {
       of: filterFinder,
       matching: find.text('24/25'),
     );
-    final selectedChevron = find.descendant(
+    final selectedTeam = find.descendant(
       of: filterFinder,
-      matching: find.byIcon(Icons.keyboard_arrow_down),
+      matching: find.text('BAR'),
     );
     expect(
-      (tester.getCenter(selectedSeason).dy -
-              tester.getCenter(selectedChevron).dy)
+      (tester.getCenter(selectedSeason).dy - tester.getCenter(selectedTeam).dy)
           .abs(),
       lessThan(1),
     );
     expect(
-      tester.getRect(filterFinder).right -
-          tester.getRect(selectedChevron).right,
+      tester.getRect(filterFinder).right - tester.getRect(selectedTeam).right,
       closeTo(8, 0.1),
     );
     expect(find.text('24/25 FC BARCELONA'), findsOneWidget);
@@ -452,6 +507,11 @@ void main() {
 
     expect(requestedTeams, contains(contains('/teams/19/attributes')));
     expect(find.text('24/25 ARSENAL'), findsOneWidget);
+    final filter = find.byKey(const ValueKey('analysis-attributes-filter'));
+    expect(find.descendant(of: filter, matching: find.text('24/25')),
+        findsOneWidget);
+    expect(find.descendant(of: filter, matching: find.text('ARS')),
+        findsOneWidget);
   });
 
   testWidgets('keeps current attributes visible when options fail',
@@ -466,7 +526,7 @@ void main() {
     expect(find.byType(RadarChart), findsOneWidget);
     expect(
       find.byKey(const ValueKey('analysis-attributes-filter')),
-      findsNothing,
+      findsOneWidget,
     );
     expect(tester.takeException(), isNull);
   });
