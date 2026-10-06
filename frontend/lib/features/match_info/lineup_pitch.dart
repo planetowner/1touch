@@ -26,7 +26,7 @@ class LineupPitch extends StatelessWidget {
   });
 
   static const double _centerGap = 64;
-  static const double _pitchHeight = 820;
+  static const double _pitchHeight = 784;
   static const double _verticalPadding = 20;
 
   @override
@@ -59,7 +59,7 @@ class LineupPitch extends StatelessWidget {
           height: _pitchHeight,
           decoration: BoxDecoration(
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             boxShadow: appCardShadows(context),
           ),
           clipBehavior: Clip.hardEdge,
@@ -68,14 +68,16 @@ class LineupPitch extends StatelessWidget {
               Positioned.fill(
                 child: CustomPaint(
                   painter: _PitchMarkingsPainter(
-                    foreground.withValues(alpha: 0.18),
+                    isDark
+                        ? const Color(0xFFB2B2B2)
+                        : foreground.withValues(alpha: 0.3),
                   ),
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: _verticalPadding,
-                  horizontal: 4,
+                  horizontal: 0,
                 ),
                 child: Column(
                   children: [
@@ -233,27 +235,39 @@ class _PlayerDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pitchOutEvents = player.events
-        .where((event) => event.type == LineupEventType.subOut)
-        .toList();
-    final lowerEvents = player.events
-        .where((event) => event.type != LineupEventType.subOut)
-        .toList();
+    final cardEvents = player.events.where((event) => switch (event.type) {
+          LineupEventType.yellowCard ||
+          LineupEventType.secondYellowCard ||
+          LineupEventType.redCard =>
+            true,
+          _ => false,
+        });
+    final scoringEvents = player.events.where((event) =>
+        event.type == LineupEventType.goal ||
+        event.type == LineupEventType.assist);
+    final rightEvents = player.events.where((event) =>
+        event.type == LineupEventType.subIn ||
+        event.type == LineupEventType.subOut ||
+        event.type == LineupEventType.injury);
     final pitchInMinutes = player.events
         .where((event) => event.type == LineupEventType.subIn)
         .map((event) => event.minute)
         .whereType<int>()
         .map((minute) => "$minute'")
         .join(' · ');
-    final pitchOutMinutes = pitchOutEvents
+    final pitchOutMinutes = player.events
+        .where((event) => event.type == LineupEventType.subOut)
         .map((event) => event.minute)
         .whereType<int>()
         .map((minute) => "$minute'")
         .join(' · ');
-    final badges =
-        lowerEvents.isEmpty ? null : _EventBadges(events: lowerEvents);
-    final badgeLeft = badges == null ? 0.0 : (32 - badges.width) / 2;
-    final minuteLeft = badges == null ? 40.0 : badgeLeft + badges.width + 4;
+    final cards =
+        cardEvents.isEmpty ? null : _EventBadges(events: cardEvents.toList());
+    final scoring = scoringEvents.isEmpty
+        ? null
+        : _EventBadges(events: scoringEvents.toList());
+    final right =
+        rightEvents.isEmpty ? null : _EventBadges(events: rightEvents.toList());
     return GestureDetector(
       key: ValueKey(
         'match-lineup-player-${player.teamId}-${player.playerId}',
@@ -274,34 +288,38 @@ class _PlayerDot extends StatelessWidget {
                     number: player.number,
                     circleColor: playerCircleColor,
                   ),
-                  if (pitchOutEvents.isNotEmpty)
+                  if (cards != null)
+                    Positioned(
+                      key: const ValueKey('lineup-card-badges'),
+                      top: -4,
+                      left: -4,
+                      child: cards,
+                    ),
+                  if (scoring != null)
+                    Positioned(
+                      key: const ValueKey('lineup-scoring-badges'),
+                      left: -4,
+                      bottom: -6,
+                      child: scoring,
+                    ),
+                  if (right != null)
                     Positioned(
                       key: const ValueKey('lineup-pitch-out-badge'),
-                      top: -4,
                       left: 24,
+                      bottom: -6,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _EventBadges(events: pitchOutEvents),
+                          right,
+                          if (pitchInMinutes.isNotEmpty) ...[
+                            const SizedBox(width: 3),
+                            Text(pitchInMinutes, style: Eyebrow.style),
+                          ],
                           if (pitchOutMinutes.isNotEmpty) ...[
                             const SizedBox(width: 3),
-                            Text(pitchOutMinutes, style: Body2.style),
+                            Text(pitchOutMinutes, style: Eyebrow.style),
                           ],
                         ],
-                      ),
-                    ),
-                  if (badges != null)
-                    Positioned(
-                      left: badgeLeft,
-                      bottom: -6,
-                      child: badges,
-                    ),
-                  if (pitchInMinutes.isNotEmpty)
-                    Positioned(
-                      left: minuteLeft,
-                      bottom: -5,
-                      child: Center(
-                        child: Text(pitchInMinutes, style: Body2.style),
                       ),
                     ),
                 ],
@@ -365,7 +383,7 @@ class _PlayerCircle extends StatelessWidget {
   }
 }
 
-//   Event badges (to the right of the circle)
+//   이벤트 종류별로 선수 원의 지정된 모서리에 겹쳐 표시하는 배지
 
 class _EventBadges extends StatelessWidget {
   final List<LineupEvent> events;
@@ -393,13 +411,16 @@ class _EventBadges extends StatelessWidget {
     if (directRed != null) {
       return [...otherEvents, directRed];
     }
-    if (secondYellow != null || yellowCards.length >= 2) {
-      final firstYellow = yellowCards.firstOrNull ?? secondYellow!;
-      final dismissal = secondYellow ?? yellowCards[1];
+    if (secondYellow != null) {
+      final firstYellow = yellowCards.firstOrNull ??
+          LineupEvent(
+            type: LineupEventType.yellowCard,
+            minute: secondYellow.minute,
+          );
       return [
         ...otherEvents,
         firstYellow,
-        LineupEvent(type: LineupEventType.redCard, minute: dismissal.minute),
+        LineupEvent(type: LineupEventType.redCard, minute: secondYellow.minute),
       ];
     }
     return [...otherEvents, ...yellowCards];
@@ -475,7 +496,7 @@ class _EventBadges extends StatelessWidget {
   }
 }
 
-//   Pitch markings (halfway line + center circle)
+//   Pitch markings
 
 class _PitchMarkingsPainter extends CustomPainter {
   const _PitchMarkingsPainter(this.color);
@@ -489,13 +510,33 @@ class _PitchMarkingsPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
-    final midY = size.height / 2;
+    // 345 × 784 시안의 경기장 선을 실제 카드 너비에 비례시켜 그려요.
+    final scaleX = size.width / 345;
+    final scaleY = size.height / 784;
+    final midY = 392 * scaleY;
 
-    // Halfway line
     canvas.drawLine(Offset(0, midY), Offset(size.width, midY), paint);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width / 2, midY),
+        width: 192 * scaleX,
+        height: 192 * scaleY,
+      ),
+      paint,
+    );
 
-    // Center circle (~22% of width radius)
-    canvas.drawCircle(Offset(size.width / 2, midY), size.width * 0.22, paint);
+    for (final (width, depth) in [(200.0, 120.0), (120.0, 40.0)]) {
+      final left = (size.width - width * scaleX) / 2;
+      final right = size.width - left;
+      final top = depth * scaleY;
+      final bottom = size.height - top;
+      canvas.drawLine(Offset(left, 0), Offset(left, top), paint);
+      canvas.drawLine(Offset(left, top), Offset(right, top), paint);
+      canvas.drawLine(Offset(right, top), Offset(right, 0), paint);
+      canvas.drawLine(Offset(left, size.height), Offset(left, bottom), paint);
+      canvas.drawLine(Offset(left, bottom), Offset(right, bottom), paint);
+      canvas.drawLine(Offset(right, bottom), Offset(right, size.height), paint);
+    }
   }
 
   @override
