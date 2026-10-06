@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -54,7 +52,6 @@ int roundChartInsetLineCount(
   TextStyle axisLabelStyle, {
   int lineCount = RoundChartVisuals.horizontalLineCount,
 }) {
-  if (Localizations.localeOf(context).languageCode == 'ko') return 2;
   final painter = TextPainter(
     text: TextSpan(text: axisLabel, style: axisLabelStyle),
     textDirection: Directionality.of(context),
@@ -62,8 +59,8 @@ int roundChartInsetLineCount(
     maxLines: 1,
   )..layout();
   final cellHeight = plotSize.height / (lineCount - 1);
-  return (math.max(1, (painter.width / cellHeight).ceil()) + 1)
-      .clamp(0, lineCount);
+  // 회전한 Text의 측정 오차를 흡수하고 눈금선과 4px 이상 띄워요.
+  return ((painter.width + 6) / cellHeight).ceil().clamp(0, lineCount);
 }
 
 class RoundChartGridPainter extends CustomPainter {

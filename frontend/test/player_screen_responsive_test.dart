@@ -1735,6 +1735,47 @@ void main() {
     expect(find.text('Round 19'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final (size, scale, stacked) in [
+    (const Size(320, 568), 1.0, false),
+    (const Size(320, 568), 4.0, true),
+    (const Size(430, 932), 1.0, false),
+  ]) {
+    testWidgets('performance rating stays complete at $size scale=$scale',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(MaterialApp(
+        home: MediaQuery(
+          data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+          child: Scaffold(
+            body: PlayerPerformanceChart(points: const [
+              (fixtureId: 1, round: 1, rating: 9.9),
+            ]),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final tooltip = find.byKey(const ValueKey('player-performance-tooltip'));
+      final rating = find.descendant(
+        of: tooltip,
+        matching: find.text('Rating 9.9'),
+      );
+      final ratingText = tester.widget<Text>(rating);
+      final tooltipRect = tester.getRect(tooltip);
+      final ratingRect = tester.getRect(rating);
+      expect(tester.widget<Container>(tooltip).child,
+          stacked ? isA<Column>() : isA<Row>());
+      expect(ratingText.overflow, isNot(TextOverflow.ellipsis));
+      expect(ratingRect.right, lessThanOrEqualTo(tooltipRect.right));
+      expect(ratingRect.bottom, lessThanOrEqualTo(tooltipRect.bottom));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('performance shows all four completed rounds before round eight',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
@@ -1793,6 +1834,21 @@ void main() {
             find.byKey(const ValueKey('player-performance-grid')),
           )
           .painter! as RoundChartGridPainter;
+      final gridRect = tester.getRect(
+        find.byKey(const ValueKey('player-performance-grid')),
+      );
+      final labelRect = tester.getRect(
+        find.byKey(const ValueKey('player-performance-axis-label')),
+      );
+      final firstFullLineY = gridRect.top +
+          gridRect.height *
+              gridPainter.insetLineCount /
+              gridPainter.divisionCount;
+      expect(firstFullLineY, greaterThanOrEqualTo(labelRect.bottom + 4));
+      expect(
+        firstFullLineY - gridRect.height / gridPainter.divisionCount,
+        lessThan(labelRect.bottom),
+      );
       expect((lineChart.data.minY, lineChart.data.maxY), (0, 10));
       expect(gridPainter.divisionCount + 1, 11);
       expect(tester.getSize(mask).width, RoundChartVisuals.axisLineInset);

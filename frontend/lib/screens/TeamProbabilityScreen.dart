@@ -475,15 +475,15 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
                       index++)
                     if (plotHeight *
                                 index /
-                                (RoundChartVisuals.horizontalLineCount - 1) <=
-                            topLabelHeight + 1 ||
+                                (RoundChartVisuals.horizontalLineCount - 1) <
+                            topLabelHeight ||
                         (plotHeight *
                                         index /
                                         (RoundChartVisuals.horizontalLineCount -
                                             1) -
                                     plotHeight / 2)
-                                .abs() <=
-                            middleLabelHeight / 2 + 1)
+                                .abs() <
+                            middleLabelHeight / 2)
                       index,
                 };
                 Widget axisLabel(String label, Key key) => ColoredBox(
