@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/api_image_headers.dart';
+import 'package:onetouch/features/community/community_post_image.dart';
 
 Future<void> showCommunityAttachmentViewer(
   BuildContext context, {
   required String mediaUrl,
+  String? previewUrl,
 }) {
   return Navigator.of(context, rootNavigator: true).push<void>(
     PageRouteBuilder<void>(
@@ -12,6 +13,7 @@ Future<void> showCommunityAttachmentViewer(
       reverseTransitionDuration: const Duration(milliseconds: 140),
       pageBuilder: (_, __, ___) => CommunityAttachmentViewer(
         mediaUrl: mediaUrl,
+        previewUrl: previewUrl,
       ),
       transitionsBuilder: (_, animation, __, child) => FadeTransition(
         opacity: CurvedAnimation(
@@ -28,9 +30,11 @@ class CommunityAttachmentViewer extends StatefulWidget {
   const CommunityAttachmentViewer({
     super.key,
     required this.mediaUrl,
+    this.previewUrl,
   });
 
   final String mediaUrl;
+  final String? previewUrl;
 
   @override
   State<CommunityAttachmentViewer> createState() =>
@@ -66,18 +70,15 @@ class _CommunityAttachmentViewerState extends State<CommunityAttachmentViewer> {
                     key: const ValueKey('community-attachment-image-transform'),
                     scale: _scale,
                     alignment: Alignment.center,
-                    child: Image.network(
-                      widget.mediaUrl,
-                      key: const ValueKey('community-attachment-full-image'),
-                      headers: apiImageHeaders(widget.mediaUrl),
+                    child: CommunityPostImage(
+                      mediaUrl: widget.mediaUrl,
+                      previewUrl: widget.previewUrl,
+                      showOriginal: true,
+                      imageKey:
+                          const ValueKey('community-attachment-full-image'),
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.image_not_supported_outlined,
-                        color: Colors.white54,
-                        size: 48,
-                      ),
                     ),
                   ),
                 ),

@@ -21,6 +21,7 @@ class PostAttachment {
   final int position;
   final String? linkUrl;
   final String? mediaUrl;
+  final String? previewUrl;
   final String? contentType;
   final int? byteSize;
 
@@ -29,6 +30,7 @@ class PostAttachment {
     required this.position,
     this.linkUrl,
     this.mediaUrl,
+    this.previewUrl,
     this.contentType,
     this.byteSize,
   });
@@ -52,6 +54,12 @@ class Post {
   final int commentCount;
   final bool liked;
   final List<PostAttachment> attachments;
+
+  PostAttachment? get mediaAttachment => attachments
+      .where((attachment) => attachment.mediaUrl == mediaUrl)
+      .firstOrNull;
+
+  String? get mediaPreviewUrl => mediaAttachment?.previewUrl;
 
   const Post({
     required this.postId,

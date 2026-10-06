@@ -40,6 +40,10 @@ import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/features/app_error_view.dart';
 import 'package:onetouch/features/betting/bet_settlement_notifications.dart';
 import 'package:onetouch/features/community/notification_post_page.dart';
+import 'package:onetouch/features/media/selected_team_media_preloader.dart';
+import 'package:onetouch/data/injuries/team_injury_repository_provider.dart';
+import 'package:onetouch/data/posts/post_repository_provider.dart';
+import 'package:onetouch/data/transfers/transfer_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/current_user_profile.dart';
@@ -589,8 +593,17 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // The body should simply be the navigationShell
-      body: navigationShell,
+      body: ValueListenableBuilder<int>(
+        valueListenable: currentUserPreferences.viewedTeamId,
+        builder: (_, teamId, child) => SelectedTeamMediaPreloader(
+          teamId: teamId,
+          postRepository: postRepository,
+          injuryRepository: teamInjuryRepository,
+          transferRepository: transferRepository,
+          child: child!,
+        ),
+        child: navigationShell,
+      ),
       bottomNavigationBar: OneTouchBottomNavigationBar(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) {

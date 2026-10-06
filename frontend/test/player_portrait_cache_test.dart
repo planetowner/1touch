@@ -1,6 +1,5 @@
 import 'dart:ui' as ui;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,14 +8,11 @@ import 'package:onetouch/features/player/player_image_cache.dart';
 
 void main() {
   testWidgets(
-      'popup, detail and comparison reuse the decoded portrait on their first frame',
+      'list, popup, detail and comparison reuse the prepared portrait on their first frame',
       (tester) async {
     const url = 'https://cdn.example/player.png';
-    final provider = ResizeImage.resizeIfNeeded(
-        320,
-        null,
-        CachedNetworkImageProvider(url,
-            cacheManager: PlayerImageCache.manager));
+    final provider =
+        PlayerImageCache.portraitProvider(url, devicePixelRatio: 2);
     final key = await provider.obtainKey(ImageConfiguration.empty);
     final decoded = await tester.runAsync(() async {
       final recorder = ui.PictureRecorder();
@@ -36,7 +32,13 @@ void main() {
       PaintingBinding.instance.imageCache.clearLiveImages();
     });
 
-    for (final dimensions in [(null, 140.0), (160.0, 160.0), (130.0, 128.0)]) {
+    for (final dimensions in [
+      (74.0, 74.0),
+      (68.0, 68.0),
+      (null, 140.0),
+      (160.0, 160.0),
+      (130.0, 128.0)
+    ]) {
       await tester.pumpWidget(MaterialApp(
           home: MediaQuery(
         data: const MediaQueryData(devicePixelRatio: 2),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,30 @@ import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/data/transfers/api/api_transfer_repository.dart';
 
 void main() {
+  test('preloading and opening the team share an in-flight transfer request',
+      () async {
+    final response = Completer<http.Response>();
+    var requestCount = 0;
+    final repository = ApiTransferRepository(
+      api: ApiClient(
+        client: MockClient((_) {
+          requestCount++;
+          return response.future;
+        }),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+    );
+
+    final preload = repository.loadForTeam(83);
+    final opening = repository.loadForTeam(83);
+    response.complete(http.Response(jsonEncode(_windowJson()), 200));
+    final windows = await Future.wait([preload, opening]);
+
+    expect(requestCount, 1);
+    expect(windows.last, same(windows.first));
+  });
+
   test('requests, maps, and caches the latest team transfer window', () async {
     var requestCount = 0;
     final repository = ApiTransferRepository(

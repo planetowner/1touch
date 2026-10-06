@@ -1,13 +1,14 @@
 """R2 파일은 비공개로 보관하고 원본 형식·크기를 확인해요."""
 from functools import lru_cache
 from contextlib import contextmanager
+from io import BytesIO
 import re
 import warnings
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import HTTPException
 from fastapi.responses import Response, StreamingResponse
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, ImageOps, UnidentifiedImageError
 from .auth_security import new_token, required_setting
 from ...core.public_images import IMAGE_CACHE_CONTROL, PublicImage
 
@@ -122,3 +123,29 @@ def private_content(item: dict, range_header: str | None = None):
         headers["Content-Range"] = response["ContentRange"]
     return StreamingResponse(chunks(), status_code=206 if range_header else 200,
                              media_type=item["content_type"], headers=headers)
+
+
+@lru_cache(maxsize=64)
+def _post_preview_bytes(object_key: str) -> bytes:
+    # 첨부 원본은 바뀌지 않아요. 축소 결과만 재사용하고, 접근 권한은 요청마다 확인해요.
+    source = object_operation("get_object", Key=object_key)["Body"]
+    try:
+        data = source.read()
+    finally:
+        source.close()
+    with Image.open(BytesIO(data)) as original:
+        # 목록과 상세가 같은 사진을 재사용하도록 상세 화면 크기로 한 번만 줄여요.
+        # 회전도 축소 후에 적용해 원본 전체 픽셀을 복사하지 않아요.
+        original.thumbnail((1280, 1280), Image.Resampling.LANCZOS)
+        preview = ImageOps.exif_transpose(original)
+        output = BytesIO()
+        preview.save(output, format="WEBP", quality=85)
+        return output.getvalue()
+
+
+def private_post_preview(item: dict):
+    if not (item["content_type"] or "").startswith("image/"):
+        raise HTTPException(415, "A preview requires an image attachment")
+    return Response(_post_preview_bytes(item["object_key"]), media_type="image/webp", headers={
+        "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff",
+    })

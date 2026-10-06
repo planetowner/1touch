@@ -212,4 +212,4 @@ class PlayerWatch(PlayerCandidate):
 
 class PlayersToWatchResponse(BaseModel):
     items: list[PlayerWatch]
-    scope: Literal['all_competitions_recent_10_appearances']
+    scope: Literal['all_competitions_recent_6_appearances']

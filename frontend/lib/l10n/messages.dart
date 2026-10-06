@@ -1131,10 +1131,11 @@ const appMessages = <String, MessageTranslations>{
     zh: "没有符合筛选条件的排名数据"
   ),
   "ONES TO WATCH": (ko: "눈여겨볼 선수", ja: "注目の選手", zh: "值得关注的球员"),
-  "No players with 10 rated appearances and an improved average": (
-    ko: "평점이 있는 10경기 출전과 평균 상승 조건을 충족한 선수가 없어요",
-    ja: "評価付き10試合出場と平均上昇の条件を満たす選手はいません",
-    zh: "没有满足10场评分出场且平均评分提升的球员"
+  "No players meet the current-season appearance and rating improvement criteria":
+      (
+    ko: "이번 시즌 출전과 평점 상승 조건을 충족한 선수가 아직 없어요",
+    ja: "今季の出場と平均評価の上昇条件を満たす選手はまだいません",
+    zh: "暂无满足本赛季出场及平均评分提升条件的球员"
   ),
   "MOST COMPARED": (ko: "많이 비교한 선수", ja: "よく比較される選手", zh: "热门对比球员"),
   "Comparison data unavailable": (
@@ -2308,11 +2309,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "1touch独自のデータに基づくパフォーマンス指標で選手を評価・順位付けします。",
     zh: "使用1touch自有的数据驱动表现指标评估球员并进行排名。"
   ),
-  "Highlights players with the highest performance growth over the recent 5 matches, based on 1touch metrics.":
+  "Compares average ratings in the latest 3 appearances with the previous 3 across all competitions. All 6 need ratings, and the latest 3 must be this season. Shows up to 10 players with the biggest increases.":
       (
-    ko: "1touch 지표를 기준으로 최근 5경기에서 경기력이 가장 크게 향상된 선수를 보여줘요.",
-    ja: "1touchの指標に基づき、直近5試合で最も成長した選手を紹介します。",
-    zh: "根据1touch指标，展示最近5场比赛中表现进步最大的球员。"
+    ko: "모든 대회의 최근 3경기와 직전 3경기 평균 평점을 비교해요. 6경기 모두 평점이 있고, 최근 3경기는 모두 이번 시즌 출전이어야 해요. 평균 평점이 가장 많이 오른 선수를 최대 10명 보여줘요.",
+    ja: "全大会の直近3試合とその前の3試合の平均評価を比較します。6試合すべてに評価があり、直近3試合はすべて今季の出場が対象です。平均評価の上昇幅が大きい選手を最大10人紹介します。",
+    zh: "比较所有赛事中最近3次出场与此前3次出场的平均评分。6场均须有评分，且最近3场须全部属于本赛季。展示平均评分提升最多的至多10名球员。"
   ),
   "Measured by comparing actual salary against 1touch’s predicted market value based on performance and playtime.":
       (

@@ -81,6 +81,8 @@ def attachments_for_post(post_id: int) -> list[dict]:
     for row in rows:
         # 공개 R2 URL을 주지 않고 매 요청에서 권한을 확인하는 우리 API 주소를 제공해요.
         row["media_url"] = None if row["link_url"] else f"/v1/attachments/{row['attachment_id']}/content"
+        row["preview_url"] = (f"/v1/attachments/{row['attachment_id']}/preview"
+                              if (row["content_type"] or "").startswith("image/") else None)
     return rows
 
 
