@@ -61,7 +61,7 @@ class _SubstitutesAndCoachState extends State<SubstitutesAndCoach> {
             Text('—', style: Body1.style)
           else
             _SubList(subs: selectedSubs, onPlayerTap: widget.onPlayerTap),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
         ],
         Text(tr(context, "COACH"), style: Body2_b.style),
         const SizedBox(height: 16),
