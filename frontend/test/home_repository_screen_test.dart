@@ -257,45 +257,50 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('shows a stale Home snapshot while refreshing and after failure',
-      (tester) async {
-    await _setScreenSize(tester, const Size(393, 852));
-    final originalFavorite = currentUserPreferences.favoriteTeamId.value;
-    final originalFollowing = currentUserPreferences.followedTeamIds.value;
-    addTearDown(() => currentUserPreferences.applyServerSelection(
-          UserTeamPreferences(
-            favoriteTeamId: originalFavorite,
-            followedTeamIds: originalFollowing,
-          ),
-        ));
-    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
-      favoriteTeamId: 83,
-      followedTeamIds: [83, 9],
-    ));
-    final repository = _CachedHomeRepository()
-      ..saveSnapshot(
-        83,
-        DateTime.now(),
-        _homeData(),
-        savedAt: DateTime.now().subtract(const Duration(hours: 2)),
-      );
+  for (final requiresRefresh in [false, true]) {
+    testWidgets(
+        'refreshes cached Home and preserves fixtures on failure, country refresh=$requiresRefresh',
+        (tester) async {
+      await _setScreenSize(tester, const Size(393, 852));
+      final originalFavorite = currentUserPreferences.favoriteTeamId.value;
+      final originalFollowing = currentUserPreferences.followedTeamIds.value;
+      addTearDown(() => currentUserPreferences.applyServerSelection(
+            UserTeamPreferences(
+              favoriteTeamId: originalFavorite,
+              followedTeamIds: originalFollowing,
+            ),
+          ));
+      currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+        favoriteTeamId: 83,
+        followedTeamIds: [83, 9],
+      ));
+      final repository = _CachedHomeRepository()
+        ..saveSnapshot(
+          83,
+          DateTime.now(),
+          _homeData(),
+          savedAt: DateTime.now().subtract(
+              requiresRefresh ? Duration.zero : const Duration(hours: 2)),
+          requiresRefresh: requiresRefresh,
+        );
 
-    await tester.pumpWidget(MaterialApp(
-      theme: app_style.whitetheme,
-      home: HomeScreen(
-        repository: repository,
-        newsRepository: _RecordingNewsRepository(),
-      ),
-    ));
-    expect(find.text('Alpha FC'), findsOneWidget);
-    expect(find.byType(FootballLoadingIndicator), findsNothing);
-    expect(repository.calls, hasLength(1));
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.whitetheme,
+        home: HomeScreen(
+          repository: repository,
+          newsRepository: _RecordingNewsRepository(),
+        ),
+      ));
+      expect(find.text('Alpha FC'), findsOneWidget);
+      expect(find.byType(FootballLoadingIndicator), findsNothing);
+      expect(repository.calls, hasLength(1));
 
-    repository.calls.single.completer.completeError(StateError('offline'));
-    await tester.pump();
-    expect(find.text('Alpha FC'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      repository.calls.single.completer.completeError(StateError('offline'));
+      await tester.pump();
+      expect(find.text('Alpha FC'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('restores saved Home before a slow network refresh',
       (tester) async {
@@ -998,8 +1003,9 @@ class _CachedHomeRepository extends _ControlledHomeRepository
   final _diskSnapshots = <(int, int, int), HomeSnapshot>{};
 
   void saveSnapshot(int teamId, DateTime month, HomeData data,
-      {required DateTime savedAt}) {
-    _snapshots[(teamId, month.year, month.month)] = HomeSnapshot(data, savedAt);
+      {required DateTime savedAt, bool requiresRefresh = false}) {
+    _snapshots[(teamId, month.year, month.month)] =
+        HomeSnapshot(data, savedAt, requiresRefresh: requiresRefresh);
   }
 
   void saveDiskSnapshot(int teamId, DateTime month, HomeData data,

@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from ..deps import get_user_id
 from ..services.profile_changes import ProfileChangeLimitError
+from ..services.request_country import get_request_country
 from ..repos.teams_repo import get_team, get_teams, list_following_team_ids, set_following_and_favorite, find_team_current_context
 from ..repos.fixtures_repo import get_team_last_fixture, get_team_next_fixture, list_team_fixtures
 from ..repos.standings_repo import get_current_team_standing
@@ -73,8 +74,8 @@ def news_image(digest: str = Path(pattern=r"^[0-9a-f]{64}$")):
 @router.get("/teams/{team_id}/highlights", response_model=TeamHighlightsResponse)
 def team_highlights(
     team_id: int,
-    viewer_country: str = Query(pattern="^[A-Za-z]{2}$", description="실제 시청 국가예요. 예: KR, JP, US. 앱 언어로 추정하지 마세요."),
     user_id: int = Depends(get_user_id),
+    viewer_country: str | None = Depends(get_request_country),
 ):
     """공식 구단 영상 우선, 없으면 같은 경기의 공식 대회 영상을 반환해요.
 

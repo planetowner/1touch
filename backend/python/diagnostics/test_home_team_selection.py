@@ -81,6 +81,7 @@ class HomeTeamSelectionTests(unittest.TestCase):
         app = FastAPI()
         app.include_router(home_route.router, prefix='/v1')
         app.dependency_overrides[home_route.get_user_id] = lambda: 7
+        app.dependency_overrides[home_route.get_request_country] = lambda: "KR"
         with TestClient(app) as client:
             for team_id, position, delta in [(9, 2, -1), (83, 1, 2)]:
                 response = client.get('/v1/home', params={'team_id': team_id})
@@ -94,14 +95,16 @@ class HomeTeamSelectionTests(unittest.TestCase):
         app = FastAPI()
         app.include_router(home_route.router, prefix='/v1')
         app.dependency_overrides[home_route.get_user_id] = lambda: 7
+        app.dependency_overrides[home_route.get_request_country] = lambda: "KR"
         with TestClient(app) as client:
             for team_id in [9, 83, 9]:
                 response = client.get('/v1/home', params={
-                    'team_id': team_id, 'viewer_country': 'KR',
+                    'team_id': team_id, 'viewer_country': 'US',
                     'start': '2026-09-01', 'end': '2026-09-30',
                 })
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.json()['favorite_team']['team_id'], team_id)
+                self.repositories['get_team_highlights'].assert_called_with(team_id, 'KR')
             self.assertEqual(client.get('/v1/home').json()['favorite_team']['team_id'], 83)
             self.assertEqual(client.get('/v1/home?team_id=503').status_code, 400)
             self.assertEqual(client.get('/v1/home?team_id=0').status_code, 422)

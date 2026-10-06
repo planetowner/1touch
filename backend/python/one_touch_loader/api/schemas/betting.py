@@ -32,11 +32,6 @@ class WalletResponse(BaseModel):
     welcome_points: int = WELCOME_POINTS
 
 
-class InitializeWalletBody(BaseModel):
-    model_config = ConfigDict(extra='forbid')
-    country_code: Annotated[str, StringConstraints(to_upper=True, pattern=r'^[A-Za-z]{2}$')]
-
-
 class BetResponse(BaseModel):
     bet_id: int
     fixture_id: int

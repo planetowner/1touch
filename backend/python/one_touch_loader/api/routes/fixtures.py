@@ -8,6 +8,7 @@ from ..repos.opta_shots_repo import get_shotmap
 from ..repos.opta_analysis_repo import get_analysis
 from ..repos.highlights_repo import get_fixture_highlights
 from ..schemas.highlights import FixtureHighlightsResponse
+from ..services.request_country import get_request_country
 
 router = APIRouter()
 
@@ -15,8 +16,8 @@ router = APIRouter()
 @router.get("/fixtures/{fixture_id}/highlights", response_model=FixtureHighlightsResponse)
 def fixture_highlights(
     fixture_id: int,
-    viewer_country: str | None = Query(default=None, pattern="^[A-Za-z]{2}$", description="생략하면 국가별 재생 제한은 외부 YouTube에서 처리해요."),
     user_id: int = Depends(get_user_id),
+    viewer_country: str | None = Depends(get_request_country),
 ):
     """경기 ID가 일치하는 저장된 공식 영상만 반환해요. 없으면 다른 경기로 대체하지 않아요."""
     if not get_fixture(fixture_id):

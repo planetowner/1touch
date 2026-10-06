@@ -268,6 +268,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _displayedMonth?.month != month.month;
     final needsRefresh = forceRefresh ||
         cached == null ||
+        cached.requiresRefresh ||
         AppCachePolicy.shouldRefresh(
           tier: CacheTier.standard,
           trigger: CacheSyncTrigger.screenEnter,

@@ -104,6 +104,9 @@ for filename in index.html styles.css assets/1touch-wordmark.jpg; do
 done
 cd "$runtime_directory"
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh config --quiet
+# 첫 국가 DB가 준비되지 않으면 기존 API를 교체하기 전에 멈춰요.
+ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh up -d --wait --wait-timeout 180 geoipupdate
+ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m diagnostics.check_geoip
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps proxy caddy validate --config /etc/caddy/Caddyfile
 # Probability 적재는 별도 명령으로 끝내고, 배포는 실제 저장 자료의 조회만 확인해요.
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m diagnostics.check_probability

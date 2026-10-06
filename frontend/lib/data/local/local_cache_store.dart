@@ -98,9 +98,9 @@ abstract final class LocalCacheKeys {
 
   static String communityPost(int postId) => 'community-post:$postId';
 
-  static String home(int teamId, DateTime month, String viewerCountry) =>
-      'home:$teamId:${month.year}-${month.month.toString().padLeft(2, '0')}:'
-      '$viewerCountry';
+  // 국가를 고정해 저장한 구버전 캐시와 구분해요. 하이라이트는 저장하지 않아요.
+  static String home(int teamId, DateTime month) =>
+      'home:v2:$teamId:${month.year}-${month.month.toString().padLeft(2, '0')}';
 
   static String playerDetail(int playerId, int? seasonId) =>
       'player-detail:$playerId:${seasonId ?? 'current'}';

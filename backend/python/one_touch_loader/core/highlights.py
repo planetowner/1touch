@@ -170,10 +170,12 @@ def select_latest_matches(candidates: list[dict], viewer_country: str | None, li
     country = viewer_country.upper() if viewer_country is not None else None
     if country is not None and not re.fullmatch(r"[A-Z]{2}", country):
         raise ValueError("viewer_country must be a two-letter country code")
+    if country is None:
+        # 접속 국가를 모르면 재생 가능 여부를 확인할 수 없어 영상을 반환하지 않아요.
+        return []
     by_match = defaultdict(list)
     for candidate in candidates:
-        # 국가를 보내지 않는 경기 화면은 외부 YouTube에서 재생 가능 여부를 판단해요.
-        if country is None or available_in(candidate, country):
+        if available_in(candidate, country):
             by_match[candidate["match"]["match_key"]].append(candidate)
     selected = []
     for choices in by_match.values():
