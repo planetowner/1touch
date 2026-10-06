@@ -1,6 +1,7 @@
 import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -20,6 +21,7 @@ import 'package:onetouch/models/fixture_clock.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/screens/team_screen.dart';
+import 'package:onetouch/screens/TeamScreen_tabs/standing.dart';
 
 import 'support/test_team_overview_repository.dart';
 
@@ -77,6 +79,99 @@ void main() {
     Size(375, 667),
     Size(393, 852),
   ];
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('overview standing card pushes a fresh standing page at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      TeamScreen screen({int initialTabIndex = 0, int? competitionId}) =>
+          TeamScreen(
+            teamId: 9,
+            initialTabIndex: initialTabIndex,
+            initialStandingCompetitionId: competitionId,
+            fixtureRepository: fixtureRepository,
+            standingRepository: standingRepository,
+            currentFormRepository: currentFormRepository,
+            teamAttributeRepository: teamAttributeRepository,
+            teamOverviewRepository: teamOverviewRepository,
+            xgStandingRepository: xgStandingRepository,
+          );
+      final router = GoRouter(initialLocation: '/team/9', routes: [
+        GoRoute(
+          path: '/team',
+          builder: (context, state) => const Scaffold(body: Text('Team root')),
+          routes: [
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => screen(),
+            ),
+            GoRoute(
+              path: ':id/standing',
+              builder: (context, state) => screen(
+                initialTabIndex: 2,
+                competitionId: int.tryParse(
+                  state.uri.queryParameters['competitionId'] ?? '',
+                ),
+              ),
+            ),
+          ],
+        ),
+      ]);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      final standingCard = find.byKey(
+        const ValueKey('overview-standing-card-8'),
+      );
+      for (var attempt = 0;
+          attempt < 4 && standingCard.evaluate().isEmpty;
+          attempt++) {
+        await tester.drag(
+            find.byType(CustomScrollView).first, const Offset(0, -400));
+        await tester.pumpAndSettle();
+      }
+      await tester.ensureVisible(standingCard);
+      await tester.pumpAndSettle();
+      final originalScroll = tester
+          .widget<NestedScrollView>(find.byType(NestedScrollView))
+          .controller!;
+      final originalOffset = originalScroll.offset;
+      expect(originalOffset, greaterThan(0));
+
+      await tester.tap(standingCard);
+      await tester.pumpAndSettle();
+      expect(router.canPop(), isTrue);
+      expect(find.byType(TeamScreen, skipOffstage: false), findsNWidgets(2));
+      expect(
+          tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
+          2);
+      expect(
+          tester
+              .widget<StandingTab>(find.byType(StandingTab))
+              .requestedCompetitionId,
+          8);
+      expect(
+          tester
+              .widget<NestedScrollView>(find.byType(NestedScrollView))
+              .controller!
+              .offset,
+          0);
+
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(find.byType(TeamScreen, skipOffstage: false), findsOneWidget);
+      expect(originalScroll.offset, originalOffset);
+      expect(
+          tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
+          0);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('Team screen applies a background overview refresh',
       (tester) async {

@@ -981,6 +981,7 @@ void main() {
       await tester.tap(arrow);
       await tester.pumpAndSettle();
       expect(router.canPop(), isTrue);
+      expect(find.byType(PlayerCard, skipOffstage: false), findsNWidgets(2));
       expect(
           tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
           2);
@@ -1001,7 +1002,7 @@ void main() {
 
       router.pop();
       await tester.pumpAndSettle();
-      expect(router.canPop(), isFalse);
+      expect(find.byType(PlayerCard, skipOffstage: false), findsOneWidget);
       expect(originalScroll.offset, originalOffset);
       expect(
           tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,

@@ -39,6 +39,8 @@ class TeamScreen extends StatefulWidget {
   final XgStandingRepository? xgStandingRepository;
   final FixtureRepository? fixtureRepository;
   final CurrentFormRepository? currentFormRepository;
+  final int initialTabIndex;
+  final int? initialStandingCompetitionId;
 
   TeamScreen({
     super.key,
@@ -50,6 +52,8 @@ class TeamScreen extends StatefulWidget {
     this.xgStandingRepository,
     this.fixtureRepository,
     this.currentFormRepository,
+    this.initialTabIndex = 0,
+    this.initialStandingCompetitionId,
   });
 
   @override
@@ -67,7 +71,6 @@ class _TeamScreenState extends State<TeamScreen>
   Object? _loadError;
   int _loadRequestId = 0;
   int? _requestedStandingCompetitionId;
-  int _standingSelectionRequestId = 0;
   bool _isBracketInteracting = false;
   bool _isRevealingTeamAppBar = false;
   bool _isMatchHeaderVisible = true;
@@ -99,9 +102,14 @@ class _TeamScreenState extends State<TeamScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _scrollController = ScrollController();
+    _selectedTabIndex = widget.initialTabIndex;
+    _requestedStandingCompetitionId = widget.initialStandingCompetitionId;
 
-    _tabController = TabController(length: 5, vsync: this)
-      ..addListener(_handleTabChange);
+    _tabController = TabController(
+      length: 5,
+      initialIndex: widget.initialTabIndex,
+      vsync: this,
+    )..addListener(_handleTabChange);
     mainTabActions.addListener(_handleMainTabAction);
     _teamOverviewRepository.cachedTeams.addListener(_handleOverviewCache);
 
@@ -351,11 +359,9 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   void _openStandingCompetition(int competitionId) {
-    setState(() {
-      _requestedStandingCompetitionId = competitionId;
-      _standingSelectionRequestId++;
-    });
-    _tabController.animateTo(2);
+    context.push(
+      '/team/${widget.teamId}/standing?competitionId=$competitionId',
+    );
   }
 
   void _revealTeamAppBar() {
@@ -669,7 +675,7 @@ class _TeamScreenState extends State<TeamScreen>
                       regularStandingRepository: widget.standingRepository,
                       xgStandingRepository: widget.xgStandingRepository,
                       requestedCompetitionId: _requestedStandingCompetitionId,
-                      selectionRequestId: _standingSelectionRequestId,
+                      selectionRequestId: 0,
                       refreshRequestId: _tabRefreshEpochs[2],
                       onBracketInteractionChanged: (isInteracting) {
                         if (_isBracketInteracting == isInteracting) return;

@@ -127,6 +127,30 @@ Future<void> restorePlayerDetailBeforeNavigation(
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _footballNames = FootballNamesRepository(apiClient);
+
+CustomTransitionPage<void> _detailSlidePage(
+  GoRouterState state,
+  Widget child,
+) =>
+    CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 300),
+      reverseTransitionDuration: const Duration(milliseconds: 300),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        // 새 상세 화면이 오른쪽에서 들어와 현재 화면 위를 덮어요.
+        final position = Tween<Offset>(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        ));
+        return SlideTransition(position: position, child: child);
+      },
+    );
+
 final GoRouter _router = GoRouter(
   initialLocation: '/',
   navigatorKey: _rootNavigatorKey,
@@ -247,6 +271,25 @@ final GoRouter _router = GoRouter(
                   );
                 },
               ),
+              GoRoute(
+                path: ':id/standing',
+                redirect: (context, state) =>
+                    redirectUnsupportedTeamPath(state.pathParameters['id']),
+                pageBuilder: (context, state) {
+                  final teamId = int.parse(state.pathParameters['id']!);
+                  final competitionId = int.tryParse(
+                    state.uri.queryParameters['competitionId'] ?? '',
+                  );
+                  return _detailSlidePage(
+                    state,
+                    TeamScreen(
+                      teamId: teamId,
+                      initialTabIndex: 2,
+                      initialStandingCompetitionId: competitionId,
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ]),
@@ -269,6 +312,21 @@ final GoRouter _router = GoRouter(
                     child: PlayerCard(playerId: int.tryParse(playerId)),
                   );
                 },
+              ),
+              GoRoute(
+                path: ':id/matches',
+                redirect: (context, state) async {
+                  await restorePlayerDetailBeforeNavigation(
+                      state.pathParameters['id']);
+                  return null;
+                },
+                pageBuilder: (context, state) => _detailSlidePage(
+                  state,
+                  PlayerCard(
+                    playerId: int.tryParse(state.pathParameters['id']!),
+                    initialTabIndex: 2,
+                  ),
+                ),
               ),
             ],
           ),
