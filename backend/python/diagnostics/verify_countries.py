@@ -22,6 +22,7 @@ EXPECTED_COUNTRY_COLUMNS = [
     ("name_ko", "varchar(120)", "YES"),
     ("name_ja", "varchar(120)", "YES"),
     ("name_zh", "varchar(120)", "YES"),
+    ("iso_code", "varchar(6)", "YES"),
 ]
 
 
@@ -153,10 +154,15 @@ def verify_database() -> dict:
     missing_country_images = int(
         fetch_all("SELECT COUNT(*) FROM countries WHERE image_path IS NULL")[0][0]
     )
+    countries_with_iso_code = int(
+        fetch_all("SELECT COUNT(iso_code) FROM countries")[0][0]
+    )
 
     return {
         "country_count": country_count,
         "countries_without_image": missing_country_images,
+        "countries_with_iso_code": countries_with_iso_code,
+        "countries_without_iso_code": country_count - countries_with_iso_code,
         "players_with_nationality": player_nationalities,
         "orphan_player_nationalities": orphan_nationalities,
         "foreign_key": "players.nationality_id -> countries.country_id",
