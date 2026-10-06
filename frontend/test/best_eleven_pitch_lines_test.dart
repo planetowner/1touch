@@ -11,6 +11,58 @@ import 'support/app_catalog.dart';
 void main() {
   setUpAppCatalog();
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('keeps every player inside the 24px inset at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      const slots = [
+        '1:1', '2:1', '2:2', '2:3', '2:4',
+        '3:1', '3:2', '3:3', '4:1', '4:2', '4:3',
+      ];
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: BestElevenPitch(
+              teamId: 503,
+              formation: '4-3-3',
+              players: [
+                for (var index = 0; index < slots.length; index++)
+                  BestElevenEntry(
+                    slotKey: slots[index],
+                    slotIndex: index,
+                    playerId: index + 1,
+                    playerName: 'Player $index',
+                    starts: 1,
+                    jerseyNumber: index + 1,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final card = tester.getRect(
+        find.byKey(const ValueKey('team-best-eleven-card')),
+      );
+      for (var index = 0; index < slots.length; index++) {
+        final player = tester.getRect(
+          find.byKey(ValueKey('best-eleven-player-link-${index + 1}')),
+        );
+        expect(player.left, greaterThanOrEqualTo(card.left + 24));
+        expect(player.right, lessThanOrEqualTo(card.right - 24));
+        expect(player.top, greaterThanOrEqualTo(card.top + 24));
+        expect(player.bottom, lessThanOrEqualTo(card.bottom - 24));
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('goalkeeper boxes follow the 345 by 392 pitch design',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
