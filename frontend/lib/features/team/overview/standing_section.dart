@@ -233,14 +233,11 @@ class _StandingState extends State<Standing> {
                         // league title line
                         Row(
                           children: [
-                            Image.network(
-                              league?.imagePath ?? '',
-                              width: 24,
-                              height: 24,
-                              errorBuilder: (_, __, ___) =>
-                                  competitionLogoFallback(leagueId, size: 24),
+                            CompetitionLogo(
+                              competitionId: leagueId,
+                              size: 24,
+                              trailingGap: 8,
                             ),
-                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 competitionNameLabel(

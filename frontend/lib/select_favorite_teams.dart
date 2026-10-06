@@ -9,7 +9,7 @@ import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
-import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/models/team.dart';
 import 'rank_fav_teams.dart';
@@ -209,17 +209,10 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                 padding: AppDropdownTokens.triggerPadding,
                                 child: Row(
                                   children: [
-                                    Image.network(
-                                      league.imagePath ?? '',
-                                      width: 24,
-                                      height: 24,
-                                      errorBuilder: (_, __, ___) =>
-                                          competitionLogoFallback(
-                                              league.competitionId,
-                                              size: 24),
-                                    ),
-                                    const SizedBox(
-                                      width: AppDropdownTokens.gap,
+                                    CompetitionLogo(
+                                      competitionId: league.competitionId,
+                                      size: 24,
+                                      trailingGap: AppDropdownTokens.gap,
                                     ),
                                     Expanded(
                                       child: Text(
@@ -612,15 +605,11 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                     bottom: 8,
                     child: Row(
                       children: [
-                        Image.network(
-                          league.imagePath ?? '',
-                          width: 24,
-                          height: 24,
-                          errorBuilder: (_, __, ___) => competitionLogoFallback(
-                              league.competitionId,
-                              size: 24),
+                        CompetitionLogo(
+                          competitionId: league.competitionId,
+                          size: 24,
+                          trailingGap: 8,
                         ),
-                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             competitionNameLabel(context, league.competitionId,

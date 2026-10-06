@@ -190,4 +190,63 @@ void main() {
       ),
     );
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('league icon and label stay separated at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(24),
+            child: AppDropdown<int>(
+              triggerKey: const ValueKey('league-trigger'),
+              value: 564,
+              leading: const Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: Icon(Icons.sports_soccer,
+                    key: ValueKey('league-icon'), size: 12),
+              ),
+              options: const [
+                AppDropdownOption(value: 564, label: 'LA LIGA'),
+              ],
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      ));
+
+      final icon = tester.getRect(find.byKey(const ValueKey('league-icon')));
+      final label = tester.getRect(find.text('LA LIGA'));
+      final trigger =
+          tester.getRect(find.byKey(const ValueKey('league-trigger')));
+      expect(icon.size, const Size(12, 12));
+      expect(label.left - icon.right, 8);
+      expect(label.right, lessThan(trigger.right));
+      expect(tester.takeException(), isNull);
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(24),
+            child: AppDropdown<int>(
+              triggerKey: const ValueKey('league-trigger'),
+              value: 564,
+              leading: const SizedBox.shrink(),
+              options: const [
+                AppDropdownOption(value: 564, label: 'LA LIGA'),
+              ],
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      ));
+      expect(
+        tester.getRect(find.text('LA LIGA')).left -
+            tester.getRect(find.byKey(const ValueKey('league-trigger'))).left,
+        16,
+      );
+    });
+  }
 }
