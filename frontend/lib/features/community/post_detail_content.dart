@@ -11,6 +11,7 @@ import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
+import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/features/community/community_delete_dialog.dart';
 import 'package:onetouch/features/community/community_post_share_link.dart';
 import 'package:onetouch/models/post.dart';
@@ -202,7 +203,7 @@ class PostDetailContent extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(post.title, style: Body1_b.style),
                 const SizedBox(height: 12),
-                Text(post.body, style: Body2.style),
+                CommunityLinkedText(text: post.body, style: Body2.style),
                 const SizedBox(height: 16),
                 if (showMediaStatus)
                   _PostMediaStatus(
