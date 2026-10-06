@@ -1,6 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/overflow_scrolling_text.dart';
 import 'package:onetouch/core/style.dart';
@@ -92,22 +93,48 @@ class _AnalysisTabState extends State<AnalysisTab> {
         padding: const EdgeInsets.all(24),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final statWidth = math.min(90.0, (constraints.maxWidth - 16) / 3);
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (var index = 0; index < 3; index++)
-                  SizedBox(
-                    width: statWidth,
-                    child: _topStat(
-                      index < analysis.topStats.length
-                          ? analysis.topStats[index]
-                          : null,
-                      showPer90: showPer90,
+            const maximumStatWidth = 90.0;
+            const totalGap = 16.0;
+            final statsData = [
+              for (var index = 0; index < 3; index++)
+                index < analysis.topStats.length
+                    ? analysis.topStats[index]
+                    : null,
+            ];
+            final availableStatWidth = math.min(
+              maximumStatWidth,
+              (constraints.maxWidth - totalGap) / 3,
+            );
+            final requiredStatWidth =
+                statsData.map(_topStatValueWidth).fold(0.0, math.max);
+            final statWidth = math.max(availableStatWidth, requiredStatWidth);
+            final minimumContentWidth = statWidth * 3 + totalGap;
+            final contentWidth = math.max(
+              constraints.maxWidth,
+              minimumContentWidth,
+            );
+            final stats = SizedBox(
+              width: contentWidth,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var index = 0; index < 3; index++)
+                    SizedBox(
+                      width: statWidth,
+                      child: _topStat(
+                        statsData[index],
+                        showPer90: showPer90,
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
+            );
+            if (contentWidth == constraints.maxWidth) return stats;
+            return SingleChildScrollView(
+              key: const ValueKey('player-top-stats-scroll'),
+              scrollDirection: Axis.horizontal,
+              child: stats,
             );
           },
         ),
@@ -115,56 +142,100 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
+  double _topStatValueWidth(PlayerSeasonMetric? stat) {
+    final presentation = playerSeasonStat(stat);
+    final number = TextPainter(
+      text: TextSpan(
+        text: playerNumber(presentation.value),
+        style: Heading2.latinStyle,
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    // 실제 글리프 렌더링에서 생기는 서브픽셀 반올림 여유를 확보한다.
+    return number.width +
+        2 +
+        (presentation.unit == '%' && presentation.value != null ? 12 : 0);
+  }
+
   Widget _topStat(PlayerSeasonMetric? stat, {required bool showPer90}) {
     final presentation = playerSeasonStat(stat);
+    final label = stat?.metric.label;
+    final showsPercent = presentation.unit == '%' && presentation.value != null;
+    final mutedForeground =
+        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-          key: ValueKey('player-top-stat-value-${stat?.metric.label}'),
+          key: ValueKey('player-top-stat-value-$label'),
           height: 54,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             color: Theme.of(context).brightness == Brightness.dark
                 ? const Color(0xFF272828)
                 : AppColors.of(context).cardBackground,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              presentation.text,
-              style: Heading2.latinStyle,
+          child: Center(
+            child: Row(
+              key: ValueKey('player-top-stat-value-content-$label'),
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  playerNumber(presentation.value),
+                  key: ValueKey('player-top-stat-number-$label'),
+                  style: Heading2.latinStyle,
+                ),
+                if (showsPercent)
+                  SizedBox(
+                    width: 12,
+                    height: 20,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Text(
+                        '%',
+                        key: ValueKey('player-top-stat-percent-$label'),
+                        style: Eyebrow.style.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),
         const SizedBox(height: 8),
-        if (showPer90) ...[
-          SizedBox(
-            height: 20,
-            child: Center(
-              child: stat != null && presentation.unit == 'per 90'
-                  ? Text(tr(context, presentation.unit), style: Eyebrow.style)
-                  : null,
-            ),
-          ),
-          const SizedBox(height: 4),
-        ],
         SizedBox(
-          height: 24,
+          height: 20,
           child: Center(
-            key: ValueKey('player-top-stat-label-${stat?.metric.label}'),
+            key: ValueKey('player-top-stat-label-$label'),
             child: OverflowScrollingText(
               text: appStatLabel(context, presentation.label),
-              style: Body1.style,
+              style: Body1.style.copyWith(height: 1.3),
               alignment: Alignment.center,
             ),
           ),
         ),
-        const SizedBox(height: 4),
+        if (showPer90)
+          SizedBox(
+            height: 20,
+            child: Center(
+              child: stat != null && presentation.unit == 'per 90'
+                  ? Text(
+                      tr(context, 'Per 90 min'),
+                      key: ValueKey('player-top-stat-unit-$label'),
+                      style: Eyebrow.style.copyWith(color: mutedForeground),
+                    )
+                  : null,
+            ),
+          ),
+        const SizedBox(height: 12),
         Align(
           child: Container(
-            key: ValueKey('player-top-stat-rank-${stat?.metric.label}'),
+            key: ValueKey('player-top-stat-rank-$label'),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: AppPalette.black,
