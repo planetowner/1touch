@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -5,7 +7,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/rank_fav_teams.dart';
 import 'package:onetouch/select_favorite_teams.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
+import 'package:onetouch/welcome_loading_screen.dart';
+import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 void main() {
   setUpAppCatalog();
@@ -110,6 +116,120 @@ void main() {
     expect(nameText.overflow, TextOverflow.ellipsis);
     expect(tester.getCenter(chip).dx, closeTo(size.width / 2, 0.5));
     expect(tester.getSize(chip).width, lessThanOrEqualTo(size.width - 48));
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final size in [const Size(320, 568), const Size(393, 852)]) {
+    testWidgets('one selected team skips ranking at $size', (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final originalVideoPlatform = VideoPlayerPlatform.instance;
+      VideoPlayerPlatform.instance = _IdleVideoPlatform();
+      addTearDown(() => VideoPlayerPlatform.instance = originalVideoPlatform);
+      final repository = _RecordingPreferencesRepository();
+      final preferences = CurrentUserPreferences(
+        repository: repository,
+        teamRepository: MockTeamRepository(),
+      );
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: SelectFavoriteTeamsScreen(preferences: preferences),
+      ));
+      await tester.pump();
+
+      final team = mockTeams.first;
+      final logo = find.byWidgetPredicate((widget) =>
+          widget is Image &&
+          widget.image is NetworkImage &&
+          (widget.image as NetworkImage).url == team.imagePath);
+      await tester.tap(logo);
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('select-favorites-continue')));
+      await tester.pumpAndSettle();
+
+      expect(repository.saved?.favoriteTeamId, team.teamId);
+      expect(repository.saved?.followedTeamIds, [team.teamId]);
+      expect(find.byType(RankFavoriteTeamsScreen), findsNothing);
+      expect(find.byType(WelcomeLoadingScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('failed one-team save stays on selection for retry',
+      (tester) async {
+    final repository = _RecordingPreferencesRepository()..failSave = true;
+    final preferences = CurrentUserPreferences(
+      repository: repository,
+      teamRepository: MockTeamRepository(),
+    );
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: SelectFavoriteTeamsScreen(preferences: preferences),
+    ));
+    await tester.pump();
+
+    final team = mockTeams.first;
+    final logo = find.byWidgetPredicate((widget) =>
+        widget is Image &&
+        widget.image is NetworkImage &&
+        (widget.image as NetworkImage).url == team.imagePath);
+    await tester.tap(logo);
+    await tester.pump();
+    final continueButton =
+        find.byKey(const ValueKey('select-favorites-continue'));
+    await tester.tap(continueButton);
+    await tester.pumpAndSettle();
+
+    expect(repository.saveCalls, 1);
+    expect(find.byType(SelectFavoriteTeamsScreen), findsOneWidget);
+    expect(find.byType(RankFavoriteTeamsScreen), findsNothing);
+    expect(tester.widget<ElevatedButton>(continueButton).onPressed, isNotNull);
+    expect(
+        find.text('Unable to save teams. Please try again.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('two selected teams still open ranking without saving',
+      (tester) async {
+    final repository = _RecordingPreferencesRepository();
+    final preferences = CurrentUserPreferences(
+      repository: repository,
+      teamRepository: MockTeamRepository(),
+    );
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: SelectFavoriteTeamsScreen(preferences: preferences),
+    ));
+    await tester.pump();
+
+    final firstTeam = mockTeams.first;
+    await tester.tap(find.byWidgetPredicate((widget) =>
+        widget is Image &&
+        widget.image is NetworkImage &&
+        (widget.image as NetworkImage).url == firstTeam.imagePath));
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.keyboard_arrow_down));
+    await tester.pump();
+    await tester.tap(find.text('LA LIGA'));
+    await tester.pump();
+    final secondTeam = mockTeams.firstWhere((team) => team.teamId == 83);
+    await tester.tap(find.byWidgetPredicate((widget) =>
+        widget is Image &&
+        widget.image is NetworkImage &&
+        (widget.image as NetworkImage).url == secondTeam.imagePath));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('select-favorites-continue')));
+    await tester.pumpAndSettle();
+
+    final rank = tester.widget<RankFavoriteTeamsScreen>(
+      find.byType(RankFavoriteTeamsScreen),
+    );
+    expect(rank.selectedTeams.map((team) => team.teamId),
+        [firstTeam.teamId, secondTeam.teamId]);
+    expect(repository.saveCalls, 0);
+    expect(find.byType(WelcomeLoadingScreen), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -379,4 +499,36 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+}
+
+class _RecordingPreferencesRepository implements UserPreferencesRepository {
+  UserTeamPreferences? saved;
+  int saveCalls = 0;
+  bool failSave = false;
+
+  @override
+  Future<UserTeamPreferences?> load() async => null;
+
+  @override
+  Future<void> save(UserTeamPreferences preferences) async {
+    saveCalls++;
+    if (failSave) throw StateError('Save failed');
+    saved = preferences;
+  }
+}
+
+class _IdleVideoPlatform extends VideoPlayerPlatform {
+  final _events = StreamController<VideoEvent>.broadcast();
+
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<int?> create(DataSource dataSource) async => 1;
+
+  @override
+  Stream<VideoEvent> videoEventsFor(int playerId) => _events.stream;
+
+  @override
+  Future<void> dispose(int playerId) => _events.close();
 }
