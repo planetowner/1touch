@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/full_screen_back_gesture.dart';
@@ -364,10 +365,38 @@ class _LiveChatTabState extends State<LiveChatTab> {
         ? const SizedBox.expand(key: ValueKey('live-chat-loading-shell'))
         : _messages.isEmpty
             ? Center(
-                child: Opacity(
-                  opacity: 0.4,
-                  child: Text(tr(context, 'Be the first to chat!'),
-                      style: Body1.style),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    key: const ValueKey('live-chat-empty-state'),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/live_chat/conversation.svg',
+                        key: ValueKey('live-chat-empty-icon'),
+                        width: 56,
+                        height: 56,
+                        colorFilter: ColorFilter.mode(
+                          Theme.of(context).colorScheme.onSurface,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        tr(context, 'Be the first to chat!'),
+                        key: const ValueKey('live-chat-empty-title'),
+                        style: Heading4.style,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        tr(context, 'Say hi and get the chat started.'),
+                        key: const ValueKey('live-chat-empty-description'),
+                        style: Body1.style.copyWith(height: 1.3),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               )
             : NotificationListener<ScrollMetricsNotification>(

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:onetouch/core/full_screen_back_gesture.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -94,6 +95,60 @@ void main() {
     expect(session.sent, ['hello backend']);
     expect(find.text('Type a message'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('centers the empty chat prompt with designed spacing at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(_app(
+        repository: _ChatRepository(const []),
+        socket: _ChatSocket(session: _ChatSession()),
+      ));
+      await tester.pumpAndSettle();
+
+      const iconKey = ValueKey('live-chat-empty-icon');
+      const titleKey = ValueKey('live-chat-empty-title');
+      const descriptionKey = ValueKey('live-chat-empty-description');
+      final viewport = tester.getRect(
+        find.byKey(const ValueKey('live-chat-message-viewport')),
+      );
+      final emptyState = tester.getRect(
+        find.byKey(const ValueKey('live-chat-empty-state')),
+      );
+      final icon = tester.getRect(find.byKey(iconKey));
+      final iconWidget = tester.widget<SvgPicture>(find.byKey(iconKey));
+      final title = tester.getRect(find.byKey(titleKey));
+      final description = tester.getRect(find.byKey(descriptionKey));
+
+      expect(icon.size, const Size.square(56));
+      expect(
+        (iconWidget.bytesLoader as SvgAssetLoader).assetName,
+        'assets/live_chat/conversation.svg',
+      );
+      expect(title.top - icon.bottom, 16);
+      expect(description.top - title.bottom, 4);
+      expect(emptyState.center.dy, closeTo(viewport.center.dy, 0.5));
+      expect(find.text('Be the first to chat!'), findsOneWidget);
+      expect(find.text('Say hi and get the chat started.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('uses the approved Korean empty chat copy', (tester) async {
+    await tester.pumpWidget(_app(
+      repository: _ChatRepository(const []),
+      socket: _ChatSocket(session: _ChatSession()),
+      language: 'ko',
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('아직 아무도 없어요 👀'), findsOneWidget);
+    expect(find.text('경기 보면서 같이 떠들어볼까요?'), findsOneWidget);
   });
 
   testWidgets('shows the fixed chat shell while the connection is loading',
