@@ -97,7 +97,9 @@ class _MomentumChartState extends State<MomentumChart>
   }
 
   void _syncVisibility() {
-    if (!mounted || !widget.animate || MediaQuery.disableAnimationsOf(context)) {
+    if (!mounted ||
+        !widget.animate ||
+        MediaQuery.disableAnimationsOf(context)) {
       return;
     }
     final box = context.findRenderObject();
@@ -130,56 +132,65 @@ class _MomentumChartState extends State<MomentumChart>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
+    final lineColor = isDark ? Colors.white : const Color(0xFFB2B2B2);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(tr(context, "MOMENTUM"), style: Body2_b.style),
         const SizedBox(height: 12),
-        Container(
-          key: const ValueKey('match-momentum-card'),
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-          decoration: BoxDecoration(
-            color: isDark ? AppPalette.darkGrey : AppPalette.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: appCardShadows(context),
-          ),
-          child: Column(
-            children: [
-              SizedBox(
-                height: 140,
-                width: double.infinity,
-                child: CustomPaint(
-                  painter: _MomentumPainter(
-                    widget.values,
-                    foreground,
-                    homeColor: widget.homeColor,
-                    awayColor: widget.awayColor,
-                    reveal: _easedReveal,
+        AspectRatio(
+          aspectRatio: 5 / 4,
+          child: Container(
+            key: const ValueKey('match-momentum-card'),
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+            decoration: BoxDecoration(
+              color: isDark ? AppPalette.darkGrey : AppPalette.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: appCardShadows(context),
+            ),
+            child: Column(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: CustomPaint(
+                      key: const ValueKey('match-momentum-plot'),
+                      painter: _MomentumPainter(
+                        widget.values,
+                        foreground,
+                        homeColor: widget.homeColor,
+                        awayColor: widget.awayColor,
+                        lineColor: lineColor,
+                        lineUnderlayColor:
+                            isDark ? foreground.withValues(alpha: 0.25) : null,
+                        reveal: _easedReveal,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("0’",
-                      style: TextStyle(
-                          color: foreground,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13)),
-                  Text("45’",
-                      style: TextStyle(
-                          color: foreground,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13)),
-                  Text("90’",
-                      style: TextStyle(
-                          color: foreground,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13)),
-                ],
-              ),
-            ],
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("0’",
+                        style: TextStyle(
+                            color: foreground,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13)),
+                    Text("45’",
+                        style: TextStyle(
+                            color: foreground,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13)),
+                    Text("90’",
+                        style: TextStyle(
+                            color: foreground,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13)),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -192,13 +203,19 @@ class _MomentumPainter extends CustomPainter {
   final Color neutralColor;
   final Color homeColor;
   final Color awayColor;
+  final Color lineColor;
+  final Color? lineUnderlayColor;
   final Animation<double> reveal;
+  double get fillPeakOpacity => 0.5;
+  double get fillBaselineOpacity => 0.1;
 
   const _MomentumPainter(
     this.values,
     this.neutralColor, {
     this.homeColor = const Color(0xFFFF5C5C),
     this.awayColor = Colors.white,
+    required this.lineColor,
+    this.lineUnderlayColor,
     required this.reveal,
   }) : super(repaint: reveal);
 
@@ -233,8 +250,8 @@ class _MomentumPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          homeColor.withValues(alpha: 0.70),
-          homeColor.withValues(alpha: 0),
+          homeColor.withValues(alpha: fillPeakOpacity),
+          homeColor.withValues(alpha: fillBaselineOpacity),
         ],
       ).createShader(Rect.fromLTRB(0, 0, size.width, centerY));
     final belowPaint = Paint()
@@ -242,8 +259,8 @@ class _MomentumPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          awayColor.withValues(alpha: 0),
-          awayColor.withValues(alpha: 0.33),
+          awayColor.withValues(alpha: fillBaselineOpacity),
+          awayColor.withValues(alpha: fillPeakOpacity),
         ],
       ).createShader(Rect.fromLTRB(0, centerY, size.width, size.height));
 
@@ -253,8 +270,8 @@ class _MomentumPainter extends CustomPainter {
     }
 
     final linePaint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 2
+      ..color = lineColor
+      ..strokeWidth = 1
       ..style = PaintingStyle.stroke
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = StrokeCap.round;
@@ -262,16 +279,17 @@ class _MomentumPainter extends CustomPainter {
     for (final p in points.skip(1)) {
       path.lineTo(p.dx, p.dy);
     }
-    // Keep the white graph line visible on the light-mode card too.
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = neutralColor.withValues(alpha: 0.25)
-        ..strokeWidth = 3
-        ..style = PaintingStyle.stroke
-        ..strokeJoin = StrokeJoin.round
-        ..strokeCap = StrokeCap.round,
-    );
+    if (lineUnderlayColor case final underlayColor?) {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = underlayColor
+          ..strokeWidth = 1
+          ..style = PaintingStyle.stroke
+          ..strokeJoin = StrokeJoin.round
+          ..strokeCap = StrokeCap.round,
+      );
+    }
     canvas.drawPath(path, linePaint);
     canvas.restore();
   }
@@ -343,5 +361,7 @@ class _MomentumPainter extends CustomPainter {
       oldDelegate.neutralColor != neutralColor ||
       oldDelegate.homeColor != homeColor ||
       oldDelegate.awayColor != awayColor ||
+      oldDelegate.lineColor != lineColor ||
+      oldDelegate.lineUnderlayColor != lineUnderlayColor ||
       oldDelegate.reveal != reveal;
 }

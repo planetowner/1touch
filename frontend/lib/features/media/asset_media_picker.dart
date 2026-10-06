@@ -34,7 +34,7 @@ Future<XFile?> pickAvatarImage(BuildContext context) async {
   );
 }
 
-/// Opens the shared gallery picker and returns files in selection order.
+/// 공통 갤러리를 열고 선택한 순서대로 파일을 반환해요.
 Future<List<XFile>> pickAssetMedia(
   BuildContext context, {
   required int maxAssets,

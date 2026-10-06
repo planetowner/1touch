@@ -1221,6 +1221,7 @@ const appMessages = <String, MessageTranslations>{
   "Succ. Rate (Take-Ons)": (ko: "드리블 성공률", ja: "ドリブル成功率", zh: "过人成功率"),
   "success rate": (ko: "성공률", ja: "成功率", zh: "成功率"),
   "per 90": (ko: "90분당", ja: "90分あたり", zh: "每90分钟"),
+  "Per 90 min": (ko: "90분당", ja: "90分あたり", zh: "每90分钟"),
   "Season total": (ko: "시즌 합계", ja: "シーズン合計", zh: "赛季总计"),
   "Match analysis could not be loaded.": (
     ko: "경기 분석을 불러오지 못했어요.",
@@ -1538,9 +1539,14 @@ const appMessages = <String, MessageTranslations>{
   "LIVE CHAT": (ko: "실시간 채팅", ja: "ライブチャット", zh: "实时聊天"),
   "Type a message": (ko: "메시지를 입력해 주세요", ja: "メッセージを入力", zh: "输入消息"),
   "Be the first to chat!": (
-    ko: "첫 메시지를 남겨보세요!",
+    ko: "아직 아무도 없어요 👀",
     ja: "最初のメッセージを送りましょう！",
     zh: "发送第一条消息吧！"
+  ),
+  "Say hi and get the chat started.": (
+    ko: "경기 보면서 같이 떠들어볼까요?",
+    ja: "試合を見ながら一緒に話しませんか？",
+    zh: "一起边看比赛边聊吧？"
   ),
   "Couldn't connect to chat": (
     ko: "채팅에 연결하지 못했어요",

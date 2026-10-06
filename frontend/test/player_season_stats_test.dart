@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
@@ -97,6 +99,11 @@ class _SeasonStatsRepository extends FakePlayerDetailRepository {
 
 void main() {
   setUpAppCatalog();
+  setUpAll(() async {
+    await (FontLoader('Archivo')
+          ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
+        .load();
+  });
 
   test('season presentation uses successful counts, rates, zero and absence',
       () {
@@ -117,6 +124,71 @@ void main() {
     final zero =
         _SeasonStatsRepository().detail(3).analysis!.categories[0].metrics[3];
     expect(playerSeasonStat(zero).text, '0');
+  });
+
+  testWidgets('analysis renders a percentage with an eyebrow suffix',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final json = playerDetailJson(playerId: 1);
+    final analysis = json['analysis'] as Map<String, dynamic>;
+    final topStats = analysis['top_stats'] as List<dynamic>;
+    topStats[0] = {
+      ...Map<String, dynamic>.from(topStats[0] as Map),
+      'code': 'shot_accuracy',
+      'label': 'Shot Accuracy',
+      'kind': 'percentage',
+      'value': 88.8,
+      'per90': null,
+      'rank': 7,
+    };
+    final detail = playerDetailFromJson(json);
+
+    await tester.pumpWidget(MaterialApp(
+      theme: darktheme,
+      home: Scaffold(
+        body: PlayerDetailScope(
+          store: PlayerDetailStore(playerId: 1, initial: detail),
+          child: const AnalysisTab(playerId: 1),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final number = tester.widget<Text>(
+      find.byKey(const ValueKey('player-top-stat-number-Shot Accuracy')),
+    );
+    final percent = tester.widget<Text>(
+      find.byKey(const ValueKey('player-top-stat-percent-Shot Accuracy')),
+    );
+    expect(number.data, '88.8');
+    expect(number.style, Heading2.latinStyle);
+    expect(percent.data, '%');
+    expect(percent.style?.fontSize, Eyebrow.style.fontSize);
+    expect(percent.style?.fontWeight, FontWeight.w700);
+    final valueRect = tester.getRect(
+      find.byKey(const ValueKey('player-top-stat-value-Shot Accuracy')),
+    );
+    final contentRect = tester.getRect(
+      find.byKey(
+        const ValueKey('player-top-stat-value-content-Shot Accuracy'),
+      ),
+    );
+    expect(contentRect.center.dx, closeTo(valueRect.center.dx, 0.1));
+    expect(
+      find.descendant(
+        of: find.byKey(
+          const ValueKey('player-top-stat-value-Shot Accuracy'),
+        ),
+        matching: find.byType(FittedBox),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('player-top-stat-unit-Shot Accuracy')),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
@@ -207,8 +279,7 @@ void main() {
         expect(tester.getSize(card).width, lessThanOrEqualTo(size.width));
       });
 
-      testWidgets(
-          'analysis shares season totals, per90 and no coverage at $size $locale',
+      testWidgets('analysis shows only per90 units at $size $locale',
           (tester) async {
         await tester.binding.setSurfaceSize(size);
         addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -233,13 +304,13 @@ void main() {
         expect(
             find.descendant(
                 of: card,
-                matching: find.text(translateMessage(locale, 'per 90'))),
+                matching: find.text(translateMessage(locale, 'Per 90 min'))),
             findsOneWidget);
         expect(
             find.descendant(
                 of: card,
                 matching: find.text(translateMessage(locale, 'Season total'))),
-            findsNWidgets(2));
+            findsNothing);
         expect(
             find.textContaining(
                 RegExp(r'Based on \d+/\d+ matches|경기 중 \d+경기 기준')),
