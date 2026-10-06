@@ -620,23 +620,34 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
       text: TextSpan(text: roundLabel, style: textStyle),
       textDirection: textDirection,
       textScaler: textScaler,
-      maxLines: 1,
     )..layout();
     final ratingPainter = TextPainter(
       text: TextSpan(text: ratingLabel, style: textStyle),
       textDirection: textDirection,
       textScaler: textScaler,
-      maxLines: 1,
     )..layout();
+    final rowWidth = roundPainter.width +
+        ratingPainter.width +
+        contentGap +
+        tooltipPadding * 2 +
+        8;
+    final stacked = rowWidth > viewportWidth;
     final tooltipWidth = math.min(
       viewportWidth,
-      roundPainter.width +
-          ratingPainter.width +
-          contentGap +
-          tooltipPadding * 2 +
-          4,
+      stacked
+          ? math.max(roundPainter.width, ratingPainter.width) +
+              tooltipPadding * 2 +
+              8
+          : rowWidth,
     );
-    final tooltipHeight = math.max(roundPainter.height, ratingPainter.height) +
+    if (stacked) {
+      final contentWidth = tooltipWidth - tooltipPadding * 2;
+      roundPainter.layout(maxWidth: contentWidth);
+      ratingPainter.layout(maxWidth: contentWidth);
+    }
+    final tooltipHeight = (stacked
+            ? roundPainter.height + ratingPainter.height + contentGap
+            : math.max(roundPainter.height, ratingPainter.height)) +
         tooltipPadding * 2 +
         2;
     final anchorY = chartSize.height *
@@ -675,28 +686,39 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                   ),
                 ],
         ),
-        child: Row(
-          children: [
-            Text(
-              roundLabel,
-              maxLines: 1,
-              softWrap: false,
-              style: textStyle.copyWith(
-                color: foreground.withValues(alpha: 0.55),
+        child: stacked
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    roundLabel,
+                    style: textStyle.copyWith(
+                      color: foreground.withValues(alpha: 0.55),
+                    ),
+                  ),
+                  const SizedBox(height: contentGap),
+                  Text(ratingLabel,
+                      style: textStyle.copyWith(color: foreground)),
+                ],
+              )
+            : Row(
+                children: [
+                  Text(
+                    roundLabel,
+                    softWrap: false,
+                    style: textStyle.copyWith(
+                      color: foreground.withValues(alpha: 0.55),
+                    ),
+                  ),
+                  const SizedBox(width: contentGap),
+                  Text(
+                    ratingLabel,
+                    softWrap: false,
+                    style: textStyle.copyWith(color: foreground),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: contentGap),
-            Flexible(
-              child: Text(
-                ratingLabel,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
-                style: textStyle.copyWith(color: foreground),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

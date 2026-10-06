@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/round_chart_window.dart';
+import 'package:onetouch/core/round_chart_visuals.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
@@ -107,6 +108,19 @@ void main() {
     final pointsLabelRect = tester.getRect(pointsLabel);
     expect(pointsLabelRect.left - chartCardRect.left, 16);
     expect(pointsLabelRect.top - chartCardRect.top, 16);
+    final grid = find.byKey(const ValueKey('analysis-current-form-grid'));
+    final gridRect = tester.getRect(grid);
+    final gridPainter =
+        tester.widget<CustomPaint>(grid).painter! as RoundChartGridPainter;
+    final firstFullLineY = gridRect.top +
+        gridRect.height *
+            gridPainter.insetLineCount /
+            gridPainter.divisionCount;
+    expect(firstFullLineY, greaterThanOrEqualTo(pointsLabelRect.bottom + 4));
+    expect(
+      firstFullLineY - gridRect.height / gridPainter.divisionCount,
+      lessThan(pointsLabelRect.bottom),
+    );
     expect(
       tester
               .getTopLeft(find
@@ -778,7 +792,19 @@ void main() {
     );
     final dynamic painter = grid.painter;
     expect(painter.divisionCount, 11);
-    expect(painter.insetLineCount, 2);
+    final gridRect = tester.getRect(
+      find.byKey(const ValueKey('analysis-current-form-grid')),
+    );
+    final labelRect = tester.getRect(
+      find.byKey(const ValueKey('analysis-current-form-points-label')),
+    );
+    final firstFullLineY = gridRect.top +
+        gridRect.height * painter.insetLineCount / painter.divisionCount;
+    expect(firstFullLineY, greaterThanOrEqualTo(labelRect.bottom + 4));
+    expect(
+      firstFullLineY - gridRect.height / painter.divisionCount,
+      lessThan(labelRect.bottom),
+    );
     final lineChart = tester.widget<LineChart>(find.byType(LineChart));
     expect((lineChart.data.minY, lineChart.data.maxY), (0, 33));
     expect(lineChart.data.lineBarsData.first.spots.first.y, 0);

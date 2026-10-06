@@ -261,10 +261,9 @@ void main() {
     for (var index = 0; index <= gridPainter.divisionCount; index++) {
       final lineY = historyGrid.top +
           historyGrid.height * index / gridPainter.divisionCount;
-      if ((lineY >= topMask.top && lineY <= topMask.bottom) ||
-          (lineY >= middleMask.top && lineY <= middleMask.bottom)) {
-        expect(gridPainter.insetLineIndices, contains(index));
-      }
+      final overlapsLabel = (lineY >= topMask.top && lineY < topMask.bottom) ||
+          (lineY > middleMask.top && lineY < middleMask.bottom);
+      expect(gridPainter.insetLineIndices.contains(index), overlapsLabel);
     }
     expect(
       tester
