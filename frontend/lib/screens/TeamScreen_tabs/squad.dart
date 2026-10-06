@@ -538,9 +538,9 @@ class _SquadTabState extends State<SquadTab> {
       key: const ValueKey('squad-filter-row'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: _seasonDropdown()),
-        const SizedBox(width: 12),
-        Expanded(child: _sortDropdown()),
+        _seasonDropdown(),
+        const SizedBox(width: 16),
+        Flexible(child: _sortDropdown()),
       ],
     );
   }
@@ -560,9 +560,11 @@ class _SquadTabState extends State<SquadTab> {
       key: const ValueKey('squad-season-dropdown'),
       triggerKey: const ValueKey('squad-season-trigger'),
       value: selectedSeason.seasonId,
+      triggerHeight: 48,
+      triggerPadding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
       backgroundColor: background,
       foregroundColor: foreground,
-      textStyle: Body2_b.style,
+      textStyle: Body2_b.style.copyWith(height: 1.3),
       options: seasons
           .map(
             (season) => AppDropdownOption<int>(
@@ -593,9 +595,11 @@ class _SquadTabState extends State<SquadTab> {
       chevronKey: const ValueKey('squad-sort-arrow'),
       value: null,
       selectedLabel: tr(context, _sortOption.label).toUpperCase(),
+      triggerHeight: 48,
+      triggerPadding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
       backgroundColor: background,
       foregroundColor: foreground,
-      textStyle: Body2_b.style,
+      textStyle: Body2_b.style.copyWith(height: 1.3),
       options: [
         AppDropdownOption<String>(
           value: 'direction-ascending',

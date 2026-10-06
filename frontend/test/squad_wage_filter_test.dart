@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
@@ -26,6 +27,11 @@ const _historicalTeam = TeamOverview(
 
 void main() {
   setUpAppCatalog();
+  setUpAll(() async {
+    await (FontLoader('Archivo')
+          ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
+        .load();
+  });
   test('exposes the nullable wage sort option', () {
     expect(SortOption.wage.label, 'Wage');
 
@@ -79,6 +85,15 @@ void main() {
     );
     expect(repository.requestedSeasonIds, [27965]);
     expect(find.text('26/27'), findsOneWidget);
+    final seasonTrigger = find.byKey(const ValueKey('squad-season-trigger'));
+    final sortTrigger = find.byKey(const ValueKey('squad-sort-trigger'));
+    final seasonRect = tester.getRect(seasonTrigger);
+    final sortRect = tester.getRect(sortTrigger);
+    expect(seasonRect.height, 48);
+    expect(sortRect.height, 48);
+    expect(seasonRect.width, lessThan(100));
+    expect(sortRect.width, lessThan(140));
+    expect(sortRect.left - seasonRect.right, 16);
     expect(
       tester
           .renderObject<RenderParagraph>(find.text('26/27'))
@@ -105,7 +120,7 @@ void main() {
     final positionCheck = find.byKey(
       const ValueKey('squad-sort-selected-icon-POSITION'),
     );
-    expect(tester.getSize(dropdown).width, 166.5);
+    expect(tester.getSize(dropdown).width, lessThan(140));
     expect(
       tester.getRect(trigger).right - tester.getRect(arrow).right,
       8,
@@ -120,6 +135,9 @@ void main() {
           tester.getRect(positionCheck).right,
       8,
     );
+    await tester.tap(find.byKey(const ValueKey('squad-sort-option-wage')));
+    await tester.pumpAndSettle();
+    expect(find.text('WAGE'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -173,7 +191,8 @@ void main() {
 
     final season = find.byKey(const ValueKey('squad-season-dropdown'));
     final sort = find.byKey(const ValueKey('squad-sort-dropdown'));
-    expect(tester.getRect(season).right, lessThan(tester.getRect(sort).left));
+    expect(tester.getRect(sort).left - tester.getRect(season).right, 16);
+    expect(tester.getRect(sort).right, lessThanOrEqualTo(296));
 
     await tester.tap(find.byKey(const ValueKey('squad-season-trigger')));
     await tester.pumpAndSettle();
