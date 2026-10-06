@@ -444,7 +444,7 @@ void main() {
   }
 
   for (final width in [320.0, 430.0]) {
-    testWidgets('selected what-if bars share one color at ${width.toInt()}px',
+    testWidgets('selected what-if bar keeps one color at ${width.toInt()}px',
         (tester) async {
       tester.view.physicalSize = Size(width, 932);
       tester.view.devicePixelRatio = 1;
@@ -473,8 +473,13 @@ void main() {
       for (final selected in outcomes) {
         await tester.tap(find.byKey(ValueKey('what-if-outcome-$selected')));
         await tester.pump();
-        expect([for (final outcome in outcomes) barColor(outcome)],
-            everyElement(teamColor));
+        for (final outcome in outcomes) {
+          expect(
+              barColor(outcome),
+              outcome == selected
+                  ? teamColor
+                  : teamColor.withValues(alpha: .18));
+        }
         expect(tester.takeException(), isNull);
       }
     });
