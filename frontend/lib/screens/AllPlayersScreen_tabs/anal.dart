@@ -308,10 +308,7 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
     final gridColor = colorScheme.onSurface.withValues(
       alpha: isDark ? 0.32 : 0.18,
     );
-    final targetRound = latestRound <= 7 ? latestRound : latestRound - 3;
-    final initialPoint =
-        valid.where((point) => point.round <= targetRound).lastOrNull ??
-            valid.firstOrNull;
+    final initialPoint = valid.lastOrNull;
     final selectedPoint =
         valid.where((point) => point.round == _selectedRound).firstOrNull ??
             initialPoint;
