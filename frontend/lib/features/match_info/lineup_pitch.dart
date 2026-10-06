@@ -24,11 +24,89 @@ class LineupPitch extends StatelessWidget {
   static const double _centerGap = 64;
   static const double _pitchHeight = 784;
   static const double _verticalPadding = 20;
+  static const double _minimumPlayerGap = 8;
+
+  double _requiredHalfHeight(
+    List<List<LineupPlayer>> rows,
+    double playerHeight,
+  ) {
+    const baseHalfHeight =
+        (_pitchHeight - 2 * _verticalPadding - _centerGap) / 2;
+    var halfHeight = baseHalfHeight;
+    final minimumCenterGap = playerHeight + _minimumPlayerGap;
+    final players = rows.expand((row) => row).toList();
+    if (players.isEmpty) return halfHeight;
+    if (players.any((player) => player.formationPosition == null)) {
+      final required =
+          rows.length * playerHeight + (rows.length - 1) * _minimumPlayerGap;
+      return required > halfHeight ? required : halfHeight;
+    }
+
+    final positions = [
+      for (final player in players) player.formationPosition!,
+    ];
+    final outfieldRows = [
+      for (final row in rows)
+        if (row.any((player) =>
+            player.formationPosition!.dy < FormationLayout.goalkeeper.dy))
+          row,
+    ];
+    final outfield = [
+      for (final position in positions)
+        if (position.dy < FormationLayout.goalkeeper.dy) position,
+    ];
+    var visualRows = outfieldRows.length;
+    for (final row in outfieldRows) {
+      final ys = row.map((player) => player.formationPosition!.dy).toList();
+      if (ys.reduce((a, b) => a > b ? a : b) -
+              ys.reduce((a, b) => a < b ? a : b) >
+          FormationLayout.designSize.height / 8) {
+        visualRows++;
+      }
+    }
+    if (visualRows > 1 && outfield.isNotEmpty) {
+      final highest = outfield
+          .map((position) => position.dy)
+          .reduce((a, b) => a < b ? a : b);
+      final lowest = outfield
+          .map((position) => position.dy)
+          .reduce((a, b) => a > b ? a : b);
+      final rowGap = (lowest - highest) / (visualRows - 1);
+      if (rowGap > 0) {
+        final required =
+            FormationLayout.designSize.height * minimumCenterGap / rowGap;
+        if (required > halfHeight) halfHeight = required;
+      }
+    }
+
+    // 가로 폭이 겹치는 선수는 원과 이름 아래에도 최소 여백을 확보해요.
+    for (var i = 0; i < positions.length; i++) {
+      for (var j = i + 1; j < positions.length; j++) {
+        final dx = (positions[i].dx - positions[j].dx).abs();
+        final dy = (positions[i].dy - positions[j].dy).abs();
+        if (dx >= 64 || dy == 0) continue;
+        final required =
+            FormationLayout.designSize.height * minimumCenterGap / dy;
+        if (required > halfHeight) halfHeight = required;
+      }
+    }
+    final keeperClearance = (playerHeight - 16) /
+        (1 - FormationLayout.goalkeeper.dy / FormationLayout.designSize.height);
+    if (keeperClearance > halfHeight) halfHeight = keeperClearance;
+    return halfHeight.ceilToDouble();
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
+    final playerHeight =
+        32 + 9 + 20 * MediaQuery.textScalerOf(context).scale(1);
+    final halfHeight = [
+      _requiredHalfHeight(homeRows, playerHeight),
+      _requiredHalfHeight(awayRows, playerHeight),
+    ].reduce((a, b) => a > b ? a : b);
+    final pitchHeight = 2 * halfHeight + _centerGap + 2 * _verticalPadding;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -36,7 +114,7 @@ class LineupPitch extends StatelessWidget {
         const SizedBox(height: 12),
         Container(
           key: const ValueKey('match-lineup-card'),
-          height: _pitchHeight,
+          height: pitchHeight,
           decoration: BoxDecoration(
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(24),

@@ -31,7 +31,7 @@ void main() {
     (430.0, 1100.0)
   ]) {
     testWidgets(
-        'keeps Korean formations inside the original pitch at ${width}x$height',
+        'keeps Korean formations spaced inside the pitch at ${width}x$height',
         (tester) async {
       tester.view.physicalSize = Size(width, height);
       tester.view.devicePixelRatio = 1;
@@ -101,13 +101,15 @@ void main() {
       final pitch = tester.getRect(
         find.byKey(const ValueKey('match-lineup-card')),
       );
-      expect(pitch.size, Size(width - 48, 784));
+      expect(pitch.width, width - 48);
+      expect(pitch.height, greaterThan(784));
       final card = tester.widget<Container>(
         find.byKey(const ValueKey('match-lineup-card')),
       );
       expect((card.decoration as BoxDecoration).borderRadius,
           BorderRadius.circular(24));
       final nameRects = <Rect>[];
+      final playerRects = <({int teamId, Rect rect})>[];
       for (final player in [...away, ...home].expand((row) => row)) {
         final finder = find.byKey(ValueKey(
           'match-lineup-player-${player.teamId}-${player.playerId}',
@@ -117,6 +119,7 @@ void main() {
         expect(rect.right, lessThanOrEqualTo(pitch.right));
         expect(rect.top, greaterThanOrEqualTo(pitch.top));
         expect(rect.bottom, lessThanOrEqualTo(pitch.bottom));
+        playerRects.add((teamId: player.teamId, rect: rect));
         final expectedName = player.playerId == 10002 ? 'A. 카스트린' : player.name;
         final name =
             find.descendant(of: finder, matching: find.text(expectedName));
@@ -130,6 +133,24 @@ void main() {
         for (var j = i + 1; j < nameRects.length; j++) {
           expect(nameRects[i].overlaps(nameRects[j]), isFalse,
               reason: 'player names $i and $j');
+        }
+      }
+      for (var i = 0; i < playerRects.length; i++) {
+        for (var j = i + 1; j < playerRects.length; j++) {
+          final first = playerRects[i];
+          final second = playerRects[j];
+          if (first.teamId != second.teamId ||
+              first.rect.left >= second.rect.right ||
+              second.rect.left >= first.rect.right) {
+            continue;
+          }
+          final gap = first.rect.bottom <= second.rect.top
+              ? second.rect.top - first.rect.bottom
+              : second.rect.bottom <= first.rect.top
+                  ? first.rect.top - second.rect.bottom
+                  : -1.0;
+          expect(gap, greaterThanOrEqualTo(7.9),
+              reason: 'same-team players $i and $j');
         }
       }
       final scrollingNames = find.descendant(
