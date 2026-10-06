@@ -713,7 +713,7 @@ class PlayersToWatchState extends State<PlayersToWatch> {
     if (players.isEmpty) {
       return Text(
         tr(context,
-            'No players with 10 rated appearances and an improved average'),
+            'No players meet the current-season appearance and rating improvement criteria'),
       );
     }
     return SizedBox(
@@ -740,7 +740,7 @@ class PlayersToWatchState extends State<PlayersToWatch> {
             const AppInfoButton(
               key: ValueKey('players-ones-to-watch-info'),
               message:
-                  'Highlights players with the highest performance growth over the recent 5 matches, based on 1touch metrics.',
+                  'Compares average ratings in the latest 3 appearances with the previous 3 across all competitions. All 6 need ratings, and the latest 3 must be this season. Shows up to 10 players with the biggest increases.',
               layoutSize: 16,
             ),
           ],

@@ -6,8 +6,9 @@ from decimal import Decimal
 
 from ..db import get_conn
 from .player_detail_repo import (
-    APPEARED, COMPLETED, get_current_player_teams,
+    COMPLETED, CURRENT_LEAGUE_SEASON, get_current_player_teams,
 )
+from ...core.player_appearances import APPEARED, MATCH_FROM
 from ...core.player_ranking import merge_current_scores, rank_current_scores
 from ...core.player_positions import season_player_positions
 from ...core.player_rating_percentile import (
@@ -16,6 +17,7 @@ from ...core.player_rating_percentile import (
 )
 
 LEAGUES = ','.join(map(str, RATING_COMPETITION_IDS))
+WATCH_WINDOW_SIZE = 3
 
 
 def watch_players(rows):
@@ -25,12 +27,15 @@ def watch_players(rows):
     result = []
     for pid, matches in grouped.items():
         matches.sort(key=lambda r: (r['starting_at'], r['fixture_id']), reverse=True)
-        matches = matches[:10]
-        # 평점이 없는 출전을 건너뛰면 '최근 5경기'가 바뀌므로 10경기 모두 확인해요.
-        if len(matches) < 10 or any(r['rating'] is None for r in matches):
+        matches = matches[:WATCH_WINDOW_SIZE * 2]
+        # 평점이 없는 출전을 건너뛰면 비교할 경기가 바뀌므로 6경기 모두 확인해요.
+        if len(matches) < WATCH_WINDOW_SIZE * 2 or any(r['rating'] is None for r in matches):
             continue
-        recent = sum(Decimal(str(r['rating'])) for r in matches[:5]) / 5
-        previous = sum(Decimal(str(r['rating'])) for r in matches[5:]) / 5
+        # 최근 3경기는 모두 이번 시즌이어야 해요. 직전 3경기는 지난 시즌도 허용해요.
+        if not all(r['is_current_season'] for r in matches[:WATCH_WINDOW_SIZE]):
+            continue
+        recent = sum(Decimal(str(r['rating'])) for r in matches[:WATCH_WINDOW_SIZE]) / WATCH_WINDOW_SIZE
+        previous = sum(Decimal(str(r['rating'])) for r in matches[WATCH_WINDOW_SIZE:]) / WATCH_WINDOW_SIZE
         change = recent - previous
         if change <= 0:
             continue
@@ -113,18 +118,18 @@ def get_ones_to_watch():
         conn.start_transaction(readonly=True)
         try:
             with conn.cursor(dictionary=True) as cur:
-                # 현재 5대 리그 소속 선수의 모든 대회 출전을 시즌 경계 없이 최근 10경기씩 읽어요.
+                # 모든 대회 출전을 최근 6경기씩 읽고, 선수 상세와 같은 시즌 기준을 적용해요.
                 cur.execute(f"""WITH current_players AS (
                     SELECT DISTINCT sm.player_id FROM team_squad_members sm JOIN seasons s ON s.season_id=sm.season_id
                     WHERE s.is_current=1 AND s.competition_id IN ({LEAGUES})
                 ), appearances AS (
                     SELECT fl.player_id,fl.fixture_id,fl.rating,f.starting_at,
+                        s.name=({CURRENT_LEAGUE_SEASON}) AS is_current_season,
                         ROW_NUMBER() OVER (PARTITION BY fl.player_id ORDER BY f.starting_at DESC,fl.fixture_id DESC) AS recent
-                    FROM fixture_lineups fl JOIN current_players cp ON cp.player_id=fl.player_id
-                    JOIN fixtures f ON f.fixture_id=fl.fixture_id
+                    {MATCH_FROM} JOIN current_players cp ON cp.player_id=fl.player_id
                     WHERE f.state_id IN ({COMPLETED}) AND f.starting_at<=UTC_TIMESTAMP() AND {APPEARED}
                 ) SELECT a.*,p.display_name AS name,p.image_path AS image FROM appearances a
-                  JOIN players p ON p.player_id=a.player_id WHERE a.recent<=10""")
+                  JOIN players p ON p.player_id=a.player_id WHERE a.recent<={WATCH_WINDOW_SIZE * 2}""")
                 items = watch_players(cur.fetchall())
                 if items:
                     def fetch(sql, params=()):
@@ -137,6 +142,6 @@ def get_ones_to_watch():
                         item['jersey_number'] = team['jersey_number'] if team else None
                         item['team_id'] = team['team_id'] if team else None
                         item['team_name'] = team['team_name'] if team else None
-                return {'items': items, 'scope': 'all_competitions_recent_10_appearances'}
+                return {'items': items, 'scope': 'all_competitions_recent_6_appearances'}
         finally:
             conn.rollback()
