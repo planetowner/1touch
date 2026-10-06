@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'round_chart_window.dart';
@@ -69,10 +70,12 @@ class RoundChartGridPainter extends CustomPainter {
   const RoundChartGridPainter({
     required this.color,
     required this.insetLineCount,
+    this.insetLineIndices = const {},
   });
 
   final Color color;
   final int insetLineCount;
+  final Set<int> insetLineIndices;
   int get divisionCount => RoundChartVisuals.horizontalLineCount - 1;
 
   @override
@@ -83,7 +86,12 @@ class RoundChartGridPainter extends CustomPainter {
     for (var index = 0; index <= divisionCount; index++) {
       final y = size.height * index / divisionCount;
       canvas.drawLine(
-        Offset(index < insetLineCount ? RoundChartVisuals.axisLineInset : 0, y),
+        Offset(
+          index < insetLineCount || insetLineIndices.contains(index)
+              ? RoundChartVisuals.axisLineInset
+              : 0,
+          y,
+        ),
         Offset(size.width, y),
         paint,
       );
@@ -93,5 +101,6 @@ class RoundChartGridPainter extends CustomPainter {
   @override
   bool shouldRepaint(RoundChartGridPainter oldDelegate) =>
       oldDelegate.color != color ||
-      oldDelegate.insetLineCount != insetLineCount;
+      oldDelegate.insetLineCount != insetLineCount ||
+      !setEquals(oldDelegate.insetLineIndices, insetLineIndices);
 }
