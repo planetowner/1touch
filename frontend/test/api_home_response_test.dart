@@ -2,6 +2,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/home/api/api_home_response.dart';
 
 void main() {
+  test('accepts no highlights when the server cannot determine the country',
+      () {
+    final payload = _homeJson();
+    final highlights = payload['highlights'] as Map<String, dynamic>;
+    highlights['viewer_country'] = null;
+    highlights['items'] = [];
+    final response = ApiHomeResponse.fromJson(payload);
+    expect(response.highlights?.viewerCountry, isNull);
+    expect(response.highlights?.items, isEmpty);
+  });
+
   group('ApiHomeResponse', () {
     test('parses the verified HomeResponse shape', () {
       final response = ApiHomeResponse.fromJson(_homeJson());

@@ -68,6 +68,70 @@ ApiClient _client(Future<http.Response> Function(http.Request) handler) =>
 void main() {
   setUpAppCatalog();
 
+  for (final failBeforeBlocking in [false, true]) {
+    testWidgets(
+        'background translations retain pending or failed requests when blocking resumes ($failBeforeBlocking)',
+        (tester) async {
+      final pending = Completer<http.Response>();
+      var calls = 0;
+      final api =
+          _client((_) async => ++calls == 1 ? pending.future : _response('ko'));
+      addTearDown(api.close);
+      final repository = FootballNamesRepository(api);
+      final pageKey = GlobalKey<_CounterState>();
+
+      Future<void> pump({required bool blockContent}) =>
+          tester.pumpWidget(MaterialApp(
+            locale: const Locale('ko'),
+            supportedLocales: appSupportedLocales,
+            localizationsDelegates: appLocalizationDelegates,
+            builder: (context, child) => FootballNamesLoader(
+              repository: repository,
+              enabled: true,
+              blockContent: blockContent,
+              child: child!,
+            ),
+            home: _Counter(key: pageKey),
+          ));
+
+      await pump(blockContent: false);
+      await tester.pump();
+      expect(calls, 1);
+      expect(find.byType(FootballLoadingIndicator), findsNothing);
+      await tester.tap(find.text('0'));
+      await tester.pump();
+      final originalState = pageKey.currentState;
+
+      final retry = find.byKey(const ValueKey('app-error-500-action'));
+      if (failBeforeBlocking) {
+        pending.complete(http.Response('{}', 503));
+        await tester.pumpAndSettle();
+        expect(retry, findsNothing);
+        expect(find.text('1').hitTestable(), findsOneWidget);
+      }
+
+      await pump(blockContent: true);
+      expect(calls, 1);
+      expect(pageKey.currentState, same(originalState));
+      if (failBeforeBlocking) {
+        expect(retry, findsOneWidget);
+        await tester.tap(retry);
+      } else {
+        expect(find.byType(FootballLoadingIndicator), findsOneWidget);
+        pending.complete(_response('ko'));
+      }
+      await tester.pumpAndSettle();
+
+      expect(calls, failBeforeBlocking ? 2 : 1);
+      expect(find.text('FC 바르셀로나').hitTestable(), findsOneWidget);
+      expect(find.text('1').hitTestable(), findsOneWidget);
+      expect(pageKey.currentState, same(originalState));
+      expect(find.byType(FootballLoadingIndicator), findsNothing);
+      expect(retry, findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('match coaches follow language and keep untranslated originals',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(430, 1200));

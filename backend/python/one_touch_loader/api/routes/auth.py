@@ -1,5 +1,5 @@
 from typing import Literal
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Request
 from ..deps import get_token, get_user_id
 from ..repos import auth_repo, users_repo
 from ..schemas.users import (
@@ -7,6 +7,7 @@ from ..schemas.users import (
     PasswordLoginBody, RegisterEmailBody, RegistrationAvailabilityBody, ResetPasswordBody,
 )
 from ..services import social_login
+from ..services.request_country import get_request_country
 
 router = APIRouter()
 
@@ -27,7 +28,7 @@ def registration_availability(body: RegistrationAvailabilityBody):
 
 
 @router.get("/auth/providers")
-def providers(platform: Literal["ios", "android"], country_code: str | None = Query(default=None, min_length=2, max_length=2)):
+def providers(platform: Literal["ios", "android"], country_code: str | None = Depends(get_request_country)):
     # 국가 코드는 가입 화면의 선택지를 정해요. 사용자의 국적이나 로그인 권한을 제한하지 않아요.
     # 한국·일본만 지역별 로그인을 추가하고, 그 외는 영미권과 같은 기본 목록을 써요.
     # 중국 전용 로그인은 추후에 추가해요. 지금 CN은 기타와 같고, 중국어 표시 지원과는 별개예요.

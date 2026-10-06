@@ -14,7 +14,8 @@ class MatchHighlights extends StatefulWidget {
   State<MatchHighlights> createState() => _MatchHighlightsState();
 }
 
-class _MatchHighlightsState extends State<MatchHighlights> {
+class _MatchHighlightsState extends State<MatchHighlights>
+    with WidgetsBindingObserver {
   FixtureHighlight? _highlight;
   bool _networkImageFailed = false;
   int _requestId = 0;
@@ -25,7 +26,19 @@ class _MatchHighlightsState extends State<MatchHighlights> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadHighlight();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _loadHighlight();
   }
 
   @override
@@ -41,6 +54,11 @@ class _MatchHighlightsState extends State<MatchHighlights> {
 
   Future<void> _loadHighlight() async {
     final requestId = ++_requestId;
+    // 앱 밖에서 접속 국가가 바뀔 수 있어 이전 영상은 새 응답 전까지 숨겨요.
+    setState(() {
+      _highlight = null;
+      _networkImageFailed = false;
+    });
     try {
       final highlight = await _repository.loadForFixture(widget.fixtureId);
       if (!mounted || requestId != _requestId) return;

@@ -9,6 +9,23 @@ import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/models/fixture_highlight.dart';
 
 void main() {
+  testWidgets('checks the current country again when the app resumes',
+      (tester) async {
+    final repository = _ControlledRepository();
+    await tester.pumpWidget(_screen(1, repository));
+    repository.requests.single.complete(_highlight(1, 'old-country'));
+    await tester.pump();
+    expect(find.byIcon(Icons.play_circle_outline), findsOneWidget);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    expect(repository.requests, hasLength(2));
+    expect(find.byIcon(Icons.play_circle_outline), findsNothing);
+    repository.requests.last.complete(null);
+    await tester.pump();
+    expect(find.text('HIGHLIGHTS UNAVAILABLE'), findsOneWidget);
+  });
+
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets('opens only the current fixture video at $size',
         (tester) async {

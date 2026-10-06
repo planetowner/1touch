@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, Query
 
 from ..deps import get_user_id
 from ..repos import betting_repo as repo
-from ..schemas.betting import (BetMutationResponse, BettingMarketResponse, CancelBetBody, InitializeWalletBody,
+from ..schemas.betting import (BetMutationResponse, BettingMarketResponse, CancelBetBody,
                                PlaceBetBody, WalletResponse)
+from ..services.request_country import get_request_country
 
 router = APIRouter()
 
@@ -14,9 +15,10 @@ def wallet(user_id: int = Depends(get_user_id)):
 
 
 @router.post('/users/me/points/initialize', response_model=WalletResponse)
-def initialize_wallet(body: InitializeWalletBody | None = None, user_id: int = Depends(get_user_id)):
+def initialize_wallet(user_id: int = Depends(get_user_id),
+                      country_code: str | None = Depends(get_request_country)):
     """기존·신규 회원 모두 첫 요청에서 1,000 pts를 한 번 받아요. 재요청은 잔액을 바꾸지 않아요."""
-    return repo.initialize_wallet(user_id, country_code=body.country_code if body else None)
+    return repo.initialize_wallet(user_id, country_code=country_code)
 
 
 @router.get('/users/me/points/entries')

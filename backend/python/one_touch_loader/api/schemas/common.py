@@ -266,4 +266,4 @@ class HomeResponse(BaseModel):
     last_match: Optional[FixtureOut] = None
 
     calendar: List[FixtureOut] = []
-    highlights: TeamHighlightsResponse | None = Field(default=None, description="홈에서 조회한 팀의 최근 하이라이트예요. viewer_country를 보내지 않거나 조회 팀이 없으면 null이에요.")
+    highlights: TeamHighlightsResponse | None = Field(default=None, description="접속 국가에서 볼 수 있는 조회 팀의 최근 하이라이트예요. 조회 팀이 없으면 null이에요.")

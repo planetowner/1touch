@@ -60,5 +60,5 @@ def build_home_payload(
         "last_match": last_match,
         "standing": get_current_team_standing(viewed_team_id) if viewed_team_id else None,
         "calendar": calendar,
-        "highlights": get_team_highlights(viewed_team_id, viewer_country) if viewed_team_id and viewer_country else None,
+        "highlights": get_team_highlights(viewed_team_id, viewer_country) if viewed_team_id else None,
     }

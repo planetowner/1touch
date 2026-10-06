@@ -9,7 +9,6 @@ import 'package:onetouch/onboarding.dart';
 import 'package:onetouch/SignComps/other_login_methods.dart';
 import 'package:onetouch/SignComps/sign_in.dart';
 import 'package:onetouch/core/api_client.dart';
-import 'package:onetouch/core/device_region.dart';
 import 'package:onetouch/core/probability_display.dart';
 import 'package:onetouch/data/auth/api/api_login_options_repository.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
@@ -335,15 +334,11 @@ void main() {
   }
 
   for (final region in ['KR', 'JP', 'US']) {
-    testWidgets('English UI sends actual $region device region to login API',
+    testWidgets(
+        'English UI uses server login choices for $region without sending a country',
         (tester) async {
       tester.platformDispatcher.localeTestValue = const Locale('en', 'US');
       addTearDown(tester.platformDispatcher.clearLocaleTestValue);
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(DeviceRegion.channel, (_) async => region);
-      addTearDown(() => TestDefaultBinaryMessengerBinding
-          .instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(DeviceRegion.channel, null));
       final first =
           switch (region) { 'KR' => 'kakao', 'JP' => 'line', _ => 'google' };
       final recommended = [
@@ -363,8 +358,7 @@ void main() {
         requestHeaders: () => {},
         client: MockClient((request) async {
           expect(request.url.path, '/v1/auth/providers');
-          expect(request.url.queryParameters,
-              {'platform': 'ios', 'country_code': region});
+          expect(request.url.queryParameters, {'platform': 'ios'});
           return http.Response(
               jsonEncode({
                 'providers': recommended,
@@ -373,9 +367,7 @@ void main() {
               200);
         }),
       ));
-      final router = _loginRouter(() async => repository.load(
-          platform: 'ios',
-          country: await const DeviceRegion().readCountryCode()));
+      final router = _loginRouter(() async => repository.load(platform: 'ios'));
       addTearDown(router.dispose);
       await tester.pumpWidget(MaterialApp.router(
         routerConfig: router,
@@ -411,8 +403,7 @@ void main() {
         baseUri: Uri.parse('https://api.example.test/v1/'),
         requestHeaders: () => {},
         client: MockClient((request) async {
-          expect(request.url.queryParameters,
-              {'platform': 'android', 'country_code': 'US'});
+          expect(request.url.queryParameters, {'platform': 'android'});
           return http.Response(
               jsonEncode({
                 'providers': ['google', 'email'],
@@ -424,7 +415,6 @@ void main() {
     );
     final router = _loginRouter(() async => repository.load(
           platform: 'android',
-          country: await const DeviceRegion().readCountryCode(),
         ));
     addTearDown(router.dispose);
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));

@@ -7,15 +7,15 @@ class ApiTeamHighlightsResponse {
   }) : items = List.unmodifiable(items);
 
   final int teamId;
-  final String viewerCountry;
+  final String? viewerCountry;
   final String? updatedAt;
   final List<ApiHighlightResponse> items;
 
   factory ApiTeamHighlightsResponse.fromJson(Map<String, dynamic> json) {
-    final viewerCountry = _requiredString(json, 'viewer_country');
-    if (!_isUppercaseIsoCode(viewerCountry)) {
+    final viewerCountry = _nullableString(json, 'viewer_country');
+    if (viewerCountry != null && !_isUppercaseIsoCode(viewerCountry)) {
       throw const FormatException(
-        'Expected "viewer_country" to be an uppercase ISO country code.',
+        'Expected "viewer_country" to be an uppercase ISO country code or null.',
       );
     }
     return ApiTeamHighlightsResponse(

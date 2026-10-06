@@ -18,6 +18,7 @@ from PIL import Image
 from botocore.response import StreamingBody
 from pydantic import ValidationError
 from diagnostics import test_auth_providers as provider_tests
+from one_touch_loader.api.services.request_country import get_request_country
 
 # 테스트 수집만 해도 운영 DB 풀이 열리지 않게 해요.
 with patch("mysql.connector.pooling.MySQLConnectionPool"):
@@ -113,7 +114,8 @@ class ProviderDisplayTests(unittest.TestCase):
                     self.assertEqual(client.get(url).status_code, 200)
 
     def test_country_and_device_determine_signup_choices_without_database(self):
-        client = TestClient(create_app())
+        app = create_app()
+        client = TestClient(app)
         for platform, country, expected in (
             ("ios", "KR", ["kakao", "google", "apple", "email"]),
             ("android", "KR", ["kakao", "google", "email"]),
@@ -128,7 +130,8 @@ class ProviderDisplayTests(unittest.TestCase):
             ("android", "CN", ["google", "email"]),
         ):
             with self.subTest(platform=platform, country=country):
-                response = client.get("/v1/auth/providers", params={"platform": platform, "country_code": country})
+                app.dependency_overrides[get_request_country] = lambda: country
+                response = client.get("/v1/auth/providers", params={"platform": platform, "country_code": "XX"})
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.json(), {"providers": expected,
                     "other_providers": [name for name in ("kakao", "line") if name not in expected]})

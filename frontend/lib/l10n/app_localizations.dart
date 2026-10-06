@@ -30,7 +30,7 @@ Locale? appLocaleOverride([String value = _appLocaleEnvironment]) {
 
 const appLocalizationDelegates = GlobalMaterialLocalizations.delegates;
 
-/// 화면 언어만 해석해요. 로그인 추천 지역은 DeviceRegion에서 따로 읽어요.
+/// 화면 언어만 해석해요. 로그인 추천 국가는 서버가 접속 IP로 판별해요.
 Locale resolveAppLocale(List<Locale>? preferred, Iterable<Locale> supported) {
   for (final locale in preferred ?? const <Locale>[]) {
     for (final candidate in supported) {

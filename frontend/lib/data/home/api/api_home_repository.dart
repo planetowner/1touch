@@ -1,5 +1,4 @@
 import 'package:onetouch/core/api_client.dart';
-import 'package:onetouch/core/viewer_country_config.dart';
 import 'package:onetouch/data/home/api/api_home_mapper.dart';
 import 'package:onetouch/data/home/api/api_home_response.dart';
 import 'package:onetouch/data/home/home_repository.dart';
@@ -10,15 +9,12 @@ import 'package:onetouch/models/home_data.dart';
 class ApiHomeRepository implements HomeSnapshotRepository {
   ApiHomeRepository({
     required ApiClient api,
-    required String viewerCountry,
     LocalCacheStore? cacheStore,
   })  : _api = api,
-        _cacheStore = cacheStore,
-        _viewerCountry = ViewerCountryConfig.normalize(viewerCountry);
+        _cacheStore = cacheStore;
 
   final ApiClient _api;
   final LocalCacheStore? _cacheStore;
-  final String _viewerCountry;
   static const _maxSnapshots = 24;
   final _snapshots = <(int, int, int), HomeSnapshot>{};
   int _cacheGeneration = 0;
@@ -37,7 +33,7 @@ class ApiHomeRepository implements HomeSnapshotRepository {
     final store = _cacheStore;
     if (store == null) return null;
     final generation = _cacheGeneration;
-    final key = LocalCacheKeys.home(teamId, month, _viewerCountry);
+    final key = LocalCacheKeys.home(teamId, month);
     final record = await store.read(
       key,
       scope: LocalCacheScopes.authenticatedUser,
@@ -47,7 +43,8 @@ class ApiHomeRepository implements HomeSnapshotRepository {
       final decoded = Map<String, dynamic>.from(record.payload as Map);
       final data = _mapResponse(decoded, teamId: teamId);
       if (generation != _cacheGeneration) return null;
-      final snapshot = HomeSnapshot(data, record.savedAt);
+      final snapshot =
+          HomeSnapshot(data, record.savedAt, requiresRefresh: true);
       _remember((teamId, month.year, month.month), snapshot);
       return snapshot;
     } on Object {
@@ -67,7 +64,6 @@ class ApiHomeRepository implements HomeSnapshotRepository {
     final cacheGeneration = _cacheGeneration;
     const boundaryEnvelope = Duration(days: 1);
     final queryParameters = <String, String>{
-      'viewer_country': _viewerCountry,
       if (teamId != null) 'team_id': '$teamId',
       // The backend filters UTC database dates while Home displays device-local
       // dates. Include adjacent UTC dates so timezone-boundary fixtures are not
@@ -93,10 +89,19 @@ class ApiHomeRepository implements HomeSnapshotRepository {
         start.year == end.year &&
         start.month == end.month) {
       final key = (teamId, start.year, start.month);
-      _remember(key, HomeSnapshot(data, DateTime.now().toUtc()));
+      // 다른 국가에서 만든 영상 목록을 재사용하지 않아요. 경기·순위 캐시는 유지해요.
+      final cachedResponse = {...decoded, 'highlights': null};
+      _remember(
+        key,
+        HomeSnapshot(
+          _mapResponse(cachedResponse, teamId: teamId),
+          DateTime.now().toUtc(),
+          requiresRefresh: true,
+        ),
+      );
       await _cacheStore?.write(
-        LocalCacheKeys.home(teamId, start, _viewerCountry),
-        decoded,
+        LocalCacheKeys.home(teamId, start),
+        cachedResponse,
         scope: LocalCacheScopes.authenticatedUser,
       );
     }
@@ -105,13 +110,6 @@ class ApiHomeRepository implements HomeSnapshotRepository {
 
   HomeData _mapResponse(Map<String, dynamic> decoded, {int? teamId}) {
     final apiResponse = ApiHomeResponse.fromJson(decoded);
-    final responseCountry = apiResponse.highlights?.viewerCountry;
-    if (responseCountry != null && responseCountry != _viewerCountry) {
-      throw FormatException(
-        'Expected highlight viewer_country $_viewerCountry but received '
-        '$responseCountry.',
-      );
-    }
     final data = homeDataFromApiResponse(apiResponse);
     if (teamId != null && data.favoriteTeam.teamId != teamId) {
       throw FormatException(
