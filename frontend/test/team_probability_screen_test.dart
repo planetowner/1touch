@@ -48,7 +48,11 @@ void main() {
     });
   }
 
-  for (final size in [const Size(393, 852), const Size(430, 932)]) {
+  for (final size in [
+    const Size(360, 780),
+    const Size(393, 852),
+    const Size(430, 932),
+  ]) {
     testWidgets('history chart fits the shared design at $size',
         (tester) async {
       tester.view.physicalSize = size;
@@ -190,15 +194,24 @@ void main() {
         .data;
     expect((historyData.minX, historyData.maxX), (0, 14));
     expect(historyData.lineBarsData.single.spots.map((spot) => spot.x), [4, 5]);
-    expect((historyData.minY, historyData.maxY), (20, 40));
+    expect((historyData.minY, historyData.maxY), (0, 40));
     final historyCardFinder =
         find.byKey(const ValueKey('probability-history-card'));
     expect(
       find.descendant(
         of: historyCardFinder,
-        matching: find.byKey(const ValueKey('probability-history-axis-label')),
+        matching: find.byKey(const ValueKey('probability-history-top-label')),
       ),
       findsOneWidget,
+    );
+    expect(find.text('40%'), findsOneWidget);
+    expect(find.text('20%'), findsOneWidget);
+    expect(
+      tester
+          .getCenter(
+              find.byKey(const ValueKey('probability-history-middle-label')))
+          .dy,
+      closeTo(historyGrid.center.dy, 0.1),
     );
     expect(
       find.descendant(
@@ -218,6 +231,28 @@ void main() {
         )
         .painter! as RoundChartGridPainter;
     expect(gridPainter.divisionCount + 1, 12);
+    expect(gridPainter.insetLineCount, 0);
+    final topMask = tester.getRect(find
+        .ancestor(
+          of: find.byKey(const ValueKey('probability-history-top-label')),
+          matching: find.byType(ColoredBox),
+        )
+        .first);
+    final middleMask = tester.getRect(find
+        .ancestor(
+          of: find.byKey(const ValueKey('probability-history-middle-label')),
+          matching: find.byType(ColoredBox),
+        )
+        .first);
+    expect(topMask.width, lessThan(RoundChartVisuals.axisLineInset));
+    for (var index = 0; index <= gridPainter.divisionCount; index++) {
+      final lineY = historyGrid.top +
+          historyGrid.height * index / gridPainter.divisionCount;
+      if ((lineY >= topMask.top && lineY <= topMask.bottom) ||
+          (lineY >= middleMask.top && lineY <= middleMask.bottom)) {
+        expect(gridPainter.insetLineIndices, contains(index));
+      }
+    }
     expect(
       tester
           .widget<LineChart>(find.byType(LineChart))
@@ -271,13 +306,19 @@ void main() {
     expect(tooltipRect.right, lessThanOrEqualTo(historyViewport.right));
     expect(
         tester.getRect(historyHandle).left + RoundChartSelectionHandle.tipInset,
-        closeTo(historyViewport.left + historyViewport.width * 4 / 14, 0.1));
+        closeTo(
+            tester
+                    .getRect(find
+                        .byKey(const ValueKey('probability-history-viewport')))
+                    .left +
+                historyViewport.width * 4 / 14,
+            0.1));
     expect(
       tester
           .getRect(find.byKey(const ValueKey('probability-history-tooltip')))
           .center
           .dy,
-      closeTo(historyChart.top + historyChart.height * 0.7, 1),
+      closeTo(historyChart.top + historyChart.height * 0.35, 1),
     );
     final nextDrag = await tester.startGesture(tester.getCenter(historyHandle));
     await nextDrag.moveBy(Offset(historyViewport.width / 14, 0));
@@ -349,22 +390,161 @@ void main() {
       find.byKey(const ValueKey('what-if-scenario-chart')),
       findsOneWidget,
     );
-    for (final (index, outcome) in ['win', 'draw', 'loss'].indexed) {
+    for (final outcome in ['win', 'draw', 'loss']) {
       final option = find.byKey(ValueKey('what-if-outcome-$outcome'));
       final labels = find.descendant(of: option, matching: find.byType(Text));
-      expect(labels, findsNWidgets(2));
-      final first = tester.getRect(labels.first);
-      final last = tester.getRect(labels.last);
-      expect((first.top + last.bottom) / 2,
-          closeTo(tester.getRect(option).center.dy, 0.1));
+      expect(labels, findsOneWidget);
       expect(
-          find.descendant(
-              of: option, matching: find.text('(${[55, 25, 20][index]}%)')),
-          findsOneWidget);
+          tester.getRect(labels).center.dy,
+          closeTo(
+              tester
+                  .getRect(
+                      find.byKey(ValueKey('what-if-outcome-logo-$outcome')))
+                  .center
+                  .dy,
+              0.1));
     }
     await tester.tap(find.byKey(const ValueKey('what-if-outcome-win')));
     await tester.pump();
 
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('what-if outcome labels align with logos at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: TeamProbabilityWhatIfScreen(
+          snapshot: _snapshot(),
+          event: 'league_winner',
+          teamPrimaryColor: const Color(0xFFA50044),
+          homeTeam: const Team(
+              teamId: 83, name: 'FC Barcelona', shortName: 'Barcelona'),
+          awayTeam: const Team(teamId: 90, name: 'Girona FC'),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      for (final outcome in ['win', 'draw', 'loss']) {
+        final option = find.byKey(ValueKey('what-if-outcome-$outcome'));
+        final label = find.descendant(of: option, matching: find.byType(Text));
+        final logo = find.byKey(ValueKey('what-if-outcome-logo-$outcome'));
+        expect(label, findsOneWidget);
+        expect(tester.getRect(label).center.dy,
+            closeTo(tester.getRect(logo).center.dy, 0.1));
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('keeps a 100% line behind the Y-axis label background',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: TeamProbabilityScreen(
+        teamId: 83,
+        event: 'league_winner',
+        initialSnapshot: _snapshot(
+          firstPlayedRound: 0,
+          firstLeagueProbability: 1,
+          latestLeagueProbability: 1,
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final chart = find.byKey(const ValueKey('probability-history-line-chart'));
+    expect(tester.widget<LineChart>(chart).data.maxY, 100);
+    expect(tester.widget<LineChart>(chart).data.lineBarsData.single.spots.first,
+        const FlSpot(0, 100));
+    final label = find.byKey(const ValueKey('probability-history-top-label'));
+    expect(
+        tester
+            .widget<Text>(find.descendant(
+              of: label,
+              matching: find.byType(Text),
+            ))
+            .data,
+        '100%');
+    final mask =
+        find.ancestor(of: label, matching: find.byType(ColoredBox)).first;
+    expect(tester.widget<ColoredBox>(mask).color,
+        app_style.AppColors.of(tester.element(mask)).cardBackground);
+    final gutterMask =
+        find.byKey(const ValueKey('probability-history-top-gutter-mask'));
+    expect(tester.widget<ColoredBox>(gutterMask).color,
+        app_style.AppColors.of(tester.element(gutterMask)).cardBackground);
+    expect(tester.getSize(gutterMask).width, RoundChartVisuals.axisLineInset);
+    final gridPainter = tester
+        .widget<CustomPaint>(
+          find.byKey(const ValueKey('probability-history-grid')),
+        )
+        .painter! as RoundChartGridPainter;
+    expect(gridPainter.insetLineIndices, containsAll([0, 1]));
+    final viewport = find.byKey(const ValueKey('probability-history-viewport'));
+    await tester.scrollUntilVisible(
+      viewport,
+      200,
+      scrollable: find.byWidgetPredicate((widget) =>
+          widget is Scrollable && widget.axisDirection == AxisDirection.down),
+    );
+    await tester.pumpAndSettle();
+    final initialViewport = tester.getRect(viewport);
+    final initialChart = tester.getRect(chart);
+    final initialLabel = tester.getRect(label);
+    final gutter = tester.getRect(gutterMask);
+    final plotClip =
+        find.byKey(const ValueKey('probability-history-plot-clip'));
+    expect(tester.widget<ClipRect>(plotClip).clipBehavior, Clip.hardEdge);
+    final fixedClip = tester.getRect(plotClip);
+    expect(fixedClip.left, initialViewport.left);
+    expect(fixedClip.right, initialViewport.right);
+    expect(gutter.left, initialViewport.left);
+    expect(initialChart.left, lessThan(gutter.right));
+    expect(gutter.bottom, greaterThanOrEqualTo(initialLabel.bottom));
+    final handle = find.descendant(
+      of: viewport,
+      matching: find.byKey(const ValueKey('round-chart-selection-handle')),
+    );
+    final drag = await tester.startGesture(tester.getCenter(handle));
+    await drag.moveBy(Offset(-initialViewport.width * 5 / 14, 0));
+    await drag.up();
+    await tester.pumpAndSettle();
+
+    expect(
+        tester
+            .widget<AnimatedSlide>(
+              find.byKey(const ValueKey('probability-history-reveal-slide')),
+            )
+            .offset
+            .dx,
+        closeTo(
+            RoundChartVisuals.axisLineInset / initialViewport.width, 0.001));
+    expect(tester.getRect(viewport).left,
+        closeTo(initialViewport.left + RoundChartVisuals.axisLineInset, 0.1));
+    expect(tester.getRect(chart).left,
+        closeTo(initialChart.left + RoundChartVisuals.axisLineInset, 0.1));
+    expect(tester.getRect(chart).left, closeTo(gutter.right, 0.1));
+    expect(tester.getRect(plotClip), fixedClip);
+    expect(tester.getRect(label), initialLabel);
+    expect(tester.getRect(handle).left + RoundChartSelectionHandle.tipInset,
+        closeTo(tester.getRect(viewport).left, 0.1));
+    expect(
+        tester
+            .getRect(find.byKey(const ValueKey('probability-history-tooltip')))
+            .left,
+        greaterThan(tester.getRect(mask).right));
+    final returnDrag = await tester.startGesture(tester.getCenter(handle));
+    await returnDrag.moveBy(Offset(initialViewport.width * 5 / 14, 0));
+    await returnDrag.up();
+    await tester.pumpAndSettle();
+    expect(tester.getRect(viewport).left, closeTo(initialViewport.left, 0.1));
+    expect(tester.getRect(chart).left, closeTo(initialChart.left, 0.1));
     expect(tester.takeException(), isNull);
   });
 
@@ -402,7 +582,16 @@ void main() {
           find.byKey(const ValueKey('probability-history-line-chart')),
         )
         .data;
-    expect((historyData.minY, historyData.maxY), (0, 15));
+    expect((historyData.minY, historyData.maxY), (0, 20));
+    expect(
+      tester
+          .widget<Text>(find.descendant(
+            of: find.byKey(const ValueKey('probability-history-middle-label')),
+            matching: find.byType(Text),
+          ))
+          .data,
+      '10%',
+    );
 
     expect(
       find.byKey(const ValueKey('projected-position-1')),
@@ -606,10 +795,7 @@ void main() {
       final winOption = find.byKey(const ValueKey('what-if-outcome-win'));
       expect(find.descendant(of: winOption, matching: find.text('$team 승')),
           findsOneWidget);
-      expect(
-          find.descendant(
-              of: winOption,
-              matching: find.text(testCase.teamId == 83 ? '(55%)' : '(20%)')),
+      expect(find.descendant(of: winOption, matching: find.byType(Text)),
           findsOneWidget);
       await tester.tap(winOption);
       await tester.pump();
@@ -630,12 +816,15 @@ TeamProbabilitySnapshot _snapshot(
     {int teamId = 83,
     double winProbability = 0.38,
     double lossProbability = 0.21,
+    int firstPlayedRound = 4,
+    double firstLeagueProbability = 0.26,
+    double latestLeagueProbability = 0.324,
     String relegationEvent = 'direct_relegation'}) {
-  const currentCard = TeamProbabilityCard(
+  final currentCard = TeamProbabilityCard(
     event: 'league_winner',
     competitionId: 564,
     category: 'TITLE',
-    probability: 0.324,
+    probability: latestLeagueProbability,
     changePercentagePoints: 2.44,
     entropy: 0.9,
   );
@@ -680,13 +869,13 @@ TeamProbabilitySnapshot _snapshot(
     history: [
       TeamProbabilityHistoryPoint(
         asOf: DateTime.utc(2026, 9, 11),
-        played: 4,
-        events: const [
+        played: firstPlayedRound,
+        events: [
           TeamProbabilityCard(
             event: 'league_winner',
             competitionId: 564,
             category: 'TITLE',
-            probability: 0.26,
+            probability: firstLeagueProbability,
             changePercentagePoints: null,
             entropy: null,
           ),
