@@ -145,8 +145,8 @@ class CoachDatabaseRepairTests(unittest.TestCase):
     def test_reviewed_seed_keeps_evidence_and_excludes_held_people(self):
         seed = json.loads(repair.KOREAN_SEED_PATH.read_text(encoding='utf-8'))
         by_id = {row['coach_id']: row for row in self.reviewed}
-        self.assertEqual(len(seed['additional_review_ids']), 16)
-        self.assertEqual(len(seed['held_coach_ids']), 29)
+        self.assertEqual(len(seed['additional_review_ids']), 17)
+        self.assertEqual(len(seed['held_coach_ids']), 28)
         self.assertEqual(by_id[1500238]['ko'], '유라 아르시치')
         self.assertEqual(by_id[37660199]['ko'], '비탈리 포노마료우')
         self.assertEqual(by_id[455650]['ko'], '헤이미르 그뷔드욘손')
