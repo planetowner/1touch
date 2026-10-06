@@ -773,6 +773,10 @@ class MyApp extends StatelessWidget {
                           builder: (context, _) => FootballNamesLoader(
                             repository: _footballNames,
                             enabled: authSession.isAuthenticated,
+                            // 번역은 미리 불러오되 이름 표기가 없는 시작 로고는 가리지 않아요.
+                            blockContent: _router
+                                    .routeInformationProvider.value.uri.path !=
+                                '/',
                             child: FullScreenBackGesture(
                               canGoBack: _router.canPop,
                               goBack: _router.routerDelegate.popRoute,

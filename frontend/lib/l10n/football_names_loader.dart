@@ -9,11 +9,13 @@ class FootballNamesLoader extends StatefulWidget {
     super.key,
     required this.repository,
     required this.enabled,
+    this.blockContent = true,
     required this.child,
   });
 
   final FootballNamesRepository repository;
   final bool enabled;
+  final bool blockContent;
   final Widget child;
 
   @override
@@ -61,7 +63,7 @@ class _FootballNamesLoaderState extends State<FootballNamesLoader> {
               fit: StackFit.expand,
               children: [
                 widget.child,
-                if (widget.enabled && !ready)
+                if (widget.enabled && widget.blockContent && !ready)
                   Material(
                     child: snapshot.hasError
                         ? AppErrorView(
