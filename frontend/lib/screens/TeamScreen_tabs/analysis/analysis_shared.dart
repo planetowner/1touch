@@ -52,3 +52,65 @@ class _AnalysisSectionHeader extends StatelessWidget {
     );
   }
 }
+
+class _AnalysisComparisonFilterPill extends StatelessWidget {
+  final Key filterKey;
+  final Key dividerKey;
+  final String seasonLabel;
+  final String teamLabel;
+  final VoidCallback? onTap;
+
+  const _AnalysisComparisonFilterPill({
+    required this.filterKey,
+    required this.dividerKey,
+    required this.seasonLabel,
+    required this.teamLabel,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final textStyle =
+        Body2_b.style.copyWith(color: colors.onSurface, height: 1.30);
+
+    return InkWell(
+      key: filterKey,
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 42),
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: AppColors.of(context).subtleBackground,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(seasonLabel, style: textStyle),
+            const SizedBox(width: 8),
+            SizedBox(
+              key: dividerKey,
+              width: 1,
+              height: 26,
+              child: ColoredBox(
+                color: colors.onSurface.withValues(alpha: 0.30),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                teamLabel,
+                style: textStyle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
