@@ -1172,7 +1172,7 @@ const appMessages = <String, MessageTranslations>{
   "Last 5": (ko: "최근 5경기", ja: "直近5試合", zh: "最近5场"),
   "Last {count}": (ko: "최근 {count}경기", ja: "直近{count}試合", zh: "最近{count}场"),
   "Win": (ko: "승", ja: "勝ち", zh: "胜"),
-  "Draw": (ko: "무", ja: "引き分け", zh: "平"),
+  "Draw": (ko: "무승부", ja: "引き分け", zh: "平局"),
   "Lose": (ko: "패", ja: "負け", zh: "负"),
   "Home Win": (ko: "홈 승", ja: "ホーム勝利", zh: "主胜"),
   "Away Win": (ko: "원정 승", ja: "アウェイ勝利", zh: "客胜"),
@@ -1600,7 +1600,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "フォロー中の全チームに適用しました",
     zh: "已应用到所有关注的球队"
   ),
-  "Done": (ko: "완료", ja: "完了", zh: "完成"),
+  "Done": (ko: "확인", ja: "確認", zh: "确认"),
   "Sync all upcoming matches for {team}. Each event lasts 2 hours, with a reminder 30 minutes before kickoff.":
       (
     ko: "{team}의 전체 예정 경기를 동기화해요. 경기당 2시간으로 저장하고 시작 30분 전에 알려드려요.",
@@ -1719,23 +1719,30 @@ const appMessages = <String, MessageTranslations>{
     zh: "将你喜欢的球队赛程添加到日历，并在赛前提醒你，不错过每一次开球。"
   ),
   "YES, SYNC IT!": (ko: "네, 동기화할게요", ja: "同期する", zh: "立即同步"),
-  "PLACE A BET": (ko: "베팅하기", ja: "予想する", zh: "参与竞猜"),
+  "PLACE A BET": (ko: "예측하기", ja: "予想する", zh: "预测"),
+  "{team} Win": (ko: "{team} 승", ja: "{team} 勝利", zh: "{team} 胜"),
   "CONFIRM BET": (ko: "베팅 확정", ja: "予想を確定", zh: "确认竞猜"),
   "EDIT BET": (ko: "베팅 수정", ja: "予想を編集", zh: "修改竞猜"),
+  "EDIT MY BET": (ko: "베팅 수정하기", ja: "予想を編集", zh: "修改竞猜"),
+  "You’ve already placed a bet.": (
+    ko: "이미 승부 예측을 완료했어요.",
+    ja: "すでに予想を送信しています。",
+    zh: "你已经提交了竞猜。"
+  ),
   "CANCEL BET": (ko: "베팅 취소", ja: "予想をキャンセル", zh: "取消竞猜"),
   "KEEP BET": (ko: "베팅 유지", ja: "予想を維持", zh: "保留竞猜"),
   "CHANGE PICK": (ko: "선택 변경", ja: "選択を変更", zh: "更改选择"),
   "Cancel your bet?": (ko: "베팅을 취소할까요?", ja: "予想をキャンセルしますか？", zh: "要取消竞猜吗？"),
-  "Bet Submitted!": (ko: "베팅을 완료했어요!", ja: "予想を送信しました！", zh: "竞猜已提交！"),
+  "Bet Submitted!": (ko: "예측했어요!", ja: "予想しました！", zh: "预测好了！"),
   "SUBMIT": (ko: "제출", ja: "送信", zh: "提交"),
   "SUBMITTING…": (ko: "제출 중…", ja: "送信中…", zh: "提交中…"),
   "HISTORY": (ko: "내역", ja: "履歴", zh: "记录"),
   "REFRESH RESULT": (ko: "결과 새로고침", ja: "結果を更新", zh: "刷新结果"),
   "Waiting for the result": (ko: "결과를 기다리고 있어요", ja: "結果を待っています", zh: "等待结果"),
-  "Check back after the final whistle for the result.": (
-    ko: "경기 종료 후 결과를 확인해 주세요.",
-    ja: "試合終了後に結果をご確認ください。",
-    zh: "请在比赛结束后查看结果。"
+  "Check back after the final whistle…": (
+    ko: "경기가 끝나면 결과를 확인해보세요",
+    ja: "試合が終わったら結果を確認してみてください",
+    zh: "比赛结束后，来看看结果吧"
   ),
   "No bets yet.": (ko: "아직 베팅 내역이 없어요.", ja: "予想の履歴はまだありません。", zh: "暂无竞猜记录。"),
   "Unable to load bets.": (
@@ -1879,7 +1886,7 @@ const appMessages = <String, MessageTranslations>{
   "Round {round}": (ko: "{round}R", ja: "第{round}節", zh: "第{round}轮"),
   "{leg} Leg": (ko: "{leg}차전", ja: "第{leg}戦", zh: "第{leg}回合"),
   "{points} Pts": (ko: "승점 {points}", ja: "勝点{points}", zh: "{points}积分"),
-  "{points} pts": (ko: "{points}포인트", ja: "{points}ポイント", zh: "{points}积分"),
+  "{points} pts": (ko: "{points} 포인트", ja: "{points}ポイント", zh: "{points}积分"),
   "{points} points": (ko: "{points}포인트", ja: "{points}ポイント", zh: "{points}积分"),
   "You earned {points} from this bet! 🎉": (
     ko: "이 베팅으로 {points}를 획득했어요! 🎉",
@@ -1905,6 +1912,32 @@ const appMessages = <String, MessageTranslations>{
     ko: "{points}포인트가 있어요!",
     ja: "{points}ポイントあります！",
     zh: "你有{points}积分！"
+  ),
+  "You’re betting": (ko: "사용할 포인트", ja: "使用するポイント", zh: "使用的积分"),
+  "You can use up to {points} pts!": (
+    ko: "최대 {points}P를 쓸 수 있어요",
+    ja: "最大{points}P使えます",
+    zh: "最多可使用{points}P"
+  ),
+  "Your estimated win": (
+    ko: "맞히면 더 받는 포인트",
+    ja: "当たると追加でもらえるポイント",
+    zh: "猜中后额外获得的积分"
+  ),
+  "Total you’re getting back": (
+    ko: "총 돌려받는 포인트",
+    ja: "合計で戻ってくるポイント",
+    zh: "总共返还的积分"
+  ),
+  "You’re about to place a bet of": (
+    ko: "예측에 사용할 포인트예요",
+    ja: "予想に使うポイントです",
+    zh: "本次预测使用的积分"
+  ),
+  "Would you like to proceed?": (
+    ko: "이대로 예측할까요?",
+    ja: "このまま予想しますか？",
+    zh: "就这样预测吗？"
   ),
   "{points} pts will be returned.": (
     ko: "{points}포인트가 반환돼요.",

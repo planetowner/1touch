@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/betting/betting_repository.dart';
 import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
@@ -48,10 +49,13 @@ void main() {
         expect(labelRect.right, lessThanOrEqualTo(segmentRect.right - 8));
         if (label == '80.0%') {
           expect(labelRect.left, closeTo(segmentRect.left + 8, 0.1));
-        } else if (label == '15.0%') {
-          expect(labelRect.center.dx, closeTo(segmentRect.center.dx, 0.1));
         } else {
-          expect(labelRect.right, closeTo(segmentRect.right - 8, 0.1));
+          final contentRow =
+              find.ancestor(of: labelFinder, matching: find.byType(Row)).first;
+          expect(
+            tester.getRect(contentRow).center.dx,
+            closeTo(segmentRect.center.dx, 0.1),
+          );
         }
       }
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
@@ -65,32 +69,104 @@ void main() {
     });
   }
 
-  testWidgets('outcome labels follow their bar segments at narrow width',
-      (tester) async {
+  testWidgets('equal 1.1% segments use equal numeric padding', (tester) async {
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
         body: Center(
           child: SizedBox(
-            width: 110,
+            width: 345,
             child: BettingProbabilityBar(
-              values: [0.8, 0.15, 0.05],
-              outcomeLabels: ['Home Win', 'Draw', 'Away Win'],
+              values: [0.978, 0.011, 0.011],
+              outcomeLabels: ['BAR Win', 'Draw', 'GIR Win'],
             ),
           ),
         ),
       ),
     ));
 
-    final drawSegment = tester.getRect(find
-        .ancestor(
-          of: find.text('15.0%'),
-          matching: find.byType(Container),
-        )
-        .first);
-    final drawLabel = tester.getRect(find.text('Draw'));
-    expect(drawLabel.center.dx, closeTo(drawSegment.center.dx, 0.1));
-    expect(drawLabel.top, closeTo(drawSegment.bottom + 8, 0.1));
-    expect(find.byType(SingleChildScrollView), findsOneWidget);
+    final homeSegment = tester.getRect(
+      find.byKey(const ValueKey('betting-probability-segment-0')),
+    );
+    final drawSegment = tester.getRect(
+      find.byKey(const ValueKey('betting-probability-segment-1')),
+    );
+    final awaySegment = tester.getRect(
+      find.byKey(const ValueKey('betting-probability-segment-2')),
+    );
+    final homePercentage = tester.getRect(find.text('97.8%'));
+    final drawPercentage = tester.getRect(find.text('1.1%').first);
+    final awayPercentage = tester.getRect(find.text('1.1%').last);
+    final drawLabel = tester.getRect(
+      find.byKey(const ValueKey('betting-outcome-label-1')),
+    );
+
+    expect(drawSegment.width, closeTo(awaySegment.width, .1));
+    expect(drawPercentage.center.dx, closeTo(drawSegment.center.dx, .1));
+    expect(awayPercentage.center.dx, closeTo(awaySegment.center.dx, .1));
+    expect(drawPercentage.left - drawSegment.left,
+        closeTo(drawSegment.right - drawPercentage.right, .1));
+    expect(awayPercentage.left - awaySegment.left,
+        closeTo(awaySegment.right - awayPercentage.right, .1));
+    expect(homePercentage.left - homeSegment.left, closeTo(8, .1));
+    expect(awaySegment.right - awayPercentage.right, closeTo(8, .1));
+    expect(
+      homePercentage.left - homeSegment.left,
+      closeTo(awaySegment.right - awayPercentage.right, .1),
+    );
+    expect(drawPercentage.left - drawSegment.left, greaterThanOrEqualTo(8));
+    expect(awayPercentage.left - awaySegment.left, greaterThanOrEqualTo(8));
+    expect(drawLabel.center.dx, closeTo(drawSegment.center.dx, .1));
+    expect(find.byType(SingleChildScrollView), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('responsive WDL odds keep the multiplication sign visible',
+      (tester) async {
+    final teams = MockTeamRepository();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 313,
+            child: MatchStatsHeader(
+              homeTeam: teams.requireById(83),
+              awayTeam: teams.requireById(676),
+              options: const [
+                BettingOption(
+                  outcome: BetOutcome.homeWin,
+                  probabilityText: '0.978',
+                  decimalOdds: 1.022494887526,
+                ),
+                BettingOption(
+                  outcome: BetOutcome.draw,
+                  probabilityText: '0.011',
+                  decimalOdds: 90.909090909091,
+                ),
+                BettingOption(
+                  outcome: BetOutcome.awayWin,
+                  probabilityText: '0.011',
+                  decimalOdds: 90.909090909091,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('1.0×'), findsOneWidget);
+    expect(find.text('90.9×'), findsNWidgets(2));
+    final fontSizes = <double>[];
+    for (var index = 0; index < 3; index++) {
+      final box = find.byKey(ValueKey('match-betting-odds-box-$index'));
+      final text = find.descendant(of: box, matching: find.byType(Text));
+      final boxRect = tester.getRect(box);
+      final textRect = tester.getRect(text);
+      fontSizes.add(tester.widget<Text>(text).style!.fontSize!);
+      expect(textRect.left, greaterThanOrEqualTo(boxRect.left + 8));
+      expect(textRect.right, lessThanOrEqualTo(boxRect.right - 8));
+    }
+    expect(fontSizes.toSet().length, 1);
     expect(tester.takeException(), isNull);
   });
 
@@ -127,6 +203,14 @@ void main() {
     await tester.tap(find.text('CONTINUE'));
     await tester.pumpAndSettle();
     expect(find.text('75'), findsOneWidget);
+    expect(
+      tester
+          .widget<IconButton>(find.byKey(const ValueKey('bet-decrease')))
+          .style
+          ?.side
+          ?.resolve({})?.width,
+      2,
+    );
     await tester.ensureVisible(find.byKey(const ValueKey('bet-decrease')));
     await tester.tap(find.byKey(const ValueKey('bet-decrease')));
     await tester.pump();
@@ -149,15 +233,52 @@ void main() {
             .widget<IconButton>(find.byKey(const ValueKey('bet-decrease')))
             .onPressed,
         isNull);
-    await tester.ensureVisible(find.text('CHANGE PICK'));
-    await tester.tap(find.text('CHANGE PICK'));
+    await tester.ensureVisible(find.byKey(const ValueKey('bet-flow-back')));
+    await tester.tap(find.byKey(const ValueKey('bet-flow-back')));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('CONTINUE'));
     await tester.tap(find.text('CONTINUE'));
     await tester.pumpAndSettle();
     expect(find.text('25'), findsOneWidget);
-    expect(find.text('If correct: +225 pts'), findsOneWidget);
+    expect(
+      find.textContaining('225', findRichText: true),
+      findsOneWidget,
+    );
+    expect(find.text('Your estimated win'), findsOneWidget);
     expect(repository.saveCalls, 0);
+    await tester.pumpWidget(const SizedBox.shrink());
+    controller.dispose();
+  });
+
+  testWidgets('uses the localized point unit throughout the amount flow',
+      (tester) async {
+    final repository = FakeBettingRepository();
+    final controller = BettingController(fixtureId: 1, repository: repository);
+    await controller.load();
+    final teams = MockTeamRepository();
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('ko'),
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
+      home: Scaffold(
+        body: MatchBettingSection(
+          controller: controller,
+          homeTeam: teams.requireById(6),
+          awayTeam: teams.requireById(14),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('예측하기'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(ListTile).first);
+    await tester.pump();
+    await tester.tap(find.text('계속하기'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('사용할 포인트'), findsOneWidget);
+    expect(find.textContaining('포인트', findRichText: true), findsWidgets);
+    expect(find.textContaining('pts', findRichText: true), findsNothing);
+    expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
   });
@@ -335,6 +456,40 @@ void main() {
           expect(bar.values, drawAllowed ? [0.6, 0.1, 0.3] : [0.8, 0, 0.2]);
         }
         final statsHeader = find.byType(MatchStatsHeader);
+        final oddsBoxes = [
+          for (var index = 0; index < (drawAllowed ? 3 : 2); index++)
+            find.descendant(
+              of: statsHeader,
+              matching: find.byKey(
+                ValueKey('match-betting-odds-box-$index'),
+              ),
+            ),
+        ];
+        final oddsBoxWidths =
+            oddsBoxes.map(tester.getSize).map((size) => size.width);
+        expect(oddsBoxWidths.toSet().length, 1);
+        final oddsFontSizes = <double>[];
+        for (final oddsBox in oddsBoxes) {
+          final container = tester.widget<Container>(oddsBox);
+          final decoration = container.decoration! as BoxDecoration;
+          final oddsText = tester.widget<Text>(
+            find.descendant(of: oddsBox, matching: find.byType(Text)),
+          );
+          expect(tester.getSize(oddsBox).height, 32);
+          expect(
+            container.padding,
+            const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          );
+          expect(container.alignment, Alignment.center);
+          expect(decoration.color, AppPalette.black);
+          expect(decoration.borderRadius, BorderRadius.circular(4));
+          oddsFontSizes.add(oddsText.style!.fontSize!);
+          expect(oddsText.style?.fontWeight, FontWeight.w700);
+          expect(oddsText.textAlign, TextAlign.center);
+        }
+        expect(oddsFontSizes.toSet().length, 1);
+        expect(
+            oddsFontSizes.first, lessThanOrEqualTo(Heading4.style.fontSize!));
         final headerBar = tester.getRect(find.descendant(
           of: statsHeader,
           matching: find.byKey(
@@ -411,6 +566,19 @@ void main() {
         await tester.tap(find.text('PLACE A BET'));
         await tester.pumpAndSettle();
         expect(find.byType(ListTile), findsNWidgets(drawAllowed ? 3 : 2));
+        for (final tile in tester.widgetList<ListTile>(find.byType(ListTile))) {
+          expect(tile.subtitle, isNull);
+          expect((tile.title! as Text).style?.fontWeight, FontWeight.w700);
+        }
+        final headerTitle = tester.getRect(find.text('Bets'));
+        final backButton = tester.getRect(
+          find.byKey(const ValueKey('bet-flow-back')),
+        );
+        final closeButton = tester.getRect(
+          find.byKey(const ValueKey('bet-flow-close')),
+        );
+        expect(headerTitle.center.dy, closeTo(backButton.center.dy, .1));
+        expect(headerTitle.center.dy, closeTo(closeButton.center.dy, .1));
         if (drawAllowed) {
           final drawHomeLogo = tester.getRect(
             find.byKey(const ValueKey('match-betting-draw-home-logo')),
@@ -460,26 +628,66 @@ void main() {
         await tester.ensureVisible(find.text('CONTINUE'));
         await tester.tap(find.text('CONTINUE'));
         await tester.pumpAndSettle();
-        expect(find.text('If correct: +$profit pts'), findsOneWidget);
+        expect(
+          find.textContaining('$profit', findRichText: true),
+          findsOneWidget,
+        );
+        expect(find.text('Your estimated win'), findsOneWidget);
+        final amountInput = tester.getRect(
+          find.byKey(const ValueKey('match-betting-amount-input')),
+        );
+        expect(tester.getRect(find.text('You’re betting')).left,
+            closeTo(amountInput.left, .1));
+        expect(tester.getRect(find.text('You can use up to 1,000 pts!')).left,
+            closeTo(amountInput.left, .1));
+        await tester.ensureVisible(find.text('CONTINUE'));
+        await tester.tap(find.text('CONTINUE'));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('bet-review-amount')), findsOneWidget);
+        expect(find.byKey(const ValueKey('bet-decrease')), findsNothing);
+        final flowHeader = tester.getRect(
+          find.byKey(const ValueKey('bet-flow-header')),
+        );
+        final reviewPrompt = tester.getRect(
+          find.text('You’re about to place a bet of'),
+        );
+        final reviewAmount = tester.getRect(
+          find.byKey(const ValueKey('bet-review-amount')),
+        );
+        final reviewQuestion = tester.getRect(
+          find.text('Would you like to proceed?'),
+        );
+        expect(reviewPrompt.top - flowHeader.bottom, closeTo(32, .1));
+        expect(reviewAmount.top - reviewPrompt.bottom, closeTo(16, .1));
+        expect(reviewQuestion.top - reviewAmount.bottom, closeTo(16, .1));
+        expect(repository.saveCalls, 0);
+        await tester.tap(find.byKey(const ValueKey('bet-flow-back')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('bet-decrease')), findsOneWidget);
+        await tester.ensureVisible(find.text('CONTINUE'));
+        await tester.tap(find.text('CONTINUE'));
+        await tester.pumpAndSettle();
         repository.submitGate = Completer<void>();
         await tester.ensureVisible(find.text('CONFIRM BET'));
         await tester.tap(find.text('CONFIRM BET'));
         await tester.pump();
         expect(find.text('Bet Submitted!'), findsNothing);
         expect(repository.saveCalls, 1);
-        for (final key in ['bet-decrease', 'bet-increase']) {
-          expect(
-            tester.widget<IconButton>(find.byKey(ValueKey(key))).onPressed,
-            isNull,
-          );
-        }
+        expect(find.byKey(const ValueKey('bet-decrease')), findsNothing);
+        expect(find.byKey(const ValueKey('bet-increase')), findsNothing);
         repository.submitGate!.complete();
         await tester.pumpAndSettle();
         expect(find.text('Bet Submitted!'), findsOneWidget);
+        expect(find.byKey(const ValueKey('bet-flow-back')), findsNothing);
+        expect(
+            tester.widget<Icon>(find.byIcon(Icons.check_circle_outline)).size,
+            56);
         await tester.tap(find.text('DONE'));
         await tester.pumpAndSettle();
-        expect(find.text('You’ve got 900 pts!'), findsOneWidget);
-        expect(find.text('EDIT BET'), findsOneWidget);
+        expect(find.text('You’ve got 900 pts!'), findsNothing);
+        expect(find.text('You’ve already placed a bet.'), findsOneWidget);
+        expect(find.text('EDIT MY BET'), findsOneWidget);
+        expect(find.text('CANCEL BET'), findsNothing);
         expect(repository.bet!.outcome, outcome);
         expect(repository.bet!.potentialReturn, profit + 100);
         final participationBar = find
@@ -503,8 +711,8 @@ void main() {
                 of: participationBar,
                 matching: find.byIcon(Icons.check_circle)),
             findsOneWidget);
-        await tester.ensureVisible(find.text('EDIT BET'));
-        await tester.tap(find.text('EDIT BET'));
+        await tester.ensureVisible(find.text('EDIT MY BET'));
+        await tester.tap(find.text('EDIT MY BET'));
         await tester.pumpAndSettle();
         await tester.ensureVisible(find.text('CONTINUE'));
         await tester.tap(find.text('CONTINUE'));
@@ -512,20 +720,17 @@ void main() {
         await tester.ensureVisible(find.byKey(const ValueKey('bet-increase')));
         await tester.tap(find.byKey(const ValueKey('bet-increase')));
         await tester.pump();
+        await tester.ensureVisible(find.text('CONTINUE'));
+        await tester.tap(find.text('CONTINUE'));
+        await tester.pumpAndSettle();
         await tester.ensureVisible(find.text('CONFIRM BET'));
         await tester.tap(find.text('CONFIRM BET'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('DONE'));
         await tester.pumpAndSettle();
-        expect(find.text('You’ve got 890 pts!'), findsOneWidget);
-        await tester.ensureVisible(find.text('CANCEL BET'));
-        await tester.tap(find.text('CANCEL BET'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.widgetWithText(TextButton, 'CANCEL BET').last);
-        await tester.pumpAndSettle();
-        expect(find.text('You’ve got 1000 pts!'), findsOneWidget);
-        expect(find.text('No bets yet.'), findsOneWidget);
-        expect(noBetsBar, findsOneWidget);
+        expect(find.text('You’ve got 890 pts!'), findsNothing);
+        expect(find.text('You’ve already placed a bet.'), findsOneWidget);
+        expect(find.text('EDIT MY BET'), findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
         controller.dispose();
