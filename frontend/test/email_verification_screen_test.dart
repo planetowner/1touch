@@ -42,9 +42,11 @@ void main() {
         tester.view.physicalSize = const Size(393, 852);
         tester.view.devicePixelRatio = 1;
         tester.view.padding = const FakeViewPadding(top: 59, bottom: 34);
+        tester.view.viewPadding = const FakeViewPadding(top: 59, bottom: 34);
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
         addTearDown(tester.view.resetPadding);
+        addTearDown(tester.view.resetViewPadding);
         final previousLocale = appLocaleController.value;
         appLocaleController.value = locale;
         addTearDown(() => appLocaleController.value = previousLocale);
@@ -106,7 +108,7 @@ void main() {
         expect(textRect('Username').top, 131);
         expect(
             tester.getRect(find.byKey(const ValueKey('email-sign-up-button'))),
-            const Rect.fromLTWH(24, 724, 345, 56));
+            const Rect.fromLTWH(24, 762, 345, 56));
         final backIcon = find.byWidgetPredicate((widget) =>
             widget is SvgPicture &&
             (widget.bytesLoader as SvgAssetLoader).assetName ==
@@ -212,9 +214,9 @@ void main() {
     }
   }
 
-  testWidgets('signup terms and button stay fixed while fields scroll',
+  testWidgets('signup terms and button scroll after the input fields',
       (tester) async {
-    tester.view.physicalSize = const Size(393, 650);
+    tester.view.physicalSize = const Size(393, 568);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -232,14 +234,74 @@ void main() {
         const Offset(0, -300));
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(username).dy, lessThan(usernameTop));
-    expect(tester.getTopLeft(checkbox).dy, checkboxTop);
-    expect(tester.getTopLeft(button).dy, buttonTop);
+    expect(tester.getTopLeft(checkbox).dy, lessThan(checkboxTop));
+    expect(tester.getTopLeft(button).dy, lessThan(buttonTop));
+
+    final scrolledCheckboxTop = tester.getTopLeft(checkbox).dy;
+    final scrolledButtonTop = tester.getTopLeft(button).dy;
 
     tester.view.viewInsets = const FakeViewPadding(bottom: 280);
     await tester.pumpAndSettle();
-    expect(tester.getBottomRight(button).dy, lessThanOrEqualTo(370));
+    expect(tester.getTopLeft(checkbox).dy, scrolledCheckboxTop);
+    expect(tester.getTopLeft(button).dy, scrolledButtonTop);
+    expect(
+        tester
+            .widget<SingleChildScrollView>(
+                find.byKey(const ValueKey('signup-fields-scroll')))
+            .padding,
+        const EdgeInsets.fromLTRB(24, 0, 24, 280));
     expect(tester.takeException(), isNull);
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('signup consent appears after scrolling with keyboard at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      await tester.pumpWidget(const MaterialApp(home: EmailSignUpScreen()));
+      await tester.pumpAndSettle();
+
+      final checkbox = find.byType(Checkbox);
+      final button = find.byKey(const ValueKey('email-sign-up-button'));
+      final checkboxBefore = tester.getRect(checkbox);
+      final buttonBefore = tester.getRect(button);
+      await tester.tap(find.byKey(const ValueKey('signup-username-field')));
+      tester.view.viewInsets = const FakeViewPadding(bottom: 280);
+      await tester.pumpAndSettle();
+
+      expect(
+          tester
+              .widget<Scaffold>(find.byType(Scaffold))
+              .resizeToAvoidBottomInset,
+          isFalse);
+      expect(tester.getRect(checkbox), checkboxBefore);
+      expect(tester.getRect(button), buttonBefore);
+      expect(tester.getRect(checkbox).top,
+          greaterThanOrEqualTo(size.height - 280));
+
+      final scroll = tester.state<ScrollableState>(find
+          .descendant(
+            of: find.byKey(const ValueKey('signup-fields-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first);
+      scroll.position.jumpTo(scroll.position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      expect(tester.getRect(checkbox).top, lessThan(size.height - 280));
+      expect(
+          tester.getRect(button).bottom, lessThanOrEqualTo(size.height - 280));
+      expect(
+          tester.getRect(checkbox).top,
+          greaterThan(tester
+              .getRect(
+                  find.byKey(const ValueKey('signup-confirm-password-field')))
+              .bottom));
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   for (final field in RegistrationField.values) {
     testWidgets('blocks duplicate $field and rechecks its edited value',

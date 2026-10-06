@@ -141,9 +141,11 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     final colors = Theme.of(context).colorScheme;
     final bodyStyle = AuthStyles.signupTextStyle(Body1.style);
     final labelStyle = AuthStyles.signupTextStyle(Eyebrow.style);
+    final bottomSafeInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: AuthStyles.background(context),
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         toolbarHeight: 24,
         leadingWidth: 56,
@@ -178,17 +180,21 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         title: Text(tr(context, 'Sign up'), style: bodyStyle),
       ),
       body: SafeArea(
-        // Figma의 하단 72에는 기기 안전 영역도 포함돼요.
-        minimum: const EdgeInsets.only(bottom: 72),
-        child: Column(
-          children: [
-            Expanded(
-              child: Form(
-                key: _formKey,
-                onChanged: () => setState(() {}),
-                child: SingleChildScrollView(
-                  key: const ValueKey('signup-fields-scroll'),
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+        bottom: false,
+        child: Form(
+          key: _formKey,
+          onChanged: () => setState(() {}),
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              key: const ValueKey('signup-fields-scroll'),
+              padding: EdgeInsets.fromLTRB(24, 0, 24,
+                  bottomSafeInset + MediaQuery.viewInsetsOf(context).bottom),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight > bottomSafeInset
+                        ? constraints.maxHeight - bottomSafeInset
+                        : 0.0),
+                child: IntrinsicHeight(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -296,70 +302,73 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         style: bodyStyle,
                       ),
                       const SizedBox(height: 24),
+                      const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.zero,
+                              alignment: Alignment.topLeft,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: Checkbox(
+                                      value: _agreed,
+                                      onChanged: (v) =>
+                                          setState(() => _agreed = v ?? false),
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(4)),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      tr(
+                                              context,
+                                              "By clicking sign up, I hereby agree and consent to\n"
+                                              "1touch’s Terms & Conditions; I confirm that I have\n"
+                                              "read 1touch’s Privacy Policy.")
+                                          .replaceAll('\n', ' '),
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Body2.style,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            AuthPrimaryButton(
+                              buttonKey: const ValueKey('email-sign-up-button'),
+                              label: trUpper(context, 'Sign up'),
+                              textStyle:
+                                  AuthStyles.signupTextStyle(Body2_b.style),
+                              loading: _submitting,
+                              onPressed: _submitting ||
+                                      (_validInputs &&
+                                          _availableFields.length !=
+                                              RegistrationField.values.length)
+                                  ? null
+                                  : _submit,
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.zero,
-                    alignment: Alignment.topLeft,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: Checkbox(
-                            value: _agreed,
-                            onChanged: (v) =>
-                                setState(() => _agreed = v ?? false),
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4)),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                            tr(
-                                    context,
-                                    "By clicking sign up, I hereby agree and consent to\n"
-                                    "1touch’s Terms & Conditions; I confirm that I have\n"
-                                    "read 1touch’s Privacy Policy.")
-                                .replaceAll('\n', ' '),
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: Body2.style,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  AuthPrimaryButton(
-                    buttonKey: const ValueKey('email-sign-up-button'),
-                    label: trUpper(context, 'Sign up'),
-                    textStyle: AuthStyles.signupTextStyle(Body2_b.style),
-                    loading: _submitting,
-                    onPressed: _submitting ||
-                            (_validInputs &&
-                                _availableFields.length !=
-                                    RegistrationField.values.length)
-                        ? null
-                        : _submit,
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
