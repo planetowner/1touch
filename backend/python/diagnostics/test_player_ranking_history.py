@@ -72,6 +72,12 @@ class RankingHistoryTests(unittest.TestCase):
         self.db.row_factory = sqlite3.Row
         self.addCleanup(self.db.close)
         self.db.executescript('''
+            CREATE TABLE players (player_id INTEGER PRIMARY KEY,position_id INTEGER);
+            CREATE TABLE positions (position_id INTEGER PRIMARY KEY,position_group_id INTEGER);
+            CREATE TABLE team_squad_members (player_id INTEGER,team_id INTEGER,season_id INTEGER,position_group_id INTEGER);
+            INSERT INTO positions VALUES (156,27),(150,26);
+            INSERT INTO players VALUES (1,156),(2,150);
+            INSERT INTO team_squad_members VALUES (1,10,82026,27),(2,10,82026,26);
             CREATE TABLE competitions (competition_id INTEGER PRIMARY KEY);
             INSERT INTO competitions VALUES (8),(82),(301),(384),(564),(24);
             CREATE TABLE seasons (season_id INTEGER PRIMARY KEY,competition_id INTEGER,name TEXT,is_current INTEGER);
@@ -152,10 +158,13 @@ class RankingHistoryTests(unittest.TestCase):
         self.assertEqual(again['status'], 'unchanged')
         self.assertEqual(self.changes('2026-09-22T00:01:00Z')['previous_observed_at'], '2026-09-21T23:00:00+00:00')
 
-    def test_cup_position_change_keeps_the_prior_days_position(self):
+    def test_squad_position_change_keeps_the_prior_days_position(self):
         self.capture('2026-09-21T12:00:00Z')
         self.add_appearance(3, 1, 26, stage=2)
         self.add_appearance(4, 1, 26, stage=2)
+        self.db.execute('UPDATE players SET position_id=150 WHERE player_id=1')
+        self.assertEqual(self.changes('2026-09-22T10:00:00Z', position='FW')['items'][0]['player_id'], 1)
+        self.db.execute('UPDATE team_squad_members SET position_group_id=26 WHERE player_id=1')
         self.capture('2026-09-22T12:00:00Z')
         result = self.changes('2026-09-22T12:01:00Z', position='MF')['items']
         self.assertEqual(result[0]['movement'], 'new')

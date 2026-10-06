@@ -935,7 +935,7 @@ void main() {
     expect(find.byKey(const ValueKey('app-info-popup')), findsOneWidget);
     expect(
       find.text(
-          'Top 3 stats where the player ranks best in the league. The displayed stats will only reflect good performance.'),
+          'The 3 stats with the highest ranks among players in the same position in the selected league and season.'),
       findsOneWidget,
     );
     await tester.tapAt(const Offset(8, 8));

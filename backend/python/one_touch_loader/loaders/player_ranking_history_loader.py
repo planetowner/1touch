@@ -7,7 +7,7 @@ from pathlib import Path
 
 from ..core.cup_betting import utc_datetime
 from ..core.player_rank_changes import compare_rankings, ranking_fingerprint
-from ..core.player_ranking import season_player_positions
+from ..core.player_positions import season_player_positions
 from ..core.player_rating_percentile import RATING_COMPETITION_IDS
 
 

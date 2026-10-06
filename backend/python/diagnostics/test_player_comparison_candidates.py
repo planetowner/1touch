@@ -1,5 +1,4 @@
 """비교 후보는 포지션을 먼저 거르고, 선수 수와 무관하게 묶어서 조회해요."""
-from datetime import datetime
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -17,9 +16,8 @@ def candidate(pid):
     return dict(player_id=pid, name=f'Player {pid:03}', image=None)
 
 
-def appearance(pid, position, *, minutes=90, day=1):
-    return dict(player_id=pid, match_position_id=position, minutes_played=minutes,
-                starting_at=datetime(2026, 9, day), state_id=5)
+def source_position(pid, position):
+    return dict(player_id=pid,team_id=8,position_group_id=position)
 
 
 class ComparisonCandidatesTests(unittest.TestCase):
@@ -43,8 +41,8 @@ class ComparisonCandidatesTests(unittest.TestCase):
 
     def test_filters_before_pagination_even_beyond_the_old_hundred_candidate_limit(self):
         candidates = [candidate(pid) for pid in range(1, 126)]
-        matches = [appearance(pid, 25 if pid <= 100 else 27) for pid in range(1, 126)]
-        first, cur, teams = self.page(candidates, matches, position='FW', excluded_id=102, limit=20)
+        positions = [source_position(pid, 25 if pid <= 100 else 27) for pid in range(1, 126)]
+        first, cur, teams = self.page(candidates, positions, position='FW', excluded_id=102, limit=20)
         expected = [pid for pid in range(101, 122) if pid != 102]
         self.assertEqual([r['player_id'] for r in first['players']], expected)
         self.assertEqual(first['total'], 24)
@@ -52,21 +50,19 @@ class ComparisonCandidatesTests(unittest.TestCase):
         self.assertEqual(first['players'][0]['jersey_number'], 9)
         self.assertEqual(teams.call_args.args[1], expected)
         self.assertEqual(cur.execute.call_count, 2)
-        second, _, _ = self.page(candidates, matches, position='FW', excluded_id=102, limit=20, offset=20)
+        second, _, _ = self.page(candidates, positions, position='FW', excluded_id=102, limit=20, offset=20)
         self.assertEqual([r['player_id'] for r in second['players']], [122, 123, 124, 125])
         self.assertEqual(second['total'], 24)
 
-    def test_uses_shared_season_position_rule_and_preserves_unknown_positions(self):
-        matches = [appearance(1, 25, minutes=90), appearance(1, 27, minutes=5),
-                   appearance(1, 27, minutes=5, day=2), appearance(2, 26, minutes=20),
-                   appearance(2, 27, minutes=90)]
-        result, _, _ = self.page([candidate(pid) for pid in [1, 2, 3]], matches)
-        self.assertEqual([row['position_group'] for row in result['players']], ['FW', 'FW', None])
-        filtered, _, _ = self.page([candidate(pid) for pid in [1, 2, 3]], matches, position='FW')
-        self.assertEqual([row['player_id'] for row in filtered['players']], [1, 2])
+    def test_uses_provider_positions_without_requiring_appearances(self):
+        positions = [source_position(1, 27), source_position(2, 26), source_position(3, None)]
+        result, _, _ = self.page([candidate(pid) for pid in [1, 2, 3]], positions)
+        self.assertEqual([row['position_group'] for row in result['players']], ['FW', 'MF', None])
+        filtered, _, _ = self.page([candidate(pid) for pid in [1, 2, 3]], positions, position='FW')
+        self.assertEqual([row['player_id'] for row in filtered['players']], [1])
 
     def test_out_of_range_page_has_total_but_no_team_ids_to_load(self):
-        result, _, teams = self.page([candidate(1)], [appearance(1, 27)], limit=20, offset=20)
+        result, _, teams = self.page([candidate(1)], [source_position(1, 27)], limit=20, offset=20)
         self.assertEqual(result['players'], [])
         self.assertEqual(result['total'], 1)
         self.assertEqual(teams.call_args.args[1], [])

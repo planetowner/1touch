@@ -5,6 +5,7 @@ from collections import defaultdict
 from math import ceil
 
 from .fixture_states import COMPLETED_STATE_IDS
+from .player_membership import team_for_appearances
 from .player_match_metrics import (
     CATEGORIES, METRICS, POSITION_GROUPS, SUMMARY_METRICS, build_categories, build_metric,
     normalize_player_counts,
@@ -20,26 +21,7 @@ def minimum_reference_minutes(completed_matches: int, team_count: int) -> int:
 
 
 def current_player_team(roster: list[dict], current_matches: list[dict]) -> dict | None:
-    current_roster = [r for r in roster if r["is_current"]]
-    team = current_roster[0] if current_roster else None
-    # 이적 기록이 여러 개면 현재 시즌에 가장 최근에 출전한 팀을 우선해요.
-    if len(current_roster) > 1 and current_matches:
-        latest_team = max(current_matches, key=lambda r: r["starting_at"])["team_id"]
-        team = next((r for r in current_roster if r["team_id"] == latest_team), team)
-    return team
-
-
-def dominant_position(matches: list[dict]) -> int | None:
-    positions = defaultdict(lambda: [0, 0, ""])
-    for row in matches:
-        position = row["match_position_id"]
-        if position in POSITION_GROUPS and row["state_id"] in COMPLETED_STATE_IDS:
-            item = positions[position]
-            item[0] += 1
-            item[1] += row["minutes_played"] or 0
-            item[2] = max(item[2], str(row["starting_at"]))
-    # 출전 횟수가 같으면 출전 시간, 최근 출전 순으로 결정해요.
-    return max(positions, key=lambda p: (*positions[p], -p)) if positions else None
+    return team_for_appearances([r for r in roster if r['is_current']], current_matches)
 
 
 def result_for(row: dict) -> str | None:

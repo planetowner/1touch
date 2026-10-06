@@ -44,7 +44,7 @@ METRICS = {
     "dribbles": ("Successful dribbles / attempts", "pair", (109, 108)),
 }
 
-# Overview와 Matches는 경기별 포지션 대신 이번 시즌 최다 출전 포지션을 사용해요.
+# 개인 화면은 선택한 시즌의 Sportmonks 원본 포지션으로 표시 지표를 골라요.
 SUMMARY_METRICS = {
     24: ("saves", "long_balls_won", "accurate_passes"),
     25: ("tackles", "interceptions", "duels_won"),

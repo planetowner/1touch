@@ -18,23 +18,21 @@ def get_team_contracts(team_id: int, season_id: int, *, descending: bool = False
     # 남은 기간은 같은 기준일에서 종료일 순서와 같아요. NULL은 양쪽 정렬 모두 마지막이에요.
     direction = "DESC" if descending else "ASC"
     order_by = f"(c.end_date IS NULL), c.end_date {direction}, sm.player_id" if is_current else "sm.player_id"
-    # 계산값이 없는 선수는 명단의 원본 포지션을 그대로 보여줘요.
     # 계약 이력은 저장하지 않아서 과거 시즌에는 현재 계약을 붙이거나 계약순으로 정렬하지 않아요.
     rows = fetch_all_dict(f"""
         SELECT sm.player_id, p.display_name AS player_name, p.image_path AS player_image,
-               COALESCE(sp.position_group_id,sm.position_group_id) AS position_group_id,
+               sm.position_group_id,
                sm.jersey_number, p.date_of_birth,
                w.estimated_weekly_gross_eur,
                c.start_date, c.end_date
         FROM team_squad_members sm
         JOIN players p ON p.player_id=sm.player_id
-        LEFT JOIN player_season_positions sp ON sp.player_id=sm.player_id AND sp.season_name=%s
         LEFT JOIN player_contracts c ON c.team_id=sm.team_id AND c.player_id=sm.player_id AND %s=1
         LEFT JOIN player_wages w ON w.team_id=sm.team_id AND w.season_id=sm.season_id
                                AND w.player_id=sm.player_id
         WHERE sm.team_id=%s AND sm.season_id=%s
         ORDER BY {order_by}
-    """, (season["name"], is_current, team_id, season_id))
+    """, (is_current, team_id, season_id))
     leadership = fetch_all_dict("""
         SELECT a.player_id, p.display_name AS player_name, a.leadership_role
         FROM team_leadership_assignments a

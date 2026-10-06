@@ -213,6 +213,10 @@ class SnapshotRepositoryTests(unittest.TestCase):
         self.addCleanup(self.db.close)
         self.db.executescript("""
           PRAGMA journal_mode=WAL;
+          CREATE TABLE players (player_id INTEGER PRIMARY KEY,position_id INTEGER);
+          CREATE TABLE positions (position_id INTEGER PRIMARY KEY,position_group_id INTEGER);
+          INSERT INTO positions VALUES (148,25),(150,26);
+          INSERT INTO players VALUES (1,148),(2,148),(3,148);
           CREATE TABLE seasons (season_id INTEGER PRIMARY KEY,competition_id INTEGER,name TEXT,is_current INTEGER);
           CREATE TABLE team_squad_members (player_id INTEGER,team_id INTEGER,season_id INTEGER,position_group_id INTEGER,squad_role TEXT);
           CREATE INDEX squad_player ON team_squad_members(player_id);
@@ -381,6 +385,7 @@ class SnapshotRepositoryTests(unittest.TestCase):
         self.assertEqual(self.writes, [])
         loader.refresh(apply=True)
         old = self.metadata()
+        self.change("UPDATE players SET position_id=150 WHERE player_id=1")
         self.dates.now.return_value += timedelta(minutes=1)
         with patch.object(
             loader, "build_snapshot", side_effect=AssertionError("Unexpected training")
@@ -529,6 +534,7 @@ class SnapshotRepositoryTests(unittest.TestCase):
 
     def test_readiness_checks_complete_snapshot_and_measures_actual_repository(self):
         for index, competition in enumerate((82, 301, 384, 564), 11):
+            self.db.execute("INSERT INTO players VALUES (?,148)", (index,))
             self.db.execute(
                 "INSERT INTO seasons VALUES (?, ?, ?, 1)",
                 (index, competition, "2026/2027"),

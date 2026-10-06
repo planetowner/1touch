@@ -18,6 +18,7 @@ class CombinedRefreshTests(unittest.TestCase):
         self.client = Mock()
         self.client.iter_transfers_by_team.return_value = []
         self.client.get_team_squad.side_effect = lambda team: deepcopy(self.squads[team])
+        self.client.get_team_season_squad.side_effect = lambda team, season: deepcopy(self.squads[team])
         self.client.get_player_or_none.side_effect = lambda player: dict(
             id=player, display_name=f'Direct {player}', name=f'Player {player}', detailed_position_id=24)
         self.calls = []
@@ -49,6 +50,7 @@ class CombinedRefreshTests(unittest.TestCase):
         self.assertEqual([row[1] for row in self.saved], ['Direct 8', 'Direct 9'])
         self.assertEqual(self.client.iter_transfers_by_team.call_count, 2)
         self.assertEqual(self.client.get_team_squad.call_count, 2)
+        self.assertEqual(self.client.get_team_season_squad.call_count, 2)
         self.assertEqual(self.client.get_player_or_none.call_count, 2)
         self.assertEqual(result['stored_squad_members'], 2)
 
