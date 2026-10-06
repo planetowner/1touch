@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/services/mobile_ads_service.dart';
 // import 'package:go_router/go_router.dart';
 
 class AboutPage extends StatefulWidget {
@@ -12,6 +13,21 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
+  bool _showingPrivacyOptions = false;
+
+  Future<void> _showPrivacyOptions() async {
+    setState(() => _showingPrivacyOptions = true);
+    final success = await MobileAdsService.showPrivacyOptions();
+    if (!mounted) return;
+    setState(() => _showingPrivacyOptions = false);
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(tr(context,
+            'Unable to open ad privacy choices. Please try again.')),
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,6 +89,20 @@ class _AboutPageState extends State<AboutPage> {
                       // TODO: Navigate or show dialog
                     }),
                     _buildDivider(),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: MobileAdsService.privacyOptionsRequired,
+                      builder: (context, required, _) => required
+                          ? Column(children: [
+                              _buildListItem(
+                                  context,
+                                  tr(context, 'Ad privacy choices'),
+                                  _showingPrivacyOptions
+                                      ? null
+                                      : _showPrivacyOptions),
+                              _buildDivider(),
+                            ])
+                          : const SizedBox.shrink(),
+                    ),
                   ],
                 ))
               ],
@@ -84,7 +114,7 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   Widget _buildListItem(
-      BuildContext context, String title, VoidCallback onTap) {
+      BuildContext context, String title, VoidCallback? onTap) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(tr(context, title), style: Body1.style),

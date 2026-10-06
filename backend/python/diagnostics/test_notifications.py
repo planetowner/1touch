@@ -191,6 +191,9 @@ class SqliteCursor:
         sql = sql.replace('ON DUPLICATE KEY UPDATE', 'ON CONFLICT DO UPDATE SET')
         sql = re.sub(r'VALUES\((\w+)\)', r'excluded.\1', sql)
         sql = sql.replace('LEFT(c.body,60)', 'SUBSTR(c.body,1,60)')
+        # SQLite 기본 빌드에는 DELETE LIMIT이 없어 같은 행 선택을 하위 조회로 표현해요.
+        sql = re.sub(r'^DELETE FROM (\w+) WHERE (.+) LIMIT \?$',
+                     r'DELETE FROM \1 WHERE rowid IN (SELECT rowid FROM \1 WHERE \2 LIMIT ?)', sql)
         return self.raw.execute(sql, params)
 
     def _row(self, row):

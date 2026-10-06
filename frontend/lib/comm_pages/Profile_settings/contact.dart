@@ -13,6 +13,8 @@ class ContactPage extends StatefulWidget {
 }
 
 class _ContactPageState extends State<ContactPage> {
+  static const _contactEmail = 'support@1touch.football';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,11 +64,11 @@ class _ContactPageState extends State<ContactPage> {
                       _buildLabel(tr(context, "EMAIL")),
                       const SizedBox(height: 16),
                       _buildValueRow(
-                        "contact@1touch.com",
+                        _contactEmail,
                         onTap: () => launchUrl(
                           Uri(
                             scheme: 'mailto',
-                            path: 'contact@1touch.com',
+                            path: _contactEmail,
                           ),
                           mode: LaunchMode.externalApplication,
                         ),
