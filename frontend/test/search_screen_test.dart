@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/comm_pages/Search.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/search/search_repository.dart';
 import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class _Context implements TeamCompetitionContextResolver {
@@ -86,6 +88,85 @@ Future<void> _query(WidgetTester tester, String text) async {
 }
 
 void main() {
+  for (final dark in [false, true]) {
+    testWidgets(
+        'upcoming search card follows the compact layout in ${dark ? 'dark' : 'light'} mode',
+        (tester) async {
+      final previousCompetitions = footballCatalog.competitions.value;
+      footballCatalog.competitions.value = const [
+        Competition(competitionId: 564, name: 'La Liga'),
+      ];
+      addTearDown(
+          () => footballCatalog.competitions.value = previousCompetitions);
+
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      tester.view.physicalSize = const Size(320, 568);
+
+      final repo = _Search();
+      await _pump(tester, repo, dark: dark);
+      await _query(tester, 'Chelsea');
+      repo.pending.single.complete(SearchResults(fixtures: [
+        Fixture(
+          fixtureId: 105,
+          seasonId: 1,
+          competitionId: 564,
+          homeTeamId: 18,
+          awayTeamId: 90,
+          homeTeamName: 'Chelsea',
+          awayTeamName: 'Athletic Club',
+          homeTeamShortName: 'CHE',
+          awayTeamShortName: 'ATH',
+          competitionType: CompetitionType.league,
+          status: FixtureStatus.upcoming,
+          roundName: '8',
+          startingAt: DateTime(2026, 10, 10, 16, 30).toIso8601String(),
+        ),
+        Fixture(
+          fixtureId: 106,
+          seasonId: 1,
+          competitionId: 564,
+          homeTeamId: 18,
+          awayTeamId: 90,
+          competitionType: CompetitionType.league,
+          status: FixtureStatus.past,
+          roundName: '7',
+          startingAt: DateTime(2026, 10, 3, 16, 30).toIso8601String(),
+          homeScore: 2,
+          awayScore: 1,
+        ),
+      ]));
+      await tester.pumpAndSettle();
+
+      final card = find.byKey(const ValueKey('search-event-105'));
+      expect(tester.getSize(card).height, 96);
+      expect(find.descendant(of: card, matching: find.text('CHE')),
+          findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('ATH')),
+          findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('Sat, Oct 10')),
+          findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('4:30 PM')),
+          findsOneWidget);
+      expect(
+          find.descendant(of: card, matching: find.text('LA LIGA · Round 8')),
+          findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('-')), findsNothing);
+      final pastCard = find.byKey(const ValueKey('search-event-106'));
+      expect(find.descendant(of: pastCard, matching: find.text('2')),
+          findsOneWidget);
+      expect(find.descendant(of: pastCard, matching: find.text('1')),
+          findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      tester.view.physicalSize = const Size(430, 932);
+      await tester.pumpAndSettle();
+      expect(tester.getSize(card).height, 96);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('Korean search fixtures use the shared match date format',
       (tester) async {
     final repo = _Search();
