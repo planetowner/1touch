@@ -13,11 +13,11 @@ from sklearn.model_selection import KFold
 from sklearn.preprocessing import SplineTransformer, StandardScaler
 from threadpoolctl import threadpool_limits
 
+from .player_indicator_grades import GRADE_LABELS
 from .player_rating_percentile import HistoricalPercentile
 
 
 FORM_MATCH_LIMIT = 5
-GRADE_LABELS = ("Very Poor", "Poor", "Fair", "Good")
 COST_MODEL_SEED = 20260920
 COST_WEIGHTS = np.asarray([.5, .5])
 
@@ -105,7 +105,7 @@ def _assign_form_grades(items: list[dict]) -> None:
         percentile = float(distribution.score(value["raw_score"]))
         band = min(int(percentile // 20), 4)
         value.update(percentile=percentile, band=band,
-                     grade=(*GRADE_LABELS, "Excellent")[band],
+                     grade=GRADE_LABELS[band],
                      reference_count=len(eligible), unavailable_reason=None)
 
 
@@ -209,7 +209,7 @@ def cost_effectiveness_scores(rows: list[dict], roster: list[dict]) -> dict[int,
                 band = _cost_band(float(score), q80, q95)
                 results[rows[index]["player_id"]] = {
                     "raw_score": float(score), "band": band,
-                    "grade": (*GRADE_LABELS, "Very Good")[band], "unavailable_reason": None,
+                    "grade": GRADE_LABELS[band], "unavailable_reason": None,
                     "expected_rating": float(expected[index, 0]),
                     "expected_minutes_share": float(expected[index, 1]),
                     "rating_sd": float(scales[0]), "minutes_share_sd": float(scales[1]),

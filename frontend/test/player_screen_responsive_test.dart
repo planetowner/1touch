@@ -17,6 +17,7 @@ import 'package:onetouch/screens/all_players_screen.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/anal.dart';
@@ -908,6 +909,37 @@ void main() {
     expect(ratingText.style?.fontWeight, FontWeight.w700);
     expect(ratingText.style?.height, 1.3);
     expect(ratingText.style?.color, app_style.AppPalette.white);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('competition stats put leagues before the shared calendar order',
+      (tester) async {
+    const inputIds = [27, 570, 2, 2286, 24, 5, 564, 8];
+    const expectedIds = [8, 564, 2, 5, 2286, 24, 570, 27];
+    final record =
+        playerDetailFromJson(playerDetailJson()).competitions.first.record;
+    final competitions = List<PlayerCompetitionRecord>.unmodifiable([
+      for (final id in inputIds)
+        (id: id, name: 'Competition $id', record: record),
+    ]);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: PlayerCompetitionTable(competitions: competitions),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    for (var index = 1; index < expectedIds.length; index++) {
+      final previous = find
+          .byKey(ValueKey('player-competition-row-${expectedIds[index - 1]}'));
+      final current =
+          find.byKey(ValueKey('player-competition-row-${expectedIds[index]}'));
+      expect(tester.getTopLeft(previous).dy,
+          lessThan(tester.getTopLeft(current).dy));
+    }
+    expect(competitions.map((competition) => competition.id), inputIds);
     expect(tester.takeException(), isNull);
   });
 

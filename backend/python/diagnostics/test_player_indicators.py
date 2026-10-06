@@ -3,6 +3,7 @@ from copy import deepcopy
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 import math
+import json
 import re
 from pathlib import Path
 import sqlite3
@@ -101,7 +102,7 @@ class IndicatorMathTests(unittest.TestCase):
         self.assertEqual(items[0]["form"]["percentile"], 20)
         self.assertEqual(items[0]["form"]["grade"], "Poor")
         self.assertEqual(items[0]["form"], items[1]["form"])
-        self.assertEqual(items[-1]["form"]["grade"], "Excellent")
+        self.assertEqual(items[-1]["form"]["grade"], "Very Good")
 
     def test_numeric_noise_does_not_split_ties(self):
         items = [{"form": {"raw_score": x}} for x in [7.1, 7.099999999999999]]
@@ -397,6 +398,35 @@ class SnapshotRepositoryTests(unittest.TestCase):
         self.assertEqual(new["as_of"], old["as_of"])
         self.assertEqual(new["calculated_at"], old["calculated_at"])
         self.assertGreater(new["checked_at"], old["checked_at"])
+
+    def test_saved_top_grade_uses_current_name_without_recalculation(self):
+        loader.refresh(apply=True)
+        saved = json.loads(self.db.execute(
+            "SELECT payload FROM player_indicator_snapshots WHERE player_id=1"
+        ).fetchone()["payload"])
+        for key, grade in (("form", "Excellent"), ("cost_effectiveness", "Very Good")):
+            saved[key].update(band=4, grade=grade, unavailable_reason=None)
+        saved["form"]["percentile"] = 90
+        self.db.execute(
+            "UPDATE player_indicator_snapshots SET payload=? WHERE player_id=1",
+            (json.dumps(saved),),
+        )
+        self.db.commit()
+        app = FastAPI()
+        app.include_router(route.router, prefix="/v1")
+        app.dependency_overrides[get_user_id] = lambda: 1
+        with patch.object(loader, "build_snapshot", side_effect=AssertionError("Unexpected training")):
+            result = repo.get_current_player_indicators(1)
+            with TestClient(app) as client:
+                response = client.get("/v1/players/1/indicators")
+        self.assertEqual(response.status_code, 200)
+        for key in ("form", "cost_effectiveness"):
+            self.assertEqual(result[key], {**saved[key], "grade": "Very Good"})
+            self.assertEqual(response.json()[key]["grade"], "Very Good")
+            self.assertEqual(response.json()[key]["band"], 4)
+        self.assertEqual(json.loads(self.db.execute(
+            "SELECT payload FROM player_indicator_snapshots WHERE player_id=1"
+        ).fetchone()["payload"]), saved)
 
     def test_role_is_fresh_without_retraining_or_request_time_computation(self):
         loader.refresh(apply=True)

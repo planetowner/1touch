@@ -81,14 +81,6 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
     }
   }
 
-  // 유럽대항전 → 자국 컵 → 잉글랜드 리그컵 순서로 색을 배정해요.
-  static int _competitionPriority(Competition competition) =>
-      switch (competition.competitionId) {
-        2 || 5 || 2286 => 0,
-        27 => 2,
-        _ => 1,
-      };
-
   static String _competitionLegendLabel(Competition competition) =>
       normalizeCompetitionDisplayLabel(
           competition.shortCode ?? competition.name);
@@ -173,13 +165,8 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
         .where((competition) =>
             !leagueCompetitionIds.contains(competition.competitionId))
         .toList()
-      ..sort((a, b) {
-        final priority =
-            _competitionPriority(a).compareTo(_competitionPriority(b));
-        return priority != 0
-            ? priority
-            : a.competitionId.compareTo(b.competitionId);
-      });
+      ..sort((a, b) =>
+          compareCompetitionDisplayOrder(a.competitionId, b.competitionId));
     const palette = [
       Colors.red,
       Colors.blue,
