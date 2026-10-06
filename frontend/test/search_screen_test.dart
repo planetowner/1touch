@@ -64,6 +64,10 @@ Future<void> _pump(WidgetTester tester, _Search repository,
             path: '/players/:id',
             builder: (_, state) =>
                 Text('Player ID ${state.pathParameters['id']}')),
+        GoRoute(
+            path: '/match/:id',
+            builder: (_, state) =>
+                Text('Match ID ${state.pathParameters['id']}')),
       ]);
   addTearDown(routing.dispose);
   await tester.pumpWidget(MaterialApp.router(
@@ -102,6 +106,55 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('10월 10일 (토)'), findsOneWidget);
     expect(find.text('4:30 PM'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('postponed and cancelled search matches cannot open',
+      (tester) async {
+    final repo = _Search();
+    await _pump(tester, repo);
+    await _query(tester, 'Nantes');
+    repo.pending.single.complete(SearchResults(fixtures: [
+      for (final (id, stateId, status) in [
+        (101, 10, FixtureStatus.upcoming),
+        (102, 12, FixtureStatus.unknown),
+        (103, 1, FixtureStatus.upcoming),
+      ])
+        Fixture(
+          fixtureId: id,
+          seasonId: 1,
+          competitionId: 564,
+          homeTeamId: 83,
+          awayTeamId: 90,
+          homeTeamName: 'Nantes',
+          awayTeamName: 'Nîmes',
+          competitionType: CompetitionType.league,
+          status: status,
+          stateId: stateId,
+          roundName: '8',
+          startingAt: DateTime(2026, 3, 14).toIso8601String(),
+        ),
+    ]));
+    await tester.pumpAndSettle();
+
+    for (final id in [101, 102]) {
+      final card = find.byKey(ValueKey('search-event-$id'));
+      await tester.ensureVisible(card);
+      final inkWell = tester.widget<InkWell>(find.ancestor(
+        of: card,
+        matching: find.byType(InkWell),
+      ));
+      expect(inkWell.onTap, isNull);
+      await tester.tap(card);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('search-scaffold')), findsOneWidget);
+    }
+
+    final scheduledCard = find.byKey(const ValueKey('search-event-103'));
+    await tester.ensureVisible(scheduledCard);
+    await tester.tap(scheduledCard);
+    await tester.pumpAndSettle();
+    expect(find.text('Match ID 103'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

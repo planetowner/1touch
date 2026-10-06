@@ -467,10 +467,12 @@ class _SearchContentState extends State<SearchContent> {
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
-      onTap: () => context.push(
-        '/match/${fixture.fixtureId}?status=${fixture.status.name}',
-        extra: fixture,
-      ),
+      onTap: const {10, 12}.contains(fixture.stateId)
+          ? null
+          : () => context.push(
+                '/match/${fixture.fixtureId}?status=${fixture.status.name}',
+                extra: fixture,
+              ),
       child: Container(
         key: ValueKey('search-event-${fixture.fixtureId}'),
         constraints: const BoxConstraints(minHeight: 112),
