@@ -399,10 +399,101 @@ void main() {
     expect(requests, 2);
   });
 
+  test('replaces cached lineup metrics from the previous schema', () async {
+    Map<String, dynamic> detailWithMetrics(
+            List<Map<String, dynamic>> metrics) =>
+        {
+          ..._fixtureDetailJson(),
+          'status': 'past',
+          'player_statistics': [
+            {
+              'team_id': 8,
+              'player_id': 31892,
+              'match_position_id': 24,
+              'position_group': 'GK',
+              'categories': [
+                {
+                  'code': 'long_balls',
+                  'label': 'Long Balls',
+                  'metrics': metrics,
+                },
+              ],
+            },
+          ],
+        };
+    final oldDetail = detailWithMetrics([
+      {
+        'code': 'long_balls',
+        'label': 'Long balls attempted',
+        'kind': 'count',
+        'source': 'sportmonks',
+        'stat_type_ids': [122],
+        'value': 24,
+      },
+      {
+        'code': 'long_ball_success_rate',
+        'label': 'Long ball success rate',
+        'kind': 'percentage',
+        'source': 'sportmonks',
+        'stat_type_ids': [123, 122],
+        'value': 41.7,
+        'numerator': 10,
+        'denominator': 24,
+      },
+    ]);
+    final newDetail = detailWithMetrics([
+      {
+        'code': 'long_balls_pair',
+        'label': 'Long balls completed / attempted',
+        'kind': 'pair',
+        'source': 'sportmonks',
+        'stat_type_ids': [123, 122],
+        'numerator': 10,
+        'denominator': 24,
+      },
+    ]);
+    final store = MemoryLocalCacheStore();
+    await store.write(LocalCacheKeys.fixtureDetail(19712345), oldDetail);
+    await store.write(LocalCacheKeys.catalog, {'unchanged': true});
+    var requests = 0;
+    ApiFixtureRepository repository() => ApiFixtureRepository(
+          api: ApiClient(
+            client: MockClient((_) async {
+              requests++;
+              return http.Response(jsonEncode(newDetail), 200);
+            }),
+            baseUri: Uri.parse('http://localhost:8000/v1/'),
+            requestHeaders: () => const {},
+          ),
+          cacheStore: store,
+        );
+
+    final updated = await repository().loadDetail(19712345);
+    expect(updated.playerStatistics.single.categories.single.metrics,
+        hasLength(1));
+    final metric =
+        updated.playerStatistics.single.categories.single.metrics.single;
+    expect(metric.code, 'long_balls_pair');
+    expect(metric.numerator, 10);
+    expect(metric.denominator, 24);
+    expect(requests, 1);
+
+    final restored = await repository().loadDetail(19712345);
+    expect(
+        restored.playerStatistics.single.categories.single.metrics.single.code,
+        'long_balls_pair');
+    expect(requests, 1);
+    expect((await store.read(LocalCacheKeys.catalog))!.payload,
+        {'unchanged': true});
+  });
+
   test('keeps expired detail when its background refresh fails', () async {
     final store = _AgedCacheStore();
     await store.write(
-        LocalCacheKeys.fixtureDetail(19712345), _fixtureDetailJson());
+      LocalCacheKeys.fixtureDetail(19712345),
+      _fixtureDetailJson(),
+      schemaVersion: 2,
+    );
     var requests = 0;
     final repository = ApiFixtureRepository(
       api: ApiClient(
@@ -425,10 +516,14 @@ void main() {
 
   test('always rechecks restored live detail', () async {
     final store = MemoryLocalCacheStore();
-    await store.write(LocalCacheKeys.fixtureDetail(19712345), {
-      ..._fixtureDetailJson(),
-      'status': 'live',
-    });
+    await store.write(
+      LocalCacheKeys.fixtureDetail(19712345),
+      {
+        ..._fixtureDetailJson(),
+        'status': 'live',
+      },
+      schemaVersion: 2,
+    );
     var requests = 0;
     final repository = ApiFixtureRepository(
       api: ApiClient(
