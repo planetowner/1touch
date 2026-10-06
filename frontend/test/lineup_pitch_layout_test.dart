@@ -101,7 +101,12 @@ void main() {
       final pitch = tester.getRect(
         find.byKey(const ValueKey('match-lineup-card')),
       );
-      expect(pitch.size, Size(width - 48, 820));
+      expect(pitch.size, Size(width - 48, 784));
+      final card = tester.widget<Container>(
+        find.byKey(const ValueKey('match-lineup-card')),
+      );
+      expect((card.decoration as BoxDecoration).borderRadius,
+          BorderRadius.circular(24));
       final nameRects = <Rect>[];
       for (final player in [...away, ...home].expand((row) => row)) {
         final finder = find.byKey(ValueKey(

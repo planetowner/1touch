@@ -572,7 +572,7 @@ void main() {
       final pitch = tester.getRect(
         find.byKey(const ValueKey('match-lineup-card')),
       );
-      expect(pitch.height, 820);
+      expect(pitch.height, 784);
       final positionedHalves =
           find.byType(FormationPlayerPositions<LineupPlayer>);
       expect(positionedHalves,

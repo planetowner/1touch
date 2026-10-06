@@ -78,9 +78,9 @@ void main() {
         final player = tester.getRect(find.byKey(
           ValueKey('match-lineup-player-83-${index + 1}'),
         ));
-        expect(player.width, lessThanOrEqualTo(319 / count + 0.001));
-        expect(player.left, greaterThanOrEqualTo(card.left + 4 - 0.001));
-        expect(player.right, lessThanOrEqualTo(card.right - 4 + 0.001));
+        expect(player.width, lessThanOrEqualTo(card.width / count + 0.001));
+        expect(player.left, greaterThanOrEqualTo(card.left - 0.001));
+        expect(player.right, lessThanOrEqualTo(card.right + 0.001));
       }
       expect(tester.takeException(), isNull);
     });
@@ -165,9 +165,11 @@ void main() {
     expect(find.text("15'"), findsNothing);
     expect(find.text("30'"), findsOneWidget);
     expect(find.text("75'"), findsOneWidget);
+    expect(tester.widget<Text>(find.text("30'")).style!.fontSize, 12);
+    expect(tester.widget<Text>(find.text("75'")).style!.fontSize, 12);
   });
 
-  testWidgets('places pitch-out at the top right of the player circle',
+  testWidgets('places pitch-out at the bottom right of the player circle',
       (tester) async {
     await tester.pumpWidget(
       subject(const [
@@ -180,7 +182,7 @@ void main() {
     final circleRect = tester.getRect(circle);
     final pitchOutRect = tester.getRect(pitchOut);
     expect(pitchOutRect.center.dx, greaterThan(circleRect.center.dx));
-    expect(pitchOutRect.center.dy, lessThan(circleRect.center.dy));
+    expect(pitchOutRect.center.dy, greaterThan(circleRect.center.dy));
     expect(pitchOutRect.left, lessThan(circleRect.right));
     expect(pitchOutRect.bottom, greaterThan(circleRect.top));
     final icon = find.byKey(const ValueKey('lineup-sub-out-icon'));
@@ -246,7 +248,7 @@ void main() {
     expect(find.text('A'), findsOneWidget);
   });
 
-  testWidgets('centers event badges beneath the player circle', (tester) async {
+  testWidgets('places goal and assist at the bottom left', (tester) async {
     await tester.pumpWidget(
       subject(const [
         LineupEvent(type: LineupEventType.assist, minute: 20),
@@ -255,12 +257,32 @@ void main() {
     );
 
     final circle = find.byKey(const ValueKey('lineup-player-circle'));
-    final badges = find.byKey(const ValueKey('lineup-event-badge-groups'));
-    expect(tester.getCenter(badges).dx, tester.getCenter(circle).dx);
+    final badges = find.byKey(const ValueKey('lineup-scoring-badges'));
+    expect(tester.getCenter(badges).dx, lessThan(tester.getCenter(circle).dx));
     expect(
       tester.getBottomLeft(badges).dy,
       greaterThan(tester.getBottomLeft(circle).dy),
     );
+  });
+
+  testWidgets('keeps cards top left and injury bottom right', (tester) async {
+    await tester.pumpWidget(
+      subject(const [
+        LineupEvent(type: LineupEventType.yellowCard),
+        LineupEvent(type: LineupEventType.injury),
+      ]),
+    );
+
+    final circle =
+        tester.getRect(find.byKey(const ValueKey('lineup-player-circle')));
+    final card =
+        tester.getRect(find.byKey(const ValueKey('lineup-card-badges')));
+    final injury =
+        tester.getRect(find.byKey(const ValueKey('lineup-injury-icon')));
+    expect(card.center.dx, lessThan(circle.center.dx));
+    expect(card.center.dy, lessThan(circle.center.dy));
+    expect(injury.center.dx, greaterThan(circle.center.dx));
+    expect(injury.center.dy, greaterThan(circle.center.dy));
   });
 
   testWidgets('overlaps all badges with matching categories adjacent',
@@ -299,6 +321,34 @@ void main() {
       find.byKey(const ValueKey('lineup-event-redCard-1')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('shows stacked yellow and red from one yellowredcard event',
+      (tester) async {
+    await tester.pumpWidget(subject(const [
+      LineupEvent(type: LineupEventType.secondYellowCard, minute: 70),
+    ]));
+
+    final yellow =
+        tester.getRect(find.byKey(const ValueKey('lineup-event-yellowCard-0')));
+    final red =
+        tester.getRect(find.byKey(const ValueKey('lineup-event-redCard-1')));
+    expect(yellow.overlaps(red), isTrue);
+    expect(red.left, greaterThan(yellow.left));
+  });
+
+  testWidgets('does not infer a dismissal from two yellow events',
+      (tester) async {
+    await tester.pumpWidget(subject(const [
+      LineupEvent(type: LineupEventType.yellowCard, minute: 30),
+      LineupEvent(type: LineupEventType.yellowCard, minute: 70),
+    ]));
+
+    expect(find.byKey(const ValueKey('lineup-event-yellowCard-0')),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('lineup-event-yellowCard-1')),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('lineup-event-redCard-1')), findsNothing);
   });
 
   testWidgets('shows only one card badge for a direct red', (tester) async {
@@ -354,7 +404,7 @@ void main() {
 
     expect(
       tester.getSize(find.byKey(const ValueKey('match-lineup-card'))).height,
-      820,
+      784,
     );
     expect(tester.takeException(), isNull);
   });
