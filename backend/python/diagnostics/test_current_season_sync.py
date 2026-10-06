@@ -4,7 +4,7 @@ import io
 import re
 import sqlite3
 import unittest
-from contextlib import ExitStack, nullcontext, redirect_stdout
+from contextlib import ExitStack, redirect_stdout
 from copy import deepcopy
 from unittest.mock import MagicMock, Mock, patch
 
@@ -37,11 +37,6 @@ def fixture(fixture_id=1001, competition_id=24, season_id=2400, home_id=10, away
 
 class CurrentSeasonSyncTests(unittest.TestCase):
     def setUp(self):
-        # 포지션 갱신은 별도 통합 테스트에서 실제 SQL로 확인해요.
-        positions = patch.object(fixtures.player_positions, 'refresh_positions_after_fixtures',
-                                 side_effect=lambda *args, **kwargs: nullcontext())
-        positions.start()
-        self.addCleanup(positions.stop)
         self.sqlite = sqlite3.connect(":memory:")
         self.addCleanup(self.sqlite.close)
         self.sqlite.executescript("""

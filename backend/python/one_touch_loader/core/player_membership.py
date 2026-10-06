@@ -5,6 +5,15 @@ from datetime import date
 import re
 
 
+def team_for_appearances(roster: list[dict], matches: list[dict]) -> dict | None:
+    team = roster[0] if roster else None
+    # 이적 기록이 여러 개면 가장 최근에 출전한 팀을 우선해요.
+    if len(roster) > 1 and matches:
+        latest_team = max(matches, key=lambda r: r['starting_at'])['team_id']
+        team = next((r for r in roster if r['team_id'] == latest_team), team)
+    return team
+
+
 def season_start_date(season_name: str) -> date:
     match = re.fullmatch(r"(\d{4})/(\d{4})", season_name)
     if match is None:

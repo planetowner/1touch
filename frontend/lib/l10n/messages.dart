@@ -2047,11 +2047,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "同じシーズンポジション（{position}）の選手を選んでください。",
     zh: "请选择本赛季位置相同（{position}）的球员。"
   ),
-  "Top 3 stats where the player ranks best in the league. The displayed stats will only reflect good performance.":
+  "The 3 stats with the highest ranks among players in the same position in the selected league and season.":
       (
-    ko: "선수가 리그에서 가장 높은 순위를 기록한 상위 3개 통계예요. 좋은 성과를 보인 통계만 표시돼요.",
-    ja: "リーグ内で選手の順位が最も高い上位3つのスタッツです。好成績のスタッツのみ表示します。",
-    zh: "展示该球员在联赛中排名最高的3项数据，仅显示表现出色的统计项。"
+    ko: "선택한 리그·시즌에서 같은 포지션 선수와 비교해 순위가 가장 높은 3개 통계예요.",
+    ja: "選択したリーグ・シーズンで、同じポジションの選手と比べて順位が最も高い3つのスタッツです。",
+    zh: "展示该球员在所选联赛和赛季中，与同位置球员相比排名最高的3项数据。"
   ),
   "Current season: {season}.": (
     ko: "현재 시즌: {season}.",

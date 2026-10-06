@@ -9,6 +9,7 @@ from ..core.sportmonks import SportmonksClient
 from . import fixtures_loader as fixtures
 from . import players_loader as players
 from . import player_contracts_loader as contracts
+from . import player_rating_rankings_loader as player_rankings
 from . import transfers_loader as transfer_loader
 from . import seasons_loader as seasons
 from . import team_squad_members_loader as squads
@@ -180,6 +181,8 @@ def sync_current_squads(*, apply: bool = False) -> dict:
             # 같은 응답의 명단·계약을 함께 저장하고 계약이 참조하는 이적을 먼저 준비해요.
             with transaction() as connection:
                 with connection.cursor() as cursor:
+                    # 순위 저장의 선수 외래 키 잠금과 충돌하지 않도록 공통 잠금을 먼저 잡아요.
+                    player_rankings._lock_rating_pool(cursor)
                     players._write_player_rows(
                         cursor, [new_player_rows[pid] for pid in sorted(missing_ids)], update_existing=True,
                     )
