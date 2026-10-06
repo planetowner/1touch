@@ -15,8 +15,8 @@ from diagnostics import test_fixture_details as existing
 from one_touch_loader.api.deps import get_user_id
 from one_touch_loader.api.routes import fixtures as routes
 from one_touch_loader.core.player_match_metrics import (
-    CATEGORIES, COVERAGE_COUNT_TYPES, METRICS, STORED_STAT_TYPE_IDS,
-    build_player_statistics, build_team_player_statistics, normalize_player_counts,
+    CATEGORIES, COVERAGE_COUNT_TYPES, MATCH_CATEGORY_METRICS, METRICS, STORED_STAT_TYPE_IDS,
+    build_categories, build_metric, build_player_statistics, build_team_player_statistics, normalize_player_counts,
 )
 from one_touch_loader.loaders import fixture_details_loader as loader
 
@@ -66,11 +66,12 @@ class PlayerMetricTests(unittest.TestCase):
                 for team, values in [(10, {120: 60, 108: 3}), (20, {120: 50, 109: 2, 27271: 3})]
                 for t, v in values.items()]
         home, away = build_player_statistics(lineups, rows, [])
-        self.assertEqual(metrics(home)["dribble_success_rate"]["value"], 0)
+        self.assertEqual(metrics(home)["dribbles"]["numerator"], 0)
+        self.assertEqual(metrics(home)["dribbles"]["denominator"], 3)
         self.assertEqual(metrics(home)["ball_recoveries"]["value"], 0)
         self.assertEqual(metrics(away)["ball_recoveries"]["value"], 3)
         rows.append(dict(team_id=10, player_id=1, stat_type_id=109, value=None))
-        self.assertIsNone(metrics(build_player_statistics(lineups, rows, [])[0])["dribble_success_rate"]["value"])
+        self.assertIsNone(metrics(build_player_statistics(lineups, rows, [])[0])["dribbles"]["numerator"])
 
     def test_clean_sheet_uses_the_correct_opponent_score(self):
         lineups = [dict(team_id=team, player_id=1, match_position_id=24,
@@ -88,8 +89,10 @@ class PlayerMetricTests(unittest.TestCase):
         self.assertEqual(metrics(gk)["saves"]["value"], 4)
         self.assertEqual(metrics(gk)["passes"]["numerator"], 19)
         self.assertEqual(metrics(gk)["passes"]["denominator"], 34)
-        self.assertEqual(metrics(gk)["long_ball_success_rate"]["value"], 34.8)
-        self.assertEqual(metrics(df)["long_ball_success_rate"]["value"], 40.0)
+        self.assertEqual(metrics(gk)["long_balls_pair"]["numerator"], 8)
+        self.assertEqual(metrics(gk)["long_balls_pair"]["denominator"], 23)
+        self.assertEqual(metrics(df)["long_balls_pair"]["numerator"], 2)
+        self.assertEqual(metrics(df)["long_balls_pair"]["denominator"], 5)
         self.assertEqual(metrics(mf)["shots"]["value"], 4)
         self.assertEqual(metrics(mf)["xg"]["value"], Decimal("0.172853"))
         self.assertEqual(metrics(fw)["xg"]["value"], Decimal("1.212923"))
@@ -115,7 +118,36 @@ class PlayerMetricTests(unittest.TestCase):
         # 요약 카드 전용 지표도 같은 정의를 쓰지만 상세 분류에 중복 표시하지 않아요.
         displayed = {code for cats in CATEGORIES.values() for _, _, codes in cats for code in codes}
         displayed.update(code for codes in SUMMARY_METRICS.values() for code in codes)
+        displayed.update(code for codes in MATCH_CATEGORY_METRICS.values() for code in codes)
         self.assertEqual(set(METRICS), displayed)
+
+    def test_lineup_categories_replace_only_the_requested_metrics(self):
+        expected = {
+            24: {"long_balls": ["long_balls_pair"]},
+            25: {"physicality": ["duels_won", "aerial_duels_won"],
+                 "build_up": ["touches", "passes", "long_balls_pair"]},
+            27: {"dribble": ["dribbles", "fouls_drawn"]},
+        }
+        for player in output_for(SAMPLE["cases"][0]):
+            position = player["match_position_id"]
+            categories = {c["code"]: [m["code"] for m in c["metrics"]] for c in player["categories"]}
+            for code, _, original in CATEGORIES[position]:
+                self.assertEqual(categories[code], expected.get(position, {}).get(code, list(original)))
+
+    def test_lineup_pairs_keep_zero_and_missing_parts_distinct(self):
+        for position, code, success_id, attempts_id in (
+            (24, "long_balls_pair", 123, 122),
+            (25, "long_balls_pair", 123, 122),
+            (27, "dribbles", 109, 108),
+        ):
+            for success, attempts in ((None, None), (None, 3), (0, 3), (0, 0), (2, 3), (2, None)):
+                with self.subTest(position=position, success=success, attempts=attempts):
+                    stats = {success_id: success, attempts_id: attempts}
+                    result = metrics({"categories": build_categories(position, stats, None, for_match=True)})[code]
+                    self.assertEqual(result["kind"], "pair")
+                    self.assertEqual(result["numerator"], success)
+                    self.assertEqual(result["denominator"], attempts)
+                    self.assertIsNone(result["value"])
 
     def test_absence_zero_and_invalid_percentage_remain_distinct(self):
         case = deepcopy(SAMPLE["cases"][0])
@@ -132,7 +164,9 @@ class PlayerMetricTests(unittest.TestCase):
             with self.subTest(details=details):
                 fw["details"] = [{"type_id": key, "data": {"value": value}} for key, value in details]
                 result = output_for(case)[0]
-                self.assertEqual(metrics(result)["dribble_success_rate"]["value"], expected)
+                self.assertEqual(build_metric("dribble_success_rate", dict(details), None)["value"], expected)
+                self.assertEqual(metrics(result)["dribbles"]["numerator"], dict(details).get(109))
+                self.assertEqual(metrics(result)["dribbles"]["denominator"], dict(details).get(108))
                 self.assertIsNone(metrics(result)["goals"]["value"])
                 self.assertIsNone(result["rating"])
         fw["details"] = [{"type_id": 52, "data": {"value": 0}}, {"type_id": 79, "data": {"value": None}}]

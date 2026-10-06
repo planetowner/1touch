@@ -1,0 +1,5214 @@
+{
+  "source": {
+    "file": "coaches_korean_transliteration_review.xlsx",
+    "sha256": "6cac29cd7d4a876c66ef4c5815eae92092d7ff21d4ae09292533e3b6c341cf94",
+    "sheet": "전체",
+    "range": "A2:I780",
+    "id_column": "A",
+    "original_name_column": "B",
+    "korean_name_column": "C",
+    "row_count": 779
+  },
+  "review": {
+    "database_coaches": 779,
+    "already_named_preserved": 163,
+    "matched_unmapped_coaches": 551,
+    "empty_recommended_names": 65,
+    "expected_named_after": 714
+  },
+  "preserved_coach_ids": [
+    236,
+    255,
+    307,
+    510,
+    515,
+    562,
+    645,
+    727,
+    1398,
+    1631,
+    4115,
+    5125,
+    22986,
+    23180,
+    23685,
+    25008,
+    29535,
+    30314,
+    31151,
+    33835,
+    35441,
+    37679,
+    38927,
+    45305,
+    51518,
+    60303,
+    60390,
+    60442,
+    62986,
+    78952,
+    82974,
+    94328,
+    94575,
+    120469,
+    120775,
+    127483,
+    127495,
+    127582,
+    127755,
+    127889,
+    128026,
+    128076,
+    128160,
+    128261,
+    130041,
+    131252,
+    153005,
+    153106,
+    185033,
+    185780,
+    186018,
+    186111,
+    191684,
+    198883,
+    199988,
+    201088,
+    251872,
+    260206,
+    347590,
+    350699,
+    370847,
+    379788,
+    452683,
+    452732,
+    452946,
+    455355,
+    455361,
+    455375,
+    455384,
+    455387,
+    455424,
+    455701,
+    455705,
+    455745,
+    455819,
+    455821,
+    455907,
+    455944,
+    455991,
+    456360,
+    456450,
+    457589,
+    458783,
+    458813,
+    459203,
+    459829,
+    460096,
+    460311,
+    460535,
+    462195,
+    462257,
+    467464,
+    467859,
+    468615,
+    468798,
+    470943,
+    474728,
+    498593,
+    523897,
+    523898,
+    523911,
+    523928,
+    523931,
+    523937,
+    523959,
+    523962,
+    524009,
+    524011,
+    524461,
+    526440,
+    527103,
+    527267,
+    529482,
+    536978,
+    896137,
+    896251,
+    896306,
+    896460,
+    896462,
+    896549,
+    896798,
+    978850,
+    1068543,
+    1068613,
+    1467953,
+    1552945,
+    1553200,
+    1553203,
+    1553204,
+    2511171,
+    4916304,
+    7387314,
+    9938631,
+    9950240,
+    10293491,
+    10626699,
+    10966287,
+    11675677,
+    15062004,
+    15084021,
+    16111977,
+    16845924,
+    19960388,
+    20355643,
+    27440217,
+    33587721,
+    37250724,
+    37293365,
+    37336795,
+    37337215,
+    37352367,
+    37547542,
+    37553756,
+    37566248,
+    37598242,
+    37610194,
+    37647611,
+    37680707,
+    37691812,
+    37710356,
+    37726653,
+    37909808,
+    37953841
+  ],
+  "empty_recommended_name_ids": [
+    1195,
+    23435,
+    29935,
+    57037,
+    94064,
+    95553,
+    97444,
+    97499,
+    120315,
+    127886,
+    128124,
+    186071,
+    224127,
+    345859,
+    455650,
+    456105,
+    457103,
+    460151,
+    462010,
+    462666,
+    464996,
+    466802,
+    524257,
+    530681,
+    896485,
+    1477272,
+    1500238,
+    3876677,
+    5283476,
+    10644819,
+    10966289,
+    10995347,
+    18219447,
+    21404466,
+    21803155,
+    29313767,
+    37257795,
+    37347403,
+    37400429,
+    37412485,
+    37416958,
+    37438919,
+    37453039,
+    37453040,
+    37510953,
+    37512287,
+    37523749,
+    37524048,
+    37524062,
+    37552530,
+    37555912,
+    37613259,
+    37630747,
+    37646028,
+    37646482,
+    37646986,
+    37647434,
+    37648058,
+    37648171,
+    37660199,
+    37921530,
+    37928902,
+    37953758,
+    37953834,
+    37953964
+  ],
+  "entities": {
+    "coaches": [
+      {
+        "coach_id": 24,
+        "identity": {
+          "name": "David Unsworth"
+        },
+        "ko": "데이비드 언스워스",
+        "source_row": 2,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 50,
+        "identity": {
+          "name": "Steven Gerrard"
+        },
+        "ko": "스티븐 제라드",
+        "source_row": 3,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 95,
+        "identity": {
+          "name": "Frank Lampard"
+        },
+        "ko": "프랭크 램퍼드",
+        "source_row": 4,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 128,
+        "identity": {
+          "name": "Hayden Mullins"
+        },
+        "ko": "헤이든 멀린스",
+        "source_row": 5,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 129,
+        "identity": {
+          "name": "James Morrison"
+        },
+        "ko": "제임스 모리슨",
+        "source_row": 6,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 148,
+        "identity": {
+          "name": "Fredrik Ljungberg"
+        },
+        "ko": "프레드리크 융베리",
+        "source_row": 7,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 153,
+        "identity": {
+          "name": "Scott Parker"
+        },
+        "ko": "스콧 파커",
+        "source_row": 8,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 173,
+        "identity": {
+          "name": "Habib Beye"
+        },
+        "ko": "하비브 베예",
+        "source_row": 9,
+        "source_status": "웹 확인"
+      },
+      {
+        "coach_id": 243,
+        "identity": {
+          "name": "Didier Digard"
+        },
+        "ko": "디디에 디가르",
+        "source_row": 11,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 248,
+        "identity": {
+          "name": "Aleksandar Kolarov"
+        },
+        "ko": "알렉산다르 콜라로프",
+        "source_row": 12,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 270,
+        "identity": {
+          "name": "Gary O'Neil"
+        },
+        "ko": "게리 오닐",
+        "source_row": 14,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 346,
+        "identity": {
+          "name": "Alessandro Diamanti"
+        },
+        "ko": "알레산드로 디아만티",
+        "source_row": 16,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 384,
+        "identity": {
+          "name": "Darren Moore"
+        },
+        "ko": "대런 무어",
+        "source_row": 17,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 472,
+        "identity": {
+          "name": "John Heitinga"
+        },
+        "ko": "욘 헤이팅아",
+        "source_row": 18,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 511,
+        "identity": {
+          "name": "Xabi Alonso"
+        },
+        "ko": "샤비 알론소",
+        "source_row": 20,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 518,
+        "identity": {
+          "name": "Thierry Henry"
+        },
+        "ko": "티에리 앙리",
+        "source_row": 22,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 604,
+        "identity": {
+          "name": "Darren Fletcher"
+        },
+        "ko": "대런 플레처",
+        "source_row": 24,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 618,
+        "identity": {
+          "name": "Liam Rosenior"
+        },
+        "ko": "리엄 로제니어",
+        "source_row": 25,
+        "source_status": "웹 확인"
+      },
+      {
+        "coach_id": 653,
+        "identity": {
+          "name": "Andriy Shevchenko"
+        },
+        "ko": "안드리 셰우첸코",
+        "source_row": 27,
+        "source_status": "웹 확인"
+      },
+      {
+        "coach_id": 717,
+        "identity": {
+          "name": "Jack Wilshere"
+        },
+        "ko": "잭 윌셔",
+        "source_row": 28,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 904,
+        "identity": {
+          "name": "Russell Martin"
+        },
+        "ko": "러셀 마틴",
+        "source_row": 30,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 938,
+        "identity": {
+          "name": "Ryan Mason"
+        },
+        "ko": "라이언 메이슨",
+        "source_row": 31,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1171,
+        "identity": {
+          "name": "Andrew Crofts"
+        },
+        "ko": "앤드루 크로프츠",
+        "source_row": 32,
+        "source_status": "웹 확인"
+      },
+      {
+        "coach_id": 1198,
+        "identity": {
+          "name": "Kelvin Davis"
+        },
+        "ko": "켈빈 데이비스",
+        "source_row": 34,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1260,
+        "identity": {
+          "name": "Aaron Rowe"
+        },
+        "ko": "에런 로",
+        "source_row": 35,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1272,
+        "identity": {
+          "name": "Tom Cleverley"
+        },
+        "ko": "톰 클레벌리",
+        "source_row": 36,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 1440,
+        "identity": {
+          "name": "Willy Caballero"
+        },
+        "ko": "윌리 카바예로",
+        "source_row": 38,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 1470,
+        "identity": {
+          "name": "Filipe Luís"
+        },
+        "ko": "필리피 루이스",
+        "source_row": 39,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 2003,
+        "identity": {
+          "name": "Johnnie Jackson"
+        },
+        "ko": "조니 잭슨",
+        "source_row": 41,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 2220,
+        "identity": {
+          "name": "Marco Cassetti"
+        },
+        "ko": "마르코 카세티",
+        "source_row": 42,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 2228,
+        "identity": {
+          "name": "Kenny Miller"
+        },
+        "ko": "케니 밀러",
+        "source_row": 43,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 2470,
+        "identity": {
+          "name": "Chris Cohen"
+        },
+        "ko": "크리스 코언",
+        "source_row": 44,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 2540,
+        "identity": {
+          "name": "Tarmo Kink"
+        },
+        "ko": "타르모 킨크",
+        "source_row": 45,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 3701,
+        "identity": {
+          "name": "Riera"
+        },
+        "ko": "리에라",
+        "source_row": 46,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 3721,
+        "identity": {
+          "name": "Moritz Volz"
+        },
+        "ko": "모리츠 폴츠",
+        "source_row": 47,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 3790,
+        "identity": {
+          "name": "Sylvinho"
+        },
+        "ko": "시우비뉴",
+        "source_row": 48,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 7016,
+        "identity": {
+          "name": "Nathan Jones"
+        },
+        "ko": "네이선 존스",
+        "source_row": 51,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 10127,
+        "identity": {
+          "name": "Paul Heckingbottom"
+        },
+        "ko": "폴 헤킹보텀",
+        "source_row": 52,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 10388,
+        "identity": {
+          "name": "John Rooney"
+        },
+        "ko": "존 루니",
+        "source_row": 53,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 10957,
+        "identity": {
+          "name": "Jason Tindall"
+        },
+        "ko": "제이슨 틴들",
+        "source_row": 54,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 11565,
+        "identity": {
+          "name": "Rhys Griffiths"
+        },
+        "ko": "리스 그리피스",
+        "source_row": 55,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 13183,
+        "identity": {
+          "name": "Simon Rusk"
+        },
+        "ko": "사이먼 러스크",
+        "source_row": 56,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 14859,
+        "identity": {
+          "name": "John Disney"
+        },
+        "ko": "존 디즈니",
+        "source_row": 57,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 23237,
+        "identity": {
+          "name": "Giovanni van Bronckhorst"
+        },
+        "ko": "조반니 판 브롱크호르스트",
+        "source_row": 60,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 24118,
+        "identity": {
+          "name": "Hernan Losada"
+        },
+        "ko": "에르난 로사다",
+        "source_row": 63,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 24381,
+        "identity": {
+          "name": "Mark van Bommel"
+        },
+        "ko": "마르크 판 보멀",
+        "source_row": 64,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 29582,
+        "identity": {
+          "name": "Pal Dardai"
+        },
+        "ko": "팔 다르다이",
+        "source_row": 67,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 29621,
+        "identity": {
+          "name": "Thomas Brdarić"
+        },
+        "ko": "토마스 브르다리치",
+        "source_row": 68,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 29676,
+        "identity": {
+          "name": "Steffen Baumgart"
+        },
+        "ko": "슈테펜 바움가르트",
+        "source_row": 69,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 29710,
+        "identity": {
+          "name": "Marco Rose"
+        },
+        "ko": "마르코 로제",
+        "source_row": 70,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 29730,
+        "identity": {
+          "name": "Willy Sagnol"
+        },
+        "ko": "윌리 사뇰",
+        "source_row": 71,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 29820,
+        "identity": {
+          "name": "Heiko Butscher"
+        },
+        "ko": "하이코 부처",
+        "source_row": 72,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 30546,
+        "identity": {
+          "name": "Massimo Oddo"
+        },
+        "ko": "마시모 오도",
+        "source_row": 75,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 30770,
+        "identity": {
+          "name": "Zsolt Low"
+        },
+        "ko": "졸트 뢰브",
+        "source_row": 76,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 30897,
+        "identity": {
+          "name": "Milorad Pekovic"
+        },
+        "ko": "밀로라드 페코비치",
+        "source_row": 77,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 30957,
+        "identity": {
+          "name": "Julian Schuster"
+        },
+        "ko": "율리안 슈스터",
+        "source_row": 78,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 30963,
+        "identity": {
+          "name": "Ruud van Nistelrooy"
+        },
+        "ko": "뤼트 판 니스텔로이",
+        "source_row": 79,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 30987,
+        "identity": {
+          "name": "Eugen Polanski"
+        },
+        "ko": "오이겐 폴란스키",
+        "source_row": 80,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 30996,
+        "identity": {
+          "name": "Sandro Wagner"
+        },
+        "ko": "잔드로 바그너",
+        "source_row": 81,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 31239,
+        "identity": {
+          "name": "Almog Cohen"
+        },
+        "ko": "알모그 코헨",
+        "source_row": 83,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 31358,
+        "identity": {
+          "name": "Mauro Camoranesi"
+        },
+        "ko": "마우로 카모라네시",
+        "source_row": 84,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 32849,
+        "identity": {
+          "name": "Dino Toppmöller"
+        },
+        "ko": "디노 토프묄러",
+        "source_row": 85,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 32886,
+        "identity": {
+          "name": "Alexander Nouri"
+        },
+        "ko": "알렉산더 누리",
+        "source_row": 86,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 33182,
+        "identity": {
+          "name": "Stefan Leitl"
+        },
+        "ko": "슈테판 라이틀",
+        "source_row": 87,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 33212,
+        "identity": {
+          "name": "Daniel Thioune"
+        },
+        "ko": "다니엘 티우네",
+        "source_row": 88,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 33525,
+        "identity": {
+          "name": "Jacques Abardonado"
+        },
+        "ko": "자크 아바르도나도",
+        "source_row": 89,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 33534,
+        "identity": {
+          "name": "Martin Forkel"
+        },
+        "ko": "마르틴 포르켈",
+        "source_row": 90,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 35399,
+        "identity": {
+          "name": "Marcel Rapp"
+        },
+        "ko": "마르셀 라프",
+        "source_row": 92,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 35571,
+        "identity": {
+          "name": "Alexander Blessin"
+        },
+        "ko": "알렉산더 블레신",
+        "source_row": 94,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 35676,
+        "identity": {
+          "name": "Ralf Kettemann"
+        },
+        "ko": "랄프 케테만",
+        "source_row": 95,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 36527,
+        "identity": {
+          "name": "Dennis Schmitt"
+        },
+        "ko": "데니스 슈미트",
+        "source_row": 96,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 38211,
+        "identity": {
+          "name": "Ante Čović"
+        },
+        "ko": "안테 초비치",
+        "source_row": 98,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 38217,
+        "identity": {
+          "name": "Sebastian Hoeneß"
+        },
+        "ko": "제바스티안 회네스",
+        "source_row": 99,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 38848,
+        "identity": {
+          "name": "Daniel Bauer"
+        },
+        "ko": "다니엘 바우어",
+        "source_row": 100,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 44409,
+        "identity": {
+          "name": "René Wagner"
+        },
+        "ko": "르네 바그너",
+        "source_row": 102,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 47928,
+        "identity": {
+          "name": "Zekirija Ramadani"
+        },
+        "ko": "제키리야 라마다니",
+        "source_row": 104,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 48177,
+        "identity": {
+          "name": "Danijel Jumic"
+        },
+        "ko": "다니옐 유미치",
+        "source_row": 105,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 48428,
+        "identity": {
+          "name": "Ivan Gvozdenovic"
+        },
+        "ko": "이반 그보즈데노비치",
+        "source_row": 106,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 51608,
+        "identity": {
+          "name": "Saša Ilić"
+        },
+        "ko": "사샤 일리치",
+        "source_row": 108,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 54047,
+        "identity": {
+          "name": "Álvaro del Moral"
+        },
+        "ko": "알바로 델 모랄",
+        "source_row": 109,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 54417,
+        "identity": {
+          "name": "Alexei Savinov"
+        },
+        "ko": "알렉세이 사비노프",
+        "source_row": 110,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 54433,
+        "identity": {
+          "name": "Rashad Sadygov"
+        },
+        "ko": "라샤드 사디고프",
+        "source_row": 111,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 57855,
+        "identity": {
+          "name": "Viktors Morozs"
+        },
+        "ko": "빅토르스 모로즈",
+        "source_row": 113,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 60356,
+        "identity": {
+          "name": "Elyaniv Barda"
+        },
+        "ko": "엘리아니브 바르다",
+        "source_row": 115,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 61516,
+        "identity": {
+          "name": "Víctor Vázquez"
+        },
+        "ko": "빅토르 바스케스",
+        "source_row": 118,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 64357,
+        "identity": {
+          "name": "Samba Diawara"
+        },
+        "ko": "삼바 디아와라",
+        "source_row": 120,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 68378,
+        "identity": {
+          "name": "Sasho Aleksandrov"
+        },
+        "ko": "사쇼 알렉산드로프",
+        "source_row": 121,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 68482,
+        "identity": {
+          "name": "Hristo Yanev"
+        },
+        "ko": "흐리스토 야네프",
+        "source_row": 122,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 72400,
+        "identity": {
+          "name": "Nikola Šafarić"
+        },
+        "ko": "니콜라 샤파리치",
+        "source_row": 123,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 72750,
+        "identity": {
+          "name": "Željko Sopić"
+        },
+        "ko": "젤코 소피치",
+        "source_row": 124,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 74546,
+        "identity": {
+          "name": "Sergej Jakirović"
+        },
+        "ko": "세르게이 야키로비치",
+        "source_row": 125,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 75099,
+        "identity": {
+          "name": "Sandro Perković"
+        },
+        "ko": "산드로 페르코비치",
+        "source_row": 126,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 75427,
+        "identity": {
+          "name": "Christos Kontis"
+        },
+        "ko": "흐리스토스 콘티스",
+        "source_row": 127,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 75442,
+        "identity": {
+          "name": "Dimitrios Grammozis"
+        },
+        "ko": "디미트리오스 그라모지스",
+        "source_row": 128,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 75773,
+        "identity": {
+          "name": "Zoran Željkovič"
+        },
+        "ko": "조란 젤코비치",
+        "source_row": 129,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 76027,
+        "identity": {
+          "name": "Balazs Borbely"
+        },
+        "ko": "벌라주 보르베이",
+        "source_row": 130,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 78594,
+        "identity": {
+          "name": "David Horejs"
+        },
+        "ko": "다비트 호레이시",
+        "source_row": 131,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 82755,
+        "identity": {
+          "name": "Sölvi Ottesen Jónsson"
+        },
+        "ko": "쇨비 오테센 욘손",
+        "source_row": 133,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 84835,
+        "identity": {
+          "name": "Łukasz Cieślewicz"
+        },
+        "ko": "우카시 치에실레비치",
+        "source_row": 135,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 86144,
+        "identity": {
+          "name": "Atli Gregersen"
+        },
+        "ko": "아틀리 그레게르센",
+        "source_row": 136,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 87351,
+        "identity": {
+          "name": "Nikita Andreev"
+        },
+        "ko": "니키타 안드레예프",
+        "source_row": 137,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 87361,
+        "identity": {
+          "name": "Vjatseslav Zahovaiko"
+        },
+        "ko": "뱌체슬라프 자호바이코",
+        "source_row": 138,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 92128,
+        "identity": {
+          "name": "Peter Lundberg"
+        },
+        "ko": "페테르 룬드베리",
+        "source_row": 139,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 94233,
+        "identity": {
+          "name": "Vincent Hognon"
+        },
+        "ko": "뱅상 오뇽",
+        "source_row": 141,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 94341,
+        "identity": {
+          "name": "Stéphane Dumont"
+        },
+        "ko": "스테판 뒤몽",
+        "source_row": 143,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 94363,
+        "identity": {
+          "name": "Romain Pitau"
+        },
+        "ko": "로맹 피토",
+        "source_row": 144,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 95003,
+        "identity": {
+          "name": "Julien Sablé"
+        },
+        "ko": "쥘리앵 사블레",
+        "source_row": 146,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 95212,
+        "identity": {
+          "name": "Bruno Grougi"
+        },
+        "ko": "브뤼노 그루지",
+        "source_row": 147,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 95316,
+        "identity": {
+          "name": "Ahmed Kantari"
+        },
+        "ko": "아메드 칸타리",
+        "source_row": 148,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 95726,
+        "identity": {
+          "name": "Thiago Motta"
+        },
+        "ko": "치아구 모타",
+        "source_row": 150,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 97031,
+        "identity": {
+          "name": "Alexandre Dujeux"
+        },
+        "ko": "알렉상드르 뒤죄",
+        "source_row": 151,
+        "source_status": "웹 확인"
+      },
+      {
+        "coach_id": 97216,
+        "identity": {
+          "name": "David Linarès"
+        },
+        "ko": "다비드 리나레스",
+        "source_row": 152,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 105900,
+        "identity": {
+          "name": "Levan Korghalidze"
+        },
+        "ko": "레반 코르갈리제",
+        "source_row": 155,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 106189,
+        "identity": {
+          "name": "Xisco Muñoz"
+        },
+        "ko": "시스코 무뇨스",
+        "source_row": 156,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 107439,
+        "identity": {
+          "name": "Enzo Maresca"
+        },
+        "ko": "엔초 마레스카",
+        "source_row": 157,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 117955,
+        "identity": {
+          "name": "Jacob Neestrup Hansen"
+        },
+        "ko": "야코브 네스트루프 한센",
+        "source_row": 158,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 119214,
+        "identity": {
+          "name": "Daniel Osafo-Badu"
+        },
+        "ko": "대니얼 오사포바두",
+        "source_row": 159,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 124829,
+        "identity": {
+          "name": "Ran Kozuch"
+        },
+        "ko": "란 코주흐",
+        "source_row": 163,
+        "source_status": "웹 확인"
+      },
+      {
+        "coach_id": 127492,
+        "identity": {
+          "name": "Eugenio Corini"
+        },
+        "ko": "에우제니오 코리니",
+        "source_row": 165,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 127538,
+        "identity": {
+          "name": "Clarence Seedorf"
+        },
+        "ko": "클라렌스 세도르프",
+        "source_row": 167,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 127597,
+        "identity": {
+          "name": "Dejan Stankovic"
+        },
+        "ko": "데얀 스탄코비치",
+        "source_row": 169,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 127616,
+        "identity": {
+          "name": "Paolo Zanetti"
+        },
+        "ko": "파올로 차네티",
+        "source_row": 170,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 127617,
+        "identity": {
+          "name": "Leonardo Colucci"
+        },
+        "ko": "레오나르도 콜루치",
+        "source_row": 171,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 127657,
+        "identity": {
+          "name": "Abdoulay Konko"
+        },
+        "ko": "압둘라이 콩코",
+        "source_row": 172,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 127771,
+        "identity": {
+          "name": "Alberto Gilardino"
+        },
+        "ko": "알베르토 질라르디노",
+        "source_row": 174,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 127799,
+        "identity": {
+          "name": "Luca Vigiani"
+        },
+        "ko": "루카 비자니",
+        "source_row": 175,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 127811,
+        "identity": {
+          "name": "Andrea Soncin"
+        },
+        "ko": "안드레아 손친",
+        "source_row": 176,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 127925,
+        "identity": {
+          "name": "Cristian Chivu"
+        },
+        "ko": "크리스티안 키부",
+        "source_row": 179,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 127935,
+        "identity": {
+          "name": "Antonio Floro Flores"
+        },
+        "ko": "안토니오 플로로 플로레스",
+        "source_row": 180,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 127965,
+        "identity": {
+          "name": "Gennaro Gattuso"
+        },
+        "ko": "젠나로 가투소",
+        "source_row": 181,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 127980,
+        "identity": {
+          "name": "Ivan Juric"
+        },
+        "ko": "이반 유리치",
+        "source_row": 182,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 127987,
+        "identity": {
+          "name": "Alessandro Nesta"
+        },
+        "ko": "알레산드로 네스타",
+        "source_row": 183,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 127989,
+        "identity": {
+          "name": "Andrea Pirlo"
+        },
+        "ko": "안드레아 피를로",
+        "source_row": 184,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 128013,
+        "identity": {
+          "name": "Fabio Liverani"
+        },
+        "ko": "파비오 리베라니",
+        "source_row": 185,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 128118,
+        "identity": {
+          "name": "Daniele Galloppa"
+        },
+        "ko": "다니엘레 갈로파",
+        "source_row": 188,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 128295,
+        "identity": {
+          "name": "Raffaele Palladino"
+        },
+        "ko": "라파엘레 팔라디노",
+        "source_row": 192,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 128311,
+        "identity": {
+          "name": "Alessandro Agostini"
+        },
+        "ko": "알레산드로 아고스티니",
+        "source_row": 193,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 128374,
+        "identity": {
+          "name": "Cristian Stellini"
+        },
+        "ko": "크리스티안 스텔리니",
+        "source_row": 194,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 128419,
+        "identity": {
+          "name": "Fabio Cannavaro"
+        },
+        "ko": "파비오 칸나바로",
+        "source_row": 195,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 128505,
+        "identity": {
+          "name": "Salvatore Bocchetti"
+        },
+        "ko": "살바토레 보케티",
+        "source_row": 196,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 129954,
+        "identity": {
+          "name": "Pietro De Giorgio"
+        },
+        "ko": "피에트로 데 조르조",
+        "source_row": 197,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 130283,
+        "identity": {
+          "name": "Raffaele Longo"
+        },
+        "ko": "라파엘레 롱고",
+        "source_row": 199,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 130290,
+        "identity": {
+          "name": "Davide Possanzini"
+        },
+        "ko": "다비데 포산치니",
+        "source_row": 200,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 130370,
+        "identity": {
+          "name": "Gaetano Caridi"
+        },
+        "ko": "가에타노 카리디",
+        "source_row": 201,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 130528,
+        "identity": {
+          "name": "Fabio Pecchia"
+        },
+        "ko": "파비오 페키아",
+        "source_row": 202,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 134646,
+        "identity": {
+          "name": "Andrei Karpovich"
+        },
+        "ko": "안드레이 카르포비치",
+        "source_row": 204,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 135222,
+        "identity": {
+          "name": "Rafael Urazbakhtin"
+        },
+        "ko": "라파엘 우라즈바흐틴",
+        "source_row": 205,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 138506,
+        "identity": {
+          "name": "Andrius Skerla"
+        },
+        "ko": "안드류스 스케를라",
+        "source_row": 206,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 141517,
+        "identity": {
+          "name": "Ardijan Nuhiji"
+        },
+        "ko": "아르디안 누히우",
+        "source_row": 207,
+        "source_status": "웹 확인"
+      },
+      {
+        "coach_id": 141572,
+        "identity": {
+          "name": "Festim Ademi"
+        },
+        "ko": "페스팀 아데미",
+        "source_row": 208,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 146356,
+        "identity": {
+          "name": "Andriy Demchenko"
+        },
+        "ko": "안드리 뎀첸코",
+        "source_row": 209,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 146777,
+        "identity": {
+          "name": "Zdravko Dragićević"
+        },
+        "ko": "즈드라브코 드라기체비치",
+        "source_row": 210,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 149815,
+        "identity": {
+          "name": "Magnus Powell"
+        },
+        "ko": "마그누스 파웰",
+        "source_row": 211,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 152235,
+        "identity": {
+          "name": "Eirik Horneland"
+        },
+        "ko": "에이리크 호르넬란",
+        "source_row": 212,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 153980,
+        "identity": {
+          "name": "Pavol Stano"
+        },
+        "ko": "파볼 스타노",
+        "source_row": 215,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 155555,
+        "identity": {
+          "name": "Konstantin Vassiljev"
+        },
+        "ko": "콘스탄틴 바실리예프",
+        "source_row": 216,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 158158,
+        "identity": {
+          "name": "Ruben Amorim"
+        },
+        "ko": "후벤 아모링",
+        "source_row": 217,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 159773,
+        "identity": {
+          "name": "Vítor Bruno"
+        },
+        "ko": "비토르 브루누",
+        "source_row": 218,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 163293,
+        "identity": {
+          "name": "Cristian Fabbiani"
+        },
+        "ko": "크리스티안 파비아니",
+        "source_row": 219,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 172446,
+        "identity": {
+          "name": "Efrain Juarez"
+        },
+        "ko": "에프라인 후아레스",
+        "source_row": 220,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 173023,
+        "identity": {
+          "name": "Alex Neil"
+        },
+        "ko": "앨릭스 닐",
+        "source_row": 221,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 176760,
+        "identity": {
+          "name": "Veljko Paunovic"
+        },
+        "ko": "벨코 파우노비치",
+        "source_row": 222,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 176765,
+        "identity": {
+          "name": "Radomir Koković"
+        },
+        "ko": "라도미르 코코비치",
+        "source_row": 223,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 184794,
+        "identity": {
+          "name": "Sergio"
+        },
+        "ko": "세르히오",
+        "source_row": 224,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 184903,
+        "identity": {
+          "name": "Albert Celades López"
+        },
+        "ko": "알베르트 셀라데스 로페스",
+        "source_row": 225,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 184942,
+        "identity": {
+          "name": "Xavi"
+        },
+        "ko": "샤비",
+        "source_row": 226,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 184954,
+        "identity": {
+          "name": "Leonardo Franco"
+        },
+        "ko": "레오나르도 프랑코",
+        "source_row": 227,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 185046,
+        "identity": {
+          "name": "Álvaro Rubio"
+        },
+        "ko": "알바로 루비오",
+        "source_row": 229,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 185095,
+        "identity": {
+          "name": "Rubén Baraja"
+        },
+        "ko": "루벤 바라하",
+        "source_row": 230,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 185287,
+        "identity": {
+          "name": "Rufete"
+        },
+        "ko": "루페테",
+        "source_row": 231,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 185336,
+        "identity": {
+          "name": "Moreno"
+        },
+        "ko": "모레노",
+        "source_row": 232,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 185346,
+        "identity": {
+          "name": "Calleja"
+        },
+        "ko": "카예하",
+        "source_row": 233,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 185486,
+        "identity": {
+          "name": "Óscar Sánchez"
+        },
+        "ko": "오스카르 산체스",
+        "source_row": 234,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 185870,
+        "identity": {
+          "name": "Vicente Iborra de la Fuente"
+        },
+        "ko": "비센테 이보라 데 라 푸엔테",
+        "source_row": 236,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 185917,
+        "identity": {
+          "name": "Arda Turan"
+        },
+        "ko": "아르다 투란",
+        "source_row": 237,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 187382,
+        "identity": {
+          "name": "Ruben Torrecilla"
+        },
+        "ko": "루벤 토레시야",
+        "source_row": 241,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 187679,
+        "identity": {
+          "name": "Patri"
+        },
+        "ko": "파트리",
+        "source_row": 242,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 187936,
+        "identity": {
+          "name": "Sergio Francisco"
+        },
+        "ko": "세르히오 프란시스코",
+        "source_row": 243,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 188158,
+        "identity": {
+          "name": "Javi Martínez"
+        },
+        "ko": "하비 마르티네스",
+        "source_row": 244,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 188502,
+        "identity": {
+          "name": "Felip Ortiz"
+        },
+        "ko": "펠리프 오르티스",
+        "source_row": 245,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 189541,
+        "identity": {
+          "name": "Henrik Rydström"
+        },
+        "ko": "헨리크 뤼드스트룀",
+        "source_row": 246,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 197165,
+        "identity": {
+          "name": "Marc Schneider"
+        },
+        "ko": "마르크 슈나이더",
+        "source_row": 248,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 204364,
+        "identity": {
+          "name": "Ruslan Rotan"
+        },
+        "ko": "루슬란 로탄",
+        "source_row": 252,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 209134,
+        "identity": {
+          "name": "Scott Ruscoe"
+        },
+        "ko": "스콧 러스코",
+        "source_row": 253,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 227933,
+        "identity": {
+          "name": "Marinho Nascimento"
+        },
+        "ko": "마리뉴 나시멘투",
+        "source_row": 255,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 323316,
+        "identity": {
+          "name": "Chris Davies"
+        },
+        "ko": "크리스 데이비스",
+        "source_row": 258,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 336679,
+        "identity": {
+          "name": "Artak Oseyan"
+        },
+        "ko": "아르타크 오세얀",
+        "source_row": 259,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 337859,
+        "identity": {
+          "name": "Javi Muñoz"
+        },
+        "ko": "하비 무뇨스",
+        "source_row": 260,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 361268,
+        "identity": {
+          "name": "Pierre Aristouy"
+        },
+        "ko": "피에르 아리스투이",
+        "source_row": 264,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 364995,
+        "identity": {
+          "name": "Davide Nicola"
+        },
+        "ko": "다비데 니콜라",
+        "source_row": 265,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 365779,
+        "identity": {
+          "name": "Massimo Brambilla"
+        },
+        "ko": "마시모 브람빌라",
+        "source_row": 266,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 367568,
+        "identity": {
+          "name": "Alessio Dionisi"
+        },
+        "ko": "알레시오 디오니시",
+        "source_row": 267,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 367604,
+        "identity": {
+          "name": "Marco Ianni"
+        },
+        "ko": "마르코 이안니",
+        "source_row": 268,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 379220,
+        "identity": {
+          "name": "Mario Pérez"
+        },
+        "ko": "마리오 페레스",
+        "source_row": 270,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 379273,
+        "identity": {
+          "name": "Lluis Blanco"
+        },
+        "ko": "류이스 블랑코",
+        "source_row": 271,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 407775,
+        "identity": {
+          "name": "Zinédine Zidane"
+        },
+        "ko": "지네딘 지단",
+        "source_row": 273,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 407845,
+        "identity": {
+          "name": "Igor Tudor"
+        },
+        "ko": "이고르 투도르",
+        "source_row": 274,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 417317,
+        "identity": {
+          "name": "Edin Terzic"
+        },
+        "ko": "에딘 테르지치",
+        "source_row": 275,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 429880,
+        "identity": {
+          "name": "Nelson Vivas"
+        },
+        "ko": "넬손 비바스",
+        "source_row": 276,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 449595,
+        "identity": {
+          "name": "Antonio Muñoz"
+        },
+        "ko": "안토니오 무뇨스",
+        "source_row": 277,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 452690,
+        "identity": {
+          "name": "Felix Magath"
+        },
+        "ko": "펠릭스 마가트",
+        "source_row": 279,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 453012,
+        "identity": {
+          "name": "Sebastián Beccacece"
+        },
+        "ko": "세바스티안 베카세세",
+        "source_row": 282,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455343,
+        "identity": {
+          "name": "Slaven Bilić"
+        },
+        "ko": "슬라벤 빌리치",
+        "source_row": 283,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455353,
+        "identity": {
+          "name": "Jürgen Klopp"
+        },
+        "ko": "위르겐 클로프",
+        "source_row": 284,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455358,
+        "identity": {
+          "name": "Mauricio Pochettino Trossero"
+        },
+        "ko": "마우리시오 포체티노 트로세로",
+        "source_row": 286,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455360,
+        "identity": {
+          "name": "Tony Pulis"
+        },
+        "ko": "토니 퓰리스",
+        "source_row": 287,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455363,
+        "identity": {
+          "name": "Slaviša Jokanović"
+        },
+        "ko": "슬라비샤 요카노비치",
+        "source_row": 289,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455372,
+        "identity": {
+          "name": "Ronald Koeman"
+        },
+        "ko": "로날트 쿠만",
+        "source_row": 290,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455377,
+        "identity": {
+          "name": "Steve Bruce"
+        },
+        "ko": "스티브 브루스",
+        "source_row": 292,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455383,
+        "identity": {
+          "name": "Arsène Wenger"
+        },
+        "ko": "아르센 벵거",
+        "source_row": 293,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455400,
+        "identity": {
+          "name": "Chris Wilder"
+        },
+        "ko": "크리스 와일더",
+        "source_row": 296,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455458,
+        "identity": {
+          "name": "Mark Hughes"
+        },
+        "ko": "마크 휴스",
+        "source_row": 298,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455461,
+        "identity": {
+          "name": "Sean Dyche"
+        },
+        "ko": "숀 다이치",
+        "source_row": 299,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455465,
+        "identity": {
+          "name": "Paul Lambert"
+        },
+        "ko": "폴 램버트",
+        "source_row": 300,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455468,
+        "identity": {
+          "name": "Paul Clement"
+        },
+        "ko": "폴 클레먼트",
+        "source_row": 301,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455469,
+        "identity": {
+          "name": "Alan Irvine"
+        },
+        "ko": "앨런 어빈",
+        "source_row": 302,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455473,
+        "identity": {
+          "name": "Craig Shakespeare"
+        },
+        "ko": "크레이그 셰익스피어",
+        "source_row": 303,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455474,
+        "identity": {
+          "name": "Claude Puel"
+        },
+        "ko": "클로드 퓌엘",
+        "source_row": 304,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455489,
+        "identity": {
+          "name": "Mark Robins"
+        },
+        "ko": "마크 로빈스",
+        "source_row": 305,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455493,
+        "identity": {
+          "name": "José González Martín del Campo"
+        },
+        "ko": "호세 곤살레스 마르틴 델 캄포",
+        "source_row": 306,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455648,
+        "identity": {
+          "name": "Pepe Mel"
+        },
+        "ko": "페페 멜",
+        "source_row": 307,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455664,
+        "identity": {
+          "name": "Stefano Colantuono"
+        },
+        "ko": "스테파노 콜란투오노",
+        "source_row": 309,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455672,
+        "identity": {
+          "name": "Lucien Favre"
+        },
+        "ko": "뤼시앵 파브르",
+        "source_row": 310,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455712,
+        "identity": {
+          "name": "Urs Fischer"
+        },
+        "ko": "우르스 피셔",
+        "source_row": 313,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455800,
+        "identity": {
+          "name": "Carlo Ancelotti"
+        },
+        "ko": "카를로 안첼로티",
+        "source_row": 315,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455803,
+        "identity": {
+          "name": "Andries Jonker"
+        },
+        "ko": "안드리스 용커",
+        "source_row": 316,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455815,
+        "identity": {
+          "name": "Olivier Pantaloni"
+        },
+        "ko": "올리비에 팡탈로니",
+        "source_row": 317,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455827,
+        "identity": {
+          "name": "Stéphane Le Mignan"
+        },
+        "ko": "스테판 르 미냥",
+        "source_row": 320,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455848,
+        "identity": {
+          "name": "Marco Baroni"
+        },
+        "ko": "마르코 바로니",
+        "source_row": 321,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455867,
+        "identity": {
+          "name": "Craig Harrison"
+        },
+        "ko": "크레이그 해리슨",
+        "source_row": 322,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455882,
+        "identity": {
+          "name": "Massimo Rastelli"
+        },
+        "ko": "마시모 라스텔리",
+        "source_row": 323,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455926,
+        "identity": {
+          "name": "Maurizio Sarri"
+        },
+        "ko": "마우리치오 사리",
+        "source_row": 325,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455927,
+        "identity": {
+          "name": "Eusebio Sacristán Mena"
+        },
+        "ko": "에우세비오 사크리스탄 메나",
+        "source_row": 326,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455928,
+        "identity": {
+          "name": "Jean-Louis Gasset"
+        },
+        "ko": "장루이 가세",
+        "source_row": 327,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455930,
+        "identity": {
+          "name": "Christian Gourcuff"
+        },
+        "ko": "크리스티앙 구르퀴프",
+        "source_row": 328,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455935,
+        "identity": {
+          "name": "Siniša Mihajlović"
+        },
+        "ko": "시니샤 미하일로비치",
+        "source_row": 329,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455945,
+        "identity": {
+          "name": "Paulo Rodrigues Fonseca"
+        },
+        "ko": "파울루 호드리게스 폰세카",
+        "source_row": 331,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455957,
+        "identity": {
+          "name": "Massimiliano Allegri"
+        },
+        "ko": "마시밀리아노 알레그리",
+        "source_row": 332,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455958,
+        "identity": {
+          "name": "Peter Bosz"
+        },
+        "ko": "페터르 보스",
+        "source_row": 333,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 455978,
+        "identity": {
+          "name": "Adolf Hütter"
+        },
+        "ko": "아돌프 휘터",
+        "source_row": 334,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 455994,
+        "identity": {
+          "name": "Roberto Bordin"
+        },
+        "ko": "로베르토 보르딘",
+        "source_row": 336,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456014,
+        "identity": {
+          "name": "Jorge Sampaoli Moya"
+        },
+        "ko": "호르헤 삼파올리 모야",
+        "source_row": 337,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 456020,
+        "identity": {
+          "name": "Dieter Hecking"
+        },
+        "ko": "디터 헤킹",
+        "source_row": 338,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 456022,
+        "identity": {
+          "name": "Thierry Laurey"
+        },
+        "ko": "티에리 로레",
+        "source_row": 339,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456038,
+        "identity": {
+          "name": "Gian Gasperini"
+        },
+        "ko": "잔 가스페리니",
+        "source_row": 340,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456084,
+        "identity": {
+          "name": "Christian Bucchi"
+        },
+        "ko": "크리스티안 부키",
+        "source_row": 341,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456113,
+        "identity": {
+          "name": "Erik ten Hag"
+        },
+        "ko": "에릭 텐 하흐",
+        "source_row": 343,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 456153,
+        "identity": {
+          "name": "Stéphane Moulin"
+        },
+        "ko": "스테판 물랭",
+        "source_row": 344,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456161,
+        "identity": {
+          "name": "Martin Schmidt"
+        },
+        "ko": "마르틴 슈미트",
+        "source_row": 345,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456183,
+        "identity": {
+          "name": "Simon Rožman"
+        },
+        "ko": "시몬 로주만",
+        "source_row": 346,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456247,
+        "identity": {
+          "name": "Christophe Pélissier"
+        },
+        "ko": "크리스토프 펠리시에",
+        "source_row": 347,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 456258,
+        "identity": {
+          "name": "Asier Garitano"
+        },
+        "ko": "아시에르 가리타노",
+        "source_row": 348,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456409,
+        "identity": {
+          "name": "Luis Carrión Delgado"
+        },
+        "ko": "루이스 카리온 델가도",
+        "source_row": 350,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456421,
+        "identity": {
+          "name": "Jess Thorup"
+        },
+        "ko": "예스 토루프",
+        "source_row": 351,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456423,
+        "identity": {
+          "name": "Arrasate"
+        },
+        "ko": "아라사테",
+        "source_row": 352,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456433,
+        "identity": {
+          "name": "Henning Berg"
+        },
+        "ko": "헤닝 베르그",
+        "source_row": 353,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 456549,
+        "identity": {
+          "name": "Valdas Dambrauskas"
+        },
+        "ko": "발다스 담브라우스카스",
+        "source_row": 355,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456603,
+        "identity": {
+          "name": "Michel Der Zakarian"
+        },
+        "ko": "미셸 데르 자카리안",
+        "source_row": 356,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 456646,
+        "identity": {
+          "name": "Julio Velázquez"
+        },
+        "ko": "훌리오 벨라스케스",
+        "source_row": 357,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 456652,
+        "identity": {
+          "name": "Uwe Neuhaus"
+        },
+        "ko": "우베 노이하우스",
+        "source_row": 358,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456656,
+        "identity": {
+          "name": "Claude Robin"
+        },
+        "ko": "클로드 로뱅",
+        "source_row": 359,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 456663,
+        "identity": {
+          "name": "Friedhelm Funkel"
+        },
+        "ko": "프리트헬름 풍켈",
+        "source_row": 360,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 457045,
+        "identity": {
+          "name": "Kåre Ingebrigtsen"
+        },
+        "ko": "코레 잉게브릭트센",
+        "source_row": 361,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 457910,
+        "identity": {
+          "name": "Mika Laurikainen"
+        },
+        "ko": "미카 라우리카이넨",
+        "source_row": 364,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 458506,
+        "identity": {
+          "name": "Kasper Hjulmand"
+        },
+        "ko": "카스페르 율만",
+        "source_row": 365,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 458610,
+        "identity": {
+          "name": "Sandro Schwarz"
+        },
+        "ko": "산드로 슈바르츠",
+        "source_row": 366,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 458614,
+        "identity": {
+          "name": "André Breitenreiter"
+        },
+        "ko": "안드레 브라이텐라이터",
+        "source_row": 367,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 458751,
+        "identity": {
+          "name": "Markus Gisdol"
+        },
+        "ko": "마르쿠스 기스돌",
+        "source_row": 368,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 458978,
+        "identity": {
+          "name": "Frank Schmidt"
+        },
+        "ko": "프랑크 슈미트",
+        "source_row": 371,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 459054,
+        "identity": {
+          "name": "Antoine Kombouare"
+        },
+        "ko": "앙투안 콩부아레",
+        "source_row": 372,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 459056,
+        "identity": {
+          "name": "Quique Setién"
+        },
+        "ko": "키케 세티엔",
+        "source_row": 373,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 459100,
+        "identity": {
+          "name": "Stefano Pioli"
+        },
+        "ko": "스테파노 피올리",
+        "source_row": 374,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 459192,
+        "identity": {
+          "name": "Darko Milanič"
+        },
+        "ko": "다르코 밀라니치",
+        "source_row": 375,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 459565,
+        "identity": {
+          "name": "Hannes Wolf"
+        },
+        "ko": "한네스 볼프",
+        "source_row": 377,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 459570,
+        "identity": {
+          "name": "Peter Stöger"
+        },
+        "ko": "페터 슈퇴거",
+        "source_row": 378,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 459651,
+        "identity": {
+          "name": "Matjaž Kek"
+        },
+        "ko": "마탸시 케크",
+        "source_row": 379,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 459666,
+        "identity": {
+          "name": "Ronald Montero Iglesias"
+        },
+        "ko": "로날드 몬테로 이글레시아스",
+        "source_row": 380,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 459671,
+        "identity": {
+          "name": "Tayfun Korkut"
+        },
+        "ko": "타이푼 코르쿠트",
+        "source_row": 381,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 459675,
+        "identity": {
+          "name": "José González López"
+        },
+        "ko": "호세 곤살레스 로페스",
+        "source_row": 382,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 459717,
+        "identity": {
+          "name": "Bernd Hollerbach"
+        },
+        "ko": "베른트 홀러바흐",
+        "source_row": 383,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 459871,
+        "identity": {
+          "name": "Stefan Ruthenbeck"
+        },
+        "ko": "슈테판 루텐베크",
+        "source_row": 385,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 460060,
+        "identity": {
+          "name": "Juan López Muñiz"
+        },
+        "ko": "후안 로페스 무니스",
+        "source_row": 386,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 460085,
+        "identity": {
+          "name": "Heiko Herrlich"
+        },
+        "ko": "하이코 헤를리히",
+        "source_row": 387,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 460197,
+        "identity": {
+          "name": "Christian Streich"
+        },
+        "ko": "크리스티안 슈트라이히",
+        "source_row": 390,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 460255,
+        "identity": {
+          "name": "Torsten Lieberknecht"
+        },
+        "ko": "토르스텐 리버크네히트",
+        "source_row": 391,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 460266,
+        "identity": {
+          "name": "Florian Kohfeldt"
+        },
+        "ko": "플로리안 코펠트",
+        "source_row": 392,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 460370,
+        "identity": {
+          "name": "Diego Cocca Pera"
+        },
+        "ko": "디에고 코카 페라",
+        "source_row": 394,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 460451,
+        "identity": {
+          "name": "Patrick Vieira"
+        },
+        "ko": "파트리크 비에라",
+        "source_row": 395,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 460530,
+        "identity": {
+          "name": "Robert Klauß"
+        },
+        "ko": "로베르트 클라우스",
+        "source_row": 396,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 460905,
+        "identity": {
+          "name": "Aleksandr Yermakovich"
+        },
+        "ko": "알렉산드르 예르마코비치",
+        "source_row": 398,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 460993,
+        "identity": {
+          "name": "Ernest Gjoka"
+        },
+        "ko": "에르네스트 조카",
+        "source_row": 399,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 461083,
+        "identity": {
+          "name": "Goce Sedloski"
+        },
+        "ko": "고체 세들로스키",
+        "source_row": 400,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 461561,
+        "identity": {
+          "name": "Marek Zub"
+        },
+        "ko": "마레크 주프",
+        "source_row": 401,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 462197,
+        "identity": {
+          "name": "Jeton Beqiri"
+        },
+        "ko": "예톤 베치리",
+        "source_row": 404,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 462788,
+        "identity": {
+          "name": "Aleksandr Puštov"
+        },
+        "ko": "알렉산드르 푸시토프",
+        "source_row": 407,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 463057,
+        "identity": {
+          "name": "Luís Pina Cabral Villas-Boas"
+        },
+        "ko": "루이스 피나 카브랄 빌라스보아스",
+        "source_row": 408,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 463191,
+        "identity": {
+          "name": "Nenad Bjelica"
+        },
+        "ko": "네나드 비엘리차",
+        "source_row": 409,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 463785,
+        "identity": {
+          "name": "Yury Vernydub"
+        },
+        "ko": "유리 베르니두브",
+        "source_row": 410,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 464744,
+        "identity": {
+          "name": "Olivier Dall’Oglio"
+        },
+        "ko": "올리비에 달롤리오",
+        "source_row": 411,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 464754,
+        "identity": {
+          "name": "Álvaro Cervera Díaz"
+        },
+        "ko": "알바로 세르베라 디아스",
+        "source_row": 412,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 464910,
+        "identity": {
+          "name": "Bernard Blaquart"
+        },
+        "ko": "베르나르 블라카르",
+        "source_row": 413,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 464975,
+        "identity": {
+          "name": "Francisco"
+        },
+        "ko": "프란시스코",
+        "source_row": 414,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 465028,
+        "identity": {
+          "name": "Ricard Imbernon Rios"
+        },
+        "ko": "리카르트 임베르논 리오스",
+        "source_row": 416,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 465167,
+        "identity": {
+          "name": "Sabri Lamouchi"
+        },
+        "ko": "사브리 라무시",
+        "source_row": 417,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 465718,
+        "identity": {
+          "name": "Zoran Zekić"
+        },
+        "ko": "조란 제키치",
+        "source_row": 418,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 466541,
+        "identity": {
+          "name": "Diego Martínez Penas"
+        },
+        "ko": "디에고 마르티네스 페나스",
+        "source_row": 419,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 466699,
+        "identity": {
+          "name": "Roberto Donadoni"
+        },
+        "ko": "로베르토 도나도니",
+        "source_row": 420,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 466730,
+        "identity": {
+          "name": "György Bognár"
+        },
+        "ko": "죄르지 보그나르",
+        "source_row": 421,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 467837,
+        "identity": {
+          "name": "Ricardo Andrade Silva Sá Pinto"
+        },
+        "ko": "히카르두 안드라드 실바 사 핀투",
+        "source_row": 424,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 467944,
+        "identity": {
+          "name": "Christian Gross"
+        },
+        "ko": "크리스티안 그로스",
+        "source_row": 426,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 474593,
+        "identity": {
+          "name": "Giovanni De Biasi"
+        },
+        "ko": "조반니 데 비아시",
+        "source_row": 430,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 474619,
+        "identity": {
+          "name": "Giampiero Ventura"
+        },
+        "ko": "잠피에로 벤투라",
+        "source_row": 431,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 474706,
+        "identity": {
+          "name": "Vladimir Petković"
+        },
+        "ko": "블라디미르 페트코비치",
+        "source_row": 432,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 518647,
+        "identity": {
+          "name": "Walter Mazzarri"
+        },
+        "ko": "발테르 마차리",
+        "source_row": 435,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 518873,
+        "identity": {
+          "name": "Magnus Pehrsson"
+        },
+        "ko": "마그누스 페르손",
+        "source_row": 436,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 518875,
+        "identity": {
+          "name": "Bo Henriksen"
+        },
+        "ko": "보 헨릭센",
+        "source_row": 437,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 523894,
+        "identity": {
+          "name": "Javier Gracia Carlos"
+        },
+        "ko": "하비에르 그라시아 카를로스",
+        "source_row": 438,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 523896,
+        "identity": {
+          "name": "Manuel Berizzo"
+        },
+        "ko": "마누엘 베리소",
+        "source_row": 439,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 523905,
+        "identity": {
+          "name": "Rudi Garcia"
+        },
+        "ko": "뤼디 가르시아",
+        "source_row": 442,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 523909,
+        "identity": {
+          "name": "Óscar García Junyent"
+        },
+        "ko": "오스카르 가르시아 주녠트",
+        "source_row": 443,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 523910,
+        "identity": {
+          "name": "Sam Allardyce"
+        },
+        "ko": "샘 앨러다이스",
+        "source_row": 444,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 523914,
+        "identity": {
+          "name": "Carlos Soares da Costa Faria Carvalhal"
+        },
+        "ko": "카를루스 소아르스 다 코스타 파리아 카르발랼",
+        "source_row": 446,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 523929,
+        "identity": {
+          "name": "John van den Brom"
+        },
+        "ko": "욘 판 덴 브롬",
+        "source_row": 448,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 523936,
+        "identity": {
+          "name": "Markus Weinzierl"
+        },
+        "ko": "마르쿠스 바인치얼",
+        "source_row": 450,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 523946,
+        "identity": {
+          "name": "Chris Hughton"
+        },
+        "ko": "크리스 휴턴",
+        "source_row": 452,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 523953,
+        "identity": {
+          "name": "Bruno Génésio"
+        },
+        "ko": "브뤼노 제네시오",
+        "source_row": 453,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 523973,
+        "identity": {
+          "name": "Manuel Baum"
+        },
+        "ko": "마누엘 바움",
+        "source_row": 456,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 523982,
+        "identity": {
+          "name": "Rolando Maran"
+        },
+        "ko": "롤란도 마란",
+        "source_row": 457,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524018,
+        "identity": {
+          "name": "Paulo Carvalho de Sousa"
+        },
+        "ko": "파울루 카르발류 드 소자",
+        "source_row": 460,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524029,
+        "identity": {
+          "name": "Thomas Doll"
+        },
+        "ko": "토마스 돌",
+        "source_row": 461,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 524030,
+        "identity": {
+          "name": "Vincenzo Montella"
+        },
+        "ko": "빈첸초 몬텔라",
+        "source_row": 462,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 524177,
+        "identity": {
+          "name": "Salvador Gonzalez Marco"
+        },
+        "ko": "살바도르 곤살레스 마르코",
+        "source_row": 463,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524237,
+        "identity": {
+          "name": "Dean Smith"
+        },
+        "ko": "딘 스미스",
+        "source_row": 464,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 524244,
+        "identity": {
+          "name": "Pablo Machín Díez"
+        },
+        "ko": "파블로 마친 디에스",
+        "source_row": 465,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524279,
+        "identity": {
+          "name": "David Healy"
+        },
+        "ko": "데이비드 힐리",
+        "source_row": 467,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 524286,
+        "identity": {
+          "name": "Jean-Marc Furlan"
+        },
+        "ko": "장마르크 퓌를랑",
+        "source_row": 468,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524290,
+        "identity": {
+          "name": "Alain Casanova"
+        },
+        "ko": "알랭 카사노바",
+        "source_row": 469,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524297,
+        "identity": {
+          "name": "Ralph Hasenhüttl"
+        },
+        "ko": "랄프 하젠휘틀",
+        "source_row": 470,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 524306,
+        "identity": {
+          "name": "Pascal Dupraz"
+        },
+        "ko": "파스칼 뒤프라",
+        "source_row": 471,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524307,
+        "identity": {
+          "name": "Ole Solskjær"
+        },
+        "ko": "올레 솔셰르",
+        "source_row": 472,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 524310,
+        "identity": {
+          "name": "Michael Appleton"
+        },
+        "ko": "마이클 애플턴",
+        "source_row": 473,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524374,
+        "identity": {
+          "name": "Uwe Rösler"
+        },
+        "ko": "우베 뢰슬러",
+        "source_row": 474,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 524431,
+        "identity": {
+          "name": "Luis Zubeldía"
+        },
+        "ko": "루이스 수벨디아",
+        "source_row": 475,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524468,
+        "identity": {
+          "name": "Luigi Delneri"
+        },
+        "ko": "루이지 델네리",
+        "source_row": 477,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524476,
+        "identity": {
+          "name": "Domenico Di Carlo"
+        },
+        "ko": "도메니코 디 카를로",
+        "source_row": 478,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524496,
+        "identity": {
+          "name": "Jacek Magiera"
+        },
+        "ko": "야체크 마기에라",
+        "source_row": 479,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524525,
+        "identity": {
+          "name": "Mark Miller"
+        },
+        "ko": "마크 밀러",
+        "source_row": 480,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524537,
+        "identity": {
+          "name": "Niko Kovač"
+        },
+        "ko": "니코 코바치",
+        "source_row": 481,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 524552,
+        "identity": {
+          "name": "Jesse Marsch"
+        },
+        "ko": "제시 마시",
+        "source_row": 482,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524570,
+        "identity": {
+          "name": "Gabriel Strefezza"
+        },
+        "ko": "가브리에우 스트레페차",
+        "source_row": 483,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524571,
+        "identity": {
+          "name": "Giovanni Martusciello"
+        },
+        "ko": "조반니 마르투셸로",
+        "source_row": 484,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 524690,
+        "identity": {
+          "name": "Luigi Bizzotto"
+        },
+        "ko": "루이지 비초토",
+        "source_row": 485,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 525105,
+        "identity": {
+          "name": "Juan Pavón Domínguez"
+        },
+        "ko": "후안 파본 도밍게스",
+        "source_row": 486,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 526236,
+        "identity": {
+          "name": "Thomas Letsch"
+        },
+        "ko": "토마스 레치",
+        "source_row": 487,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 527346,
+        "identity": {
+          "name": "Julien Stéphan"
+        },
+        "ko": "쥘리앵 스테판",
+        "source_row": 491,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 527526,
+        "identity": {
+          "name": "Patrick Collot"
+        },
+        "ko": "파트리크 콜로",
+        "source_row": 492,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 528506,
+        "identity": {
+          "name": "Gustavo Siviero"
+        },
+        "ko": "구스타보 시비에로",
+        "source_row": 493,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 529830,
+        "identity": {
+          "name": "Antoine Conte"
+        },
+        "ko": "앙투안 콩테",
+        "source_row": 495,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 530329,
+        "identity": {
+          "name": "Pascal Gastien"
+        },
+        "ko": "파스칼 가스티앵",
+        "source_row": 496,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 530755,
+        "identity": {
+          "name": "Imanol Alguacil Barrenetxea"
+        },
+        "ko": "이마놀 알과실 바레네체아",
+        "source_row": 498,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 532352,
+        "identity": {
+          "name": "David Gallego Rodríguez"
+        },
+        "ko": "다비드 가예고 로드리게스",
+        "source_row": 499,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 533879,
+        "identity": {
+          "name": "José Ziganda Lacunza"
+        },
+        "ko": "호세 시간다 라쿤사",
+        "source_row": 500,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 533904,
+        "identity": {
+          "name": "Francisco López Fernández"
+        },
+        "ko": "프란시스코 로페스 페르난데스",
+        "source_row": 501,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 535613,
+        "identity": {
+          "name": "Nicola Berardi"
+        },
+        "ko": "니콜라 베라르디",
+        "source_row": 502,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 608137,
+        "identity": {
+          "name": "Vesa Vasara"
+        },
+        "ko": "베사 바사라",
+        "source_row": 504,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 608246,
+        "identity": {
+          "name": "Alexis Trujillo Oramas"
+        },
+        "ko": "알렉시스 트루히요 오라마스",
+        "source_row": 505,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 688932,
+        "identity": {
+          "name": "Dragan Kažić"
+        },
+        "ko": "드라간 카지치",
+        "source_row": 506,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 784532,
+        "identity": {
+          "name": "Temur Ketsbaia"
+        },
+        "ko": "테무르 케츠바이아",
+        "source_row": 507,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 883011,
+        "identity": {
+          "name": "Mario Been"
+        },
+        "ko": "마리오 베인",
+        "source_row": 508,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 883095,
+        "identity": {
+          "name": "Gaizka Garitano Aguirre"
+        },
+        "ko": "가이스카 가리타노 아기레",
+        "source_row": 509,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 893654,
+        "identity": {
+          "name": "Claudio Ranieri"
+        },
+        "ko": "클라우디오 라니에리",
+        "source_row": 510,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 893655,
+        "identity": {
+          "name": "Domenico Tedesco"
+        },
+        "ko": "도메니코 테데스코",
+        "source_row": 511,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896319,
+        "identity": {
+          "name": "Vahid Halilhodžić"
+        },
+        "ko": "바히드 할릴호지치",
+        "source_row": 515,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896470,
+        "identity": {
+          "name": "Alan Pardew"
+        },
+        "ko": "앨런 파듀",
+        "source_row": 518,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896473,
+        "identity": {
+          "name": "Aitor Karanka de la Hoz"
+        },
+        "ko": "아이토르 카랑카 데 라 오스",
+        "source_row": 519,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896507,
+        "identity": {
+          "name": "Bruno Labbadia"
+        },
+        "ko": "브루노 라바디아",
+        "source_row": 521,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896509,
+        "identity": {
+          "name": "Dirk Schuster"
+        },
+        "ko": "디르크 슈스터",
+        "source_row": 522,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896523,
+        "identity": {
+          "name": "Frank de Boer"
+        },
+        "ko": "프랑크 더 부르",
+        "source_row": 523,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896525,
+        "identity": {
+          "name": "José Nunes Alves Sousa Jardim"
+        },
+        "ko": "조제 누네스 알베스 소자 자르딩",
+        "source_row": 524,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896528,
+        "identity": {
+          "name": "Barak Bakhar"
+        },
+        "ko": "바라크 바하르",
+        "source_row": 525,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896529,
+        "identity": {
+          "name": "Georgi Dermendzhiev"
+        },
+        "ko": "게오르기 데르멘지예프",
+        "source_row": 526,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896551,
+        "identity": {
+          "name": "Philippe Montanier"
+        },
+        "ko": "필리프 몽타니에",
+        "source_row": 528,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896553,
+        "identity": {
+          "name": "Nigel Pearson"
+        },
+        "ko": "나이절 피어슨",
+        "source_row": 529,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896555,
+        "identity": {
+          "name": "Walter Zenga"
+        },
+        "ko": "발테르 첸가",
+        "source_row": 530,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896572,
+        "identity": {
+          "name": "Frédéric Antonetti"
+        },
+        "ko": "프레데리크 앙토네티",
+        "source_row": 531,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896575,
+        "identity": {
+          "name": "Frédéric Hantz"
+        },
+        "ko": "프레데리크 앙츠",
+        "source_row": 532,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896578,
+        "identity": {
+          "name": "Neil Warnock"
+        },
+        "ko": "닐 워녹",
+        "source_row": 533,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896608,
+        "identity": {
+          "name": "Franck Haise"
+        },
+        "ko": "프랑크 에즈",
+        "source_row": 534,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896615,
+        "identity": {
+          "name": "Denis Zanko"
+        },
+        "ko": "드니 장코",
+        "source_row": 535,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896618,
+        "identity": {
+          "name": "Fabien Mercadal"
+        },
+        "ko": "파비앵 메르카달",
+        "source_row": 536,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896619,
+        "identity": {
+          "name": "Lukas Kwasniok"
+        },
+        "ko": "루카스 크바스니오크",
+        "source_row": 537,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896624,
+        "identity": {
+          "name": "Serse Cosmi"
+        },
+        "ko": "세르세 코스미",
+        "source_row": 538,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896626,
+        "identity": {
+          "name": "Giuseppe Iachini"
+        },
+        "ko": "주세페 이아키니",
+        "source_row": 539,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896644,
+        "identity": {
+          "name": "José Sandoval Huertas"
+        },
+        "ko": "호세 산도발 우에르타스",
+        "source_row": 540,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896648,
+        "identity": {
+          "name": "Claudio Prandelli"
+        },
+        "ko": "클라우디오 프란델리",
+        "source_row": 541,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896649,
+        "identity": {
+          "name": "Abelardo Fernández Antuña"
+        },
+        "ko": "아벨라르도 페르난데스 안투냐",
+        "source_row": 542,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896650,
+        "identity": {
+          "name": "Joaquín de Jesús Caparrós Camino"
+        },
+        "ko": "호아킨 데 헤수스 카파로스 카미노",
+        "source_row": 543,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896653,
+        "identity": {
+          "name": "Paco Jémez"
+        },
+        "ko": "파코 헤메스",
+        "source_row": 544,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896755,
+        "identity": {
+          "name": "Antonio Mohamed Matijevich"
+        },
+        "ko": "안토니오 모하메드 마티예비치",
+        "source_row": 545,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896756,
+        "identity": {
+          "name": "Matías Almeyda"
+        },
+        "ko": "마티아스 알메이다",
+        "source_row": 546,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 896757,
+        "identity": {
+          "name": "Diego Alonso López"
+        },
+        "ko": "디에고 알론소 로페스",
+        "source_row": 547,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 896805,
+        "identity": {
+          "name": "Ange Postecoglou"
+        },
+        "ko": "앤지 포스테코글루",
+        "source_row": 549,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 932371,
+        "identity": {
+          "name": "Luigi Di Biagio"
+        },
+        "ko": "루이지 디 비아조",
+        "source_row": 550,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1314182,
+        "identity": {
+          "name": "Arsim Thaçi"
+        },
+        "ko": "아르심 타치",
+        "source_row": 554,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1452203,
+        "identity": {
+          "name": "Christian Ilzer"
+        },
+        "ko": "크리스티안 일처",
+        "source_row": 555,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1452260,
+        "identity": {
+          "name": "Vladimir Vassiljev"
+        },
+        "ko": "블라디미르 바실리예프",
+        "source_row": 556,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1452487,
+        "identity": {
+          "name": "Sergei Bragin"
+        },
+        "ko": "세르게이 브라긴",
+        "source_row": 557,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1467941,
+        "identity": {
+          "name": "Giorgi Tsetsadze"
+        },
+        "ko": "기오르기 체차제",
+        "source_row": 558,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1467973,
+        "identity": {
+          "name": "Miroslav Đukić"
+        },
+        "ko": "미로슬라브 주키치",
+        "source_row": 560,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 1477271,
+        "identity": {
+          "name": "Vinko Marinović"
+        },
+        "ko": "빈코 마리노비치",
+        "source_row": 561,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1477278,
+        "identity": {
+          "name": "Adrián Guľa"
+        },
+        "ko": "아드리안 굴랴",
+        "source_row": 563,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1524899,
+        "identity": {
+          "name": "Blaž Slišković"
+        },
+        "ko": "블라시 슬리슈코비치",
+        "source_row": 565,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 1524900,
+        "identity": {
+          "name": "Erik van der Meer"
+        },
+        "ko": "에릭 판 데르 메이르",
+        "source_row": 566,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1533119,
+        "identity": {
+          "name": "Marcelo Bielsa Caldera"
+        },
+        "ko": "마르셀로 비엘사 칼데라",
+        "source_row": 567,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 1548355,
+        "identity": {
+          "name": "Juan Unzué Labiano"
+        },
+        "ko": "후안 운수에 라비아노",
+        "source_row": 568,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 1548455,
+        "identity": {
+          "name": "Horst Steffen"
+        },
+        "ko": "호르스트 슈테펜",
+        "source_row": 569,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1552424,
+        "identity": {
+          "name": "Manuel Márquez Roca"
+        },
+        "ko": "마누엘 마르케스 로카",
+        "source_row": 570,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1552476,
+        "identity": {
+          "name": "Achim Beierlorzer"
+        },
+        "ko": "아힘 바이어로르처",
+        "source_row": 571,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 1552532,
+        "identity": {
+          "name": "Filipe Amaral Rino Coelho"
+        },
+        "ko": "필리피 아마랄 히누 코엘류",
+        "source_row": 572,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1552561,
+        "identity": {
+          "name": "Gian Privitelli"
+        },
+        "ko": "잔 프리비텔리",
+        "source_row": 573,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1552838,
+        "identity": {
+          "name": "Vítor de Carvalho Campelos"
+        },
+        "ko": "비토르 드 카르발류 캄펠루스",
+        "source_row": 574,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1552879,
+        "identity": {
+          "name": "Stefano Sanderra"
+        },
+        "ko": "스테파노 산데라",
+        "source_row": 575,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1872773,
+        "identity": {
+          "name": "Jan Siewert"
+        },
+        "ko": "얀 지베르트",
+        "source_row": 580,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 1873165,
+        "identity": {
+          "name": "Oleksandr Poklonskyi"
+        },
+        "ko": "올렉산드르 포클론스키",
+        "source_row": 581,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 2158189,
+        "identity": {
+          "name": "Philippe Clement"
+        },
+        "ko": "필리프 클레망",
+        "source_row": 582,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 2158433,
+        "identity": {
+          "name": "László Bölöni"
+        },
+        "ko": "라슬로 뵐뢰니",
+        "source_row": 583,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 2206526,
+        "identity": {
+          "name": "Christian Titz"
+        },
+        "ko": "크리스티안 티츠",
+        "source_row": 584,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 2510599,
+        "identity": {
+          "name": "Pedro Resende dos Morais"
+        },
+        "ko": "페드루 헤젠드 두스 모라이스",
+        "source_row": 585,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 2511135,
+        "identity": {
+          "name": "José Azevedo Cardoso"
+        },
+        "ko": "조제 아제베두 카르도주",
+        "source_row": 586,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 2511270,
+        "identity": {
+          "name": "Julián Calero Fernández"
+        },
+        "ko": "훌리안 칼레로 페르난데스",
+        "source_row": 588,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 2823203,
+        "identity": {
+          "name": "Jozef Vukušič"
+        },
+        "ko": "요제프 부쿠시치",
+        "source_row": 589,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 2823348,
+        "identity": {
+          "name": "İsmail Kartal"
+        },
+        "ko": "이스마일 카르탈",
+        "source_row": 590,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 3187813,
+        "identity": {
+          "name": "Luka Elsner"
+        },
+        "ko": "루카 엘스네르",
+        "source_row": 591,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 3187883,
+        "identity": {
+          "name": "António dos Santos Folha"
+        },
+        "ko": "안토니우 두스 산투스 폴랴",
+        "source_row": 592,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 3509984,
+        "identity": {
+          "name": "Marco Zaffaroni"
+        },
+        "ko": "마르코 차파로니",
+        "source_row": 593,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 3510275,
+        "identity": {
+          "name": "Cristóbal Parralo Aguilera"
+        },
+        "ko": "크리스토발 파랄로 아길레라",
+        "source_row": 594,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 3861734,
+        "identity": {
+          "name": "Thomas Reis"
+        },
+        "ko": "토마스 라이스",
+        "source_row": 595,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 3861781,
+        "identity": {
+          "name": "Marco Grote"
+        },
+        "ko": "마르코 그로테",
+        "source_row": 596,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 3862110,
+        "identity": {
+          "name": "Benjamin Hoffmann"
+        },
+        "ko": "베냐민 호프만",
+        "source_row": 597,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 4592176,
+        "identity": {
+          "name": "Roy Hodgson"
+        },
+        "ko": "로이 호지슨",
+        "source_row": 599,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 4592317,
+        "identity": {
+          "name": "Abdelaziz Bouhazama"
+        },
+        "ko": "압델아지즈 부아자마",
+        "source_row": 600,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 4599210,
+        "identity": {
+          "name": "Javier Cabello Rubio"
+        },
+        "ko": "하비에르 카베요 루비오",
+        "source_row": 601,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 5666542,
+        "identity": {
+          "name": "Josef Heynckes"
+        },
+        "ko": "요제프 하인케스",
+        "source_row": 604,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 5669971,
+        "identity": {
+          "name": "Mislav Karoglan"
+        },
+        "ko": "미슬라브 카로글란",
+        "source_row": 605,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 5689610,
+        "identity": {
+          "name": "Francisco Ayestarán Barandiarán"
+        },
+        "ko": "프란시스코 아예스타란 바란디아란",
+        "source_row": 606,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 5961878,
+        "identity": {
+          "name": "William Still"
+        },
+        "ko": "윌리엄 스틸",
+        "source_row": 607,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 6971104,
+        "identity": {
+          "name": "Duncan Ferguson"
+        },
+        "ko": "덩컨 퍼거슨",
+        "source_row": 608,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 7330518,
+        "identity": {
+          "name": "Francisco García Pimienta"
+        },
+        "ko": "프란시스코 가르시아 피미엔타",
+        "source_row": 609,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 8093364,
+        "identity": {
+          "name": "Gary Megson"
+        },
+        "ko": "게리 멕슨",
+        "source_row": 611,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 9307997,
+        "identity": {
+          "name": "Francisco Ortiz Rivas"
+        },
+        "ko": "프란시스코 오르티스 리바스",
+        "source_row": 612,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 9949804,
+        "identity": {
+          "name": "Marius Baciu"
+        },
+        "ko": "마리우스 바치우",
+        "source_row": 614,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 10269848,
+        "identity": {
+          "name": "Aurelio Andreazzoli"
+        },
+        "ko": "아우렐리오 안드레아촐리",
+        "source_row": 616,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 10307079,
+        "identity": {
+          "name": "Pepijn Lijnders"
+        },
+        "ko": "페파인 레인더르스",
+        "source_row": 618,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 10630610,
+        "identity": {
+          "name": "Nevil Dede"
+        },
+        "ko": "네빌 데데",
+        "source_row": 620,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 13224996,
+        "identity": {
+          "name": "Sergi Barjuán i Esclusa"
+        },
+        "ko": "세르지 바르주안 이 에스클루사",
+        "source_row": 626,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 13238945,
+        "identity": {
+          "name": "Grigoriy Babayan"
+        },
+        "ko": "그리고리 바바얀",
+        "source_row": 627,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 15040160,
+        "identity": {
+          "name": "Zoumana Camara"
+        },
+        "ko": "주마나 카마라",
+        "source_row": 628,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 16144679,
+        "identity": {
+          "name": "Lorenzo D'Anna"
+        },
+        "ko": "로렌초 단나",
+        "source_row": 632,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 17281534,
+        "identity": {
+          "name": "Kim Hellberg"
+        },
+        "ko": "킴 헬베리",
+        "source_row": 634,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 19960383,
+        "identity": {
+          "name": "Ralf Rangnick"
+        },
+        "ko": "랄프 랑니크",
+        "source_row": 636,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 20693423,
+        "identity": {
+          "name": "Ole Werner"
+        },
+        "ko": "올레 베르너",
+        "source_row": 639,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 21395195,
+        "identity": {
+          "name": "Giacomo Modica"
+        },
+        "ko": "자코모 모디카",
+        "source_row": 640,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 21412795,
+        "identity": {
+          "name": "Bruno Nascimento"
+        },
+        "ko": "브루누 나시멘투",
+        "source_row": 642,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 22877956,
+        "identity": {
+          "name": "Gabriele Cioffi"
+        },
+        "ko": "가브리엘레 초피",
+        "source_row": 644,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 23287458,
+        "identity": {
+          "name": "Ben Dawson"
+        },
+        "ko": "벤 도슨",
+        "source_row": 645,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 23738824,
+        "identity": {
+          "name": "Vahe Gevorgyan"
+        },
+        "ko": "바헤 게보르기안",
+        "source_row": 646,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 24427744,
+        "identity": {
+          "name": "Thomas Frank"
+        },
+        "ko": "토마스 프랑크",
+        "source_row": 647,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 25567014,
+        "identity": {
+          "name": "Cristiano Bergodi"
+        },
+        "ko": "크리스티아노 베르고디",
+        "source_row": 648,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 26328630,
+        "identity": {
+          "name": "Miron Muslić"
+        },
+        "ko": "미론 무슬리치",
+        "source_row": 649,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 27088812,
+        "identity": {
+          "name": "Stefano Ceci"
+        },
+        "ko": "스테파노 체치",
+        "source_row": 650,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 29710512,
+        "identity": {
+          "name": "Luís Valado Tralhão"
+        },
+        "ko": "루이스 발라두 트랄량",
+        "source_row": 653,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 30850842,
+        "identity": {
+          "name": "Boris Schommers"
+        },
+        "ko": "보리스 쇼머스",
+        "source_row": 654,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 30850931,
+        "identity": {
+          "name": "Declan Devine"
+        },
+        "ko": "데클런 디바인",
+        "source_row": 655,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 31255278,
+        "identity": {
+          "name": "Michael Stowell"
+        },
+        "ko": "마이클 스토웰",
+        "source_row": 656,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 32404532,
+        "identity": {
+          "name": "Huub Stevens"
+        },
+        "ko": "휘프 스테번스",
+        "source_row": 657,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 32786620,
+        "identity": {
+          "name": "Daniel Guindos Lopez"
+        },
+        "ko": "다니엘 긴도스 로페스",
+        "source_row": 658,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 33186405,
+        "identity": {
+          "name": "Luis Cembranos Martínez"
+        },
+        "ko": "루이스 셈브라노스 마르티네스",
+        "source_row": 659,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37257796,
+        "identity": {
+          "name": "Stéphane Jobard"
+        },
+        "ko": "스테판 조바르",
+        "source_row": 663,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37265609,
+        "identity": {
+          "name": "Vitor Joaquim Pereira"
+        },
+        "ko": "비토르 조아킹 페레이라",
+        "source_row": 664,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37316073,
+        "identity": {
+          "name": "Ibro Rahimić"
+        },
+        "ko": "이브로 라히미치",
+        "source_row": 666,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37331744,
+        "identity": {
+          "name": "Gérald Baticle"
+        },
+        "ko": "제랄 바티클",
+        "source_row": 667,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37335011,
+        "identity": {
+          "name": "Robert Moreno"
+        },
+        "ko": "로베르트 모레노",
+        "source_row": 668,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37336731,
+        "identity": {
+          "name": "Manuel da Silva Cruz"
+        },
+        "ko": "마누엘 다 실바 크루스",
+        "source_row": 669,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37336840,
+        "identity": {
+          "name": "Shota Makharadze"
+        },
+        "ko": "쇼타 마하라제",
+        "source_row": 671,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37336957,
+        "identity": {
+          "name": "Frank Kramer"
+        },
+        "ko": "프랑크 크라머",
+        "source_row": 672,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37351217,
+        "identity": {
+          "name": "Luca Gotti"
+        },
+        "ko": "루카 고티",
+        "source_row": 675,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37357466,
+        "identity": {
+          "name": "Luboš Kozel"
+        },
+        "ko": "루보시 코젤",
+        "source_row": 677,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37361463,
+        "identity": {
+          "name": "Jan-Moritz Lichte"
+        },
+        "ko": "얀모리츠 리히테",
+        "source_row": 678,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37368010,
+        "identity": {
+          "name": "Jürgen Klinsmann"
+        },
+        "ko": "위르겐 클린스만",
+        "source_row": 679,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37380715,
+        "identity": {
+          "name": "Edi Martini"
+        },
+        "ko": "에디 마르티니",
+        "source_row": 680,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37438968,
+        "identity": {
+          "name": "Joachim Björklund"
+        },
+        "ko": "요아킴 비외르클룬드",
+        "source_row": 685,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37523066,
+        "identity": {
+          "name": "Raymond Domenech"
+        },
+        "ko": "레몽 도메네크",
+        "source_row": 690,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37523079,
+        "identity": {
+          "name": "Thomas Schaaf"
+        },
+        "ko": "토마스 샤프",
+        "source_row": 691,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37523259,
+        "identity": {
+          "name": "Juan Jose Gallardo Fernandez"
+        },
+        "ko": "후안 호세 가야르도 페르난데스",
+        "source_row": 692,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37523743,
+        "identity": {
+          "name": "Eric Roy"
+        },
+        "ko": "에리크 루아",
+        "source_row": 693,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37524130,
+        "identity": {
+          "name": "Markus Feldhoff"
+        },
+        "ko": "마르쿠스 펠트호프",
+        "source_row": 697,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37524146,
+        "identity": {
+          "name": "Kieran McKenna"
+        },
+        "ko": "키런 매케나",
+        "source_row": 698,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37524603,
+        "identity": {
+          "name": "Stéphane Gilli"
+        },
+        "ko": "스테판 질리",
+        "source_row": 699,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37537736,
+        "identity": {
+          "name": "Vincenzo Potenza"
+        },
+        "ko": "빈첸초 포텐차",
+        "source_row": 700,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37543306,
+        "identity": {
+          "name": "Francisco Javier Pereira Mejía"
+        },
+        "ko": "프란시스코 하비에르 페레이라 메히아",
+        "source_row": 701,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37550682,
+        "identity": {
+          "name": "Adrian Dante Ursea"
+        },
+        "ko": "아드리안 단테 우르세아",
+        "source_row": 703,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37555830,
+        "identity": {
+          "name": "Nasser Larguet"
+        },
+        "ko": "나세르 라르게",
+        "source_row": 706,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37555966,
+        "identity": {
+          "name": "Hans Erik Ødegaard"
+        },
+        "ko": "한스 에리크 외데고르",
+        "source_row": 708,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37558369,
+        "identity": {
+          "name": "Mathieu Le Scornet"
+        },
+        "ko": "마티외 르 스코르네",
+        "source_row": 709,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37571867,
+        "identity": {
+          "name": "Morten Jensen"
+        },
+        "ko": "모르텐 옌센",
+        "source_row": 711,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37575018,
+        "identity": {
+          "name": "Edward Still"
+        },
+        "ko": "에드워드 스틸",
+        "source_row": 712,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37583345,
+        "identity": {
+          "name": "Daniele Cavalletto"
+        },
+        "ko": "다니엘레 카발레토",
+        "source_row": 713,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37584240,
+        "identity": {
+          "name": "Vesko Stešević"
+        },
+        "ko": "베스코 스테셰비치",
+        "source_row": 714,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37593573,
+        "identity": {
+          "name": "Danilo Girolomoni"
+        },
+        "ko": "다닐로 지롤로모니",
+        "source_row": 715,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37614914,
+        "identity": {
+          "name": "Martin Anselmi"
+        },
+        "ko": "마르틴 안셀미",
+        "source_row": 719,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37622754,
+        "identity": {
+          "name": "Miika Nuutinen"
+        },
+        "ko": "미카 누티넨",
+        "source_row": 720,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37623328,
+        "identity": {
+          "name": "Akis Vavalis"
+        },
+        "ko": "아키스 바발리스",
+        "source_row": 721,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37629949,
+        "identity": {
+          "name": "Marco Kostmann"
+        },
+        "ko": "마르코 코스트만",
+        "source_row": 722,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37639970,
+        "identity": {
+          "name": "Emilio Longo"
+        },
+        "ko": "에밀리오 롱고",
+        "source_row": 724,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37646014,
+        "identity": {
+          "name": "Davide Ancelotti"
+        },
+        "ko": "다비데 안첼로티",
+        "source_row": 725,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37646248,
+        "identity": {
+          "name": "Marie-Louise Eta"
+        },
+        "ko": "마리루이즈 에타",
+        "source_row": 727,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37646623,
+        "identity": {
+          "name": "Lars Voßler"
+        },
+        "ko": "라르스 포슬러",
+        "source_row": 729,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37646722,
+        "identity": {
+          "name": "Mikel Aramburu Erneta"
+        },
+        "ko": "미켈 아람부루 에르네타",
+        "source_row": 730,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37646786,
+        "identity": {
+          "name": "Jon López"
+        },
+        "ko": "욘 로페스",
+        "source_row": 731,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37647784,
+        "identity": {
+          "name": "Michael Skubala"
+        },
+        "ko": "마이클 스쿠발라",
+        "source_row": 735,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37647975,
+        "identity": {
+          "name": "Gnégnéri Yaya Touré"
+        },
+        "ko": "녜녜리 야야 투레",
+        "source_row": 736,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37647980,
+        "identity": {
+          "name": "Xavi Andrés Ibarra"
+        },
+        "ko": "샤비 안드레스 이바라",
+        "source_row": 737,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37648009,
+        "identity": {
+          "name": "Leonid Pascaru"
+        },
+        "ko": "레오니드 파스카루",
+        "source_row": 738,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37648020,
+        "identity": {
+          "name": "Gert Remmel"
+        },
+        "ko": "게르트 렘멜",
+        "source_row": 739,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37648736,
+        "identity": {
+          "name": "Andrea Tarozzi"
+        },
+        "ko": "안드레아 타로치",
+        "source_row": 742,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37662502,
+        "identity": {
+          "name": "Francesco Calzona"
+        },
+        "ko": "프란체스코 칼초나",
+        "source_row": 744,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37663655,
+        "identity": {
+          "name": "Igor Ryabov"
+        },
+        "ko": "이고르 랴보프",
+        "source_row": 745,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37664990,
+        "identity": {
+          "name": "Alfred Johansson"
+        },
+        "ko": "알프레드 요한손",
+        "source_row": 746,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37666395,
+        "identity": {
+          "name": "Michel Padovani"
+        },
+        "ko": "미셸 파도바니",
+        "source_row": 747,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37666625,
+        "identity": {
+          "name": "Michael Wimmer"
+        },
+        "ko": "미하엘 비머",
+        "source_row": 748,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37668448,
+        "identity": {
+          "name": "Matthias Kreutzer"
+        },
+        "ko": "마티아스 크로이처",
+        "source_row": 749,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37683798,
+        "identity": {
+          "name": "Fabrizio Lorieri"
+        },
+        "ko": "파브리치오 로리에리",
+        "source_row": 751,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37684524,
+        "identity": {
+          "name": "Rubén Sellés Salvador"
+        },
+        "ko": "루벤 세예스 살바도르",
+        "source_row": 752,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37686605,
+        "identity": {
+          "name": "Aleš Arnol"
+        },
+        "ko": "알레시 아르놀",
+        "source_row": 753,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37693264,
+        "identity": {
+          "name": "Richard Owain Davies"
+        },
+        "ko": "리처드 오와인 데이비스",
+        "source_row": 755,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37700640,
+        "identity": {
+          "name": "Carles Martínez Novell"
+        },
+        "ko": "카를레스 마르티네스 노벨",
+        "source_row": 756,
+        "source_status": "통용 표기 참고"
+      },
+      {
+        "coach_id": 37701955,
+        "identity": {
+          "name": "Francesco Tomei"
+        },
+        "ko": "프란체스코 토메이",
+        "source_row": 757,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37703074,
+        "identity": {
+          "name": "Ivan Brnović"
+        },
+        "ko": "이반 브르노비치",
+        "source_row": 758,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37705463,
+        "identity": {
+          "name": "Daniel Luque Tenedor"
+        },
+        "ko": "다니엘 루케 테네도르",
+        "source_row": 759,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37712485,
+        "identity": {
+          "name": "Miroslav Romashchenko"
+        },
+        "ko": "미로슬라프 로마셴코",
+        "source_row": 761,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37714602,
+        "identity": {
+          "name": "Alberto Lasarte Ruiz"
+        },
+        "ko": "알베르토 라사르테 루이스",
+        "source_row": 762,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37715889,
+        "identity": {
+          "name": "Didier Zanetti"
+        },
+        "ko": "디디에 차네티",
+        "source_row": 763,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37732840,
+        "identity": {
+          "name": "Pierre Sage"
+        },
+        "ko": "피에르 사주",
+        "source_row": 765,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37739806,
+        "identity": {
+          "name": "Merlin Polzin"
+        },
+        "ko": "메를린 폴친",
+        "source_row": 766,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37758368,
+        "identity": {
+          "name": "Vítor Bruno Clara Santos Mota Fernandes"
+        },
+        "ko": "비토르 브루누 클라라 산투스 모타 페르난드스",
+        "source_row": 767,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37759140,
+        "identity": {
+          "name": "Filipp Sokolinskiy"
+        },
+        "ko": "필리프 소콜린스키",
+        "source_row": 768,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37760921,
+        "identity": {
+          "name": "Pedro Garcia Fernandez"
+        },
+        "ko": "페드로 가르시아 페르난데스",
+        "source_row": 769,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37778278,
+        "identity": {
+          "name": "Sergio Tomás Ferri"
+        },
+        "ko": "세르히오 토마스 페리",
+        "source_row": 770,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37869198,
+        "identity": {
+          "name": "Vitali Rogozhkin"
+        },
+        "ko": "비탈리 로고시킨",
+        "source_row": 771,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 37919911,
+        "identity": {
+          "name": "Antonio Gagliardi"
+        },
+        "ko": "안토니오 갈리아르디",
+        "source_row": 773,
+        "source_status": "규칙 적용"
+      },
+      {
+        "coach_id": 38201535,
+        "identity": {
+          "name": "Marco Landucci"
+        },
+        "ko": "마르코 란두치",
+        "source_row": 780,
+        "source_status": "규칙 적용"
+      }
+    ]
+  }
+}

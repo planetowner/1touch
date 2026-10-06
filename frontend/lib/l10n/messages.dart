@@ -712,8 +712,8 @@ const appMessages = <String, MessageTranslations>{
   ),
   "No players found": (ko: "선수를 찾지 못했어요", ja: "選手が見つかりません", zh: "未找到球员"),
   "No teams found": (ko: "팀을 찾지 못했어요", ja: "チームが見つかりません", zh: "未找到球队"),
-  "Overview": (ko: "개요", ja: "概要", zh: "概览"),
-  "Matches": (ko: "경기", ja: "試合", zh: "比赛"),
+  "Overview": (ko: "선수 정보", ja: "概要", zh: "概览"),
+  "Matches": (ko: "경기 기록", ja: "試合", zh: "比赛"),
   "Squad": (ko: "스쿼드", ja: "選手一覧", zh: "阵容"),
   "Standing": (ko: "순위", ja: "順位表", zh: "积分榜"),
   "Analysis": (ko: "분석", ja: "分析", zh: "分析"),
@@ -793,6 +793,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "请选择有联赛出场记录的赛季"
   ),
   "League": (ko: "리그", ja: "リーグ", zh: "联赛"),
+  "Appearances": (ko: "출전", ja: "出場", zh: "出场"),
   "Cup": (ko: "컵 대회", ja: "カップ戦", zh: "杯赛"),
   "COMPETITION": (ko: "대회", ja: "大会", zh: "赛事"),
   "BRACKET": (ko: "대진표", ja: "トーナメント表", zh: "对阵图"),
@@ -1068,17 +1069,6 @@ const appMessages = <String, MessageTranslations>{
   "No history available": (ko: "기록이 없어요", ja: "記録がありません", zh: "暂无记录"),
   "Career": (ko: "커리어", ja: "キャリア", zh: "职业生涯"),
   "COMPETITION STATS": (ko: "대회 기록", ja: "大会成績", zh: "赛事数据"),
-  "Collected since 17/18 season": (
-    ko: "17/18 시즌부터 집계",
-    ja: "17/18シーズン以降の集計",
-    zh: "自17/18赛季起统计"
-  ),
-  "A quick overview of the player's average performance in each competition. Data has been collected since the 2017/18 season.":
-      (
-    ko: "대회별 선수의 평균 경기력을 간단히 보여줘요. 데이터는 2017/18 시즌부터 집계했어요.",
-    ja: "大会ごとの選手の平均的なパフォーマンスを簡単に示します。データは2017/18シーズンから集計しています。",
-    zh: "简要展示球员在各项赛事中的平均表现。数据从2017/18赛季开始收集。"
-  ),
   "No competitions this season": (
     ko: "이 시즌의 대회 기록이 없어요",
     ja: "このシーズンの大会記録はありません",
@@ -1150,19 +1140,9 @@ const appMessages = <String, MessageTranslations>{
   "Assist": (ko: "도움", ja: "アシスト", zh: "助攻"),
   "Assists": (ko: "도움", ja: "アシスト", zh: "助攻"),
   "Shot": (ko: "슈팅", ja: "シュート", zh: "射门"),
-  "Goal\nContributions": (ko: "공격\n포인트", ja: "ゴール\n関与", zh: "参与\n进球"),
   "Win Rate": (ko: "승률", ja: "勝率", zh: "胜率"),
-  "Minutes Played\nPer Game": (
-    ko: "경기당\n출전 시간",
-    ja: "1試合あたりの\n出場時間",
-    zh: "场均\n出场时间"
-  ),
   "Starting Rate": (ko: "선발 비율", ja: "先発率", zh: "首发率"),
   "Starting / Substitute": (ko: "선발 / 교체", ja: "先発 / 途中出場", zh: "首发 / 替补"),
-  "Pace": (ko: "속도", ja: "スピード", zh: "速度"),
-  "Shooting": (ko: "슈팅", ja: "シュート", zh: "射门"),
-  "Passing": (ko: "패스", ja: "パス", zh: "传球"),
-  "Physical": (ko: "피지컬", ja: "フィジカル", zh: "身体"),
   "Reaction": (ko: "반응", ja: "反応", zh: "反应"),
   "MATCH INFO": (ko: "경기 정보", ja: "試合情報", zh: "比赛信息"),
   "MATCH PREVIEW": (ko: "경기 프리뷰", ja: "試合プレビュー", zh: "赛前分析"),
@@ -1215,10 +1195,10 @@ const appMessages = <String, MessageTranslations>{
     zh: "传入进攻三区"
   ),
   "Passes into Pen. Area": (ko: "페널티 지역 진입 패스", ja: "ペナルティエリアへのパス", zh: "传入禁区"),
-  "Recoveries": (ko: "볼 회수", ja: "ボール回収", zh: "球权夺回"),
+  "Recoveries": (ko: "리커버리", ja: "ボール回収", zh: "球权夺回"),
   "Tackles Won": (ko: "태클 성공", ja: "タックル成功", zh: "成功抢断"),
-  "Interceptions": (ko: "가로채기", ja: "インターセプト", zh: "拦截"),
-  "Clearances": (ko: "걷어내기", ja: "クリア", zh: "解围"),
+  "Interceptions": (ko: "인터셉트", ja: "インターセプト", zh: "拦截"),
+  "Clearances": (ko: "클리어링", ja: "クリア", zh: "解围"),
   "Blocks": (ko: "블록", ja: "ブロック", zh: "封堵"),
   "Saves": (ko: "선방", ja: "セーブ", zh: "扑救"),
   "Touches": (ko: "볼 터치", ja: "ボールタッチ", zh: "触球"),
@@ -1884,7 +1864,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "順位表を読み込めませんでした。再試行",
     zh: "无法加载积分榜，请重试"
   ),
-  "Round {round}": (ko: "{round}라운드", ja: "第{round}節", zh: "第{round}轮"),
+  "Round {round}": (ko: "{round}R", ja: "第{round}節", zh: "第{round}轮"),
   "{leg} Leg": (ko: "{leg}차전", ja: "第{leg}戦", zh: "第{leg}回合"),
   "{points} Pts": (ko: "승점 {points}", ja: "勝点{points}", zh: "{points}积分"),
   "{points} pts": (ko: "{points}포인트", ja: "{points}ポイント", zh: "{points}积分"),
@@ -1990,7 +1970,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "传球成功 / 尝试"
   ),
   "Possession lost": (ko: "소유권 상실", ja: "ボールロスト", zh: "丢失球权"),
-  "Ball recoveries": (ko: "볼 회수", ja: "ボール奪回", zh: "夺回球权"),
+  "Ball recoveries": (ko: "리커버리", ja: "ボール奪回", zh: "夺回球权"),
   "Long balls attempted": (ko: "롱패스 시도", ja: "ロングパス試行", zh: "长传尝试"),
   "Long ball success rate": (ko: "롱패스 성공률", ja: "ロングパス成功率", zh: "长传成功率"),
   "Duels won / contested": (
@@ -2001,11 +1981,23 @@ const appMessages = <String, MessageTranslations>{
   "Aerial duels won": (ko: "공중볼 경합 승리", ja: "空中戦勝利", zh: "争顶成功"),
   "Dribbled past": (ko: "드리블 돌파 허용", ja: "被ドリブル突破", zh: "被过次数"),
   "Fouls committed": (ko: "파울", ja: "ファウル", zh: "犯规"),
-  "Key passes": (ko: "키 패스", ja: "キーパス", zh: "关键传球"),
-  "Passes in final third": (ko: "공격 지역 패스", ja: "アタッキングサードのパス", zh: "进攻三区传球"),
-  "Total duels": (ko: "전체 경합", ja: "デュエル総数", zh: "总对抗次数"),
-  "Fouls drawn": (ko: "얻어낸 파울", ja: "被ファウル", zh: "被犯规"),
-  "Total shots": (ko: "전체 슈팅", ja: "シュート総数", zh: "总射门"),
+  "Key passes": (ko: "키패스", ja: "キーパス", zh: "关键传球"),
+  "Passes in final third": (ko: "파이널 서드 패스", ja: "アタッキングサードのパス", zh: "进攻三区传球"),
+  "Total duels": (ko: "경합 횟수", ja: "デュエル総数", zh: "总对抗次数"),
+  "Fouls drawn": (ko: "파울 유도", ja: "被ファウル", zh: "被犯规"),
+  "Total shots": (ko: "슈팅 횟수", ja: "シュート総数", zh: "总射门"),
+  "Tackles": (ko: "태클", ja: "タックル", zh: "抢断"),
+  "xG": (ko: "xG", ja: "xG", zh: "xG"),
+  "Long balls completed / attempted": (
+    ko: "롱패스 성공 / 시도",
+    ja: "ロングパス成功 / 試行",
+    zh: "长传成功 / 尝试"
+  ),
+  "Successful dribbles / attempts": (
+    ko: "드리블 성공 / 시도",
+    ja: "ドリブル成功 / 試行",
+    zh: "盘带成功 / 尝试"
+  ),
   "Dribble attempts": (ko: "드리블 시도", ja: "ドリブル試行", zh: "盘带尝试"),
   "Dribble success rate": (ko: "드리블 성공률", ja: "ドリブル成功率", zh: "盘带成功率"),
   "Duels won": (ko: "경합 승리", ja: "デュエル勝利", zh: "对抗成功"),
@@ -2024,9 +2016,15 @@ const appMessages = <String, MessageTranslations>{
   "Sporadic": (ko: "제한적 출전", ja: "出場機会が少ない", zh: "偶尔出场"),
   "Prospect": (ko: "유망주", ja: "有望な若手", zh: "潜力新星"),
   "Build Up": (ko: "빌드업", ja: "ビルドアップ", zh: "组织进攻"),
-  "Defensive Actions": (ko: "수비 행동", ja: "守備アクション", zh: "防守动作"),
-  "Work Rate": (ko: "활동량", ja: "運動量", zh: "跑动积极性"),
+  "Defensive Actions": (ko: "수비", ja: "守備アクション", zh: "防守动作"),
+  "Work Rate": (ko: "경합", ja: "運動量", zh: "跑动积极性"),
   "Link Up": (ko: "연계", ja: "連携", zh: "串联"),
+  "Long Balls": (ko: "롱패스", ja: "ロングパス", zh: "长传"),
+  "Physicality": (ko: "경합", ja: "フィジカル", zh: "身体对抗"),
+  "Defence": (ko: "수비", ja: "守備", zh: "防守"),
+  "Playmaking": (ko: "기회 창출", ja: "チャンスメイク", zh: "组织进攻"),
+  "Finish": (ko: "마무리", ja: "フィニッシュ", zh: "终结"),
+  "Dribble": (ko: "드리블", ja: "ドリブル", zh: "盘带"),
   "Available in {observed}/{total} matches": (
     ko: "{total}경기 중 {observed}경기에서 제공",
     ja: "{total}試合中{observed}試合で提供",

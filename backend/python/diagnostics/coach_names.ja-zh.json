@@ -5,12 +5,12 @@
   "coverage": {
     "stored_coaches": 779,
     "returned_coaches": 776,
-    "reviewed_coaches": 544,
+    "reviewed_coaches": 543,
     "translations": {
-      "ja": 544,
-      "zh": 540
+      "ja": 543,
+      "zh": 539
     },
-    "identity_conflicts": 226,
+    "identity_conflicts": 227,
     "no_translation": 6
   },
   "unavailable_coach_ids": [
@@ -701,6 +701,14 @@
       "conflicts": [
         "display_name"
       ]
+    },
+    {
+      "coach_id": 457103,
+      "name": "Jessy Deminguet",
+      "conflicts": [
+        "verified_coach_identity"
+      ],
+      "verified_name": "Patrice Garande"
     },
     {
       "coach_id": 457589,
@@ -5574,21 +5582,6 @@
           "full_name": "Kåre Hedley Ingebrigtsen",
           "date_of_birth": "1965-11-11",
           "nationality_id": 1578
-        }
-      },
-      {
-        "coach_id": 457103,
-        "identity": {
-          "name": "Jessy Deminguet"
-        },
-        "ja": "ジェシー・デミンゲット",
-        "zh": "杰西·德明盖特",
-        "player_identity": {
-          "player_id": 457103,
-          "display_name": "Jessy Deminguet",
-          "full_name": "Patrice Garande",
-          "date_of_birth": "1960-11-27",
-          "nationality_id": 17
         }
       },
       {

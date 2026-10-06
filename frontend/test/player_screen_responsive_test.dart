@@ -7,9 +7,11 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/locale_controller.dart';
+import 'package:onetouch/core/overflow_scrolling_text.dart';
 import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/round_chart_visuals.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/screens/all_players_screen.dart';
@@ -17,6 +19,7 @@ import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
+import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/anal.dart';
 import 'support/player_detail_fixture.dart';
@@ -43,6 +46,35 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets('match cards localize API results and share competition rounds',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    for (final (result, label) in [
+      ('WIN', '승'),
+      ('DRAW', '무'),
+      ('DEF', '패'),
+      ('LOSE', '패'),
+    ]) {
+      final json = playerDetailJson();
+      json['matches'][0]['result'] = result;
+      final match = playerDetailFromJson(json).matches.first;
+      await tester.pumpWidget(MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        home: FootballNamesScope(
+          names: const FootballNames(competitions: {564: '라리가'}),
+          child: Scaffold(body: PlayerDetailMatchCard(match: match)),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text(label), findsOneWidget);
+      expect(find.text('라리가 7R'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   final player = playerRepository.findById('lee-kang-in')!;
   for (final (role, theme, size) in [
     (TeamLeadershipRole.captain, app_style.darktheme, const Size(320, 568)),
@@ -620,7 +652,7 @@ void main() {
       expect(
         topStatDecoration.color,
         testCase.name == 'dark'
-            ? app_style.AppPalette.darkGrey
+            ? const Color(0xFF272828)
             : app_style.AppPalette.white,
       );
       expect(
@@ -811,6 +843,75 @@ void main() {
     expect(find.text('LIVE'), findsNothing);
     expect(repository.calls.length, 1);
   });
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('overview match arrow opens matches from the app bar at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        home: PlayerCard(
+          player: player,
+          detailRepository: FakePlayerDetailRepository(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final arrow = find.byKey(const ValueKey('player-matches-arrow'));
+      await tester.ensureVisible(arrow);
+      await tester.pumpAndSettle();
+      final outerScroll = tester
+          .widget<NestedScrollView>(find.byType(NestedScrollView))
+          .controller!;
+      expect(outerScroll.offset, greaterThan(0));
+
+      await tester.tap(arrow);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pump();
+      final startOffset = outerScroll.offset;
+      expect(startOffset, greaterThan(0));
+      await tester.pump(const Duration(milliseconds: 80));
+      await tester.pump(const Duration(milliseconds: 80));
+      expect(outerScroll.offset, greaterThan(0));
+      expect(outerScroll.offset, lessThan(startOffset));
+      await tester.pumpAndSettle();
+      expect(
+          tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
+          2);
+      expect(outerScroll.offset, 0);
+      expect(tester.getRect(find.byType(PlayerScreenHeader)).top,
+          greaterThanOrEqualTo(0));
+      final matchesScroll = find.byKey(const ValueKey('player-matches-scroll'));
+      expect(matchesScroll, findsOneWidget);
+      final innerScroll = tester.state<ScrollableState>(find.descendant(
+        of: matchesScroll,
+        matching: find.byWidgetPredicate((widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down),
+      ));
+      expect(innerScroll.position.pixels, 0);
+
+      await tester.drag(matchesScroll, const Offset(0, -500));
+      await tester.pumpAndSettle();
+      expect(innerScroll.position.pixels, greaterThan(0));
+      tester
+          .widget<TabBarView>(find.byType(TabBarView))
+          .controller!
+          .animateTo(0);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(arrow);
+      await tester.pumpAndSettle();
+      await tester.tap(arrow);
+      await tester.pumpAndSettle();
+      expect(outerScroll.offset, 0);
+      final reopenedInner = tester.state<ScrollableState>(find.descendant(
+        of: matchesScroll,
+        matching: find.byWidgetPredicate((widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down),
+      ));
+      expect(reopenedInner.position.pixels, 0);
+      expect(tester.takeException(), isNull);
+    });
+  }
   testWidgets('top stats help stays directly beside its section title',
       (tester) async {
     final repository = FakePlayerDetailRepository();
@@ -894,6 +995,9 @@ void main() {
         addTearDown(() => appLocaleController.value = const Locale('en'));
 
         await tester.pumpWidget(MaterialApp(
+          locale: locale,
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
           theme: app_style.darktheme,
           home: PlayerCard(
             player: player,
@@ -911,6 +1015,12 @@ void main() {
           matching: find.byType(Text),
         );
         expect(headerTexts, findsNWidgets(4));
+        expect(
+          tester.widgetList<Text>(headerTexts).map((text) => text.data),
+          locale.languageCode == 'ko'
+              ? ['대회', '출전', '승률', '평점']
+              : ['League', 'MP', 'WR', 'Rating'],
+        );
         expect(valueTexts, findsNWidgets(4));
         for (var column = 1; column < 4; column++) {
           final headerX = tester.getCenter(headerTexts.at(column)).dx;
@@ -1110,15 +1220,69 @@ void main() {
     );
     expect(
       surface.padding,
-      const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
+      const EdgeInsets.all(24),
     );
-    for (final label in ['키 패스', '볼 회수', '공격 지역 패스']) {
+    for (final label in ['키패스', '리커버리', '파이널 서드 패스']) {
       final text = tester.widget<Text>(find.text(label));
-      expect(text.maxLines, 2);
+      expect(text.maxLines, 1);
       expect(tester.getSize(find.text(label)).height, lessThan(30));
     }
     expect(tester.takeException(), isNull);
   });
+
+  for (final size in [const Size(393, 852), const Size(320, 568)]) {
+    testWidgets(
+        'top stats keep long values and names inside three columns at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: PlayerCard(
+          player: player,
+          detailRepository: _LongTopStatsRepository(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Analysis').first);
+      await tester.pumpAndSettle();
+
+      final card =
+          tester.getRect(find.byKey(const ValueKey('player-top-stats-card')));
+      final values = [
+        'player-top-stat-value-Key passes',
+        'player-top-stat-value-Ball recoveries',
+        'player-top-stat-value-Passes in final third',
+      ].map((key) => tester.getRect(find.byKey(ValueKey(key)))).toList();
+      expect(card.width, size.width - 48);
+      expect(values.every((rect) => rect.width <= 90 && rect.height == 54),
+          isTrue);
+      expect(values.first.left - card.left, 24);
+      expect(card.right - values.last.right, 24);
+      expect(values[1].left - values[0].right, greaterThanOrEqualTo(8));
+      expect(values[2].left - values[1].right, greaterThanOrEqualTo(8));
+      expect(find.text('117.46'), findsOneWidget);
+      expect(tester.getRect(find.text('117.46')).width,
+          lessThanOrEqualTo(values.first.width - 32));
+
+      final longLabel = find
+          .byKey(const ValueKey('player-top-stat-label-Passes in final third'));
+      final scrollingText = tester.widget<OverflowScrollingText>(
+        find.descendant(
+            of: longLabel, matching: find.byType(OverflowScrollingText)),
+      );
+      expect(scrollingText.text, 'Passes in Final Third');
+      expect(tester.widget<Text>(find.text(scrollingText.text)).maxLines, 1);
+      expect(
+          find.descendant(
+              of: longLabel,
+              matching: find.byWidgetPredicate((widget) =>
+                  widget is SingleChildScrollView &&
+                  widget.scrollDirection == Axis.horizontal)),
+          findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('performance chart follows the team current form format',
       (tester) async {
@@ -1356,6 +1520,17 @@ void main() {
     expect(find.text('team-7980'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+}
+
+class _LongTopStatsRepository extends FakePlayerDetailRepository {
+  @override
+  Future<PlayerDetail> load(int playerId, {int? seasonId}) async {
+    final json = playerDetailJson(playerId: playerId, seasonId: seasonId);
+    final topStats =
+        (json['analysis'] as Map<String, dynamic>)['top_stats'] as List;
+    (topStats.first as Map<String, dynamic>)['per90'] = 117.46;
+    return playerDetailFromJson(json);
+  }
 }
 
 class _OverviewLeadershipRepository implements TeamContractRepository {

@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:onetouch/core/app_info_button.dart';
+import 'package:onetouch/core/overflow_scrolling_text.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/round_chart_visuals.dart';
@@ -76,7 +77,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
       ];
 
   Widget _topStats(PlayerAnalysis analysis) {
-    final isKorean = Localizations.localeOf(context).languageCode == 'ko';
+    final showPer90 = analysis.topStats
+        .any((stat) => playerSeasonStat(stat).unit == 'per 90');
     return PlayerSection(
       title: tr(context, 'TOP STATS'),
       titleAccessory: const AppInfoButton(
@@ -87,81 +89,76 @@ class _AnalysisTabState extends State<AnalysisTab> {
       child: PlayerSurface(
         key: const ValueKey('player-top-stats-card'),
         color: AppColors.of(context).subtleBackground,
-        padding: EdgeInsets.symmetric(
-          horizontal: isKorean ? 8 : 24,
-          vertical: 24,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (var index = 0; index < 3; index++) ...[
-              if (index > 0) SizedBox(width: isKorean ? 4 : 12),
-              Expanded(
-                flex: isKorean
-                    ? _koreanTopStatFlex(index < analysis.topStats.length
-                        ? analysis.topStats[index]
-                        : null)
-                    : 1,
-                child: _topStat(index < analysis.topStats.length
-                    ? analysis.topStats[index]
-                    : null),
-              ),
-            ],
-          ],
+        radius: 24,
+        padding: const EdgeInsets.all(24),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final statWidth = math.min(90.0, (constraints.maxWidth - 16) / 3);
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var index = 0; index < 3; index++)
+                  SizedBox(
+                    width: statWidth,
+                    child: _topStat(
+                      index < analysis.topStats.length
+                          ? analysis.topStats[index]
+                          : null,
+                      showPer90: showPer90,
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  int _koreanTopStatFlex(PlayerSeasonMetric? stat) {
-    final label = appStatLabel(context, playerSeasonStat(stat).label);
-    final painter = TextPainter(
-      text: TextSpan(text: label, style: Body1.style),
-      textDirection: Directionality.of(context),
-      textScaler: MediaQuery.textScalerOf(context),
-      locale: Localizations.maybeLocaleOf(context),
-      maxLines: 1,
-    )..layout();
-    final width = painter.width;
-    painter.dispose();
-    return width.clamp(64, 140).ceil();
-  }
-
-  Widget _topStat(PlayerSeasonMetric? stat) {
+  Widget _topStat(PlayerSeasonMetric? stat, {required bool showPer90}) {
     final presentation = playerSeasonStat(stat);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
           key: ValueKey('player-top-stat-value-${stat?.metric.label}'),
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          height: 54,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.of(context).cardBackground,
-            borderRadius: BorderRadius.circular(8),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? const Color(0xFF272828)
+                : AppColors.of(context).cardBackground,
+            borderRadius: BorderRadius.circular(4),
           ),
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               presentation.text,
-              style: Heading2.style,
+              style: Heading2.latinStyle,
             ),
           ),
         ),
-        const SizedBox(height: 4),
-        if (stat != null)
-          Text(tr(context, presentation.unit),
-              textAlign: TextAlign.center, style: Eyebrow.style),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
+        if (showPer90) ...[
+          SizedBox(
+            height: 20,
+            child: Center(
+              child: stat != null && presentation.unit == 'per 90'
+                  ? Text(tr(context, presentation.unit), style: Eyebrow.style)
+                  : null,
+            ),
+          ),
+          const SizedBox(height: 4),
+        ],
         SizedBox(
-          height: 38,
+          height: 24,
           child: Center(
             key: ValueKey('player-top-stat-label-${stat?.metric.label}'),
-            child: Text(
-              appStatLabel(context, presentation.label),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            child: OverflowScrollingText(
+              text: appStatLabel(context, presentation.label),
               style: Body1.style,
+              alignment: Alignment.center,
             ),
           ),
         ),
@@ -169,14 +166,14 @@ class _AnalysisTabState extends State<AnalysisTab> {
         Align(
           child: Container(
             key: ValueKey('player-top-stat-rank-${stat?.metric.label}'),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: AppPalette.black,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
               stat?.rank == null ? '—' : '#${stat!.rank}',
-              style: Body1.style.copyWith(color: AppPalette.white),
+              style: Eyebrow.style.copyWith(color: AppPalette.white),
             ),
           ),
         ),

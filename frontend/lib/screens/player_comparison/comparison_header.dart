@@ -144,12 +144,7 @@ class _HeaderArea extends StatelessWidget {
             child: Center(
               child: Text(
                 'VS',
-                style: TextStyle(
-                  color: foreground,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  height: 1.10,
-                ),
+                style: Heading5.style,
               ),
             ),
           ),
