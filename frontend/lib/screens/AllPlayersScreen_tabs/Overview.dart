@@ -233,7 +233,7 @@ class PlayerOverviewTab extends StatelessWidget {
                     for (final match in detail.matches.take(3))
                       PlayerDetailMatchCard(match: match),
                   ])),
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
               PlayerSection(
                   title: tr(context, 'CLUB HISTORY'),
                   child: PlayerSurface(
