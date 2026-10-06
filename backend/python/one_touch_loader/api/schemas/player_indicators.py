@@ -3,11 +3,13 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from ...core.player_indicator_grades import IndicatorGrade
+
 
 class IndicatorScore(BaseModel):
     raw_score: float | None
     percentile: float | None = Field(ge=0, le=100)
-    grade: Literal["Very Poor", "Poor", "Fair", "Good", "Excellent", "Very Good"] | None
+    grade: IndicatorGrade | None
     band: int | None = Field(ge=0, le=4)
     reference_count: int
     unavailable_reason: str | None

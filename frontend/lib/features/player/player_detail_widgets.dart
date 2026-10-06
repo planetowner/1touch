@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/competitions/competition_display_order.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
 import 'package:onetouch/features/player/player_image_cache.dart';
 import 'package:onetouch/models/player_detail.dart';
@@ -184,6 +185,8 @@ class PlayerCompetitionTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final competitions = [...this.competitions]
+      ..sort((a, b) => compareCompetitionDisplayOrder(a.id, b.id));
     final headerStyle = Body1.style.copyWith(
       color: isDark ? AppPalette.white : AppPalette.black,
     );
