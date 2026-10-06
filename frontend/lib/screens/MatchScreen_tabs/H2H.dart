@@ -144,9 +144,9 @@ class _H2HTabState extends State<H2HTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 48),
+          const SizedBox(height: 32),
           _buildDropdownRow(),
-          const SizedBox(height: 48),
+          const SizedBox(height: 32),
           if (_isLoading)
             const Padding(
               key: ValueKey('match-h2h-loading'),
