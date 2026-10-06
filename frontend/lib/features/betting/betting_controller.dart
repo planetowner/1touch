@@ -36,9 +36,14 @@ class BettingController extends ChangeNotifier {
       market?.closesAt != null && DateTime.now().isBefore(market!.closesAt!);
   bool get canBet => market?.canBet == true && beforeKickoff && !saving;
   bool get canCancel => market?.canCancel == true && beforeKickoff && !saving;
-  int get spendingLimit =>
-      (market?.wallet.balance ?? 0) +
-      (market?.bet?.isOpen == true ? market!.bet!.stake : 0);
+  int get spendingLimit {
+    final current = market;
+    if (current == null) return 0;
+    final available = current.wallet.balance +
+        (current.bet?.isOpen == true ? current.bet!.stake : 0);
+    // 안내와 증감 버튼이 같은 한도를 쓰도록 입력 단위 미만의 잔액을 제외해요.
+    return available ~/ current.stakeUnit * current.stakeUnit;
+  }
 
   Future<void> load() async {
     final version = ++_loadVersion;
