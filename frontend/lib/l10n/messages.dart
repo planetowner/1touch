@@ -1558,6 +1558,16 @@ const appMessages = <String, MessageTranslations>{
     ja: "チャットが切断されました。もう一度お試しください。",
     zh: "聊天已断开，请重试。"
   ),
+  "Reconnecting to chat…": (
+    ko: "채팅에 다시 연결하는 중…",
+    ja: "チャットに再接続中…",
+    zh: "正在重新连接聊天…"
+  ),
+  "Jump to latest messages": (
+    ko: "최신 메시지로 이동",
+    ja: "最新のメッセージに移動",
+    zh: "跳转到最新消息"
+  ),
   "Chat unavailable": (ko: "지금은 채팅할 수 없어요", ja: "現在チャットは利用できません", zh: "当前无法聊天"),
   "Live chat is only available during the match.": (
     ko: "경기 중에만 실시간 채팅을 이용할 수 있어요.",

@@ -32,7 +32,14 @@ class LiveChatTab extends StatefulWidget {
   State<LiveChatTab> createState() => _LiveChatTabState();
 }
 
-class _LiveChatTabState extends State<LiveChatTab> {
+class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
+  static const _reconnectDelays = [
+    Duration(seconds: 2),
+    Duration(seconds: 4),
+    Duration(seconds: 8),
+    Duration(seconds: 16),
+    Duration(seconds: 30),
+  ];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -47,6 +54,11 @@ class _LiveChatTabState extends State<LiveChatTab> {
   bool _showTopFade = false;
   bool _canScroll = false;
   bool _scrollStateUpdateScheduled = false;
+  bool _followLatest = true;
+  bool _showLatestButton = false;
+  bool _reconnecting = false;
+  int _reconnectAttempt = 0;
+  Timer? _reconnectTimer;
 
   ChatRepository get _repository =>
       widget.repository ?? chat_repository_provider.chatRepository;
@@ -56,8 +68,14 @@ class _LiveChatTabState extends State<LiveChatTab> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _scrollController.addListener(_scheduleScrollStateUpdate);
     _initChat();
+  }
+
+  @override
+  void didChangeMetrics() {
+    if (_followLatest) _scrollToBottom(animate: false);
   }
 
   @override
@@ -71,6 +89,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
   }
 
   Future<void> _restartChat() async {
+    _reconnectTimer?.cancel();
     await _closeChat();
     if (!mounted) return;
     setState(() {
@@ -79,14 +98,18 @@ class _LiveChatTabState extends State<LiveChatTab> {
       _initError = null;
       _showTopFade = false;
       _canScroll = false;
+      _showLatestButton = false;
+      _followLatest = true;
+      _reconnecting = false;
+      _reconnectAttempt = 0;
     });
     await _initChat();
   }
 
   Future<void> _initChat() async {
     final requestId = ++_requestId;
+    final reconnecting = _isInitialized;
     _isClosing = false;
-    _chatUnavailable = false;
     try {
       final session = await _socket.connect(widget.matchId);
       if (!mounted || requestId != _requestId) {
@@ -100,32 +123,53 @@ class _LiveChatTabState extends State<LiveChatTab> {
         onDone: _handleSocketDone,
       );
 
-      final history = await _repository.loadHistory(fixtureId: widget.matchId);
+      if (reconnecting && _messages.isNotEmpty) {
+        // 재연결 사이에 빠진 메시지를 마지막 ID부터 순서대로 채워요.
+        var afterId = _messages.last.messageId;
+        while (true) {
+          final page = await _repository.loadHistory(
+            fixtureId: widget.matchId,
+            afterId: afterId,
+            limit: 100,
+          );
+          if (!mounted || requestId != _requestId) return;
+          if (page.isEmpty) break;
+          setState(() => _mergeMessages(page));
+          if (_followLatest) _scrollToBottom();
+          if (page.length < 100) break;
+          afterId = page.last.messageId;
+        }
+      } else {
+        final history =
+            await _repository.loadHistory(fixtureId: widget.matchId);
+        if (!mounted || requestId != _requestId) return;
+        setState(() => _mergeMessages(history));
+      }
       if (!mounted || requestId != _requestId) return;
       setState(() {
-        _mergeMessages(history);
         _isInitialized = true;
         _initError = null;
+        _reconnecting = false;
+        _reconnectAttempt = 0;
       });
-      _scrollToBottom();
+      if (_followLatest) _scrollToBottom(animate: !reconnecting);
     } on Object catch (error) {
       if (!mounted || requestId != _requestId) return;
       await _closeChat(invalidateRequest: false);
       if (!mounted || requestId != _requestId) return;
-      setState(() {
-        _isInitialized = false;
-        _chatUnavailable = _isChatUnavailable(error);
-        _initError = _friendlyError(error);
-      });
+      _handleConnectionFailure(error);
     }
   }
 
   Future<void> _retryInit() async {
+    _reconnectTimer?.cancel();
     await _closeChat();
     if (!mounted) return;
     setState(() {
       _initError = null;
       _isInitialized = false;
+      _reconnecting = false;
+      _reconnectAttempt = 0;
     });
     await _initChat();
   }
@@ -133,7 +177,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
   void _receiveLiveMessage(FixtureChatMessage message) {
     if (!mounted) return;
     setState(() => _mergeMessages([message]));
-    _scrollToBottom();
+    if (_followLatest) _scrollToBottom();
   }
 
   void _mergeMessages(Iterable<FixtureChatMessage> incoming) {
@@ -148,19 +192,45 @@ class _LiveChatTabState extends State<LiveChatTab> {
   }
 
   void _handleSocketError(Object error) {
-    if (!mounted || _isClosing) return;
-    _requestId++;
-    setState(() {
-      _chatUnavailable = _isChatUnavailable(error);
-      _initError = _friendlyError(error);
-    });
+    if (!mounted || _isClosing || _reconnecting) return;
+    unawaited(_disconnect(error));
   }
 
   void _handleSocketDone() {
-    if (!mounted || _isClosing || _initError != null) return;
+    if (!mounted || _isClosing || _reconnecting || _initError != null) return;
+    unawaited(_disconnect(
+        const ChatSocketException(message: 'Fixture chat disconnected.')));
+  }
+
+  Future<void> _disconnect(Object error) async {
     _requestId++;
-    setState(
-        () => _initError = tr(context, 'Chat disconnected. Please try again.'));
+    _handleConnectionFailure(error);
+    await _closeChat(invalidateRequest: false);
+  }
+
+  void _handleConnectionFailure(Object error) {
+    final code = error is ChatSocketException ? error.closeCode : null;
+    final text = error.toString();
+    // 서버가 명시적으로 거절한 연결은 다시 시도해도 복구되지 않아요.
+    final terminal = (code != null && code >= 4000 && code < 5000) ||
+        RegExp(r'status 4\d\d\b').hasMatch(text);
+    if (terminal) {
+      _reconnectTimer?.cancel();
+      setState(() {
+        _reconnecting = false;
+        _chatUnavailable = _isChatUnavailable(error);
+        _initError = _friendlyError(error);
+      });
+      return;
+    }
+    setState(() => _reconnecting = true);
+    final delay = _reconnectDelays[
+        _reconnectAttempt.clamp(0, _reconnectDelays.length - 1)];
+    _reconnectAttempt++;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(delay, () {
+      if (mounted) unawaited(_initChat());
+    });
   }
 
   bool _isChatUnavailable(Object error) => error is ChatSocketException
@@ -192,17 +262,32 @@ class _LiveChatTabState extends State<LiveChatTab> {
     return tr(context, 'Please check your connection and try again.');
   }
 
-  void _scrollToBottom() {
+  void _scrollToBottom({bool animate = true}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
+      if (mounted && _followLatest && _scrollController.hasClients) {
         _scheduleScrollStateUpdate();
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-        );
+        final target = _scrollController.position.maxScrollExtent;
+        if (animate) {
+          unawaited(_scrollController.animateTo(
+            target,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          ));
+        } else {
+          _scrollController.jumpTo(target);
+        }
       }
     });
+  }
+
+  bool _handleUserScroll(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification &&
+        notification.dragDetails != null) {
+      _followLatest = notification.metrics.extentAfter <= 48;
+    } else if (notification is ScrollEndNotification) {
+      _followLatest = notification.metrics.extentAfter <= 48;
+    }
+    return false;
   }
 
   void _scheduleScrollStateUpdate() {
@@ -214,10 +299,16 @@ class _LiveChatTabState extends State<LiveChatTab> {
       final canScroll = _scrollController.hasClients &&
           _scrollController.position.maxScrollExtent > 0;
       final showFade = canScroll && _scrollController.position.pixels > 1;
-      if (canScroll != _canScroll || showFade != _showTopFade) {
+      final showLatestButton = canScroll &&
+          _scrollController.position.extentAfter >
+              _scrollController.position.viewportDimension;
+      if (canScroll != _canScroll ||
+          showFade != _showTopFade ||
+          showLatestButton != _showLatestButton) {
         setState(() {
           _canScroll = canScroll;
           _showTopFade = showFade;
+          _showLatestButton = showLatestButton;
         });
       }
     });
@@ -289,6 +380,8 @@ class _LiveChatTabState extends State<LiveChatTab> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _reconnectTimer?.cancel();
     unawaited(_closeChat());
     _controller.dispose();
     _scrollController.dispose();
@@ -402,47 +495,51 @@ class _LiveChatTabState extends State<LiveChatTab> {
             : NotificationListener<ScrollMetricsNotification>(
                 onNotification: (_) {
                   _scheduleScrollStateUpdate();
+                  if (_followLatest) _scrollToBottom(animate: false);
                   return false;
                 },
-                child: ListView.builder(
-                  key: const ValueKey('live-chat-message-list'),
-                  controller: _scrollController,
-                  physics: _canScroll && !backSwipeActive
-                      ? null
-                      : const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) {
-                    final messageIndex = index;
-                    final msg = _messages[messageIndex];
-                    final prevMsg =
-                        messageIndex > 0 ? _messages[messageIndex - 1] : null;
-                    final nextMsg = messageIndex + 1 < _messages.length
-                        ? _messages[messageIndex + 1]
-                        : null;
-                    final showHeader =
-                        prevMsg == null || prevMsg.nicknameEn != msg.nicknameEn;
-                    final continuesGroup =
-                        nextMsg != null && nextMsg.nicknameEn == msg.nicknameEn;
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: _handleUserScroll,
+                  child: ListView.builder(
+                    key: const ValueKey('live-chat-message-list'),
+                    controller: _scrollController,
+                    physics: _canScroll && !backSwipeActive
+                        ? null
+                        : const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final messageIndex = index;
+                      final msg = _messages[messageIndex];
+                      final prevMsg =
+                          messageIndex > 0 ? _messages[messageIndex - 1] : null;
+                      final nextMsg = messageIndex + 1 < _messages.length
+                          ? _messages[messageIndex + 1]
+                          : null;
+                      final showHeader = prevMsg == null ||
+                          prevMsg.nicknameEn != msg.nicknameEn;
+                      final continuesGroup = nextMsg != null &&
+                          nextMsg.nicknameEn == msg.nicknameEn;
 
-                    return GestureDetector(
-                      onLongPressStart: (details) => _showContextMenu(
-                        context,
-                        details.globalPosition,
-                        msg,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          bottom: nextMsg == null
-                              ? 0
-                              : continuesGroup
-                                  ? 8
-                                  : 16,
+                      return GestureDetector(
+                        onLongPressStart: (details) => _showContextMenu(
+                          context,
+                          details.globalPosition,
+                          msg,
                         ),
-                        child: _buildMessage(msg, showHeader),
-                      ),
-                    );
-                  },
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            bottom: nextMsg == null
+                                ? 0
+                                : continuesGroup
+                                    ? 8
+                                    : 16,
+                          ),
+                          child: _buildMessage(msg, showHeader),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               );
 
@@ -475,9 +572,29 @@ class _LiveChatTabState extends State<LiveChatTab> {
                     ),
                   ),
                 ),
+              if (_showLatestButton)
+                Positioned(
+                  right: 16,
+                  bottom: 12,
+                  child: IconButton.filled(
+                    key: const ValueKey('live-chat-latest-button'),
+                    tooltip: tr(context, 'Jump to latest messages'),
+                    onPressed: () {
+                      _followLatest = true;
+                      _scrollToBottom();
+                    },
+                    icon: const Icon(Icons.keyboard_arrow_down),
+                  ),
+                ),
             ],
           ),
         ),
+        if (_reconnecting)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Text(tr(context, 'Reconnecting to chat…'),
+                style: Eyebrow.style),
+          ),
         Container(
           key: const ValueKey('live-chat-composer'),
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
@@ -525,7 +642,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
               const SizedBox(width: 8),
               GestureDetector(
                 key: const ValueKey('live-chat-send-button'),
-                onTap: _sendMessage,
+                onTap: _reconnecting ? null : _sendMessage,
                 child: Container(
                   width: 43,
                   height: 43,
