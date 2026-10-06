@@ -82,14 +82,29 @@ class _SubList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 교체선수 등번호만 테마에 맞는 50% 색상으로 보여줘요.
+    final numberColor = (Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black)
+        .withValues(alpha: 0.5);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: subs.map((sub) {
         final name = playerNameLabel(context, sub.playerId, sub.name);
-        final label =
-            sub.jerseyNumber == null ? name : '#${sub.jerseyNumber} $name';
         final children = [
-          Text(label, style: Body1.style),
+          if (sub.jerseyNumber == null)
+            Text(name, style: Body1.style)
+          else
+            Text.rich(
+              TextSpan(children: [
+                TextSpan(
+                  text: '${sub.jerseyNumber} ',
+                  style: TextStyle(color: numberColor),
+                ),
+                TextSpan(text: name),
+              ]),
+              style: Body1.style,
+            ),
           if (sub.subIn) ...[
             const MatchEventIcon(type: LineupEventType.subIn),
           ],
