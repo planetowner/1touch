@@ -54,8 +54,6 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string></string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose photos and videos for your profile and community posts in 1touch.</string>
 	<key>UIApplicationSceneManifest</key>
