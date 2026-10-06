@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 
 void main() {
   for (final width in [320.0, 430.0]) {
-    testWidgets('shows the complete formations at ${width}px width',
+    testWidgets('shows only the lineup header at ${width}px width',
         (tester) async {
       tester.view.physicalSize = Size(width, 932);
       tester.view.devicePixelRatio = 1;
@@ -19,8 +18,6 @@ void main() {
             child: LineupPitch(
               awayRows: [],
               homeRows: [],
-              homeFormation: '4-2-3-1-1',
-              awayFormation: '4-2-3-1-1',
               homeColor: Color(0xFFD92455),
               awayColor: Color(0xFF18539F),
             ),
@@ -29,14 +26,11 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      final formation = find.textContaining('4-2-3-1-1');
-      final label = tester.widget<Text>(formation);
-      expect(label.textAlign, TextAlign.right);
-      expect(label.maxLines, isNull);
-      expect(label.overflow, isNot(TextOverflow.ellipsis));
-      expect(tester.renderObject<RenderParagraph>(formation).didExceedMaxLines,
-          isFalse);
-      expect(tester.getRect(formation).right, closeTo(width, 0.001));
+      final header = find.text('LINEUP');
+      expect(header, findsOneWidget);
+      expect(tester.getRect(header).left, 0);
+      expect(find.textContaining('HOME'), findsNothing);
+      expect(find.textContaining('AWAY'), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }

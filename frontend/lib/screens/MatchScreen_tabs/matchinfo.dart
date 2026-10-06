@@ -407,8 +407,6 @@ class MatchInfoTab extends StatelessWidget {
             LineupPitch(
               awayRows: awayLineupRows,
               homeRows: homeLineupRows,
-              homeFormation: _formation(fixture.homeTeamId),
-              awayFormation: _formation(fixture.awayTeamId),
               homeColor: comparisonColors.anchor,
               awayColor: comparisonColors.opponent,
               onPlayerTap: detail?.playerStatistics.isEmpty ?? true

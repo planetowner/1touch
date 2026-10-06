@@ -474,8 +474,8 @@ void main() {
     );
     expect(momentum.values[10], 0.7);
     expect(momentum.values[20], -0.4);
-    expect(lineup.homeFormation, '4-3-3');
-    expect(lineup.awayFormation, '4-2-3-1');
+    expect(find.text('LINEUP'), findsOneWidget);
+    expect(find.textContaining('HOME 4-3-3'), findsNothing);
     expect(lineup.homeColor, const Color(0xFFD92455));
     expect(lineup.awayColor, const Color(0xFF18539F));
     _expectLineupPlayerColors(
