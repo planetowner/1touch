@@ -9,6 +9,11 @@ const teamScreenKoreanMessages = <String, String>{
   'Draw': '무승부',
 };
 
+// 선수 정보의 섹션 제목은 '경기 기록', 상단 탭 이름은 '경기'로 구분해요.
+const playerTabKoreanMessages = <String, String>{
+  'Matches': '경기',
+};
+
 const appMessages = <String, MessageTranslations>{
   // 인증 메일도 이 문구를 원본으로 삼고 서버용 JSON을 생성해요.
   "Email Verification Code": (ko: "이메일 인증번호", ja: "メール認証コード", zh: "邮箱验证码"),
@@ -1088,8 +1093,8 @@ const appMessages = <String, MessageTranslations>{
   "No ratings available": (ko: "평점이 없어요", ja: "評価がありません", zh: "暂无评分"),
   "Rating": (ko: "평점", ja: "評価", zh: "评分"),
   "Form": (ko: "최근 경기력", ja: "調子", zh: "状态"),
-  "PERFORMANCE": (ko: "경기력", ja: "パフォーマンス", zh: "表现"),
-  "INFLUENCE": (ko: "영향력", ja: "影響力", zh: "影响力"),
+  "PERFORMANCE": (ko: "라운드별 경기력", ja: "パフォーマンス", zh: "表现"),
+  "INFLUENCE": (ko: "출전 & 활약", ja: "影響力", zh: "影响力"),
   "Cost-Effectiveness": (ko: "급여 대비 효율", ja: "給与対効果", zh: "薪资性价比"),
   "An indicator is shown when enough data is available.": (
     ko: "데이터가 충분히 모이면 지표를 보여드려요.",
@@ -1177,7 +1182,7 @@ const appMessages = <String, MessageTranslations>{
   "SUBSTITUTES": (ko: "교체 선수", ja: "控え選手", zh: "替补球员"),
   "PLAYER OF THE MATCH": (ko: "경기 최우수 선수", ja: "プレイヤー・オブ・ザ・マッチ", zh: "全场最佳球员"),
   "MOMENTUM": (ko: "경기 흐름", ja: "試合の流れ", zh: "比赛走势"),
-  "TOP STATS": (ko: "주요 기록", ja: "主要スタッツ", zh: "关键数据"),
+  "TOP STATS": (ko: "주요 스탯", ja: "主要スタッツ", zh: "关键数据"),
   "Ball Possession": (ko: "점유율", ja: "ボール支配率", zh: "控球率"),
   "Shots": (ko: "슈팅", ja: "シュート", zh: "射门"),
   "Shots on Target": (ko: "유효 슈팅", ja: "枠内シュート", zh: "射正"),
