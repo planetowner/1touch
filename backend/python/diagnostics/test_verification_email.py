@@ -90,7 +90,12 @@ class VerificationEmailTests(unittest.TestCase):
                         self.assertEqual(part.get_content_disposition(), "inline")
                         self.assertTrue(part.get_payload(decode=True).startswith(b"\x89PNG\r\n\x1a\n"))
                     self.assertNotIn("figma.com", html)
-                    self.assertEqual(document.find_all("a"), [])
+                    self.assertEqual(
+                        [(link.get_text(), link["href"]) for link in document.find_all("a")],
+                        [("Privacy Policy", "https://1touch.football/legal/privacy.html"),
+                         ("Terms of Service", "https://1touch.football/legal/terms.html"),
+                         ("Contact us", "mailto:support@1touch.football")],
+                    )
 
     def test_expiry_copy_uses_the_code_lifetime_setting(self):
         with patch.object(verification_email, "CODE_LIFETIME_MINUTES", 7):
