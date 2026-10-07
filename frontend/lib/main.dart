@@ -199,36 +199,47 @@ CustomTransitionPage<void> _detailSlidePage(
 GoRoute profileAboutRoute({GlobalKey<NavigatorState>? navigatorKey}) => GoRoute(
       path: '/profile/about',
       parentNavigatorKey: navigatorKey,
-      builder: (context, state) => AboutPage(
-        detailBuilder: (section) => AboutDetailPage(
-          section: section,
-          showSearch: true,
-          onSearch: () => context.go('/search'),
-          bottomNavigationBar: OneTouchBottomNavigationBar(
-            currentIndex: mainTabActions.tabIndex ?? 0,
-            onTap: (index) {
-              mainTabActions.select(index);
-              if (index == 1) {
-                openTeamPage(
-                  context,
-                  currentUserPreferences.viewedTeamId.value,
-                );
-              } else {
-                context.go(
-                  switch (index) {
-                    0 => '/home',
-                    2 => '/players',
-                    _ => '/community',
-                  },
-                );
-              }
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                mainTabActions.select(index);
-              });
-            },
+      builder: (context, state) => _profilePage(
+        context,
+        AboutPage(
+          detailBuilder: (section) => AboutDetailPage(
+            section: section,
+            showSearch: true,
+            onSearch: () => context.go('/search'),
+            bottomNavigationBar: _profileBottomNavigationBar(context),
           ),
         ),
       ),
+    );
+
+Widget _profilePage(BuildContext context, Widget child) => Scaffold(
+      body: child,
+      bottomNavigationBar: _profileBottomNavigationBar(context),
+    );
+
+Widget _profileBottomNavigationBar(BuildContext context) =>
+    OneTouchBottomNavigationBar(
+      currentIndex: mainTabActions.tabIndex ?? 0,
+      onTap: (index) {
+        mainTabActions.select(index);
+        if (index == 1) {
+          openTeamPage(
+            context,
+            currentUserPreferences.viewedTeamId.value,
+          );
+        } else {
+          context.go(
+            switch (index) {
+              0 => '/home',
+              2 => '/players',
+              _ => '/community',
+            },
+          );
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          mainTabActions.select(index);
+        });
+      },
     );
 
 final GoRouter _router = GoRouter(
@@ -544,13 +555,14 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/profile',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (c, s) => Profile(),
+      builder: (context, state) => _profilePage(context, const Profile()),
     ),
     GoRoute(
       path: '/profile/activity',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => Scaffold(
-        body: ProfileActivityScreen(
+      builder: (context, state) => _profilePage(
+        context,
+        ProfileActivityScreen(
           profile: state.extra is CurrentUserProfile
               ? state.extra as CurrentUserProfile
               : null,
@@ -558,70 +570,62 @@ final GoRouter _router = GoRouter(
               ? ProfileActivityTab.comments
               : ProfileActivityTab.posts,
         ),
-        bottomNavigationBar: OneTouchBottomNavigationBar(
-          currentIndex: 0,
-          onTap: (index) {
-            mainTabActions.select(index);
-            if (index == 1) {
-              openTeamPage(
-                context,
-                currentUserPreferences.viewedTeamId.value,
-              );
-            } else {
-              context.go(
-                switch (index) {
-                  0 => '/home',
-                  2 => '/players',
-                  _ => '/community',
-                },
-              );
-            }
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              mainTabActions.select(index);
-            });
-          },
-        ),
       ),
     ),
     GoRoute(
       path: '/profile/edit',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (c, s) => EditProfileScreen(
-        profile: s.extra is CurrentUserProfile
-            ? s.extra as CurrentUserProfile
-            : null,
+      builder: (context, state) => _profilePage(
+        context,
+        EditProfileScreen(
+          profile: state.extra is CurrentUserProfile
+              ? state.extra as CurrentUserProfile
+              : null,
+        ),
       ),
     ),
     GoRoute(
         path: '/profile/notification',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (c, s) => NotificationListPage()),
+        builder: (context, state) =>
+            _profilePage(context, const NotificationListPage())),
     GoRoute(
       path: '/profile/notification/team/:name',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (c, s) => TeamNotificationDetailPage(
-        teamName: s.pathParameters['name']!,
-        teamId: int.tryParse(s.uri.queryParameters['id'] ?? ''),
+      builder: (context, state) => _profilePage(
+        context,
+        TeamNotificationDetailPage(
+          teamName: state.pathParameters['name']!,
+          teamId: int.tryParse(state.uri.queryParameters['id'] ?? ''),
+        ),
       ),
     ),
     GoRoute(
       path: '/profile/notification/player/:name',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (c, s) => PlayerNotificationDetailPage(
-        playerName: s.pathParameters['name']!,
-        playerId: int.tryParse(s.uri.queryParameters['id'] ?? ''),
+      builder: (context, state) => _profilePage(
+        context,
+        PlayerNotificationDetailPage(
+          playerName: state.pathParameters['name']!,
+          playerId: int.tryParse(state.uri.queryParameters['id'] ?? ''),
+        ),
       ),
     ),
     GoRoute(
       path: '/profile/preference',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (c, s) => PreferencePage(),
+      builder: (context, state) => _profilePage(
+        context,
+        PreferencePage(
+          bottomNavigationBarBuilder: _profileBottomNavigationBar,
+        ),
+      ),
     ),
     profileAboutRoute(navigatorKey: _rootNavigatorKey),
     GoRoute(
       path: '/profile/contact',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (c, s) => ContactPage(),
+      builder: (context, state) => _profilePage(context, const ContactPage()),
     ),
     GoRoute(
       path: '/search',
@@ -907,7 +911,8 @@ class MyApp extends StatelessWidget {
 
 bool _usesMainBottomNavigation(String path) =>
     path == '/home' ||
-    path == '/profile/activity' ||
+    path == '/profile' ||
+    path.startsWith('/profile/') ||
     path == '/notifications' ||
     path == '/team' ||
     path.startsWith('/team/') ||
