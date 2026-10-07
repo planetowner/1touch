@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/full_screen_back_gesture.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/overflow_scrolling_text.dart';
@@ -34,6 +35,57 @@ import 'support/player_detail_fixture.dart';
 
 void main() {
   setUpAppCatalog();
+  testWidgets('iOS player tab swipe takes priority over page back swipe',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(430, 932));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final router = GoRouter(routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => Scaffold(
+          body: TextButton(
+            onPressed: () => context.push('/player'),
+            child: const Text('Open player'),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/player',
+        builder: (context, state) => PlayerCard(
+          playerId: 1,
+          detailRepository: FakePlayerDetailRepository(),
+          initialDetail: detailFixture(playerId: 1),
+        ),
+      ),
+    ]);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(
+      theme: app_style.darktheme.copyWith(platform: TargetPlatform.iOS),
+      builder: (context, child) => FullScreenBackGesture(child: child!),
+      routerConfig: router,
+    ));
+    await tester.tap(find.text('Open player'));
+    await tester.pumpAndSettle();
+
+    final tabs = tester.widget<TabBarView>(find.byType(TabBarView)).controller!;
+    await tester.dragFrom(const Offset(230, 600), const Offset(-260, 0));
+    await tester.pumpAndSettle();
+    expect(tabs.index, 1);
+    expect(
+        ModalRoute.of(tester.element(find.byType(PlayerCard)))!
+            .popGestureEnabled,
+        isFalse);
+    await tester.dragFrom(const Offset(150, 350), const Offset(260, 0));
+    await tester.pumpAndSettle();
+    expect(find.byType(PlayerCard), findsOneWidget);
+    expect(router.canPop(), isTrue);
+    expect(tabs.index, 0);
+    expect(
+        ModalRoute.of(tester.element(find.byType(PlayerCard)))!
+            .popGestureEnabled,
+        isTrue);
+    expect(tester.takeException(), isNull);
+  });
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     for (final dark in [false, true]) {
       testWidgets('season filter shows the full label at $size dark=$dark',

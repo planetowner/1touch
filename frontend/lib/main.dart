@@ -15,6 +15,7 @@ import 'package:onetouch/services/firebase_push_notification_handler.dart';
 import 'package:onetouch/services/push_device_registration_service_provider.dart';
 import 'package:onetouch/data/notifications/notification_unread_controller_provider.dart';
 
+// 핵심 코드와 데이터 계층이에요.
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
 import 'package:onetouch/core/stylesheet.dart';
@@ -51,11 +52,16 @@ import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/comm_pages/profile_activity_screen.dart';
 import 'package:onetouch/comm_pages/Profile_settings/about_detail_page.dart';
 
+// 기능 모듈이에요.
 // Feature Modules
+// 모든 화면을 가져온다.
 import 'package:onetouch/screens/index.dart'; // Imports all screens
+// 모든 프로필 페이지를 가져온다.
 import 'package:onetouch/comm_pages/index.dart'; // Imports all profile pages
+// 인증 구성요소를 가져온다.
 import 'package:onetouch/SignComps/index.dart'; // Imports auth components
 
+// 최상위 화면이에요.
 // Root Level Pages
 import 'package:onetouch/splash.dart';
 import 'package:onetouch/onboarding.dart';
@@ -159,6 +165,7 @@ Future<void> restorePlayerDetailBeforeNavigation(
       await source.restoreFor(playerId);
     }
   } on Object {
+    // 로컬 캐시를 읽지 못해도 화면 이동을 막지 않는다.
     // An unreadable local cache must not prevent navigation.
   }
 }
@@ -223,10 +230,7 @@ Widget _profileBottomNavigationBar(BuildContext context) =>
       onTap: (index) {
         mainTabActions.select(index);
         if (index == 1) {
-          openTeamPage(
-            context,
-            currentUserPreferences.viewedTeamId.value,
-          );
+          context.go('/team');
         } else {
           context.go(
             switch (index) {
@@ -281,6 +285,7 @@ final GoRouter _router = GoRouter(
   },
   errorBuilder: (context, state) => const AppErrorScreen(statusCode: 404),
   routes: [
+    // 시작 화면이에요.
     // Splash
     GoRoute(
       path: '/',
@@ -294,6 +299,7 @@ final GoRouter _router = GoRouter(
     GoRoute(
         path: '/session', builder: (context, state) => const SessionScreen()),
 
+    // 온보딩 화면이에요.
     // Onboarding
     GoRoute(
         path: '/onboarding',
@@ -522,10 +528,7 @@ final GoRouter _router = GoRouter(
           onTap: (index) {
             mainTabActions.select(index);
             if (index == 1) {
-              openTeamPage(
-                context,
-                currentUserPreferences.viewedTeamId.value,
-              );
+              context.go('/team');
             } else {
               context.go(
                 switch (index) {
@@ -648,6 +651,7 @@ final GoRouter _router = GoRouter(
 class MainScreen extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
+  // `StatefulShellRoute.indexedStack`에는 `child` 매개변수가 필요 없다.
   // The 'child' parameter is not needed for StatefulShellRoute.indexedStack
   const MainScreen({super.key, required this.navigationShell});
 
@@ -668,6 +672,7 @@ class MainScreen extends StatelessWidget {
       bottomNavigationBar: OneTouchBottomNavigationBar(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) {
+          // 목적지의 첫 프레임 전에 유지 중인 페이지 상태를 초기화한다.
           // Reset persistent pages before the destination's first frame.
           mainTabActions.select(index);
 
@@ -677,13 +682,15 @@ class MainScreen extends StatelessWidget {
             });
           }
 
-          // 팀 탭은 홈에서 현재 조회 중인 팀으로 열어요.
+          // 팀 탭도 다른 하단 탭처럼 분기 루트로 돌아가며 Overview를 열어요.
           if (index == 1) {
-            openTeamPage(context, currentUserPreferences.viewedTeamId.value);
+            navigationShell.goBranch(1, initialLocation: true);
             notifyRootScreen();
+            // 특수 사례를 처리했으므로 여기서 종료한다.
             return; // Exit after handling the special case
           }
 
+          // 이 호출 하나로 탭 전환과 스택 초기화를 처리한다. `goBranch`는 다른 탭의 상태를 보존하고, 현재 탭을 다시 누르면 `initialLocation`으로 스택을 초기화한다.
           // This single call handles both switching tabs and resetting the stack.
           // goBranch preserves the state of other tabs.
           // The 'initialLocation' parameter resets the stack if the tapped tab
@@ -699,6 +706,7 @@ class MainScreen extends StatelessWidget {
   }
 }
 
+/// 팀이나 선수 상세 화면 아래에 출발 경기를 남겨 시스템 뒤로 가기와 iOS 스와이프로 같은 경기로 돌아간다.
 /// Keeps the source match beneath a team or player detail page so system back
 /// and iOS swipe-back return to that exact match.
 class _MatchOriginDetailPage extends StatelessWidget {
@@ -719,7 +727,7 @@ class _MatchOriginDetailPage extends StatelessWidget {
         onTap: (index) {
           mainTabActions.select(index);
           if (index == 1) {
-            context.go('/team/${currentUserPreferences.viewedTeamId.value}');
+            context.go('/team');
           } else {
             context.go(
               switch (index) {
