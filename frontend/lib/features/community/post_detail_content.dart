@@ -160,9 +160,15 @@ class PostDetailContent extends StatelessWidget {
                 Row(
                   children: [
                     CircleAvatar(
+                      key: ValueKey('community-post-avatar-${post.postId}'),
                       radius: 12,
                       backgroundColor:
                           isDark ? Colors.white24 : AppPalette.lightGrey,
+                      backgroundImage: post.avatarUrl == null
+                          ? null
+                          : communityImageProvider(post.avatarUrl!),
+                      onBackgroundImageError:
+                          post.avatarUrl == null ? null : (_, __) {},
                     ),
                     const SizedBox(width: 8),
                     Expanded(
