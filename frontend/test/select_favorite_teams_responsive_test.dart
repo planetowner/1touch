@@ -63,10 +63,6 @@ void main() {
       builder: (context, child) => AnimatedBuilder(
         animation: router.routeInformationProvider,
         builder: (context, _) => FullScreenBackGesture(
-          enabled: router.routeInformationProvider.value.uri.path !=
-              '/onboarding/select-favorites',
-          canGoBack: router.canPop,
-          goBack: router.routerDelegate.popRoute,
           child: child!,
         ),
       ),
