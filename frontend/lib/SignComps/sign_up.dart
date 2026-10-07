@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/comm_pages/Profile_settings/about_detail_page.dart';
 import 'package:onetouch/core/identity_name_rules.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
@@ -44,6 +46,23 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   bool _obscureConfirm = true;
   bool _agreed = false;
   bool _submitting = false;
+  late final TapGestureRecognizer _termsTap;
+  late final TapGestureRecognizer _privacyTap;
+
+  @override
+  void initState() {
+    super.initState();
+    _termsTap = TapGestureRecognizer()
+      ..onTap = () {
+        FocusManager.instance.primaryFocus?.unfocus();
+        context.push(AboutSection.terms.path);
+      };
+    _privacyTap = TapGestureRecognizer()
+      ..onTap = () {
+        FocusManager.instance.primaryFocus?.unfocus();
+        context.push(AboutSection.privacy.path);
+      };
+  }
 
   AuthService get _authService =>
       widget.authService ?? auth_provider.authService;
@@ -128,6 +147,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
   @override
   void dispose() {
+    _termsTap.dispose();
+    _privacyTap.dispose();
     _username.dispose();
     _displayName.dispose();
     _email.dispose();
@@ -142,6 +163,13 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     final bodyStyle = AuthStyles.signupTextStyle(Body1.style);
     final labelStyle = AuthStyles.signupTextStyle(Eyebrow.style);
     final bottomSafeInset = MediaQuery.viewPaddingOf(context).bottom;
+    final consentTemplate = tr(
+      context,
+      'By clicking sign up, I hereby agree and consent to 1touch’s {terms}; I confirm that I have read 1touch’s {privacy}.',
+    );
+    final termsParts = consentTemplate.split('{terms}');
+    final privacyParts = termsParts[1].split('{privacy}');
+    final consentParts = [termsParts[0], privacyParts[0], privacyParts[1]];
 
     return Scaffold(
       backgroundColor: AuthStyles.background(context),
@@ -331,16 +359,33 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
-                                    child: Text(
-                                      tr(
-                                              context,
-                                              "By clicking sign up, I hereby agree and consent to\n"
-                                              "1touch’s Terms & Conditions; I confirm that I have\n"
-                                              "read 1touch’s Privacy Policy.")
-                                          .replaceAll('\n', ' '),
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Body2.style,
+                                    child: Text.rich(
+                                      TextSpan(
+                                        style: Body2.style
+                                            .copyWith(color: colors.onSurface),
+                                        children: [
+                                          TextSpan(text: consentParts[0]),
+                                          TextSpan(
+                                            text:
+                                                tr(context, 'Terms of Service'),
+                                            style: const TextStyle(
+                                                decoration:
+                                                    TextDecoration.underline),
+                                            recognizer: _termsTap,
+                                          ),
+                                          TextSpan(text: consentParts[1]),
+                                          TextSpan(
+                                            text: tr(context, 'Privacy Policy'),
+                                            style: const TextStyle(
+                                                decoration:
+                                                    TextDecoration.underline),
+                                            recognizer: _privacyTap,
+                                          ),
+                                          TextSpan(text: consentParts[2]),
+                                        ],
+                                      ),
+                                      key:
+                                          const ValueKey('signup-consent-text'),
                                     ),
                                   ),
                                 ],
