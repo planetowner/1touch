@@ -223,6 +223,8 @@ class _MomentumPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (values.length < 2) return;
 
+    // 절댓값이 가장 큰 기록을 피치의 반 높이에서 4px 안쪽에 맞춰
+    // 홈팀의 양수와 원정팀의 음수를 같은 척도로 그려요.
     final maxAbs = values.map((v) => v.abs()).reduce((a, b) => a > b ? a : b);
     final centerY = size.height / 2;
     final scaleY = maxAbs == 0 ? 1.0 : (size.height / 2 - 4) / maxAbs;

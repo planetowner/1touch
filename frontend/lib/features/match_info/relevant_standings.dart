@@ -50,6 +50,7 @@ RelevantStandingWindow selectRelevantMatchStandings(
   final lowerIndex = math.min(homeIndex, awayIndex);
   final upperIndex = math.max(homeIndex, awayIndex);
   if (upperIndex - lowerIndex <= visibleCount - 1) {
+    // 두 팀이 6행 안에 들어오면 둘 다 포함하는 시작 범위 안에서 가운데를 택해요.
     final minimumStart = math.max(0, upperIndex - (visibleCount - 1));
     final maximumStart = math.min(lowerIndex, sorted.length - visibleCount);
     final preferredStart =
@@ -62,6 +63,7 @@ RelevantStandingWindow selectRelevantMatchStandings(
   }
 
   const neighborhoodSize = 3;
+  // 한 창에 담을 수 없는 두 팀은 각각 주변 3행을 보여주고 사이에 구분선을 둬요.
   final firstStart = _centeredWindowStart(
     index: lowerIndex,
     count: neighborhoodSize,

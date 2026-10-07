@@ -70,6 +70,8 @@ class StatComparisonBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final total = data.homePercent + data.awayPercent;
+    // 표시값은 원본 그대로 두고 막대만 두 값의 합에 대한 비율로 나눠요.
+    // 둘 다 0이면 한쪽 막대가 사라지지 않도록 절반씩 배분해요.
     final homeFlex = total == 0 ? 50 : (data.homePercent / total * 100).round();
     final awayFlex = 100 - homeFlex;
 

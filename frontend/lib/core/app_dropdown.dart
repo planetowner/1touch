@@ -134,6 +134,8 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
         AppDropdownTokens.gap +
         AppDropdownTokens.iconSize +
         AppDropdownTokens.gap;
+    // 가장 긴 선택지에 패딩·아이콘 폭을 더하되 메뉴는 트리거보다 좁거나
+    // 화면 양쪽 8px 여백을 넘지 않게 해요.
     final menuWidth = widget.matchMenuWidth
         ? trigger.size.width.clamp(0.0, availableWidth).toDouble()
         : (longestOptionWidth + optionChromeWidth)

@@ -51,6 +51,7 @@ class _CurrentFormSelectionPainter extends CustomPainter {
     Color color,
   ) {
     if (points == null) return;
+    // 승점 축의 위쪽이 최댓값이므로 비율을 뒤집어 점의 세로 위치를 구해요.
     final y =
         size.height * (1 - (points - minPoints) / (maxPoints - minPoints));
     canvas.drawCircle(Offset(x, y), 4, Paint()..color = color);
