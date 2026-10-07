@@ -54,6 +54,7 @@ void main() {
     const original = 'https://images.example.test/attachments/9/content';
     const preview = 'https://images.example.test/attachments/9/preview';
     final post = Post(
+      language: 'en',
       postId: 9,
       teamId: 83,
       userId: 1,
@@ -85,6 +86,7 @@ void main() {
         transferRepository: MockTransferRepository(transfers: const []),
         postRepository: MockPostRepository(posts: [
           const Post(
+            language: 'en',
             postId: 10,
             teamId: 83,
             userId: 1,

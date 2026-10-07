@@ -14,7 +14,7 @@ void main() {
 
   test('wraps the existing community post catalog by default', () async {
     final repository = MockPostRepository();
-    final posts = await repository.loadPosts(teamId: 83);
+    final posts = await repository.loadPosts(language: 'en', teamId: 83);
 
     expect(posts, hasLength(2));
     expect(posts.first.postId, 1);
@@ -28,13 +28,15 @@ void main() {
 
     final postId = await repository.createPost(
       CreatePostInput(
+        language: 'en',
         teamId: 83,
         category: PostCategory.general,
         title: 'Mock user post',
         body: 'Stored only for this repository instance.',
       ),
     );
-    final post = (await repository.loadPosts(teamId: 83)).single;
+    final post =
+        (await repository.loadPosts(language: 'en', teamId: 83)).single;
 
     expect(post.postId, postId);
     expect(post.teamId, 83);

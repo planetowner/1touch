@@ -1,6 +1,7 @@
 Map<String, dynamic> activityPostJson({int id = 42}) => {
       'post_id': id,
       'team_id': 83,
+      'language': 'en',
       'user_id': 1,
       'category': 'general',
       'title': 'My post $id',

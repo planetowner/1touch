@@ -22,6 +22,7 @@ class ApiPostResponse {
   ApiPostResponse({
     required this.postId,
     required this.teamId,
+    required this.language,
     required this.userId,
     required this.category,
     required this.title,
@@ -40,6 +41,7 @@ class ApiPostResponse {
 
   final int postId;
   final int teamId;
+  final String language;
   final int? userId;
   final String category;
   final String title;
@@ -59,6 +61,7 @@ class ApiPostResponse {
     return ApiPostResponse(
       postId: _requiredInt(json, 'post_id'),
       teamId: _requiredInt(json, 'team_id'),
+      language: _requiredString(json, 'language'),
       userId: _nullableInt(json, 'user_id'),
       category: _requiredString(json, 'category'),
       title: _requiredString(json, 'title'),

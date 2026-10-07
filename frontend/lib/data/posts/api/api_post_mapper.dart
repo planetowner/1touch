@@ -45,6 +45,7 @@ Post postFromApiResponse(ApiPostResponse response, {required Uri apiBaseUri}) {
   return Post(
     postId: response.postId,
     teamId: response.teamId,
+    language: response.language,
     userId: response.userId,
     category: category,
     title: response.title,

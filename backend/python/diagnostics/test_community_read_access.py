@@ -36,7 +36,7 @@ class FollowedCommunityReadTests(unittest.TestCase):
 
     def read_operations(self):
         return [
-            lambda: posts_repo.list_posts(1, 9, None, posts_repo.PostSort.newest, PostPeriod.all_time, 50, 0),
+            lambda: posts_repo.list_posts(1, 9, None, posts_repo.PostSort.newest, PostPeriod.all_time, 50, 0, language="ko"),
             lambda: posts_repo.get_post(1, 91),
             lambda: posts_repo.list_comments(1, 91, 0, 50),
             lambda: community_repo.get_rules(1, 9),
@@ -75,7 +75,7 @@ class FollowedCommunityReadTests(unittest.TestCase):
         cursor.fetchone.return_value = self.post
         self.patch(posts_repo, 'lock_user', return_value=self.user)
         operations = [
-            lambda: posts_repo.create_post(1, 9, 'general', 'Title', 'Body', []),
+            lambda: posts_repo.create_post(1, 9, 'general', 'Title', 'Body', [], language="ko"),
             lambda: posts_repo.create_comment(1, 91, 'Comment', None),
             lambda: posts_repo.set_like(1, 'post', 91, True),
             lambda: posts_repo.set_like(1, 'comment', 3, True),

@@ -93,8 +93,8 @@ class ChatNicknameTests(unittest.TestCase):
         rows = [stored_message(message_id=12), stored_message(message_id=11)]
         with patch.object(chat_repo, "check_chat_user"), patch.object(chat_repo, "get_user"), \
                 patch.object(chat_repo, "fetch_all_dict", return_value=rows) as fetch:
-            history = chat_repo.history(5, 42, 20, None, 2)
-        self.assertEqual(fetch.call_args.args[1], (42, 5, 20, 2))
+            history = chat_repo.history(5, 42, 20, None, 2, language="ko")
+        self.assertEqual(fetch.call_args.args[1], (42, "ko", 5, 20, 2))
         self.assertEqual([m["message_id"] for m in history], [11, 12])
         self.assertEqual(history[0], chat_aliases.public_chat_message(stored_message(), 5))
 
@@ -147,8 +147,8 @@ class ChatAnonymousSocketTests(unittest.TestCase):
                 patch.object(chat.auth_repo, "rate_limit"), \
                 patch.object(chat.chat_repo, "create_message", return_value=row) as create, \
                 patch.object(chat, "is_blocked", return_value=False), TestClient(app) as client:
-            with client.websocket_connect("/v1/fixtures/42/chat") as sender, \
-                    client.websocket_connect("/v1/fixtures/42/chat") as recipient:
+            with client.websocket_connect("/v1/fixtures/42/chat?language=ko") as sender, \
+                    client.websocket_connect("/v1/fixtures/42/chat?language=ko") as recipient:
                 sender.send_json({"token": "a" * 40})
                 recipient.send_json({"token": "b" * 40})
                 self.assertEqual(sender.receive_json()["type"], "ready")
@@ -157,7 +157,7 @@ class ChatAnonymousSocketTests(unittest.TestCase):
                 own, other = sender.receive_json(), recipient.receive_json()
                 self.assertEqual(own, {"type": "message", **chat_aliases.public_chat_message(row, 928371)})
                 self.assertEqual(other, {**own, "is_mine": False})
-                create.assert_called_once_with(928371, 42, "Hello")
+                create.assert_called_once_with(928371, 42, "Hello", language="ko")
 
                 from starlette.websockets import WebSocketDisconnect
                 sender.send_json({"text": "Hello", "nickname_en": "Fake_AAAA"})

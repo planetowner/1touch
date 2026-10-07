@@ -144,6 +144,7 @@ class _AddPostState extends State<AddPost> {
           attachmentRepository: _attachmentRepository,
         ).publish(
           post: CreatePostInput(
+            language: Localizations.localeOf(context).languageCode,
             teamId: widget.teamId ?? FavoriteTeam.id.value,
             category: _selectedCategory,
             title: title,

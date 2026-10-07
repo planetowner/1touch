@@ -42,11 +42,20 @@ class SelectedTeamMediaPreloader extends StatefulWidget {
 class _SelectedTeamMediaPreloaderState
     extends State<SelectedTeamMediaPreloader> {
   int _generation = 0;
+  String? _language;
 
   @override
   void initState() {
     super.initState();
     _listen(widget);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final language = Localizations.localeOf(context).languageCode;
+    if (_language == language) return;
+    _language = language;
     _scheduleLoad();
   }
 
@@ -86,8 +95,11 @@ class _SelectedTeamMediaPreloaderState
       _prepareCachedImages();
       final teamId = widget.teamId;
       // 한 목록이 늦거나 없어도 다른 목록의 사진은 먼저 준비해요.
-      unawaited(_load(() => widget.postRepository.loadPosts(teamId: teamId),
-          _postImages, generation));
+      unawaited(_load(
+          () => widget.postRepository
+              .loadPosts(teamId: teamId, language: _language!),
+          _postImages,
+          generation));
       unawaited(_load(() => widget.injuryRepository.loadForTeam(teamId),
           _injuryImages, generation));
       unawaited(_load(() => widget.transferRepository.loadForTeam(teamId),
@@ -109,7 +121,7 @@ class _SelectedTeamMediaPreloaderState
   void _prepareCachedImages() {
     final posts = switch (widget.postRepository) {
       CachedPostRepository repository =>
-        repository.cachedFeed(teamId: widget.teamId),
+        repository.cachedFeed(teamId: widget.teamId, language: _language!),
       _ => null,
     };
     final injuries = widget.injuryRepository.cachedForTeam(widget.teamId);

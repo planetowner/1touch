@@ -150,6 +150,7 @@ class AccountManagementTests(CommunityDatabaseCase):
 
 class AccountMigrationTests(CommunityDatabaseCase):
     account_management_schema = False
+    language_schema = False
 
     def test_existing_members_credentials_sessions_and_codes_survive(self):
         self.execute("UPDATE users SET timezone='Asia/Seoul' WHERE user_id=%s", (self.a,))

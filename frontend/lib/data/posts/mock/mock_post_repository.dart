@@ -71,6 +71,7 @@ class MockPostRepository implements PostRepository {
       Post(
         postId: postId,
         teamId: input.teamId,
+        language: input.language,
         userId: _currentUserId,
         username: _mockUsernameFor(_currentUserId),
         category: input.category,
@@ -138,6 +139,7 @@ class MockPostRepository implements PostRepository {
   @override
   Future<List<Post>> loadPosts({
     required int teamId,
+    required String language,
     PostCategory? category,
     PostSort sort = PostSort.newest,
     PostPeriod period = PostPeriod.allTime,
@@ -168,6 +170,7 @@ class MockPostRepository implements PostRepository {
         .where(
           (post) =>
               post.teamId == teamId &&
+              post.language == language &&
               (category == null || post.category == category),
         )
         .toList();
@@ -225,6 +228,7 @@ class MockPostRepository implements PostRepository {
     _posts[index] = Post(
       postId: post.postId,
       teamId: post.teamId,
+      language: post.language,
       userId: post.userId,
       category: post.category,
       title: post.title,

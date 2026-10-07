@@ -87,6 +87,7 @@ abstract final class LocalCacheKeys {
 
   static String communityFeed(
     int teamId,
+    String language,
     String? category,
     String sort,
     String period,
@@ -94,10 +95,11 @@ abstract final class LocalCacheKeys {
     int limit,
     int offset,
   ) =>
-      'community-feed:$teamId:${category ?? 'all'}:$sort:$period:'
+      'community-feed:$teamId:$language:${category ?? 'all'}:$sort:$period:'
       '${Uri.encodeComponent(timezone ?? 'all')}:$limit:$offset';
 
-  static String communityPost(int postId) => 'community-post:$postId';
+  // 언어 필드가 없던 상세 캐시를 새 응답으로 읽지 않아요.
+  static String communityPost(int postId) => 'community-post:v2:$postId';
 
   // 국가를 고정해 저장한 구버전 캐시와 구분해요. 하이라이트는 저장하지 않아요.
   static String home(int teamId, DateTime month) =>

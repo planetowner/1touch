@@ -32,7 +32,7 @@ class CommunityPointRepositoryTests(unittest.TestCase):
                 favorite_team_id INTEGER DEFAULT 6, suspended_until TEXT);
             CREATE TABLE user_blocks (user_id INTEGER, blocked_user_id INTEGER);
             CREATE TABLE posts (post_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                team_id INTEGER, user_id INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
+                team_id INTEGER, language TEXT NOT NULL, user_id INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
                 category TEXT, title TEXT, body TEXT, created_at TEXT, state TEXT, edited_at TEXT);
             CREATE TABLE post_comments (comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 post_id INTEGER REFERENCES posts(post_id), user_id INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
@@ -60,7 +60,7 @@ class CommunityPointRepositoryTests(unittest.TestCase):
         self.addCleanup(self.client.close)
 
     def post(self, user=1, *, draft=False):
-        return posts_repo.create_post(user, 6, 'general', 'Title', 'Body', [], draft=draft)
+        return posts_repo.create_post(user, 6, 'general', 'Title', 'Body', [], draft=draft, language="ko")
 
     def comment(self, post, user=2, body='ㅋ', reply=None):
         return posts_repo.create_comment(user, post, body, reply)

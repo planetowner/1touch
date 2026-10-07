@@ -34,7 +34,7 @@ class ChatAliasDatabaseTests(CommunityDatabaseCase):
             self.assertEqual(names, {f"nickname_{lang}": f"{player[f'short_{lang}']}_A8Q4" for lang in ("en", "ko")})
 
     def test_catalog_edits_apply_to_new_authors_and_survive_migration(self):
-        first = chat_repo.create_message(self.a, 10, "Before catalog change")
+        first = chat_repo.create_message(self.a, 10, "Before catalog change", language="ko")
         self.execute("DELETE FROM chat_alias_players")
         self.execute("""INSERT INTO chat_alias_players (english_name,korean_name,short_en,short_ko)
             VALUES ('Park Ji-sung','박지성','ParkJiSung','박지성')""")
@@ -44,38 +44,38 @@ class ChatAliasDatabaseTests(CommunityDatabaseCase):
         with patch("sys.argv", ["migrate_fixture_chat_aliases", "--apply"]), patch("builtins.print"):
             migration.main()
         self.assertEqual(self.execute("SELECT * FROM chat_alias_players"), catalog)
-        repeated = chat_repo.create_message(self.a, 10, "After catalog change")
+        repeated = chat_repo.create_message(self.a, 10, "After catalog change", language="ko")
         self.assertEqual((repeated["nickname_en"], repeated["nickname_ko"]),
                          (first["nickname_en"], first["nickname_ko"]))
-        new_author = chat_repo.create_message(self.b, 10, "New author")
+        new_author = chat_repo.create_message(self.b, 10, "New author", language="ko")
         self.assertTrue(new_author["nickname_en"].startswith("ParkJiSung_"))
         self.assertTrue(new_author["nickname_ko"].startswith("박지성_"))
 
     def test_name_survives_profile_changes_and_differs_between_matches(self):
         with patch.object(chat_repo, "new_nickname", return_value={"nickname_en": "Cruyff_A8Q4", "nickname_ko": "크루이프_A8Q4"}):
-            first = chat_repo.create_message(self.a, 10, "First")
+            first = chat_repo.create_message(self.a, 10, "First", language="ko")
         self.execute("UPDATE users SET username='renamed',display_name='NewName' WHERE user_id=%s", (self.a,))
-        second = chat_repo.create_message(self.a, 10, "Second")
+        second = chat_repo.create_message(self.a, 10, "Second", language="ko")
         for key in ("nickname_en", "nickname_ko"):
             self.assertEqual(first[key], second[key])
         self.execute("INSERT INTO fixtures VALUES (30,6,14,2)")
         repeat = {key: first[key] for key in ("nickname_en", "nickname_ko")}
         fresh = {"nickname_en": "Zidane_4821", "nickname_ko": "지단_4821"}
         with patch.object(chat_repo, "new_nickname", side_effect=[repeat, fresh]) as generate:
-            third = chat_repo.create_message(self.a, 30, "Another match")
+            third = chat_repo.create_message(self.a, 30, "Another match", language="ko")
         self.assertEqual(generate.call_count, 2)
         self.assertEqual(third["nickname_en"], "Zidane_4821")
-        history = chat_repo.history(self.b, 10, None, None, 50)
+        history = chat_repo.history(self.b, 10, None, None, 50, language="ko")
         self.assertEqual([m["nickname_en"] for m in history], [first["nickname_en"]] * 2)
 
     def test_same_room_names_are_unique_in_both_languages(self):
         with patch.object(chat_repo, "new_nickname", return_value={"nickname_en": "Cruyff_A8Q4", "nickname_ko": "크루이프_A8Q4"}):
-            first = chat_repo.create_message(self.a, 10, "First")
+            first = chat_repo.create_message(self.a, 10, "First", language="ko")
         # 영문이 달라도 한국어 표시가 같으면 다른 닉네임을 배정해야 해요.
         collision = {"nickname_en": "Another_1111", "nickname_ko": first["nickname_ko"]}
         fresh = {"nickname_en": "Rooney_X7K2", "nickname_ko": "루니_X7K2"}
         with patch.object(chat_repo, "new_nickname", side_effect=[collision, fresh]) as generate:
-            other = chat_repo.create_message(self.b, 10, "Second")
+            other = chat_repo.create_message(self.b, 10, "Second", language="ko")
         self.assertEqual(generate.call_count, 2)
         self.assertEqual(other["nickname_en"], "Rooney_X7K2")
 
@@ -84,7 +84,7 @@ class ChatAliasDatabaseTests(CommunityDatabaseCase):
 
         def send(text):
             barrier.wait(timeout=5)
-            return chat_repo.create_message(self.a, 10, text)
+            return chat_repo.create_message(self.a, 10, text, language="ko")
 
         with ThreadPoolExecutor(max_workers=2) as executor:
             one, two = list(executor.map(send, ["One", "Two"]))
@@ -93,18 +93,18 @@ class ChatAliasDatabaseTests(CommunityDatabaseCase):
         self.assertEqual(len(self.execute("SELECT * FROM fixture_chat_messages")), 2)
 
     def test_backfill_preserves_messages_and_reports_and_is_repeatable(self):
-        old = self.execute("""INSERT INTO fixture_chat_messages (fixture_id,user_id,body,created_at)
-            VALUES (10,%s,'Old message',UTC_TIMESTAMP())""", (self.a,))
-        deleted = self.execute("""INSERT INTO fixture_chat_messages (fixture_id,user_id,body,created_at)
-            VALUES (10,NULL,'Deleted author',UTC_TIMESTAMP())""")
+        old = self.execute("""INSERT INTO fixture_chat_messages (fixture_id,language,user_id,body,created_at)
+            VALUES (10,'ko',%s,'Old message',UTC_TIMESTAMP())""", (self.a,))
+        deleted = self.execute("""INSERT INTO fixture_chat_messages (fixture_id,language,user_id,body,created_at)
+            VALUES (10,'ko',NULL,'Deleted author',UTC_TIMESTAMP())""")
         original = self.execute("SELECT * FROM fixture_chat_messages ORDER BY message_id")
         self.assertEqual(backfill_aliases(), 1)
         assigned = self.execute("SELECT * FROM fixture_chat_aliases")
         self.assertEqual(backfill_aliases(), 0)
         self.assertEqual(self.execute("SELECT * FROM fixture_chat_aliases"), assigned)
         self.assertEqual(self.execute("SELECT * FROM fixture_chat_messages ORDER BY message_id"), original)
-        later = chat_repo.create_message(self.a, 10, "New message")
-        history = chat_repo.history(self.b, 10, None, None, 50)
+        later = chat_repo.create_message(self.a, 10, "New message", language="ko")
+        history = chat_repo.history(self.b, 10, None, None, 50, language="ko")
         self.assertEqual(history[0]["message_id"], old)
         self.assertEqual(history[0]["nickname_en"], later["nickname_en"])
         self.assertEqual(history[1]["message_id"], deleted)
@@ -115,8 +115,8 @@ class ChatAliasDatabaseTests(CommunityDatabaseCase):
 
     def test_names_start_on_first_message_and_closure_preserves_stored_chat(self):
         from starlette.websockets import WebSocketDisconnect
-        self.assertEqual(chat_repo.history(self.a, 10, None, None, 50), [])
-        with self.client.websocket_connect("/v1/fixtures/10/chat") as socket:
+        self.assertEqual(chat_repo.history(self.a, 10, None, None, 50, language="ko"), [])
+        with self.client.websocket_connect("/v1/fixtures/10/chat?language=ko") as socket:
             socket.send_json({"token": self.token_a})
             socket.receive_json()
             self.assertEqual(self.execute("SELECT * FROM fixture_chat_aliases"), [])
@@ -130,9 +130,9 @@ class ChatAliasDatabaseTests(CommunityDatabaseCase):
             with self.assertRaises(WebSocketDisconnect) as error:
                 socket.receive_json()
             self.assertEqual(error.exception.code, 4410)
-        self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages").status_code, 410)
+        self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages?language=ko").status_code, 410)
         with self.assertRaises(HTTPException) as error:
-            chat_repo.create_message(self.b, 10, "New author after full time")
+            chat_repo.create_message(self.b, 10, "New author after full time", language="ko")
         self.assertEqual(error.exception.status_code, 410)
         self.assertEqual(self.execute("SELECT * FROM fixture_chat_messages"), messages)
         self.assertEqual(self.execute("SELECT * FROM fixture_chat_aliases"), aliases)
@@ -167,5 +167,5 @@ class ChatAliasDatabaseTests(CommunityDatabaseCase):
             sent.result(timeout=5)
             finished.result(timeout=5)
         with self.assertRaises(HTTPException) as error:
-            chat_repo.create_message(self.a, 10, "After full time")
+            chat_repo.create_message(self.a, 10, "After full time", language="ko")
         self.assertEqual(error.exception.status_code, 410)

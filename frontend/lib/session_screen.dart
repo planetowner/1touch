@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/core/notification_navigation.dart';
 import 'package:onetouch/core/community_link_navigation.dart';
@@ -59,8 +60,10 @@ Future<void> restoreSelectedTeamCaches(int teamId) async {
   }
   final communityRepository = postRepository;
   if (communityRepository is ApiPostRepository) {
-    tasks.add(
-        communityRepository.restoreCachedFeed(teamId: teamId).then((_) {}));
+    tasks.add(communityRepository
+        .restoreCachedFeed(
+            teamId: teamId, language: appLocaleController.value.languageCode)
+        .then((_) {}));
   }
   if (standingRepository is ApiStandingRepository) {
     const bigFiveIds = {8, 82, 301, 384, 564};

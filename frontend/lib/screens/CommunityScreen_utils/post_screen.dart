@@ -252,7 +252,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ? await repository.refreshPost(_post.postId)
             : await (repository as PostDetailRepository).loadPost(_post.postId);
       } else {
-        updatedPost = (await repository.loadPosts(teamId: _post.teamId))
+        updatedPost = (await repository.loadPosts(
+                teamId: _post.teamId, language: _post.language))
             .firstWhere((post) => post.postId == _post.postId);
       }
       if (mounted) {

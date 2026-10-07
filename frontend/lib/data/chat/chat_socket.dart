@@ -3,7 +3,7 @@ import 'package:onetouch/models/fixture_chat_message.dart';
 const int maxChatMessageLength = 2000;
 
 abstract interface class ChatSocket {
-  Future<ChatSocketSession> connect(int fixtureId);
+  Future<ChatSocketSession> connect(int fixtureId, {required String language});
 }
 
 abstract interface class ChatSocketSession {

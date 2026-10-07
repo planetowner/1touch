@@ -43,6 +43,7 @@ class PostAttachmentPublisher {
       return await _postRepository.createPost(
         CreatePostInput(
           teamId: post.teamId,
+          language: post.language,
           category: post.category,
           title: post.title,
           body: post.body,

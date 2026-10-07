@@ -195,6 +195,7 @@ class _LikePostRepository implements PostRepository {
   @override
   Future<List<Post>> loadPosts({
     required int teamId,
+    required String language,
     PostCategory? category,
     PostSort sort = PostSort.newest,
     PostPeriod period = PostPeriod.allTime,
@@ -218,6 +219,7 @@ class _LikePostRepository implements PostRepository {
 }
 
 const _post = Post(
+  language: 'en',
   postId: 91,
   teamId: 9,
   userId: 1001,

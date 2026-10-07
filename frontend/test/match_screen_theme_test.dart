@@ -447,15 +447,18 @@ void main() {
 
 class _EmptyChatRepository implements ChatRepository {
   @override
-  final ValueNotifier<Map<int, List<FixtureChatMessage>>> cachedHistories =
+  final ValueNotifier<Map<ChatRoom, List<FixtureChatMessage>>> cachedHistories =
       ValueNotifier(const {});
 
   @override
-  List<FixtureChatMessage> cachedHistoryForFixture(int fixtureId) => const [];
+  List<FixtureChatMessage> cachedHistoryForFixture(int fixtureId,
+          {required String language}) =>
+      const [];
 
   @override
   Future<List<FixtureChatMessage>> loadHistory({
     required int fixtureId,
+    required String language,
     int? beforeId,
     int? afterId,
     int limit = 50,
@@ -471,7 +474,9 @@ class _EmptyChatRepository implements ChatRepository {
 
 class _TestChatSocket implements ChatSocket {
   @override
-  Future<ChatSocketSession> connect(int fixtureId) async => _TestChatSession();
+  Future<ChatSocketSession> connect(int fixtureId,
+          {required String language}) async =>
+      _TestChatSession();
 }
 
 class _TestChatSession implements ChatSocketSession {
