@@ -192,6 +192,56 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    for (final dark in [false, true]) {
+      testWidgets(
+          'ones to watch shows the next card at the edge at $size '
+          'dark=$dark', (tester) async {
+        await tester.binding.setSurfaceSize(size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await tester.pumpWidget(MaterialApp(
+          theme: dark ? app_style.darktheme : app_style.whitetheme,
+          home: Builder(
+            builder: (context) => Scaffold(
+              backgroundColor: app_style.mainPageBackground(context),
+              body: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: PlayersToWatch(
+                  repository: _ThreeWatchDirectoryRepository(),
+                ),
+              ),
+            ),
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        final list = find.byKey(const ValueKey('ones-to-watch-list'));
+        expect(tester.getRect(list).right, size.width);
+        expect(
+            find.byKey(const ValueKey('ones-to-watch-end-fade')), findsNothing);
+        if (size.width > 356) {
+          final third = tester.getRect(
+            find.byKey(const ValueKey('ones-to-watch-player-3')),
+          );
+          expect(third.left, lessThan(size.width));
+          expect(third.right, greaterThan(size.width));
+        }
+
+        await tester.drag(list, const Offset(-600, 0));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('ones-to-watch-player-3')),
+            findsOneWidget);
+        expect(
+          tester
+              .getRect(find.byKey(const ValueKey('ones-to-watch-player-3')))
+              .right,
+          moreOrLessEquals(size.width - 24),
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
   testWidgets('cached watch cards appear on the first frame during refresh',
       (tester) async {
     final repository = _CachedWatchDirectoryRepository();
@@ -476,6 +526,7 @@ void main() {
     await tester.pump();
     expect(find.text('Fresh rank'), findsOneWidget);
 
+    // 예전 로딩 결과가 더 새 캐시 게시 내용을 덮어쓰면 안 된다.
     // An older load result must not replace a newer cache publication.
     repository.pending.complete(cached);
     await tester.pumpAndSettle();
@@ -965,6 +1016,24 @@ class _TwoWatchDirectoryRepository extends FakePlayerDirectoryRepository {
           recent: 8.1,
           previous: 7.2,
           change: 0.9,
+        ),
+      ];
+}
+
+class _ThreeWatchDirectoryRepository extends _TwoWatchDirectoryRepository {
+  @override
+  Future<List<PlayerWatch>> watch() async => [
+        ...await super.watch(),
+        (
+          id: 3,
+          name: 'Third player',
+          image: null,
+          jerseyNumber: 9,
+          teamId: 7980,
+          teamName: 'Atlético de Madrid',
+          recent: 8.0,
+          previous: 7.0,
+          change: 1.0,
         ),
       ];
 }
