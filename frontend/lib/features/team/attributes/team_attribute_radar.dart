@@ -85,6 +85,7 @@ class TeamAttributeRadar extends StatelessWidget {
       }
 
       const gap = 8.0;
+      // 정오각형의 아래 두 꼭짓점은 중심보다 반지름의 sin(54°)만큼 아래에 있어요.
       const lowerVertexHeight = 0.8090169943749475; // sin(54°)
       final topHeight = labels[0].$3;
       final bottomHeight = math.max(labels[2].$3, labels[3].$3);
@@ -97,6 +98,8 @@ class TeamAttributeRadar extends StatelessWidget {
                   (1 + lowerVertexHeight),
             )
           : math.min(constraints.maxWidth, frameHeight) * 0.4;
+      // 위쪽 라벨과 아래쪽 두 라벨이 차지하는 높이를 반영해
+      // 오각형 바깥의 위아래 여백이 같아지도록 중심을 옮겨요.
       final centerY = balanceVerticalMargins
           ? (frameHeight +
                   (1 - lowerVertexHeight) * radius +
@@ -180,6 +183,7 @@ class TeamAttributeRadar extends StatelessWidget {
           ],
         ),
       );
+      // 선택한 반지름이 차트 정사각형 변 길이의 40%가 되게 크기를 역산해요.
       final chartSide = radius / 0.4;
       return SizedBox(
         height: frameHeight,
