@@ -718,12 +718,33 @@ class PlayersToWatchState extends State<PlayersToWatch> {
     }
     return SizedBox(
       height: 200,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        itemCount: players.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
-        itemBuilder: (_, index) => _WatchCard(player: players[index]),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // 부모의 오른쪽 여백까지만 목록을 넓혀 다음 카드가 살짝 보이게 해요.
+          final extraWidth =
+              (MediaQuery.sizeOf(context).width - constraints.maxWidth)
+                  .clamp(0.0, 24.0)
+                  .toDouble();
+          final viewportWidth = constraints.maxWidth + extraWidth;
+          return OverflowBox(
+            alignment: Alignment.centerLeft,
+            minWidth: viewportWidth,
+            maxWidth: viewportWidth,
+            child: SizedBox(
+              width: viewportWidth,
+              height: 200,
+              child: ListView.separated(
+                key: const ValueKey('ones-to-watch-list'),
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                padding: const EdgeInsets.only(right: 24),
+                itemCount: players.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 16),
+                itemBuilder: (_, index) => _WatchCard(player: players[index]),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
