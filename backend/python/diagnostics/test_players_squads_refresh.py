@@ -12,21 +12,31 @@ from one_touch_loader.core.sportmonks import SportmonksClient
 
 
 class RenewedPlayerSquadTests(unittest.TestCase):
-    def test_modric_renewal_keeps_current_squad_and_jersey(self):
+    def test_verified_renewals_keep_current_squad_and_jersey(self):
+        cases = (
+            (268, 113, 571561, 492766, 3468, '2025-07-14', 26, 14),
+            (129261, 37, 561986, 9253, 625, '2022-07-20', 27, 21),
+        )
+        for case in cases:
+            with self.subTest(player_id=case[0]):
+                self.check_renewal(*case)
+
+    def check_renewal(self, player_id, team_id, departure_id, arrival_id,
+                      previous_team_id, start, position_id, jersey_number):
         # 실제 응답의 이적 두 건을 재현해요. 재계약 뒤 남은 이탈만 제외하고 영입은 보존해요.
         transfers = [
-            dict(id=571561, player_id=268, from_team_id=113, to_team_id=260131,
+            dict(id=departure_id, player_id=player_id, from_team_id=team_id, to_team_id=260131,
                  type_id=219, date='2026-07-01', completed=True),
-            dict(id=492766, player_id=268, from_team_id=3468, to_team_id=113,
-                 type_id=220, date='2025-07-14', completed=True),
+            dict(id=arrival_id, player_id=player_id, from_team_id=previous_team_id, to_team_id=team_id,
+                 type_id=220, date=start, completed=True),
         ]
-        squad = [dict(player_id=268, team_id=113, position_id=26, jersey_number=14,
-                      start='2025-07-14', end='2027-06-30')]
+        squad = [dict(player_id=player_id, team_id=team_id, position_id=position_id,
+                      jersey_number=jersey_number, start=start, end='2027-06-30')]
         client = SportmonksClient.__new__(SportmonksClient)
         client._iter_paginated_data = Mock()
         sources = (
-            (lambda: client.iter_transfers_by_player(268), transfers, [492766]),
-            (lambda: client.iter_transfers_by_team(113), transfers, [492766]),
+            (lambda: client.iter_transfers_by_player(player_id), transfers, [arrival_id]),
+            (lambda: client.iter_transfers_by_team(team_id), transfers, [arrival_id]),
             (lambda: client.iter_transfers_between_dates(date(2026, 7, 1), date(2026, 10, 7)),
              transfers[:1], []),
         )
@@ -36,12 +46,12 @@ class RenewedPlayerSquadTests(unittest.TestCase):
                 corrected = list(source())
                 self.assertEqual([row['id'] for row in corrected], expected_ids)
                 kept, removed = _filter_current_squad_items(
-                    squad, corrected, 113, date(2026, 7, 1), date(2026, 10, 7),
+                    squad, corrected, team_id, date(2026, 7, 1), date(2026, 10, 7),
                 )
                 self.assertEqual(kept, squad)
                 self.assertEqual(removed, set())
         client._get = Mock(return_value={'data': transfers[0]})
-        self.assertIsNone(client.get_transfer(571561))
+        self.assertIsNone(client.get_transfer(departure_id))
 
 
 class CombinedRefreshTests(unittest.TestCase):

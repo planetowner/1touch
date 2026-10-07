@@ -1,4 +1,6 @@
-"""공식 발표·원문 대조로 확인한 이적 ID와 표시 보류 범위예요."""
+"""공식 발표·원문 대조로 확인한 이적·현재 소속 보정과 표시 보류 범위예요."""
+
+from datetime import date
 
 # 전체 근거와 날짜의 의미는 TRANSFERS_SOURCE_REVIEW.md에 정리했어요.
 DUPLICATE_TRANSFER_IDS = {
@@ -54,6 +56,9 @@ DUPLICATE_TRANSFER_IDS = {
     # Modrić는 2027년까지 재계약했어요. 남아 있는 2026년 이탈 행이 현재 스쿼드에서 선수를 빼지 않게 해요.
     # https://www.acmilan.com/en/news/articles/media/2026-07-23/official-statement-luka-modric
     571561,
+    # Dybala도 2027년까지 재계약했어요. 현재 명단·계약과 충돌하는 2026년 이탈 행을 제외해요.
+    # https://www.asroma.com/en/news/75594/as-roma-and-paulo-dybala-together-until-2027
+    561986,
     # Barák → 597171(2026-09-04). 7월 협상은 결렬됐고 9월에 다시 영입했어요.
     # https://www.alphanews.live/sports/episimo-antonin-barak-xana-ston-apoel/
     581933,
@@ -83,6 +88,45 @@ DUPLICATE_TRANSFER_IDS = {
 # https://as.com/futbol/segunda/la-ud-las-palmas-rescinde-el-contrato-de-jaime-mata-f202512-n/
 # https://www.estadiodeportivo.com/futbol/las-palmas/las-palmas-rescinde-contrato-jaime-mata-futbolista-libre-para-firmar-por-cualquier-club-20251221-524421.html
 TRANSFER_DATE_OVERRIDES = {538587: "2025-12-21"}
+
+# (팀, 선수, 마지막 OUT)별 현재 소속 확인일이에요. 복귀일을 뜻하지 않아요.
+# 구단 명단·발표와 현재 스쿼드에서 확인한 재계약·복귀가 이력에 빠진 경우에만 써요.
+# 실제 계약 만료·매입 이력은 보존하고, 확인일 이후 현재 명단 판정만 보정해요.
+CURRENT_SQUAD_OUT_OVERRIDES = {
+    # 가마다 · 크리스털 팰리스
+    # https://www.cpfc.co.uk/news/announcement/daichi-kamada-contract-extension-august/
+    (51, 310131, 576019): date(2026, 10, 7),
+    # 제코 · 샬케: 계약 만료 뒤 8/3에 다시 합류했어요.
+    # https://schalke04.de/teams/profis/person/edin-dzeko/
+    (67, 1358, 576056): date(2026, 10, 7),
+    # 케디라 · 우니온 베를린
+    # https://app-v2.fc-union-berlin.de/en/football/first-men-p6kl
+    (1079, 31907, 576054): date(2026, 10, 7),
+    # 펠레그리니 · 로마
+    # https://www.asroma.com/it/notizie/75741/as-roma-e-lorenzo-pellegrini-ancora-insieme-per-il-futuro
+    (37, 129946, 571559): date(2026, 10, 7),
+    # 카마르다 · 밀란: 레체 매입 이후 밀란 복귀가 마지막 이동에 반영되지 않았어요.
+    # https://www.acmilan.com/en/news/articles/media/2026-07-24/official-statement-francesco-camarda
+    (113, 37714462, 570019): date(2026, 10, 7),
+    # 합스 · 베네치아
+    # https://www.ansa.it/veneto/notizie/2026/07/01/il-venezia-rinnova-il-contratto-per-haps-era-in-scadenza_378ba21c-dfed-44cb-b90d-50dd8e534243.html
+    (267, 24935, 571555): date(2026, 10, 7),
+    # 피세리 · 프로시노네: 9/20 공식 경기 명단에도 있어요.
+    # https://www.frosinonecalcio.com/frosinone-como-2-0-il-tabellino-2/
+    (4070, 368235, 574781): date(2026, 10, 7),
+    # 데실베스트리 · 볼로냐
+    # https://www.bolognafc.it/lorenzo-de-silvestri-in-rossoblu-fino-al-2027/
+    (8513, 127629, 571558): date(2026, 10, 7),
+    # 하우레기 · 말라가
+    # https://www.malagacf.com/noticias/jauregi-renueva-hasta-2027
+    (126, 446977, 571547): date(2026, 10, 7),
+    # 루이스 펠리피 · 라요 바예카노
+    # https://as.com/futbol/el-rayo-anuncia-la-renovacion-de-luiz-felipe-hasta-2027-f202607-n/
+    (377, 132577, 571546): date(2026, 10, 7),
+    # 라이언 · 레반테
+    # https://www.levanteud.com/jugadores/ryan
+    (3457, 62317, 571542): date(2026, 10, 7),
+}
 
 # 웹 대조로도 확정하지 못한 이력은 사용자가 정한 기준에 따라 이적 화면만 보류해요.
 # 두 행이 모두 실제 재임대일 수도 있어요. 원문·현재 계약은 보존하고 확인 뒤 이 목록에서 해제해요.
