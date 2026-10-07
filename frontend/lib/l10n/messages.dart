@@ -507,6 +507,7 @@ const appMessages = <String, MessageTranslations>{
   "Contact Us": (ko: "문의하기", ja: "お問い合わせ", zh: "联系我们"),
   "General": (ko: "자유", ja: "一般", zh: "通用"),
   "Legal": (ko: "법적 고지", ja: "法的情報", zh: "法律信息"),
+  "Contents": (ko: "목차", ja: "目次", zh: "目录"),
   "Preferences": (ko: "환경 설정", ja: "環境設定", zh: "偏好设置"),
   "Account": (ko: "개인 정보", ja: "個人情報", zh: "个人信息"),
   "Notification": (ko: "알림", ja: "通知", zh: "通知"),
@@ -1913,6 +1914,12 @@ const appMessages = <String, MessageTranslations>{
     ko: "회원가입을 누르면 1touch 이용약관에 동의하고\n개인정보 처리방침을 확인한 것으로 간주해요.",
     ja: "新規登録を押すと、1touchの利用規約に同意し、\nプライバシーポリシーを確認したものとみなします。",
     zh: "点击注册即表示同意1touch服务条款，\n并确认已阅读隐私政策。"
+  ),
+  "By clicking sign up, I hereby agree and consent to 1touch’s {terms}; I confirm that I have read 1touch’s {privacy}.":
+      (
+    ko: "회원가입을 누르면 1touch {terms}에 동의하고 {privacy}을 확인한 것으로 간주해요.",
+    ja: "新規登録を押すと、1touchの{terms}に同意し、{privacy}を確認したものとみなします。",
+    zh: "点击注册即表示同意1touch{terms}，并确认已阅读{privacy}。"
   ),
   "Unable to load attributes. Retry": (
     ko: "팀 특성을 불러오지 못했어요. 다시 시도",
