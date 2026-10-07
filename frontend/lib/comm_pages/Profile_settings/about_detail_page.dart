@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/legal_document_content.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 enum AboutSection {
@@ -42,16 +44,9 @@ class AboutDetailPage extends StatefulWidget {
 }
 
 class _AboutDetailPageState extends State<AboutDetailPage> {
-  static const _titles = [
-    'Lorem ipsum dolor sit amet',
-    'Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore',
-    'Et dolore magna aliqua. Ut enim ad minim',
-    'Veniam, quis nostrud exercitation ullamco',
-    'Laboris nisi ut aliquip ex ea commodo',
-  ];
-  static const _paragraph =
-      'Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor.';
-  final _sectionKeys = List.generate(_titles.length, (_) => GlobalKey());
+  // 가입 화면과 설정에서 같은 공개 문서를 기존 상세 화면으로 보여줘요.
+  late final _sections = legalDocumentContent[widget.section.name]!;
+  late final _sectionKeys = List.generate(_sections.length, (_) => GlobalKey());
 
   @override
   Widget build(BuildContext context) {
@@ -156,13 +151,15 @@ class _AboutDetailPageState extends State<AboutDetailPage> {
                       style: bodyStyle.copyWith(fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 20),
-                    for (var index = 0; index < _titles.length; index++)
+                    for (var index = 0; index < _sections.length; index++)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('${index + 1}. ', style: bodyStyle),
+                            if (_sections[index].number.isNotEmpty)
+                              Text('${_sections[index].number}. ',
+                                  style: bodyStyle),
                             Expanded(
                               child: InkWell(
                                 key: ValueKey('about-content-link-$index'),
@@ -172,7 +169,7 @@ class _AboutDetailPageState extends State<AboutDetailPage> {
                                   curve: Curves.easeOut,
                                 ),
                                 child: Text(
-                                  _titles[index],
+                                  _sections[index].title,
                                   style: bodyStyle.copyWith(
                                       decoration: TextDecoration.underline,
                                       decorationColor: foreground),
@@ -184,7 +181,7 @@ class _AboutDetailPageState extends State<AboutDetailPage> {
                       ),
                     const SizedBox(height: 16),
                     Divider(height: 2, thickness: 2, color: divider),
-                    for (var index = 0; index < _titles.length; index++) ...[
+                    for (var index = 0; index < _sections.length; index++) ...[
                       Padding(
                         key: _sectionKeys[index],
                         padding: const EdgeInsets.symmetric(vertical: 32),
@@ -192,24 +189,21 @@ class _AboutDetailPageState extends State<AboutDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${index + 1}. ${_titles[index]} consectetur adipiscing elit.',
+                              '${_sections[index].number.isEmpty ? '' : '${_sections[index].number}. '}${_sections[index].title}',
                               style: bodyStyle.copyWith(
                                   fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 24),
-                            Text(_paragraph, style: bodyStyle),
-                            const SizedBox(height: 16),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 24),
-                              child: Text(
-                                'a. Pulvinar vivamus fringilla lacus nec metus bibendum egestas.\n\nb. Iaculis massa nisl malesuada lacinia integer nunc posuere.',
+                            SelectionArea(
+                              child: CommunityLinkedText(
+                                text: _sections[index].body,
                                 style: bodyStyle,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      if (index < _titles.length - 1)
+                      if (index < _sections.length - 1)
                         Divider(height: 2, thickness: 2, color: divider),
                     ],
                   ],

@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 // import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/locale_controller.dart';
+import 'package:onetouch/core/display_preferences.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'preference_details.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -24,21 +25,15 @@ class _PreferencePageState extends State<PreferencePage> {
   };
 
   late String _language;
-  String _unit = "Metric (cm)";
-  String _currency = "USD (\$)";
-
-  final List<String> _unitOptions = ["Metric (cm)", "Imperial (ft/in)"];
-  final List<String> _currencyOptions = [
-    "USD (\$)",
-    "EUR (€)",
-    "GBP (£)",
-    "KRW (₩)",
-    "JPY (¥)"
-  ];
+  late MeasurementUnit _unit;
+  late DisplayCurrency _currency;
+  bool _saving = false;
 
   @override
   void initState() {
     super.initState();
+    _unit = appDisplayPreferences.value.unit;
+    _currency = appDisplayPreferences.value.currency;
     _language = _languageOptions.entries
         .firstWhere(
           (entry) =>
@@ -50,8 +45,22 @@ class _PreferencePageState extends State<PreferencePage> {
   }
 
   Future<void> _savePreferences() async {
-    await appLocaleController.setLocale(_languageOptions[_language]!);
-    if (mounted) Navigator.pop(context);
+    setState(() => _saving = true);
+    try {
+      await appDisplayPreferences.save(
+        DisplayPreferences(unit: _unit, currency: _currency),
+      );
+      await appLocaleController.setLocale(_languageOptions[_language]!);
+      if (mounted) Navigator.pop(context);
+    } on Object {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content:
+            Text(tr(context, 'Unable to save preferences. Please try again.')),
+      ));
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -106,6 +115,7 @@ class _PreferencePageState extends State<PreferencePage> {
                           tr(context, "Language"),
                           _languageOptions.keys.toList(growable: false),
                           _language,
+                          (language) => language,
                           (value) => _language = value,
                         ),
                       ),
@@ -116,20 +126,26 @@ class _PreferencePageState extends State<PreferencePage> {
                       const SizedBox(
                         height: 12,
                       ),
-                      _buildPreferenceSection(trUpper(context, "Unit"), _unit,
-                          onTap: () => _navigateAndSelect(tr(context, "Unit"),
-                              _unitOptions, _unit, (val) => _unit = val)),
+                      _buildPreferenceSection(
+                          trUpper(context, "Unit"), _unit.label,
+                          onTap: () => _navigateAndSelect(
+                              tr(context, "Unit"),
+                              MeasurementUnit.values,
+                              _unit,
+                              (unit) => unit.label,
+                              (unit) => _unit = unit)),
                       _buildDivider(),
                       const SizedBox(
                         height: 12,
                       ),
                       _buildPreferenceSection(
-                          trUpper(context, "Currency"), _currency,
+                          trUpper(context, "Currency"), _currency.label,
                           onTap: () => _navigateAndSelect(
                               tr(context, "Currency"),
-                              _currencyOptions,
+                              DisplayCurrency.values,
                               _currency,
-                              (val) => _currency = val)),
+                              (currency) => currency.label,
+                              (currency) => _currency = currency)),
                       const SizedBox(
                         height: 144,
                       ),
@@ -142,7 +158,7 @@ class _PreferencePageState extends State<PreferencePage> {
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _savePreferences,
+                      onPressed: _saving ? null : _savePreferences,
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             Theme.of(context).colorScheme.onSurface,
@@ -154,7 +170,7 @@ class _PreferencePageState extends State<PreferencePage> {
                         ),
                       ),
                       child: Text(
-                        tr(context, "UPDATE PREFERENCES"),
+                        tr(context, _saving ? 'Saving…' : "UPDATE PREFERENCES"),
                         style: Body2_b.style.copyWith(
                           color: Theme.of(context).colorScheme.onPrimary,
                         ),
@@ -168,17 +184,21 @@ class _PreferencePageState extends State<PreferencePage> {
         ]));
   }
 
-  // Helper method to handle navigation and state update
-  Future<void> _navigateAndSelect(String title, List<String> options,
-      String currentVal, Function(String) onUpdate) async {
-    final result = await Navigator.push(
+  // 선택 화면은 표시 문구만 다루고, 실제 설정값은 이곳에서 함께 변환해요.
+  Future<void> _navigateAndSelect<T>(
+      String title,
+      List<T> options,
+      T currentVal,
+      String Function(T) labelFor,
+      ValueChanged<T> onUpdate) async {
+    final result = await Navigator.push<String>(
       context,
       MaterialPageRoute(
         builder: (context) {
           final detail = PreferenceDetailScreen(
             title: title,
-            options: options,
-            selectedOption: currentVal,
+            options: options.map(labelFor).toList(growable: false),
+            selectedOption: labelFor(currentVal),
           );
           final bottomNavigationBar =
               widget.bottomNavigationBarBuilder?.call(context);
@@ -192,9 +212,9 @@ class _PreferencePageState extends State<PreferencePage> {
       ),
     );
 
-    if (result != null) {
+    if (mounted && result != null) {
       setState(() {
-        onUpdate(result);
+        onUpdate(options.firstWhere((option) => labelFor(option) == result));
       });
     }
   }

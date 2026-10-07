@@ -41,7 +41,7 @@ void main() {
     }
   }
 
-  testWidgets('About list opens each placeholder page', (tester) async {
+  testWidgets('About list opens each legal document', (tester) async {
     final router = _router('/profile/about');
     addTearDown(router.dispose);
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -62,6 +62,22 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text(section.titleKey), findsOneWidget);
     }
+  });
+
+  testWidgets('privacy notice includes regional text on a small screen',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(const MaterialApp(
+      home: AboutDetailPage(section: AboutSection.privacy),
+    ));
+
+    for (final title in ['한국 이용자 안내', '日本の利用者へのお知らせ', '中国大陆用户说明']) {
+      expect(find.textContaining(title, findRichText: true), findsOneWidget);
+    }
+    expect(
+        find.textContaining('Lorem ipsum', findRichText: true), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('signed-in detail search and bottom tabs navigate',
