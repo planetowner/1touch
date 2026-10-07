@@ -1,12 +1,14 @@
 import "package:flutter/material.dart";
+import 'package:onetouch/comm_pages/Profile_settings/about_detail_page.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/services/mobile_ads_service.dart';
-// import 'package:go_router/go_router.dart';
 
 class AboutPage extends StatefulWidget {
-  const AboutPage({super.key});
+  const AboutPage({super.key, this.detailBuilder});
+
+  final Widget Function(AboutSection)? detailBuilder;
 
   @override
   State<AboutPage> createState() => _AboutPageState();
@@ -15,6 +17,16 @@ class AboutPage extends StatefulWidget {
 class _AboutPageState extends State<AboutPage> {
   bool _showingPrivacyOptions = false;
 
+  void _openSection(AboutSection section) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            widget.detailBuilder?.call(section) ??
+            AboutDetailPage(section: section),
+      ),
+    );
+  }
+
   Future<void> _showPrivacyOptions() async {
     setState(() => _showingPrivacyOptions = true);
     final success = await MobileAdsService.showPrivacyOptions();
@@ -22,8 +34,8 @@ class _AboutPageState extends State<AboutPage> {
     setState(() => _showingPrivacyOptions = false);
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(tr(context,
-            'Unable to open ad privacy choices. Please try again.')),
+        content: Text(tr(
+            context, 'Unable to open ad privacy choices. Please try again.')),
       ));
     }
   }
@@ -76,18 +88,14 @@ class _AboutPageState extends State<AboutPage> {
                     child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   children: [
-                    _buildListItem(context, tr(context, "Legal"), () {
-                      // TODO: Navigate or show dialog
-                    }),
+                    _buildListItem(context, tr(context, "Legal"),
+                        () => _openSection(AboutSection.legal)),
                     _buildDivider(),
                     _buildListItem(context, tr(context, "Terms of Service"),
-                        () {
-                      // TODO: Navigate or show dialog
-                    }),
+                        () => _openSection(AboutSection.terms)),
                     _buildDivider(),
-                    _buildListItem(context, tr(context, "Privacy Policy"), () {
-                      // TODO: Navigate or show dialog
-                    }),
+                    _buildListItem(context, tr(context, "Privacy Policy"),
+                        () => _openSection(AboutSection.privacy)),
                     _buildDivider(),
                     ValueListenableBuilder<bool>(
                       valueListenable: MobileAdsService.privacyOptionsRequired,

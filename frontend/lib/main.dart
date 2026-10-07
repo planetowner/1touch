@@ -49,6 +49,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/comm_pages/profile_activity_screen.dart';
+import 'package:onetouch/comm_pages/Profile_settings/about_detail_page.dart';
 
 // Feature Modules
 import 'package:onetouch/screens/index.dart'; // Imports all screens
@@ -194,6 +195,42 @@ CustomTransitionPage<void> _detailSlidePage(
       },
     );
 
+// 로그인 후 About 문서는 목록 화면 위에 열어 스크롤 상태를 보존해요.
+GoRoute profileAboutRoute({GlobalKey<NavigatorState>? navigatorKey}) => GoRoute(
+      path: '/profile/about',
+      parentNavigatorKey: navigatorKey,
+      builder: (context, state) => AboutPage(
+        detailBuilder: (section) => AboutDetailPage(
+          section: section,
+          showSearch: true,
+          onSearch: () => context.go('/search'),
+          bottomNavigationBar: OneTouchBottomNavigationBar(
+            currentIndex: mainTabActions.tabIndex ?? 0,
+            onTap: (index) {
+              mainTabActions.select(index);
+              if (index == 1) {
+                openTeamPage(
+                  context,
+                  currentUserPreferences.viewedTeamId.value,
+                );
+              } else {
+                context.go(
+                  switch (index) {
+                    0 => '/home',
+                    2 => '/players',
+                    _ => '/community',
+                  },
+                );
+              }
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                mainTabActions.select(index);
+              });
+            },
+          ),
+        ),
+      ),
+    );
+
 final GoRouter _router = GoRouter(
   initialLocation: '/',
   navigatorKey: _rootNavigatorKey,
@@ -209,6 +246,7 @@ final GoRouter _router = GoRouter(
     if (path == '/' ||
         path == '/session' ||
         path == '/onboarding' ||
+        path.startsWith('/about/') ||
         path.startsWith('/auth/')) {
       return null;
     }
@@ -287,6 +325,19 @@ final GoRouter _router = GoRouter(
         return EmailVerifyScreen(
           email: email,
           registrationDraft: draft,
+        );
+      },
+    ),
+    // 회원가입 중에는 하단 메뉴가 없는 공개 약관 화면을 열어요.
+    GoRoute(
+      path: '/about/:section',
+      pageBuilder: (context, state) {
+        final section = AboutSection.fromPath(state.pathParameters['section']);
+        return _detailSlidePage(
+          state,
+          section == null
+              ? const AppErrorScreen(statusCode: 404)
+              : AboutDetailPage(section: section),
         );
       },
     ),
@@ -566,11 +617,7 @@ final GoRouter _router = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (c, s) => PreferencePage(),
     ),
-    GoRoute(
-      path: '/profile/about',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (c, s) => AboutPage(),
-    ),
+    profileAboutRoute(navigatorKey: _rootNavigatorKey),
     GoRoute(
       path: '/profile/contact',
       parentNavigatorKey: _rootNavigatorKey,
