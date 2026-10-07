@@ -51,6 +51,9 @@ DUPLICATE_TRANSFER_IDS = {
     # https://angers-sco.fr/florent-hanin-prolonge-avec-angers-sco-2/
     # https://www.realracingclub.es/noticias/el-racing-renueva-a-marco-sangalli-hasta-el-30-de-junio-de-2026
     489634, 489824,
+    # Modrić는 2027년까지 재계약했어요. 남아 있는 2026년 이탈 행이 현재 스쿼드에서 선수를 빼지 않게 해요.
+    # https://www.acmilan.com/en/news/articles/media/2026-07-23/official-statement-luka-modric
+    571561,
     # Barák → 597171(2026-09-04). 7월 협상은 결렬됐고 9월에 다시 영입했어요.
     # https://www.alphanews.live/sports/episimo-antonin-barak-xana-ston-apoel/
     581933,
