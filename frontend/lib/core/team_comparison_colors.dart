@@ -92,6 +92,8 @@ class TeamComparisonColors {
 class TeamComparisonColorResolver {
   const TeamComparisonColorResolver._();
 
+  // 상대 색은 기준 팀 색과 충분히 다르고 카드 배경에서도 보여야 해요.
+  // 팔레트의 기본색·보조색·세 번째 색 순서로 검사하고 모두 실패하면 흰색을 써요.
   static const double minimumOkLabDistance = 0.12;
   static const double minimumBackgroundContrast = 2.5;
   static const Color fallbackColor = Colors.white;

@@ -107,6 +107,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
             );
             final requiredStatWidth =
                 statsData.map(_topStatValueWidth).fold(0.0, math.max);
+            // 세 수치에 같은 너비와 총 16px 간격을 주되 가장 긴 실제 값은
+            // 자르지 않아요. 화면보다 넓어지면 카드 안에서 가로 스크롤해요.
             final statWidth = math.max(availableStatWidth, requiredStatWidth);
             final minimumContentWidth = statWidth * 3 + totalGap;
             final contentWidth = math.max(

@@ -210,6 +210,8 @@ class _StatRow extends StatelessWidget {
 
                   final firstMinimum = minimumWidth(firstLabel);
                   final secondMinimum = minimumWidth(secondLabel);
+                  // 두 수치의 절댓값 비율로 막대를 나누되 각 라벨의 실제 너비와
+                  // 양쪽 12px 여백을 먼저 보장해 긴 값도 잘리지 않게 해요.
                   final contentWidth = math.max(
                     constraints.maxWidth,
                     firstMinimum + secondMinimum,

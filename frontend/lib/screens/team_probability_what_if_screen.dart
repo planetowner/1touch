@@ -476,6 +476,7 @@ class _ScenarioChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 세 시나리오 중 가장 높은 확률을 막대 높이 100%로 삼아 상대 높이를 비교해요.
     final maxProbability = scenarios
         .map((item) => item.probability)
         .fold<double>(
@@ -540,6 +541,7 @@ class _ScenarioBar extends StatelessWidget {
           child: Align(
             alignment: Alignment.bottomCenter,
             child: FractionallySizedBox(
+              // 0%도 막대 위치가 보이도록 최소 높이를 4%로 둬요.
               heightFactor: heightFactor.clamp(.04, 1),
               widthFactor: 1,
               child: DecoratedBox(

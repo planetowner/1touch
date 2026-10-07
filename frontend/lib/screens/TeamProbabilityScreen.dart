@@ -914,6 +914,8 @@ class _ProjectedPointsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 시즌 최대 승점으로 평균과 예상 구간을 0~1 좌표로 바꾸고 막대 밖은 잘라요.
+    // 분모가 0인 입력에도 차트 계산을 계속할 수 있도록 1을 사용해요.
     final maxPoints = maximumPoints <= 0 ? 1 : maximumPoints;
     final mean = (projectedPoints.mean / maxPoints).clamp(0.0, 1.0);
     final lower =
