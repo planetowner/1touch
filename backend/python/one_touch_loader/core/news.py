@@ -132,7 +132,8 @@ def parse_feed(content: bytes, source: dict) -> list[dict]:
             # 일부 RSS는 이미지 주소를 description 또는 content:encoded 안에 넣어요.
             for element in item:
                 if element.tag.rsplit("}", 1)[-1] in ("description", "encoded"):
-                    img = BeautifulSoup(element.text or "", "html.parser").find("img", src=True)
+                    # WordPress RSS의 본문 이모지는 사진이 아니에요. 사진이 없으면 원문의 대표 이미지를 조회해요.
+                    img = BeautifulSoup(element.text or "", "html.parser").select_one("img[src]:not(.wp-smiley)")
                     if img:
                         image = canonical_url(img["src"])
                         if image:
@@ -236,14 +237,17 @@ def select_news(articles: list[dict], *, language: str, now: datetime) -> list[d
     candidates = [a for a in articles if a["language"] == language
                   and now - NEWS_MAX_AGE <= utc_datetime(a["published_at"]) <= now]
     candidates.sort(key=lambda a: (utc_datetime(a["published_at"]), a["url"]), reverse=True)
-    selected, urls, titles = [], set(), set()
+    selected, urls, titles, sources = [], set(), set(), set()
     for article in candidates:
         url = canonical_url(article["url"])
         title = normalized_text(article["title"])
-        if url is None or url in urls or title in titles:
+        source = article["source"]
+        # 최신순으로 언론사별 한 기사만 골라 같은 매체가 세 자리를 모두 차지하지 않게 해요.
+        if url is None or url in urls or title in titles or source in sources:
             continue
         urls.add(url)
         titles.add(title)
+        sources.add(source)
         selected.append(article)
         if len(selected) == NEWS_LIMIT:
             break

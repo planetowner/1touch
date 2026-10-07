@@ -22,16 +22,46 @@ SOURCE = {"key": "sample", "name": "테스트 공급자", "language": "ko", "tim
           "is_active": True, "feed_url": "https://example.com/feed", "competition_ids": [8]}
 
 
-def article(key, *, age=0, language="ko", title=None):
-    return {"article_id": key, "title": title or f"기사 {key}", "source": "공급자", "language": language,
+def article(key, *, age=0, language="ko", title=None, source=None):
+    return {"article_id": key, "title": title or f"기사 {key}", "source": source or f"공급자 {key}", "language": language,
             "url": f"https://example.com/articles/{key}", "image_url": None,
             "published_at": NOW - timedelta(days=age), "categories": []}
+
+
+# 실제 Get Spanish Football News RSS에서 썸네일로 잘못 선택한 두 이모지예요.
+WORDPRESS_EMOJI_IMAGES = [
+    f'<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/{code}.png" '
+    f'alt="{emoji}" class="wp-smiley" style="height: 1em; max-height: 1em;">'
+    for code, emoji in [('274c', '❌'), ('1f6a8', '🚨')]
+]
+
+
+def feed_with_inline_images(description='', content=''):
+    return f'''<rss xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><item>
+      <title>바르셀로나 경기 소식</title><link>https://example.com/1</link>
+      <pubDate>Sat, 19 Sep 2026 17:00:00 GMT</pubDate>
+      <description><![CDATA[{description}]]></description>
+      <content:encoded><![CDATA[{content}]]></content:encoded>
+      </item></channel></rss>'''.encode()
 
 
 class SelectionTests(unittest.TestCase):
     def test_latest_three_sorted_by_publication_and_not_collected_time(self):
         rows = [article(i, age=i) for i in range(5)]
         self.assertEqual([a["article_id"] for a in select_news(rows[::-1], language="ko", now=NOW)], [0, 1, 2])
+
+    def test_latest_three_are_from_distinct_sources(self):
+        rows = [article(i, age=i, source=source)
+                for i, source in enumerate(('A', 'A', 'B', 'B', 'C', 'D'))]
+        selected = select_news(rows[::-1], language="ko", now=NOW)
+        self.assertEqual([row['article_id'] for row in selected], [0, 2, 4])
+
+    def test_fewer_than_three_sources_are_not_filled_with_repeated_sources(self):
+        for sources, expected in [(('A', 'A', 'A'), [0]), (('A', 'A', 'B', 'B'), [0, 2])]:
+            with self.subTest(sources=sources):
+                rows = [article(i, age=i, source=source) for i, source in enumerate(sources)]
+                selected = select_news(rows, language='ko', now=NOW)
+                self.assertEqual([row['article_id'] for row in selected], expected)
 
     def test_fourteen_day_boundary_future_and_language(self):
         boundary = article(1, age=14)
@@ -44,11 +74,12 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual(len(select_news([article(1)], language="ko", now=NOW)), 1)
 
     def test_title_and_tracking_url_duplicates_do_not_consume_slots(self):
-        first = article(1, title="Arsenal  Transfer")
-        duplicate_title = article(2, title="arsenal transfer")
-        duplicate_url = {**article(3), "url": first["url"] + "?utm_source=feed#story"}
-        selected = select_news([first, duplicate_title, duplicate_url, article(4)], language="ko", now=NOW)
-        self.assertEqual(len(selected), 3)
+        first = article(1, age=1, title="Arsenal  Transfer", source='A')
+        duplicate_title = article(2, age=2, title="arsenal transfer", source='B')
+        duplicate_url = {**article(3, age=3, source='C'), "url": first["url"] + "?utm_source=feed#story"}
+        rows = [first, duplicate_title, duplicate_url, article(4, age=4, source='B'), article(5, age=5, source='C')]
+        selected = select_news(rows, language="ko", now=NOW)
+        self.assertEqual([row['article_id'] for row in selected], [1, 4, 5])
         # 순서와 관계없이 같은 제목 또는 URL을 함께 표시하지 않아요.
         self.assertEqual(len({canonical_url(a['url']) for a in selected}), len(selected))
         self.assertEqual(canonical_url('https://example.com/article?idxno=123&utm_source=rss'),
@@ -158,6 +189,21 @@ class FeedTests(unittest.TestCase):
         self.assertIsNone(items[1]['image_url'])
         self.assertEqual(items[0]['categories'], ['Arsenal'])
 
+    def test_inline_emoji_images_are_skipped_in_both_feed_fields(self):
+        photo = '<img src="https://example.com/photo.jpg">'
+        for emoji in WORDPRESS_EMOJI_IMAGES:
+            cases = [
+                ({'description': emoji}, None),
+                ({'content': emoji}, None),
+                ({'description': emoji + photo}, 'https://example.com/photo.jpg'),
+                ({'content': emoji + photo}, 'https://example.com/photo.jpg'),
+                ({'description': emoji, 'content': photo}, 'https://example.com/photo.jpg'),
+            ]
+            for fields, expected in cases:
+                with self.subTest(emoji=emoji, fields=fields):
+                    row, = parse_feed(feed_with_inline_images(**fields), SOURCE)
+                    self.assertEqual(row['image_url'], expected)
+
     def test_wrong_feed_language_is_not_accepted(self):
         with self.assertRaises(ValueError):
             parse_feed(b'<rss><channel><language>fr</language></channel></rss>', {**SOURCE, 'language': 'en'})
@@ -247,23 +293,24 @@ class LoaderTests(unittest.TestCase):
         self.addCleanup(thumbnails.stop)
 
     def test_missing_feed_images_use_article_metadata_without_replacing_feed_fields(self):
-        feeds = {
-            'rss': '''<rss><channel><item><title>바르셀로나 경기 소식</title>
+        feeds = [
+            ('rss', '''<rss><channel><item><title>바르셀로나 경기 소식</title>
               <link>https://example.com/1</link><pubDate>Sat, 19 Sep 2026 17:00:00 GMT</pubDate>
-              </item></channel></rss>''',
-            'news_sitemap': '''<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+              </item></channel></rss>'''),
+            ('news_sitemap', '''<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
               xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
               <url><loc>https://example.com/1</loc><news:news>
                 <news:publication><news:language>ko</news:language></news:publication>
                 <news:publication_date>2026-09-19T17:00:00Z</news:publication_date>
                 <news:title>바르셀로나 경기 소식</news:title>
-              </news:news></url></urlset>''',
-        }
+              </news:news></url></urlset>'''),
+        ]
+        feeds.extend(('rss', feed_with_inline_images(content=emoji).decode()) for emoji in WORDPRESS_EMOJI_IMAGES)
         # 마이데일리 원문처럼 발행 시각이 없어도 피드의 제목·시각을 그대로 사용해요.
         page = b'''<html lang="ko"><meta property="og:title" content="Different title">
           <meta property="og:image" content="https://example.com/photo.jpg"></html>'''
-        for feed_format, feed in feeds.items():
-            with self.subTest(feed_format=feed_format):
+        for feed_format, feed in feeds:
+            with self.subTest(feed_format=feed_format, feed=feed):
                 source = {**SOURCE, 'format': feed_format}
                 original, = parse_feed(feed.encode(), source)
                 session = Mock()
@@ -398,13 +445,16 @@ class LoaderTests(unittest.TestCase):
 
 class ApiTests(unittest.TestCase):
     def test_repository_uses_team_language_window_and_serializes_utc(self):
-        with patch.object(news_repo, 'fetch_all_dict', return_value=[{**article(1), 'published_at': NOW.replace(tzinfo=None)}]) as fetch, \
+        rows = [article(i, age=i, source=source) for i, source in enumerate(('A', 'A', 'B', 'C'))]
+        rows = [{**row, 'published_at': row['published_at'].replace(tzinfo=None)} for row in rows]
+        with patch.object(news_repo, 'fetch_all_dict', return_value=rows) as fetch, \
                 patch.object(news_repo, 'datetime') as clock:
             clock.now.return_value = NOW
             result = news_repo.get_team_news(83, 'ko-KR')
         params = fetch.call_args.args[1]
         self.assertEqual(params[:2], (83, 'ko'))
         self.assertEqual(params[2], (NOW - NEWS_MAX_AGE).replace(tzinfo=None))
+        self.assertEqual([row['article_id'] for row in result['items']], [0, 2, 3])
         self.assertEqual(result['items'][0]['published_at'].utcoffset(), timedelta(0))
 
     def test_route_auth_missing_team_and_response_contract(self):
