@@ -270,7 +270,7 @@ void main() {
         closeTo(8, 0.1));
     expect(
       tester.getRect(filter).right - tester.getRect(team).right,
-      closeTo(8, 0.1),
+      closeTo(16, 0.1),
     );
     expect(tester.renderObject<RenderParagraph>(season).didExceedMaxLines,
         isFalse);
@@ -396,7 +396,7 @@ void main() {
     );
     expect(
       tester.getRect(filterFinder).right - tester.getRect(selectedTeam).right,
-      closeTo(8, 0.1),
+      closeTo(16, 0.1),
     );
     expect(find.text('24/25 FC BARCELONA'), findsOneWidget);
     final legendFinder = find.byKey(

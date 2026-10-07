@@ -219,7 +219,7 @@ void main() {
       expect(seasonRect.left - filterRect.left, 16);
       expect(dividerRect.left - seasonRect.right, 8);
       expect(teamRect.left - dividerRect.right, 8);
-      expect(filterRect.right - teamRect.right, 8);
+      expect(filterRect.right - teamRect.right, 16);
       expect((dividerRect.width, dividerRect.height), (1, 26));
       expect(tester.widget<Text>(season).style?.fontSize, 14);
       expect(tester.widget<Text>(season).style?.height, 1.30);
