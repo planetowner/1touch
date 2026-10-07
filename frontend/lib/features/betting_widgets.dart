@@ -79,6 +79,7 @@ class MatchBettingSection extends StatelessWidget {
           }
           return Container(
             key: const ValueKey('match-betting-card'),
+            width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             decoration: BoxDecoration(
               color: _surface(context),

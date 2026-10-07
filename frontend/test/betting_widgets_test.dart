@@ -63,6 +63,52 @@ void main() {
     });
   }
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('match betting card keeps equal outer margins at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final repository = FakeBettingRepository()
+        ..unavailableReason = 'unsupported_competition';
+      final controller =
+          BettingController(fixtureId: 1, repository: repository);
+      await controller.load();
+      final teams = MockTeamRepository();
+
+      await tester.pumpWidget(MaterialApp(
+        theme: darktheme,
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('BETS'),
+                MatchBettingSection(
+                  controller: controller,
+                  homeTeam: teams.requireById(6),
+                  awayTeam: teams.requireById(14),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final title = tester.getRect(find.text('BETS'));
+      final cardFinder = find.byKey(const ValueKey('match-betting-card'));
+      final card = tester.getRect(cardFinder);
+      expect(card.left, title.left);
+      expect(size.width - card.right, card.left);
+      expect(tester.widget<Container>(cardFinder).padding,
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 24));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
+    });
+  }
+
   testWidgets('betting omits full names when both short fields are missing',
       (tester) async {
     final controller = BettingController(
