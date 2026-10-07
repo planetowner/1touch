@@ -686,14 +686,15 @@ void main() {
                 tester.getSize(filterRow).width,
                 closeTo(size.width - 48, 0.1),
               );
-              expect(
-                tester.getSize(leagueShell).width,
-                closeTo((size.width - 64) / 2, 0.1),
-              );
-              expect(
-                tester.getSize(seasonShell).width,
-                closeTo((size.width - 64) / 2, 0.1),
-              );
+              final standingFilterRect = tester.getRect(filterRow);
+              final standingSeasonWidth = tester.getSize(seasonShell).width;
+              expect(tester.getSize(leagueShell).height, 48);
+              expect(tester.getSize(seasonShell).height, 48);
+              expect(standingFilterRect.height, 48);
+              expect(standingFilterRect.top - tester.getTopLeft(tabView).dy,
+                  closeTo(16, 0.1));
+              expect(standingSeasonWidth,
+                  lessThan(tester.getSize(leagueShell).width));
               expect(
                 find.descendant(
                   of: filterRow,

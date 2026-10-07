@@ -455,15 +455,15 @@ class _StandingTabState extends State<StandingTab> {
         SliverList(
           delegate: SliverChildListDelegate(
             [
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                 child: Row(
                   key: const ValueKey('standing-filter-row'),
                   children: [
-                    Expanded(child: _buildLeagueDropdown()),
+                    Flexible(child: _buildLeagueDropdown()),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildSeasonDropdown()),
+                    _buildSeasonDropdown(),
                   ],
                 ),
               ),
@@ -631,6 +631,8 @@ class _StandingTabState extends State<StandingTab> {
       key: const ValueKey('standing-league-filter-shell'),
       triggerKey: const ValueKey('standing-league-filter'),
       value: selectedLeagueId,
+      triggerHeight: 48,
+      triggerPadding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
       leading: CompetitionLogo(
         competitionId: selectedLeagueId,
         trailingGap: AppDropdownTokens.gap,
@@ -677,6 +679,8 @@ class _StandingTabState extends State<StandingTab> {
       key: const ValueKey('standing-season-filter-shell'),
       triggerKey: const ValueKey('standing-season-filter'),
       value: selectedSeasonId,
+      triggerHeight: 48,
+      triggerPadding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
       backgroundColor: appColors.subtleBackground,
       foregroundColor: colors.onSurface,
       textStyle: Body2_b.style,
