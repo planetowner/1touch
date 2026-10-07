@@ -52,6 +52,7 @@ class KnockoutBracket extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 16강부터 결승까지 8·4·2·1칸을 유지해 미확정 경기도 자리를 남겨요.
     final rounds = <_RoundColumnData>[
       _RoundColumnData(
         expectedMatches: 8,
@@ -161,6 +162,8 @@ class KnockoutBracket extends StatelessWidget {
   }
 
   double _cardTop(int roundIndex, int matchIndex) {
+    // 라운드가 진행될 때마다 카드 중심 간격을 두 배로 늘려
+    // 다음 경기 카드를 이전 두 경기의 중간에 배치해요.
     final multiplier = math.pow(2, roundIndex).toDouble();
     final center = _baseStep * (multiplier * matchIndex + multiplier / 2);
     return center - _cardHeight / 2;

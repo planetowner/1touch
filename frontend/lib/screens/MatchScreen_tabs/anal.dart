@@ -359,6 +359,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
       ];
 
   Offset _halfPitchPoint(TacticalPitchPoint point, {required bool isHome}) {
+    // 원본 0~100 좌표를 공격 방향 기준의 반쪽 피치 0~1로 바꿔요.
+    // 홈·원정의 깊이 방향을 반대로 계산해 같은 골문 쪽을 향하게 해요.
     final depth = isHome ? (point.x - 50) / 50 : (50 - point.x) / 50;
     return Offset(
       (point.y / 100).clamp(0.0, 1.0),
@@ -830,6 +832,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
       return null;
     }
     final counts = [0, 0, 0];
+    // 원본 X축을 세 구역으로 나눠 각 구역의 수비 행동 비율을 구해요.
+    // 100은 마지막 구역의 범위를 벗어나므로 99.999로 제한해요.
     for (final action in activity.actions) {
       final zone = (action.x.clamp(0, 99.999) / (100 / 3)).floor();
       counts[zone] += 1;
@@ -1383,6 +1387,7 @@ class _ProgressionPainter extends CustomPainter {
       if (progress == 0) break;
       final midY = laneHeight * (i + 0.5);
       // A minimum shaft width keeps even small percentages legible.
+      // 가장 긴 화살표를 최대 길이에 맞추고 나머지는 해당 최대 비율로 줄여요.
       final relative = maximum == 0 ? 0.0 : values[i] / maximum;
       final tip = size.width * (0.64 + 0.36 * relative);
       final shoulder = tip - headWidth;
@@ -1646,9 +1651,11 @@ class _DefenseTerritoryPainter extends CustomPainter {
       oldDelegate.reveal != reveal;
 }
 
+// 수비 행동 비율 차이 0은 투명도 0.5, ±50%p는 0·1로 표시해요.
 double defenseTerritoryOpacity(double zoneDelta) =>
     (0.5 + zoneDelta / 100).clamp(0.0, 1.0).toDouble();
 
+// 세 구역의 시작 시점을 1/3씩 어긋나게 하고 방향에 따라 순서를 뒤집어요.
 double defenseTerritoryZoneReveal(double progress, int index,
         {required bool rightToLeft}) =>
     (progress * 3 - (rightToLeft ? 2 - index : index)).clamp(0.0, 1.0);

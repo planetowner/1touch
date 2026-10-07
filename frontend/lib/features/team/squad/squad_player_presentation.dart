@@ -121,6 +121,7 @@ int? ageAt(DateTime? dateOfBirth, DateTime asOf) {
 }
 
 List<SortOption> availableSquadSortOptions({required bool isCurrent}) {
+  // 계약 기간 정렬은 현재 스쿼드에서만 제공해요.
   return SortOption.values
       .where((option) => isCurrent || option != SortOption.contractLength)
       .toList(growable: false);
@@ -174,6 +175,7 @@ int _compareNullable<T extends Comparable<dynamic>>(
   T? b, {
   required bool ascending,
 }) {
+  // 값이 없는 선수는 정렬 방향과 관계없이 항상 목록 뒤에 둬요.
   if (a == null) return b == null ? 0 : 1;
   if (b == null) return -1;
   final result = a.compareTo(b);
