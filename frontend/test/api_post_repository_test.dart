@@ -11,6 +11,68 @@ import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/models/post.dart';
 
 void main() {
+  test('keeps all four language feeds separate in memory and disk', () async {
+    final store = MemoryLocalCacheStore();
+    final requestedLanguages = <String>[];
+    ApiPostRepository repository() => ApiPostRepository(
+          api: ApiClient(
+            client: MockClient((request) async {
+              final language = request.url.queryParameters['language']!;
+              requestedLanguages.add(language);
+              return http.Response(
+                  jsonEncode({
+                    'items': [
+                      {..._postJson(), 'language': language, 'title': language}
+                    ],
+                    'limit': 50,
+                    'offset': 0,
+                  }),
+                  200);
+            }),
+            baseUri: Uri.parse('https://example.test/v1/'),
+            requestHeaders: () => const {},
+          ),
+          cacheStore: store,
+        );
+    final writer = repository();
+    for (final language in ['ko', 'en', 'zh', 'ja']) {
+      final posts = await writer.loadPosts(teamId: 83, language: language);
+      expect(posts.single.language, language);
+      expect(posts.single.title, language);
+    }
+    final reader = repository();
+    for (final language in ['ko', 'en', 'zh', 'ja']) {
+      expect(writer.cachedFeed(teamId: 83, language: language)!.single.title,
+          language);
+      final restored =
+          await reader.restoreCachedFeed(teamId: 83, language: language);
+      expect(restored!.single.title, language);
+    }
+    expect(requestedLanguages, ['ko', 'en', 'zh', 'ja']);
+  });
+
+  test('does not reuse a pre-language feed and rejects another language',
+      () async {
+    final store = MemoryLocalCacheStore();
+    await store.write(
+        'community-feed:83:all:newest:all_time:all:50:0', _feedJson(),
+        scope: LocalCacheScopes.communityPosts);
+    final repository = ApiPostRepository(
+      api: ApiClient(
+        client: MockClient(
+            (_) async => http.Response(jsonEncode(_feedJson()), 200)),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+    expect(
+        await repository.restoreCachedFeed(teamId: 83, language: 'en'), isNull);
+    await expectLater(repository.loadPosts(teamId: 83, language: 'ko'),
+        throwsFormatException);
+    expect(repository.cachedFeed(teamId: 83, language: 'ko'), isNull);
+  });
+
   test('older cached responses without a preview still keep their original',
       () async {
     final json = _postJson();
@@ -125,20 +187,20 @@ void main() {
           cacheStore: store,
         );
 
-    await repository().loadPosts(teamId: 83);
+    await repository().loadPosts(language: 'en', teamId: 83);
     await repository().loadPost(42);
     final reader = repository();
-    final feed = await reader.restoreCachedFeed(teamId: 83);
+    final feed = await reader.restoreCachedFeed(language: 'en', teamId: 83);
     expect(feed, isNotNull);
     expect(requests, 2);
-    expect(await reader.loadPosts(teamId: 83), same(feed));
+    expect(await reader.loadPosts(language: 'en', teamId: 83), same(feed));
     final post = await reader.loadPost(42);
     expect(feed!.single.postId, 42);
     expect(post.postId, 42);
     expect(
         post.mediaPreviewUrl, 'https://example.test/v1/attachments/7/preview');
     expect(feed.single.mediaPreviewUrl, post.mediaPreviewUrl);
-    expect(reader.cachedFeed(teamId: 83), same(feed));
+    expect(reader.cachedFeed(language: 'en', teamId: 83), same(feed));
     expect(reader.cachedPost(42), same(post));
     expect(requests, 2);
   });
@@ -146,7 +208,8 @@ void main() {
   test('keeps an expired feed visible during one background refresh', () async {
     final store = _AgedPostStore();
     await store.write(
-      LocalCacheKeys.communityFeed(83, null, 'newest', 'all_time', null, 50, 0),
+      LocalCacheKeys.communityFeed(
+          83, 'en', null, 'newest', 'all_time', null, 50, 0),
       _feedJson(),
       scope: LocalCacheScopes.communityPosts,
     );
@@ -164,8 +227,8 @@ void main() {
       cacheStore: store,
     );
 
-    final stale = await repository.loadPosts(teamId: 83);
-    final duplicate = await repository.loadPosts(teamId: 83);
+    final stale = await repository.loadPosts(language: 'en', teamId: 83);
+    final duplicate = await repository.loadPosts(language: 'en', teamId: 83);
     await Future<void>.delayed(Duration.zero);
     expect(stale.single.title, 'Pressing structure');
     expect(duplicate, same(stale));
@@ -173,7 +236,8 @@ void main() {
 
     final updated = Completer<void>();
     repository.cachedFeeds.addListener(() {
-      if (repository.cachedFeed(teamId: 83)?.single.title == 'New title' &&
+      if (repository.cachedFeed(language: 'en', teamId: 83)?.single.title ==
+              'New title' &&
           !updated.isCompleted) {
         updated.complete();
       }
@@ -185,7 +249,8 @@ void main() {
       200,
     ));
     await updated.future;
-    expect(repository.cachedFeed(teamId: 83)?.single.title, 'New title');
+    expect(repository.cachedFeed(language: 'en', teamId: 83)?.single.title,
+        'New title');
   });
 
   test('keeps cached post detail when its refresh fails', () async {
@@ -214,7 +279,7 @@ void main() {
   test('repairs malformed feed cache without deleting another entry', () async {
     final store = MemoryLocalCacheStore();
     final key = LocalCacheKeys.communityFeed(
-        83, null, 'newest', 'all_time', null, 50, 0);
+        83, 'en', null, 'newest', 'all_time', null, 50, 0);
     await store.write(key, {'items': 'broken'},
         scope: LocalCacheScopes.communityPosts);
     await store.write(LocalCacheKeys.communityPost(42), _postJson(),
@@ -232,7 +297,9 @@ void main() {
       cacheStore: store,
     );
 
-    expect((await repository.loadPosts(teamId: 83)).single.postId, 42);
+    expect(
+        (await repository.loadPosts(language: 'en', teamId: 83)).single.postId,
+        42);
     expect(requests, 1);
     expect(await store.read(key, scope: LocalCacheScopes.communityPosts),
         isNotNull);
@@ -257,8 +324,8 @@ void main() {
       cacheStore: MemoryLocalCacheStore(),
     );
 
-    final first = repository.loadPosts(teamId: 83);
-    final second = repository.loadPosts(teamId: 83);
+    final first = repository.loadPosts(language: 'en', teamId: 83);
+    final second = repository.loadPosts(language: 'en', teamId: 83);
     await Future<void>.delayed(Duration.zero);
     expect(requests, 1);
     response.complete(http.Response(jsonEncode(_feedJson()), 200));
@@ -279,13 +346,13 @@ void main() {
       cacheStore: store,
     );
 
-    await repository.loadPosts(teamId: 83);
+    await repository.loadPosts(language: 'en', teamId: 83);
     final key = LocalCacheKeys.communityFeed(
-        83, null, 'newest', 'all_time', null, 50, 0);
+        83, 'en', null, 'newest', 'all_time', null, 50, 0);
     expect(await store.read(key, scope: LocalCacheScopes.communityPosts),
         isNotNull);
     await repository.setPostLiked(postId: 42, liked: true);
-    expect(repository.cachedFeed(teamId: 83), isNull);
+    expect(repository.cachedFeed(language: 'en', teamId: 83), isNull);
     expect(
         await store.read(key, scope: LocalCacheScopes.communityPosts), isNull);
     expect(await store.read('unrelated'), isNotNull);
@@ -312,12 +379,14 @@ void main() {
       ),
     );
     final posts = await repository.loadPosts(
+      language: 'en',
       teamId: 83,
       category: PostCategory.fanart,
     );
     expect(posts.single.category, PostCategory.fanart);
     expect(
         await repository.createPost(CreatePostInput(
+          language: 'en',
           teamId: 83,
           category: posts.single.category,
           title: 'Fan art',
@@ -334,6 +403,7 @@ void main() {
             expect(request.url.path, '/v1/posts');
             expect(request.url.queryParameters, {
               'team_id': '83',
+              'language': 'en',
               'sort': 'newest',
               'period': 'all_time',
               'limit': '50',
@@ -348,7 +418,7 @@ void main() {
               const {'Authorization': 'Bearer session-token'}),
     );
 
-    final posts = await repository.loadPosts(teamId: 83);
+    final posts = await repository.loadPosts(language: 'en', teamId: 83);
     final post = posts.single;
 
     expect(post.postId, 42);
@@ -372,6 +442,7 @@ void main() {
           client: MockClient((request) async {
             expect(request.url.queryParameters, {
               'team_id': '83',
+              'language': 'en',
               'category': 'analysis',
               'sort': 'popular',
               'period': 'week',
@@ -390,6 +461,7 @@ void main() {
 
     expect(
       await repository.loadPosts(
+        language: 'en',
         teamId: 83,
         category: PostCategory.analysis,
         sort: PostSort.popular,
@@ -434,7 +506,8 @@ void main() {
           requestHeaders: () => const {}),
     );
 
-    final post = (await repository.loadPosts(teamId: 83)).single;
+    final post =
+        (await repository.loadPosts(language: 'en', teamId: 83)).single;
 
     expect(post.userId, isNull);
     expect(post.authorDeleted, isTrue);
@@ -456,17 +529,19 @@ void main() {
           requestHeaders: () => const {}),
     );
 
-    await expectLater(repository.loadPosts(teamId: 0), throwsRangeError);
     await expectLater(
-      repository.loadPosts(teamId: 83, limit: 101),
+        repository.loadPosts(language: 'en', teamId: 0), throwsRangeError);
+    await expectLater(
+      repository.loadPosts(language: 'en', teamId: 83, limit: 101),
       throwsRangeError,
     );
     await expectLater(
-      repository.loadPosts(teamId: 83, offset: -1),
+      repository.loadPosts(language: 'en', teamId: 83, offset: -1),
       throwsRangeError,
     );
     await expectLater(
-      repository.loadPosts(teamId: 83, period: PostPeriod.today),
+      repository.loadPosts(
+          language: 'en', teamId: 83, period: PostPeriod.today),
       throwsArgumentError,
     );
     expect(requests, 0);
@@ -508,12 +583,12 @@ void main() {
     );
 
     await expectLater(
-      repository.loadPosts(teamId: 83),
+      repository.loadPosts(language: 'en', teamId: 83),
       throwsA(isA<http.ClientException>()),
     );
     for (var i = 0; i < responses.length - 1; i++) {
       await expectLater(
-        repository.loadPosts(teamId: 83),
+        repository.loadPosts(language: 'en', teamId: 83),
         throwsFormatException,
       );
     }
@@ -611,6 +686,7 @@ void main() {
             expect(request.headers['Authorization'], 'Bearer session-token');
             expect(jsonDecode(request.body), {
               'team_id': 83,
+              'language': 'en',
               'category': 'analysis',
               'title': 'Title',
               'body': 'Body',
@@ -626,6 +702,7 @@ void main() {
     expect(
       await repository.createPost(
         CreatePostInput(
+          language: 'en',
           teamId: 83,
           category: PostCategory.analysis,
           title: '  Title  ',
@@ -651,30 +728,35 @@ void main() {
 
     final invalidInputs = [
       CreatePostInput(
+        language: 'en',
         teamId: 0,
         category: PostCategory.general,
         title: 'Title',
         body: 'Body',
       ),
       CreatePostInput(
+        language: 'en',
         teamId: 83,
         category: PostCategory.general,
         title: '   ',
         body: 'Body',
       ),
       CreatePostInput(
+        language: 'en',
         teamId: 83,
         category: PostCategory.general,
         title: ''.padRight(201, 'x'),
         body: 'Body',
       ),
       CreatePostInput(
+        language: 'en',
         teamId: 83,
         category: PostCategory.general,
         title: 'Title',
         body: ''.padRight(10001, 'x'),
       ),
       CreatePostInput(
+        language: 'en',
         teamId: 83,
         category: PostCategory.general,
         title: 'Title',
@@ -682,6 +764,7 @@ void main() {
         attachmentIds: const [1, 1],
       ),
       CreatePostInput(
+        language: 'en',
         teamId: 83,
         category: PostCategory.general,
         title: 'Title',
@@ -716,6 +799,7 @@ void main() {
           requestHeaders: () => const {}),
     );
     final input = CreatePostInput(
+      language: 'en',
       teamId: 83,
       category: PostCategory.general,
       title: 'Title',
@@ -820,6 +904,7 @@ Map<String, dynamic> _feedJson({
 Map<String, dynamic> _postJson() => {
       'post_id': 42,
       'team_id': 83,
+      'language': 'en',
       'user_id': 1001,
       'category': 'analysis',
       'title': 'Pressing structure',

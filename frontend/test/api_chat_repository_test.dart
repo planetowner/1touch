@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,46 @@ import 'package:onetouch/data/chat/api/api_chat_repository.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';
 
 void main() {
+  test('keeps late responses and cursors in their requested language cache',
+      () async {
+    final pending = <String, Completer<http.Response>>{};
+    final repository = ApiChatRepository(
+        api: ApiClient(
+      client: MockClient((request) {
+        final language = request.url.queryParameters['language']!;
+        return (pending[language] = Completer<http.Response>()).future;
+      }),
+      baseUri: Uri.parse('https://example.test/v1/'),
+      requestHeaders: () => const {},
+    ));
+    final loads = {
+      for (final language in ['ko', 'en', 'zh', 'ja'])
+        language: repository.loadHistory(fixtureId: 42, language: language),
+    };
+    await Future<void>.delayed(Duration.zero);
+    var messageId = 1;
+    for (final language in ['ja', 'zh', 'en', 'ko']) {
+      pending[language]!.complete(http.Response(
+          jsonEncode({
+            'items': [
+              {..._messageJson(messageId: messageId++), 'text': language}
+            ],
+          }),
+          200,
+          headers: {'content-type': 'application/json; charset=utf-8'}));
+      await loads[language];
+    }
+    for (final language in loads.keys) {
+      expect(
+          repository
+              .cachedHistoryForFixture(42, language: language)
+              .single
+              .text,
+          language);
+    }
+    expect(repository.cachedHistories.value, hasLength(4));
+  });
+
   test('loads authenticated history and maps anonymous author metadata',
       () async {
     final repository = ApiChatRepository(
@@ -16,6 +57,7 @@ void main() {
             expect(request.method, 'GET');
             expect(request.url.path, '/v1/fixtures/42/chat/messages');
             expect(request.url.queryParameters, {
+              'language': 'en',
               'limit': '25',
               'before_id': '30',
             });
@@ -43,6 +85,7 @@ void main() {
     );
 
     final messages = await repository.loadHistory(
+      language: 'en',
       fixtureId: 42,
       beforeId: 30,
       limit: 25,
@@ -57,7 +100,8 @@ void main() {
     expect(messages.first.displayAuthor('ko'), '크루이프_a8q4');
     expect(messages.first.isMine, isTrue);
     expect(messages.last.displayAuthor('en'), 'Deleted user');
-    expect(repository.cachedHistoryForFixture(42), orderedEquals(messages));
+    expect(repository.cachedHistoryForFixture(42, language: 'en'),
+        orderedEquals(messages));
     expect(() => messages.clear(), throwsUnsupportedError);
   });
 
@@ -78,10 +122,10 @@ void main() {
           requestHeaders: () => const {}),
     );
 
-    await repository.loadHistory(fixtureId: 42);
-    await repository.loadHistory(fixtureId: 42, beforeId: 20);
+    await repository.loadHistory(language: 'en', fixtureId: 42);
+    await repository.loadHistory(language: 'en', fixtureId: 42, beforeId: 20);
 
-    final cached = repository.cachedHistoryForFixture(42);
+    final cached = repository.cachedHistoryForFixture(42, language: 'en');
     expect(cached.map((message) => message.messageId), [10, 20, 30]);
     expect(() => cached.clear(), throwsUnsupportedError);
   });
@@ -94,6 +138,7 @@ void main() {
           client: MockClient((request) async {
             requestCount++;
             expect(request.url.queryParameters, {
+              'language': 'en',
               'limit': '100',
               'after_id': '0',
             });
@@ -104,19 +149,21 @@ void main() {
     );
 
     expect(
-      await repository.loadHistory(fixtureId: 42, afterId: 0, limit: 100),
+      await repository.loadHistory(
+          language: 'en', fixtureId: 42, afterId: 0, limit: 100),
       isEmpty,
     );
     await expectLater(
-      repository.loadHistory(fixtureId: 42, beforeId: 10, afterId: 5),
+      repository.loadHistory(
+          language: 'en', fixtureId: 42, beforeId: 10, afterId: 5),
       throwsArgumentError,
     );
     await expectLater(
-      repository.loadHistory(fixtureId: 0),
+      repository.loadHistory(language: 'en', fixtureId: 0),
       throwsRangeError,
     );
     await expectLater(
-      repository.loadHistory(fixtureId: 42, limit: 101),
+      repository.loadHistory(language: 'en', fixtureId: 42, limit: 101),
       throwsRangeError,
     );
     expect(requestCount, 1);
@@ -152,18 +199,18 @@ void main() {
     );
 
     await expectLater(
-      repository.loadHistory(fixtureId: 42),
+      repository.loadHistory(language: 'en', fixtureId: 42),
       throwsA(isA<http.ClientException>()),
     );
     await expectLater(
-      repository.loadHistory(fixtureId: 42),
+      repository.loadHistory(language: 'en', fixtureId: 42),
       throwsFormatException,
     );
     await expectLater(
-      repository.loadHistory(fixtureId: 42),
+      repository.loadHistory(language: 'en', fixtureId: 42),
       throwsFormatException,
     );
-    expect(repository.cachedHistoryForFixture(42), isEmpty);
+    expect(repository.cachedHistoryForFixture(42, language: 'en'), isEmpty);
   });
 
   test('reports a chat message with the authenticated normalized reason',

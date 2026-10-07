@@ -76,6 +76,7 @@ class _CommunityState extends State<Community>
   bool _checkedRulesThisVisit = false;
   int _rulesVisitGeneration = 0;
   CommunityBanStatus? _banStatus;
+  String? _language;
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
@@ -104,7 +105,6 @@ class _CommunityState extends State<Community>
     _postLoadErrorsByTab = List<Object?>.filled(tabCount, null);
     if (_postRepository case CachedPostRepository cached) {
       cached.cachedFeeds.addListener(_handleCachedFeeds);
-      _applyCachedFeeds(cached);
     }
 
     _scrollController = ScrollController()
@@ -117,10 +117,23 @@ class _CommunityState extends State<Community>
     _tabController = TabController(length: tabCount, vsync: this)
       ..addListener(_handlePostTabChange);
     mainTabActions.addListener(_handleMainTabAction);
-    _loadPosts();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _showFirstVisitRules();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final language = Localizations.localeOf(context).languageCode;
+    if (_language == language) return;
+    _language = language;
+    // 유지 중인 탭도 언어가 바뀌면 이전 목록과 진행 중인 조회를 비워요.
+    _resetPostFeeds();
+    if (_postRepository case CachedPostRepository cached) {
+      _applyCachedFeeds(cached);
+    }
+    _loadPosts();
   }
 
   Future<void> _showFirstVisitRules() async {
@@ -293,6 +306,7 @@ class _CommunityState extends State<Community>
   void _applyCachedFeeds(CachedPostRepository repository) {
     for (var index = 0; index < _postsByTab.length; index++) {
       final page = repository.cachedFeed(
+        language: _language!,
         teamId: widget.teamId,
         category: CommunityPostTabHeader.categories[index],
         sort: _selectedPostSort,
@@ -375,6 +389,7 @@ class _CommunityState extends State<Community>
     final repository = _postRepository;
     final cache = repository is CachedPostRepository ? repository : null;
     final cached = cache?.cachedFeed(
+      language: _language!,
       teamId: widget.teamId,
       category: category,
       sort: _selectedPostSort,
@@ -394,11 +409,13 @@ class _CommunityState extends State<Community>
     try {
       final posts = await (forceRefresh && cache != null
           ? cache.refreshPosts(
+              language: _language!,
               teamId: widget.teamId,
               category: category,
               sort: _selectedPostSort,
             )
           : repository.loadPosts(
+              language: _language!,
               teamId: widget.teamId,
               category: category,
               sort: _selectedPostSort,
@@ -406,6 +423,7 @@ class _CommunityState extends State<Community>
       if (!mounted || requestId != _postRequestId) return;
       setState(() {
         _postsByTab[tabIndex] = cache?.cachedFeed(
+                language: _language!,
                 teamId: widget.teamId,
                 category: category,
                 sort: _selectedPostSort) ??

@@ -37,7 +37,8 @@ class ApiChatSocket implements ChatSocket {
   final Duration _handshakeTimeout;
 
   @override
-  Future<ChatSocketSession> connect(int fixtureId) async {
+  Future<ChatSocketSession> connect(int fixtureId,
+      {required String language}) async {
     if (fixtureId < 1) {
       throw RangeError.value(fixtureId, 'fixtureId', 'Must be positive');
     }
@@ -52,7 +53,9 @@ class ApiChatSocket implements ChatSocket {
     if (sessionToken.length < 40 || sessionToken.length > 100) {
       throw ArgumentError('Session token must contain 40 to 100 characters.');
     }
-    final httpUri = _apiBaseUri.resolve('fixtures/$fixtureId/chat');
+    final httpUri = _apiBaseUri.resolve('fixtures/$fixtureId/chat').replace(
+      queryParameters: {'language': language},
+    );
     final socketUri = httpUri.replace(
       scheme: switch (httpUri.scheme) {
         'https' => 'wss',
@@ -65,6 +68,7 @@ class ApiChatSocket implements ChatSocket {
     final session = _ApiChatSocketSession(
       connection: _connector(socketUri),
       fixtureId: fixtureId,
+      language: language,
       sessionToken: sessionToken,
       handshakeTimeout: _handshakeTimeout,
     );
@@ -82,12 +86,14 @@ class _ApiChatSocketSession implements ChatSocketSession {
   _ApiChatSocketSession({
     required ChatSocketConnection connection,
     required this.fixtureId,
+    required this.language,
     required this.sessionToken,
     required this.handshakeTimeout,
   }) : _connection = connection;
 
   final ChatSocketConnection _connection;
   final int fixtureId;
+  final String language;
   final String sessionToken;
   final Duration handshakeTimeout;
   final StreamController<FixtureChatMessage> _messages =
@@ -132,7 +138,9 @@ class _ApiChatSocketSession implements ChatSocketSession {
       }
       final type = decoded['type'];
       if (type == 'ready') {
-        if (_serverReady.isCompleted || decoded['fixture_id'] != fixtureId) {
+        if (_serverReady.isCompleted ||
+            decoded['fixture_id'] != fixtureId ||
+            decoded['language'] != language) {
           throw const FormatException('Invalid fixture chat ready frame.');
         }
         _serverReady.complete();

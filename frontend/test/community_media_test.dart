@@ -23,6 +23,7 @@ void main() {
           body: CommunityPostList(
             posts: [
               Post(
+                language: 'en',
                 postId: 8,
                 teamId: 9,
                 userId: 1,
@@ -59,6 +60,7 @@ void main() {
           body: CommunityPostList(
             posts: [
               Post(
+                language: 'en',
                 postId: 8,
                 teamId: 9,
                 userId: 1,
@@ -106,6 +108,7 @@ void main() {
           body: CommunityPostList(
             posts: [
               Post(
+                language: 'en',
                 postId: 7,
                 teamId: 9,
                 userId: 1,
@@ -240,6 +243,7 @@ void main() {
       });
       final avatarUrl = apiClient.baseUri.resolve('users/1/avatar').toString();
       final post = Post(
+        language: 'en',
         postId: 12,
         teamId: 9,
         userId: 1,
@@ -250,6 +254,7 @@ void main() {
         createdAt: '2026-09-27T12:00:00Z',
       );
       const postWithoutAvatar = Post(
+        language: 'en',
         postId: 13,
         teamId: 9,
         userId: 2,
@@ -328,6 +333,7 @@ void main() {
     });
     final avatarUrl = apiClient.baseUri.resolve('users/1/avatar').toString();
     const post = Post(
+      language: 'en',
       postId: 12,
       teamId: 9,
       userId: 1,
@@ -391,6 +397,7 @@ void main() {
       (tester) async {
     ShareParams? sharedParams;
     const post = Post(
+      language: 'en',
       postId: 12,
       teamId: 9,
       userId: 1,

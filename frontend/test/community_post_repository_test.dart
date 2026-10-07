@@ -17,6 +17,53 @@ import 'support/stub_community_repository.dart';
 
 void main() {
   setUpAppCatalog(favoriteTeamId: 9);
+  testWidgets('switching language clears every tab and ignores an older feed',
+      (tester) async {
+    _setScreenSize(tester, const Size(430, 932));
+    final pendingKorean = Completer<List<Post>>();
+    Post post(String language) => Post(
+          postId: language.codeUnitAt(0),
+          teamId: 9,
+          language: language,
+          userId: 1001,
+          category: PostCategory.general,
+          title: '$language feed',
+          body: 'Body',
+          createdAt: '2026-10-06T12:00:00Z',
+        );
+    final repository = _ScriptedPostRepository([
+      () => pendingKorean.future,
+      () async => [post('en')],
+      () async => [post('zh')],
+      () async => [post('ja')],
+    ]);
+    Widget app(String language) => MaterialApp(
+          locale: Locale(language),
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
+          home: Community(
+              teamId: 9,
+              postRepository: repository,
+              communityRepository: const StubCommunityRepository()),
+        );
+    await tester.pumpWidget(app('ko'));
+    await tester.pump();
+    for (final language in ['en', 'zh', 'ja']) {
+      await tester.pumpWidget(app(language));
+      await tester.pumpAndSettle();
+      expect(find.text('$language feed'), findsOneWidget);
+      for (final other
+          in ['ko', 'en', 'zh', 'ja'].where((item) => item != language)) {
+        expect(find.text('$other feed'), findsNothing);
+      }
+    }
+    pendingKorean.complete([post('ko')]);
+    await tester.pumpAndSettle();
+    expect(find.text('ko feed'), findsNothing);
+    expect(find.text('ja feed'), findsOneWidget);
+    expect(repository.languages, ['ko', 'en', 'zh', 'ja']);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('uses the server attachment limit before opening the file picker',
       (tester) async {
     _setScreenSize(tester, const Size(430, 932));
@@ -584,6 +631,7 @@ class _ScriptedPostRepository implements PostRepository {
   final List<PostCategory?> categories = [];
   final List<PostSort> sorts = [];
   final List<int> teamIds = [];
+  final List<String> languages = [];
 
   @override
   Future<void> deletePost({required int postId}) {
@@ -609,6 +657,7 @@ class _ScriptedPostRepository implements PostRepository {
   @override
   Future<List<Post>> loadPosts({
     required int teamId,
+    required String language,
     PostCategory? category,
     PostSort sort = PostSort.newest,
     PostPeriod period = PostPeriod.allTime,
@@ -617,6 +666,7 @@ class _ScriptedPostRepository implements PostRepository {
     int offset = 0,
   }) {
     lastTeamId = teamId;
+    languages.add(language);
     teamIds.add(teamId);
     lastCategory = category;
     lastSort = sort;
@@ -641,6 +691,7 @@ class _ScriptedPostRepository implements PostRepository {
 }
 
 const _loadedPost = Post(
+  language: 'en',
   postId: 91,
   teamId: 9,
   userId: 1001,
@@ -654,6 +705,7 @@ const _loadedPost = Post(
 );
 
 const _stalePost = Post(
+  language: 'en',
   postId: 90,
   teamId: 9,
   userId: 1002,
@@ -664,6 +716,7 @@ const _stalePost = Post(
 );
 
 const _likedPost = Post(
+  language: 'en',
   postId: 91,
   teamId: 9,
   userId: 1001,
@@ -678,6 +731,7 @@ const _likedPost = Post(
 );
 
 const _createdPost = Post(
+  language: 'en',
   postId: 92,
   teamId: 9,
   userId: 1001,
@@ -688,6 +742,7 @@ const _createdPost = Post(
 );
 
 const _otherTeamPost = Post(
+  language: 'en',
   postId: 93,
   teamId: 83,
   userId: 1001,

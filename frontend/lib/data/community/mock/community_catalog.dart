@@ -8,6 +8,7 @@ import 'package:onetouch/models/user_profile.dart';
 
 const mockPosts = <Post>[
   Post(
+      language: 'en',
       postId: 1,
       teamId: 83,
       userId: 1001,
@@ -20,6 +21,7 @@ const mockPosts = <Post>[
       mediaUrl: 'https://picsum.photos/200',
       createdAt: '2025-04-07 21:30:00'),
   Post(
+      language: 'en',
       postId: 2,
       teamId: 503,
       userId: 1002,
@@ -31,6 +33,7 @@ const mockPosts = <Post>[
           'Harry Kane has been the fulcrum of Bayern Munich\'s record-breaking Bundesliga campaign. In this analysis we break down the numbers behind their 78-goal tally through 29 matchdays and how Kompany\'s high press has revolutionised their build-up play.',
       createdAt: '2025-04-06 14:00:00'),
   Post(
+      language: 'en',
       postId: 3,
       teamId: 83,
       userId: 1001,
@@ -42,6 +45,7 @@ const mockPosts = <Post>[
           'Our community picks the standout performers from across all five major European leagues this weekend. Inter Milan\'s goalkeeper makes the cut after his stunning save denied Napoli a late equaliser.',
       createdAt: '2025-04-05 10:00:00'),
   Post(
+      language: 'en',
       postId: 4,
       teamId: 9,
       userId: 1003,
@@ -53,6 +57,7 @@ const mockPosts = <Post>[
           'Pep Guardiola confirmed in his pre-match press conference that Erling Haaland has fully recovered from the hamstring issue that kept him out of last weekend\'s draw at Villa Park. The Norwegian is expected to lead the line tonight.',
       createdAt: '2025-04-08 11:00:00'),
   Post(
+      language: 'en',
       postId: 5,
       teamId: 7980,
       userId: 1002,

@@ -3,6 +3,7 @@ import 'package:onetouch/models/post.dart';
 
 typedef PostFeedQuery = ({
   int teamId,
+  String language,
   PostCategory? category,
   PostSort sort,
   PostPeriod period,
@@ -30,6 +31,7 @@ const int maxPostReportReasonLength = 500;
 
 class CreatePostInput {
   final int teamId;
+  final String language;
   final PostCategory category;
   final String title;
   final String body;
@@ -37,6 +39,7 @@ class CreatePostInput {
 
   CreatePostInput({
     required this.teamId,
+    required this.language,
     required this.category,
     required this.title,
     required this.body,
@@ -65,6 +68,7 @@ abstract interface class PostRepository {
 
   Future<List<Post>> loadPosts({
     required int teamId,
+    required String language,
     PostCategory? category,
     PostSort sort = PostSort.newest,
     PostPeriod period = PostPeriod.allTime,
@@ -103,6 +107,7 @@ abstract interface class CachedPostRepository
 
   List<Post>? cachedFeed({
     required int teamId,
+    required String language,
     PostCategory? category,
     PostSort sort = PostSort.newest,
     PostPeriod period = PostPeriod.allTime,
@@ -115,6 +120,7 @@ abstract interface class CachedPostRepository
 
   Future<List<Post>> refreshPosts({
     required int teamId,
+    required String language,
     PostCategory? category,
     PostSort sort = PostSort.newest,
     PostPeriod period = PostPeriod.allTime,

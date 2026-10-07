@@ -196,6 +196,7 @@ class CommunityDatabaseCase(unittest.TestCase):
     post_drafts_schema = True
     display_name_schema = True
     community_points_schema = True
+    language_schema = True
     @classmethod
     def setUpClass(cls):
         cls.config = {"host": "127.0.0.1", "port": 14873, "user": "root", "password": "", "connection_timeout": 5}
@@ -241,6 +242,11 @@ class CommunityDatabaseCase(unittest.TestCase):
                         self.apply_post_drafts_schema()
                         if self.display_name_schema:
                             self.apply_display_name_schema()
+        if self.language_schema:
+            language_sql = sql.with_name("migrate_community_language.sql")
+            for statement in language_sql.read_text(encoding="utf-8").split(";"):
+                if statement.strip():
+                    self.execute(statement)
         # 게시물 쓰기는 알림도 같은 트랜잭션으로 저장하므로 배포와 같은 테이블을 준비해요.
         notification_sql = Path(__file__).resolve().parents[1] / 'one_touch_loader/sql/create_notifications.sql'
         for statement in notification_sql.read_text(encoding='utf-8').split(';'):
@@ -315,10 +321,18 @@ class CommunityDatabaseCase(unittest.TestCase):
         return user_id, token
 
     def request(self, method, url, token=None, **kwargs):
+        if method == "GET" and url.split("?")[0] == "/v1/posts" and "language=" not in url:
+            url += ("&" if "?" in url else "?") + "language=ko"
+        if method == "POST" and url in ("/v1/posts", "/v1/post-drafts"):
+            kwargs.setdefault("json", {}).setdefault("language", "ko")
         return self.client.request(method, url, headers={"Authorization": f"Bearer {token or self.token_a}"}, **kwargs)
 
     def post(self, user_id=None, team_id=6, **kwargs):
-        return posts_repo.create_post(user_id or self.a, team_id, "general", "Title", "Body", kwargs.get("attachment_ids", []))
+        if not self.language_schema:
+            # 과거 마이그레이션 검증에는 그 시점의 컬럼만으로 데이터를 준비해요.
+            return self.execute("""INSERT INTO posts (team_id,user_id,category,title,body,created_at)
+                VALUES (%s,%s,'general','Title','Body',%s)""", (team_id, user_id or self.a, utc_now()))
+        return posts_repo.create_post(user_id or self.a, team_id, "general", "Title", "Body", kwargs.get("attachment_ids", []), language="ko")
 
     def apply_account_management_schema(self):
         sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_account_management.sql"
@@ -346,6 +360,7 @@ class CommunityDatabaseCase(unittest.TestCase):
 
 class MigrationPreservationTests(CommunityDatabaseCase):
     management_schema = False
+    language_schema = False
 
     def test_existing_users_posts_replies_sessions_and_attachments_survive_alter(self):
         now = utc_now()
@@ -702,17 +717,17 @@ class MySQLCommunityTests(CommunityDatabaseCase):
 
     def test_chat_history_both_teams_and_other_fixture_denied(self):
         self.apply_chat_alias_schema()
-        chat_repo.create_message(self.a, 10, "hello")
-        self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages", self.token_b).status_code, 200)
-        self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages", self.token_c).status_code, 403)
-        self.assertEqual(self.request("GET", "/v1/fixtures/20/chat/messages").status_code, 403)
+        chat_repo.create_message(self.a, 10, "hello", language="ko")
+        self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages?language=ko", self.token_b).status_code, 200)
+        self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages?language=ko", self.token_c).status_code, 403)
+        self.assertEqual(self.request("GET", "/v1/fixtures/20/chat/messages?language=ko").status_code, 403)
 
     def test_websocket_messages_persist_and_use_anonymous_names(self):
         self.apply_chat_alias_schema()
-        with self.client.websocket_connect("/v1/fixtures/10/chat") as a:
+        with self.client.websocket_connect("/v1/fixtures/10/chat?language=ko") as a:
             a.send_json({"token": self.token_a})
             self.assertEqual(a.receive_json()["type"], "ready")
-            with self.client.websocket_connect("/v1/fixtures/10/chat") as b:
+            with self.client.websocket_connect("/v1/fixtures/10/chat?language=ko") as b:
                 b.send_json({"token": self.token_b})
                 b.receive_json()
                 a.send_json({"text": "hello"})
@@ -725,12 +740,12 @@ class MySQLCommunityTests(CommunityDatabaseCase):
                 self.assertNotIn("user_id", one)
                 self.assertNotIn("avatar_url", one)
                 self.assertTrue(one["created_at"].endswith("Z"))
-        self.assertEqual(len(chat_repo.history(self.a, 10, None, None, 50)), 1)
+        self.assertEqual(len(chat_repo.history(self.a, 10, None, None, 50, language="ko")), 1)
 
     def test_websocket_revokes_access_after_favorite_change(self):
         self.apply_chat_alias_schema()
         from starlette.websockets import WebSocketDisconnect
-        with self.client.websocket_connect("/v1/fixtures/10/chat") as socket:
+        with self.client.websocket_connect("/v1/fixtures/10/chat?language=ko") as socket:
             socket.send_json({"token": self.token_a})
             socket.receive_json()
             teams_repo.set_following_and_favorite(self.a, [14], 14)
@@ -743,10 +758,10 @@ class MySQLCommunityTests(CommunityDatabaseCase):
     def test_websocket_revoked_recipient_does_not_receive_next_message(self):
         self.apply_chat_alias_schema()
         from starlette.websockets import WebSocketDisconnect
-        with self.client.websocket_connect("/v1/fixtures/10/chat") as a:
+        with self.client.websocket_connect("/v1/fixtures/10/chat?language=ko") as a:
             a.send_json({"token": self.token_a})
             a.receive_json()
-            with self.client.websocket_connect("/v1/fixtures/10/chat") as b:
+            with self.client.websocket_connect("/v1/fixtures/10/chat?language=ko") as b:
                 b.send_json({"token": self.token_b})
                 b.receive_json()
                 auth_repo.logout(self.token_b)
@@ -759,7 +774,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
     def test_websocket_binary_frame_is_rejected_as_invalid_text(self):
         self.apply_chat_alias_schema()
         from starlette.websockets import WebSocketDisconnect
-        with self.client.websocket_connect("/v1/fixtures/10/chat") as socket:
+        with self.client.websocket_connect("/v1/fixtures/10/chat?language=ko") as socket:
             socket.send_json({"token": self.token_a})
             socket.receive_json()
             socket.send_bytes(b"not a text frame")
@@ -831,7 +846,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
     def test_live_chat_block_hides_sender_without_disconnecting_recipient(self):
         self.apply_chat_alias_schema()
         self.request("PUT", f"/v1/users/me/blocks/{self.a}", self.token_b)
-        with self.client.websocket_connect("/v1/fixtures/10/chat") as a, self.client.websocket_connect("/v1/fixtures/10/chat") as b:
+        with self.client.websocket_connect("/v1/fixtures/10/chat?language=ko") as a, self.client.websocket_connect("/v1/fixtures/10/chat?language=ko") as b:
             a.send_json({"token": self.token_a}); a.receive_json()
             b.send_json({"token": self.token_b}); b.receive_json()
             a.send_json({"text": "blocked message"})
@@ -844,7 +859,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             a.receive_json()
             self.assertEqual(b.receive_json()["text"], "unblocked")
         self.request("PUT", f"/v1/users/me/blocks/{self.a}", self.token_b)
-        self.assertEqual([x["text"] for x in chat_repo.history(self.b, 10, None, None, 10)], ["still connected"])
+        self.assertEqual([x["text"] for x in chat_repo.history(self.b, 10, None, None, 10, language="ko")], ["still connected"])
 
     def test_account_deletion_unlinks_authors_and_removes_private_relations(self):
         self.apply_chat_alias_schema()
@@ -853,7 +868,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         post = self.post(attachment_ids=[published])
         comment = posts_repo.create_comment(self.a, post, "preserved", None)
         reply = posts_repo.create_comment(viewer, post, "reply", comment)
-        chat_repo.create_message(self.a, 10, "anonymous chat")
+        chat_repo.create_message(self.a, 10, "anonymous chat", language="ko")
         posts_repo.set_like(self.a, "post", post, True)
         self.execute("INSERT INTO user_email_credentials VALUES (%s,'alpha@example.com','not-a-real-hash')", (self.a,))
         self.execute("INSERT INTO user_social_identities VALUES ('google','old-subject',%s)", (self.a,))
@@ -867,7 +882,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual((item["user_id"], item["username"], item["author_deleted"], item["like_count"]), (None, None, True, 0))
         comments = posts_repo.list_comments(viewer, post, 0, 10)
         self.assertEqual((comments[0]["body"], comments[0]["user_id"], comments[1]["reply_to_id"]), ("preserved", None, comment))
-        deleted_chat = chat_repo.history(viewer, 10, None, None, 10)[0]
+        deleted_chat = chat_repo.history(viewer, 10, None, None, 10, language="ko")[0]
         self.assertTrue(deleted_chat["author_deleted"])
         self.assertIsNone(deleted_chat["nickname_en"])
         self.assertNotIn("user_id", deleted_chat)
@@ -888,7 +903,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             storage.reset_mock()
             self.assertEqual(self.request("GET", f"/v1/users/{self.a}/avatar", self.token_b).status_code, 404)
             storage.assert_not_called()
-            chat_repo.create_message(self.a, 10, "visible author")
+            chat_repo.create_message(self.a, 10, "visible author", language="ko")
             self.assertEqual(self.request("GET", f"/v1/users/{self.a}/avatar", self.token_b).status_code, 404)
             storage.assert_not_called()
             self.execute("UPDATE users SET favorite_team_id=6 WHERE user_id=%s", (self.b,))
@@ -926,7 +941,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             end = (utc_now() + timedelta(days=1)).isoformat() + "Z"
             self.assertEqual(self.request("PUT", url, self.token_b, json={"suspended_until": end, "reason": "spam"}).status_code, 200)
             self.assertEqual(self.request("GET", f"/v1/posts/{post}").status_code, 403)
-            self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages").status_code, 403)
+            self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages?language=ko").status_code, 403)
             self.assertEqual(self.request("GET", "/v1/users/me").status_code, 200)
             self.assertEqual(self.request("PUT", url, self.token_b, json={"suspended_until": None}).status_code, 200)
             self.assertEqual(self.request("GET", f"/v1/posts/{post}").status_code, 200)
@@ -1016,7 +1031,7 @@ class KakaoWebhookTests(CommunityDatabaseCase):
         self.apply_chat_alias_schema()
         post = self.post()
         comment = posts_repo.create_comment(self.a, post, 'keep reply', None)
-        chat_repo.create_message(self.a, 10, 'keep chat')
+        chat_repo.create_message(self.a, 10, 'keep chat', language="ko")
         self.execute("INSERT INTO user_avatars VALUES (%s,'avatars/old','image/png',3)", (self.a,))
         with patch.object(social_login, 'unlink_kakao') as unlink:
             response = self.webhook()
@@ -1062,6 +1077,7 @@ class KakaoWebhookTests(CommunityDatabaseCase):
 
 class SocialWebhookMigrationTests(CommunityDatabaseCase):
     social_webhooks_schema = False
+    language_schema = False
 
     def test_existing_kakao_receipts_survive_shared_table_migration(self):
         event_hash = auth_security.token_hash("previously-processed-event")
@@ -1102,7 +1118,7 @@ class AppleWebhookTests(CommunityDatabaseCase):
         self.apply_chat_alias_schema()
         post = self.post()
         posts_repo.create_comment(self.a, post, "keep reply", None)
-        chat_repo.create_message(self.a, 10, "keep chat")
+        chat_repo.create_message(self.a, 10, "keep chat", language="ko")
         self.execute("INSERT INTO user_avatars VALUES (%s,'avatars/apple','image/png',3)", (self.a,))
         self.execute("INSERT INTO user_social_identities VALUES ('kakao','apple-member',%s)", (self.b,))
         with patch.object(social_login, "unlink_apple") as unlink:
@@ -1150,6 +1166,7 @@ class AppleWebhookTests(CommunityDatabaseCase):
 
 class DisplayNameMigrationTests(CommunityDatabaseCase):
     display_name_schema = False
+    language_schema = False
 
     def test_existing_names_and_favorite_change_survive(self):
         changed_at = utc_now() - timedelta(days=2)

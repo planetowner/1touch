@@ -8,6 +8,40 @@ import 'package:onetouch/data/chat/chat_socket.dart';
 void main() {
   const token = '1234567890123456789012345678901234567890';
 
+  for (final language in ['ko', 'en', 'zh', 'ja']) {
+    test('connects to the $language room and verifies the ready language',
+        () async {
+      final connection = _FakeConnection();
+      final socket = ApiChatSocket(
+        apiBaseUri: Uri.parse('https://example.test/v1/'),
+        sessionToken: () => token,
+        connector: (uri) {
+          expect(uri.queryParameters, {'language': language});
+          return connection;
+        },
+      );
+      final connecting = socket.connect(42, language: language);
+      await _waitFor(() => connection.sent.isNotEmpty);
+      connection
+          .addJson({'type': 'ready', 'fixture_id': 42, 'language': language});
+      await (await connecting).close();
+    });
+  }
+
+  test('rejects a ready frame for another language', () async {
+    final connection = _FakeConnection();
+    final socket = ApiChatSocket(
+      apiBaseUri: Uri.parse('https://example.test/v1/'),
+      sessionToken: () => token,
+      connector: (_) => connection,
+    );
+    final result =
+        expectLater(socket.connect(42, language: 'ko'), throwsFormatException);
+    await _waitFor(() => connection.sent.isNotEmpty);
+    connection.addJson({'type': 'ready', 'fixture_id': 42, 'language': 'en'});
+    await result;
+  });
+
   test('uses wss and authenticates before accepting chat messages', () async {
     final connection = _FakeConnection();
     Uri? connectedUri;
@@ -20,16 +54,16 @@ void main() {
       },
     );
 
-    final connecting = socket.connect(42);
+    final connecting = socket.connect(42, language: 'en');
     await _waitFor(() => connection.sent.isNotEmpty);
 
     expect(
       connectedUri,
-      Uri.parse('wss://api.1touch.football/v1/fixtures/42/chat'),
+      Uri.parse('wss://api.1touch.football/v1/fixtures/42/chat?language=en'),
     );
     expect(jsonDecode(connection.sent.single as String), {'token': token});
 
-    connection.addJson({'type': 'ready', 'fixture_id': 42});
+    connection.addJson({'type': 'ready', 'language': 'en', 'fixture_id': 42});
     final session = await connecting;
     final nextMessage = session.messages.first;
     connection.addJson({
@@ -67,9 +101,9 @@ void main() {
         return connection;
       },
     );
-    final connecting = socket.connect(5);
+    final connecting = socket.connect(5, language: 'en');
     await _waitFor(() => connection.sent.isNotEmpty);
-    connection.addJson({'type': 'ready', 'fixture_id': 5});
+    connection.addJson({'type': 'ready', 'language': 'en', 'fixture_id': 5});
     final session = await connecting;
 
     await session.send('  hello  ');
@@ -91,9 +125,9 @@ void main() {
       sessionToken: () => token,
       connector: (_) => connection,
     );
-    final connecting = socket.connect(42);
+    final connecting = socket.connect(42, language: 'en');
     await _waitFor(() => connection.sent.isNotEmpty);
-    connection.addJson({'type': 'ready', 'fixture_id': 42});
+    connection.addJson({'type': 'ready', 'language': 'en', 'fixture_id': 42});
     final session = await connecting;
     final error = expectLater(
       session.messages,
@@ -122,18 +156,18 @@ void main() {
       },
     );
     await expectLater(
-      socket.connect(42),
+      socket.connect(42, language: 'en'),
       throwsA(isA<ChatSocketException>()
           .having((e) => e.closeCode, 'closeCode', 4401)),
     );
     expect(connections, isEmpty);
     for (final value in [token, 'a' * 40]) {
       currentToken = value;
-      final connecting = socket.connect(42);
+      final connecting = socket.connect(42, language: 'en');
       final connection = connections.last;
       await _waitFor(() => connection.sent.isNotEmpty);
       expect(jsonDecode(connection.sent.single as String), {'token': value});
-      connection.addJson({'type': 'ready', 'fixture_id': 42});
+      connection.addJson({'type': 'ready', 'language': 'en', 'fixture_id': 42});
       await (await connecting).close();
     }
   });
@@ -147,7 +181,7 @@ void main() {
         sessionToken: () => token,
         connector: (_) => connection,
       );
-      final connecting = socket.connect(42);
+      final connecting = socket.connect(42, language: 'en');
       final closed = isA<ChatSocketException>()
           .having((value) => value.closeCode, 'closeCode', 4410)
           .having((value) => value.isUnavailable, 'isUnavailable', isTrue)
@@ -155,7 +189,8 @@ void main() {
       await _waitFor(() => connection.sent.isNotEmpty);
       Future<void> expectation;
       if (alreadyConnected) {
-        connection.addJson({'type': 'ready', 'fixture_id': 42});
+        connection
+            .addJson({'type': 'ready', 'language': 'en', 'fixture_id': 42});
         final session = await connecting;
         expectation = expectLater(session.messages, emitsError(closed));
       } else {
@@ -174,9 +209,9 @@ void main() {
       sessionToken: () => token,
       connector: (_) => malformed,
     );
-    final malformedConnect = malformedSocket.connect(42);
+    final malformedConnect = malformedSocket.connect(42, language: 'en');
     await _waitFor(() => malformed.sent.isNotEmpty);
-    malformed.addJson({'type': 'ready', 'fixture_id': 99});
+    malformed.addJson({'type': 'ready', 'language': 'en', 'fixture_id': 99});
     await expectLater(malformedConnect, throwsFormatException);
 
     final timedOut = _FakeConnection();
@@ -187,7 +222,7 @@ void main() {
       handshakeTimeout: const Duration(milliseconds: 5),
     );
     await expectLater(
-      timeoutSocket.connect(42),
+      timeoutSocket.connect(42, language: 'en'),
       throwsA(isA<TimeoutException>()),
     );
     expect(timedOut.closedCode, 1001);
@@ -199,7 +234,7 @@ void main() {
         apiBaseUri: Uri.parse('https://api.example.test/v1/'),
         sessionToken: () => 'short',
         connector: (_) => _FakeConnection(),
-      ).connect(42),
+      ).connect(42, language: 'en'),
       throwsArgumentError,
     );
     final socket = ApiChatSocket(
@@ -207,7 +242,7 @@ void main() {
       sessionToken: () => token,
       connector: (_) => _FakeConnection(),
     );
-    await expectLater(socket.connect(0), throwsRangeError);
+    await expectLater(socket.connect(0, language: 'en'), throwsRangeError);
   });
 }
 

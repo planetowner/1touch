@@ -20,7 +20,7 @@ class PostCategoryTests(unittest.TestCase):
 
     def test_fanart_filter_reaches_the_repository(self):
         with patch.object(posts.posts_repo, "list_posts", return_value=[]) as load:
-            response = self.client.get("/v1/posts", params={"team_id": 9, "category": "fanart"})
+            response = self.client.get("/v1/posts", params={"language": "ko", "team_id": 9, "category": "fanart"})
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(load.call_args.args[2], "fanart")
 
@@ -31,7 +31,7 @@ class PostCategoryTests(unittest.TestCase):
                     patch.object(posts.posts_repo, "update_post") as update, \
                     patch.object(posts.posts_repo, "get_draft", return_value={"post_id": 42, "category": "fanart"}):
                 body = {"category": "fanart", "title": "Drawing", "body": "My team"}
-                response = self.client.post(f"/v1/{path}", json={"team_id": 9, **body})
+                response = self.client.post(f"/v1/{path}", json={"team_id": 9, "language": "ko", **body})
                 self.assertEqual(response.status_code, 201, response.text)
                 self.assertEqual(create.call_args.kwargs["category"], "fanart")
                 response = self.client.put(f"/v1/{path}/42", json=body)
@@ -41,7 +41,7 @@ class PostCategoryTests(unittest.TestCase):
     def test_all_is_only_a_tab_and_not_a_stored_category(self):
         with patch.object(posts.posts_repo, "create_post") as create:
             response = self.client.post("/v1/posts", json={
-                "team_id": 9, "category": "all", "title": "Invalid category", "body": "Body",
+                "team_id": 9, "language": "ko", "category": "all", "title": "Invalid category", "body": "Body",
             })
         self.assertEqual(response.status_code, 422)
         create.assert_not_called()

@@ -20,6 +20,7 @@ import 'support/stub_community_repository.dart';
 import 'support/stub_post_comment_repository.dart';
 
 const _ownPost = Post(
+  language: 'en',
   postId: 91,
   teamId: 83,
   userId: 1001,
@@ -30,6 +31,7 @@ const _ownPost = Post(
 );
 
 const _otherPost = Post(
+  language: 'en',
   postId: 92,
   teamId: 83,
   userId: 2000,
@@ -111,7 +113,9 @@ void main() {
     expect(find.text('Delete post?'), findsOneWidget);
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
-    expect((await repository.loadPosts(teamId: 83)).single.postId, 91);
+    expect(
+        (await repository.loadPosts(language: 'en', teamId: 83)).single.postId,
+        91);
 
     await tester.tap(find.byKey(const ValueKey('community-post-delete-menu')));
     await tester.pumpAndSettle();
@@ -120,7 +124,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('community-confirm-delete')));
     await tester.pumpAndSettle();
     expect(deletionResult, isTrue);
-    expect(await repository.loadPosts(teamId: 83), isEmpty);
+    expect(await repository.loadPosts(language: 'en', teamId: 83), isEmpty);
     expect(tester.takeException(), isNull);
   });
 
@@ -194,7 +198,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('community-post-submit')));
     await tester.pumpAndSettle();
 
-    final stored = (await repository.loadPosts(teamId: 83)).single;
+    final stored =
+        (await repository.loadPosts(language: 'en', teamId: 83)).single;
     expect(stored.title, 'Updated title');
     expect(stored.body, 'Updated body');
     expect(find.text('Updated title'), findsOneWidget);
@@ -210,6 +215,7 @@ void main() {
       (tester) async {
     _usePhone(tester);
     const post = Post(
+      language: 'en',
       postId: 95,
       teamId: 83,
       userId: 1001,
@@ -326,6 +332,7 @@ void main() {
       (tester) async {
     _usePhone(tester);
     const post = Post(
+      language: 'en',
       postId: 93,
       teamId: 83,
       userId: 1001,
@@ -370,7 +377,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(attachments.uploadedNames, ['post-attachment']);
-    final updated = (await posts.loadPosts(teamId: 83)).single;
+    final updated = (await posts.loadPosts(language: 'en', teamId: 83)).single;
     expect(updated.category, PostCategory.analysis);
     expect(updated.attachments.single.attachmentId, 8);
     expect(tester.takeException(), isNull);
@@ -380,6 +387,7 @@ void main() {
       (tester) async {
     _usePhone(tester);
     const post = Post(
+      language: 'en',
       postId: 94,
       teamId: 83,
       userId: 1001,
@@ -525,6 +533,7 @@ class _RefreshingPostRepository extends MockPostRepository {
   @override
   Future<List<Post>> loadPosts({
     required int teamId,
+    required String language,
     PostCategory? category,
     PostSort sort = PostSort.newest,
     PostPeriod period = PostPeriod.allTime,

@@ -26,7 +26,7 @@ class ChatLifecycleTests(unittest.TestCase):
             self.enterContext(patch.object(target, name, **options))
         self.fetch_messages = self.enterContext(patch.object(chat_repo, "fetch_all_dict", return_value=[]))
         self.create = self.enterContext(patch.object(chat_repo, "create_message", side_effect=
-            lambda user_id, fixture_id, text: stored_message(user_id=user_id, fixture_id=fixture_id, text=text)))
+            lambda user_id, fixture_id, text, *, language: stored_message(user_id=user_id, fixture_id=fixture_id, text=text)))
         self.app = FastAPI()
         self.app.state.chat_hub = chat.ChatHub()
         self.app.include_router(chat.router, prefix="/v1")
@@ -39,11 +39,11 @@ class ChatLifecycleTests(unittest.TestCase):
                     self.fixtures[42]["state_id"] = state
                     live = state in LIVE_STATE_IDS
                     self.fetch_messages.reset_mock()
-                    response = client.get("/v1/fixtures/42/chat/messages")
+                    response = client.get("/v1/fixtures/42/chat/messages?language=ko")
                     self.assertEqual(response.status_code, 200 if live else 410)
                     if not live:
                         self.fetch_messages.assert_not_called()
-                    with client.websocket_connect("/v1/fixtures/42/chat") as socket:
+                    with client.websocket_connect("/v1/fixtures/42/chat?language=ko") as socket:
                         socket.send_json({"token": "a" * 40})
                         if live:
                             self.assertEqual(socket.receive_json()["type"], "ready")
@@ -61,7 +61,7 @@ class ChatLifecycleTests(unittest.TestCase):
 
     def test_message_after_full_time_is_rejected_without_waiting_for_poll(self):
         with patch.object(chat, "CHAT_STATE_CHECK_SECONDS", 3600), TestClient(self.app) as client:
-            with client.websocket_connect("/v1/fixtures/42/chat") as socket:
+            with client.websocket_connect("/v1/fixtures/42/chat?language=ko") as socket:
                 socket.send_json({"token": "a" * 40})
                 socket.receive_json()
                 self.fixtures[42]["state_id"] = 5
@@ -73,9 +73,9 @@ class ChatLifecycleTests(unittest.TestCase):
 
     def test_idle_viewers_close_after_full_time_without_affecting_another_match(self):
         with patch.object(chat, "CHAT_STATE_CHECK_SECONDS", 0.02), TestClient(self.app) as client:
-            with client.websocket_connect("/v1/fixtures/42/chat") as first, \
-                    client.websocket_connect("/v1/fixtures/42/chat") as second, \
-                    client.websocket_connect("/v1/fixtures/43/chat") as other:
+            with client.websocket_connect("/v1/fixtures/42/chat?language=ko") as first, \
+                    client.websocket_connect("/v1/fixtures/42/chat?language=ko") as second, \
+                    client.websocket_connect("/v1/fixtures/43/chat?language=ko") as other:
                 for socket in (first, second, other):
                     socket.send_json({"token": "a" * 40})
                     socket.receive_json()
@@ -103,7 +103,7 @@ class ChatLifecycleTests(unittest.TestCase):
 
         with patch.object(chat, "CHAT_STATE_CHECK_SECONDS", 0.02), \
                 patch.object(chat, "_authorized", side_effect=authorize), TestClient(self.app) as client:
-            with client.websocket_connect("/v1/fixtures/42/chat") as socket:
+            with client.websocket_connect("/v1/fixtures/42/chat?language=ko") as socket:
                 socket.send_json({"token": "a" * 40})
                 socket.receive_json()
                 self.assertTrue(checked.wait(5), "Idle connections must be rechecked")

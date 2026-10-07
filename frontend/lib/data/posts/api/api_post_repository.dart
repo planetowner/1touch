@@ -47,6 +47,7 @@ class ApiPostRepository implements CachedPostRepository {
   @override
   List<Post>? cachedFeed({
     required int teamId,
+    required String language,
     PostCategory? category,
     PostSort sort = PostSort.newest,
     PostPeriod period = PostPeriod.allTime,
@@ -54,12 +55,13 @@ class ApiPostRepository implements CachedPostRepository {
     int limit = 50,
     int offset = 0,
   }) =>
-      _cachedFeeds.value[
-          _query(teamId, category, sort, period, timezone, limit, offset)];
+      _cachedFeeds.value[_query(
+          teamId, language, category, sort, period, timezone, limit, offset)];
 
   /// Promotes a local feed page to memory without starting an API request.
   Future<List<Post>?> restoreCachedFeed({
     required int teamId,
+    required String language,
     PostCategory? category,
     PostSort sort = PostSort.newest,
     PostPeriod period = PostPeriod.allTime,
@@ -67,8 +69,8 @@ class ApiPostRepository implements CachedPostRepository {
     int limit = 50,
     int offset = 0,
   }) async {
-    final query =
-        _query(teamId, category, sort, period, timezone, limit, offset);
+    final query = _query(
+        teamId, language, category, sort, period, timezone, limit, offset);
     return _cachedFeeds.value[query] ?? await _restoreFeed(query);
   }
 
@@ -211,6 +213,7 @@ class ApiPostRepository implements CachedPostRepository {
   @override
   Future<List<Post>> loadPosts({
     required int teamId,
+    required String language,
     PostCategory? category,
     PostSort sort = PostSort.newest,
     PostPeriod period = PostPeriod.allTime,
@@ -218,8 +221,8 @@ class ApiPostRepository implements CachedPostRepository {
     int limit = 50,
     int offset = 0,
   }) async {
-    final query =
-        _query(teamId, category, sort, period, timezone, limit, offset);
+    final query = _query(
+        teamId, language, category, sort, period, timezone, limit, offset);
     final cached = _cachedFeeds.value[query];
     if (cached != null) {
       _refreshFeedIfStale(query);
@@ -238,6 +241,7 @@ class ApiPostRepository implements CachedPostRepository {
   @override
   Future<List<Post>> refreshPosts({
     required int teamId,
+    required String language,
     PostCategory? category,
     PostSort sort = PostSort.newest,
     PostPeriod period = PostPeriod.allTime,
@@ -245,11 +249,12 @@ class ApiPostRepository implements CachedPostRepository {
     int limit = 50,
     int offset = 0,
   }) async =>
-      _fetchFeed(
-          _query(teamId, category, sort, period, timezone, limit, offset));
+      _fetchFeed(_query(
+          teamId, language, category, sort, period, timezone, limit, offset));
 
   PostFeedQuery _query(
     int teamId,
+    String language,
     PostCategory? category,
     PostSort sort,
     PostPeriod period,
@@ -265,6 +270,7 @@ class ApiPostRepository implements CachedPostRepository {
         offset: offset);
     return (
       teamId: teamId,
+      language: language,
       category: category,
       sort: sort,
       period: period,
@@ -337,6 +343,7 @@ class ApiPostRepository implements CachedPostRepository {
     final generation = _cacheGeneration;
     final queryParameters = <String, String>{
       'team_id': '${query.teamId}',
+      'language': query.language,
       if (query.category != null) 'category': query.category!.name,
       'sort': query.sort.name,
       'period': query.period.apiValue,
@@ -375,6 +382,7 @@ class ApiPostRepository implements CachedPostRepository {
         .toList(growable: false);
     for (final post in posts) {
       if (post.teamId != query.teamId ||
+          post.language != query.language ||
           (query.category != null && post.category != query.category)) {
         throw FormatException(
           'Unexpected post ${post.postId} in requested feed.',
@@ -416,6 +424,7 @@ class ApiPostRepository implements CachedPostRepository {
 
   String _feedKey(PostFeedQuery query) => LocalCacheKeys.communityFeed(
         query.teamId,
+        query.language,
         query.category?.name,
         query.sort.name,
         query.period.apiValue,
@@ -437,6 +446,7 @@ class ApiPostRepository implements CachedPostRepository {
       },
       body: jsonEncode({
         'team_id': input.teamId,
+        'language': input.language,
         'category': input.category.name,
         'title': title,
         'body': input.body,

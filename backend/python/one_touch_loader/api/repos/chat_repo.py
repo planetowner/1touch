@@ -7,6 +7,7 @@ from ..services.community_access import require_favorite_team_access
 from ..services.community_periods import utc_now
 from .users_repo import get_user, lock_user, require_profile
 from ..services.content_visibility import blocked_sql
+from ..schemas.community_language import CommunityLanguage
 
 
 def live_fixture_teams(fixture_id: int, cur=None) -> tuple[int, int]:
@@ -30,11 +31,11 @@ def check_chat_user(user: dict, fixture_id: int, cur=None) -> None:
     require_favorite_team_access(user["favorite_team_id"], live_fixture_teams(fixture_id, cur))
 
 
-def history(user_id: int, fixture_id: int, before_id: int | None, after_id: int | None, limit: int):
+def history(user_id: int, fixture_id: int, before_id: int | None, after_id: int | None, limit: int, *, language: CommunityLanguage):
     check_chat_user(get_user(user_id), fixture_id)
     if before_id is not None and after_id is not None:
         raise HTTPException(400, "Use either before_id or after_id")
-    condition, params = "", [fixture_id, user_id]
+    condition, params = "", [fixture_id, language, user_id]
     if before_id is not None:
         condition = "AND m.message_id<%s"
         params.append(before_id)
@@ -46,7 +47,7 @@ def history(user_id: int, fixture_id: int, before_id: int | None, after_id: int 
         a.nickname_en,a.nickname_ko
         FROM fixture_chat_messages m LEFT JOIN fixture_chat_aliases a
             ON a.fixture_id=m.fixture_id AND a.user_id=m.user_id
-        WHERE m.fixture_id=%s AND m.state='active' AND NOT {blocked_sql('m.user_id')}
+        WHERE m.fixture_id=%s AND m.language=%s AND m.state='active' AND NOT {blocked_sql('m.user_id')}
         {condition} ORDER BY m.message_id {order} LIMIT %s""", tuple(params + [limit]))
     if after_id is None:
         rows.reverse()
@@ -75,14 +76,14 @@ def get_or_create_alias(cur, user_id: int, fixture_id: int) -> dict:
                 raise
 
 
-def create_message(user_id: int, fixture_id: int, text: str) -> dict:
+def create_message(user_id: int, fixture_id: int, text: str, *, language: CommunityLanguage) -> dict:
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
         user = lock_user(cur, user_id)
         check_chat_user(user, fixture_id, cur)
         nickname = get_or_create_alias(cur, user_id, fixture_id)
         now = utc_now()
-        cur.execute("INSERT INTO fixture_chat_messages (fixture_id,user_id,body,created_at) VALUES (%s,%s,%s,%s)",
-                    (fixture_id, user_id, text, now))
+        cur.execute("INSERT INTO fixture_chat_messages (fixture_id,language,user_id,body,created_at) VALUES (%s,%s,%s,%s,%s)",
+                    (fixture_id, language, user_id, text, now))
         result = {"message_id": cur.lastrowid, "fixture_id": fixture_id, "user_id": user_id,
                   **nickname, "text": text, "created_at": now}
     # DB 저장에 실패한 메시지를 실시간으로 먼저 전달하지 않아요.

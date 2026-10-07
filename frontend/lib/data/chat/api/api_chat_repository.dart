@@ -11,20 +11,23 @@ class ApiChatRepository implements ChatRepository {
   ApiChatRepository({required ApiClient api}) : _api = api;
 
   final ApiClient _api;
-  final ValueNotifier<Map<int, List<FixtureChatMessage>>> _cachedHistories =
-      ValueNotifier(const {});
+  final ValueNotifier<Map<ChatRoom, List<FixtureChatMessage>>>
+      _cachedHistories = ValueNotifier(const {});
 
   @override
-  ValueListenable<Map<int, List<FixtureChatMessage>>> get cachedHistories =>
-      _cachedHistories;
+  ValueListenable<Map<ChatRoom, List<FixtureChatMessage>>>
+      get cachedHistories => _cachedHistories;
 
   @override
-  List<FixtureChatMessage> cachedHistoryForFixture(int fixtureId) =>
-      _cachedHistories.value[fixtureId] ?? const [];
+  List<FixtureChatMessage> cachedHistoryForFixture(int fixtureId,
+          {required String language}) =>
+      _cachedHistories.value[(fixtureId: fixtureId, language: language)] ??
+      const [];
 
   @override
   Future<List<FixtureChatMessage>> loadHistory({
     required int fixtureId,
+    required String language,
     int? beforeId,
     int? afterId,
     int limit = 50,
@@ -45,7 +48,7 @@ class ApiChatRepository implements ChatRepository {
       throw RangeError.range(limit, 1, 100, 'limit');
     }
 
-    final query = <String, String>{'limit': '$limit'};
+    final query = <String, String>{'limit': '$limit', 'language': language};
     if (beforeId != null) query['before_id'] = '$beforeId';
     if (afterId != null) query['after_id'] = '$afterId';
     final uri = _api.baseUri
@@ -67,7 +70,7 @@ class ApiChatRepository implements ChatRepository {
       return message;
     }).toList(growable: false);
     _verifyIncreasingIds(page);
-    _mergeIntoCache(fixtureId, page);
+    _mergeIntoCache((fixtureId: fixtureId, language: language), page);
     return List.unmodifiable(page);
   }
 
@@ -114,18 +117,19 @@ class ApiChatRepository implements ChatRepository {
     }
   }
 
-  void _mergeIntoCache(int fixtureId, List<FixtureChatMessage> page) {
+  void _mergeIntoCache(ChatRoom room, List<FixtureChatMessage> page) {
     final byId = {
-      for (final message in cachedHistoryForFixture(fixtureId))
+      for (final message
+          in _cachedHistories.value[room] ?? const <FixtureChatMessage>[])
         message.messageId: message,
       for (final message in page) message.messageId: message,
     };
     final merged = byId.values.toList()
       ..sort((left, right) => left.messageId.compareTo(right.messageId));
     _cachedHistories.value = Map.unmodifiable(
-      <int, List<FixtureChatMessage>>{
+      <ChatRoom, List<FixtureChatMessage>>{
         ..._cachedHistories.value,
-        fixtureId: List.unmodifiable(merged),
+        room: List.unmodifiable(merged),
       },
     );
   }

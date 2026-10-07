@@ -172,6 +172,7 @@ class DraftTests(CommunityDatabaseCase):
 
 class DraftMigrationTests(CommunityDatabaseCase):
     post_drafts_schema = False
+    language_schema = False
 
     def test_additive_migration_preserves_posts_comments_attachments_and_avatars(self):
         post = self.post()

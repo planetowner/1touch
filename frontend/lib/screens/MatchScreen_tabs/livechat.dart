@@ -60,6 +60,7 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
   bool _reconnecting = false;
   int _reconnectAttempt = 0;
   Timer? _reconnectTimer;
+  String? _language;
 
   ChatRepository get _repository =>
       widget.repository ?? chat_repository_provider.chatRepository;
@@ -71,7 +72,20 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _scrollController.addListener(_scheduleScrollStateUpdate);
-    _initChat();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final language = Localizations.localeOf(context).languageCode;
+    if (_language == language) return;
+    final firstVisit = _language == null;
+    _language = language;
+    if (firstVisit) {
+      unawaited(_initChat());
+    } else {
+      unawaited(_restartChat());
+    }
   }
 
   @override
@@ -91,9 +105,11 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
 
   Future<void> _restartChat() async {
     _reconnectTimer?.cancel();
-    await _closeChat();
-    if (!mounted) return;
+    // 이전 연결을 닫는 동안에도 다른 언어의 메시지나 입력을 보여주지 않아요.
+    final closing = _closeChat();
+    final requestId = _requestId;
     setState(() {
+      _controller.clear();
       _messages.clear();
       _isInitialized = false;
       _initError = null;
@@ -104,23 +120,29 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
       _followLatest = true;
       _reconnecting = false;
       _reconnectAttempt = 0;
+      _chatUnavailable = false;
     });
+    await closing;
+    if (!mounted || requestId != _requestId) return;
     await _initChat();
   }
 
   Future<void> _initChat() async {
     final requestId = ++_requestId;
     final reconnecting = _isInitialized;
+    final language = _language!;
     _isClosing = false;
     try {
-      final session = await _socket.connect(widget.matchId);
+      final session = await _socket.connect(widget.matchId, language: language);
       if (!mounted || requestId != _requestId) {
         await session.close();
         return;
       }
       _socketSession = session;
       _messagesSub = session.messages.listen(
-        _receiveLiveMessage,
+        (message) {
+          if (requestId == _requestId) _receiveLiveMessage(message);
+        },
         onError: _handleSocketError,
         onDone: _handleSocketDone,
       );
@@ -131,6 +153,7 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
         while (true) {
           final page = await _repository.loadHistory(
             fixtureId: widget.matchId,
+            language: language,
             afterId: afterId,
             limit: 100,
           );
@@ -146,8 +169,8 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
           afterId = page.last.messageId;
         }
       } else {
-        final history =
-            await _repository.loadHistory(fixtureId: widget.matchId);
+        final history = await _repository.loadHistory(
+            fixtureId: widget.matchId, language: language);
         if (!mounted || requestId != _requestId) return;
         setState(() => _mergeMessages(history));
       }

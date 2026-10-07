@@ -6,6 +6,7 @@ void main() {
     final post = Post.fromJson(const {
       'post_id': 42,
       'team_id': 83,
+      'language': 'en',
       'user_id': 1001,
       'category': 'analysis',
       'title': 'Pressing structure',

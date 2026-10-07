@@ -11,6 +11,7 @@ from .media_repo import remove_attachments
 from ..services.content_visibility import blocked_sql, public_author, require_visible_author
 from .notifications_repo import notify_post
 from .community_points_repo import reward_publication, reward_interaction
+from ..schemas.community_language import CommunityLanguage
 
 MAX_ATTACHMENTS = 10
 
@@ -57,9 +58,10 @@ def _post_team(post_id: int) -> int:
 
 
 def list_posts(user_id: int, team_id: int, category: str | None, sort: PostSort,
-               period: PostPeriod, limit: int, offset: int, timezone: str | None = None) -> list[dict]:
+               period: PostPeriod, limit: int, offset: int, timezone: str | None = None,
+               *, language: CommunityLanguage) -> list[dict]:
     community_user(user_id, team_id, read_only=True)
-    clauses, params = ["p.team_id=%s", "p.state='active'", f"NOT {blocked_sql('p.user_id')}"], [user_id, user_id, team_id, user_id]
+    clauses, params = ["p.team_id=%s", "p.language=%s", "p.state='active'", f"NOT {blocked_sql('p.user_id')}"], [user_id, user_id, team_id, language, user_id]
     if category:
         clauses.append("p.category=%s")
         params.append(category)
@@ -204,14 +206,15 @@ def _lock_interaction_users(cur, actor_id: int, owner_id: int | None) -> dict:
     return actor
 
 
-def create_post(user_id: int, team_id: int, category: str, title: str, body: str, attachment_ids: list[int], *, draft: bool = False) -> int:
+def create_post(user_id: int, team_id: int, category: str, title: str, body: str, attachment_ids: list[int], *, language: CommunityLanguage, draft: bool = False) -> int:
     if len(attachment_ids) != len(set(attachment_ids)):
         raise HTTPException(400, "Repeated attachment ID")
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
         check_community_user(lock_user(cur, user_id), team_id)
         now = utc_now()
-        cur.execute("INSERT INTO posts (team_id,user_id,category,title,body,created_at,state,edited_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-                    (team_id, user_id, category, title, body, now, "draft" if draft else "active", now if draft else None))
+        # 글과 초안은 작성한 공간에 남아요. 앱 언어를 바꿔도 수정·게시할 때 옮기지 않아요.
+        cur.execute("INSERT INTO posts (team_id,language,user_id,category,title,body,created_at,state,edited_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                    (team_id, language, user_id, category, title, body, now, "draft" if draft else "active", now if draft else None))
         post_id = cur.lastrowid
         _set_attachments(cur, user_id, post_id, attachment_ids)
         if not draft:

@@ -1,5 +1,4 @@
-// GET /v1/posts item contract:
-// post_id | team_id | user_id | category | title | body | media_url | created_at
+// 게시글은 팀과 작성 당시의 언어에 속해요. 수정할 때도 언어를 유지해요.
 
 // 탭과 글쓰기에서 같은 분류 순서와 이름을 사용해요. enum 이름은 API 값이에요.
 enum PostCategory {
@@ -39,6 +38,7 @@ class PostAttachment {
 class Post {
   final int postId;
   final int teamId;
+  final String language;
   final int? userId;
   final PostCategory category;
   final String title;
@@ -64,6 +64,7 @@ class Post {
   const Post({
     required this.postId,
     required this.teamId,
+    required this.language,
     required this.userId,
     required this.category,
     required this.title,
@@ -91,6 +92,7 @@ class Post {
       Post(
         postId: postId,
         teamId: teamId,
+        language: language,
         userId: userId,
         category: category ?? this.category,
         title: title ?? this.title,
@@ -116,6 +118,7 @@ class Post {
     return Post(
       postId: json['post_id'] as int,
       teamId: json['team_id'] as int,
+      language: json['language'] as String,
       userId: json['user_id'] as int?,
       category: PostCategory.tryParse(json['category'] as String? ?? '') ??
           PostCategory.general,

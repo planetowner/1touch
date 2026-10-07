@@ -7,6 +7,7 @@ void postRepositoryContract({
 }) {
   const posts = [
     Post(
+      language: 'en',
       postId: 1,
       teamId: 83,
       userId: 101,
@@ -16,6 +17,7 @@ void postRepositoryContract({
       createdAt: '2026-08-20 10:00:00',
     ),
     Post(
+      language: 'en',
       postId: 2,
       teamId: 83,
       userId: 102,
@@ -25,6 +27,7 @@ void postRepositoryContract({
       createdAt: '2026-08-23 10:00:00',
     ),
     Post(
+      language: 'en',
       postId: 3,
       teamId: 83,
       userId: 103,
@@ -34,6 +37,7 @@ void postRepositoryContract({
       createdAt: '2026-08-22 10:00:00',
     ),
     Post(
+      language: 'en',
       postId: 4,
       teamId: 83,
       userId: 104,
@@ -48,7 +52,8 @@ void postRepositoryContract({
     final repository = createRepository(posts);
 
     expect(
-      (await repository.loadPosts(teamId: 83)).map((post) => post.postId),
+      (await repository.loadPosts(language: 'en', teamId: 83))
+          .map((post) => post.postId),
       [2, 3, 4, 1],
     );
   });
@@ -58,6 +63,7 @@ void postRepositoryContract({
 
     expect(
       (await repository.loadPosts(
+        language: 'en',
         teamId: 83,
         category: PostCategory.general,
       ))
@@ -70,6 +76,7 @@ void postRepositoryContract({
     final repository = createRepository([
       ...posts,
       const Post(
+        language: 'en',
         postId: 5,
         teamId: 9,
         userId: 105,
@@ -81,11 +88,13 @@ void postRepositoryContract({
     ]);
 
     expect(
-      (await repository.loadPosts(teamId: 9)).map((post) => post.postId),
+      (await repository.loadPosts(language: 'en', teamId: 9))
+          .map((post) => post.postId),
       [5],
     );
     expect(
-      (await repository.loadPosts(teamId: 83)).map((post) => post.postId),
+      (await repository.loadPosts(language: 'en', teamId: 83))
+          .map((post) => post.postId),
       [2, 3, 4, 1],
     );
   });
@@ -95,7 +104,7 @@ void postRepositoryContract({
 
     for (final sort in PostSort.values) {
       expect(
-        (await repository.loadPosts(teamId: 83, sort: sort))
+        (await repository.loadPosts(language: 'en', teamId: 83, sort: sort))
             .map((post) => post.postId),
         [2, 3, 4, 1],
         reason: '$sort should currently use newest-first ordering',
@@ -107,7 +116,8 @@ void postRepositoryContract({
     final repository = createRepository(posts);
 
     expect(
-      (await repository.loadPosts(teamId: 83, limit: 2, offset: 1))
+      (await repository.loadPosts(
+              language: 'en', teamId: 83, limit: 2, offset: 1))
           .map((post) => post.postId),
       [3, 4],
     );
@@ -117,19 +127,19 @@ void postRepositoryContract({
     final repository = createRepository(posts);
 
     await expectLater(
-      repository.loadPosts(teamId: 83, limit: 0),
+      repository.loadPosts(language: 'en', teamId: 83, limit: 0),
       throwsRangeError,
     );
     await expectLater(
-      repository.loadPosts(teamId: 83, limit: 101),
+      repository.loadPosts(language: 'en', teamId: 83, limit: 101),
       throwsRangeError,
     );
     await expectLater(
-      repository.loadPosts(teamId: 83, offset: -1),
+      repository.loadPosts(language: 'en', teamId: 83, offset: -1),
       throwsRangeError,
     );
     await expectLater(
-      repository.loadPosts(teamId: 0),
+      repository.loadPosts(language: 'en', teamId: 0),
       throwsRangeError,
     );
   });
@@ -138,11 +148,13 @@ void postRepositoryContract({
     final repository = createRepository(posts);
 
     await expectLater(
-      repository.loadPosts(teamId: 83, period: PostPeriod.today),
+      repository.loadPosts(
+          language: 'en', teamId: 83, period: PostPeriod.today),
       throwsArgumentError,
     );
     await expectLater(
       repository.loadPosts(
+        language: 'en',
         teamId: 83,
         period: PostPeriod.today,
         timezone: 'America/New_York',
@@ -160,7 +172,7 @@ void postRepositoryContract({
 
   test('does not expose a mutable result list', () async {
     final repository = createRepository(posts);
-    final result = await repository.loadPosts(teamId: 83);
+    final result = await repository.loadPosts(language: 'en', teamId: 83);
 
     expect(() => result.clear(), throwsUnsupportedError);
   });
@@ -168,6 +180,7 @@ void postRepositoryContract({
   test('creates a post that appears in subsequent loads', () async {
     final repository = createRepository(posts);
     final input = CreatePostInput(
+      language: 'en',
       teamId: 83,
       category: PostCategory.analysis,
       title: 'Created through repository',
@@ -176,7 +189,7 @@ void postRepositoryContract({
     );
 
     final postId = await repository.createPost(input);
-    final created = (await repository.loadPosts(teamId: 83))
+    final created = (await repository.loadPosts(language: 'en', teamId: 83))
         .singleWhere((post) => post.postId == postId);
 
     expect(created.category, input.category);
@@ -195,6 +208,7 @@ void postRepositoryContract({
     await expectLater(
       repository.createPost(
         CreatePostInput(
+          language: 'en',
           teamId: 83,
           category: PostCategory.general,
           title: '',
@@ -206,6 +220,7 @@ void postRepositoryContract({
     await expectLater(
       repository.createPost(
         CreatePostInput(
+          language: 'en',
           teamId: 83,
           category: PostCategory.general,
           title: 'Title',
@@ -222,6 +237,7 @@ void postRepositoryContract({
     await expectLater(
       repository.createPost(
         CreatePostInput(
+          language: 'en',
           teamId: 0,
           category: PostCategory.general,
           title: 'Title',
@@ -233,6 +249,7 @@ void postRepositoryContract({
     await expectLater(
       repository.createPost(
         CreatePostInput(
+          language: 'en',
           teamId: 83,
           category: PostCategory.general,
           title: 'Title',
@@ -245,6 +262,7 @@ void postRepositoryContract({
     await expectLater(
       repository.createPost(
         CreatePostInput(
+          language: 'en',
           teamId: 83,
           category: PostCategory.general,
           title: 'Title',
@@ -297,14 +315,16 @@ void postRepositoryContract({
 
     await repository.setPostLiked(postId: posts.first.postId, liked: true);
     await repository.setPostLiked(postId: posts.first.postId, liked: true);
-    var updated = (await repository.loadPosts(teamId: posts.first.teamId))
-        .singleWhere((post) => post.postId == posts.first.postId);
+    var updated =
+        (await repository.loadPosts(language: 'en', teamId: posts.first.teamId))
+            .singleWhere((post) => post.postId == posts.first.postId);
     expect(updated.liked, isTrue);
     expect(updated.likeCount, posts.first.likeCount + 1);
 
     await repository.setPostLiked(postId: posts.first.postId, liked: false);
-    updated = (await repository.loadPosts(teamId: posts.first.teamId))
-        .singleWhere((post) => post.postId == posts.first.postId);
+    updated =
+        (await repository.loadPosts(language: 'en', teamId: posts.first.teamId))
+            .singleWhere((post) => post.postId == posts.first.postId);
     expect(updated.liked, isFalse);
     expect(updated.likeCount, posts.first.likeCount);
   });

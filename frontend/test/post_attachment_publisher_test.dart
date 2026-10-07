@@ -106,6 +106,7 @@ void main() {
 }
 
 CreatePostInput _postInput() => CreatePostInput(
+      language: 'en',
       teamId: 9,
       category: PostCategory.analysis,
       title: 'Match analysis',

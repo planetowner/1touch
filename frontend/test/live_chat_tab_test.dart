@@ -13,6 +13,50 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/livechat.dart';
 
 void main() {
+  testWidgets('language changes close the old room and discard delayed history',
+      (tester) async {
+    final oldHistory = Completer<List<FixtureChatMessage>>();
+    final repository = _ChatRepository([],
+        load: (language) => language == 'ko'
+            ? oldHistory.future
+            : Future.value([
+                _message(
+                    userId: 7,
+                    messageId: language == 'en'
+                        ? 20
+                        : language == 'zh'
+                            ? 30
+                            : 40)
+              ]));
+    final sessions = List.generate(4, (_) => _ChatSession());
+    final socket = _SequenceChatSocket(sessions);
+    await tester.pumpWidget(
+        _app(repository: repository, socket: socket, language: 'ko'));
+    await tester.pump();
+    for (final language in ['en', 'zh', 'ja']) {
+      await tester.pumpWidget(
+          _app(repository: repository, socket: socket, language: language));
+      // 구독 취소의 공용 Future는 테스트의 가짜 시계 밖에서도 진행해야 해요.
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pumpAndSettle();
+      expect(socket.languages.last, language,
+          reason: 'Selected language must reconnect');
+      expect(
+        find.text(
+            'History message ${language == 'en' ? 20 : language == 'zh' ? 30 : 40}'),
+        findsOneWidget,
+      );
+    }
+    oldHistory.complete([_message(messageId: 10, userId: 7)]);
+    await tester.pumpAndSettle();
+    expect(find.text('History message 40'), findsOneWidget);
+    for (final id in [10, 20, 30]) {
+      expect(find.text('History message $id'), findsNothing);
+    }
+    expect(socket.languages, ['ko', 'en', 'zh', 'ja']);
+    expect(sessions.take(3).every((session) => session.closed), isTrue);
+    expect(tester.takeException(), isNull);
+  });
   for (final language in ['ko', 'en', 'ja', 'zh']) {
     testWidgets('shows anonymous names and own-message alignment in $language',
         (tester) async {
@@ -716,28 +760,34 @@ FixtureChatMessage _message({required int messageId, required int userId}) {
 }
 
 class _ChatRepository implements ChatRepository {
-  _ChatRepository(this.history, {this.error})
-      : cachedHistories = ValueNotifier({42: List.unmodifiable(history)});
+  _ChatRepository(this.history, {this.error, this.load})
+      : cachedHistories = ValueNotifier(
+            {(fixtureId: 42, language: 'en'): List.unmodifiable(history)});
 
   final List<FixtureChatMessage> history;
   final Object? error;
+  final Future<List<FixtureChatMessage>> Function(String language)? load;
   final List<({int messageId, String reason})> reports = [];
 
   @override
-  final ValueNotifier<Map<int, List<FixtureChatMessage>>> cachedHistories;
+  final ValueNotifier<Map<ChatRoom, List<FixtureChatMessage>>> cachedHistories;
 
   @override
-  List<FixtureChatMessage> cachedHistoryForFixture(int fixtureId) =>
-      cachedHistories.value[fixtureId] ?? const [];
+  List<FixtureChatMessage> cachedHistoryForFixture(int fixtureId,
+          {required String language}) =>
+      cachedHistories.value[(fixtureId: fixtureId, language: language)] ??
+      const [];
 
   @override
   Future<List<FixtureChatMessage>> loadHistory({
     required int fixtureId,
+    required String language,
     int? beforeId,
     int? afterId,
     int limit = 50,
   }) async {
     if (error != null) throw error!;
+    if (load != null) return load!(language);
     if (afterId == null) {
       return List.unmodifiable(history.length <= limit
           ? history
@@ -763,7 +813,8 @@ class _ChatSocket implements ChatSocket {
   final Object? error;
 
   @override
-  Future<ChatSocketSession> connect(int fixtureId) async {
+  Future<ChatSocketSession> connect(int fixtureId,
+      {required String language}) async {
     final connectionError = error;
     if (connectionError != null) throw connectionError;
     return session!;
@@ -776,7 +827,9 @@ class _PendingChatSocket implements ChatSocket {
   final Future<ChatSocketSession> connection;
 
   @override
-  Future<ChatSocketSession> connect(int fixtureId) => connection;
+  Future<ChatSocketSession> connect(int fixtureId,
+          {required String language}) =>
+      connection;
 }
 
 class _SequenceChatSocket implements ChatSocket {
@@ -784,10 +837,14 @@ class _SequenceChatSocket implements ChatSocket {
 
   final List<_ChatSession> sessions;
   int connectCalls = 0;
+  final List<String> languages = [];
 
   @override
-  Future<ChatSocketSession> connect(int fixtureId) async =>
-      sessions[connectCalls++];
+  Future<ChatSocketSession> connect(int fixtureId,
+      {required String language}) async {
+    languages.add(language);
+    return sessions[connectCalls++];
+  }
 }
 
 class _ChatSession implements ChatSocketSession {
