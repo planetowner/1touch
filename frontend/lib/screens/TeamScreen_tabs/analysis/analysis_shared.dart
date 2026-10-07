@@ -80,7 +80,7 @@ class _AnalysisComparisonFilterPill extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         constraints: const BoxConstraints(minHeight: 42),
-        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: AppColors.of(context).subtleBackground,
