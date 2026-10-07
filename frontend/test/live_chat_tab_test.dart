@@ -730,19 +730,29 @@ Widget _app({
         ? app_style.whitetheme.copyWith(platform: TargetPlatform.iOS)
         : theme ?? app_style.whitetheme,
     builder: withBackGesture
-        ? (_, child) => FullScreenBackGesture(
-              canGoBack: () => true,
-              goBack: () async => true,
-              child: child!,
-            )
+        ? (_, child) => FullScreenBackGesture(child: child!)
         : null,
-    home: Scaffold(
-      body: LiveChatTab(
-        matchId: 42,
-        repository: repository,
-        socket: socket,
-      ),
-    ),
+    initialRoute: withBackGesture ? '/chat' : '/',
+    routes: withBackGesture
+        ? {
+            '/chat': (_) => Scaffold(
+                  body: LiveChatTab(
+                    matchId: 42,
+                    repository: repository,
+                    socket: socket,
+                  ),
+                ),
+          }
+        : {},
+    home: withBackGesture
+        ? const Scaffold()
+        : Scaffold(
+            body: LiveChatTab(
+              matchId: 42,
+              repository: repository,
+              socket: socket,
+            ),
+          ),
   );
 }
 

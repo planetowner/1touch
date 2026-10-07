@@ -2,15 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/full_screen_back_gesture.dart';
+import 'package:onetouch/core/interactive_back_page.dart';
 
 void main() {
   testWidgets('exposes the iOS back swipe only while dragging', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      theme: ThemeData(platform: TargetPlatform.iOS),
-      home: FullScreenBackGesture(
-        canGoBack: () => true,
-        goBack: () async => true,
-        child: Builder(
+    final router = GoRouter(routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, _) => Scaffold(
+          body: TextButton(
+            onPressed: () => context.push('/detail'),
+            child: const Text('Open detail'),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/detail',
+        builder: (_, __) => Builder(
           builder: (context) => Scaffold(
             body: Center(
               child: Text('${FullScreenBackGesture.isSwipeActive(context)}'),
@@ -18,7 +26,11 @@ void main() {
           ),
         ),
       ),
-    ));
+    ]);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(_testApp(router));
+    await tester.tap(find.text('Open detail'));
+    await tester.pumpAndSettle();
 
     expect(find.text('false'), findsOneWidget);
     final gesture = await tester.startGesture(const Offset(400, 300));
@@ -26,7 +38,7 @@ void main() {
     await tester.pump();
     expect(find.text('true'), findsOneWidget);
     await gesture.up();
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('false'), findsOneWidget);
 
     final cancelled = await tester.startGesture(const Offset(400, 300));
@@ -34,7 +46,7 @@ void main() {
     await tester.pump();
     expect(find.text('true'), findsOneWidget);
     await cancelled.cancel();
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('false'), findsOneWidget);
   });
 
@@ -74,15 +86,62 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Detail'), findsOneWidget);
 
-      await tester.dragFrom(start, const Offset(110, 0));
+      await tester.dragFrom(Offset(24, start.dy), Offset(size.width * 0.6, 0));
       await tester.pumpAndSettle();
       expect(find.text('Open detail'), findsOneWidget);
+      expect(
+        FullScreenBackGesture.isSwipeActive(
+          tester.element(find.text('Open detail')),
+        ),
+        isFalse,
+      );
 
-      await tester.dragFrom(start, const Offset(110, 0));
+      await tester.dragFrom(Offset(24, start.dy), Offset(size.width * 0.6, 0));
       await tester.pumpAndSettle();
       expect(find.text('Open detail'), findsOneWidget);
     });
   }
+
+  testWidgets('Navigator.push detail follows the finger before popping',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: _interactiveTheme(),
+      builder: (_, child) => FullScreenBackGesture(child: child!),
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const Scaffold(
+                  body: Center(child: Text('Pushed detail')),
+                ),
+              ),
+            ),
+            child: const Text('Open pushed detail'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('Open pushed detail'));
+    await tester.pumpAndSettle();
+
+    final detail = find.text('Pushed detail');
+    final initialX = tester.getTopLeft(detail).dx;
+    final shortDrag = await tester.startGesture(const Offset(120, 300));
+    await shortDrag.moveBy(const Offset(80, 0));
+    await tester.pump();
+    expect(tester.getTopLeft(detail).dx - initialX, closeTo(80, 1));
+    await shortDrag.up();
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(detail).dx, closeTo(initialX, 1));
+
+    final longDrag = await tester.startGesture(const Offset(24, 300));
+    await longDrag.moveBy(const Offset(500, 0));
+    await longDrag.up();
+    await tester.pumpAndSettle();
+    expect(detail, findsNothing);
+    expect(find.text('Open pushed detail'), findsOneWidget);
+  });
 
   testWidgets('a screen that blocks popping also blocks the swipe',
       (tester) async {
@@ -135,11 +194,7 @@ void main() {
 
     await tester.pumpWidget(MaterialApp.router(
       theme: ThemeData(platform: TargetPlatform.android),
-      builder: (_, child) => FullScreenBackGesture(
-        canGoBack: router.canPop,
-        goBack: router.routerDelegate.popRoute,
-        child: child!,
-      ),
+      builder: (_, child) => FullScreenBackGesture(child: child!),
       routerConfig: router,
     ));
     await tester.tap(find.text('Open detail'));
@@ -202,7 +257,13 @@ void main() {
     expect(find.text('Tab 1'), findsOneWidget);
     expect(find.text('Player 42'), findsOneWidget);
 
-    await tester.dragFrom(const Offset(400, 300), const Offset(110, 0));
+    final route = ModalRoute.of(tester.element(find.text('Player 42')))!;
+    expect(route.popGestureEnabled, isTrue);
+    final gesture = await tester.startGesture(const Offset(24, 300));
+    await gesture.moveBy(const Offset(500, 0));
+    await tester.pump();
+    expect(route.animation!.value, lessThan(0.5));
+    await gesture.up();
     await tester.pumpAndSettle();
     expect(find.text('Players root'), findsOneWidget);
     expect(find.text('Tab 1'), findsOneWidget);
@@ -259,11 +320,14 @@ void main() {
 }
 
 Widget _testApp(GoRouter router) => MaterialApp.router(
-      theme: ThemeData(platform: TargetPlatform.iOS),
-      builder: (_, child) => FullScreenBackGesture(
-        canGoBack: router.canPop,
-        goBack: router.routerDelegate.popRoute,
-        child: child!,
-      ),
+      theme: _interactiveTheme(),
+      builder: (_, child) => FullScreenBackGesture(child: child!),
       routerConfig: router,
+    );
+
+ThemeData _interactiveTheme() => ThemeData(
+      platform: TargetPlatform.iOS,
+      pageTransitionsTheme: const PageTransitionsTheme(builders: {
+        TargetPlatform.iOS: InteractiveBackPageTransitionsBuilder(),
+      }),
     );

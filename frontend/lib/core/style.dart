@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:onetouch/core/interactive_back_page.dart';
 
 abstract final class AppPalette {
   static const black = Color(0xFF090A0A);
@@ -201,6 +202,10 @@ ThemeData _buildTheme(
   );
 
   return base.copyWith(
+    pageTransitionsTheme: PageTransitionsTheme(builders: {
+      ...base.pageTransitionsTheme.builders,
+      TargetPlatform.iOS: const InteractiveBackPageTransitionsBuilder(),
+    }),
     scaffoldBackgroundColor: colors.pageBackground,
     canvasColor: colors.pageBackground,
     cardColor: colors.cardBackground,

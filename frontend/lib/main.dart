@@ -26,6 +26,7 @@ import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/keyboard_dismiss.dart';
 import 'package:onetouch/core/full_screen_back_gesture.dart';
+import 'package:onetouch/core/interactive_back_page.dart';
 import 'package:onetouch/core/notification_navigation.dart';
 import 'package:onetouch/core/community_link_navigation.dart';
 import 'package:onetouch/core/session_sync_lifecycle.dart';
@@ -175,15 +176,21 @@ CustomTransitionPage<void> _detailSlidePage(
       reverseTransitionDuration: const Duration(milliseconds: 300),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         // 새 상세 화면이 오른쪽에서 들어와 현재 화면 위를 덮어요.
+        final route = ModalRoute.of(context)! as PageRoute<dynamic>;
         final position = Tween<Offset>(
           begin: const Offset(1, 0),
           end: Offset.zero,
-        ).animate(CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutCubic,
-          reverseCurve: Curves.easeInCubic,
-        ));
-        return SlideTransition(position: position, child: child);
+        ).animate(route.popGestureInProgress
+            ? animation
+            : CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+                reverseCurve: Curves.easeInCubic,
+              ));
+        return InteractiveBackTransition(
+          route: route,
+          child: SlideTransition(position: position, child: child),
+        );
       },
     );
 
@@ -249,7 +256,10 @@ final GoRouter _router = GoRouter(
           ),
           GoRoute(
             path: 'select-favorites',
-            builder: (context, state) => const SelectFavoriteTeamsScreen(),
+            pageBuilder: (context, state) => InteractiveBackPage<void>(
+              key: state.pageKey,
+              child: const SelectFavoriteTeamsScreen(),
+            ),
           ),
         ]),
     GoRoute(
@@ -827,8 +837,6 @@ class MyApp extends StatelessWidget {
                                         .path !=
                                     '/',
                             child: FullScreenBackGesture(
-                              canGoBack: _router.canPop,
-                              goBack: _router.routerDelegate.popRoute,
                               child: child!,
                             ),
                           ),
