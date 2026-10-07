@@ -44,6 +44,7 @@ class HomeContentService implements HomeContentRepository {
   }
 
   List<HomeContentItem> _withFallbacks(List<HomeContentItem> items) {
+    // 화면의 고정 슬롯 수만큼 실제 항목을 쓰고 부족한 자리만 같은 인덱스의 대체 항목으로 채워요.
     final result = items.take(homeContentFallbackItems.length).toList();
     while (result.length < homeContentFallbackItems.length) {
       result.add(homeContentFallbackItems[result.length]);
@@ -117,6 +118,8 @@ class HomeContentService implements HomeContentRepository {
     final matchingTeams =
         teamTerms.where((terms) => terms.any(title.contains)).length;
 
+    // 경기 영상은 양 팀 이름이 모두 제목에 있으면 100점을 더해
+    // 한 팀만 언급한 영상보다 먼저 정렬해요.
     if (preferExactMatch &&
         teamTerms.length > 1 &&
         matchingTeams == teamTerms.length) {

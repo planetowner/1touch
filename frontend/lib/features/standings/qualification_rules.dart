@@ -112,6 +112,7 @@ class LeagueQualificationRules {
       ];
 }
 
+// 리그 ID별 진출·강등 표시 위치를 고정값으로 두며 시즌별 규칙 변경은 반영하지 않아요.
 const Map<int, LeagueQualificationRules> _leagueRules = {
   8: LeagueQualificationRules(
     uclPositions: {1, 2, 3, 4, 5},

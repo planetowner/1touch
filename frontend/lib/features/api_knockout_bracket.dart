@@ -127,6 +127,8 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final pairWidth = constraints.maxWidth - _shadowInset * 2;
+          // 두 라운드 카드와 연결선이 한 화면에 들어오게 카드 폭을 정해요.
+          // 한 라운드뿐이면 최대 카드 폭 안에서 카드 하나에 폭을 배분해요.
           final cardWidth = widget.stages.length == 1
               ? math.min(_maximumCardWidth, pairWidth)
               : math.min(
@@ -221,6 +223,8 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
     if (startPage == null) return;
     _dragStartPage = null;
     final distance = _roundController.offset - startPage * roundWidth;
+    // 빠른 스와이프는 속도 200, 느린 드래그는 한 라운드 폭의 1/3을
+    // 넘었을 때만 이동하고 시작 페이지에서 한 단계 이상 건너뛰지 않아요.
     final direction = velocity.abs() > 200
         ? (velocity < 0 ? 1 : -1)
         : distance.abs() > roundWidth / 3
@@ -286,12 +290,16 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
   }
 
   double _cardTop(double stageIndex, int tieIndex) {
+    // 다음 라운드의 한 카드는 이전 라운드 두 카드의 중심 사이에 놓여요.
+    // 단계마다 중심 간격을 두 배로 늘려 연결선 끝과 카드 중심을 맞춰요.
     final multiplier = math.pow(2, stageIndex).toDouble();
     final center = _baseStep * (multiplier * tieIndex + multiplier / 2);
     return center - _cardHeight / 2;
   }
 
   (double, double) _contentMetrics(double page) {
+    // 가로 스크롤 중 보이는 최대 세 라운드의 맨 위·맨 아래 카드로
+    // 높이를 정해 빈 위쪽 공간 없이 대진표를 표시해요.
     final firstIndex = page.floor();
     final visibleIndexes = [
       for (var index = firstIndex;

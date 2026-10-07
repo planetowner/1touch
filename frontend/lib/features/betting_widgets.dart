@@ -203,6 +203,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
       _amount = bet.stake;
     } else {
       final unit = widget.controller.market!.stakeUnit;
+      // 기본 베팅액은 100을 기준으로 허용 단위 수를 정하고 지출 한도 내로 줄여요.
       final initialUnits = math.max(1, 100 ~/ unit);
       _amount =
           math.min(widget.controller.spendingLimit ~/ unit, initialUnits) *
@@ -1150,6 +1151,8 @@ class BettingProbabilityBar extends StatelessWidget {
           minimums[index] = percentageMinimum;
         }
         final minimumWidth = minimums.values.fold<double>(0, (a, b) => a + b);
+        // 확률 비율로 너비를 나누기 전에 각 라벨의 최소 폭을 확보해요.
+        // 최소 폭에 걸린 칸을 고정한 뒤 남은 폭만 나머지 확률대로 다시 나눠요.
         final contentWidth = math.max(constraints.maxWidth, minimumWidth);
         final widths = <int, double>{};
         final flexible = active.toSet();

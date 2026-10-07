@@ -74,12 +74,14 @@ Color appPillForeground(BuildContext context, {required bool selected}) {
 const double appBarMinimumContentTop = 47;
 
 double appStatusBarInset(BuildContext context) {
+  // 상위 위젯이 MediaQuery 상단 여백을 소비했어도 시스템 상태 표시줄 높이는 유지해요.
   final view = View.of(context);
   final viewTop = view.viewPadding.top / view.devicePixelRatio;
   return math.max(MediaQuery.paddingOf(context).top, viewTop);
 }
 
 double appBarContentTop(BuildContext context) {
+  // 이미 소비된 시스템 여백을 빼고 앱 바 내용의 최소 위쪽 공간을 계산해요.
   final remainingTop = MediaQuery.paddingOf(context).top;
   final consumedTop = appStatusBarInset(context) - remainingTop;
   return math.max(
@@ -89,6 +91,7 @@ double appBarContentTop(BuildContext context) {
 }
 
 double responsiveBrandGradientHeight(BuildContext context) {
+  // 화면 높이의 70%를 쓰되 짧거나 긴 화면에서도 550~650px 범위로 제한해요.
   return (MediaQuery.sizeOf(context).height * 0.70)
       .clamp(550.0, 650.0)
       .toDouble();
