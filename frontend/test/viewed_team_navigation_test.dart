@@ -123,7 +123,17 @@ void main() {
 
     // 먼저 두 탭을 열어둬야 처음 로드할 때뿐 아니라 유지된 화면도 바뀌는지 확인해요.
     await tab(1);
+    expect(router.routeInformationProvider.value.uri.path, '/team');
     expect(tester.widget<TeamScreen>(find.byType(TeamScreen)).teamId, 8);
+    router.go('/team/8');
+    await tester.pumpAndSettle();
+    expect(router.canPop(), isTrue);
+    tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(2);
+    await tester.pumpAndSettle();
+    await tab(1);
+    expect(router.routeInformationProvider.value.uri.path, '/team');
+    expect(router.canPop(), isFalse);
+    expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 0);
     await tab(3);
     expect(tester.widget<Community>(find.byType(Community)).teamId, 8);
     final communityState = tester.state(find.byType(Community));
@@ -138,7 +148,7 @@ void main() {
       expect(currentUserPreferences.viewedTeamId.value, id);
 
       await tab(1);
-      expect(router.routeInformationProvider.value.uri.path, '/team/$id');
+      expect(router.routeInformationProvider.value.uri.path, '/team');
       expect(tester.widget<TeamScreen>(find.byType(TeamScreen)).teamId, id);
       await tab(3);
       expect(tester.widget<Community>(find.byType(Community)).teamId, id);

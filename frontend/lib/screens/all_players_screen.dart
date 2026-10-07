@@ -151,7 +151,15 @@ class _PlayerCardState extends State<PlayerCard>
     );
     final tabAnimation = _tabController.animation!;
 
-    return PlayerDetailScope(
+    return ListenableBuilder(
+      listenable: _tabController,
+      builder: (context, child) => PopScope<void>(
+        // iOS에서는 이전 탭이 있으면 탭 스와이프를 페이지 뒤로가기보다 우선해요.
+        canPop: Theme.of(context).platform != TargetPlatform.iOS ||
+            _tabController.index == 0,
+        child: child!,
+      ),
+      child: PlayerDetailScope(
         store: _detailStore,
         child: Scaffold(
           extendBodyBehindAppBar: true,
@@ -291,7 +299,9 @@ class _PlayerCardState extends State<PlayerCard>
               ),
             ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
 
