@@ -213,10 +213,10 @@ class _StandingState extends State<Standing> {
                 : () => widget.onCompetitionSelected!(leagueId),
             child: Container(
               key: ValueKey('overview-standing-card-$leagueId'),
-              width: 345,
+              width: double.infinity,
               decoration: BoxDecoration(color: bodyBackground),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // header block
                   Container(
