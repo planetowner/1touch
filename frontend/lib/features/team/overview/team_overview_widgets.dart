@@ -34,7 +34,6 @@ class TransferTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final playerImage = transfer.playerImage;
-    final transferValue = _transferValue(context, transfer);
     final playerName = _playerName(context, transfer);
 
     final content = Container(
@@ -74,16 +73,17 @@ class TransferTile extends StatelessWidget {
                           // while showing the complete type whenever it fits.
                           maxWidth: constraints.maxWidth * 0.75,
                         ),
-                        child: Text(
-                          transferValue,
-                          key:
-                              ValueKey('transfer-value-${transfer.transferId}'),
-                          style: Body1_b.style,
-                          maxLines: 1,
-                          softWrap: false,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.end,
-                        ),
+                        child: transfer.typeId == 219 && transfer.amount != null
+                            ? TransferFee(
+                                amountInEuros: transfer.amount!,
+                                textKey: ValueKey(
+                                    'transfer-value-${transfer.transferId}'),
+                              )
+                            : transferValueText(
+                                _transferType(context, transfer),
+                                key: ValueKey(
+                                    'transfer-value-${transfer.transferId}'),
+                              ),
                       ),
                     ],
                   ),
@@ -152,14 +152,7 @@ class TransferTile extends StatelessWidget {
     );
   }
 
-  static String _transferValue(BuildContext context, TransferEntry transfer) {
-    if (transfer.typeId == 219 && transfer.amount != null) {
-      // Temporary frontend-only rule: verified Sportmonks fixtures and public
-      // fees indicate confirmed transfer amounts are EUR. Remove this assumption
-      // when the backend starts returning authoritative currency metadata.
-      return '€${_compactAmount(transfer.amount!)}';
-    }
-
+  static String _transferType(BuildContext context, TransferEntry transfer) {
     final original =
         transfer.typeId == 219 ? 'Unknown' : transfer.displayType ?? '-';
     // 영문은 기존 표기를 유지하고, 요청된 세 언어의 문구만 바꿔요.
@@ -193,26 +186,6 @@ class TransferTile extends StatelessWidget {
           tr(context, 'Complete contract dates are currently unavailable.'),
       child: text,
     );
-  }
-
-  static String _compactAmount(int amount) {
-    if (amount >= 1000000000) {
-      return '${_scaledAmount(amount, 1000000000)}bn';
-    }
-    if (amount >= 1000000) {
-      return '${_scaledAmount(amount, 1000000)}m';
-    }
-    if (amount >= 1000) {
-      return '${_scaledAmount(amount, 1000)}k';
-    }
-    return '$amount';
-  }
-
-  static String _scaledAmount(int amount, int divisor) {
-    final scaled = amount / divisor;
-    return scaled == scaled.roundToDouble()
-        ? scaled.toInt().toString()
-        : scaled.toStringAsFixed(1);
   }
 }
 

@@ -522,6 +522,21 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Unit": (ko: "단위", ja: "単位", zh: "单位"),
   "Currency": (ko: "통화", ja: "通貨", zh: "货币"),
+  "Unable to load exchange rates. Tap to retry.": (
+    ko: "환율을 불러오지 못했어요. 눌러서 다시 시도해 주세요.",
+    ja: "為替レートを読み込めませんでした。タップして再試行してください。",
+    zh: "无法加载汇率，请点击重试。"
+  ),
+  "ECB exchange rate · {date}": (
+    ko: "ECB 기준 환율 · {date}",
+    ja: "ECB基準レート · {date}",
+    zh: "欧洲央行参考汇率 · {date}"
+  ),
+  "Unable to save preferences. Please try again.": (
+    ko: "설정을 저장하지 못했어요. 다시 시도해 주세요.",
+    ja: "設定を保存できませんでした。もう一度お試しください。",
+    zh: "无法保存偏好设置，请重试。"
+  ),
   "English": (ko: "영어", ja: "英語", zh: "英语"),
   "Korean": (ko: "한국어", ja: "韓国語", zh: "韩语"),
   "Japanese": (ko: "일본어", ja: "日本語", zh: "日语"),
