@@ -9,6 +9,7 @@ from ..core.player_membership import season_start_date as _season_start_date
 from ..core.fixture_states import COMPLETED_STATE_IDS
 from ..core.sportmonks import SportmonksClient
 from ..core.identity import SPORTMONKS_DUPLICATE_PLAYER_IDS
+from ..core.transfer_source_rules import CURRENT_SQUAD_OUT_OVERRIDES
 
 
 BIG5_COMPETITION_IDS = (8, 82, 301, 384, 564)
@@ -313,7 +314,8 @@ def _filter_current_squad_items(
     """현재 시즌의 Sportmonks 스쿼드와 이적 기록을 맞춰요.
 
     공급자의 현재 스쿼드를 기준으로 삼아요. season_start부터 오늘까지 이미 효력이 생긴
-    완료 이적만 반영해요. 기준 명단 선수의 마지막 이동이 OUT이면 빼요. IN 기록만으로
+    완료 이적만 반영해요. 마지막 OUT 이후 현재 소속을 별도로 확인한 선수는 남겨요.
+    나머지 기준 명단 선수는 마지막 이동이 OUT이면 빼요. IN 기록만으로
     공급자 스쿼드에 없는 선수를 추가하지 않아요. 미래 날짜의 이적은 무시해요.
     """
     base_player_ids = _squad_player_ids(squad)
@@ -327,6 +329,10 @@ def _filter_current_squad_items(
             if season_start <= movement[0] <= today
         ]
         if effective and effective[-1][2] == "out":
+            verified_on = CURRENT_SQUAD_OUT_OVERRIDES.get((team_id, player_id, effective[-1][1]))
+            # 확인한 OUT에만 적용해 이후 실제 이적이나 다른 팀의 명단을 덮어쓰지 않아요.
+            if verified_on is not None and season_start <= verified_on <= today:
+                continue
             removed_player_ids.add(player_id)
 
     return (

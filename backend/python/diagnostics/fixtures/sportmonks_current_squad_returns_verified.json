@@ -1,0 +1,374 @@
+{
+  "verified_on": "2026-10-07",
+  "cases": [
+    {
+      "player_id": 310131,
+      "name": "Daichi Kamada",
+      "team_id": 51,
+      "team_name": "Crystal Palace",
+      "competition_id": 8,
+      "season_id": 28083,
+      "source_url": "https://www.cpfc.co.uk/news/announcement/daichi-kamada-contract-extension-august/",
+      "squad": {
+        "id": 1589028,
+        "start": "2024-07-01",
+        "end": "2027-06-30",
+        "transfer_id": null,
+        "jersey_number": 18,
+        "position_id": 26,
+        "player_id": 310131,
+        "team_id": 51
+      },
+      "transfers": [
+        {
+          "id": 576019,
+          "player_id": 310131,
+          "from_team_id": 51,
+          "to_team_id": 260131,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        }
+      ]
+    },
+    {
+      "player_id": 1358,
+      "name": "Edin Džeko",
+      "team_id": 67,
+      "team_name": "Schalke 04",
+      "competition_id": 82,
+      "season_id": 28321,
+      "source_url": "https://schalke04.de/teams/profis/person/edin-dzeko/",
+      "squad": {
+        "id": 1612548,
+        "start": "2026-01-22",
+        "end": "2027-06-30",
+        "transfer_id": null,
+        "jersey_number": 10,
+        "position_id": 27,
+        "player_id": 1358,
+        "team_id": 67
+      },
+      "transfers": [
+        {
+          "id": 576056,
+          "player_id": 1358,
+          "from_team_id": 67,
+          "to_team_id": 260131,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        }
+      ]
+    },
+    {
+      "player_id": 31907,
+      "name": "Rani Khedira",
+      "team_id": 1079,
+      "team_name": "FC Union Berlin",
+      "competition_id": 82,
+      "season_id": 28321,
+      "source_url": "https://app-v2.fc-union-berlin.de/en/football/first-men-p6kl",
+      "squad": {
+        "id": 1583613,
+        "start": "2021-07-01",
+        "end": "2027-06-30",
+        "transfer_id": null,
+        "jersey_number": 8,
+        "position_id": 26,
+        "player_id": 31907,
+        "team_id": 1079
+      },
+      "transfers": [
+        {
+          "id": 576054,
+          "player_id": 31907,
+          "from_team_id": 1079,
+          "to_team_id": 260131,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        }
+      ]
+    },
+    {
+      "player_id": 129946,
+      "name": "Lorenzo Pellegrini ",
+      "team_id": 37,
+      "team_name": "Roma",
+      "competition_id": 384,
+      "season_id": 27895,
+      "source_url": "https://www.asroma.com/it/notizie/75741/as-roma-e-lorenzo-pellegrini-ancora-insieme-per-il-futuro",
+      "squad": {
+        "id": 1611946,
+        "start": "2017-07-01",
+        "end": "2027-06-30",
+        "transfer_id": null,
+        "jersey_number": 7,
+        "position_id": 26,
+        "player_id": 129946,
+        "team_id": 37
+      },
+      "transfers": [
+        {
+          "id": 571559,
+          "player_id": 129946,
+          "from_team_id": 37,
+          "to_team_id": 260131,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        }
+      ]
+    },
+    {
+      "player_id": 129261,
+      "name": "Paulo Dybala",
+      "team_id": 37,
+      "team_name": "Roma",
+      "competition_id": 384,
+      "season_id": 27895,
+      "source_url": "https://www.asroma.com/en/news/75594/as-roma-and-paulo-dybala-together-until-2027",
+      "squad": {
+        "id": 1592698,
+        "start": "2022-07-20",
+        "end": "2027-06-30",
+        "transfer_id": null,
+        "jersey_number": 21,
+        "position_id": 27,
+        "player_id": 129261,
+        "team_id": 37
+      },
+      "transfers": [
+        {
+          "id": 561986,
+          "player_id": 129261,
+          "from_team_id": 37,
+          "to_team_id": 260131,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        }
+      ]
+    },
+    {
+      "player_id": 37714462,
+      "name": "Francesco Camarda",
+      "team_id": 113,
+      "team_name": "AC Milan",
+      "competition_id": 384,
+      "season_id": 27895,
+      "source_url": "https://www.acmilan.com/en/news/articles/media/2026-07-24/official-statement-francesco-camarda",
+      "squad": {
+        "id": 1560492,
+        "start": "2025-06-01",
+        "end": "2031-06-30",
+        "transfer_id": null,
+        "jersey_number": 73,
+        "position_id": 27,
+        "player_id": 37714462,
+        "team_id": 113
+      },
+      "transfers": [
+        {
+          "id": 570019,
+          "player_id": 37714462,
+          "from_team_id": 113,
+          "to_team_id": 7790,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        },
+        {
+          "id": 510673,
+          "player_id": 37714462,
+          "from_team_id": 7790,
+          "to_team_id": 113,
+          "date": "2026-06-30",
+          "completed": true,
+          "type_id": 9688
+        }
+      ]
+    },
+    {
+      "player_id": 24935,
+      "name": "Ridgeciano Haps",
+      "team_id": 267,
+      "team_name": "Venezia",
+      "competition_id": 384,
+      "season_id": 27895,
+      "source_url": "https://www.ansa.it/veneto/notizie/2026/07/01/il-venezia-rinnova-il-contratto-per-haps-era-in-scadenza_378ba21c-dfed-44cb-b90d-50dd8e534243.html",
+      "squad": {
+        "id": 1578930,
+        "start": "2021-08-31",
+        "end": "2028-06-30",
+        "transfer_id": null,
+        "jersey_number": 5,
+        "position_id": 26,
+        "player_id": 24935,
+        "team_id": 267
+      },
+      "transfers": [
+        {
+          "id": 571555,
+          "player_id": 24935,
+          "from_team_id": 267,
+          "to_team_id": 260131,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        }
+      ]
+    },
+    {
+      "player_id": 368235,
+      "name": "Matteo Pisseri",
+      "team_id": 4070,
+      "team_name": "Frosinone",
+      "competition_id": 384,
+      "season_id": 27895,
+      "source_url": "https://www.frosinonecalcio.com/frosinone-como-2-0-il-tabellino-2/",
+      "squad": {
+        "id": 1592576,
+        "start": "2025-09-02",
+        "end": null,
+        "transfer_id": null,
+        "jersey_number": 12,
+        "position_id": 24,
+        "player_id": 368235,
+        "team_id": 4070
+      },
+      "transfers": [
+        {
+          "id": 574781,
+          "player_id": 368235,
+          "from_team_id": 4070,
+          "to_team_id": 260131,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        }
+      ]
+    },
+    {
+      "player_id": 127629,
+      "name": "Lorenzo De Silvestri ",
+      "team_id": 8513,
+      "team_name": "Bologna",
+      "competition_id": 384,
+      "season_id": 27895,
+      "source_url": "https://www.bolognafc.it/lorenzo-de-silvestri-in-rossoblu-fino-al-2027/",
+      "squad": {
+        "id": 1586157,
+        "start": "2020-09-17",
+        "end": "2027-06-30",
+        "transfer_id": null,
+        "jersey_number": 29,
+        "position_id": 25,
+        "player_id": 127629,
+        "team_id": 8513
+      },
+      "transfers": [
+        {
+          "id": 571558,
+          "player_id": 127629,
+          "from_team_id": 8513,
+          "to_team_id": 260131,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        }
+      ]
+    },
+    {
+      "player_id": 446977,
+      "name": "Eneko Jauregi",
+      "team_id": 126,
+      "team_name": "Málaga",
+      "competition_id": 564,
+      "season_id": 27965,
+      "source_url": "https://www.malagacf.com/noticias/jauregi-renueva-hasta-2027",
+      "squad": {
+        "id": 1590754,
+        "start": "2025-07-14",
+        "end": "2027-06-30",
+        "transfer_id": null,
+        "jersey_number": 17,
+        "position_id": 27,
+        "player_id": 446977,
+        "team_id": 126
+      },
+      "transfers": [
+        {
+          "id": 571547,
+          "player_id": 446977,
+          "from_team_id": 126,
+          "to_team_id": 260131,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        }
+      ]
+    },
+    {
+      "player_id": 132577,
+      "name": "Luiz Felipe",
+      "team_id": 377,
+      "team_name": "Rayo Vallecano",
+      "competition_id": 564,
+      "season_id": 27965,
+      "source_url": "https://as.com/futbol/el-rayo-anuncia-la-renovacion-de-luiz-felipe-hasta-2027-f202607-n/",
+      "squad": {
+        "id": 1590661,
+        "start": "2025-07-07",
+        "end": "2027-06-30",
+        "transfer_id": null,
+        "jersey_number": 5,
+        "position_id": 25,
+        "player_id": 132577,
+        "team_id": 377
+      },
+      "transfers": [
+        {
+          "id": 571546,
+          "player_id": 132577,
+          "from_team_id": 377,
+          "to_team_id": 260131,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        }
+      ]
+    },
+    {
+      "player_id": 62317,
+      "name": "Mathew Ryan",
+      "team_id": 3457,
+      "team_name": "Levante",
+      "competition_id": 564,
+      "season_id": 27965,
+      "source_url": "https://www.levanteud.com/jugadores/ryan",
+      "squad": {
+        "id": 1613949,
+        "start": "2025-08-26",
+        "end": "2027-06-30",
+        "transfer_id": null,
+        "jersey_number": 13,
+        "position_id": 24,
+        "player_id": 62317,
+        "team_id": 3457
+      },
+      "transfers": [
+        {
+          "id": 571542,
+          "player_id": 62317,
+          "from_team_id": 3457,
+          "to_team_id": 260131,
+          "date": "2026-07-01",
+          "completed": true,
+          "type_id": 219
+        }
+      ]
+    }
+  ]
+}
