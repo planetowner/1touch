@@ -89,7 +89,7 @@ class AppApiContractsTests(unittest.TestCase):
              patch.object(search_repo, 'search_fixtures', return_value=[]) as fixtures:
             self.assertEqual(search_repo.search(query, 12), dict(players=[], teams=[], fixtures=[]))
             player.assert_called_once_with(query, limit=12)
-            fixtures.assert_called_once_with(query, team_ids=(8,), limit=12)
+            fixtures.assert_called_once_with(query, team_ids=(8,))
             self.assertNotIn(query, teams.call_args.args[0])
             self.assertIn('%' + query + '%', teams.call_args.args[1])
         with patch.object(search_repo, 'fetch_all_dict') as fetch:
@@ -98,11 +98,40 @@ class AppApiContractsTests(unittest.TestCase):
 
     def test_fixture_search_uses_same_status_and_bound_parameters(self):
         row = sample('api_search')['fixtures'][0]
-        with patch.object(fixtures_repo, 'fetch_all_dict', return_value=[dict(row)]) as fetch:
-            self.assertEqual(fixtures_repo.search_fixtures('Example', team_ids=(8,), limit=12), [row])
-        sql, params = fetch.call_args.args
-        self.assertEqual(sql.count('%s'), len(params))
-        self.assertEqual(params[-3:], (8, 8, 12))
+        with patch.object(fixtures_repo, 'fetch_all_dict',
+                          side_effect=[[{'team_id': 8}, {'team_id': 9}], [], [dict(row)], []]) as fetch:
+            self.assertEqual(fixtures_repo.search_fixtures('Example', team_ids=(8,)), [row])
+        team_sql, team_params = fetch.call_args_list[0].args
+        self.assertEqual(team_sql.count('%s'), len(team_params))
+        self.assertEqual(team_params, ('%Example%',) * 3)
+        for call in fetch.call_args_list[1:]:
+            sql, params = call.args
+            self.assertEqual(sql.count('%s'), len(params))
+            self.assertEqual(params[:4], (8, 9, 8, 9))
+
+    def test_fixture_search_skips_fixtures_when_no_team_matches(self):
+        with patch.object(fixtures_repo, 'fetch_all_dict', return_value=[]) as fetch:
+            self.assertEqual(fixtures_repo.search_fixtures('이강인', team_ids=()), [])
+        self.assertEqual(fetch.call_count, 1)
+
+    def test_fixture_search_keeps_korean_matches_without_an_english_match(self):
+        row = sample('api_search')['fixtures'][0]
+        with patch.object(fixtures_repo, 'fetch_all_dict', side_effect=[[], [], [dict(row)], []]) as fetch:
+            self.assertEqual(fixtures_repo.search_fixtures('리버풀', team_ids=(8,)), [row])
+        for call in fetch.call_args_list[1:]:
+            self.assertEqual(call.args[1][:2], (8, 8))
+
+    def test_search_limit_only_controls_players_and_teams(self):
+        for limit in (1, 12, 100):
+            with self.subTest(limit=limit), \
+                 patch.object(search_repo, 'korean_name_ids', return_value=()), \
+                 patch.object(search_repo, 'fetch_all_dict', return_value=[]) as teams, \
+                 patch.object(search_repo, 'list_player_comparison_candidates', return_value=[]) as players, \
+                 patch.object(search_repo, 'search_fixtures', return_value=[]) as fixtures:
+                search_repo.search('Liverpool', limit)
+                players.assert_called_once_with('Liverpool', limit=limit)
+                self.assertEqual(teams.call_args.args[1][-1], limit)
+                fixtures.assert_called_once_with('Liverpool', team_ids=())
 
 
 if __name__ == '__main__':
