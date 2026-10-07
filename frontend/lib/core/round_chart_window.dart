@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// The latest round starts at the center; the chart stops at round one.
+/// 화면에는 14개 라운드 간격을 보여주고 최신 라운드를 가운데에 배치해요.
 class RoundChartWindow {
   const RoundChartWindow._(this.firstRound, this.lastRound);
 
@@ -12,6 +12,7 @@ class RoundChartWindow {
   static const int centerIntervalCount = visibleIntervalCount ~/ 2;
 
   factory RoundChartWindow.endingAt(int latestRound) {
+    // 종료 라운드 기준 최근 13개를 잡되 시작은 1, 끝은 최소 7라운드로 둬요.
     final lastCompletedRound = math.max(1, latestRound);
     return RoundChartWindow._(
       math.max(1, lastCompletedRound - 12),
@@ -19,7 +20,7 @@ class RoundChartWindow {
     );
   }
 
-  /// Leaves future slots to center the latest round without scrolling past one.
+  /// 최신 라운드 오른쪽에 7칸을 남기고, 왼쪽 스크롤은 0라운드에서 멈춰요.
   factory RoundChartWindow.centeredThrough(int latestRound) =>
       RoundChartWindow._(
         0,
@@ -37,6 +38,7 @@ class RoundChartWindow {
   int get intervalCount => lastRound - firstRound;
 
   double contentWidth(double viewportWidth) =>
+      // 14칸의 화면 폭을 전체 라운드 간격에 비례해 늘려 칸 너비를 유지해요.
       viewportWidth * intervalCount / visibleIntervalCount;
 
   double initialScrollOffset(double viewportWidth) =>

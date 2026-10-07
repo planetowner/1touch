@@ -419,7 +419,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final comparisonPoint = !showComparison || selectedRound == null
         ? null
         : _pointAtRound(comparison, selectedRound);
-    // Twelve grid lines span eleven 3-point steps; follow the selected round.
+    // 눈금선 12개 사이를 승리 한 경기의 승점인 3점씩 나눠 33점을 표시해요.
+    // 선택한 라운드의 높은 승점을 3의 배수로 올리고 이 폭만큼 아래를 보여줘요.
     const pointsPerStep = 3;
     const visiblePointsSpan =
         (RoundChartVisuals.horizontalLineCount - 1) * pointsPerStep;
@@ -482,6 +483,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                     comparisonPoint != null &&
                     currentTooltipCenterY != null &&
                     comparisonTooltipCenterY != null) {
+                  // 두 툴팁이 겹치면 높이 32px과 간격 8px을 확보하고 차트 경계 안에 둬요.
                   const tooltipHeight = 32.0;
                   const tooltipGap = 8.0;
                   const minimumCenterSeparation = tooltipHeight + tooltipGap;

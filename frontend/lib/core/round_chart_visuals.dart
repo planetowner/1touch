@@ -18,6 +18,7 @@ double roundChartTooltipLeft({
   required double gap,
   required bool preferLeft,
 }) {
+  // 선호하는 쪽이 화면 밖이면 반대쪽을 쓰고, 둘 다 부족하면 보이는 범위에 맞춰요.
   final visibleLeft = roundWindow.centeredScrollOffset(round, viewportWidth);
   final visibleRight = visibleLeft + viewportWidth;
   final anchorX =

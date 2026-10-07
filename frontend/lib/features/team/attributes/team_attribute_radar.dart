@@ -22,14 +22,9 @@ class TeamAttributeRadar extends StatelessWidget {
   final Color? comparisonColor;
   final bool balanceVerticalMargins;
 
-  //   Radar chart
-
-  // Fixed frame for the radar's scale. fl_chart derives the chart's center and
-  // radius from the min/max value across ALL datasets, so without a pinned
-  // range MY TEAM's polygon would rescale (and visibly change shape) every time
-  // a different comparison season is picked. Anchoring the floor/ceiling keeps
-  // MY TEAM identical no matter what it's compared to. Attribute values are
-  // clamped to 5-95, so 0..100 gives clean headroom and aligns with tickCount.
+  // fl_chart는 모든 데이터셋의 최솟값·최댓값으로 반지름을 정해요. 축을 0~100으로
+  // 고정해야 비교 시즌이 바뀌어도 현재 팀 도형이 같은 크기로 남아요.
+  // 표시 점수는 5~95로 제한하므로 양끝에 여유가 있고 눈금도 일정해요.
   static const double _radarFloor = 0;
   static const double _radarCeil = 100;
   static const double _chartHeight = 238;
@@ -93,8 +88,8 @@ class TeamAttributeRadar extends StatelessWidget {
       const lowerVertexHeight = 0.8090169943749475; // sin(54°)
       final topHeight = labels[0].$3;
       final bottomHeight = math.max(labels[2].$3, labels[3].$3);
-      // The card adds 25px above and below. Keep 20px around the outermost
-      // labels, then fit each locale's pentagon into the same 300px card.
+      // 카드 위아래 25px 여백과 바깥 라벨 주변 20px을 남겨요.
+      // 언어별 라벨 높이에 맞춰 오각형을 300px 카드 안에 넣어요.
       final radius = balanceVerticalMargins
           ? math.min(
               constraints.maxWidth * 0.4,
@@ -209,8 +204,7 @@ class TeamAttributeRadar extends StatelessWidget {
     });
   }
 
-  // Fully transparent dataset carrying one floor value and the rest at the
-  // ceiling, so both minEntry and maxEntry across the chart stay constant.
+  // 투명 데이터셋에 축의 양끝 값을 넣어 fl_chart의 최솟값·최댓값을 고정해요.
   RadarDataSet _scaleAnchorDataSet() {
     final count = scores.radarValues.length;
     return RadarDataSet(
