@@ -90,6 +90,14 @@ void main() {
           body = {'items': [], 'limit': 50, 'offset': 0};
         } else if (path == '/v1/community/followers') {
           body = {'team_id': teamId, 'follower_count': 3};
+        } else if (path == '/v1/users/me/points/initialize') {
+          body = {'balance': 1000, 'initialized': true, 'welcome_points': 1000};
+        } else if (path == '/v1/users/me/notification-preferences') {
+          body = {
+            'community': {'post_reactions': true, 'post_comments': true},
+            'teams': <String, Object>{},
+            'players': <String, Object>{},
+          };
         } else {
           // 이 테스트에서 다루지 않는 부가 콘텐츠는 기존 오류 상태로 표시해요.
           return http.Response('{"detail":"Unavailable test content"}', 503);
@@ -140,17 +148,70 @@ void main() {
           id == 8 ? findsOneWidget : findsNothing);
       expect(tester.state(find.byType(Community)), same(communityState));
       expect(
-          requests
-              .lastWhere((r) => r.url.path == '/v1/posts')
-              .url
-              .queryParameters['team_id'],
-          '$id');
+        requests.any((request) =>
+            request.url.path == '/v1/posts' &&
+            request.url.queryParameters['team_id'] == '$id'),
+        isTrue,
+      );
       expect(currentUserPreferences.favoriteTeamId.value, 8);
       expect(currentUserPreferences.followedTeamIds.value, [8, 19]);
     }
     await tab(2);
     expect(router.routeInformationProvider.value.uri.path, '/players');
-    expect(requests.every((request) => request.method == 'GET'), isTrue);
+
+    router.go('/profile');
+    await tester.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, '/profile');
+    expect(find.byType(OneTouchBottomNavigationBar), findsOneWidget);
+    expect(
+      tester
+          .widget<OneTouchBottomNavigationBar>(
+            find.byType(OneTouchBottomNavigationBar),
+          )
+          .currentIndex,
+      2,
+    );
+    tester.view.physicalSize = const Size(320, 568);
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    for (final path in [
+      '/profile/edit',
+      '/profile/notification',
+      '/profile/notification/team/Test',
+      '/profile/notification/player/Test',
+      '/profile/preference',
+      '/profile/contact',
+      '/profile/about',
+    ]) {
+      router.go(path);
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, path);
+      expect(find.byType(OneTouchBottomNavigationBar), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      if (path == '/profile/preference') {
+        await tester.tap(find.text('English'));
+        await tester.pumpAndSettle();
+        expect(find.byType(OneTouchBottomNavigationBar), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.byIcon(Icons.arrow_back_ios_new).last);
+        await tester.pumpAndSettle();
+      } else if (path == '/profile/about') {
+        await tester.tap(find.text('Terms of Service'));
+        await tester.pumpAndSettle();
+        expect(find.byType(OneTouchBottomNavigationBar), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.byKey(const ValueKey('about-detail-back')));
+        await tester.pumpAndSettle();
+      }
+    }
+    await tab(0);
+    expect(router.routeInformationProvider.value.uri.path, '/home');
+    expect(
+      requests.where((request) => request.method != 'GET').map(
+            (request) => request.url.path,
+          ),
+      everyElement('/v1/users/me/points/initialize'),
+    );
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });

@@ -7,7 +7,9 @@ import 'preference_details.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class PreferencePage extends StatefulWidget {
-  const PreferencePage({super.key});
+  const PreferencePage({super.key, this.bottomNavigationBarBuilder});
+
+  final WidgetBuilder? bottomNavigationBarBuilder;
 
   @override
   State<PreferencePage> createState() => _PreferencePageState();
@@ -172,11 +174,21 @@ class _PreferencePageState extends State<PreferencePage> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PreferenceDetailScreen(
-          title: title,
-          options: options,
-          selectedOption: currentVal,
-        ),
+        builder: (context) {
+          final detail = PreferenceDetailScreen(
+            title: title,
+            options: options,
+            selectedOption: currentVal,
+          );
+          final bottomNavigationBar =
+              widget.bottomNavigationBarBuilder?.call(context);
+          return bottomNavigationBar == null
+              ? detail
+              : Scaffold(
+                  body: detail,
+                  bottomNavigationBar: bottomNavigationBar,
+                );
+        },
       ),
     );
 
