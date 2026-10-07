@@ -19,5 +19,5 @@ def search(query: str, limit: int) -> dict:
     return {
         "players": list_player_comparison_candidates(query, limit=limit),
         "teams": teams,
-        "fixtures": search_fixtures(query, team_ids=team_ids, limit=limit),
+        "fixtures": search_fixtures(query, team_ids=team_ids),
     }

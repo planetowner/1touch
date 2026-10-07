@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 from ...core.fixture_states import (
     COMPLETED_STATE_IDS,
     LIVE_STATE_IDS,
+    PAST_STATE_IDS,
     UPCOMING_STATE_IDS,
     screen_status_for_state_id,
     state_ids_for_screen_status,
@@ -86,24 +87,33 @@ def get_fixture(fixture_id: int) -> Optional[Dict[str, Any]]:
     )
 
 
-def search_fixtures(query: str, *, team_ids: list[int], limit: int) -> list[dict]:
-    localized = ""
-    if team_ids:
-        placeholders = ",".join(["%s"] * len(team_ids))
-        localized = f" OR f.home_team_id IN ({placeholders}) OR f.away_team_id IN ({placeholders})"
-    # 화면의 진행 중 → 예정 → 종료 순서를 유지하고 경기 전체를 내려받지 않아요.
-    live = ','.join(map(str, LIVE_STATE_IDS))
-    upcoming = ','.join(map(str, UPCOMING_STATE_IDS))
-    completed = ','.join(map(str, COMPLETED_STATE_IDS))
-    return _with_status_many(fetch_all_dict(_BASE_SELECT + f"""
-        WHERE (th.name LIKE %s OR th.short_name LIKE %s OR th.short_code LIKE %s
-            OR ta.name LIKE %s OR ta.short_name LIKE %s OR ta.short_code LIKE %s{localized})
-        ORDER BY CASE WHEN f.state_id IN ({live}) THEN 0 WHEN f.state_id IN ({upcoming}) THEN 1
-            WHEN f.state_id IN ({completed}) THEN 2 ELSE 3 END,
-            f.starting_at IS NULL,
-            CASE WHEN f.state_id IN ({upcoming}) THEN f.starting_at END ASC,
-            f.starting_at DESC,f.fixture_id
-        LIMIT %s""", (f"%{query}%",) * 6 + (*team_ids, *team_ids, limit)))
+def search_fixtures(query: str, *, team_ids: tuple[int, ...]) -> list[dict]:
+    # 과거 시즌과 컵 상대팀도 찾아야 하므로 현재 5대 리그 팀 목록으로 제한하지 않아요.
+    matching_teams = fetch_all_dict("""SELECT team_id FROM teams
+        WHERE name LIKE %s OR short_name LIKE %s OR short_code LIKE %s""", (f"%{query}%",) * 3)
+    matching_ids = tuple(sorted(set(team_ids) | {row["team_id"] for row in matching_teams}))
+    if not matching_ids:
+        return []
+    # 모든 경기에 이름을 대조하지 않고, 팀 ID 인덱스로 해당 경기부터 좁혀요.
+    placeholders = _sql_placeholders(matching_ids)
+    # 예정 경기만 결과를 채우지 않게 과거·미래를 각각 5개로 제한하고, 진행 중 경기는 모두 보여줘요.
+    groups = (
+        (LIVE_STATE_IDS, "", "DESC", None),
+        (PAST_STATE_IDS, "AND f.starting_at < UTC_TIMESTAMP()", "DESC", 5),
+        (UPCOMING_STATE_IDS, "AND f.starting_at >= UTC_TIMESTAMP()", "ASC", 5),
+    )
+    rows = []
+    for state_ids, time_filter, direction, limit in groups:
+        sql = _BASE_SELECT + f"""
+            WHERE (f.home_team_id IN ({placeholders}) OR f.away_team_id IN ({placeholders}))
+                AND f.state_id IN ({_sql_placeholders(state_ids)}) {time_filter}
+            ORDER BY f.starting_at IS NULL, f.starting_at {direction}, f.fixture_id"""
+        params = (*matching_ids, *matching_ids, *state_ids)
+        if limit is not None:
+            sql += " LIMIT %s"
+            params += (limit,)
+        rows.extend(fetch_all_dict(sql, params))
+    return _with_status_many(rows)
 
 
 def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
