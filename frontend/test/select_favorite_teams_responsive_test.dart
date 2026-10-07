@@ -4,6 +4,9 @@ import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/full_screen_back_gesture.dart';
+import 'package:onetouch/core/interactive_back_page.dart';
 import 'package:onetouch/rank_fav_teams.dart';
 import 'package:onetouch/select_favorite_teams.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -19,7 +22,75 @@ void main() {
     Size(320, 568),
     Size(375, 667),
     Size(393, 852),
+    Size(430, 932),
   ];
+
+  testWidgets('dragging over the real team carousel moves the page',
+      (tester) async {
+    const size = Size(393, 852);
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final router = GoRouter(initialLocation: '/onboarding/welcome', routes: [
+      GoRoute(
+        path: '/onboarding',
+        builder: (_, __) => const Scaffold(body: Text('Login')),
+        routes: [
+          GoRoute(
+            path: 'welcome',
+            builder: (context, _) => Scaffold(
+              body: TextButton(
+                onPressed: () => context.push('/onboarding/select-favorites'),
+                child: const Text('Welcome'),
+              ),
+            ),
+          ),
+          GoRoute(
+            path: 'select-favorites',
+            pageBuilder: (_, state) => InteractiveBackPage<void>(
+              key: state.pageKey,
+              child: const SelectFavoriteTeamsScreen(),
+            ),
+          ),
+        ],
+      ),
+    ]);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(
+      theme: app_style.darktheme.copyWith(platform: TargetPlatform.iOS),
+      routerConfig: router,
+      builder: (context, child) => AnimatedBuilder(
+        animation: router.routeInformationProvider,
+        builder: (context, _) => FullScreenBackGesture(
+          enabled: router.routeInformationProvider.value.uri.path !=
+              '/onboarding/select-favorites',
+          canGoBack: router.canPop,
+          goBack: router.routerDelegate.popRoute,
+          child: child!,
+        ),
+      ),
+    ));
+    await tester.tap(find.text('Welcome'));
+    await tester.pumpAndSettle();
+
+    final logo = find.byKey(const ValueKey('gradient-header-logo'));
+    final initialX = tester.getTopLeft(logo).dx;
+    final drag = await tester.startGesture(
+      tester.getCenter(find.byKey(const ValueKey('favorite-team-logo-region'))),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    await drag.moveBy(const Offset(80, 0));
+    await tester.pump();
+    expect(tester.getTopLeft(logo).dx - initialX, closeTo(80, 1));
+    expect(tester.widget<PageView>(find.byType(PageView)).physics,
+        isA<NeverScrollableScrollPhysics>());
+    await drag.up();
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(logo).dx, closeTo(initialX, 1));
+    expect(tester.widget<PageView>(find.byType(PageView)).physics,
+        isNot(isA<NeverScrollableScrollPhysics>()));
+  });
 
   for (final size in phoneSizes) {
     testWidgets('fits a ${size.width}x${size.height} viewport', (tester) async {
@@ -60,6 +131,21 @@ void main() {
         tester.getSize(logoRegion).height,
         closeTo(expectedLogoHeight, 0.01),
       );
+      for (final team in mockTeams.take(2)) {
+        final teamLogo = find.byKey(
+          ValueKey('favorite-team-logo-${team.teamId}'),
+        );
+        expect(teamLogo, findsOneWidget);
+        expect(tester.getRect(teamLogo).size, const Size(72, 72));
+        expect(
+          tester
+              .widget<Image>(
+                find.descendant(of: teamLogo, matching: find.byType(Image)),
+              )
+              .fit,
+          BoxFit.contain,
+        );
+      }
       expect(toggleIcon.color, app_style.AppPalette.white);
       expect(find.byKey(const ValueKey('favorite-league-trigger-blur')),
           findsOneWidget);
