@@ -25,6 +25,8 @@ class LineupPitch extends StatelessWidget {
   static const double _pitchHeight = 784;
   static const double _verticalPadding = 20;
   static const double _minimumPlayerGap = 8;
+  static const double _playerWidth = 64;
+  static const double _meaningfulHorizontalOverlap = 8;
 
   double _requiredHalfHeight(
     List<List<LineupPlayer>> rows,
@@ -79,12 +81,14 @@ class LineupPitch extends StatelessWidget {
       }
     }
 
-    // 가로 폭이 겹치는 선수는 원과 이름 아래에도 최소 여백을 확보해요.
+    // 같은 줄의 선수 칸이 끝에서 조금 닿는 것만으로 피치 높이를 늘리지 않아요.
     for (var i = 0; i < positions.length; i++) {
       for (var j = i + 1; j < positions.length; j++) {
         final dx = (positions[i].dx - positions[j].dx).abs();
         final dy = (positions[i].dy - positions[j].dy).abs();
-        if (dx >= 64 || dy == 0) continue;
+        if (dx >= _playerWidth - _meaningfulHorizontalOverlap || dy == 0) {
+          continue;
+        }
         final required =
             FormationLayout.designSize.height * minimumCenterGap / dy;
         if (required > halfHeight) halfHeight = required;
@@ -200,13 +204,14 @@ class _LineupHalf extends StatelessWidget {
                       scaleY -
                   16
               : 0.0;
-          final playerWidth =
-              (64 * constraints.maxWidth / FormationLayout.designSize.width)
-                  .clamp(0.0, 64.0);
+          final playerWidth = (LineupPitch._playerWidth *
+                  constraints.maxWidth /
+                  FormationLayout.designSize.width)
+              .clamp(0.0, LineupPitch._playerWidth);
           return FormationPlayerPositions<LineupPlayer>(
             players: players,
             positionOf: (player) => player.formationPosition,
-            playerWidth: 64,
+            playerWidth: LineupPitch._playerWidth,
             reverseVertical: reverseVertical,
             playerBuilder: (player) {
               final dot = _PlayerDot(
