@@ -45,9 +45,8 @@ TransferEntry _entryFromApiResponse(
     );
   }
 
-  // The response also carries other-team imagery, jersey and currency. Keep
-  // those values at the transport boundary until a frontend feature has
-  // defined how it will present them.
+  // 다른 팀의 사진·등번호는 화면에서 쓰지 않아요. 서버의 currency는 현재 null이고,
+  // 금액 표시는 기사와 대조한 기존 EUR 기준을 TransferFee에서 함께 적용해요.
   return TransferEntry(
     transferId: response.transferId,
     playerId: response.playerId,

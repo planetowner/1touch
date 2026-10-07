@@ -15,4 +15,4 @@ class NewsArticleOut(BaseModel):
 class TeamNewsResponse(BaseModel):
     team_id: int
     language: Literal["ko", "en"]
-    items: list[NewsArticleOut] = Field(max_length=3, description="선택한 팀의 최근 14일 기사 중 최신 3개예요. 부족하면 있는 만큼만 반환해요.")
+    items: list[NewsArticleOut] = Field(max_length=3, description="선택한 팀의 최근 14일 기사를 최신순으로 언론사별 하나씩 최대 3개 반환해요. 부족하면 있는 만큼만 반환해요.")

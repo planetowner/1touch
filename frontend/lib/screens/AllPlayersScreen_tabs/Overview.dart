@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/season_label.dart';
+import 'package:onetouch/core/display_preferences.dart';
 import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
@@ -570,7 +571,14 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ValueListenableBuilder<DisplayPreferences>(
+        valueListenable: appDisplayPreferences,
+        builder: (context, preferences, _) =>
+            _buildStats(context, preferences.unit),
+      );
+
+  Widget _buildStats(BuildContext context, MeasurementUnit unit) {
     final player = widget.player;
     final appColors = AppColors.of(context);
     final birthDate = widget.profile == null
@@ -590,11 +598,9 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
         (
           label: tr(context, 'Height'),
           value: Text(
-              widget.profile == null
-                  ? (player == null ? '—' : '${player.heightCm}cm')
-                  : widget.profile!.heightCm == null
-                      ? '—'
-                      : '${widget.profile!.heightCm}cm',
+              unit.formatHeight(widget.profile == null
+                  ? player?.heightCm
+                  : widget.profile!.heightCm),
               style: Heading5.style),
           explanation: null
         ),
@@ -622,11 +628,9 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
         (
           label: tr(context, 'Weight'),
           value: Text(
-              widget.profile == null
-                  ? (player == null ? '—' : '${player.weightKg}kg')
-                  : widget.profile!.weightKg == null
-                      ? '—'
-                      : '${widget.profile!.weightKg}kg',
+              unit.formatWeight(widget.profile == null
+                  ? player?.weightKg
+                  : widget.profile!.weightKg),
               style: Heading5.style),
           explanation: null
         ),

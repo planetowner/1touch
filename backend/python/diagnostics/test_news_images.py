@@ -30,7 +30,7 @@ NOW = datetime(2026, 10, 2, tzinfo=timezone.utc)
 
 
 def article(number, **changes):
-    return {"article_id": number, "team_id": 37, "language": "ko", "source": "매체",
+    return {"article_id": number, "team_id": 37, "language": "ko", "source": f"매체 {number}",
             "title": f"기사 {number}", "url": f"https://example.test/articles/{number}",
             "image_url": f"https://example.test/images/{number}.jpg", "thumbnail_digest": None,
             "published_at": NOW - timedelta(hours=number), **changes}
@@ -61,6 +61,12 @@ class NewsThumbnailTests(unittest.TestCase):
                  article(10, published_at=NOW + timedelta(days=1))]
         targets = news_images.thumbnail_targets(rows, NOW)
         self.assertEqual(targets, {article(i)["image_url"]: {i} for i in (1, 2, 3, 8)})
+
+    def test_targets_skip_other_articles_from_selected_sources(self):
+        rows = [article(i, source=source)
+                for i, source in enumerate(('A', 'A', 'B', 'B', 'C', 'D'), start=1)]
+        targets = news_images.thumbnail_targets(rows, NOW)
+        self.assertEqual(targets, {article(i)['image_url']: {i} for i in (1, 3, 5)})
 
     def test_upload_precedes_db_update_and_completed_images_skip_network(self):
         row = article(1)

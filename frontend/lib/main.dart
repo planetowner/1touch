@@ -22,6 +22,7 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/api_config.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/locale_controller.dart';
+import 'package:onetouch/core/display_preferences.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
@@ -110,6 +111,7 @@ Future<void> runOneTouchApp({
     await initializePlatform?.call();
     await appThemeController.initialize();
     await appLocaleController.initialize();
+    await appDisplayPreferences.initialize();
     await (restoreSession ?? auth_provider.authService.restoreSession)();
     unawaited(_startNotificationServices(startPushServices));
     return _startupDestination();

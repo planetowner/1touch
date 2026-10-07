@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/display_preferences.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
@@ -23,6 +24,11 @@ TeamOverview _team(int id) => TeamOverview(
     );
 
 void main() {
+  setUp(() {
+    appDisplayPreferences.value =
+        const DisplayPreferences(currency: DisplayCurrency.eur);
+    addTearDown(() => appDisplayPreferences.value = const DisplayPreferences());
+  });
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     await (FontLoader('Archivo')
