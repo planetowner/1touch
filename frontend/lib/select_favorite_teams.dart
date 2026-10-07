@@ -3,6 +3,7 @@ import 'dart:ui' show ImageFilter, lerpDouble;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/interactive_back_page.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
@@ -353,6 +354,10 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                             height: carouselHeight,
                             child: PageView.builder(
                               controller: _pageController,
+                              physics:
+                                  InteractiveBackDragScope.isDragging(context)
+                                      ? const NeverScrollableScrollPhysics()
+                                      : null,
                               pageSnapping: true,
                               onPageChanged: (index) {
                                 setState(() {
@@ -363,47 +368,33 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                               itemCount: teams.length,
                               itemBuilder: (context, index) {
                                 final team = teams[index];
-                                return AnimatedBuilder(
-                                  animation: _pageController,
-                                  builder: (context, child) {
-                                    final page = _pageController.hasClients &&
-                                            _pageController
-                                                .position.hasContentDimensions
-                                        ? (_pageController.page ??
-                                            _focusedIndex.toDouble())
-                                        : _focusedIndex.toDouble();
-                                    final distanceInPages =
-                                        (index - page).abs();
-                                    final value = (1 - distanceInPages * 0.4)
-                                        .clamp(0.0, 1.0);
-                                    final scale =
-                                        Curves.easeOut.transform(value);
-                                    return Transform.scale(
-                                        scale: scale, child: child);
+                                return GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () {
+                                    setState(() {
+                                      if (_selectedTeams[_selectedLeagueId]
+                                              ?.teamId ==
+                                          team.teamId) {
+                                        _selectedTeams
+                                            .remove(_selectedLeagueId);
+                                      } else {
+                                        _selectedTeams[_selectedLeagueId] =
+                                            team;
+                                      }
+                                    });
                                   },
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        if (_selectedTeams[_selectedLeagueId]
-                                                ?.teamId ==
-                                            team.teamId) {
-                                          _selectedTeams
-                                              .remove(_selectedLeagueId);
-                                        } else {
-                                          _selectedTeams[_selectedLeagueId] =
-                                              team;
-                                        }
-                                      });
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.all(10),
+                                  child: Center(
+                                    child: SizedBox.square(
+                                      key: ValueKey(
+                                          'favorite-team-logo-${team.teamId}'),
+                                      dimension: 72,
                                       child: Image.network(
                                         team.imagePath ?? '',
                                         fit: BoxFit.contain,
                                         errorBuilder: (_, __, ___) =>
                                             const Icon(Icons.shield,
                                                 color: Colors.white54,
-                                                size: 80),
+                                                size: 72),
                                       ),
                                     ),
                                   ),
