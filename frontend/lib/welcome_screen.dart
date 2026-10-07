@@ -123,7 +123,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 height: 56,
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () => context.go('/onboarding/select-favorites'),
+                  onPressed: () => context.push('/onboarding/select-favorites'),
                   style: FilledButton.styleFrom(
                     backgroundColor: colors.onSurface,
                     foregroundColor: colors.surface,
