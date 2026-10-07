@@ -176,6 +176,37 @@ void main() {
     );
   });
 
+  testWidgets(
+      'fills the available width and aligns stat columns on each screen',
+      (tester) async {
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    for (final size in [
+      const Size(320, 568),
+      const Size(393, 852),
+      const Size(430, 932),
+    ]) {
+      await tester.binding.setSurfaceSize(size);
+      await tester.pumpWidget(subject(9));
+
+      final card = find.byKey(const ValueKey('overview-standing-card-8'));
+      final cardRect = tester.getRect(card);
+      expect(cardRect.left, 24);
+      expect(size.width - cardRect.right, 24);
+
+      for (final stat in ['points', 'mp', 'win', 'draw', 'loss']) {
+        final headerCenter = tester.getCenter(
+          find.byKey(ValueKey('overview-standing-$stat-header')),
+        );
+        final valueCenter = tester.getCenter(
+          find.byKey(ValueKey('overview-standing-$stat-1')),
+        );
+        expect(valueCenter.dx, closeTo(headerCenter.dx, 0.01));
+      }
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   testWidgets('keeps the Korean matches-played header on one line',
       (tester) async {
     await tester.pumpWidget(
