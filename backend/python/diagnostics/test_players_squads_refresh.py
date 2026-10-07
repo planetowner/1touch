@@ -1,10 +1,47 @@
 """한 번 수집한 명단으로 선수 저장 후 스쿼드를 갱신하는 순서를 확인해요."""
 from copy import deepcopy
+from datetime import date
 import unittest
 from unittest.mock import Mock, patch
 
 with patch('mysql.connector.pooling.MySQLConnectionPool'):
     from one_touch_loader.loaders import players_loader as loader
+    from one_touch_loader.loaders.team_squad_members_loader import _filter_current_squad_items
+
+from one_touch_loader.core.sportmonks import SportmonksClient
+
+
+class RenewedPlayerSquadTests(unittest.TestCase):
+    def test_modric_renewal_keeps_current_squad_and_jersey(self):
+        # 실제 응답의 이적 두 건을 재현해요. 재계약 뒤 남은 이탈만 제외하고 영입은 보존해요.
+        transfers = [
+            dict(id=571561, player_id=268, from_team_id=113, to_team_id=260131,
+                 type_id=219, date='2026-07-01', completed=True),
+            dict(id=492766, player_id=268, from_team_id=3468, to_team_id=113,
+                 type_id=220, date='2025-07-14', completed=True),
+        ]
+        squad = [dict(player_id=268, team_id=113, position_id=26, jersey_number=14,
+                      start='2025-07-14', end='2027-06-30')]
+        client = SportmonksClient.__new__(SportmonksClient)
+        client._iter_paginated_data = Mock()
+        sources = (
+            (lambda: client.iter_transfers_by_player(268), transfers, [492766]),
+            (lambda: client.iter_transfers_by_team(113), transfers, [492766]),
+            (lambda: client.iter_transfers_between_dates(date(2026, 7, 1), date(2026, 10, 7)),
+             transfers[:1], []),
+        )
+        for index, (source, payload, expected_ids) in enumerate(sources):
+            with self.subTest(source=index):
+                client._iter_paginated_data.return_value = payload
+                corrected = list(source())
+                self.assertEqual([row['id'] for row in corrected], expected_ids)
+                kept, removed = _filter_current_squad_items(
+                    squad, corrected, 113, date(2026, 7, 1), date(2026, 10, 7),
+                )
+                self.assertEqual(kept, squad)
+                self.assertEqual(removed, set())
+        client._get = Mock(return_value={'data': transfers[0]})
+        self.assertIsNone(client.get_transfer(571561))
 
 
 class CombinedRefreshTests(unittest.TestCase):
