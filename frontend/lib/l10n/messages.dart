@@ -547,6 +547,25 @@ const appMessages = <String, MessageTranslations>{
     zh: "无法关联{provider}，该账号可能已关联其他账户。",
   ),
   "DELETE ACCOUNT": (ko: "계정 삭제하기", ja: "アカウントを削除", zh: "删除账号"),
+  "Delete account": (ko: "계정 삭제", ja: "アカウントを削除", zh: "删除账号"),
+  "Delete account?": (ko: "계정을 삭제할까요?", ja: "アカウントを削除しますか？", zh: "确定删除账号吗？"),
+  "Leaving the pitch already?": (
+    ko: "벌써 그라운드를 떠나시나요?",
+    ja: "もうピッチを離れますか？",
+    zh: "现在就要离开球场吗？"
+  ),
+  "Deleting your account will permanently remove your data, predictions, and points.":
+      (
+    ko: "계정을 삭제하면 데이터, 예측 기록, 포인트가 모두 영구적으로 사라져요.",
+    ja: "アカウントを削除すると、データ、予想履歴、ポイントがすべて完全に削除されます。",
+    zh: "删除账号后，您的数据、预测记录和积分将被永久删除。"
+  ),
+  "Deleting account…": (ko: "계정 삭제 중…", ja: "アカウントを削除しています…", zh: "正在删除账号…"),
+  "Unable to delete account. Please try again.": (
+    ko: "계정을 삭제하지 못했어요. 다시 시도해 주세요.",
+    ja: "アカウントを削除できませんでした。もう一度お試しください。",
+    zh: "无法删除账号，请重试。"
+  ),
   "Privacy Policy": (ko: "개인정보 처리방침", ja: "プライバシーポリシー", zh: "隐私政策"),
   "Terms of Service": (ko: "이용약관", ja: "利用規約", zh: "服务条款"),
   "Name": (ko: "이름", ja: "名前", zh: "姓名"),

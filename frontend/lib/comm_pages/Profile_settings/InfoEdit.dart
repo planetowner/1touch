@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/identity_name_rules.dart';
@@ -24,6 +25,11 @@ import 'package:onetouch/data/auth/social_identity_service.dart';
 import 'package:onetouch/data/profile/social_account_service.dart';
 import 'package:onetouch/data/profile/social_account_service_provider.dart'
     as social_account_provider;
+import 'package:onetouch/data/profile/account_deletion_service.dart';
+import 'package:onetouch/data/profile/account_deletion_service_provider.dart'
+    as account_deletion_provider;
+import 'package:onetouch/data/auth/auth_repository_provider.dart'
+    as auth_provider;
 
 typedef AvatarImagePicker = Future<XFile?> Function();
 
@@ -37,6 +43,8 @@ class EditProfileScreen extends StatefulWidget {
     this.pickAvatar,
     this.avatarRequestHeaders,
     this.socialAccountService,
+    this.accountDeletionService,
+    this.onAccountDeleted,
   });
 
   final CurrentUserProfile? profile;
@@ -44,6 +52,8 @@ class EditProfileScreen extends StatefulWidget {
   final AvatarImagePicker? pickAvatar;
   final Map<String, String>? avatarRequestHeaders;
   final SocialAccountService? socialAccountService;
+  final AccountDeletionService? accountDeletionService;
+  final Future<void> Function()? onAccountDeleted;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -55,6 +65,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController emailController;
   bool _isAvatarSaving = false;
   bool _isProfileSaving = false;
+  bool _isDeletingAccount = false;
   String? _profileSaveError;
   LoginProvider? _connectingProvider;
   late Set<String> _socialAccounts;
@@ -62,6 +73,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   SocialAccountService get _socialAccountService =>
       widget.socialAccountService ??
       social_account_provider.socialAccountService;
+
+  AccountDeletionService get _accountDeletionService =>
+      widget.accountDeletionService ??
+      account_deletion_provider.accountDeletionService;
 
   ProfileAvatarRepository get _avatarRepository =>
       widget.avatarRepository ?? avatar_provider.profileAvatarRepository;
@@ -310,6 +325,129 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     ));
   }
 
+  Future<void> _confirmDeleteAccount() async {
+    if (_isDeletingAccount) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
+        final foreground = isDark ? AppPalette.white : AppPalette.black;
+        return Dialog(
+          insetPadding: const EdgeInsets.all(24),
+          backgroundColor:
+              isDark ? AppPalette.lightGrey : AppPalette.lightModeDarkGrey,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: SizedBox(
+            key: const ValueKey('profile-delete-confirmation-card'),
+            width: 345,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      tr(dialogContext, 'Leaving the pitch already?'),
+                      style: TextStyle(
+                        color: foreground,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        height: 1.10,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      tr(dialogContext,
+                          'Deleting your account will permanently remove your data, predictions, and points.'),
+                      style: TextStyle(
+                        color: foreground,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                        height: 1.30,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    TextButton(
+                      key: const ValueKey('profile-confirm-delete-account'),
+                      onPressed: () => Navigator.of(dialogContext).pop(true),
+                      style: TextButton.styleFrom(
+                        backgroundColor: AppPalette.white,
+                        padding: const EdgeInsets.all(16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        trUpper(dialogContext, 'Delete account'),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Color(0xFFFF5B5B),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          height: 1.30,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(false),
+                      style: TextButton.styleFrom(
+                        foregroundColor: foreground,
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        trUpper(dialogContext, 'Cancel'),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: foreground,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.underline,
+                          decorationColor: foreground,
+                          height: 1.30,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isDeletingAccount = true);
+    try {
+      await _accountDeletionService.deleteAccount(_socialAccounts);
+    } on SocialLoginCancelled {
+      if (mounted) setState(() => _isDeletingAccount = false);
+      return;
+    } on Object {
+      if (!mounted) return;
+      setState(() => _isDeletingAccount = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          tr(context, 'Unable to delete account. Please try again.'),
+        ),
+      ));
+      return;
+    }
+
+    if (widget.onAccountDeleted != null) {
+      await widget.onAccountDeleted!();
+    } else {
+      await auth_provider.authService.logout();
+      if (mounted) context.go('/onboarding');
+    }
+  }
+
   @override
   void dispose() {
     usernameController.dispose();
@@ -495,14 +633,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               const SizedBox(height: 24),
 
-              // Delete Account
               Center(
                 child: GestureDetector(
-                  onTap: () {
-                    // Handle delete logic
-                  },
+                  key: const ValueKey('profile-delete-account'),
+                  onTap: _isDeletingAccount ? null : _confirmDeleteAccount,
                   child: Text(
-                    tr(context, "DELETE ACCOUNT"),
+                    _isDeletingAccount
+                        ? tr(context, 'Deleting account…')
+                        : tr(context, 'DELETE ACCOUNT'),
                     style: Body2_b.style.copyWith(
                       decoration: TextDecoration.underline,
                       decorationColor: colors.onSurface,
