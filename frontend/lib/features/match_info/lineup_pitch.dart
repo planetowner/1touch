@@ -1,13 +1,13 @@
 part of 'match_info_features.dart';
 
 class LineupPitch extends StatelessWidget {
-  /// Away team rows ordered GK → attackers (displayed top → bottom).
+  /// 원정팀은 골키퍼부터 공격수 순서로 위에서 아래에 배치해요.
   final List<List<LineupPlayer>> awayRows;
 
-  /// Home team rows ordered attackers → GK (displayed top → bottom in their half).
+  /// 홈팀은 공격수부터 골키퍼 순서로 자기 진영의 위에서 아래에 배치해요.
   final List<List<LineupPlayer>> homeRows;
 
-  /// Called when the user taps a player dot.
+  /// 사용자가 선수 표시를 누르면 호출해요.
   final void Function(BuildContext context, LineupPlayer player)? onPlayerTap;
   final Color homeColor;
   final Color awayColor;
@@ -32,6 +32,7 @@ class LineupPitch extends StatelessWidget {
     List<List<LineupPlayer>> rows,
     double playerHeight,
   ) {
+    // 기본 높이에서 시작하고 선수 카드 사이에 최소 8px이 필요할 때만 늘려요.
     const baseHalfHeight =
         (_pitchHeight - 2 * _verticalPadding - _centerGap) / 2;
     var halfHeight = baseHalfHeight;
@@ -39,6 +40,7 @@ class LineupPitch extends StatelessWidget {
     final players = rows.expand((row) => row).toList();
     if (players.isEmpty) return halfHeight;
     if (players.any((player) => player.formationPosition == null)) {
+      // 좌표가 하나라도 없으면 줄 수와 카드 높이로 필요한 공간을 계산해요.
       final required =
           rows.length * playerHeight + (rows.length - 1) * _minimumPlayerGap;
       return required > halfHeight ? required : halfHeight;
@@ -58,6 +60,7 @@ class LineupPitch extends StatelessWidget {
         if (position.dy < FormationLayout.goalkeeper.dy) position,
     ];
     var visualRows = outfieldRows.length;
+    // 같은 원본 줄의 세로 좌표 차이가 피치 높이의 1/8보다 크면 두 줄로 세요.
     for (final row in outfieldRows) {
       final ys = row.map((player) => player.formationPosition!.dy).toList();
       if (ys.reduce((a, b) => a > b ? a : b) -
@@ -67,6 +70,7 @@ class LineupPitch extends StatelessWidget {
       }
     }
     if (visualRows > 1 && outfield.isNotEmpty) {
+      // 기준 좌표의 줄 간격을 화면 높이로 환산해 카드 간 최소 간격을 확보해요.
       final highest = outfield
           .map((position) => position.dy)
           .reduce((a, b) => a < b ? a : b);
@@ -81,7 +85,7 @@ class LineupPitch extends StatelessWidget {
       }
     }
 
-    // 같은 줄의 선수 칸이 끝에서 조금 닿는 것만으로 피치 높이를 늘리지 않아요.
+    // 가로로 8px 이하만 겹치는 선수 칸 때문에 피치 높이를 늘리지 않아요.
     for (var i = 0; i < positions.length; i++) {
       for (var j = i + 1; j < positions.length; j++) {
         final dx = (positions[i].dx - positions[j].dx).abs();
@@ -94,6 +98,7 @@ class LineupPitch extends StatelessWidget {
         if (required > halfHeight) halfHeight = required;
       }
     }
+    // 골키퍼 카드가 아래쪽 경계를 넘지 않도록 필요한 높이도 반영해요.
     final keeperClearance = (playerHeight - 16) /
         (1 - FormationLayout.goalkeeper.dy / FormationLayout.designSize.height);
     if (keeperClearance > halfHeight) halfHeight = keeperClearance;

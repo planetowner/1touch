@@ -70,6 +70,8 @@ class BestElevenPitch extends StatelessWidget {
                     final innerHeight = constraints.maxHeight;
                     final designWidth = FormationLayout.designSize.width;
                     final designHeight = FormationLayout.designSize.height;
+                    // 바깥 카드의 24px 여백을 포함한 배율로 좌표를 옮기고,
+                    // 선수 너비는 내부 배율을 상쇄해 화면에서 최대 45px로 유지해요.
                     final cardScaleX = (innerWidth + 48) / designWidth;
                     final cardScaleY = (innerHeight + 48) / designHeight;
                     final innerScaleX = innerWidth / designWidth;

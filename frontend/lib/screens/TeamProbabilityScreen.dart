@@ -425,7 +425,7 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
     ];
     final highestProbability =
         spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
-    // Always show the zero baseline; round the visible peak up to a 20% band.
+    // 0%를 기준선으로 두고 표시할 최고 확률을 20% 단위로 올려요.
     final maxY = (highestProbability / 20).ceil().clamp(1, 5) * 20;
     final gridColor = Theme.of(context).colorScheme.onSurface.withValues(
           alpha: Theme.of(context).brightness == Brightness.dark ? 0.32 : 0.18,
@@ -497,8 +497,8 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
                         ),
                       ),
                     );
-                // At the first rounds the shared viewport cannot scroll left;
-                // reveal its covered leading edge as the handle moves back.
+                // 초기 라운드에서는 더 왼쪽으로 스크롤할 수 없으므로 선택점이
+                // 뒤로 갈수록 축 라벨에 가린 눈금선의 시작점을 드러내요.
                 final revealStart =
                     math.min(latestRound, RoundChartWindow.centerIntervalCount);
                 final revealOffset = _selectedRound == null || revealStart == 0

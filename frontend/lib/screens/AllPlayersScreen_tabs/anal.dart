@@ -408,8 +408,8 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                         axisLabelStyle,
                         lineCount: _gridLineCount,
                       );
-                      // The first rounds cannot scroll farther left, so move
-                      // their hidden line out from behind the axis label.
+                      // 초기 라운드에서는 더 왼쪽으로 스크롤할 수 없으므로
+                      // 축 라벨에 가린 눈금선의 시작점을 선택점에 맞춰 옮겨요.
                       final revealStart = math.min(
                         latestRound,
                         RoundChartWindow.centerIntervalCount,

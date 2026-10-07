@@ -42,6 +42,7 @@ FormationLayout buildFormationLayout(String formation) {
       .where((count) => count > 0)
       .toList();
   if (counts.fold<int>(0, (sum, count) => sum + count) != 10) {
+    // 필드 선수 10명으로 해석할 수 없으면 기본 배치로 돌아가요.
     counts = [4, 1, 2, 3];
   }
 
@@ -82,7 +83,8 @@ FormationLayout buildFormationLayout(String formation) {
     } else {
       y = baseY;
     }
-    // 인원수별 가로 간격만 사용하고 각 포메이션의 좌표를 따로 저장하지 않아요.
+    // 345px 시안에서 두 명은 87.5px, 세 명은 220px, 그 이상은 252px 폭에 배치해요.
+    // 각 포메이션의 좌표를 따로 저장하지 않고 줄 인원수로 간격을 나눠요.
     final span = switch (count) {
       1 => 0.0,
       2 => 87.5,
