@@ -178,6 +178,50 @@ void main() {
       });
     });
   }
+
+  for (final size in [const Size(320, 700), const Size(430, 1100)]) {
+    testWidgets('five-player rows keep the pitch compact at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final names = List.generate(11, (index) => 'Player ${index + 1}');
+      final away = _rows(2, '3-5-2', names);
+      final home = _rows(1, '5-3-2', names).reversed.toList();
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: LineupPitch(
+                awayRows: away,
+                homeRows: home,
+                awayColor: const Color(0xFF1E70BF),
+                homeColor: const Color(0xFFEF1935),
+              ),
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final pitch = tester.getRect(
+        find.byKey(const ValueKey('match-lineup-card')),
+      );
+      expect(pitch.height, greaterThanOrEqualTo(784));
+      expect(pitch.height, lessThan(1000));
+      for (final player in [...away, ...home].expand((row) => row)) {
+        final rect = tester.getRect(find.byKey(
+          ValueKey('match-lineup-player-${player.teamId}-${player.playerId}'),
+        ));
+        expect(pitch.contains(rect.topLeft), isTrue);
+        expect(pitch.contains(rect.bottomRight), isTrue);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
 
 List<List<LineupPlayer>> _rows(
