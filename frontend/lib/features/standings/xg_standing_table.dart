@@ -85,6 +85,15 @@ class XgTable extends StatelessWidget {
           color: AppColors.of(context).cardBackground,
           child: Stack(
             children: [
+              Positioned(
+                key: const ValueKey('standing-stats-header-backdrop'),
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 59,
+                child:
+                    ColoredBox(color: AppColors.of(context).subtleBackground),
+              ),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 controller: horizontalScrollController,
@@ -93,47 +102,33 @@ class XgTable extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          topRight: isScrolledToEnd
-                              ? const Radius.circular(24)
-                              : Radius.zero,
+                      Container(
+                        key: const ValueKey('standing-stats-header'),
+                        height: 59,
+                        color: AppColors.of(context).subtleBackground,
+                        padding: const EdgeInsets.fromLTRB(
+                          _standingTableHorizontalPadding,
+                          24,
+                          _standingTableHorizontalPadding,
+                          16,
                         ),
-                        child: Container(
-                          key: const ValueKey('standing-stats-header'),
-                          height: 59,
-                          color: AppColors.of(context).subtleBackground,
-                          padding: const EdgeInsets.fromLTRB(
-                            _standingTableHorizontalPadding,
-                            24,
-                            _standingTableHorizontalPadding,
-                            16,
-                          ),
-                          child: Row(
-                            children: [
-                              _buildXgHeaderCell(context, tr(context, 'MP')),
-                              const SizedBox(width: 8),
-                              _buildXgHeaderCell(context, 'xG'),
-                              const SizedBox(width: 8),
-                              _buildXgHeaderCell(context, 'xGA'),
-                              const SizedBox(width: 8),
-                              _buildXgHeaderCell(context, 'xPts'),
-                            ],
-                          ),
+                        child: Row(
+                          children: [
+                            _buildXgHeaderCell(context, tr(context, 'MP')),
+                            const SizedBox(width: 8),
+                            _buildXgHeaderCell(context, 'xG'),
+                            const SizedBox(width: 8),
+                            _buildXgHeaderCell(context, 'xGA'),
+                            const SizedBox(width: 8),
+                            _buildXgHeaderCell(context, 'xPts'),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 24),
                       ..._buildStatRows(context),
-                      ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          bottomRight: isScrolledToEnd
-                              ? const Radius.circular(24)
-                              : Radius.zero,
-                        ),
-                        child: Container(
-                          height: 24,
-                          color: AppColors.of(context).cardBackground,
-                        ),
+                      Container(
+                        height: 24,
+                        color: AppColors.of(context).cardBackground,
                       ),
                     ],
                   ),

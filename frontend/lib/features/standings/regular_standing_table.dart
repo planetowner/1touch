@@ -76,100 +76,94 @@ class StandingTable extends StatelessWidget {
       color: AppColors.of(context).cardBackground,
       child: Stack(
         children: [
+          Positioned(
+            key: const ValueKey('standing-stats-header-backdrop'),
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 59,
+            child: ColoredBox(color: AppColors.of(context).subtleBackground),
+          ),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             controller: horizontalScrollController,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    topRight: isScrolledToEnd
-                        ? const Radius.circular(24)
-                        : Radius.zero,
+                Container(
+                  key: const ValueKey('standing-stats-header'),
+                  height: 59,
+                  color: AppColors.of(context).subtleBackground,
+                  padding: const EdgeInsets.fromLTRB(
+                    _standingTableHorizontalPadding,
+                    24,
+                    _standingTableHorizontalPadding,
+                    16,
                   ),
-                  child: Container(
-                    key: const ValueKey('standing-stats-header'),
-                    height: 59,
-                    color: AppColors.of(context).subtleBackground,
-                    padding: const EdgeInsets.fromLTRB(
-                      _standingTableHorizontalPadding,
-                      24,
-                      _standingTableHorizontalPadding,
-                      16,
-                    ),
-                    child: Row(
-                      children: [
-                        _buildHeaderCell(
-                          context,
-                          'Pts',
-                          key: const ValueKey('standing-header-pts'),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderCell(
-                          context,
-                          'MP',
-                          key: const ValueKey('standing-header-mp'),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderCell(
-                          context,
-                          'W',
-                          key: const ValueKey('standing-header-w'),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderCell(
-                          context,
-                          'D',
-                          key: const ValueKey('standing-header-d'),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderCell(
-                          context,
-                          'L',
-                          key: const ValueKey('standing-header-l'),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderCell(
-                          context,
-                          'GF',
-                          key: const ValueKey('standing-header-gf'),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderCell(
-                          context,
-                          'GA',
-                          key: const ValueKey('standing-header-ga'),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderCell(
-                          context,
-                          'GD',
-                          key: const ValueKey('standing-header-gd'),
-                        ),
-                        const SizedBox(width: 12),
-                        _buildHeaderCell(
-                          context,
-                          'Last 5',
-                          isWide: true,
-                          key: const ValueKey('standing-header-last-five'),
-                        ),
-                      ],
-                    ),
+                  child: Row(
+                    children: [
+                      _buildHeaderCell(
+                        context,
+                        'Pts',
+                        key: const ValueKey('standing-header-pts'),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildHeaderCell(
+                        context,
+                        'MP',
+                        key: const ValueKey('standing-header-mp'),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildHeaderCell(
+                        context,
+                        'W',
+                        key: const ValueKey('standing-header-w'),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildHeaderCell(
+                        context,
+                        'D',
+                        key: const ValueKey('standing-header-d'),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildHeaderCell(
+                        context,
+                        'L',
+                        key: const ValueKey('standing-header-l'),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildHeaderCell(
+                        context,
+                        'GF',
+                        key: const ValueKey('standing-header-gf'),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildHeaderCell(
+                        context,
+                        'GA',
+                        key: const ValueKey('standing-header-ga'),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildHeaderCell(
+                        context,
+                        'GD',
+                        key: const ValueKey('standing-header-gd'),
+                      ),
+                      const SizedBox(width: 12),
+                      _buildHeaderCell(
+                        context,
+                        'Last 5',
+                        isWide: true,
+                        key: const ValueKey('standing-header-last-five'),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),
                 ..._buildStatRows(context),
-                ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    bottomRight: isScrolledToEnd
-                        ? const Radius.circular(24)
-                        : Radius.zero,
-                  ),
-                  child: Container(
-                    height: 24,
-                    color: AppColors.of(context).cardBackground,
-                  ),
+                Container(
+                  height: 24,
+                  color: AppColors.of(context).cardBackground,
                 ),
               ],
             ),

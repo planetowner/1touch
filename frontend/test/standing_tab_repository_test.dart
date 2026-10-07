@@ -194,12 +194,26 @@ void main() {
     final statsHeader = tester.widget<Container>(
       find.byKey(const ValueKey('standing-stats-header')),
     );
+    final headerBackdrop =
+        find.byKey(const ValueKey('standing-stats-header-backdrop'));
 
     expect(tester.getSize(card).width, 345);
     expect(tester.getSize(clubColumn).width, 130);
     expect(decoration.borderRadius, BorderRadius.circular(24));
     expect(clubHeader.padding, const EdgeInsets.fromLTRB(16, 24, 16, 16));
     expect(statsHeader.padding, const EdgeInsets.fromLTRB(16, 24, 16, 16));
+    expect(tester.getRect(headerBackdrop).top, tester.getRect(card).top);
+    expect(tester.getRect(headerBackdrop).right, tester.getRect(card).right);
+    expect(tester.getSize(headerBackdrop).height, 59);
+    expect(
+      tester
+          .widget<ColoredBox>(
+            find.descendant(
+                of: headerBackdrop, matching: find.byType(ColoredBox)),
+          )
+          .color,
+      statsHeader.color,
+    );
     expect(
       tester.getTopRight(clubColumn).dx -
           tester
@@ -505,7 +519,24 @@ void main() {
       app_style.lightModeCardShadows,
     );
     final xgHeader = find.byKey(const ValueKey('standing-stats-header'));
+    final xgHeaderBackdrop =
+        find.byKey(const ValueKey('standing-stats-header-backdrop'));
     expect(tester.getSize(xgHeader).width, 215);
+    expect(
+      tester.getRect(xgHeaderBackdrop).right,
+      tester
+          .getRect(find.byKey(const ValueKey('xg-standing-table-card')))
+          .right,
+    );
+    expect(
+      tester
+          .widget<ColoredBox>(find.descendant(
+            of: xgHeaderBackdrop,
+            matching: find.byType(ColoredBox),
+          ))
+          .color,
+      tester.widget<Container>(xgHeader).color,
+    );
     expect(
       tester.getTopRight(xgHeader).dx,
       tester
