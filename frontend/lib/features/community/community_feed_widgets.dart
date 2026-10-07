@@ -194,9 +194,15 @@ class _PostCard extends StatelessWidget {
                   Row(
                     children: [
                       CircleAvatar(
+                        key: ValueKey('community-post-avatar-${post.postId}'),
                         radius: 12,
                         backgroundColor:
                             isLight ? AppPalette.lightGrey : Colors.white24,
+                        backgroundImage: post.avatarUrl == null
+                            ? null
+                            : communityImageProvider(post.avatarUrl!),
+                        onBackgroundImageError:
+                            post.avatarUrl == null ? null : (_, __) {},
                       ),
                       const SizedBox(width: 8),
                       Expanded(

@@ -227,6 +227,97 @@ void main() {
     expect(apiImageHeaders('https://images.example.org/photo.jpg'), isNull);
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('community post avatars use authenticated images at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final previousToken = authSession.accessToken;
+      authSession.establish('post-avatar-token');
+      addTearDown(() {
+        authSession.clear();
+        if (previousToken != null) authSession.establish(previousToken);
+      });
+      final avatarUrl = apiClient.baseUri.resolve('users/1/avatar').toString();
+      final post = Post(
+        postId: 12,
+        teamId: 9,
+        userId: 1,
+        category: PostCategory.general,
+        title: 'Photo author',
+        body: 'Body',
+        avatarUrl: avatarUrl,
+        createdAt: '2026-09-27T12:00:00Z',
+      );
+      const postWithoutAvatar = Post(
+        postId: 13,
+        teamId: 9,
+        userId: 2,
+        category: PostCategory.general,
+        title: 'No photo',
+        body: 'Body',
+        createdAt: '2026-09-27T12:00:00Z',
+      );
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: CommunityPostList(
+            posts: [post, postWithoutAvatar],
+            onPostTap: (_) {},
+          ),
+        ),
+      ));
+
+      final feedAvatar = tester.widget<CircleAvatar>(
+        find.byKey(const ValueKey('community-post-avatar-12')),
+      );
+      final feedImage = feedAvatar.backgroundImage! as NetworkImage;
+      expect(feedImage.url, avatarUrl);
+      expect(feedImage.headers,
+          const {'Authorization': 'Bearer post-avatar-token'});
+      expect(
+        tester
+            .widget<CircleAvatar>(
+                find.byKey(const ValueKey('community-post-avatar-13')))
+            .backgroundImage,
+        isNull,
+      );
+      expect(tester.takeException(), isNull);
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: CustomScrollView(
+            slivers: [
+              PostDetailContent(
+                post: post,
+                liked: false,
+                likeCount: 0,
+                commentCount: 0,
+                onLike: null,
+                communityRepository: const StubCommunityRepository(),
+                comments: const [],
+                commentsLoading: false,
+                commentsError: null,
+                onRetryComments: () {},
+                onReply: null,
+                onReport: null,
+              ),
+            ],
+          ),
+        ),
+      ));
+
+      final detailAvatar = tester.widget<CircleAvatar>(
+        find.byKey(const ValueKey('community-post-avatar-12')),
+      );
+      final detailImage = detailAvatar.backgroundImage! as NetworkImage;
+      expect(detailImage.url, avatarUrl);
+      expect(detailImage.headers,
+          const {'Authorization': 'Bearer post-avatar-token'});
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('community comment avatars authenticate API image requests',
       (tester) async {
     final previousToken = authSession.accessToken;
