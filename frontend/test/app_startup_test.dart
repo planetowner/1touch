@@ -9,8 +9,38 @@ import 'package:onetouch/onboarding.dart';
 import 'package:onetouch/main.dart' as app;
 import 'package:onetouch/splash.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:onetouch/core/theme_controller.dart';
 
 void main() {
+  testWidgets('saved light theme is used on the first Flutter splash frame',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({'app.theme_mode': 'light'});
+    final platform = Completer<void>();
+    await tester.runAsync(
+      () => AssetLottie('assets/animations/onetouch_logo_light.json').load(),
+    );
+
+    await app.runOneTouchApp(
+      initializePlatform: () => platform.future,
+      restoreSession: () async => false,
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(appThemeController.value, ThemeMode.light);
+    expect(find.byType(SplashScreen), findsOneWidget);
+    expect(
+      tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
+      Colors.white,
+    );
+    expect(
+      find.byKey(const ValueKey('assets/animations/onetouch_logo_light.json')),
+      findsOneWidget,
+    );
+    platform.complete();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets(
       'logo precedes initialization and navigation does not wait for push',
       (tester) async {
