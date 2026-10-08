@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/number_display.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';

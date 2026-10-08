@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 class ApiCompetitionXgStandingsResponse {
   ApiCompetitionXgStandingsResponse({
     required this.competitionId,
@@ -21,10 +23,10 @@ class ApiCompetitionXgStandingsResponse {
       throw const FormatException('Expected required list field "rows".');
     }
     return ApiCompetitionXgStandingsResponse(
-      competitionId: _requiredInt(json, 'competition_id'),
-      seasonId: _requiredInt(json, 'season_id'),
-      provider: _requiredString(json, 'provider'),
-      xptsMethod: _requiredString(json, 'xpts_method'),
+      competitionId: api_json.requiredInt(json, 'competition_id'),
+      seasonId: api_json.requiredInt(json, 'season_id'),
+      provider: api_json.requiredString(json, 'provider'),
+      xptsMethod: api_json.requiredString(json, 'xpts_method'),
       rows: rawRows.map((row) {
         if (row is! Map<String, dynamic>) {
           throw const FormatException(
@@ -62,37 +64,19 @@ class ApiXgStandingRowResponse {
 
   factory ApiXgStandingRowResponse.fromJson(Map<String, dynamic> json) {
     return ApiXgStandingRowResponse(
-      position: _requiredInt(json, 'position'),
-      teamId: _requiredInt(json, 'team_id'),
-      teamName: _requiredString(json, 'team_name'),
+      position: api_json.requiredInt(json, 'position'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      teamName: api_json.requiredString(json, 'team_name'),
       teamShortName: json.containsKey('team_short_name')
           ? _nullableString(json, 'team_short_name')
           : null,
       teamLogo: _nullableString(json, 'team_logo'),
-      matchesPlayed: _requiredInt(json, 'matches_played'),
-      xg: _requiredDouble(json, 'xg'),
-      xga: _requiredDouble(json, 'xga'),
-      xpts: _requiredDouble(json, 'xpts'),
+      matchesPlayed: api_json.requiredInt(json, 'matches_played'),
+      xg: api_json.requiredDouble(json, 'xg'),
+      xga: api_json.requiredDouble(json, 'xga'),
+      xpts: api_json.requiredDouble(json, 'xpts'),
     );
   }
-}
-
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
-}
-
-double _requiredDouble(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is num) return value.toDouble();
-  throw FormatException('Expected required numeric field "$key".');
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
 }
 
 String? _nullableString(Map<String, dynamic> json, String key) {

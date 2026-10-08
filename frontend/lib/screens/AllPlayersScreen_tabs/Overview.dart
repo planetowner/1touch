@@ -8,7 +8,7 @@ import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/display_preferences.dart';
 import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/data/contracts/team_contract_repository_provider.dart';

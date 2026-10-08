@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 /// Transport response for `GET /v1/teams/{team_id}/best-eleven`.
 class ApiBestElevenResponse {
   const ApiBestElevenResponse({
@@ -22,12 +24,12 @@ class ApiBestElevenResponse {
 
   factory ApiBestElevenResponse.fromJson(Map<String, dynamic> json) {
     return ApiBestElevenResponse(
-      teamId: _requiredInt(json, 'team_id'),
-      seasonId: _requiredInt(json, 'season_id'),
-      formation: _requiredString(json, 'formation'),
-      matchesUsed: _requiredInt(json, 'matches_used'),
-      totalValidMatches: _requiredInt(json, 'total_valid_matches'),
-      usagePercentage: _requiredDouble(json, 'usage_percentage'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      seasonId: api_json.requiredInt(json, 'season_id'),
+      formation: api_json.requiredString(json, 'formation'),
+      matchesUsed: api_json.requiredInt(json, 'matches_used'),
+      totalValidMatches: api_json.requiredInt(json, 'total_valid_matches'),
+      usagePercentage: api_json.requiredDouble(json, 'usage_percentage'),
       formations: _requiredObjectList(
         json,
         'formations',
@@ -59,11 +61,11 @@ class ApiBestElevenFormationResponse {
 
   factory ApiBestElevenFormationResponse.fromJson(Map<String, dynamic> json) {
     return ApiBestElevenFormationResponse(
-      formation: _requiredString(json, 'formation'),
-      matchesUsed: _requiredInt(json, 'matches_used'),
-      totalValidMatches: _requiredInt(json, 'total_valid_matches'),
-      usagePercentage: _requiredDouble(json, 'usage_percentage'),
-      isDefault: _requiredBool(json, 'is_default'),
+      formation: api_json.requiredString(json, 'formation'),
+      matchesUsed: api_json.requiredInt(json, 'matches_used'),
+      totalValidMatches: api_json.requiredInt(json, 'total_valid_matches'),
+      usagePercentage: api_json.requiredDouble(json, 'usage_percentage'),
+      isDefault: api_json.requiredBool(json, 'is_default'),
     );
   }
 }
@@ -93,23 +95,17 @@ class ApiBestElevenPlayerResponse {
 
   factory ApiBestElevenPlayerResponse.fromJson(Map<String, dynamic> json) {
     return ApiBestElevenPlayerResponse(
-      slotKey: _requiredString(json, 'slot_key'),
-      slotIndex: _requiredInt(json, 'slot_index'),
-      playerId: _requiredInt(json, 'player_id'),
+      slotKey: api_json.requiredString(json, 'slot_key'),
+      slotIndex: api_json.requiredInt(json, 'slot_index'),
+      playerId: api_json.requiredInt(json, 'player_id'),
       playerName: _nullableString(json, 'player_name'),
       playerImage: _nullableString(json, 'player_image'),
       positionGroupCode: _nullableString(json, 'position_group_code'),
       positionCode: _nullableString(json, 'position_code'),
-      starts: _requiredInt(json, 'starts'),
+      starts: api_json.requiredInt(json, 'starts'),
       jerseyNumber: _nullableInt(json, 'jersey_number'),
     );
   }
-}
-
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
 }
 
 int? _nullableInt(Map<String, dynamic> json, String key) {
@@ -118,28 +114,10 @@ int? _nullableInt(Map<String, dynamic> json, String key) {
   throw FormatException('Expected nullable integer field "$key".');
 }
 
-double _requiredDouble(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is num) return value.toDouble();
-  throw FormatException('Expected required numeric field "$key".');
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
-}
-
 String? _nullableString(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null || value is String) return value as String?;
   throw FormatException('Expected nullable string field "$key".');
-}
-
-bool _requiredBool(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is bool) return value;
-  throw FormatException('Expected required boolean field "$key".');
 }
 
 List<T> _requiredObjectList<T>(

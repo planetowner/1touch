@@ -8,7 +8,7 @@ import json
 
 from fastapi import HTTPException
 
-from ..db import fetch_all_dict, fetch_one_dict, transaction
+from ..db import fetch_all_dict, fetch_one_dict, fetch_one_from_cursor, transaction
 from ..services.community_periods import utc_now
 from .users_repo import lock_user
 from .points_repo import (get_wallet, initialize_wallet, initialize_locked_wallet as _initialize,
@@ -144,11 +144,6 @@ def market_unavailable_reason(fixture, now, prediction):
             'prediction_unavailable' if prediction is None else None)
 
 
-def _read_one(cur, sql, params=()):
-    cur.execute(sql, params)
-    return cur.fetchone()
-
-
 def mutate_bet(user_id, fixture_id, body, *, cancel=False):
     request_id = str(body['request_id'])
     digest = hashlib.sha256(json.dumps({'fixture_id': fixture_id, 'cancel': cancel, **body},
@@ -156,17 +151,17 @@ def mutate_bet(user_id, fixture_id, body, *, cancel=False):
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
         # 참여·변경·취소·자동 정산은 회원→경기→베팅 순서로 잠가요.
         lock_user(cur, user_id)
-        fixture = _read_one(cur, FIXTURE_SQL + ' FOR UPDATE', (fixture_id,))
+        fixture = fetch_one_from_cursor(cur, FIXTURE_SQL + ' FOR UPDATE', (fixture_id,))
         if fixture is None:
             raise HTTPException(404, 'Fixture not found')
-        bet = _read_one(cur, 'SELECT * FROM fixture_bets WHERE user_id=%s AND fixture_id=%s FOR UPDATE',
+        bet = fetch_one_from_cursor(cur, 'SELECT * FROM fixture_bets WHERE user_id=%s AND fixture_id=%s FOR UPDATE',
                         (user_id, fixture_id))
-        prior = _read_one(cur, 'SELECT request_hash FROM user_point_entries WHERE user_id=%s AND request_id=%s',
+        prior = fetch_one_from_cursor(cur, 'SELECT request_hash FROM user_point_entries WHERE user_id=%s AND request_id=%s',
                           (user_id, request_id))
         if prior:
             if prior['request_hash'] != digest:
                 raise HTTPException(409, {'code': 'request_conflict', 'message': 'Request ID was already used'})
-            wallet = _read_one(cur, 'SELECT balance FROM user_point_wallets WHERE user_id=%s', (user_id,))
+            wallet = fetch_one_from_cursor(cur, 'SELECT balance FROM user_point_wallets WHERE user_id=%s', (user_id,))
             return {'wallet': _wallet(wallet), 'bet': _bet(bet)}
         now = utc_now()
         if not _before_start(fixture, now):
@@ -188,7 +183,7 @@ def mutate_bet(user_id, fixture_id, body, *, cancel=False):
                         (revision, old_stake, now, bet['bet_id']))
             bet_id = bet['bet_id']
         else:
-            prediction = _prediction(lambda sql, params: _read_one(cur, sql, params), fixture, now)
+            prediction = _prediction(lambda sql, params: fetch_one_from_cursor(cur, sql, params), fixture, now)
             if prediction is None:
                 raise HTTPException(409, {'code': 'prediction_unavailable', 'message': 'Prediction is unavailable'})
             if body['prediction_run_id'] != prediction['prediction_run_id']:
@@ -218,7 +213,7 @@ def mutate_bet(user_id, fixture_id, body, *, cancel=False):
         balance = apply_delta(cur, user_id, wallet, delta, now, kind=kind, request_id=request_id,
                               request_hash=digest, bet_id=bet_id, revision=revision)
         return {'wallet': _wallet({'balance': balance}),
-                'bet': _bet(_read_one(cur, 'SELECT * FROM fixture_bets WHERE bet_id=%s', (bet_id,)))}
+                'bet': _bet(fetch_one_from_cursor(cur, 'SELECT * FROM fixture_bets WHERE bet_id=%s', (bet_id,)))}
 
 
 def settle_bet(bet_id, *, apply=False):
@@ -227,19 +222,19 @@ def settle_bet(bet_id, *, apply=False):
         return None
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
         lock_user(cur, owner['user_id'])
-        fixture = _read_one(cur, FIXTURE_SQL + ' FOR UPDATE', (owner['fixture_id'],))
-        bet = _read_one(cur, 'SELECT * FROM fixture_bets WHERE bet_id=%s FOR UPDATE', (bet_id,))
+        fixture = fetch_one_from_cursor(cur, FIXTURE_SQL + ' FOR UPDATE', (owner['fixture_id'],))
+        bet = fetch_one_from_cursor(cur, 'SELECT * FROM fixture_bets WHERE bet_id=%s FOR UPDATE', (bet_id,))
         if bet is None or bet['status'] != 'open':
             return None
         draw_allowed = True
         if fixture['competition_id'] in CUP_COMPETITION_IDS:
-            run = _read_one(cur, 'SELECT payload FROM probability_runs WHERE run_id=%s', (bet['prediction_run_id'],))
+            run = fetch_one_from_cursor(cur, 'SELECT payload FROM probability_runs WHERE run_id=%s', (bet['prediction_run_id'],))
             quote = decoded(run['payload'])['fixture_markets'][str(fixture['fixture_id'])]
             draw_allowed = quote['draw_allowed']
         result = settlement(fixture, bet, draw_allowed=draw_allowed)
         if result is None or not apply:
             return {'bet_id': bet_id, **result} if result else None
-        wallet = _read_one(cur, 'SELECT balance FROM user_point_wallets WHERE user_id=%s', (owner['user_id'],))
+        wallet = fetch_one_from_cursor(cur, 'SELECT balance FROM user_point_wallets WHERE user_id=%s', (owner['user_id'],))
         now, revision = utc_now(), bet['revision'] + 1
         cur.execute('''UPDATE fixture_bets SET status=%s,payout=%s,settlement_reason=%s,
             settled_home_score=%s,settled_away_score=%s,settled_at=%s,updated_at=%s,revision=%s WHERE bet_id=%s''',

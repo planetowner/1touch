@@ -11,6 +11,7 @@ PYTHON_ROOT = BACKEND_ROOT / "python"
 sys.path.insert(0, str(PYTHON_ROOT))
 
 from one_touch_loader.loaders import teams_loader
+from one_touch_loader.core.season_names import season_start_year
 
 
 def _team(team_id: int, name: str, placeholder: bool = False) -> dict:
@@ -169,10 +170,10 @@ class TeamsLoaderTests(unittest.TestCase):
             )
 
     def test_all_mode_season_names_require_consecutive_years(self):
-        self.assertEqual(teams_loader._season_start_year("2017/2018"), 2017)
+        self.assertEqual(season_start_year("2017/2018"), 2017)
 
         with self.assertRaisesRegex(ValueError, "Unsupported season name"):
-            teams_loader._season_start_year("2024/2026")
+            season_start_year("2024/2026")
 
 
 if __name__ == "__main__":

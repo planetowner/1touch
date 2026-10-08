@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 /// Transport response for `GET /v1/teams/{team_id}/attributes`.
 ///
 /// Supplying `season_id` returns the same shape for that historical season.
@@ -34,43 +36,20 @@ class ApiTeamAttributeResponse {
 
   factory ApiTeamAttributeResponse.fromJson(Map<String, dynamic> json) {
     return ApiTeamAttributeResponse(
-      competitionId: _requiredInt(json, 'competition_id'),
-      seasonId: _requiredInt(json, 'season_id'),
-      seasonName: _requiredString(json, 'season_name'),
-      isCurrent: _requiredBool(json, 'is_current'),
-      teamId: _requiredInt(json, 'team_id'),
-      teamName: _requiredString(json, 'team_name'),
-      modelId: _requiredInt(json, 'model_id'),
-      possessionBuildUp: _requiredDouble(json, 'possession_build_up'),
-      attackingThreat: _requiredDouble(json, 'attacking_threat'),
-      chanceCreation: _requiredDouble(json, 'chance_creation'),
-      finishing: _requiredDouble(json, 'finishing'),
-      defending: _requiredDouble(json, 'defending'),
-      attributesUpdatedAt: _requiredString(json, 'attributes_updated_at'),
+      competitionId: api_json.requiredInt(json, 'competition_id'),
+      seasonId: api_json.requiredInt(json, 'season_id'),
+      seasonName: api_json.requiredString(json, 'season_name'),
+      isCurrent: api_json.requiredBool(json, 'is_current'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      teamName: api_json.requiredString(json, 'team_name'),
+      modelId: api_json.requiredInt(json, 'model_id'),
+      possessionBuildUp: api_json.requiredDouble(json, 'possession_build_up'),
+      attackingThreat: api_json.requiredDouble(json, 'attacking_threat'),
+      chanceCreation: api_json.requiredDouble(json, 'chance_creation'),
+      finishing: api_json.requiredDouble(json, 'finishing'),
+      defending: api_json.requiredDouble(json, 'defending'),
+      attributesUpdatedAt:
+          api_json.requiredString(json, 'attributes_updated_at'),
     );
   }
-}
-
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
-}
-
-double _requiredDouble(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is num) return value.toDouble();
-  throw FormatException('Expected required numeric field "$key".');
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
-}
-
-bool _requiredBool(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is bool) return value;
-  throw FormatException('Expected required boolean field "$key".');
 }

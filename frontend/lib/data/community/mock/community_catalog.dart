@@ -1,7 +1,5 @@
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/user.dart';
-import 'package:onetouch/models/user_following_team.dart';
-import 'package:onetouch/models/user_profile.dart';
 
 // POSTS  (posts table)
 //
@@ -111,89 +109,3 @@ const mockUsers = <User>[
       avatarAsset: 'assets/profileAvatar.png',
       createdAt: '2025-02-14 08:00:00'), // Liverpool fan
 ];
-
-User mockUserById(int id) =>
-    mockUsers.firstWhere((u) => u.userId == id, orElse: () => mockUsers.first);
-
-//
-// USER PROFILES  (user_profiles table)
-//
-
-const mockUserProfiles = <UserProfile>[
-  UserProfile(
-      userId: 1001,
-      favoriteTeamId: 83,
-      pts: 1420,
-      postCount: 8,
-      commentCount: 54,
-      createdAt: '2024-08-15 09:01:00',
-      updatedAt: '2025-04-07 21:30:00'), // Barcelona
-  UserProfile(
-      userId: 1002,
-      favoriteTeamId: 503,
-      pts: 870,
-      postCount: 5,
-      commentCount: 31,
-      createdAt: '2024-09-01 12:31:00',
-      updatedAt: '2025-04-06 14:00:00'), // Bayern
-  UserProfile(
-      userId: 1003,
-      favoriteTeamId: 9,
-      pts: 310,
-      postCount: 2,
-      commentCount: 12,
-      createdAt: '2024-10-20 18:46:00',
-      updatedAt: '2025-04-08 11:00:00'), // Man City
-  UserProfile(
-      userId: 1004,
-      favoriteTeamId: 591,
-      pts: 2250,
-      postCount: 19,
-      commentCount: 88,
-      createdAt: '2025-01-05 11:01:00',
-      updatedAt: '2025-04-05 10:00:00'), // PSG
-  UserProfile(
-      userId: 1005,
-      favoriteTeamId: 8,
-      pts: 540,
-      postCount: 3,
-      commentCount: 27,
-      createdAt: '2025-02-14 08:01:00',
-      updatedAt: '2025-04-04 09:00:00'), // Liverpool
-];
-
-UserProfile mockUserProfileById(int id) => mockUserProfiles
-    .firstWhere((p) => p.userId == id, orElse: () => mockUserProfiles.first);
-
-//
-// USER FOLLOWING TEAMS  (user_following_teams table)
-//
-
-const mockUserFollowingTeams = <UserFollowingTeam>[
-  // 1001 Alex Kim: Barcelona + Bayern
-  UserFollowingTeam(userId: 1001, teamId: 83, createdAt: '2024-08-15 09:01:00'),
-  UserFollowingTeam(
-      userId: 1001, teamId: 503, createdAt: '2024-08-15 09:02:00'),
-  // 1002 Maria Schmidt: Bayern + Dortmund
-  UserFollowingTeam(
-      userId: 1002, teamId: 503, createdAt: '2024-09-01 12:31:00'),
-  UserFollowingTeam(userId: 1002, teamId: 68, createdAt: '2024-09-01 12:32:00'),
-  // 1003 James Walker: Man City + Inter Milan
-  UserFollowingTeam(userId: 1003, teamId: 9, createdAt: '2024-10-20 18:46:00'),
-  UserFollowingTeam(
-      userId: 1003, teamId: 2930, createdAt: '2024-10-20 18:47:00'),
-  // 1004 Sophie Martin: PSG + Marseille
-  UserFollowingTeam(
-      userId: 1004, teamId: 591, createdAt: '2025-01-05 11:01:00'),
-  UserFollowingTeam(userId: 1004, teamId: 44, createdAt: '2025-01-05 11:02:00'),
-  // 1005 Lucas Santos: Liverpool + Arsenal
-  UserFollowingTeam(userId: 1005, teamId: 8, createdAt: '2025-02-14 08:01:00'),
-  UserFollowingTeam(userId: 1005, teamId: 19, createdAt: '2025-02-14 08:02:00'),
-];
-
-List<int> followingTeamIds(int userId) => mockUserFollowingTeams
-    .where((f) => f.userId == userId)
-    .map((f) => f.teamId)
-    .toList();
-
-//

@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 import 'package:onetouch/data/fixtures/api/api_fixture_response.dart';
 import 'package:onetouch/data/teams/api/api_team_response.dart';
 
@@ -82,22 +84,22 @@ class ApiTeamOverviewStandingResponse {
     }
 
     return ApiTeamOverviewStandingResponse(
-      position: _requiredInt(json, 'position'),
+      position: api_json.requiredInt(json, 'position'),
       rankDelta: _optionalInt(json, 'rank_delta'),
-      teamId: _requiredInt(json, 'team_id'),
-      teamName: _requiredString(json, 'team_name'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      teamName: api_json.requiredString(json, 'team_name'),
       teamShortName: json.containsKey('team_short_name')
           ? _optionalString(json, 'team_short_name')
           : null,
       teamLogo: _optionalString(json, 'team_logo'),
-      matchesPlayed: _requiredInt(json, 'matches_played'),
-      won: _requiredInt(json, 'won'),
-      draw: _requiredInt(json, 'draw'),
-      lost: _requiredInt(json, 'lost'),
-      goalsFor: _requiredInt(json, 'goals_for'),
-      goalsAgainst: _requiredInt(json, 'goals_against'),
-      goalDiff: _requiredInt(json, 'goal_diff'),
-      points: _requiredInt(json, 'points'),
+      matchesPlayed: api_json.requiredInt(json, 'matches_played'),
+      won: api_json.requiredInt(json, 'won'),
+      draw: api_json.requiredInt(json, 'draw'),
+      lost: api_json.requiredInt(json, 'lost'),
+      goalsFor: api_json.requiredInt(json, 'goals_for'),
+      goalsAgainst: api_json.requiredInt(json, 'goals_against'),
+      goalDiff: api_json.requiredInt(json, 'goal_diff'),
+      points: api_json.requiredInt(json, 'points'),
       lastFiveForm: rawForm.cast<String>(),
     );
   }
@@ -127,12 +129,6 @@ T? _optionalObject<T>(
   throw FormatException('Expected nullable object field "$key".');
 }
 
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
-}
-
 int? _optionalInt(Map<String, dynamic> json, String key) {
   if (!json.containsKey(key)) {
     throw FormatException('Expected nullable integer field "$key".');
@@ -141,12 +137,6 @@ int? _optionalInt(Map<String, dynamic> json, String key) {
   if (value == null) return null;
   if (value is int) return value;
   throw FormatException('Expected nullable integer field "$key".');
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
 }
 
 String? _optionalString(Map<String, dynamic> json, String key) {

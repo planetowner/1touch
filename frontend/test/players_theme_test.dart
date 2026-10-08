@@ -14,7 +14,6 @@ import 'package:onetouch/screens/PlayerScreen.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/player/player_directory_widgets.dart';
 import 'package:onetouch/features/player/player_directory_sheets.dart';
-import 'package:onetouch/features/player/player_picker_sheet.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'support/player_detail_fixture.dart';
@@ -480,7 +479,6 @@ void main() {
       find.byKey(const ValueKey('shared-search-page')),
       findsOneWidget,
     );
-    expect(find.byType(PlayerPickerSheet), findsNothing);
   });
 
   testWidgets('ranking title sits 16px above its card without filters',

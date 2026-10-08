@@ -6,7 +6,7 @@ import 'package:cross_file/cross_file.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/api_image_headers.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/post.dart';
 

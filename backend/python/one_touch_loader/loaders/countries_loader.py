@@ -4,6 +4,7 @@ from typing import Dict, Optional, Tuple
 
 from ..core.db import upsert_many
 from ..core.sportmonks import SportmonksClient
+from ..core.sportmonks_fields import require_int, require_string, optional_string
 
 
 SQL_UPSERT_COUNTRY = """
@@ -19,31 +20,13 @@ ON DUPLICATE KEY UPDATE
 """
 
 
-def _require_int(value, field_name: str) -> int:
-    if type(value) is not int:
-        raise ValueError(f"Missing or invalid integer: {field_name}={value!r}")
-    return value
-
-
-def _require_string(value, field_name: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"Missing or invalid string: {field_name}={value!r}")
-    return value.strip()
-
-
-def _optional_string(value, field_name: str) -> Optional[str]:
-    if value is None:
-        return None
-    return _require_string(value, field_name)
-
-
 def _normalize_country(country: Dict, index: int) -> Tuple[int, str, Optional[str]]:
     if not isinstance(country, dict):
         raise ValueError(f"countries[{index}] must be an object: {country!r}")
     return (
-        _require_int(country.get("id"), f"countries[{index}].id"),
-        _require_string(country.get("name"), f"countries[{index}].name"),
-        _optional_string(
+        require_int(country.get("id"), f"countries[{index}].id"),
+        require_string(country.get("name"), f"countries[{index}].name"),
+        optional_string(
             country.get("image_path"),
             f"countries[{index}].image_path",
         ),

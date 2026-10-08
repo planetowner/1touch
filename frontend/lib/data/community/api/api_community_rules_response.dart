@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 class ApiCommunityRulesResponse {
   const ApiCommunityRulesResponse({required this.rules});
 
@@ -31,7 +33,7 @@ class ApiCommunityRulesContentResponse {
       throw const FormatException('Expected required list field "items".');
     }
     return ApiCommunityRulesContentResponse(
-      title: _requiredString(json, 'title'),
+      title: api_json.requiredString(json, 'title'),
       items: items.map((item) {
         if (item is! Map<String, dynamic>) {
           throw const FormatException(
@@ -55,14 +57,8 @@ class ApiCommunityRuleResponse {
 
   factory ApiCommunityRuleResponse.fromJson(Map<String, dynamic> json) {
     return ApiCommunityRuleResponse(
-      title: _requiredString(json, 'title'),
-      body: _requiredString(json, 'body'),
+      title: api_json.requiredString(json, 'title'),
+      body: api_json.requiredString(json, 'body'),
     );
   }
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
 }

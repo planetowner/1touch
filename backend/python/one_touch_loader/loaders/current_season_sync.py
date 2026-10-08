@@ -6,6 +6,7 @@ from time import monotonic
 
 from ..core.db import fetch_all, transaction
 from ..core.sportmonks import SportmonksClient
+from ..core.sportmonks_fields import require_int
 from . import fixtures_loader as fixtures
 from . import players_loader as players
 from . import player_contracts_loader as contracts
@@ -243,7 +244,7 @@ def sync_player_updates(*, apply: bool = False) -> dict:
     client = SportmonksClient()
     changed = client.get_latest_players()
     # latest는 이미 프로필을 포함해 단건 API를 다시 호출할 필요가 없어요.
-    by_id = {squads._require_int(raw.get("id"), "player.id"): raw for raw in changed}
+    by_id = {require_int(raw.get("id"), "player.id"): raw for raw in changed}
     existing_ids = _existing_player_ids(by_id)
     result = _sync_existing_profiles(
         ((pid, by_id[pid]) for pid in sorted(existing_ids)),

@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 /// Transport response for `GET /v1/teams/{team_id}/contracts`.
 class ApiTeamContractsResponse {
   const ApiTeamContractsResponse({
@@ -14,9 +16,9 @@ class ApiTeamContractsResponse {
 
   factory ApiTeamContractsResponse.fromJson(Map<String, dynamic> json) {
     return ApiTeamContractsResponse(
-      teamId: _requiredInt(json, 'team_id'),
-      seasonId: _requiredInt(json, 'season_id'),
-      isCurrent: _requiredBool(json, 'is_current'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      seasonId: api_json.requiredInt(json, 'season_id'),
+      isCurrent: api_json.requiredBool(json, 'is_current'),
       players: _requiredObjectList(
         json,
         'players',
@@ -53,8 +55,8 @@ class ApiPlayerContractResponse {
 
   factory ApiPlayerContractResponse.fromJson(Map<String, dynamic> json) {
     return ApiPlayerContractResponse(
-      playerId: _requiredInt(json, 'player_id'),
-      playerName: _requiredString(json, 'player_name'),
+      playerId: api_json.requiredInt(json, 'player_id'),
+      playerName: api_json.requiredString(json, 'player_name'),
       playerImage: _nullableString(json, 'player_image'),
       positionGroupId: _nullableInt(json, 'position_group_id'),
       jerseyNumber: _nullableInt(json, 'jersey_number'),
@@ -70,28 +72,10 @@ class ApiPlayerContractResponse {
   }
 }
 
-bool _requiredBool(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is bool) return value;
-  throw FormatException('Expected required boolean field "$key".');
-}
-
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
-}
-
 int? _nullableInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null || value is int) return value as int?;
   throw FormatException('Expected nullable integer field "$key".');
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
 }
 
 String? _nullableString(Map<String, dynamic> json, String key) {

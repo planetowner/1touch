@@ -2,8 +2,8 @@
 from datetime import datetime, timedelta
 import math
 
-from ..api.db import fetch_one_dict, transaction
-from ..api.repos.notifications_repo import push_data, read_one
+from ..api.db import fetch_one_dict, fetch_one_from_cursor, transaction
+from ..api.repos.notifications_repo import push_data
 from ..api.services.community_periods import utc_now
 from ..api.services.push_sender import PushError, PushSender
 
@@ -20,13 +20,13 @@ def dispatch(*, apply=False, limit=100, sender=None):
         for _ in range(limit):
             with transaction() as conn, conn.cursor(dictionary=True) as cur:
                 now = utc_now()
-                delivery = read_one(cur, '''SELECT notification_id,device_id,attempts FROM notification_push_deliveries
+                delivery = fetch_one_from_cursor(cur, '''SELECT notification_id,device_id,attempts FROM notification_push_deliveries
                     WHERE status='pending' AND next_attempt_at<=%s ORDER BY next_attempt_at,notification_id
                     LIMIT 1 FOR UPDATE SKIP LOCKED''', (now,))
                 if delivery is None:
                     break
-                row = read_one(cur, 'SELECT * FROM user_notifications WHERE notification_id=%s', (delivery['notification_id'],))
-                device = read_one(cur, '''SELECT d.*,s.expires_at AS session_expires_at FROM user_push_devices d
+                row = fetch_one_from_cursor(cur, 'SELECT * FROM user_notifications WHERE notification_id=%s', (delivery['notification_id'],))
+                device = fetch_one_from_cursor(cur, '''SELECT d.*,s.expires_at AS session_expires_at FROM user_push_devices d
                     JOIN user_sessions s ON s.token_hash=d.session_token_hash WHERE d.device_id=%s FOR UPDATE''', (delivery['device_id'],))
                 data = push_data(cur, row, now) if row and device and device['user_id'] == row['user_id'] and device['session_expires_at'] > now else None
                 status, code, next_try = 'skipped', None, now

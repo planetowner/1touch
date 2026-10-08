@@ -35,6 +35,7 @@ from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from ..core.db import upsert_many
 from ..core.sportmonks import SportmonksClient
+from ..core.season_names import season_start_year
 
 
 # 지원 범위를 코드에 명시해요. 공급자 응답만 보고 대회를 자동으로 늘리지 않아요.
@@ -103,22 +104,6 @@ def _team_row(team: Dict, field_name: str) -> TeamRow:
         _optional_string(team.get("short_code"), f"{field_name}.short_code"),
         _optional_string(team.get("image_path"), f"{field_name}.image_path"),
     )
-
-
-def _season_start_year(season_name: str) -> int:
-    parts = season_name.split("/", 1)
-    if len(parts) != 2:
-        raise ValueError(f"Unsupported season name: {season_name!r}")
-
-    try:
-        start_year = int(parts[0])
-        end_year = int(parts[1])
-    except ValueError as exc:
-        raise ValueError(f"Unsupported season name: {season_name!r}") from exc
-
-    if end_year != start_year + 1:
-        raise ValueError(f"Unsupported season name: {season_name!r}")
-    return start_year
 
 
 def _seasons_by_name(
@@ -298,8 +283,8 @@ def _collect_and_upsert(
         )
 
     season_name = _require_non_empty_string(season_name, "season_name")
-    season_start_year = _season_start_year(season_name)
-    if season_start_year < MIN_SEASON_START_YEAR:
+    start_year = season_start_year(season_name)
+    if start_year < MIN_SEASON_START_YEAR:
         raise ValueError(
             f"Season {season_name!r} is before the supported minimum "
             f"2017/2018."
@@ -376,7 +361,7 @@ def collect_all_teams() -> Dict[str, object]:
     for competition_id in SUPPORTED_COMPETITION_IDS:
         seasons = _seasons_by_name(sm, competition_id, cache)
         for season_name in seasons:
-            start_year = _season_start_year(season_name)
+            start_year = season_start_year(season_name)
             if start_year >= MIN_SEASON_START_YEAR:
                 collection_scope.append(
                     (start_year, competition_id, season_name)
