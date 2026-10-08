@@ -283,6 +283,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                       TextFormField(
                         key: const ValueKey('signup-password-field'),
                         controller: _password,
+                        // 비밀번호 검증 오류도 커서 색상은 바꾸지 않아요.
+                        cursorErrorColor: colors.primary,
                         obscureText: _obscure,
                         decoration: AuthStyles.inputDecoration(
                                 context, '••••••••',
@@ -312,6 +314,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                       TextFormField(
                         key: const ValueKey('signup-confirm-password-field'),
                         controller: _confirmPassword,
+                        cursorErrorColor: colors.primary,
                         obscureText: _obscureConfirm,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         decoration: AuthStyles.inputDecoration(
