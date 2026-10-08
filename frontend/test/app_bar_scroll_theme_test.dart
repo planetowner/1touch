@@ -1,8 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/main.dart' as app;
 
 void main() {
+  for (final theme in [app_style.whitetheme, app_style.darktheme]) {
+    testWidgets(
+        'status bar surface follows the visible route in ${theme.brightness}',
+        (tester) async {
+      late BuildContext pageContext;
+      await tester.pumpWidget(MaterialApp(
+        theme: theme,
+        home: Builder(builder: (context) {
+          pageContext = context;
+          return const SizedBox.shrink();
+        }),
+      ));
+
+      final isLight = theme.brightness == Brightness.light;
+      expect(app.statusBarBackgroundForPath(pageContext, '/'),
+          isLight ? Colors.white : Colors.black);
+      expect(
+          app.statusBarBackgroundForPath(pageContext, '/home'),
+          isLight
+              ? app_style.AppPalette.lightModeDarkGrey
+              : app_style.AppPalette.black);
+      expect(
+          app.statusBarBackgroundForPath(pageContext, '/profile'),
+          isLight
+              ? app_style.AppPalette.lightGreyBox
+              : app_style.AppPalette.black);
+      expect(app.statusBarBackgroundForPath(pageContext, '/profile/preference'),
+          isLight ? Colors.white : app_style.AppPalette.black);
+    });
+  }
+
   test('app bars retain their surface color when content scrolls beneath', () {
     for (final theme in [app_style.whitetheme, app_style.darktheme]) {
       expect(theme.appBarTheme.elevation, 0);

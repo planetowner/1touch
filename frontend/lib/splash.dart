@@ -22,7 +22,6 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  Brightness? _brightness;
   bool _hasNavigated = false;
   bool _animationStarted = false;
   bool _logoDrawn = false;
@@ -57,12 +56,6 @@ class _SplashScreenState extends State<SplashScreen>
       debugPrintStack(stackTrace: stackTrace);
       if (mounted) setState(() => _preparationError = error);
     }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _brightness ??= Theme.of(context).brightness;
   }
 
   void _handleAnimationStatus(AnimationStatus status) {
@@ -125,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen>
     if (_preparationError != null) {
       return AppErrorScreen(statusCode: 500, onRetry: _prepare);
     }
-    final brightness = _brightness ?? Theme.of(context).brightness;
+    final brightness = Theme.of(context).brightness;
     final backgroundColor =
         brightness == Brightness.dark ? Colors.black : Colors.white;
     final logoWidth = (MediaQuery.sizeOf(context).width * 0.34)
