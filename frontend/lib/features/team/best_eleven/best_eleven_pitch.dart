@@ -144,7 +144,9 @@ class _BestElevenPlayerDot extends StatelessWidget {
       label: 'Open $label',
       child: InkWell(
         key: ValueKey('best-eleven-player-link-${player.playerId}'),
-        onTap: () => openPlayerPage(context, player.playerId.toString()),
+        onTap: () => context.push(
+          playerPageLocation(context, player.playerId.toString()),
+        ),
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(
           width: 45,
