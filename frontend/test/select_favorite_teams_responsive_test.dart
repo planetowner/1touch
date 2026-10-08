@@ -201,7 +201,8 @@ void main() {
         const ValueKey('favorite-team-logo-region'),
       );
       final expectedLogoHeight =
-          112 + 108 * ((size.height - 560) / 240).clamp(0.0, 1.0);
+          (112 + 108 * ((size.height - 560) / 240).clamp(0.0, 1.0))
+              .clamp(150.0, 220.0);
       final toggleIcon = tester.widget<Icon>(
         find.descendant(
           of: find.byKey(const ValueKey('gradient-header-theme-toggle')),
@@ -223,7 +224,9 @@ void main() {
           ValueKey('favorite-team-logo-${team.teamId}'),
         );
         expect(teamLogo, findsOneWidget);
-        expect(tester.getRect(teamLogo).size, const Size(72, 72));
+        final logoSize = tester.getRect(teamLogo).size;
+        expect(logoSize.width, closeTo(150, 0.01));
+        expect(logoSize.height, closeTo(150, 0.01));
         expect(
           tester
               .widget<Image>(

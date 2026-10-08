@@ -302,9 +302,12 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
           body: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
+                const logoSize = 150.0;
                 final logoHeightScale =
                     ((constraints.maxHeight - 560) / 240).clamp(0.0, 1.0);
-                final carouselHeight = lerpDouble(112, 220, logoHeightScale)!;
+                // 작은 화면에서도 팀 로고의 150×150 영역을 유지해요.
+                final carouselHeight =
+                    math.max(logoSize, lerpDouble(112, 220, logoHeightScale)!);
 
                 return SingleChildScrollView(
                   child: ConstrainedBox(
@@ -393,14 +396,14 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                     child: SizedBox.square(
                                       key: ValueKey(
                                           'favorite-team-logo-${team.teamId}'),
-                                      dimension: 72,
+                                      dimension: logoSize,
                                       child: Image.network(
                                         team.imagePath ?? '',
                                         fit: BoxFit.contain,
                                         errorBuilder: (_, __, ___) =>
                                             const Icon(Icons.shield,
                                                 color: Colors.white54,
-                                                size: 72),
+                                                size: logoSize),
                                       ),
                                     ),
                                   ),
