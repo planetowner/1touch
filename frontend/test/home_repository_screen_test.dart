@@ -609,7 +609,7 @@ void main() {
       );
       expect(
         tester.getRect(titleRow).right - tester.getRect(syncIcon).right,
-        24,
+        0,
       );
       expect(
         tester.getSize(find.ancestor(
@@ -619,7 +619,7 @@ void main() {
         const Size(48, 48),
       );
       expect(
-        tester.getTopLeft(calendarCard).dy - tester.getBottomLeft(titleRow).dy,
+        tester.getTopLeft(calendarCard).dy - tester.getBottomLeft(syncIcon).dy,
         16,
       );
       expect(tester.takeException(), isNull);

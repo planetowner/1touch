@@ -174,8 +174,8 @@ class _CareerTabState extends State<CareerTab> {
     final competitions = <int, String>{};
     for (final season in history) {
       for (final competition in season.competitions) {
-        competitions[competition.id] = competitionNameLabel(
-            context, competition.id, competition.name);
+        competitions[competition.id] =
+            competitionNameLabel(context, competition.id, competition.name);
       }
     }
     final visible = history

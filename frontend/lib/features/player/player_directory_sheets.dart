@@ -567,10 +567,7 @@ class _SearchPlayerRow extends StatelessWidget {
 
 class _PlayerIdentity extends StatelessWidget {
   const _PlayerIdentity(
-      {required this.name,
-      this.team,
-      this.number,
-      this.rankingStyle = false});
+      {required this.name, this.team, this.number, this.rankingStyle = false});
   final String name;
   final String? team;
   final int? number;

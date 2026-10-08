@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/core/formation_layout.dart';
 import 'package:onetouch/core/formation_player_positions.dart';
-import 'package:onetouch/core/overflow_scrolling_text.dart';
 import 'package:flutter/rendering.dart' show OverflowBoxFit;
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';

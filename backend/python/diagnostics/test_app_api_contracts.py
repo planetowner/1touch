@@ -32,7 +32,7 @@ class AppApiContractsTests(unittest.TestCase):
         cases = [
             (catalog, 'get_catalog', '/v1/catalog', 'api_catalog'),
             (search, 'search', '/v1/search?q=Example', 'api_search'),
-            (players, 'get_current_ranking', '/v1/players/ranking-current', 'api_player_directory'),
+            (players, 'get_current_ranking', '/v1/players/ranking-current?limit=100', 'api_player_directory'),
             (players, 'get_player_detail', '/v1/players/9967153/detail', 'player_detail'),
             (players, 'get_player_comparison_candidates', '/v1/players/comparison-candidates?limit=20&offset=20',
              'api_player_comparison_candidates'),

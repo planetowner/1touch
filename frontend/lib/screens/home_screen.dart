@@ -5,6 +5,7 @@ import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/app_action_section_header.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
@@ -629,35 +630,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       liveMatchClock: _liveMatchClock,
                     ),
                     const SizedBox(height: 32),
-                    Row(
-                      key: const ValueKey('home-calendar-title-row'),
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SectionHeader(title: tr(context, "CALENDAR")),
-                        const Spacer(),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 24),
-                          child: IconButton(
-                            padding: EdgeInsets.zero,
-                            alignment: Alignment.centerRight,
-                            constraints: const BoxConstraints.tightFor(
-                              width: 48,
-                              height: 48,
-                            ),
-                            icon: Icon(
-                              Icons.sync,
-                              color: colorScheme.onSurface,
-                              size: 24,
-                            ),
-                            onPressed: () => SyncDialog.show(
-                              context,
-                              teamId: viewedTeamId,
-                              teamName: teamNameLabel(context, viewedTeamId,
-                                  homeData.favoriteTeam.name),
-                            ),
-                          ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: AppActionSectionHeader(
+                        key: const ValueKey('home-calendar-title-row'),
+                        title:
+                            Text(tr(context, 'CALENDAR'), style: Body2_b.style),
+                        icon: Icons.sync,
+                        onPressed: () => SyncDialog.show(
+                          context,
+                          teamId: viewedTeamId,
+                          teamName: teamNameLabel(context, viewedTeamId,
+                              homeData.favoriteTeam.name),
                         ),
-                      ],
+                      ),
                     ),
                     FixtureCalendar(
                       allMatches: homeData.calendar,

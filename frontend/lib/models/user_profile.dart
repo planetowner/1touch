@@ -23,13 +23,13 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      userId:         json['user_id'] as int,
+      userId: json['user_id'] as int,
       favoriteTeamId: json['favorite_team_id'] as int?,
-      pts:            json['pts'] as int? ?? 0,
-      postCount:      json['post_count'] as int? ?? 0,
-      commentCount:   json['comment_count'] as int? ?? 0,
-      createdAt:      json['created_at'] as String,
-      updatedAt:      json['updated_at'] as String,
+      pts: json['pts'] as int? ?? 0,
+      postCount: json['post_count'] as int? ?? 0,
+      commentCount: json['comment_count'] as int? ?? 0,
+      createdAt: json['created_at'] as String,
+      updatedAt: json['updated_at'] as String,
     );
   }
 }

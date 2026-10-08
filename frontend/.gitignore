@@ -44,3 +44,6 @@ Thumbs.db
 
 # 오류 로그는 PC에 보관해요.
 *.log
+# script 명령이 잘못된 파일명으로 만든 실행 로그예요.
+/done,
+/started,

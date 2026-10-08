@@ -79,6 +79,27 @@ void setUpAppCatalog({int favoriteTeamId = 83}) {
                     request.method == 'GET' ? '{"items":[]}' : '{"ok":true}',
                     200);
               }
+              if (request.url.path.endsWith('/users/me/points/initialize') &&
+                  request.method == 'POST') {
+                return http.Response('{"balance":0,"initialized":true}', 200);
+              }
+              if (request.url.path.endsWith('/users/me') &&
+                  request.method == 'GET') {
+                return http.Response(
+                    jsonEncode({
+                      'user_id': 1,
+                      'username': null,
+                      'display_name': 'Example',
+                      'email': null,
+                      'avatar_url': null,
+                      'favorite_team_id':
+                          currentUserPreferences.favoriteTeamId.value,
+                      'created_at': '2026-09-22T00:00:00Z',
+                      'onboarding_complete': true,
+                      'social_accounts': [],
+                    }),
+                    200);
+              }
               if (request.url.path.endsWith('/users/me/following/teams') &&
                   request.method == 'PUT') {
                 return http.Response('{"ok":true}', 200);

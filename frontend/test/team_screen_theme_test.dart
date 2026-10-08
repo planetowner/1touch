@@ -1483,30 +1483,16 @@ void main() {
       const ValueKey('analysis-form-filter'),
     );
 
-    expect(
-      tester
-          .widget<Text>(
-            find.descendant(
-              of: attributesFilterFinder,
-              matching: find.byType(Text),
-            ),
-          )
-          .style
-          ?.color,
-      app_style.AppPalette.black,
-    );
-    expect(
-      tester
-          .widget<Text>(
-            find.descendant(
-              of: formFilterFinder,
-              matching: find.byType(Text),
-            ),
-          )
-          .style
-          ?.color,
-      app_style.AppPalette.black,
-    );
+    for (final filter in [attributesFilterFinder, formFilterFinder]) {
+      final labels = tester.widgetList<Text>(find.descendant(
+        of: filter,
+        matching: find.byType(Text),
+      ));
+      expect(labels, hasLength(2));
+      for (final label in labels) {
+        expect(label.style?.color, app_style.AppPalette.black);
+      }
+    }
     expect(find.byKey(const ValueKey('analysis-attributes-filter')),
         findsOneWidget);
     expect(find.byKey(const ValueKey('analysis-form-filter')), findsOneWidget);

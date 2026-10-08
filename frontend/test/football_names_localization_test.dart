@@ -178,11 +178,17 @@ void main() {
         home: Scaffold(body: MatchInfoTab(fixture: fixture, detail: detail)),
       ));
       await tester.pumpAndSettle();
+      await tester
+          .tap(find.byKey(const ValueKey('match-substitutes-home-toggle')));
+      await tester.pumpAndSettle();
       expect(find.text(_coachTranslations[language]!), findsOneWidget);
       for (final other
           in _coachTranslations.keys.where((key) => key != language)) {
         expect(find.text(_coachTranslations[other]!), findsNothing);
       }
+      await tester
+          .tap(find.byKey(const ValueKey('match-substitutes-away-toggle')));
+      await tester.pumpAndSettle();
       expect(find.text('Jürgen Klopp'), findsOneWidget);
       expect(detail.coaches.first.name, 'Antonio Conte');
       expect(tester.takeException(), isNull);

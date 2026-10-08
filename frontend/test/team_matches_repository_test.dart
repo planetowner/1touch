@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team_overview.dart';
@@ -80,14 +81,12 @@ void main() {
     expect(tester.widget<SizedBox>(competitionAndRound).width, double.infinity);
     expect(
       tester
-          .widget<Text>(
-            find.descendant(
-              of: competitionAndRound,
-              matching: find.byType(Text),
-            ),
-          )
-          .textAlign,
-      TextAlign.center,
+          .getCenter(find.descendant(
+            of: competitionAndRound,
+            matching: find.byType(CompetitionLabel),
+          ))
+          .dx,
+      tester.getCenter(competitionAndRound).dx,
     );
     final fixtureCard = tester.widget<Container>(
       find.byKey(const ValueKey('team-fixture-card-3')),

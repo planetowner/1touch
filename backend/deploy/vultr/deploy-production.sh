@@ -52,9 +52,9 @@ docker run --rm --init --user 1001:1001 --entrypoint python "onetouch-api:$relea
 docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compose.yaml" exec -T db sh -c \
   'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --execute="SELECT season_id,team_id,position,previous_position,won,draw,lost,goals_for,goals_against,points FROM live_standings LIMIT 0"'
 
-# 좋아요·댓글 저장과 실시간 수집에서 바로 쓰므로 알림 테이블을 먼저 준비해야 해요.
+# 알림 테이블과 언어 컬럼이 없으면 글·채팅이 실패하므로 API 교체 전에 확인해요.
 docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compose.yaml" exec -T db sh -c \
-  'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --execute="SELECT user_id,scope,subject_id,preferences FROM user_notification_preferences LIMIT 0; SELECT notification_id,user_id,event_key,kind,scope,subject_ids,payload,fixture_id,post_id,comment_id,actor_id,created_at,expires_at,read_at,cancelled_at FROM user_notifications LIMIT 0; SELECT device_id,user_id,session_token_hash,token_hash,token,platform,locale FROM user_push_devices LIMIT 0; SELECT notification_id,device_id,status,attempts,next_attempt_at,last_error FROM notification_push_deliveries LIMIT 0; SELECT fixture_id,state_id,seen_keys,current_keys,sampled_at FROM notification_fixture_state LIMIT 0"'
+  'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --execute="SELECT user_id,scope,subject_id,preferences FROM user_notification_preferences LIMIT 0; SELECT notification_id,user_id,event_key,kind,scope,subject_ids,payload,fixture_id,post_id,comment_id,actor_id,created_at,expires_at,read_at,cancelled_at FROM user_notifications LIMIT 0; SELECT device_id,user_id,session_token_hash,token_hash,token,platform,locale FROM user_push_devices LIMIT 0; SELECT notification_id,device_id,status,attempts,next_attempt_at,last_error FROM notification_push_deliveries LIMIT 0; SELECT fixture_id,state_id,seen_keys,current_keys,sampled_at FROM notification_fixture_state LIMIT 0; SELECT language FROM posts LIMIT 0; SELECT language FROM fixture_chat_messages LIMIT 0"'
 
 # 지표 테이블과 뉴스 썸네일 컬럼이 없으면 API 교체 전에 멈춰요.
 docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compose.yaml" exec -T db sh -c \

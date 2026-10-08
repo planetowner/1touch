@@ -622,25 +622,27 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
                   right: 0,
                   bottom: 12,
                   child: Center(
-                    heightFactor: 1,
+                      heightFactor: 1,
                       child: IconButton(
-                    key: const ValueKey('live-chat-latest-button'),
-                    tooltip: tr(context, 'Jump to latest messages'),
-                    style: IconButton.styleFrom(
-                      backgroundColor:
-                          isDark ? AppPalette.lightGrey : AppPalette.white,
-                      foregroundColor: Theme.of(context).colorScheme.onSurface,
-                      minimumSize: const Size(48, 48),
-                      padding: EdgeInsets.zero,
-                      shape: const CircleBorder(),
-                    ),
-                    onPressed: () {
-                      _followLatest = true;
-                      _hasNewMessagesWhileReading = false;
-                      _scrollToBottom();
-                    },
-                    icon: const Icon(Icons.arrow_downward_rounded, size: 24),
-                  )),
+                        key: const ValueKey('live-chat-latest-button'),
+                        tooltip: tr(context, 'Jump to latest messages'),
+                        style: IconButton.styleFrom(
+                          backgroundColor:
+                              isDark ? AppPalette.lightGrey : AppPalette.white,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onSurface,
+                          minimumSize: const Size(48, 48),
+                          padding: EdgeInsets.zero,
+                          shape: const CircleBorder(),
+                        ),
+                        onPressed: () {
+                          _followLatest = true;
+                          _hasNewMessagesWhileReading = false;
+                          _scrollToBottom();
+                        },
+                        icon:
+                            const Icon(Icons.arrow_downward_rounded, size: 24),
+                      )),
                 ),
             ],
           ),
