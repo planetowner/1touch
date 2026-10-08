@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 class ApiMatchAnalysisResponse {
   const ApiMatchAnalysisResponse({
     required this.fixtureId,
@@ -12,7 +14,7 @@ class ApiMatchAnalysisResponse {
   final ApiMatchTeamAnalysisResponse? away;
 
   factory ApiMatchAnalysisResponse.fromJson(Map<String, dynamic> json) {
-    final available = _requiredBool(json, 'available');
+    final available = api_json.requiredBool(json, 'available');
     final teams = _nullableObject(json, 'teams');
     if (available && teams == null) {
       throw const FormatException(
@@ -25,7 +27,7 @@ class ApiMatchAnalysisResponse {
       );
     }
     return ApiMatchAnalysisResponse(
-      fixtureId: _requiredInt(json, 'fixture_id'),
+      fixtureId: api_json.requiredInt(json, 'fixture_id'),
       available: available,
       home: teams == null
           ? null
@@ -64,12 +66,13 @@ class ApiMatchTeamAnalysisResponse {
     final attack = _requiredObject(json, 'attack');
     final progression = _requiredObject(json, 'progression');
     return ApiMatchTeamAnalysisResponse(
-      teamId: _requiredInt(json, 'team_id'),
-      keyPasses: _requiredInt(attack, 'key_passes'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      keyPasses: api_json.requiredInt(attack, 'key_passes'),
       completedPassesIntoFinalThird:
-          _requiredInt(attack, 'completed_passes_into_final_third'),
-      completedPasses: _requiredInt(progression, 'completed_passes'),
-      progressivePasses: _requiredInt(progression, 'progressive_passes'),
+          api_json.requiredInt(attack, 'completed_passes_into_final_third'),
+      completedPasses: api_json.requiredInt(progression, 'completed_passes'),
+      progressivePasses:
+          api_json.requiredInt(progression, 'progressive_passes'),
       channels: ApiProgressionChannelsResponse.fromJson(
         _requiredObjectList(progression, 'channels'),
       ),
@@ -109,9 +112,9 @@ class ApiProgressionChannelsResponse {
     ApiProgressionChannelResponse? right;
 
     for (final item in json) {
-      final name = _requiredString(item, 'channel');
+      final name = api_json.requiredString(item, 'channel');
       final channel = ApiProgressionChannelResponse(
-        count: _requiredInt(item, 'count'),
+        count: api_json.requiredInt(item, 'count'),
         percentage: _requiredNullableDouble(item, 'percentage'),
       );
       switch (name) {
@@ -186,7 +189,7 @@ class ApiDefensiveActivityResponse {
     Map<String, dynamic>? own;
     Map<String, dynamic>? opponent;
     for (final half in halves) {
-      switch (_requiredString(half, 'half')) {
+      switch (api_json.requiredString(half, 'half')) {
         case 'own':
           own = half;
         case 'opponent':
@@ -199,9 +202,10 @@ class ApiDefensiveActivityResponse {
       throw const FormatException('Expected own and opponent regain halves.');
     }
     return ApiDefensiveActivityResponse(
-      complete: _requiredBool(json, 'complete'),
-      missingPositionCount: _requiredInt(json, 'missing_position_count'),
-      actionCount: _requiredInt(json, 'action_count'),
+      complete: api_json.requiredBool(json, 'complete'),
+      missingPositionCount:
+          api_json.requiredInt(json, 'missing_position_count'),
+      actionCount: api_json.requiredInt(json, 'action_count'),
       actions: _requiredObjectList(json, 'actions')
           .map(
             (action) => ApiPitchPointResponse.fromJson(
@@ -239,7 +243,7 @@ class ApiMatchShotMapResponse {
   final List<ApiMatchShotResponse> shots;
 
   factory ApiMatchShotMapResponse.fromJson(Map<String, dynamic> json) {
-    final available = _requiredBool(json, 'available');
+    final available = api_json.requiredBool(json, 'available');
     final counts = _nullableObject(json, 'counts');
     if (available && counts == null) {
       throw const FormatException(
@@ -247,10 +251,10 @@ class ApiMatchShotMapResponse {
       );
     }
     return ApiMatchShotMapResponse(
-      fixtureId: _requiredInt(json, 'fixture_id'),
+      fixtureId: api_json.requiredInt(json, 'fixture_id'),
       available: available,
-      homeCount: counts == null ? null : _requiredInt(counts, 'home'),
-      awayCount: counts == null ? null : _requiredInt(counts, 'away'),
+      homeCount: counts == null ? null : api_json.requiredInt(counts, 'home'),
+      awayCount: counts == null ? null : api_json.requiredInt(counts, 'away'),
       shots: _requiredObjectList(json, 'shots')
           .map(ApiMatchShotResponse.fromJson)
           .toList(growable: false),
@@ -283,13 +287,13 @@ class ApiMatchShotResponse {
 
   factory ApiMatchShotResponse.fromJson(Map<String, dynamic> json) {
     return ApiMatchShotResponse(
-      eventId: _requiredString(json, 'external_event_id'),
-      teamId: _requiredInt(json, 'team_id'),
+      eventId: api_json.requiredString(json, 'external_event_id'),
+      teamId: api_json.requiredInt(json, 'team_id'),
       playerId: _requiredNullableInt(json, 'player_id'),
       playerName: _requiredNullableString(json, 'player_name'),
-      minute: _requiredInt(json, 'minute'),
+      minute: api_json.requiredInt(json, 'minute'),
       extraMinute: _requiredNullableInt(json, 'extra_minute'),
-      result: _requiredString(json, 'result'),
+      result: api_json.requiredString(json, 'result'),
       start: ApiPitchPointResponse.fromJson(_requiredObject(json, 'start')),
       end: ApiPitchPointResponse.fromJson(_requiredObject(json, 'end')),
     );
@@ -303,8 +307,8 @@ class ApiPitchPointResponse {
   final double y;
 
   factory ApiPitchPointResponse.fromJson(Map<String, dynamic> json) {
-    final x = _requiredDouble(json, 'x');
-    final y = _requiredDouble(json, 'y');
+    final x = api_json.requiredDouble(json, 'x');
+    final y = api_json.requiredDouble(json, 'y');
     if (x < 0 || x > 100 || y < 0 || y > 100) {
       throw const FormatException('Expected pitch coordinates from 0 to 100.');
     }
@@ -346,12 +350,6 @@ List<Map<String, dynamic>> _requiredObjectList(
   }).toList(growable: false);
 }
 
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
-}
-
 int? _requiredNullableInt(Map<String, dynamic> json, String key) {
   if (!json.containsKey(key)) {
     throw FormatException('Expected nullable integer field "$key".');
@@ -359,12 +357,6 @@ int? _requiredNullableInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null || value is int) return value as int?;
   throw FormatException('Expected nullable integer field "$key".');
-}
-
-double _requiredDouble(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is num) return value.toDouble();
-  throw FormatException('Expected required numeric field "$key".');
 }
 
 double? _requiredNullableDouble(Map<String, dynamic> json, String key) {
@@ -377,12 +369,6 @@ double? _requiredNullableDouble(Map<String, dynamic> json, String key) {
   throw FormatException('Expected nullable numeric field "$key".');
 }
 
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
-}
-
 String? _requiredNullableString(Map<String, dynamic> json, String key) {
   if (!json.containsKey(key)) {
     throw FormatException('Expected nullable string field "$key".');
@@ -390,10 +376,4 @@ String? _requiredNullableString(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null || value is String) return value as String?;
   throw FormatException('Expected nullable string field "$key".');
-}
-
-bool _requiredBool(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is bool) return value;
-  throw FormatException('Expected required boolean field "$key".');
 }

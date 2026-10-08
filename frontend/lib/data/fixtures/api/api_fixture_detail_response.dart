@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 import 'package:onetouch/data/fixtures/api/api_fixture_response.dart';
 import 'package:clock/clock.dart' as time;
 
@@ -114,7 +116,7 @@ class ApiFixtureClockResponse {
         seconds = _optionalInt(json, 'seconds'),
         ticking = json['ticking'] as bool,
         isStale = json['is_stale'] as bool,
-        sampleAgeSeconds = _requiredDouble(json, 'sample_age_seconds'),
+        sampleAgeSeconds = api_json.requiredDouble(json, 'sample_age_seconds'),
         receivedAt = time.clock.now();
 
   final int? periodTypeId;
@@ -146,11 +148,11 @@ class ApiFixtureExpectedGoalsResponse {
     Map<String, dynamic> json,
   ) {
     return ApiFixtureExpectedGoalsResponse(
-      homeXg: _requiredDouble(json, 'home_xg'),
-      awayXg: _requiredDouble(json, 'away_xg'),
-      homeXga: _requiredDouble(json, 'home_xga'),
-      awayXga: _requiredDouble(json, 'away_xga'),
-      provider: _requiredString(json, 'provider'),
+      homeXg: api_json.requiredDouble(json, 'home_xg'),
+      awayXg: api_json.requiredDouble(json, 'away_xg'),
+      homeXga: api_json.requiredDouble(json, 'home_xga'),
+      awayXga: api_json.requiredDouble(json, 'away_xga'),
+      provider: api_json.requiredString(json, 'provider'),
     );
   }
 }
@@ -170,9 +172,9 @@ class ApiFixturePlayerExpectedGoalResponse {
     Map<String, dynamic> json,
   ) {
     return ApiFixturePlayerExpectedGoalResponse(
-      playerId: _requiredInt(json, 'player_id'),
-      playerName: _requiredString(json, 'player_name'),
-      xg: _requiredDouble(json, 'xg'),
+      playerId: api_json.requiredInt(json, 'player_id'),
+      playerName: api_json.requiredString(json, 'player_name'),
+      xg: api_json.requiredDouble(json, 'xg'),
     );
   }
 }
@@ -202,15 +204,15 @@ class ApiFixtureShotResponse {
 
   factory ApiFixtureShotResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixtureShotResponse(
-      shotId: _requiredInt(json, 'shot_id'),
-      teamId: _requiredInt(json, 'team_id'),
-      playerId: _requiredInt(json, 'player_id'),
-      playerName: _requiredString(json, 'player_name'),
-      minute: _requiredInt(json, 'minute'),
-      x: _requiredDouble(json, 'x'),
-      y: _requiredDouble(json, 'y'),
-      xg: _requiredDouble(json, 'xg'),
-      result: _requiredString(json, 'result'),
+      shotId: api_json.requiredInt(json, 'shot_id'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      playerId: api_json.requiredInt(json, 'player_id'),
+      playerName: api_json.requiredString(json, 'player_name'),
+      minute: api_json.requiredInt(json, 'minute'),
+      x: api_json.requiredDouble(json, 'x'),
+      y: api_json.requiredDouble(json, 'y'),
+      xg: api_json.requiredDouble(json, 'xg'),
+      result: api_json.requiredString(json, 'result'),
     );
   }
 }
@@ -250,18 +252,18 @@ class ApiFixtureEventResponse {
 
   factory ApiFixtureEventResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixtureEventResponse(
-      eventId: _requiredInt(json, 'event_id'),
-      teamId: _requiredInt(json, 'team_id'),
-      eventTypeId: _requiredInt(json, 'event_type_id'),
-      eventTypeCode: _requiredString(json, 'event_type_code'),
-      eventTypeName: _requiredString(json, 'event_type_name'),
+      eventId: api_json.requiredInt(json, 'event_id'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      eventTypeId: api_json.requiredInt(json, 'event_type_id'),
+      eventTypeCode: api_json.requiredString(json, 'event_type_code'),
+      eventTypeName: api_json.requiredString(json, 'event_type_name'),
       playerId: _optionalInt(json, 'player_id'),
       playerName: _optionalString(json, 'player_name'),
       playerImage: _optionalString(json, 'player_image'),
       relatedPlayerId: _optionalInt(json, 'related_player_id'),
       relatedPlayerName: _optionalString(json, 'related_player_name'),
       relatedPlayerImage: _optionalString(json, 'related_player_image'),
-      minute: _requiredInt(json, 'minute'),
+      minute: api_json.requiredInt(json, 'minute'),
       extraMinute: _optionalInt(json, 'extra_minute'),
       onBench: _optionalBool(json, 'on_bench'),
     );
@@ -285,10 +287,10 @@ class ApiFixtureStatisticResponse {
 
   factory ApiFixtureStatisticResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixtureStatisticResponse(
-      teamId: _requiredInt(json, 'team_id'),
-      statTypeId: _requiredInt(json, 'stat_type_id'),
-      statCode: _requiredString(json, 'stat_code'),
-      statName: _requiredString(json, 'stat_name'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      statTypeId: api_json.requiredInt(json, 'stat_type_id'),
+      statCode: api_json.requiredString(json, 'stat_code'),
+      statName: api_json.requiredString(json, 'stat_name'),
       value: _optionalDouble(json, 'value'),
     );
   }
@@ -319,8 +321,8 @@ class ApiFixturePlayerStatisticResponse {
     Map<String, dynamic> json,
   ) {
     return ApiFixturePlayerStatisticResponse(
-      teamId: _requiredInt(json, 'team_id'),
-      playerId: _requiredInt(json, 'player_id'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      playerId: api_json.requiredInt(json, 'player_id'),
       matchPositionId: _optionalInt(json, 'match_position_id'),
       positionGroup: _optionalString(json, 'position_group'),
       minutesPlayed: _optionalInt(json, 'minutes_played'),
@@ -350,8 +352,8 @@ class ApiFixturePlayerStatCategoryResponse {
     Map<String, dynamic> json,
   ) {
     return ApiFixturePlayerStatCategoryResponse(
-      code: _requiredString(json, 'code'),
-      label: _requiredString(json, 'label'),
+      code: api_json.requiredString(json, 'code'),
+      label: api_json.requiredString(json, 'label'),
       metrics: _objectList(
         json,
         'metrics',
@@ -386,10 +388,10 @@ class ApiFixturePlayerStatMetricResponse {
     Map<String, dynamic> json,
   ) {
     return ApiFixturePlayerStatMetricResponse(
-      code: _requiredString(json, 'code'),
-      label: _requiredString(json, 'label'),
-      kind: _requiredString(json, 'kind'),
-      source: _requiredString(json, 'source'),
+      code: api_json.requiredString(json, 'code'),
+      label: api_json.requiredString(json, 'label'),
+      kind: api_json.requiredString(json, 'kind'),
+      source: api_json.requiredString(json, 'source'),
       statTypeIds: _requiredIntList(json, 'stat_type_ids'),
       value: _optionalDouble(json, 'value'),
       numerator: _optionalDouble(json, 'numerator'),
@@ -429,14 +431,14 @@ class ApiFixtureLineupResponse {
 
   factory ApiFixtureLineupResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixtureLineupResponse(
-      teamId: _requiredInt(json, 'team_id'),
-      playerId: _requiredInt(json, 'player_id'),
-      playerName: _requiredString(json, 'player_name'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      playerId: api_json.requiredInt(json, 'player_id'),
+      playerName: api_json.requiredString(json, 'player_name'),
       playerImage: _optionalString(json, 'player_image'),
       nationalityId: _optionalInt(json, 'nationality_id'),
       nationality: _optionalString(json, 'nationality'),
       positionId: _optionalInt(json, 'position_id'),
-      lineupTypeId: _requiredInt(json, 'lineup_type_id'),
+      lineupTypeId: api_json.requiredInt(json, 'lineup_type_id'),
       formationField: _optionalString(json, 'formation_field'),
       jerseyNumber: _optionalInt(json, 'jersey_number'),
       minutesPlayed: _optionalInt(json, 'minutes_played'),
@@ -456,8 +458,8 @@ class ApiFixtureFormationResponse {
 
   factory ApiFixtureFormationResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixtureFormationResponse(
-      teamId: _requiredInt(json, 'team_id'),
-      formation: _requiredString(json, 'formation'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      formation: api_json.requiredString(json, 'formation'),
     );
   }
 }
@@ -475,9 +477,9 @@ class ApiFixtureCoachResponse {
 
   factory ApiFixtureCoachResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixtureCoachResponse(
-      teamId: _requiredInt(json, 'team_id'),
-      coachId: _requiredInt(json, 'coach_id'),
-      name: _requiredString(json, 'name'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      coachId: api_json.requiredInt(json, 'coach_id'),
+      name: api_json.requiredString(json, 'name'),
     );
   }
 }
@@ -495,9 +497,9 @@ class ApiFixturePressureResponse {
 
   factory ApiFixturePressureResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixturePressureResponse(
-      teamId: _requiredInt(json, 'team_id'),
-      minute: _requiredInt(json, 'minute'),
-      pressure: _requiredDouble(json, 'pressure'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      minute: api_json.requiredInt(json, 'minute'),
+      pressure: api_json.requiredDouble(json, 'pressure'),
     );
   }
 }
@@ -541,12 +543,6 @@ List<int> _requiredIntList(Map<String, dynamic> json, String key) {
   return List<int>.unmodifiable(value.cast<int>());
 }
 
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
-}
-
 int? _optionalInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null) return null;
@@ -554,23 +550,11 @@ int? _optionalInt(Map<String, dynamic> json, String key) {
   throw FormatException('Expected nullable integer field "$key".');
 }
 
-double _requiredDouble(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is num) return value.toDouble();
-  throw FormatException('Expected required numeric field "$key".');
-}
-
 double? _optionalDouble(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null) return null;
   if (value is num) return value.toDouble();
   throw FormatException('Expected nullable numeric field "$key".');
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
 }
 
 String? _optionalString(Map<String, dynamic> json, String key) {

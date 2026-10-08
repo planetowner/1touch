@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 /// Transport model for the backend's current `FixtureOut` response.
 ///
 /// This stays separate from the UI-facing [Fixture] domain model because the
@@ -68,31 +70,31 @@ class ApiFixtureResponse {
 
   factory ApiFixtureResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixtureResponse(
-      fixtureId: _requiredInt(json, 'fixture_id'),
-      competitionId: _requiredInt(json, 'competition_id'),
-      seasonId: _requiredInt(json, 'season_id'),
-      competitionType: _requiredString(json, 'competition_type'),
+      fixtureId: api_json.requiredInt(json, 'fixture_id'),
+      competitionId: api_json.requiredInt(json, 'competition_id'),
+      seasonId: api_json.requiredInt(json, 'season_id'),
+      competitionType: api_json.requiredString(json, 'competition_type'),
       roundName: _optionalString(json, 'round_name'),
-      stageId: _requiredInt(json, 'stage_id'),
-      stageName: _requiredString(json, 'stage_name'),
+      stageId: api_json.requiredInt(json, 'stage_id'),
+      stageName: api_json.requiredString(json, 'stage_name'),
       roundId: _optionalInt(json, 'round_id'),
       groupId: _optionalInt(json, 'group_id'),
       aggregateId: _optionalInt(json, 'aggregate_id'),
-      leg: _requiredString(json, 'leg'),
+      leg: api_json.requiredString(json, 'leg'),
       venueId: _optionalInt(json, 'venue_id'),
-      stateId: _requiredInt(json, 'state_id'),
-      stateCode: _requiredString(json, 'state_code'),
-      stateName: _requiredString(json, 'state_name'),
+      stateId: api_json.requiredInt(json, 'state_id'),
+      stateCode: api_json.requiredString(json, 'state_code'),
+      stateName: api_json.requiredString(json, 'state_name'),
       status: _optionalString(json, 'status'),
       startingAt: _optionalString(json, 'starting_at'),
-      homeTeamId: _requiredInt(json, 'home_team_id'),
-      awayTeamId: _requiredInt(json, 'away_team_id'),
+      homeTeamId: api_json.requiredInt(json, 'home_team_id'),
+      awayTeamId: api_json.requiredInt(json, 'away_team_id'),
       homeScore: _optionalInt(json, 'home_score'),
       awayScore: _optionalInt(json, 'away_score'),
       homePenaltyScore: _optionalInt(json, 'home_penalty_score'),
       awayPenaltyScore: _optionalInt(json, 'away_penalty_score'),
-      homeTeamName: _requiredString(json, 'home_team_name'),
-      awayTeamName: _requiredString(json, 'away_team_name'),
+      homeTeamName: api_json.requiredString(json, 'home_team_name'),
+      awayTeamName: api_json.requiredString(json, 'away_team_name'),
       homeTeamShortName: _optionalString(json, 'home_team_short_name'),
       awayTeamShortName: _optionalString(json, 'away_team_short_name'),
       homeTeamLogo: _optionalString(json, 'home_team_logo'),
@@ -119,8 +121,8 @@ class ApiTeamMatchesResponse {
       throw const FormatException('Expected required list field "items".');
     }
 
-    final limit = _requiredInt(json, 'limit');
-    final offset = _requiredInt(json, 'offset');
+    final limit = api_json.requiredInt(json, 'limit');
+    final offset = api_json.requiredInt(json, 'offset');
     if (limit < 1 || limit > 200) {
       throw const FormatException('Expected "limit" between 1 and 200.');
     }
@@ -175,18 +177,12 @@ class ApiFixtureHeadToHeadResponse {
     }).toList(growable: false);
 
     return ApiFixtureHeadToHeadResponse(
-      fixtureId: _requiredInt(json, 'fixture_id'),
-      teamA: _requiredInt(json, 'team_a'),
-      teamB: _requiredInt(json, 'team_b'),
+      fixtureId: api_json.requiredInt(json, 'fixture_id'),
+      teamA: api_json.requiredInt(json, 'team_a'),
+      teamB: api_json.requiredInt(json, 'team_b'),
       items: List.unmodifiable(items),
     );
   }
-}
-
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
 }
 
 int? _optionalInt(Map<String, dynamic> json, String key) {
@@ -194,12 +190,6 @@ int? _optionalInt(Map<String, dynamic> json, String key) {
   if (value == null) return null;
   if (value is int) return value;
   throw FormatException('Expected nullable integer field "$key".');
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
 }
 
 String? _optionalString(Map<String, dynamic> json, String key) {

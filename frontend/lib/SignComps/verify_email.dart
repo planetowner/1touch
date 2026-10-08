@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
 import 'package:onetouch/data/auth/auth_request_exception.dart';

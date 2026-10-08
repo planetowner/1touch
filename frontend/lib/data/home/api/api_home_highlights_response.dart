@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 class ApiTeamHighlightsResponse {
   ApiTeamHighlightsResponse({
     required this.teamId,
@@ -19,7 +21,7 @@ class ApiTeamHighlightsResponse {
       );
     }
     return ApiTeamHighlightsResponse(
-      teamId: _requiredInt(json, 'team_id'),
+      teamId: api_json.requiredInt(json, 'team_id'),
       viewerCountry: viewerCountry,
       updatedAt: _nullableString(json, 'updated_at'),
       items: _objectList(json, 'items')
@@ -73,12 +75,12 @@ class ApiHighlightResponse {
       title: _requiredString(json, 'title'),
       thumbnailUrl: _nullableString(json, 'thumbnail_url'),
       publishedAt: _requiredString(json, 'published_at'),
-      durationSeconds: _requiredInt(json, 'duration_seconds'),
+      durationSeconds: api_json.requiredInt(json, 'duration_seconds'),
       channelId: _requiredString(json, 'channel_id'),
       channelName: _requiredString(json, 'channel_name'),
       sourceType: sourceType,
-      isExtended: _requiredBool(json, 'is_extended'),
-      embeddable: _requiredBool(json, 'embeddable'),
+      isExtended: api_json.requiredBool(json, 'is_extended'),
+      embeddable: api_json.requiredBool(json, 'embeddable'),
       match: ApiHighlightMatchResponse.fromJson(
         _requiredObject(json, 'match'),
       ),
@@ -179,12 +181,6 @@ String? _nullableString(Map<String, dynamic> json, String key) {
   throw FormatException('Expected nullable string field "$key".');
 }
 
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
-}
-
 int? _nullableInt(Map<String, dynamic> json, String key) {
   if (!json.containsKey(key)) {
     throw FormatException('Expected nullable integer field "$key".');
@@ -192,10 +188,4 @@ int? _nullableInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null || value is int) return value as int?;
   throw FormatException('Expected nullable integer field "$key".');
-}
-
-bool _requiredBool(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is bool) return value;
-  throw FormatException('Expected required boolean field "$key".');
 }

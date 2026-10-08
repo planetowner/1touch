@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/welcome_loading_screen.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';

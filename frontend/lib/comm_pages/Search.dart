@@ -7,7 +7,7 @@ import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/debounced_search_controller.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/search/search_repository.dart' as search_data;

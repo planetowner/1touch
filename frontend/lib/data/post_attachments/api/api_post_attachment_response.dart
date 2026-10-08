@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 class ApiPostAttachmentUploadResponse {
   const ApiPostAttachmentUploadResponse({
     required this.attachmentId,
@@ -13,21 +15,9 @@ class ApiPostAttachmentUploadResponse {
     Map<String, dynamic> json,
   ) {
     return ApiPostAttachmentUploadResponse(
-      attachmentId: _requiredInt(json, 'attachment_id'),
-      contentType: _requiredString(json, 'content_type'),
-      byteSize: _requiredInt(json, 'byte_size'),
+      attachmentId: api_json.requiredInt(json, 'attachment_id'),
+      contentType: api_json.requiredString(json, 'content_type'),
+      byteSize: api_json.requiredInt(json, 'byte_size'),
     );
   }
-}
-
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
 }

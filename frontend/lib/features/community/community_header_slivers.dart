@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/features/match_info/live_match_motion.dart';
 import 'package:onetouch/features/notifications/unread_notification_bell_icon.dart';

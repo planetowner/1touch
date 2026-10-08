@@ -8,6 +8,7 @@ from ..core.db import fetch_all, transaction
 from ..core.player_membership import season_start_date as _season_start_date
 from ..core.fixture_states import COMPLETED_STATE_IDS
 from ..core.sportmonks import SportmonksClient
+from ..core.sportmonks_fields import require_dict, require_int, require_string, optional_string
 from ..core.identity import SPORTMONKS_DUPLICATE_PLAYER_IDS
 from ..core.transfer_source_rules import CURRENT_SQUAD_OUT_OVERRIDES
 
@@ -106,34 +107,10 @@ ON DUPLICATE KEY UPDATE
 """
 
 
-def _require_dict(value, field_name: str) -> Dict:
-    if not isinstance(value, dict):
-        raise ValueError(f"Missing or invalid object: {field_name}={value!r}")
-    return value
-
-
-def _require_int(value, field_name: str) -> int:
-    if type(value) is not int:
-        raise ValueError(f"Missing or invalid integer: {field_name}={value!r}")
-    return value
-
-
-def _require_string(value, field_name: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"Missing or invalid string: {field_name}={value!r}")
-    return value.strip()
-
-
-def _optional_string(value, field_name: str) -> Optional[str]:
-    if value is None:
-        return None
-    return _require_string(value, field_name)
-
-
 def _optional_int(value, field_name: str) -> Optional[int]:
     if value is None:
         return None
-    return _require_int(value, field_name)
+    return require_int(value, field_name)
 
 
 def _require_date(value, field_name: str) -> date:
@@ -156,7 +133,7 @@ def _squad_position_group_id(squad_item: Dict, index: int) -> Optional[int]:
         squad_item.get("position_id"), f"squad[{index}].position_id",
     )
     if position_group_id is not None and position_group_id not in SPORTMONKS_POSITION_GROUP_IDS:
-        player = _require_dict(squad_item.get("player"), f"squad[{index}].player")
+        player = require_dict(squad_item.get("player"), f"squad[{index}].player")
         embedded_position_group_id = _optional_int(
             player.get("position_id"), f"squad[{index}].player.position_id",
         )
@@ -171,7 +148,7 @@ def season_squad_position_ids(sm: SportmonksClient, team_id: int, season_id: int
     squad = sm.get_team_season_squad(team_id, season_id)
     if not squad:
         raise ValueError(f"Sportmonks returned an empty season squad: team_id={team_id}, season_id={season_id}")
-    return {_require_int(item.get("player_id"), f"squad[{index}].player_id"):
+    return {require_int(item.get("player_id"), f"squad[{index}].player_id"):
             _squad_position_group_id(item, index) for index, item in enumerate(squad)}
 
 
@@ -181,12 +158,12 @@ def _normalize_squad_item(
     season_id: int,
     index: int,
 ) -> Tuple[Tuple, Tuple]:
-    squad_item = _require_dict(item, f"squad[{index}]")
-    player_id = _require_int(
+    squad_item = require_dict(item, f"squad[{index}]")
+    player_id = require_int(
         squad_item.get("player_id"),
         f"squad[{index}].player_id",
     )
-    player = _require_dict(
+    player = require_dict(
         squad_item.get("player"),
         f"squad[{index}].player",
     )
@@ -209,14 +186,14 @@ def _normalize_squad_item(
 
     player_row = (
         player_id,
-        _require_string(player.get("display_name"), "player.display_name"),
-        _require_string(player.get("name"), "player.name"),
+        require_string(player.get("display_name"), "player.display_name"),
+        require_string(player.get("name"), "player.name"),
         position_id,
         _optional_int(player.get("nationality_id"), "player.nationality_id"),
-        _optional_string(player.get("date_of_birth"), "player.date_of_birth"),
+        optional_string(player.get("date_of_birth"), "player.date_of_birth"),
         _optional_int(player.get("height"), "player.height"),
         _optional_int(player.get("weight"), "player.weight"),
-        _optional_string(player.get("image_path"), "player.image_path"),
+        optional_string(player.get("image_path"), "player.image_path"),
     )
     member_row = (
         team_id,
@@ -231,8 +208,8 @@ def _normalize_squad_item(
 def _squad_player_ids(squad: List[Dict]) -> Set[int]:
     player_ids: Set[int] = set()
     for index, item in enumerate(squad):
-        squad_item = _require_dict(item, f"squad[{index}]")
-        player_id = _require_int(
+        squad_item = require_dict(item, f"squad[{index}]")
+        player_id = require_int(
             squad_item.get("player_id"),
             f"squad[{index}].player_id",
         )
@@ -247,8 +224,8 @@ def _exclude_sportmonks_duplicate_players(
     excluded: Dict[int, int] = {}
 
     for index, item in enumerate(squad):
-        squad_item = _require_dict(item, f"squad[{index}]")
-        player_id = _require_int(
+        squad_item = require_dict(item, f"squad[{index}]")
+        player_id = require_int(
             squad_item.get("player_id"),
             f"squad[{index}].player_id",
         )
@@ -269,7 +246,7 @@ def _completed_team_movements(
     movements: DefaultDict[int, List[Tuple[date, int, str]]] = defaultdict(list)
 
     for index, transfer in enumerate(transfers):
-        transfer = _require_dict(transfer, f"transfers[{index}]")
+        transfer = require_dict(transfer, f"transfers[{index}]")
         if transfer.get("completed") is not True:
             continue
 
@@ -291,7 +268,7 @@ def _completed_team_movements(
             # 날짜가 없으면 시즌 범위와 이동 순서를 판단할 수 없어 이적 행만 제외해요.
             continue
 
-        transfer_id = _require_int(transfer.get("id"), f"transfers[{index}].id")
+        transfer_id = require_int(transfer.get("id"), f"transfers[{index}].id")
         transfer_date = _require_date(
             transfer.get("date"),
             f"transfers[{index}].date",
@@ -459,7 +436,7 @@ def _load_lineup_dates_by_player(
         end_date=end_date,
         include="lineups",
     ):
-        fixture_id = _require_int(fixture.get("id"), "fixture.id")
+        fixture_id = require_int(fixture.get("id"), "fixture.id")
         if fixture_id not in tracked_fixture_ids:
             # 이미 적재한 성인 대회 경기만 1군 출전 근거로 봐요.
             continue
@@ -476,7 +453,7 @@ def _load_lineup_dates_by_player(
             continue
 
         for lineup_index, lineup in enumerate(lineups):
-            lineup = _require_dict(
+            lineup = require_dict(
                 lineup,
                 f"fixture[{fixture_id}].lineups[{lineup_index}]",
             )
@@ -784,7 +761,7 @@ def load_squad_scope(
             "season_name and competition_id must be provided together"
         )
     if season_name is not None:
-        season_name = _require_string(season_name, "season_name")
+        season_name = require_string(season_name, "season_name")
         season_start = _season_start_date(season_name)
         if season_start.year < MIN_SEASON_START_YEAR:
             raise ValueError(

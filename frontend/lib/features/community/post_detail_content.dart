@@ -5,7 +5,7 @@ import 'package:onetouch/core/api_image_headers.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';

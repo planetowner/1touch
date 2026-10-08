@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/SignComps/signup_availability_field.dart';
 import 'package:onetouch/core/identity_name_rules.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class SocialProfileSetup extends StatefulWidget {

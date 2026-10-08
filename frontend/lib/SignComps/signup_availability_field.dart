@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/core/debounced_search_controller.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class SignupAvailabilityField extends StatefulWidget {

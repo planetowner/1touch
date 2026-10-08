@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 /// Transport response for `GET /v1/teams/{team_id}/transfers`.
 class ApiTeamTransfersResponse {
   const ApiTeamTransfersResponse({
@@ -12,7 +14,7 @@ class ApiTeamTransfersResponse {
 
   factory ApiTeamTransfersResponse.fromJson(Map<String, dynamic> json) {
     return ApiTeamTransfersResponse(
-      windowKey: _requiredString(json, 'window_key'),
+      windowKey: api_json.requiredString(json, 'window_key'),
       transfersIn: _requiredObjectList(
         json,
         'transfers_in',
@@ -66,17 +68,17 @@ class ApiTransferResponse {
 
   factory ApiTransferResponse.fromJson(Map<String, dynamic> json) {
     return ApiTransferResponse(
-      transferId: _requiredInt(json, 'transfer_id'),
-      playerId: _requiredInt(json, 'player_id'),
+      transferId: api_json.requiredInt(json, 'transfer_id'),
+      playerId: api_json.requiredInt(json, 'player_id'),
       playerName: _nullableString(json, 'player_name'),
       playerImage: _nullableString(json, 'player_image'),
-      direction: _requiredString(json, 'direction'),
+      direction: api_json.requiredString(json, 'direction'),
       otherTeamId: _nullableInt(json, 'other_team_id'),
       otherTeamName: _nullableString(json, 'other_team_name'),
       otherTeamImage: _nullableString(json, 'other_team_image'),
       jerseyNumber: _nullableInt(json, 'jersey_number'),
-      typeId: _requiredInt(json, 'type_id'),
-      displayType: _requiredString(json, 'display_type'),
+      typeId: api_json.requiredInt(json, 'type_id'),
+      displayType: api_json.requiredString(json, 'display_type'),
       amount: _nullableInt(json, 'amount'),
       currency: _nullableString(json, 'currency'),
       transferDate: _nullableString(json, 'transfer_date'),
@@ -86,22 +88,10 @@ class ApiTransferResponse {
   }
 }
 
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
-}
-
 int? _nullableInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null || value is int) return value as int?;
   throw FormatException('Expected nullable integer field "$key".');
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
 }
 
 String? _nullableString(Map<String, dynamic> json, String key) {

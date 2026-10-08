@@ -1,7 +1,7 @@
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/notifications/notification_inbox.dart';
 import 'package:onetouch/data/notifications/notification_inbox_repository.dart';
 import 'package:onetouch/data/notifications/notification_inbox_repository_provider.dart';

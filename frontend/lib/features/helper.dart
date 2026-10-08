@@ -97,19 +97,6 @@ String ordinal(int number, {Locale locale = const Locale('en')}) {
   }
 }
 
-String determineMatchStatus(DateTime matchDateTime) {
-  final now = DateTime.now();
-  final matchEndTime = matchDateTime.add(const Duration(hours: 2));
-
-  if (now.isAfter(matchEndTime)) {
-    return 'past';
-  } else if (now.isAfter(matchDateTime) && now.isBefore(matchEndTime)) {
-    return 'live';
-  } else {
-    return 'upcoming';
-  }
-}
-
 //
 // MAIN WIDGETS (MatchCards)
 //
@@ -169,7 +156,10 @@ class MatchCard extends StatelessWidget {
                     width: compact ? logoSize : 81,
                     child: _TeamDisplay(
                       teamId: homeTeam.teamId,
-                      teamName: homeTeam.displayName,
+                      teamName: teamNameLabel(
+                          context, homeTeam.teamId, homeTeam.displayName,
+                          short: true),
+                      nameStyle: Body1.style,
                       teamLogo: homeTeam.imagePath ?? '',
                       logoSize: logoSize,
                       logoKey: const ValueKey('next-match-home-logo'),
@@ -191,7 +181,10 @@ class MatchCard extends StatelessWidget {
                     width: compact ? logoSize : 76,
                     child: _TeamDisplay(
                       teamId: awayTeam.teamId,
-                      teamName: awayTeam.displayName,
+                      teamName: teamNameLabel(
+                          context, awayTeam.teamId, awayTeam.displayName,
+                          short: true),
+                      nameStyle: Body1.style,
                       teamLogo: awayTeam.imagePath ?? '',
                       logoSize: logoSize,
                       logoKey: const ValueKey('next-match-away-logo'),
@@ -247,8 +240,6 @@ class MatchCard2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Example scores
-
     return Container(
       key: surfaceKey,
       padding:
@@ -319,9 +310,11 @@ class MatchCard2 extends StatelessWidget {
                     children: [
                       SizedBox(
                         width: teamWidth,
-                        child: _TeamDisplay2(
+                        child: _TeamDisplay(
                           teamId: team1Id,
                           teamName: team1shortname,
+                          nameStyle: Eyebrow.style,
+                          nameMaxLines: 2,
                           teamLogo: team1Logo,
                           logoSize: teamWidth,
                           logoKey: const ValueKey('last-match-home-logo'),
@@ -356,9 +349,11 @@ class MatchCard2 extends StatelessWidget {
                       SizedBox(width: gap),
                       SizedBox(
                         width: teamWidth,
-                        child: _TeamDisplay2(
+                        child: _TeamDisplay(
                           teamId: team2Id,
                           teamName: team2shortname,
+                          nameStyle: Eyebrow.style,
+                          nameMaxLines: 2,
                           teamLogo: team2Logo,
                           logoSize: teamWidth,
                           logoKey: const ValueKey('last-match-away-logo'),
@@ -377,135 +372,6 @@ class MatchCard2 extends StatelessWidget {
   }
 }
 
-class SearchMatchCard extends StatelessWidget {
-  final String homeTeam;
-  final String homeLogo;
-  final String awayTeam;
-  final String awayLogo;
-  final String date;
-  final String time;
-
-  const SearchMatchCard({
-    super.key,
-    required this.homeTeam,
-    required this.homeLogo,
-    required this.awayTeam,
-    required this.awayLogo,
-    required this.date,
-    required this.time,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    const score1 = 3;
-    const score2 = 2;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      decoration: BoxDecoration(
-        color: AppColors.of(context).cardBackground,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // HOME TEAM (Left)
-          Expanded(
-            child: Column(
-              children: [
-                SizedBox(
-                  width: 45,
-                  height: 45,
-                  child: Image.asset(
-                    homeLogo,
-                    fit: BoxFit.contain,
-                    errorBuilder: (c, o, s) =>
-                        const Icon(Icons.shield, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  homeTeam,
-                  style: Body2.style.copyWith(color: Colors.white),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-
-          // CENTER INFO (# Date/Time #)
-          Row(
-            children: [
-              // Reusing the internal _ScoreBoard with "#"
-              const _ScoreBoard(
-                score: score1,
-                isDimmed: false,
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Column(
-                  children: [
-                    Text(
-                      date,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      time,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const _ScoreBoard(
-                score: score2,
-                isDimmed: true,
-              ),
-            ],
-          ),
-
-          // AWAY TEAM (Right)
-          Expanded(
-            child: Column(
-              children: [
-                SizedBox(
-                  width: 45,
-                  height: 45,
-                  child: Image.asset(
-                    awayLogo,
-                    fit: BoxFit.contain,
-                    errorBuilder: (c, o, s) =>
-                        const Icon(Icons.shield, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  awayTeam,
-                  style: Body2.style.copyWith(color: Colors.white),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 //
 // INTERNAL WIDGET COMPONENTS
 //
@@ -515,6 +381,8 @@ class _TeamDisplay extends StatelessWidget {
   final String teamName, teamLogo;
   final double logoSize;
   final Key? logoKey;
+  final TextStyle nameStyle;
+  final int nameMaxLines;
 
   const _TeamDisplay({
     required this.teamId,
@@ -522,52 +390,8 @@ class _TeamDisplay extends StatelessWidget {
     required this.teamLogo,
     required this.logoSize,
     this.logoKey,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          key: logoKey,
-          width: logoSize,
-          height: logoSize,
-          child: teamLogo.isEmpty
-              ? teamLogoFallback(teamId, size: logoSize)
-              : Image.network(
-                  teamLogo,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) =>
-                      teamLogoFallback(teamId, size: logoSize),
-                ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          teamNameLabel(context, teamId, teamName, short: true),
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          softWrap: false,
-          overflow: TextOverflow.ellipsis,
-          style: Body1.style,
-        ),
-      ],
-    );
-  }
-}
-
-class _TeamDisplay2 extends StatelessWidget {
-  final int teamId;
-  final String teamName, teamLogo;
-  final double logoSize;
-  final Key? logoKey;
-
-  const _TeamDisplay2({
-    required this.teamId,
-    required this.teamName,
-    required this.teamLogo,
-    required this.logoSize,
-    this.logoKey,
+    required this.nameStyle,
+    this.nameMaxLines = 1,
   });
 
   @override
@@ -592,9 +416,10 @@ class _TeamDisplay2 extends StatelessWidget {
         Text(
           teamName,
           textAlign: TextAlign.center,
-          style: Eyebrow.style,
-          maxLines: 2,
+          maxLines: nameMaxLines,
+          softWrap: nameMaxLines == 1 ? false : null,
           overflow: TextOverflow.ellipsis,
+          style: nameStyle,
         ),
       ],
     );
@@ -651,7 +476,6 @@ class _MatchInfo extends StatelessWidget {
           gap: 4,
         ),
         const SizedBox(height: 4),
-        // Text('Venue ID ${match?.venueId}', style: .style),
       ],
     );
   }

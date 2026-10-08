@@ -5,17 +5,12 @@ import json
 
 from fastapi import HTTPException
 
-from ..db import fetch_all_dict, fetch_one_dict, transaction
+from ..db import fetch_all_dict, fetch_one_dict, fetch_one_from_cursor, transaction
 from ..services.auth_security import token_hash
 from ..services.community_periods import public_row, utc_now
 from .users_repo import get_user, lock_user, require_profile
 from ...core.db_json import decoded
 from ...core.notifications import DEFAULTS, KINDS, NotificationEvent, fixture_events, state_event
-
-
-def read_one(cur, sql, params=()):
-    cur.execute(sql, params)
-    return cur.fetchone()
 
 
 def following(cur, user_id, scope):
@@ -26,7 +21,7 @@ def following(cur, user_id, scope):
 
 
 def settings(cur, user_id, scope, subject_id):
-    row = read_one(cur, '''SELECT preferences FROM user_notification_preferences
+    row = fetch_one_from_cursor(cur, '''SELECT preferences FROM user_notification_preferences
         WHERE user_id=%s AND scope=%s AND subject_id=%s''', (user_id, scope, subject_id))
     return {**DEFAULTS[scope], **(decoded(row['preferences']) if row else {})}
 
@@ -64,7 +59,7 @@ def register_device(user_id, session_token, device_id, body):
         lock_user(cur, user_id)
         digest = hashlib.sha256(body['token'].encode()).digest()
         session_hash = token_hash(session_token)
-        previous = read_one(cur, 'SELECT user_id,session_token_hash FROM user_push_devices WHERE device_id=%s FOR UPDATE', (device_id,))
+        previous = fetch_one_from_cursor(cur, 'SELECT user_id,session_token_hash FROM user_push_devices WHERE device_id=%s FOR UPDATE', (device_id,))
         # 다른 계정·세션으로 바뀔 때만 이전 발송 대기를 지워요. 같은 세션의 토큰 갱신은 유지해요.
         if previous and (previous['user_id'] != user_id or previous['session_token_hash'] != session_hash):
             cur.execute('DELETE FROM user_push_devices WHERE device_id=%s', (device_id,))
@@ -117,7 +112,7 @@ def notify_post(cur, post, actor_id, *, comment_id=None):
     owner = post['user_id']
     if owner is None or owner == actor_id:
         return
-    if read_one(cur, 'SELECT 1 FROM user_blocks WHERE user_id=%s AND blocked_user_id=%s', (owner, actor_id)):
+    if fetch_one_from_cursor(cur, 'SELECT 1 FROM user_blocks WHERE user_id=%s AND blocked_user_id=%s', (owner, actor_id)):
         return
     kind = 'post_comment' if comment_id is not None else 'post_reaction'
     key = f'comment:{comment_id}' if comment_id is not None else f"post:{post['post_id']}:like:{actor_id}"
@@ -168,8 +163,8 @@ def mark_read(user_id, through_id):
 def capture_fixture(connection, fixture, sampled_at):
     with connection.cursor(dictionary=True) as cur:
         # 선발 수집과 라이브 수집이 같은 경기를 갱신할 때 마지막 관측 순서를 지켜요.
-        read_one(cur, 'SELECT fixture_id FROM fixtures WHERE fixture_id=%s FOR UPDATE', (fixture['id'],))
-        previous = read_one(cur, 'SELECT * FROM notification_fixture_state WHERE fixture_id=%s', (fixture['id'],))
+        fetch_one_from_cursor(cur, 'SELECT fixture_id FROM fixtures WHERE fixture_id=%s FOR UPDATE', (fixture['id'],))
+        previous = fetch_one_from_cursor(cur, 'SELECT * FROM notification_fixture_state WHERE fixture_id=%s', (fixture['id'],))
         if previous and previous['sampled_at'] >= sampled_at:
             return False
         candidates = fixture_events(fixture, sampled_at)
@@ -205,17 +200,17 @@ def push_data(cur, row, now):
     data = decoded(row['payload'])
     if row['scope'] == 'community':
         try:
-            require_profile(read_one(cur, 'SELECT * FROM users WHERE user_id=%s', (row['user_id'],)))
+            require_profile(fetch_one_from_cursor(cur, 'SELECT * FROM users WHERE user_id=%s', (row['user_id'],)))
         except HTTPException:
             return None
-        community = read_one(cur, f'SELECT {COMMUNITY_FIELDS} {COMMUNITY_FROM} WHERE n.notification_id=%s AND {COMMUNITY_VISIBLE}',
+        community = fetch_one_from_cursor(cur, f'SELECT {COMMUNITY_FIELDS} {COMMUNITY_FROM} WHERE n.notification_id=%s AND {COMMUNITY_VISIBLE}',
                              (row['notification_id'],))
         if community is None:
             return None
         return {**data, 'username': community['username'], 'display_name': community['display_name'],
                 'comment_preview': community['comment_preview'] or ''}
     if row['kind'] in ('team_new_bets', 'team_match_reminder'):
-        fixture = read_one(cur, 'SELECT starting_at,state_id FROM fixtures WHERE fixture_id=%s', (row['fixture_id'],))
+        fixture = fetch_one_from_cursor(cur, 'SELECT starting_at,state_id FROM fixtures WHERE fixture_id=%s', (row['fixture_id'],))
         if (fixture is None or fixture['state_id'] not in (1, 16) or fixture['starting_at'] is None
                 or fixture['starting_at'] <= now or fixture['starting_at'].isoformat() != data['starting_at']):
             return None

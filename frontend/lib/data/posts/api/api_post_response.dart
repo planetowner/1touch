@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 class ApiPostListResponse {
   ApiPostListResponse({
     required List<ApiPostResponse> items,
@@ -12,8 +14,8 @@ class ApiPostListResponse {
   factory ApiPostListResponse.fromJson(Map<String, dynamic> json) {
     return ApiPostListResponse(
       items: _objectList(json, 'items', ApiPostResponse.fromJson),
-      limit: _requiredInt(json, 'limit'),
-      offset: _requiredInt(json, 'offset'),
+      limit: api_json.requiredInt(json, 'limit'),
+      offset: api_json.requiredInt(json, 'offset'),
     );
   }
 }
@@ -59,21 +61,21 @@ class ApiPostResponse {
 
   factory ApiPostResponse.fromJson(Map<String, dynamic> json) {
     return ApiPostResponse(
-      postId: _requiredInt(json, 'post_id'),
-      teamId: _requiredInt(json, 'team_id'),
-      language: _requiredString(json, 'language'),
+      postId: api_json.requiredInt(json, 'post_id'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      language: api_json.requiredString(json, 'language'),
       userId: _nullableInt(json, 'user_id'),
-      category: _requiredString(json, 'category'),
-      title: _requiredString(json, 'title'),
-      body: _requiredString(json, 'body'),
-      createdAt: _requiredString(json, 'created_at'),
+      category: api_json.requiredString(json, 'category'),
+      title: api_json.requiredString(json, 'title'),
+      body: api_json.requiredString(json, 'body'),
+      createdAt: api_json.requiredString(json, 'created_at'),
       editedAt: _nullableString(json, 'edited_at'),
       username: _nullableString(json, 'username'),
       displayName: json['display_name'] as String?,
       avatarUrl: _nullableString(json, 'avatar_url'),
       authorDeleted: _requiredBool(json, 'author_deleted'),
-      likeCount: _requiredInt(json, 'like_count'),
-      commentCount: _requiredInt(json, 'comment_count'),
+      likeCount: api_json.requiredInt(json, 'like_count'),
+      commentCount: api_json.requiredInt(json, 'comment_count'),
       liked: _requiredBool(json, 'liked', acceptBinaryInteger: true),
       attachments: _objectList(
         json,
@@ -105,8 +107,8 @@ class ApiPostAttachmentResponse {
 
   factory ApiPostAttachmentResponse.fromJson(Map<String, dynamic> json) {
     final response = ApiPostAttachmentResponse(
-      attachmentId: _requiredInt(json, 'attachment_id'),
-      position: _requiredInt(json, 'position'),
+      attachmentId: api_json.requiredInt(json, 'attachment_id'),
+      position: api_json.requiredInt(json, 'position'),
       linkUrl: _nullableString(json, 'link_url'),
       mediaUrl: _nullableString(json, 'media_url'),
       previewUrl: json['preview_url'] as String?,
@@ -130,12 +132,6 @@ class ApiPostAttachmentResponse {
   }
 }
 
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
-}
-
 int? _nullableInt(Map<String, dynamic> json, String key) {
   if (!json.containsKey(key)) {
     throw FormatException('Expected nullable integer field "$key".');
@@ -143,12 +139,6 @@ int? _nullableInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null || value is int) return value as int?;
   throw FormatException('Expected nullable integer field "$key".');
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
 }
 
 String? _nullableString(Map<String, dynamic> json, String key) {

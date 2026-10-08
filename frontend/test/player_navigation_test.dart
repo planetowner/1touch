@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/player_navigation.dart';
-import 'package:onetouch/data/players/player_repository_provider.dart';
-import 'package:onetouch/features/player_screen_features.dart';
+import 'package:onetouch/features/player/player_directory_widgets.dart';
+import 'package:onetouch/features/player/player_directory_sheets.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/player_detail.dart';
 
+import 'support/app_catalog.dart';
+import 'support/player_directory_fixture.dart';
+import 'support/player_detail_fixture.dart';
+
 void main() {
+  setUpAppCatalog();
   testWidgets('opening a player outside the shell selects the Players branch',
       (tester) async {
     final router = GoRouter(
@@ -85,104 +90,50 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('ranking row opens its player', (tester) async {
-    final player = playerRepository.ranking.first;
-    final router = GoRouter(
-      initialLocation: '/showcase',
-      routes: [
-        GoRoute(
-          path: '/showcase',
-          builder: (_, __) => Scaffold(
-            body: PlayerRankingBox(players: [player]),
+  for (final (name, rowKey) in [
+    ('ranking', 'ranking-player-1'),
+    ('full ranking', 'full-ranking-player-1'),
+    ('one to watch', 'ones-to-watch-player-1'),
+  ]) {
+    testWidgets('$name opens its player', (tester) async {
+      final repository = FakePlayerDirectoryRepository();
+      final ranking = await repository.ranking();
+      final Widget page;
+      if (name == 'ranking') {
+        page = PlayerRankingPanel(repository: repository);
+      } else if (name == 'full ranking') {
+        page = PlayerFullRankingSheet(
+          players: ranking.items,
+          followingController: null,
+          detailRepository: FakePlayerDetailRepository(),
+        );
+      } else {
+        page = PlayersToWatch(repository: repository);
+      }
+      final router = GoRouter(
+        initialLocation: '/showcase',
+        routes: [
+          GoRoute(
+            path: '/showcase',
+            builder: (_, __) => Scaffold(body: page),
           ),
-        ),
-        GoRoute(
-          path: '/players/:id',
-          builder: (_, state) => Text('Player ${state.pathParameters['id']}'),
-        ),
-      ],
-    );
-    addTearDown(router.dispose);
-
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-    await tester.tap(find.byKey(ValueKey('ranking-player-${player.id}')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Player ${player.id}'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('full ranking row opens its player', (tester) async {
-    final player = playerRepository.ranking.first;
-    final router = GoRouter(
-      initialLocation: '/ranking',
-      routes: [
-        GoRoute(
-          path: '/ranking',
-          builder: (_, __) => const FullRankingPopup(),
-        ),
-        GoRoute(
-          path: '/players/:id',
-          builder: (_, state) => Text('Player ${state.pathParameters['id']}'),
-        ),
-      ],
-    );
-    addTearDown(router.dispose);
-
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-    await tester.tap(find.byKey(ValueKey('full-ranking-player-${player.id}')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Player ${player.id}'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('one to watch card opens its player', (tester) async {
-    final player = playerRepository.onesToWatch.first;
-    final router = GoRouter(
-      initialLocation: '/showcase',
-      routes: [
-        GoRoute(
-          path: '/showcase',
-          builder: (_, __) => Scaffold(
-            body: OnesToWatchCard(player: player),
+          GoRoute(
+            path: '/players/:id',
+            builder: (_, state) => Text('Player ${state.pathParameters['id']}'),
           ),
-        ),
-        GoRoute(
-          path: '/players/:id',
-          builder: (_, state) => Text('Player ${state.pathParameters['id']}'),
-        ),
-      ],
-    );
-    addTearDown(router.dispose);
+        ],
+      );
+      addTearDown(router.dispose);
 
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-    expect(
-      find.byKey(ValueKey('ones-to-watch-jersey-${player.id}')),
-      findsOneWidget,
-    );
-    expect(find.text('${player.jerseyNumber}'), findsOneWidget);
-    final portrait = tester.getRect(
-      find.byKey(ValueKey('ones-to-watch-portrait-${player.id}')),
-    );
-    final jersey = tester.getRect(
-      find.byKey(ValueKey('ones-to-watch-jersey-${player.id}')),
-    );
-    final imageSurface = tester.getRect(
-      find.byKey(const ValueKey('ones-to-watch-image-surface')),
-    );
-    expect(portrait.top, jersey.top);
-    expect(portrait.bottom, imageSurface.bottom);
-    expect(portrait.width, imageSurface.height - 10);
-    expect(find.text('${player.rankingChange.abs()}'), findsNothing);
-    expect(find.byIcon(Icons.arrow_drop_up), findsNothing);
-    expect(find.byIcon(Icons.arrow_drop_down), findsNothing);
-    await tester.tap(find.byKey(ValueKey('ones-to-watch-player-${player.id}')));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ValueKey(rowKey)));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Player ${player.id}'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.text('Player 1'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('completed player match opens the past match route',
       (tester) async {

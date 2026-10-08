@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 class ApiCompetitionStandingsResponse {
   ApiCompetitionStandingsResponse({
     required this.competitionId,
@@ -17,8 +19,8 @@ class ApiCompetitionStandingsResponse {
       throw const FormatException('Expected required list field "rows".');
     }
     return ApiCompetitionStandingsResponse(
-      competitionId: _requiredInt(json, 'competition_id'),
-      seasonId: _requiredInt(json, 'season_id'),
+      competitionId: api_json.requiredInt(json, 'competition_id'),
+      seasonId: api_json.requiredInt(json, 'season_id'),
       rows: rawRows.map((row) {
         if (row is! Map<String, dynamic>) {
           throw const FormatException(
@@ -78,31 +80,25 @@ class ApiStandingRowResponse {
     }
 
     return ApiStandingRowResponse(
-      position: _requiredInt(json, 'position'),
+      position: api_json.requiredInt(json, 'position'),
       rankDelta: _optionalInt(json, 'rank_delta'),
-      teamId: _requiredInt(json, 'team_id'),
-      teamName: _requiredString(json, 'team_name'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      teamName: api_json.requiredString(json, 'team_name'),
       teamShortName: json.containsKey('team_short_name')
           ? _optionalString(json, 'team_short_name')
           : null,
       teamLogo: _optionalString(json, 'team_logo'),
-      matchesPlayed: _requiredInt(json, 'matches_played'),
-      won: _requiredInt(json, 'won'),
-      draw: _requiredInt(json, 'draw'),
-      lost: _requiredInt(json, 'lost'),
-      goalsFor: _requiredInt(json, 'goals_for'),
-      goalsAgainst: _requiredInt(json, 'goals_against'),
-      goalDiff: _requiredInt(json, 'goal_diff'),
-      points: _requiredInt(json, 'points'),
+      matchesPlayed: api_json.requiredInt(json, 'matches_played'),
+      won: api_json.requiredInt(json, 'won'),
+      draw: api_json.requiredInt(json, 'draw'),
+      lost: api_json.requiredInt(json, 'lost'),
+      goalsFor: api_json.requiredInt(json, 'goals_for'),
+      goalsAgainst: api_json.requiredInt(json, 'goals_against'),
+      goalDiff: api_json.requiredInt(json, 'goal_diff'),
+      points: api_json.requiredInt(json, 'points'),
       lastFiveForm: rawForm.cast<String>(),
     );
   }
-}
-
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
 }
 
 int? _optionalInt(Map<String, dynamic> json, String key) {
@@ -113,12 +109,6 @@ int? _optionalInt(Map<String, dynamic> json, String key) {
   if (value == null) return null;
   if (value is int) return value;
   throw FormatException('Expected nullable integer field "$key".');
-}
-
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
 }
 
 String? _optionalString(Map<String, dynamic> json, String key) {

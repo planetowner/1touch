@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/comm_pages/Profile_settings/about_detail_page.dart';
 import 'package:onetouch/core/identity_name_rules.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
 import 'package:onetouch/data/auth/auth_request_exception.dart';

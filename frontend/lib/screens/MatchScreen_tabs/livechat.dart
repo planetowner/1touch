@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/full_screen_back_gesture.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';

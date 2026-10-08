@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'core/style.dart';
-import 'core/stylesheet_dark.dart';
+import 'core/stylesheet.dart';
 import 'core/theme_controller.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/services/push_device_registration_service_provider.dart';

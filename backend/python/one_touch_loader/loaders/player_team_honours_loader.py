@@ -9,6 +9,7 @@ from typing import Dict, List, Tuple
 
 from ..core.db import fetch_all, transaction
 from ..core.sportmonks import SportmonksClient
+from ..core.sportmonks_fields import require_dict, require_int, require_string
 
 
 SQL_SELECT_PLAYER = """
@@ -72,50 +73,32 @@ def _competition_name(competition_id, supplied_name):
     return entry["name"] if entry else None
 
 
-def _require_dict(value, field_name: str) -> Dict:
-    if not isinstance(value, dict):
-        raise ValueError(f"Missing or invalid object: {field_name}={value!r}")
-    return value
-
-
 def _require_list(value, field_name: str) -> List:
     if not isinstance(value, list):
         raise ValueError(f"Missing or invalid list: {field_name}={value!r}")
     return value
 
 
-def _require_int(value, field_name: str) -> int:
-    if type(value) is not int:
-        raise ValueError(f"Missing or invalid integer: {field_name}={value!r}")
-    return value
-
-
-def _require_string(value, field_name: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"Missing or invalid string: {field_name}={value!r}")
-    return value.strip()
-
-
 def _winner_rows(payload: Dict, player_id: int) -> Tuple[List[Tuple], int]:
     trophies = _require_list(payload.get("trophies"), "player.trophies")
     rows: List[Tuple] = []
     for index, raw_item in enumerate(trophies):
-        item = _require_dict(raw_item, f"trophies[{index}]")
-        team_id = _require_int(item.get("team_id"), "trophy.team_id")
+        item = require_dict(raw_item, f"trophies[{index}]")
+        team_id = require_int(item.get("team_id"), "trophy.team_id")
         # Sportmonks의 필드 이름은 league_id예요. 1Touch는 같은 값을
         # player_team_honours.competition_id에 저장해요.
-        competition_id = _require_int(
+        competition_id = require_int(
             item.get("league_id"),
             "Sportmonks trophy.league_id",
         )
-        season_id = _require_int(item.get("season_id"), "trophy.season_id")
-        trophy_id = _require_int(item.get("trophy_id"), "trophy.trophy_id")
-        trophy = _require_dict(item.get("trophy"), "trophy.trophy")
+        season_id = require_int(item.get("season_id"), "trophy.season_id")
+        trophy_id = require_int(item.get("trophy_id"), "trophy.trophy_id")
+        trophy = require_dict(item.get("trophy"), "trophy.trophy")
 
         result_mapping = (
             trophy_id,
-            _require_string(trophy.get("name"), "trophy.trophy.name"),
-            _require_int(trophy.get("position"), "trophy.trophy.position"),
+            require_string(trophy.get("name"), "trophy.trophy.name"),
+            require_int(trophy.get("position"), "trophy.trophy.position"),
         )
         if result_mapping not in EXPECTED_RESULT_MAPPINGS:
             raise ValueError(
@@ -130,13 +113,13 @@ def _winner_rows(payload: Dict, player_id: int) -> Tuple[List[Tuple], int]:
             value = item.get(field)
             if value is None:
                 return None
-            value = _require_dict(value, f"trophy.{field}")
+            value = require_dict(value, f"trophy.{field}")
             if value.get("id") != expected_id:
                 raise ValueError(f"trophy.{field} id mismatch")
             result = value.get(key)
             if result is None:
                 return None
-            return _require_string(result, f"trophy.{field}.{key}")
+            return require_string(result, f"trophy.{field}.{key}")
 
         row = (player_id, team_id, competition_id, season_id,
                metadata("team", team_id, "name"), metadata("team", team_id, "image_path"),

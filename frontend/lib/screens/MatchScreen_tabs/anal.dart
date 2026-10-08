@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/number_display.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';

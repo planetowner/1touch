@@ -1,3 +1,5 @@
+import 'package:onetouch/core/api_json.dart' as api_json;
+
 class ApiTeamProbabilityCardResponse {
   const ApiTeamProbabilityCardResponse({
     required this.event,
@@ -18,21 +20,21 @@ class ApiTeamProbabilityCardResponse {
   final String resolution;
 
   factory ApiTeamProbabilityCardResponse.fromJson(Map<String, dynamic> json) {
-    final probability = _requiredDouble(json, 'probability');
+    final probability = api_json.requiredDouble(json, 'probability');
     if (probability < 0 || probability > 1) {
       throw const FormatException(
         'Expected "probability" to be between 0 and 1.',
       );
     }
     return ApiTeamProbabilityCardResponse(
-      event: _requiredString(json, 'event'),
-      competitionId: _requiredInt(json, 'competition_id'),
-      category: _requiredString(json, 'category'),
+      event: api_json.requiredString(json, 'event'),
+      competitionId: api_json.requiredInt(json, 'competition_id'),
+      category: api_json.requiredString(json, 'category'),
       probability: probability,
       changePp: _requiredNullableDouble(json, 'change_pp'),
       entropy: _requiredNullableDouble(json, 'entropy'),
       resolution: json.containsKey('resolution')
-          ? _requiredString(json, 'resolution')
+          ? api_json.requiredString(json, 'resolution')
           : 'unresolved',
     );
   }
@@ -51,7 +53,7 @@ class ApiTeamProbabilityComparisonResponse {
     Map<String, dynamic> json,
   ) {
     return ApiTeamProbabilityComparisonResponse(
-      available: _requiredBool(json, 'available'),
+      available: api_json.requiredBool(json, 'available'),
       asOf: _requiredNullableString(json, 'as_of'),
     );
   }
@@ -69,14 +71,14 @@ class ApiTeamPositionProbabilityResponse {
   factory ApiTeamPositionProbabilityResponse.fromJson(
     Map<String, dynamic> json,
   ) {
-    final probability = _requiredDouble(json, 'probability');
+    final probability = api_json.requiredDouble(json, 'probability');
     if (probability < 0 || probability > 1) {
       throw const FormatException(
         'Expected position "probability" to be between 0 and 1.',
       );
     }
     return ApiTeamPositionProbabilityResponse(
-      position: _requiredInt(json, 'position'),
+      position: api_json.requiredInt(json, 'position'),
       probability: probability,
     );
   }
@@ -93,8 +95,8 @@ class ApiTeamPointsIntervalResponse {
 
   factory ApiTeamPointsIntervalResponse.fromJson(Map<String, dynamic> json) {
     return ApiTeamPointsIntervalResponse(
-      lower: _requiredInt(json, 'lower'),
-      upper: _requiredInt(json, 'upper'),
+      lower: api_json.requiredInt(json, 'lower'),
+      upper: api_json.requiredInt(json, 'upper'),
     );
   }
 }
@@ -112,7 +114,7 @@ class ApiTeamProjectedPointsResponse {
 
   factory ApiTeamProjectedPointsResponse.fromJson(Map<String, dynamic> json) {
     return ApiTeamProjectedPointsResponse(
-      mean: _requiredDouble(json, 'mean'),
+      mean: api_json.requiredDouble(json, 'mean'),
       likelyRange: ApiTeamPointsIntervalResponse.fromJson(
         _requiredObject(json, 'likely_range'),
       ),
@@ -138,12 +140,12 @@ class ApiTeamProbabilityHistoryPointResponse {
     Map<String, dynamic> json,
   ) {
     return ApiTeamProbabilityHistoryPointResponse(
-      asOf: _requiredString(json, 'as_of'),
-      played: _requiredInt(json, 'played'),
+      asOf: api_json.requiredString(json, 'as_of'),
+      played: api_json.requiredInt(json, 'played'),
       events: _requiredObjectList(json, 'events')
           .map(ApiTeamProbabilityCardResponse.fromJson)
           .toList(growable: false),
-      expectedPoints: _requiredDouble(json, 'expected_points'),
+      expectedPoints: api_json.requiredDouble(json, 'expected_points'),
     );
   }
 }
@@ -176,10 +178,10 @@ class ApiTeamProbabilityWhatIfFixtureResponse {
       );
     }
     return ApiTeamProbabilityWhatIfFixtureResponse(
-      fixtureId: _requiredInt(json, 'fixture_id'),
-      homeTeamId: _requiredInt(json, 'home_team_id'),
-      awayTeamId: _requiredInt(json, 'away_team_id'),
-      startingAt: _requiredString(json, 'starting_at'),
+      fixtureId: api_json.requiredInt(json, 'fixture_id'),
+      homeTeamId: api_json.requiredInt(json, 'home_team_id'),
+      awayTeamId: api_json.requiredInt(json, 'away_team_id'),
+      startingAt: api_json.requiredString(json, 'starting_at'),
       roundName: _requiredNullableString(json, 'round_name'),
       probabilities: probabilities,
     );
@@ -203,7 +205,7 @@ class ApiTeamProbabilityWhatIfScenarioResponse {
   factory ApiTeamProbabilityWhatIfScenarioResponse.fromJson(
     Map<String, dynamic> json,
   ) {
-    final outcome = _requiredString(json, 'outcome');
+    final outcome = api_json.requiredString(json, 'outcome');
     if (!const {'win', 'draw', 'loss'}.contains(outcome)) {
       throw const FormatException('Expected a win, draw, or loss outcome.');
     }
@@ -283,13 +285,13 @@ class ApiTeamProbabilityResponse {
 
   factory ApiTeamProbabilityResponse.fromJson(Map<String, dynamic> json) {
     return ApiTeamProbabilityResponse(
-      teamId: _requiredInt(json, 'team_id'),
-      teamName: _requiredString(json, 'team_name'),
-      competitionId: _requiredInt(json, 'competition_id'),
-      seasonId: _requiredInt(json, 'season_id'),
-      seasonName: _requiredString(json, 'season_name'),
-      asOf: _requiredString(json, 'as_of'),
-      maximumPoints: _requiredInt(json, 'maximum_points'),
+      teamId: api_json.requiredInt(json, 'team_id'),
+      teamName: api_json.requiredString(json, 'team_name'),
+      competitionId: api_json.requiredInt(json, 'competition_id'),
+      seasonId: api_json.requiredInt(json, 'season_id'),
+      seasonName: api_json.requiredString(json, 'season_name'),
+      asOf: api_json.requiredString(json, 'as_of'),
+      maximumPoints: api_json.requiredInt(json, 'maximum_points'),
       positions: _requiredObjectList(json, 'positions')
           .map(ApiTeamPositionProbabilityResponse.fromJson)
           .toList(growable: false),
@@ -337,18 +339,6 @@ List<double> _requiredNumberList(Map<String, dynamic> json, String key) {
   }).toList(growable: false);
 }
 
-int _requiredInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) return value;
-  throw FormatException('Expected required integer field "$key".');
-}
-
-double _requiredDouble(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is num) return value.toDouble();
-  throw FormatException('Expected required numeric field "$key".');
-}
-
 double? _requiredNullableDouble(Map<String, dynamic> json, String key) {
   if (!json.containsKey(key)) {
     throw FormatException('Expected nullable numeric field "$key".');
@@ -359,12 +349,6 @@ double? _requiredNullableDouble(Map<String, dynamic> json, String key) {
   throw FormatException('Expected nullable numeric field "$key".');
 }
 
-String _requiredString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is String) return value;
-  throw FormatException('Expected required string field "$key".');
-}
-
 String? _requiredNullableString(Map<String, dynamic> json, String key) {
   if (!json.containsKey(key)) {
     throw FormatException('Expected nullable string field "$key".');
@@ -372,12 +356,6 @@ String? _requiredNullableString(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null || value is String) return value as String?;
   throw FormatException('Expected nullable string field "$key".');
-}
-
-bool _requiredBool(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is bool) return value;
-  throw FormatException('Expected required boolean field "$key".');
 }
 
 Map<String, dynamic> _requiredObject(

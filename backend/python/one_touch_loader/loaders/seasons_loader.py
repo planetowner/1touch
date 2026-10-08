@@ -6,6 +6,7 @@ from typing import Dict, List, Tuple
 
 from ..core.db import fetch_all, upsert_many
 from ..core.sportmonks import SportmonksClient
+from ..core.season_names import season_start_year
 from .teams_loader import MIN_SEASON_START_YEAR, SUPPORTED_COMPETITION_IDS
 
 
@@ -26,20 +27,6 @@ ON DUPLICATE KEY UPDATE
 """
 
 SeasonRow = Tuple[int, int, str, bool]
-
-
-def _season_start_year(season_name: str) -> int:
-    parts = season_name.split("/", 1)
-    if len(parts) != 2:
-        raise ValueError(f"Unsupported season name: {season_name!r}")
-    try:
-        start_year = int(parts[0])
-        end_year = int(parts[1])
-    except ValueError as exc:
-        raise ValueError(f"Unsupported season name: {season_name!r}") from exc
-    if end_year != start_year + 1:
-        raise ValueError(f"Unsupported season name: {season_name!r}")
-    return start_year
 
 
 def _season_rows(competition_id: int, seasons: object) -> List[SeasonRow]:
@@ -74,7 +61,7 @@ def _season_rows(competition_id: int, seasons: object) -> List[SeasonRow]:
                 f"Invalid is_current: competition_id={competition_id}, "
                 f"season_id={season_id}, value={is_current!r}"
             )
-        if _season_start_year(name) >= MIN_SEASON_START_YEAR:
+        if season_start_year(name) >= MIN_SEASON_START_YEAR:
             rows.append((season_id, competition_id, name, is_current))
     return rows
 
