@@ -270,6 +270,7 @@ void main() {
         fixture.homeTeamId,
         keyPasses: 7,
         recoveries: 4,
+        leagueComparisonDeltas: const [6.25, -6.25, 0],
         actions: const [
           TacticalPitchPoint(x: 10, y: 20),
           TacticalPitchPoint(x: 20, y: 70),
@@ -281,6 +282,7 @@ void main() {
         fixture.awayTeamId,
         keyPasses: 2,
         recoveries: 4,
+        leagueComparisonDeltas: const [-18.75, 18.75, 0],
         actions: const [
           TacticalPitchPoint(x: 10, y: 20),
           TacticalPitchPoint(x: 45, y: 40),
@@ -372,7 +374,7 @@ void main() {
             find.byType(DefenseTerritoryDiagram),
           )
           .zoneDeltas,
-      [25, -25, 0],
+      [6.25, -6.25, 0],
     );
     expect(
       tester
@@ -592,7 +594,7 @@ void main() {
             find.byType(DefenseTerritoryDiagram),
           )
           .zoneDeltas,
-      [25, -25, 0],
+      [6.25, -6.25, 0],
     );
     expect(
       tester
@@ -635,7 +637,7 @@ void main() {
             .widget<DefenseTerritoryDiagram>(
                 find.byType(DefenseTerritoryDiagram))
             .zoneDeltas,
-        [25, -25, 0]);
+        [6.25, -6.25, 0]);
 
     final defenseAway = find.descendant(
       of: find.byKey(const ValueKey('match-analysis-defense-card')),
@@ -662,7 +664,13 @@ void main() {
             .widget<DefenseTerritoryDiagram>(
                 find.byType(DefenseTerritoryDiagram))
             .zoneDeltas,
-        [-25, 25, 0]);
+        [0, 18.75, -18.75]);
+    expect(
+        tester
+            .widget<DefenseTerritoryDiagram>(
+                find.byType(DefenseTerritoryDiagram))
+            .rightToLeft,
+        isTrue);
     expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(
@@ -677,6 +685,81 @@ void main() {
     expect(find.text('Key Passes'), findsNothing);
     expect(find.text('Passes Into Final Third'), findsWidgets);
   });
+
+  for (final scenario in [
+    (name: 'no league sample', recoveries: 4, missingPositionCount: 0),
+    (name: 'no recoveries', recoveries: 0, missingPositionCount: 0),
+    (name: 'incomplete positions', recoveries: null, missingPositionCount: 2),
+  ]) {
+    testWidgets('defense handles ${scenario.name} for the selected team',
+        (tester) async {
+      final fixture = mockFixtures.first;
+      final repository = TestMatchAnalysisRepository(
+        MatchTacticalAnalysis(
+          fixtureId: fixture.fixtureId,
+          available: true,
+          home: _team(
+            fixture.homeTeamId,
+            keyPasses: 7,
+            recoveries: scenario.recoveries,
+            actions: scenario.recoveries == 0
+                ? const []
+                : const [TacticalPitchPoint(x: 60, y: 40)],
+            missingPositionCount: scenario.missingPositionCount,
+            leagueComparisonDeltas: const [null, null, null],
+          ),
+          away: _team(
+            fixture.awayTeamId,
+            keyPasses: 2,
+            recoveries: 4,
+            leagueComparisonDeltas: scenario.name == 'no league sample'
+                ? const [null, null, null]
+                : const [-18.75, 18.75, 0],
+          ),
+        ),
+        MatchShotMap(
+          fixtureId: fixture.fixtureId,
+          available: false,
+          homeCount: null,
+          awayCount: null,
+          shots: const [],
+        ),
+      );
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.whitetheme,
+        home: Scaffold(
+          body: AnalysisTab(fixture: fixture, repository: repository),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DefenseTerritoryDiagram), findsNothing);
+      final incompleteMessage =
+          find.text('Recovery comparison incomplete (2 missing)');
+      expect(incompleteMessage,
+          scenario.missingPositionCount > 0 ? findsOneWidget : findsNothing);
+      final defenseCard =
+          find.byKey(const ValueKey('match-analysis-defense-card'));
+      final awayToggle = find.descendant(
+        of: defenseCard,
+        matching: find.byKey(const ValueKey('match-analysis-away-toggle')),
+      );
+      await tester.ensureVisible(awayToggle);
+      await tester.tap(awayToggle);
+      await tester.pumpAndSettle();
+
+      expect(incompleteMessage, findsNothing);
+      if (scenario.name == 'no league sample') {
+        expect(find.byType(DefenseTerritoryDiagram), findsNothing);
+      } else {
+        final diagram = tester.widget<DefenseTerritoryDiagram>(
+            find.byType(DefenseTerritoryDiagram));
+        expect(diagram.zoneDeltas, [0, 18.75, -18.75]);
+        expect(diagram.rightToLeft, isTrue);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('shows an honest unavailable state', (tester) async {
     final fixture = mockFixtures.first;
@@ -1109,7 +1192,9 @@ FixtureStatistic _stat(int teamId, String code, double value) =>
 MatchTeamTacticalAnalysis _team(
   int teamId, {
   required int keyPasses,
-  required int recoveries,
+  required int? recoveries,
+  int missingPositionCount = 0,
+  List<double?> leagueComparisonDeltas = const [6.25, -6.25, 0],
   List<TacticalPitchPoint> actions = const [
     TacticalPitchPoint(x: 60, y: 40),
   ],
@@ -1139,8 +1224,8 @@ MatchTeamTacticalAnalysis _team(
         ),
       ),
       defensiveActivity: MatchDefensiveActivity(
-        complete: true,
-        missingPositionCount: 0,
+        complete: missingPositionCount == 0,
+        missingPositionCount: missingPositionCount,
         actionCount: actions.length,
         actions: actions,
         recoveries: recoveries,
@@ -1149,5 +1234,6 @@ MatchTeamTacticalAnalysis _team(
         opponentHalfPercentage: 40,
         averageRegainX: 42,
         averageRegainHeightMetres: 44.5,
+        leagueComparisonDeltas: leagueComparisonDeltas,
       ),
     );

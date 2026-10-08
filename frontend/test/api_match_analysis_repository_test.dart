@@ -35,6 +35,10 @@ void main() {
     expect(analysis.away?.progression.channels.left.percentage, isNull);
     expect(analysis.away?.defensiveActivity.recoveries, isNull);
     expect(analysis.away?.defensiveActivity.actions, hasLength(1));
+    expect(analysis.home?.defensiveActivity.leagueComparisonDeltas,
+        [6.25, -6.25, 0]);
+    expect(analysis.away?.defensiveActivity.leagueComparisonDeltas,
+        [null, null, null]);
     expect(shotMap.homeCount, 1);
     expect(shotMap.shots.single.playerName, isNull);
     expect(shotMap.shots.single.start.x, 84.5);
@@ -74,6 +78,37 @@ void main() {
 
     expect((await repository.loadAnalysis(42)).available, isFalse);
     expect((await repository.loadShotMap(42)).available, isFalse);
+  });
+
+  test('preserves null league comparisons when the baseline has no sample',
+      () async {
+    final team = _teamJson(teamId: 10, complete: true);
+    final defensive = team['defensive_activity']! as Map<String, Object?>;
+    final comparison =
+        defensive['league_comparison']! as List<Map<String, Object?>>;
+    for (final third in comparison) {
+      third['league_percentage'] = null;
+      third['difference_pp'] = null;
+    }
+    final repository = ApiMatchAnalysisRepository(
+      api: ApiClient(
+        client: MockClient((_) async => http.Response(
+              jsonEncode({
+                'fixture_id': 42,
+                'available': true,
+                'teams': {'home': team, 'away': team},
+              }),
+              200,
+            )),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+    );
+
+    final analysis = await repository.loadAnalysis(42);
+    expect(analysis.home?.defensiveActivity.complete, isTrue);
+    expect(analysis.home?.defensiveActivity.leagueComparisonDeltas,
+        [null, null, null]);
   });
 
   test('rejects failed requests and mismatched fixture identities', () async {
@@ -199,6 +234,23 @@ Map<String, Object?> _teamJson({
         ],
         'average_regain_x': complete ? 40.0 : null,
         'average_regain_height_m': complete ? 42.2 : null,
+        'league_comparison': [
+          {
+            'third': 'defensive',
+            'league_percentage': 43.75,
+            'difference_pp': complete ? 6.25 : null,
+          },
+          {
+            'third': 'middle',
+            'league_percentage': 31.25,
+            'difference_pp': complete ? -6.25 : null,
+          },
+          {
+            'third': 'attacking',
+            'league_percentage': 25.0,
+            'difference_pp': complete ? 0 : null,
+          },
+        ],
       },
     };
 

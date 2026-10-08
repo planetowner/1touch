@@ -729,18 +729,11 @@ class _AnalysisTabState extends State<AnalysisTab> {
     final selectedTeamColor =
         _showHomeDefense ? comparisonColors.anchor : comparisonColors.opponent;
     final rows = _defenseRows();
-    final zoneDeltas = _defenseZoneDeltas();
-    final missingPositionCount = [
-      _homeAnalysis?.defensiveActivity,
-      _awayAnalysis?.defensiveActivity,
-    ].fold<int>(
-      0,
-      (total, activity) =>
-          total +
-          (activity?.complete == false
-              ? activity?.missingPositionCount ?? 0
-              : 0),
-    );
+    final activity =
+        (_showHomeDefense ? _homeAnalysis : _awayAnalysis)?.defensiveActivity;
+    final zoneDeltas = _defenseZoneDeltas(activity);
+    final missingPositionCount =
+        activity?.complete == false ? activity?.missingPositionCount ?? 0 : 0;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 0),
       child: Column(
@@ -814,36 +807,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  List<double>? _defenseZoneDeltas() {
-    final home = _defenseZonePercentages(_homeAnalysis?.defensiveActivity);
-    final away = _defenseZonePercentages(_awayAnalysis?.defensiveActivity);
-    if (home == null || away == null) return null;
-    final selected = _showHomeDefense ? home : away;
-    final opponent = _showHomeDefense ? away : home;
-    return List.generate(
-      3,
-      (index) => selected[index] - opponent[index],
-      growable: false,
-    );
-  }
-
-  List<double>? _defenseZonePercentages(MatchDefensiveActivity? activity) {
-    if (activity == null || !activity.complete || activity.actions.isEmpty) {
+  List<double>? _defenseZoneDeltas(MatchDefensiveActivity? activity) {
+    final deltas = activity?.leagueComparisonDeltas;
+    if (deltas == null || deltas.any((value) => value == null)) {
       return null;
     }
-    final counts = [0, 0, 0];
-    // 원본 X축을 세 구역으로 나눠 각 구역의 수비 행동 비율을 구해요.
-    // 100은 마지막 구역의 범위를 벗어나므로 99.999로 제한해요.
-    for (final action in activity.actions) {
-      final zone = (action.x.clamp(0, 99.999) / (100 / 3)).floor();
-      counts[zone] += 1;
-    }
-    final total = activity.actions.length;
-    return List.generate(
-      3,
-      (index) => counts[index] * 100 / total,
-      growable: false,
-    );
+    // 서버가 계산한 리그 평균 대비 차이를 써요. 원정팀은 왼쪽으로 공격하므로 구역 순서를 뒤집어요.
+    return (_showHomeDefense ? deltas : deltas.reversed)
+        .cast<double>()
+        .toList(growable: false);
   }
 
   int _goalCount(int teamId) => (_shotMap?.shots ?? const <MatchShot>[])
@@ -1465,9 +1437,7 @@ class _ProgressionPainter extends CustomPainter {
       oldDelegate.reveal != reveal;
 }
 
-// Team-relative recovery distribution across the defensive, middle, and
-// attacking thirds. Each value is the selected team's share minus its
-// opponent's share, so the three displayed differences sum to roughly zero.
+// 화면 왼쪽부터 세 구역의 공 회수 비중과 리그 평균의 차이(%p)를 표시해요.
 class DefenseTerritoryDiagram extends StatelessWidget {
   final bool rightToLeft;
   final List<double> zoneDeltas;
@@ -1615,8 +1585,8 @@ class _DefenseTerritoryPainter extends CustomPainter {
         rightToLeft: rightToLeft,
       );
       final label = value >= 0
-          ? '+${value.toStringAsFixed(1)}%'
-          : '${value.toStringAsFixed(1)}%';
+          ? '+${value.toStringAsFixed(1)}%p'
+          : '${value.toStringAsFixed(1)}%p';
       final text = TextPainter(
         text: TextSpan(
           text: label,
@@ -1628,17 +1598,20 @@ class _DefenseTerritoryPainter extends CustomPainter {
         textHeightBehavior: const TextHeightBehavior(
           leadingDistribution: TextLeadingDistribution.even,
         ),
-      )..layout(maxWidth: zoneWidth);
-      text.paint(
-        canvas,
-        Offset(
-          zoneWidth * (index + 0.5) - text.width / 2,
-          defenseTerritoryLabelTop(
-            labelHeight: text.height,
-            arrowHeadTop: arrowHeadTop,
-          ),
+      )..layout();
+      // %p 단위가 작은 화면에서도 줄바꿈되지 않도록 구역 너비에 맞춰요.
+      final labelScale = math.min(1.0, (zoneWidth - 8) / text.width);
+      canvas.save();
+      canvas.translate(
+        zoneWidth * (index + 0.5) - text.width * labelScale / 2,
+        defenseTerritoryLabelTop(
+          labelHeight: text.height * labelScale,
+          arrowHeadTop: arrowHeadTop,
         ),
       );
+      canvas.scale(labelScale);
+      text.paint(canvas, Offset.zero);
+      canvas.restore();
     }
   }
 

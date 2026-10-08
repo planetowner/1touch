@@ -69,7 +69,9 @@ class MatchDefensiveActivity {
     required this.opponentHalfPercentage,
     required this.averageRegainX,
     required this.averageRegainHeightMetres,
-  }) : actions = List.unmodifiable(actions);
+    required List<double?> leagueComparisonDeltas,
+  })  : actions = List.unmodifiable(actions),
+        leagueComparisonDeltas = List.unmodifiable(leagueComparisonDeltas);
 
   final bool complete;
   final int missingPositionCount;
@@ -81,6 +83,8 @@ class MatchDefensiveActivity {
   final double? opponentHalfPercentage;
   final double? averageRegainX;
   final double? averageRegainHeightMetres;
+  // 수비·중앙·공격 구역 순서의 리그 평균 대비 차이(%p)예요. 비교할 수 없으면 null이에요.
+  final List<double?> leagueComparisonDeltas;
 }
 
 @immutable

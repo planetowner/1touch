@@ -166,6 +166,7 @@ class ApiDefensiveActivityResponse {
     required this.opponentHalfPercentage,
     required this.averageRegainX,
     required this.averageRegainHeightMetres,
+    required this.leagueComparisonDeltas,
   });
 
   final bool complete;
@@ -178,6 +179,7 @@ class ApiDefensiveActivityResponse {
   final double? opponentHalfPercentage;
   final double? averageRegainX;
   final double? averageRegainHeightMetres;
+  final List<double?> leagueComparisonDeltas;
 
   factory ApiDefensiveActivityResponse.fromJson(Map<String, dynamic> json) {
     final halves = _requiredObjectList(json, 'halves');
@@ -214,6 +216,9 @@ class ApiDefensiveActivityResponse {
       averageRegainX: _requiredNullableDouble(json, 'average_regain_x'),
       averageRegainHeightMetres:
           _requiredNullableDouble(json, 'average_regain_height_m'),
+      leagueComparisonDeltas: _requiredObjectList(json, 'league_comparison')
+          .map((third) => _requiredNullableDouble(third, 'difference_pp'))
+          .toList(growable: false),
     );
   }
 }
