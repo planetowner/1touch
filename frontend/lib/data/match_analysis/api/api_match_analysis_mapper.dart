@@ -46,6 +46,7 @@ MatchTeamTacticalAnalysis? _teamAnalysis(
       opponentHalfPercentage: defensive.opponentHalfPercentage,
       averageRegainX: defensive.averageRegainX,
       averageRegainHeightMetres: defensive.averageRegainHeightMetres,
+      leagueComparisonDeltas: defensive.leagueComparisonDeltas,
     ),
   );
 }
