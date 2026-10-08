@@ -302,6 +302,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
           body: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
+                // 원본 로고의 해상도가 낮을 수 있어 표시 크기를 150×150으로 제한해요.
                 const logoSize = 150.0;
                 final logoHeightScale =
                     ((constraints.maxHeight - 560) / 240).clamp(0.0, 1.0);
