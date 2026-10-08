@@ -8,6 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/core/theme_controller.dart';
+import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/main.dart';
 import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/screens/community_screen.dart';
@@ -171,6 +173,21 @@ void main() {
 
     router.go('/profile');
     await tester.pumpAndSettle();
+    appThemeController.value = ThemeMode.light;
+    addTearDown(() => appThemeController.value = ThemeMode.dark);
+    await tester.pumpAndSettle();
+    Color statusBarBackground() => tester
+        .widget<ColoredBox>(
+          find.byKey(const ValueKey('app-status-bar-background')),
+        )
+        .color;
+    expect(statusBarBackground(), app_style.AppPalette.lightGreyBox);
+    router.push('/profile/preference');
+    await tester.pumpAndSettle();
+    expect(statusBarBackground(), app_style.AppPalette.white);
+    Navigator.of(tester.element(find.text('Preferences').last)).pop();
+    await tester.pumpAndSettle();
+    expect(statusBarBackground(), app_style.AppPalette.lightGreyBox);
     expect(router.routeInformationProvider.value.uri.path, '/profile');
     expect(find.byType(OneTouchBottomNavigationBar), findsOneWidget);
     expect(
