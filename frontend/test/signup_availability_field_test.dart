@@ -15,6 +15,8 @@ void main() {
       requests.add(value);
       return true;
     });
+    final normalCursorColor =
+        tester.widget<EditableText>(find.byType(EditableText)).cursorColor;
 
     await tester.enterText(find.byType(TextFormField), 'first');
     await tester.pump(const Duration(milliseconds: 150));
@@ -46,6 +48,13 @@ void main() {
         isNull);
     await tester.pumpAndSettle();
     expect(find.text('Available.'), findsNothing);
+    expect(
+        tester
+            .state<FormFieldState<String>>(find.byType(TextFormField))
+            .hasError,
+        isTrue);
+    expect(tester.widget<EditableText>(find.byType(EditableText)).cursorColor,
+        normalCursorColor);
   });
 
   testWidgets('ignores an available response for an input that has changed',

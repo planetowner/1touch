@@ -92,6 +92,8 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
         );
     return TextFormField(
       controller: widget.controller,
+      // 오류는 안내 문구로 표시하고 커서는 앱의 기본 색상을 유지해요.
+      cursorErrorColor: Theme.of(context).colorScheme.primary,
       enabled: widget.enabled,
       maxLength: widget.maxLength,
       keyboardType: widget.keyboardType,

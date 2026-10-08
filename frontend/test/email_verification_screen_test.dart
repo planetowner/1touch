@@ -76,6 +76,11 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        final normalCursorColors = tester
+            .widgetList<EditableText>(find.byType(EditableText))
+            .map((field) => field.cursorColor)
+            .toList();
+
         Rect inputRect(Finder field) {
           final editable =
               find.descendant(of: field, matching: find.byType(EditableText));
@@ -87,6 +92,13 @@ void main() {
           final fields = find.byType(TextFormField);
           expect(fields, findsNWidgets(5));
           for (var index = 0; index < 5; index++) {
+            expect(
+                tester
+                    .widget<EditableText>(find.descendant(
+                        of: fields.at(index),
+                        matching: find.byType(EditableText)))
+                    .cursorColor,
+                normalCursorColors[index]);
             // Figma 1529:17955의 입력칸 실측값으로 확인해요.
             expect(inputRect(fields.at(index)).size, const Size(345, 40));
             final decorator = tester.widget<InputDecorator>(find.descendant(
@@ -209,6 +221,14 @@ void main() {
         expect(error, findsOneWidget);
         expect(tester.getRect(error).top,
             greaterThanOrEqualTo(inputRect(confirm).bottom));
+        expect(
+            tester
+                .widget<RichText>(find.descendant(
+                    of: error, matching: find.byType(RichText)))
+                .text
+                .style!
+                .color,
+            Theme.of(tester.element(confirm)).colorScheme.error);
         expectInputGeometry();
       });
     }
@@ -315,6 +335,12 @@ void main() {
           availability: (checkedField, value) async =>
               checkedField != field || value == replacement);
       await _pumpSignup(tester, repository);
+      final input = find.byKey(
+          ValueKey('signup-${field.apiValue.replaceAll('_', '-')}-field'));
+      final editable =
+          find.descendant(of: input, matching: find.byType(EditableText));
+      final normalCursorColor =
+          tester.widget<EditableText>(editable).cursorColor;
       await _fillSignup(tester);
       await tester.pump(const Duration(milliseconds: 250));
       await tester.pump();
@@ -327,6 +353,8 @@ void main() {
             (RegistrationField.email, 'member@example.com'),
           ]));
       expect(find.text('Already in use.'), findsOneWidget);
+      expect(
+          tester.widget<EditableText>(editable).cursorColor, normalCursorColor);
       final submit = find.byKey(const ValueKey('email-sign-up-button'));
       expect(tester.widget<FilledButton>(submit).onPressed, isNull);
       expect(repository.requestedEmails, isEmpty);
@@ -340,6 +368,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 250));
       await tester.pump();
       expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+      expect(
+          tester.widget<EditableText>(editable).cursorColor, normalCursorColor);
       await tester.ensureVisible(submit);
       await tester.tap(submit);
       await tester.pumpAndSettle();
