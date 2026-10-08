@@ -59,6 +59,7 @@ class InteractiveBackDragScope extends InheritedNotifier<ValueNotifier<bool>> {
 class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
   static const _settleDuration = Duration(milliseconds: 250);
   static const _dragSlop = 8.0;
+  static const _horizontalDominance = 2.0;
   final ValueNotifier<bool> _dragActive = ValueNotifier(false);
   int? _pointer;
   Offset? _pointerStart;
@@ -84,15 +85,22 @@ class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
     final start = _pointerStart;
     if (start == null) return;
     final distance = event.position - start;
-    if (!_dragging) {
-      if (distance.dx.abs() < _dragSlop && distance.dy.abs() < _dragSlop) {
-        return;
-      }
-      // 처음 움직인 방향을 고정해 세로 스크롤과 왼쪽 스와이프를 유지해요.
-      if (distance.dx <= 0 || distance.dx.abs() <= distance.dy.abs()) {
+    if (!_dragging &&
+        distance.dx.abs() < _dragSlop &&
+        distance.dy.abs() < _dragSlop) {
+      return;
+    }
+    // 대각선으로 움직이기 시작하거나 진행 중 꺾이면 뒤로가기를 중단해요.
+    if (distance.dx <= 0 ||
+        distance.dx < distance.dy.abs() * _horizontalDominance) {
+      if (_dragging) {
+        _onPointerEnd(event.pointer, cancelled: true);
+      } else {
         _rejected = true;
-        return;
       }
+      return;
+    }
+    if (!_dragging) {
       if (!widget.route.popGestureEnabled) {
         _rejected = true;
         return;

@@ -41,6 +41,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('false'), findsOneWidget);
 
+    final diagonal = await tester.startGesture(const Offset(100, 300));
+    await diagonal.moveBy(const Offset(60, 40));
+    await tester.pump();
+    expect(find.text('false'), findsOneWidget);
+    await diagonal.moveBy(const Offset(150, 0));
+    await tester.pump();
+    expect(find.text('false'), findsOneWidget);
+    await diagonal.up();
+    await tester.pumpAndSettle();
+    expect(find.text('false'), findsOneWidget);
+
     final cancelled = await tester.startGesture(const Offset(400, 300));
     await cancelled.moveBy(const Offset(40, 0));
     await tester.pump();

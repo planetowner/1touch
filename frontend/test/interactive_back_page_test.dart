@@ -115,6 +115,25 @@ void main() {
       expect(tester.getTopLeft(label).dx, closeTo(originalX, 1));
       await verticalDrag.up();
 
+      await tester.dragFrom(
+        Offset(24, size.height / 3),
+        Offset(size.width * 0.7, size.width * 0.45),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(label).dx, closeTo(originalX, 1));
+
+      final curvedDrag = await tester.startGesture(Offset(24, size.height / 2));
+      await curvedDrag.moveBy(Offset(size.width * 0.6, 0));
+      await tester.pump();
+      expect(tester.getTopLeft(label).dx - originalX,
+          closeTo(size.width * 0.6, 1));
+      await curvedDrag.moveBy(Offset(0, size.width * 0.4));
+      await tester.pumpAndSettle();
+      await curvedDrag.up();
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(label).dx, closeTo(originalX, 1));
+      expect(label, findsOneWidget);
+
       final longDrag = await tester.startGesture(Offset(30, size.height / 2));
       await longDrag.moveBy(const Offset(24, 0));
       for (var step = 0; step < 3; step++) {
