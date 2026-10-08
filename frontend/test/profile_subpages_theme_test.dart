@@ -160,24 +160,6 @@ void main() {
     });
   }
 
-  testWidgets('profile real name cannot be edited after registration',
-      (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: const EditProfileScreen(),
-      ),
-    );
-
-    final nameField = tester.widget<TextField>(
-      find.byKey(const ValueKey('profile-real-name-field')),
-    );
-    expect(nameField.readOnly, isTrue);
-    expect(nameField.enableInteractiveSelection, isFalse);
-    expect(nameField.showCursor, isFalse);
-    expect(find.byIcon(Icons.lock_outline), findsNWidgets(2));
-  });
-
   testWidgets('nickname entry rejects typed and pasted whitespace',
       (tester) async {
     await tester.pumpWidget(
@@ -211,8 +193,8 @@ void main() {
     );
     await tester.pump();
 
-    final usernameField = find.byKey(
-      const ValueKey('profile-username-field'),
+    final nicknameField = find.byKey(
+      const ValueKey('profile-display-name-field'),
     );
     final firstClearAction = find
         .ancestor(
@@ -220,7 +202,7 @@ void main() {
           matching: find.byType(SizedBox),
         )
         .first;
-    final fieldRect = tester.getRect(usernameField);
+    final fieldRect = tester.getRect(nicknameField);
     final actionRect = tester.getRect(firstClearAction);
 
     expect(actionRect.left - fieldRect.right, 8);

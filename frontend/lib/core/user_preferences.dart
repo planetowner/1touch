@@ -185,7 +185,10 @@ class CurrentUserPreferences {
       viewedTeamId = ValueNotifier(favoriteId);
       _hasFavorite = true;
     }
-    followedTeamIds.value = List.unmodifiable(selectedIds);
+    // 같은 목록으로 변경 알림을 보내면 새로고침 중 홈 조회가 중복돼요.
+    if (!listEquals(followedTeamIds.value, selectedIds)) {
+      followedTeamIds.value = List.unmodifiable(selectedIds);
+    }
     if (!selectedIds.contains(_viewedTeamOverride)) _viewedTeamOverride = null;
     viewedTeamId.value = _viewedTeamOverride ?? favoriteId;
   }

@@ -97,6 +97,38 @@ void main() {
     expect(repository.saved, isNull);
   });
 
+  test('server selection only notifies when followed teams or order change',
+      () {
+    final preferences = CurrentUserPreferences(
+      repository: _FakeUserPreferencesRepository(),
+      teamRepository: teamRepository,
+      fallback: fallback,
+    );
+    final changes = <List<int>>[];
+    preferences.followedTeamIds.addListener(
+      () => changes.add(preferences.followedTeamIds.value),
+    );
+
+    preferences.applyServerSelection(const UserTeamPreferences(
+      favoriteTeamId: 83,
+      followedTeamIds: [503, 83, 503],
+    ));
+    expect(changes, isEmpty);
+
+    preferences.applyServerSelection(const UserTeamPreferences(
+      favoriteTeamId: 83,
+      followedTeamIds: [83, 503, 8],
+    ));
+    preferences.applyServerSelection(const UserTeamPreferences(
+      favoriteTeamId: 83,
+      followedTeamIds: [83, 8, 503],
+    ));
+    expect(changes, [
+      [83, 503, 8],
+      [83, 8, 503]
+    ]);
+  });
+
   test('switching favorite keeps it inside followed teams', () async {
     final repository = _FakeUserPreferencesRepository();
     final preferences = CurrentUserPreferences(

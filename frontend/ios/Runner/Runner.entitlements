@@ -2,6 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- 프로비저닝 프로파일과 별도로 앱 서명에도 Apple 로그인 권한이 필요해요. -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 	<key>aps-environment</key>
 	<string>development</string>
 	<key>com.apple.developer.associated-domains</key>

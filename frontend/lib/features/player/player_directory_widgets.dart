@@ -4,6 +4,7 @@ import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/app_info_button.dart';
+import 'package:onetouch/core/app_action_section_header.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -401,7 +402,6 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final leagueLabel = _league == null
         ? trUpper(context, 'All leagues')
         : _page?.leagues
@@ -413,9 +413,12 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        AppActionSectionHeader(
           key: const ValueKey('players-ranking-title-row'),
-          children: [
+          icon: Icons.tune,
+          tooltip: tr(context, 'Ranking filters'),
+          onPressed: _loading ? null : _filters,
+          title: Row(children: [
             Text(trUpper(context, '1touch Ranking'), style: Body2_b.style),
             const SizedBox(width: 4),
             const AppInfoButton(
@@ -424,24 +427,9 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
                   "Evaluates and ranks players using 1touch's own data-driven performance metrics.",
               layoutSize: 18,
             ),
-            const Spacer(),
-            IconButton(
-              tooltip: tr(context, 'Ranking filters'),
-              onPressed: _loading ? null : _filters,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints.tightFor(
-                width: 24,
-                height: 24,
-              ),
-              icon: Transform.translate(
-                offset: const Offset(0, -2),
-                child: Icon(Icons.tune, color: colors.onSurface),
-              ),
-            ),
-          ],
+          ]),
         ),
         if (_league != null || _position != null) ...[
-          const SizedBox(height: 16),
           SingleChildScrollView(
             key: const ValueKey('active-ranking-filters'),
             scrollDirection: Axis.horizontal,
@@ -464,6 +452,7 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
               ],
             ),
           ),
+          const SizedBox(height: 16),
         ],
         if (_failed)
           TextButton(

@@ -487,9 +487,7 @@ void main() {
       (tester) async {
     await pump(tester);
 
-    final titleBottom = tester.getBottomLeft(
-      find.byKey(const ValueKey('players-ranking-title-row')),
-    );
+    final titleBottom = tester.getBottomLeft(find.byIcon(Icons.tune));
     final cardTop = tester.getTopLeft(
       find.byKey(const ValueKey('players-ranking-card')),
     );
@@ -568,9 +566,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final titleBottom = tester.getBottomLeft(
-      find.byKey(const ValueKey('players-ranking-title-row')),
-    );
+    final titleBottom = tester.getBottomLeft(find.byIcon(Icons.tune));
     final filters = tester.getRect(
       find.byKey(const ValueKey('active-ranking-filters')),
     );

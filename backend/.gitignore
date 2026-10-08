@@ -58,3 +58,6 @@ pip-log.txt
 
 # 작업 메모와 안내 문서는 PC에 보관하고 GitHub에는 올리지 않아요.
 *.[mM][dD]
+
+# 출시 검토 자료와 배포 묶음은 로컬에 보관해요.
+/legal/release-review-2026-10-05/

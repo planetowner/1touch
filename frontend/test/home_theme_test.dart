@@ -577,7 +577,8 @@ void main() {
     await tester.pump();
 
     expect(expectedLabel, isNotEmpty);
-    expect(find.text('$expectedLabel -'), findsAtLeastNWidgets(1));
+    expect(expectedLabel, 'La Liga');
+    expect(find.text('LA LIGA -'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

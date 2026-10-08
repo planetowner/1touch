@@ -11,8 +11,5 @@ dart run tool/export_verification_email_messages.dart --check
 python3 tool/export_legal_documents.py --check
 flutter analyze
 
-if (($# > 0)); then
-  flutter test "$@"
-else
-  flutter test
-fi
+# 위젯 테스트의 HTTP 요청은 모의 클라이언트가 처리해요. 실행에 필요한 주소만 지정해요.
+flutter test --dart-define=API_BASE_URI=https://example.com/v1/ "$@"

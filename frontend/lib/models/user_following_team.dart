@@ -14,8 +14,8 @@ class UserFollowingTeam {
 
   factory UserFollowingTeam.fromJson(Map<String, dynamic> json) {
     return UserFollowingTeam(
-      userId:    json['user_id'] as int,
-      teamId:    json['team_id'] as int,
+      userId: json['user_id'] as int,
+      teamId: json['team_id'] as int,
       createdAt: json['created_at'] as String,
     );
   }

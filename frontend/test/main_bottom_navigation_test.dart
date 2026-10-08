@@ -5,7 +5,10 @@ import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/main.dart';
 
+import 'support/app_catalog.dart';
+
 void main() {
+  setUpAppCatalog();
   const testCases = [
     (size: Size(320, 568), bottomInset: 0.0),
     (size: Size(430, 932), bottomInset: 34.0),
