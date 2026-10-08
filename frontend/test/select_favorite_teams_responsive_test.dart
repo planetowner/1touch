@@ -88,6 +88,97 @@ void main() {
         isNot(isA<NeverScrollableScrollPhysics>()));
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('iOS carousel swipe returns to the first team at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final router = GoRouter(initialLocation: '/welcome', routes: [
+        GoRoute(
+          path: '/welcome',
+          builder: (context, _) => Scaffold(
+            body: TextButton(
+              onPressed: () => context.push('/select-favorites'),
+              child: const Text('Welcome'),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/select-favorites',
+          pageBuilder: (_, state) => InteractiveBackPage<void>(
+            key: state.pageKey,
+            child: const SelectFavoriteTeamsScreen(),
+          ),
+        ),
+      ]);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(
+        theme: app_style.darktheme.copyWith(platform: TargetPlatform.iOS),
+        routerConfig: router,
+        builder: (_, child) => FullScreenBackGesture(child: child!),
+      ));
+      await tester.tap(find.text('Welcome'));
+      await tester.pumpAndSettle();
+
+      final carousel = find.byKey(const ValueKey('favorite-team-logo-region'));
+      final pageController =
+          tester.widget<PageView>(find.byType(PageView)).controller!;
+      await tester.drag(carousel, Offset(-size.width * 0.65, 0));
+      await tester.pumpAndSettle();
+      expect(pageController.page, 1);
+      expect(
+          ModalRoute.of(tester.element(carousel))!.popGestureEnabled, isFalse);
+
+      await tester.drag(carousel, Offset(size.width * 0.65, 0));
+      await tester.pumpAndSettle();
+      expect(pageController.page, 0);
+      expect(find.byType(SelectFavoriteTeamsScreen), findsOneWidget);
+      expect(
+          ModalRoute.of(tester.element(carousel))!.popGestureEnabled, isTrue);
+      await tester.dragFrom(
+        Offset(24, size.height / 2),
+        Offset(size.width * 0.7, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(SelectFavoriteTeamsScreen), findsNothing);
+      expect(find.text('Welcome'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('Android system back works after selecting a later team',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme.copyWith(platform: TargetPlatform.android),
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const SelectFavoriteTeamsScreen(),
+              ),
+            ),
+            child: const Text('Open team selection'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('Open team selection'));
+    await tester.pumpAndSettle();
+    final carousel = find.byKey(const ValueKey('favorite-team-logo-region'));
+    await tester.drag(carousel, const Offset(-260, 0));
+    await tester.pumpAndSettle();
+    expect(tester.widget<PageView>(find.byType(PageView)).controller!.page, 1);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(SelectFavoriteTeamsScreen), findsNothing);
+    expect(find.text('Open team selection'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final size in phoneSizes) {
     testWidgets('fits a ${size.width}x${size.height} viewport', (tester) async {
       tester.view.physicalSize = size;

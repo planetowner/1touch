@@ -264,10 +264,16 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
     return Stack(
       children: [
         // 1) Animated background
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 350),
-          curve: Curves.easeInOut,
-          decoration: BoxDecoration(gradient: _gradientForFocusedTeam(context)),
+        PopScope<void>(
+          // iOS에서는 첫 팀을 벗어나면 캐러셀 드래그가 페이지 뒤로가기보다 먼저 동작해요.
+          canPop: Theme.of(context).platform != TargetPlatform.iOS ||
+              _focusedIndex == 0,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeInOut,
+            decoration:
+                BoxDecoration(gradient: _gradientForFocusedTeam(context)),
+          ),
         ),
 
         // 2) Vignette
