@@ -660,6 +660,8 @@ class PlayersToWatch extends StatefulWidget {
 class PlayersToWatchState extends State<PlayersToWatch> {
   late Future<List<PlayerWatch>> _request =
       Future.sync(widget.repository.watch);
+  final ScrollController _watchScrollController = ScrollController();
+  bool _hasMoreWatchCards = true;
 
   CachedPlayerWatchRepository? get _cachedRepository =>
       widget.repository is CachedPlayerWatchRepository
@@ -669,6 +671,7 @@ class PlayersToWatchState extends State<PlayersToWatch> {
   @override
   void initState() {
     super.initState();
+    _watchScrollController.addListener(_updateWatchFade);
     _cachedRepository?.cachedWatch.addListener(_handleCachedWatch);
   }
 
@@ -687,8 +690,17 @@ class PlayersToWatchState extends State<PlayersToWatch> {
 
   @override
   void dispose() {
+    _watchScrollController.dispose();
     _cachedRepository?.cachedWatch.removeListener(_handleCachedWatch);
     super.dispose();
+  }
+
+  void _updateWatchFade() {
+    if (!_watchScrollController.hasClients) return;
+    final hasMore = _watchScrollController.position.extentAfter > 1;
+    if (hasMore != _hasMoreWatchCards) {
+      setState(() => _hasMoreWatchCards = hasMore);
+    }
   }
 
   void _handleCachedWatch() {
@@ -726,6 +738,8 @@ class PlayersToWatchState extends State<PlayersToWatch> {
                   .clamp(0.0, 24.0)
                   .toDouble();
           final viewportWidth = constraints.maxWidth + extraWidth;
+          final contentWidth =
+              players.length * 150 + (players.length - 1) * 16 + 24;
           return OverflowBox(
             alignment: Alignment.centerLeft,
             minWidth: viewportWidth,
@@ -733,14 +747,41 @@ class PlayersToWatchState extends State<PlayersToWatch> {
             child: SizedBox(
               width: viewportWidth,
               height: 200,
-              child: ListView.separated(
-                key: const ValueKey('ones-to-watch-list'),
-                scrollDirection: Axis.horizontal,
-                clipBehavior: Clip.none,
-                padding: const EdgeInsets.only(right: 24),
-                itemCount: players.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 16),
-                itemBuilder: (_, index) => _WatchCard(player: players[index]),
+              child: Stack(
+                children: [
+                  ListView.separated(
+                    key: const ValueKey('ones-to-watch-list'),
+                    controller: _watchScrollController,
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none,
+                    padding: const EdgeInsets.only(right: 24),
+                    itemCount: players.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 16),
+                    itemBuilder: (_, index) =>
+                        _WatchCard(player: players[index]),
+                  ),
+                  if (contentWidth > viewportWidth && _hasMoreWatchCards)
+                    Positioned(
+                      key: const ValueKey('ones-to-watch-end-fade'),
+                      top: 0,
+                      right: 0,
+                      bottom: 0,
+                      width: 16,
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                mainPageBackground(context)
+                                    .withValues(alpha: 0),
+                                mainPageBackground(context),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           );

@@ -174,6 +174,7 @@ void main() {
     expect(find.text('Atlético de Madrid'), findsNWidgets(2));
     final cards = find.byKey(const ValueKey('ones-to-watch-card'));
     expect(cards, findsNWidgets(2));
+    expect(find.byKey(const ValueKey('ones-to-watch-end-fade')), findsNothing);
     for (var index = 0; index < 2; index++) {
       expect(tester.getSize(cards.at(index)), const Size(150, 200));
       final portrait = tester.getRect(
@@ -217,8 +218,22 @@ void main() {
 
         final list = find.byKey(const ValueKey('ones-to-watch-list'));
         expect(tester.getRect(list).right, size.width);
-        expect(
-            find.byKey(const ValueKey('ones-to-watch-end-fade')), findsNothing);
+        final fade = find.byKey(const ValueKey('ones-to-watch-end-fade'));
+        expect(fade, findsOneWidget);
+        expect(tester.getSize(fade), const Size(16, 200));
+        expect(tester.getRect(fade).right, size.width);
+        final gradient = (tester
+                .widget<DecoratedBox>(
+                  find.descendant(
+                      of: fade, matching: find.byType(DecoratedBox)),
+                )
+                .decoration as BoxDecoration)
+            .gradient! as LinearGradient;
+        final background = app_style.mainPageBackground(tester.element(fade));
+        expect(gradient.colors, [
+          background.withValues(alpha: 0),
+          background,
+        ]);
         if (size.width > 356) {
           final third = tester.getRect(
             find.byKey(const ValueKey('ones-to-watch-player-3')),
@@ -229,6 +244,7 @@ void main() {
 
         await tester.drag(list, const Offset(-600, 0));
         await tester.pumpAndSettle();
+        expect(fade, findsNothing);
         expect(find.byKey(const ValueKey('ones-to-watch-player-3')),
             findsOneWidget);
         expect(
@@ -237,6 +253,9 @@ void main() {
               .right,
           moreOrLessEquals(size.width - 24),
         );
+        await tester.drag(list, const Offset(100, 0));
+        await tester.pumpAndSettle();
+        expect(fade, findsOneWidget);
         expect(tester.takeException(), isNull);
       });
     }
