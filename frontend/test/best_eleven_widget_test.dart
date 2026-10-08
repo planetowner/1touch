@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
@@ -92,6 +93,85 @@ void main() {
       ),
     );
   }
+
+  testWidgets('best XI player returns to the team on back', (tester) async {
+    final router = GoRouter(
+      initialLocation: '/team/9',
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (_, __, navigationShell) => Scaffold(
+            body: navigationShell,
+            bottomNavigationBar: Text(
+              'Selected branch ${navigationShell.currentIndex}',
+            ),
+          ),
+          branches: [
+            StatefulShellBranch(routes: [
+              GoRoute(path: '/home', builder: (_, __) => const Text('Home')),
+            ]),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/team',
+                builder: (_, __) => const Text('Team tab'),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (_, __) => Scaffold(
+                      body: BestElevenPitch(
+                        teamId: 9,
+                        formation: '4-3-3',
+                        players: const [
+                          BestElevenEntry(
+                            slotKey: '1:1',
+                            slotIndex: 0,
+                            playerId: 100,
+                            playerName: 'Goalkeeper',
+                            starts: 1,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ]),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/players',
+                builder: (_, __) => const Text('Players'),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (_, state) =>
+                        Text('Player ${state.pathParameters['id']}'),
+                  ),
+                ],
+              ),
+            ]),
+          ],
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(
+      theme: whitetheme,
+      routerConfig: router,
+    ));
+    await tester.tap(
+      find.byKey(const ValueKey('best-eleven-player-link-100')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Player 100'), findsOneWidget);
+    expect(router.canPop(), isTrue);
+    router.pop();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('team-best-eleven-card')), findsOneWidget);
+    expect(find.text('Selected branch 1'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('loads and renders repository players at compact width',
       (tester) async {
