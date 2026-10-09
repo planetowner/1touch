@@ -1,5 +1,6 @@
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/player_club_history.dart';
+import 'package:onetouch/models/player_indicators.dart';
 
 typedef PlayerDetailProfile = ({
   String name,
@@ -168,7 +169,8 @@ class PlayerDetail {
       required this.analysis,
       required this.career,
       required this.clubs,
-      required this.honours});
+      required this.honours,
+      this.currentIndicators});
   final int playerId;
   final PlayerDetailProfile profile;
   final String? currentSeason, currentPosition;
@@ -180,6 +182,7 @@ class PlayerDetail {
   final List<PlayerCareerRecord> career;
   final List<PlayerClubHistoryEntry> clubs;
   final List<PlayerHonour> honours;
+  final PlayerIndicators? currentIndicators;
 }
 
 PlayerCandidate playerCandidateFromJson(Map<String, dynamic> json) => (

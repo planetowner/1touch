@@ -105,8 +105,9 @@ abstract final class LocalCacheKeys {
   static String home(int teamId, DateTime month) =>
       'home:v2:$teamId:${month.year}-${month.month.toString().padLeft(2, '0')}';
 
+  // 지표가 빠진 구버전 캐시를 재사용하면 상세 진입 때 별도 로딩이 반복돼요.
   static String playerDetail(int playerId, int? seasonId) =>
-      'player-detail:$playerId:${seasonId ?? 'current'}';
+      'player-detail:v2:$playerId:${seasonId ?? 'current'}';
 
   static String teamContracts(int teamId, int? seasonId) =>
       'team-contracts:$teamId:${seasonId ?? 'current'}';

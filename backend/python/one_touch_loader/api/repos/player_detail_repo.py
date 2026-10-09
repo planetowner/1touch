@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 
 from ..db import get_conn
 from .transfers_repo import get_player_club_history
+from .player_indicators_repo import IndicatorsNotReadyError, get_current_player_indicators
 from ...core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ...core.player_detail import (
     build_career, current_player_team, match_cards,
@@ -148,10 +149,18 @@ def get_player_detail(player_id: int, season_id: int | None = None) -> dict | No
                 if analysis is not None:
                     match_position = next((pid for pid, group in POSITION_GROUPS.items()
                                            if group == analysis['position_group']), None)
+                try:
+                    # 같은 읽기 전용 연결로 저장된 지표를 함께 보내 추가 화면 요청을 줄여요.
+                    indicators = get_current_player_indicators(
+                        player_id, query=lambda sql, params: next(iter(fetch(sql, params)), None))
+                except IndicatorsNotReadyError:
+                    # 첫 계산 전에도 프로필을 보여주고 기존 지표 재시도를 유지해요.
+                    indicators = None
                 return {"player_id": player_id, "profile": profile, "current_season_name": current_name,
                         "current_position": POSITION_GROUPS.get(position), "seasons": seasons, "selected_season": selected,
                         "competitions": list(comp_map.values()), "matches": match_cards(displayed, match_position, stats, recorded_types),
-                        "analysis": analysis, "career": build_career(completed), "clubs": clubs, "honours": honours}
+                        "analysis": analysis, "career": build_career(completed), "clubs": clubs, "honours": honours,
+                        "current_indicators": indicators}
         finally:
             conn.rollback()
 

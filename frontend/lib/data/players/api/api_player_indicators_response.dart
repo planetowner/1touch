@@ -1,7 +1,8 @@
 import 'package:onetouch/models/player_indicators.dart';
 
 class ApiPlayerIndicatorsResponse {
-  ApiPlayerIndicatorsResponse.fromJson(Map<String, dynamic> json)
+  ApiPlayerIndicatorsResponse.fromJson(Map<String, dynamic> json,
+      {int? expectedPlayerId})
       : indicators = PlayerIndicators(
           playerId: json['player_id'] as int,
           seasonName: json['season_name'] as String,
@@ -13,6 +14,9 @@ class ApiPlayerIndicatorsResponse {
             requirePercentile: false,
           ),
         ) {
+    if (expectedPlayerId != null && indicators.playerId != expectedPlayerId) {
+      throw const FormatException('Player indicator identity mismatch.');
+    }
     if (json['comparison_scope'] != 'current_season_big_five_all_positions') {
       throw const FormatException('Unexpected player indicator comparison.');
     }

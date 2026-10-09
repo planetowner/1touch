@@ -302,6 +302,37 @@ class PlayerDetailMathTests(unittest.TestCase):
 
 
 class PlayerDetailRepositoryTests(unittest.TestCase):
+    def test_detail_reads_stored_indicators_on_the_same_connection(self):
+        payload = {'player_id': 1, 'form': {'band': 2}, 'cost_effectiveness': {'band': 4}}
+        for rows in ([{'payload': json.dumps(payload), 'squad_role': 'crucial'}],
+                     [{'payload': None, 'squad_role': 'crucial'}], []):
+            with self.subTest(rows=rows):
+                conn = MagicMock()
+                cur = conn.cursor.return_value.__enter__.return_value
+                cur.fetchall.side_effect = [
+                    [{'player_id': 1}], [], [], [{'name': '2026/2027'}], [], [], [], rows,
+                ]
+                with patch.object(repo, 'get_conn', return_value=conn) as connect, \
+                        patch.object(repo, 'get_player_club_history', return_value={'clubs': []}):
+                    detail = repo.get_player_detail(1)
+                if rows and rows[0]['payload'] is not None:
+                    indicators = detail['current_indicators']
+                    self.assertEqual(indicators['squad_role'], 'crucial')
+                    self.assertEqual(indicators['form']['grade'], 'Fair')
+                    self.assertEqual(indicators['cost_effectiveness']['grade'], 'Very Good')
+                else:
+                    self.assertIsNone(detail['current_indicators'])
+                self.assertEqual(detail['profile']['player_id'], 1)
+                connect.assert_called_once()
+                self.assertEqual(cur.execute.call_count, 8)
+                sql, params = cur.execute.call_args.args
+                self.assertIn('player_indicator_snapshots', sql)
+                self.assertEqual(params, (1,))
+                conn.start_transaction.assert_called_once_with(readonly=True, consistent_snapshot=True)
+                conn.rollback.assert_called_once()
+                conn.commit.assert_not_called()
+                conn.close.assert_called_once()
+
     def test_missing_player_is_readonly_and_rolls_back(self):
         conn = MagicMock()
         conn.cursor.return_value.__enter__.return_value.fetchall.return_value = []

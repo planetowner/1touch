@@ -3,6 +3,8 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from .player_indicators import PlayerIndicatorsResponse
+
 
 class PlayerCandidate(BaseModel):
     player_id: int
@@ -172,6 +174,7 @@ class PlayerDetailResponse(BaseModel):
     career: list[PlayerCareer]
     clubs: list[PlayerClub]
     honours: list[PlayerHonour]
+    current_indicators: PlayerIndicatorsResponse | None = None
 
 
 class PlayerRankingLeague(BaseModel):
