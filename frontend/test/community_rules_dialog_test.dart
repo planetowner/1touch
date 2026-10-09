@@ -67,7 +67,7 @@ void main() {
     'en': 'Keep it about football',
     'ko': '의견이 달라도 서로 존중해요',
     'ja': '意見が違っても、お互いを尊重しましょう',
-    'zh': '即使意见不同，也请互相尊重',
+    'zh': '尊重不同观点，倡导理性交流',
   }.entries) {
     testWidgets('translates the same community rule keys into ${entry.key}',
         (tester) async {
