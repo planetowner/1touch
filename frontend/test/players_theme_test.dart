@@ -790,7 +790,7 @@ void main() {
       });
     }
   }
-  testWidgets('favorite editor reuses cards while loading candidate details',
+  testWidgets('favorite editor searches candidates without loading details',
       (tester) async {
     final detailRepository = FakePlayerDetailRepository();
     await pump(tester, detailRepository: detailRepository);
@@ -798,14 +798,14 @@ void main() {
 
     await tester.tap(find.byTooltip('Edit favorites'));
     await tester.pumpAndSettle();
-    expect(detailRepository.calls.length, 1);
+    expect(detailRepository.calls, isEmpty);
     await tester.enterText(find.byType(TextField), 'Player');
     await tester.pumpAndSettle();
 
     expect(find.text('Player 1'), findsNothing);
     expect(find.text('Player 2'), findsOneWidget);
     expect(find.text('Player 3'), findsOneWidget);
-    expect(detailRepository.calls.length, 1);
+    expect(detailRepository.calls, isEmpty);
 
     await tester.tap(find.text('Player 2'));
     await tester.pump();

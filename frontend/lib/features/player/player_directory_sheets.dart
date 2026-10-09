@@ -201,7 +201,6 @@ class _FollowingPlayersEditorSheetState
       DebouncedSearchController<List<PlayerCandidate>>(
           search: (query) => _repository.search(query));
   late final List<FollowingPlayer> _players = [...widget.players];
-  final Map<int, Future<PlayerDetail?>> _details = {};
   PlayerCandidate? _selected;
   bool get _searching => _candidateSearch.query.isNotEmpty;
   bool _fadeSearchTop = false;
@@ -213,19 +212,8 @@ class _FollowingPlayersEditorSheetState
   @override
   void initState() {
     super.initState();
-    for (final player in _players) {
-      _details[player.playerId] = _loadDetail(player.playerId);
-    }
     _candidateSearch.addListener(_onSearchChanged);
     _search.addListener(_onQueryChanged);
-  }
-
-  Future<PlayerDetail?> _loadDetail(int id) async {
-    try {
-      return await _repository.load(id);
-    } on Object {
-      return null;
-    }
   }
 
   void _onQueryChanged() {
@@ -380,7 +368,6 @@ class _FollowingPlayersEditorSheetState
           return _FollowingPlayerRow(
             key: ValueKey('following-editor-${player.playerId}'),
             player: player,
-            detail: _details[player.playerId],
             divider: divider,
             dragHandle: ReorderableDragStartListener(
               index: index,
@@ -473,55 +460,44 @@ class _FollowingPlayerRow extends StatelessWidget {
   const _FollowingPlayerRow(
       {super.key,
       required this.player,
-      required this.detail,
       required this.divider,
       required this.dragHandle,
       required this.onRemove});
   final FollowingPlayer player;
-  final Future<PlayerDetail?>? detail;
   final Color divider;
   final Widget dragHandle;
   final VoidCallback onRemove;
   @override
-  Widget build(BuildContext context) => FutureBuilder<PlayerDetail?>(
-        future: detail,
-        builder: (_, snapshot) {
-          final value = snapshot.data;
-          return Column(children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Row(children: [
-                IconButton(
-                  tooltip: tr(context, 'Remove player'),
-                  onPressed: onRemove,
-                  icon: const Icon(Icons.remove_circle,
-                      color: Color(0xFFFF5C5C), size: 20),
-                ),
-                ClipOval(
-                    child: ColoredBox(
-                  color: AppColors.of(context).subtleBackground,
-                  child: PlayerRemoteImage(
-                      value?.profile.image ?? player.imagePath,
-                      size: 52),
-                )),
-                const SizedBox(width: 16),
-                Expanded(
-                    child: _PlayerIdentity(
-                  name: playerNameLabel(context, player.playerId,
-                      value?.profile.name ?? player.name),
-                  team: value?.profile.teamName == null
-                      ? null
-                      : teamNameLabel(context, value?.profile.teamId,
-                          value!.profile.teamName!),
-                  number: value?.profile.jerseyNumber,
-                )),
-                dragHandle,
-              ]),
+  // 상세 응답을 기다리지 않고 이미 받은 목록 정보로 첫 프레임을 그려요.
+  Widget build(BuildContext context) => Column(children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(children: [
+            IconButton(
+              tooltip: tr(context, 'Remove player'),
+              onPressed: onRemove,
+              icon: const Icon(Icons.remove_circle,
+                  color: Color(0xFFFF5C5C), size: 20),
             ),
-            Divider(color: divider, height: 1),
-          ]);
-        },
-      );
+            ClipOval(
+                child: ColoredBox(
+              color: AppColors.of(context).subtleBackground,
+              child: PlayerRemoteImage(player.imagePath, size: 52),
+            )),
+            const SizedBox(width: 16),
+            Expanded(
+                child: _PlayerIdentity(
+              name: playerNameLabel(context, player.playerId, player.name),
+              team: player.teamName == null
+                  ? null
+                  : teamNameLabel(context, player.teamId, player.teamName!),
+              number: player.jerseyNumber,
+            )),
+            dragHandle,
+          ]),
+        ),
+        Divider(color: divider, height: 1),
+      ]);
 }
 
 class _SearchPlayerRow extends StatelessWidget {

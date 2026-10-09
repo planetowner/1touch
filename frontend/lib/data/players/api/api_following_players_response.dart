@@ -34,25 +34,26 @@ class ApiFollowingPlayerResponse {
     required this.name,
     required this.imagePath,
     this.jerseyNumber,
+    this.teamId,
+    this.teamName,
   });
 
   final int playerId;
   final String name;
   final String? imagePath;
   final int? jerseyNumber;
+  final int? teamId;
+  final String? teamName;
 
   factory ApiFollowingPlayerResponse.fromJson(Map<String, dynamic> json) {
-    // 기존 로컬 캐시에는 등번호가 없으므로 목록을 갱신할 때까지 비워 둬요.
-    final jerseyNumber = json['jersey_number'];
-    if (jerseyNumber != null && jerseyNumber is! int) {
-      throw const FormatException(
-          'Expected nullable integer field "jersey_number".');
-    }
+    // 기존 캐시에 없는 소속팀·등번호는 목록을 갱신할 때까지 비워 둬요.
     return ApiFollowingPlayerResponse(
       playerId: api_json.requiredInt(json, 'player_id'),
       name: api_json.requiredString(json, 'name'),
       imagePath: _requiredNullableString(json, 'image_path'),
-      jerseyNumber: jerseyNumber as int?,
+      jerseyNumber: _nullableInt(json, 'jersey_number'),
+      teamId: _nullableInt(json, 'team_id'),
+      teamName: _nullableString(json, 'team_name'),
     );
   }
 }
@@ -77,7 +78,17 @@ String? _requiredNullableString(Map<String, dynamic> json, String key) {
   if (!json.containsKey(key)) {
     throw FormatException('Expected nullable string field "$key".');
   }
+  return _nullableString(json, key);
+}
+
+String? _nullableString(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null || value is String) return value as String?;
   throw FormatException('Expected nullable string field "$key".');
+}
+
+int? _nullableInt(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value == null || value is int) return value as int?;
+  throw FormatException('Expected nullable integer field "$key".');
 }

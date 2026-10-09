@@ -92,6 +92,14 @@ def get_current_ranking(competition_id=None, position=None, *, limit=20, offset=
             conn.rollback()
 
 
+def _attach_current_player_teams(fetch, items):
+    teams = get_current_player_teams(fetch, tuple(item['player_id'] for item in items))
+    for item in items:
+        team = teams[item['player_id']]
+        for key in ('team_id', 'team_name', 'jersey_number'):
+            item[key] = team[key] if team else None
+
+
 def get_following_players(user_id):
     with closing(get_conn()) as conn:
         conn.start_transaction(readonly=True, consistent_snapshot=True)
@@ -104,10 +112,8 @@ def get_following_players(user_id):
                 items = fetch("""SELECT p.player_id,p.display_name AS name,p.image_path
                     FROM user_following_players f JOIN players p ON p.player_id=f.player_id
                     WHERE f.user_id=%s ORDER BY f.position""", (user_id,))
-                teams = get_current_player_teams(fetch, tuple(item['player_id'] for item in items))
-                for item in items:
-                    team = teams[item['player_id']]
-                    item['jersey_number'] = team['jersey_number'] if team else None
+                # 편집 화면도 목록 응답만으로 소속팀과 등번호를 바로 보여줘요.
+                _attach_current_player_teams(fetch, items)
                 return {'items': items}
         finally:
             conn.rollback()
@@ -136,12 +142,7 @@ def get_ones_to_watch():
                         cur.execute(sql, params)
                         return cur.fetchall()
 
-                    teams = get_current_player_teams(fetch, tuple(item['player_id'] for item in items))
-                    for item in items:
-                        team = teams[item['player_id']]
-                        item['jersey_number'] = team['jersey_number'] if team else None
-                        item['team_id'] = team['team_id'] if team else None
-                        item['team_name'] = team['team_name'] if team else None
+                    _attach_current_player_teams(fetch, items)
                 return {'items': items, 'scope': 'all_competitions_recent_6_appearances'}
         finally:
             conn.rollback()
