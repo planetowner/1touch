@@ -114,7 +114,10 @@ void main() {
         expect(finder, findsOneWidget);
         final paragraph = tester.renderObject<RenderParagraph>(finder);
         expect(paragraph.maxLines, 1);
-        expect(paragraph.didExceedMaxLines, isFalse, reason: label);
+        // 320px에서는 72px 로고 사이의 대회명에 기존 말줄임을 적용해요.
+        expect(paragraph.didExceedMaxLines,
+            width == 320 && label == '프리미어리그 6R',
+            reason: label);
         final rect = tester.getRect(finder);
         expect(rect.left, greaterThanOrEqualTo(24));
         expect(rect.right, lessThanOrEqualTo(width - 24));

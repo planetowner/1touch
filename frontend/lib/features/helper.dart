@@ -145,9 +145,7 @@ class MatchCard extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               final compact = constraints.maxWidth < 300;
-              // TODO: 좁은 화면용 디자인을 확인할 때까지 64px을 유지해요.
-              // 확인 결과에 따라 크기를 바꾸거나 64px로 확정해요.
-              final logoSize = compact ? 64.0 : 72.0;
+              const logoSize = 72.0;
               final infoGap = compact ? 0.0 : 8.0;
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
