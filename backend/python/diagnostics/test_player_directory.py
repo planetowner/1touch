@@ -23,7 +23,7 @@ def appearances(pid=1, recent=8, previous=6, current_matches=6):
 
 
 class PlayerDirectoryTests(unittest.TestCase):
-    def test_following_route_batches_current_numbers_and_keeps_saved_order(self):
+    def test_following_route_batches_current_teams_and_numbers_and_keeps_saved_order(self):
         from fastapi import FastAPI
         from fastapi.testclient import TestClient
         app = FastAPI()
@@ -32,17 +32,19 @@ class PlayerDirectoryTests(unittest.TestCase):
         conn = MagicMock()
         cur = conn.cursor.return_value.__enter__.return_value
         items = [dict(player_id=pid, name=f'Player {pid}', image_path=None) for pid in (2, 1, 3)]
-        cur.fetchall.side_effect = [items, [
-            dict(player_id=1, team_id=8, is_current=1, jersey_number=9),
-            dict(player_id=1, team_id=9, is_current=1, jersey_number=17),
-            dict(player_id=2, team_id=8, is_current=1, jersey_number=None),
-            dict(player_id=2, team_id=8, is_current=0, jersey_number=10),
+        cur.fetchall.side_effect = [[dict(item) for item in items], [
+            dict(player_id=1, team_id=8, team_name='Former club', is_current=1, jersey_number=9),
+            dict(player_id=1, team_id=9, team_name='Current club', is_current=1, jersey_number=17),
+            dict(player_id=2, team_id=8, team_name='Other club', is_current=1, jersey_number=None),
+            dict(player_id=2, team_id=8, team_name='Other club', is_current=0, jersey_number=10),
         ], [dict(player_id=1, team_id=9, starting_at=datetime(2026, 9, 20))]]
         with patch.object(repo, 'get_conn', return_value=conn):
             response = TestClient(app).get('/users/me/following/players')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['items'], [
-            dict(item, jersey_number=number) for item, number in zip(items, (None, 17, None))])
+            dict(item, jersey_number=number, team_id=team_id, team_name=team_name)
+            for item, number, team_id, team_name in zip(
+                items, (None, 17, None), (8, 9, None), ('Other club', 'Current club', None))])
         self.assertEqual(cur.execute.call_count, 3)
         self.assertEqual(cur.execute.call_args_list[0].args[1], (42,))
         self.assertIn('ORDER BY f.position', cur.execute.call_args_list[0].args[0])

@@ -8,35 +8,48 @@ import 'package:onetouch/data/players/api/api_following_players_repository.dart'
 import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
-  test('old cached players gain jersey numbers from a single refresh',
-      () async {
-    final store = MemoryLocalCacheStore();
-    final oldPayload = _followingJson();
-    for (final item in oldPayload['items'] as List) {
-      (item as Map).remove('jersey_number');
-    }
-    await store.write(LocalCacheKeys.followingPlayers, oldPayload,
-        scope: LocalCacheScopes.authenticatedUser);
-    var requests = 0;
-    final repository = ApiFollowingPlayersRepository(
-      api: ApiClient(
-        client: MockClient((request) async {
-          requests++;
-          expect(request.url.path, '/v1/users/me/following/players');
-          return http.Response(jsonEncode(_followingJson()), 200);
-        }),
-        baseUri: Uri.parse('https://api.1touch.football/v1/'),
-        requestHeaders: () => const {},
-      ),
-      cacheStore: store,
-    );
-    expect((await repository.restoreCached())?.map((p) => p.jerseyNumber),
-        [null, null]);
-    expect(requests, 0);
-    expect((await repository.load()).map((p) => p.jerseyNumber), [7, null]);
-    expect(requests, 1);
-    expect((await repository.restoreCached())?.first.jerseyNumber, 7);
-  });
+  for (final hasJerseyNumber in [false, true]) {
+    test(
+        'old cached players gain team metadata from one refresh, number=$hasJerseyNumber',
+        () async {
+      final store = MemoryLocalCacheStore();
+      final oldPayload = _followingJson();
+      for (final item in oldPayload['items'] as List) {
+        if (!hasJerseyNumber) (item as Map).remove('jersey_number');
+        (item as Map).remove('team_id');
+        item.remove('team_name');
+      }
+      await store.write(LocalCacheKeys.followingPlayers, oldPayload,
+          scope: LocalCacheScopes.authenticatedUser);
+      var requests = 0;
+      final repository = ApiFollowingPlayersRepository(
+        api: ApiClient(
+          client: MockClient((request) async {
+            requests++;
+            expect(request.url.path, '/v1/users/me/following/players');
+            return http.Response(jsonEncode(_followingJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {},
+        ),
+        cacheStore: store,
+      );
+      final cached = await repository.restoreCached();
+      expect(cached?.map((p) => p.jerseyNumber),
+          [hasJerseyNumber ? 7 : null, null]);
+      expect(cached?.map((p) => p.teamId), [null, null]);
+      expect(cached?.map((p) => p.teamName), [null, null]);
+      expect(requests, 0);
+      final refreshed = await repository.load();
+      expect(refreshed.map((p) => p.jerseyNumber), [7, null]);
+      expect(refreshed.map((p) => p.teamId), [9, null]);
+      expect(refreshed.map((p) => p.teamName), ['Current club', null]);
+      expect(requests, 1);
+      expect((await repository.restoreCached())?.first.jerseyNumber, 7);
+      expect(
+          (await repository.restoreCached())?.first.teamName, 'Current club');
+    });
+  }
 
   test('restores followed players from local cache in backend order', () async {
     final store = MemoryLocalCacheStore();
@@ -57,6 +70,8 @@ void main() {
 
     expect(cached?.map((player) => player.playerId), [268, 832]);
     expect(cached?.map((player) => player.jerseyNumber), [7, null]);
+    expect(cached?.map((player) => player.teamId), [9, null]);
+    expect(cached?.map((player) => player.teamName), ['Current club', null]);
     expect(
       repository.cachedPlayers.value.map((player) => player.playerId),
       [268, 832],
@@ -85,6 +100,8 @@ void main() {
     expect(players.first.name, 'First Player');
     expect(players.last.imagePath, isNull);
     expect(players.map((player) => player.jerseyNumber), [7, null]);
+    expect(players.map((player) => player.teamId), [9, null]);
+    expect(players.map((player) => player.teamName), ['Current club', null]);
     expect(repository.cachedPlayers.value, same(players));
     expect(() => players.clear(), throwsUnsupportedError);
   });
@@ -126,6 +143,8 @@ void main() {
     expect(requestIndex, 2);
     expect(players.map((player) => player.playerId), [832, 268]);
     expect(players.map((player) => player.jerseyNumber), [null, 7]);
+    expect(players.map((player) => player.teamId), [null, 9]);
+    expect(players.map((player) => player.teamName), [null, 'Current club']);
     expect(repository.cachedPlayers.value, same(players));
   });
 
@@ -312,12 +331,16 @@ Map<String, dynamic> _followingJson() => {
           'name': 'First Player',
           'image_path': 'https://cdn.example.com/268.png',
           'jersey_number': 7,
+          'team_id': 9,
+          'team_name': 'Current club',
         },
         {
           'player_id': 832,
           'name': 'Second Player',
           'image_path': null,
           'jersey_number': null,
+          'team_id': null,
+          'team_name': null,
         },
       ],
     };
