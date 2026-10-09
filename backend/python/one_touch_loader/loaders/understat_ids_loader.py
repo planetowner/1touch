@@ -28,6 +28,11 @@ VERIFIED_UNDERSTAT_PLAYER_ID_OVERRIDES = {
     # https://www.valenciacf.com/aaron-mayol-debuta-oficialmente-con-el-valencia-cf
     "14452": 38209538,  # Aaron Mayol → Aaron Ndive Mayol de la Cueva
 
+    # 2026-09-19 경기 31982·19715599의 Lorient 교체 명단과 구단의 55번 선수를 대조했어요.
+    # 중간 이름 생략을 일반화하지 않고 확인된 공급자 ID만 연결해요.
+    # https://www.fclorient.bzh/nosa-obaretin-sengage-avec-le-fc-lorient/
+    "14996": 37593192,  # Nosa Obaretin → Nosa Edward Obaretin
+
     # 2026-09-09: 26/27의 표기 차이 110명을 같은 경기·팀의 DB 명단 290행과 대조했어요.
     # 약칭·철자·이름 순서를 일반화하지 않아요. 근거와 경기 ID는 UNDERSTAT_PLAYER_ID_REVIEW.md에 있어요.
     "8094": 21072805,  # Mathis Cherki → Rayan Cherki
@@ -628,6 +633,14 @@ def plan_team_ids(source: dict, observations: list[dict], existing: dict) -> tup
     return additions, evidence
 
 
+VERIFIED_UNDERSTAT_FIXTURE_ID_OVERRIDES = {
+    # 2026-08-23 경기의 홈·원정 변경을 구단 공지와 Sportmonks 원본으로 확인했어요.
+    # 같은 홈·원정 조합인 2027년 경기 대신 실제 경기로 미제공 판정을 전달해요.
+    # https://www.staderennais.com/actualites/billetterie/srfc-psg-premieres-informations-pratiques
+    "31948": 19715631,
+}
+
+
 def plan_fixture_ids(source: dict, fixtures: list[dict], team_ids: dict, existing: dict) -> tuple[dict, list]:
     pairs = defaultdict(list)
     for fixture in fixtures:
@@ -639,7 +652,10 @@ def plan_fixture_ids(source: dict, fixtures: list[dict], team_ids: dict, existin
         sid = str(match["id"])
         home = team_ids.get(str(match["h"]["id"]))
         away = team_ids.get(str(match["a"]["id"]))
-        candidates = pairs[(home, away)]
+        verified_id = VERIFIED_UNDERSTAT_FIXTURE_ID_OVERRIDES.get(sid)
+        # 검증된 연결도 현재 시즌의 경기 목록 안에서만 사용해요.
+        candidates = ([f for f in fixtures if f['fixture_id'] == verified_id]
+                      if verified_id is not None else pairs[(home, away)])
         # 22/23 Serie A의 Spezia–Verona는 리그와 잔류 결정전이 모두 있어요.
         # 단일 맞대결은 변경된 일정에 영향받지 않고, 중복인 경우 날짜로 구분해요.
         if len(candidates) > 1:

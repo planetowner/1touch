@@ -1,0 +1,106 @@
+{
+  "source": {
+    "dates": [
+      {
+        "id": "31948",
+        "isResult": true,
+        "h": {
+          "id": "161",
+          "title": "Paris Saint Germain",
+          "short_title": "PSG"
+        },
+        "a": {
+          "id": "163",
+          "title": "Rennes",
+          "short_title": "REN"
+        },
+        "goals": {
+          "h": "0",
+          "a": "0"
+        },
+        "xG": {
+          "h": "0.63016",
+          "a": "0.910543"
+        },
+        "datetime": "2026-08-23 18:45:00",
+        "forecast": {
+          "w": "0.2314",
+          "d": "0.3543",
+          "l": "0.4143"
+        }
+      },
+      {
+        "id": "32144",
+        "isResult": false,
+        "h": {
+          "id": "163",
+          "title": "Rennes",
+          "short_title": "REN"
+        },
+        "a": {
+          "id": "161",
+          "title": "Paris Saint Germain",
+          "short_title": "PSG"
+        },
+        "goals": {
+          "h": null,
+          "a": null
+        },
+        "xG": {
+          "h": null,
+          "a": null
+        },
+        "datetime": "2027-03-06 14:00:00"
+      }
+    ],
+    "teams": {
+      "161": {
+        "title": "Paris Saint Germain"
+      },
+      "163": {
+        "title": "Rennes"
+      }
+    }
+  },
+  "db_fixtures": [
+    {
+      "fixture_id": 19715433,
+      "home_team_id": 591,
+      "away_team_id": 598,
+      "starting_at": "2027-03-06 00:00:00",
+      "state_id": 1,
+      "home_score": null,
+      "away_score": null,
+      "home_team": "Paris Saint Germain",
+      "away_team": "Rennes",
+      "season_id": 28082,
+      "season_name": "2026/2027"
+    },
+    {
+      "fixture_id": 19715631,
+      "home_team_id": 598,
+      "away_team_id": 591,
+      "starting_at": "2026-08-23 18:45:00",
+      "state_id": 5,
+      "home_score": 2,
+      "away_score": 2,
+      "home_team": "Rennes",
+      "away_team": "Paris Saint Germain",
+      "season_id": 28082,
+      "season_name": "2026/2027"
+    }
+  ],
+  "known": {
+    "fixture": {},
+    "team": {
+      "161": 591,
+      "163": 598
+    },
+    "player": {}
+  },
+  "evidence_urls": [
+    "https://www.staderennais.com/actualites/billetterie/srfc-psg-premieres-informations-pratiques",
+    "https://www.psg.fr/matchs/football-masculin/20262027/paris-vs-rennes-2026-08-23",
+    "https://pfc-cska.com/ru/novosti/vse-novosti/32444-pfk-cska-rostov-00/"
+  ]
+}

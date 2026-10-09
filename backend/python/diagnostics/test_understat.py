@@ -20,6 +20,8 @@ from one_touch_loader.api.repos import expected_goals_repo as repo
 
 
 SAMPLE = json.loads((Path(__file__).parent / "fixtures/understat_match_27270.json").read_text(encoding="utf-8"))
+OBARETIN = json.loads((Path(__file__).parent / "fixtures/understat_match_31982.json").read_text(encoding="utf-8"))
+RENNES_PSG = json.loads((Path(__file__).parent / "fixtures/understat_match_31948.json").read_text(encoding="utf-8"))
 
 
 def sample_rows():
@@ -124,12 +126,33 @@ class MappingTests(unittest.TestCase):
         for external, internal, name, full_name in (
             ("9805", 37316480, "Álex Balde", "Alejandro Balde"),
             ("14452", 38209538, "Aaron Mayol", "Aaron Ndive Mayol de la Cueva"),
+            ("14996", 37593192, "Nosa Obaretin", "Nosa Edward Obaretin"),
         ):
             with self.subTest(external_player_id=external):
                 self.source["players"] = [{"id": external, "player_name": name, "team_title": "Source Team"}]
                 row = {"team_id": 10, "player_id": internal, "display_name": full_name, "full_name": None}
                 self.assertEqual(ids.plan_player_ids(self.source, [row], {"100": 10}, {})[0], {external: internal})
                 self.assertEqual(ids.plan_player_ids(self.source, [{**row, "team_id": 20}], {"100": 10}, {})[0], {})
+
+    def test_obaretin_actual_match_resolves_missing_player_and_preserves_xg(self):
+        client = Mock()
+        client.get_match.return_value = OBARETIN['details']
+        source, unavailable = ids.load_mapping_source(client, {
+            'teams': OBARETIN['teams'], 'dates': [OBARETIN['match']],
+        })
+        existing = OBARETIN['player_ids']
+        self.assertNotIn('14996', existing)
+        found, pending = ids.plan_player_ids(source, [OBARETIN['db_lineup']], OBARETIN['team_ids'], existing)
+        self.assertEqual((found, pending, unavailable), ({'14996': 37593192}, [], []))
+        ids._validate_mapping_uniqueness('player', existing, found)
+        rows = loader.normalize_understat_match(
+            OBARETIN['match'], OBARETIN['details'], 19715599, OBARETIN['team_ids'], {**existing, **found},
+        )
+        self.assertEqual(rows['expected_goals'], (19715599, Decimal('0.959241'), Decimal('1.07323')))
+        self.assertEqual(len(rows['player_expected_goals']), 32)
+        self.assertEqual(len(rows['shots']), 20)
+        # 실제 원본의 xG 0도 확인된 내부 선수 ID에 저장해야 경기가 수집 완료돼요.
+        self.assertIn((19715599, 37593192, Decimal('0')), rows['player_expected_goals'])
 
     def test_transfer_player_uses_both_observed_teams(self):
         self.source["teams"]["200"] = {"title": "Second Team"}
@@ -153,6 +176,21 @@ class MappingTests(unittest.TestCase):
     def test_noncompleted_matches_are_not_mapped(self):
         match = {**SAMPLE["match"], "isResult": False}
         self.assertEqual(ids.plan_fixture_ids({"dates": [match]}, [], {}, {}), ({}, []))
+
+    def test_verified_home_away_swap_selects_actual_match_instead_of_return_leg(self):
+        found, pending = ids.plan_fixture_ids(
+            RENNES_PSG['source'], RENNES_PSG['db_fixtures'], RENNES_PSG['known']['team'], {},
+        )
+        self.assertEqual((found, pending), ({'31948': 19715631}, []))
+
+    def test_verified_fixture_requires_membership_in_current_mapping_scope(self):
+        return_leg = [f for f in RENNES_PSG['db_fixtures'] if f['fixture_id'] == 19715433]
+        found, pending = ids.plan_fixture_ids(
+            RENNES_PSG['source'], return_leg, RENNES_PSG['known']['team'], {},
+        )
+        self.assertEqual(found, {})
+        self.assertEqual(pending[0]['external_fixture_id'], '31948')
+        self.assertEqual(pending[0]['candidate_fixture_ids'], [])
 
     def test_duplicate_provider_identity_is_not_silently_overwritten(self):
         with self.assertRaisesRegex(ValueError, "unverified duplicates"):
@@ -530,14 +568,16 @@ class ExecutionTests(unittest.TestCase):
 
     def test_cli_commands_share_scope_and_check_parsing(self):
         from one_touch_loader import cli
-        for command, function in [("understat-ids", "collect_understat_ids"),
-                                  ("understat-refresh", "refresh_understat"),
-                                  ("understat", "collect_understat"), ("xg-standings", "build_xg_standings")]:
-            with self.subTest(command=command), patch.object(cli, function) as handler:
+        # CLI가 실행할 때 가져오는 실제 로더를 대체해 DB·공급자 접근 없이 인자를 확인해요.
+        for command, module, function in [("understat-ids", ids, "collect_understat_ids"),
+                                          ("understat-refresh", loader, "refresh_understat"),
+                                          ("understat", loader, "collect_understat"),
+                                          ("xg-standings", standings, "build_xg_standings")]:
+            with self.subTest(command=command), patch.object(module, function) as handler:
                 with patch("sys.argv", ["cli", command, "2026/2027", "8", "564", "--check"]):
                     cli.main()
                 handler.assert_called_once_with("2026/2027", [8, 564], check=True)
-            with self.subTest(command=command, scope="all"), patch.object(cli, function) as handler:
+            with self.subTest(command=command, scope="all"), patch.object(module, function) as handler:
                 with patch("sys.argv", ["cli", command, "all"]):
                     cli.main()
                 handler.assert_called_once_with(None, None, check=False)

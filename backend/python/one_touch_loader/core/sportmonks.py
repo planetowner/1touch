@@ -1321,10 +1321,6 @@ SPORTMONKS_EVENT_OVERRIDES = {
     # https://www.fsgc.sm/it/notizia/coppe-europee-una-strassen-dautorit-su-la-fiorita-il-tre-fiori-spaventa-il-larne-/2276
     157250485: {"player_id": 21404660},
     157272982: {"player_id": 21404660},
-    # Craiova전(19788665) 63분 VAR만 Sandro Lima의 다른 ID 159536을 사용했어요.
-    # UEFA의 91번·생년월일과 예선 8경기 라인업이 일치하는 37640040으로 이 이벤트만 연결해요.
-    # https://de.uefa.com/uefachampionsleague/clubs/players/250086826--sandro-lima/
-    157569490: {"player_id": 37640040},
     # Cluj의 Kyiv전 92분·Brann전 61분 교체는 구단 기록과 라인업의 Dan Nistor(96351)예요.
     # 이름만 Dan으로 붙은 Raul Nistor(37600520)의 ID를 두 이벤트에서만 바로잡아요.
     # https://www.fcucluj.ro/stire/cronica-u-cluj-vs-dinamo-kiev-0-0-2-4-la-lovituri-de-departajare-continuam-in-conference-league
