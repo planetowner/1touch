@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from contextlib import contextmanager, ExitStack
+from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlencode
@@ -126,6 +126,15 @@ def source_context(match, competition_id, season_name):
             'starting_at': f"{match['date']}T{match['time']}" if match['time'] else None}
 
 
+def matching_targets(match, fixtures, known):
+    # 후보 조회는 확인된 팀 ID만 좁혀요. 실제 ID 연결은 scheduled_fixture가 별도로 검증해요.
+    home = known['team'].get(match['home_external_team_id'])
+    away = known['team'].get(match['away_external_team_id'])
+    return [f for f in fixtures if str(f['starting_at'])[:10] == match['date']
+            and (home is None or home == f['home_team_id'])
+            and (away is None or away == f['away_team_id'])]
+
+
 def sync_matches(args, *, on_result=None, should_retry=None, source_order=None) -> dict:
     from ..core.db import fetch_all
 
@@ -165,136 +174,139 @@ def sync_matches(args, *, on_result=None, should_retry=None, source_order=None) 
     report_path = args.output_dir / "report.json"
     try:
         # 저장 완료·범위 밖 경기나 확보한 원본만 재검증할 때는 브라우저를 띄우지 않아요.
-        with ExitStack() as browsers:
-            driver = None
-            for competition_id in args.competition_ids:
-                try:
-                    scope = fetch_schedule(competition_id)
-                    write_json(args.output_dir / f"schedule-{competition_id}.json", scope)
-                    # 현재 공개 페이지의 시즌만 확인했어요. 과거 시즌을 현재 값으로 바꿔 수집하지 않아요.
-                    if args.season and scope["season_name"] != args.season:
-                        raise ValueError(f"공개 일정은 {scope['season_name']} 시즌이에요. 요청 시즌: {args.season}")
-                    matches = []
-                    schedule = scope['matches']
-                    if source_order is not None:
-                        schedule = sorted(schedule, key=lambda match: source_order({
-                            'external_fixture_id': match['external_fixture_id'],
-                            'source': source_context(match, competition_id, scope['season_name'])}))
-                    for match in schedule:
-                        if match['date'] > args.to_date.isoformat() or (args.from_date and match['date'] < args.from_date.isoformat()):
-                            continue
-                        external = match['external_fixture_id']
-                        if targets is not None:
-                            home = known['team'].get(match['home_external_team_id'])
-                            away = known['team'].get(match['away_external_team_id'])
-                            if not any(str(f['starting_at'])[:10] == match['date']
-                                       and (home is None or home == f['home_team_id'])
-                                       and (away is None or away == f['away_team_id']) for f in targets):
-                                continue
-                        if retry_ids is not None and external not in retry_ids:
-                            continue
-                        context = source_context(match, competition_id, scope['season_name'])
-                        if external in stored and not args.refresh:
-                            report['skipped'] += 1
-                            if on_result is not None:
-                                on_result({'external_fixture_id': external,
-                                           'fixture_id': stored_fixture_ids[external], 'status': 'stored',
-                                           'source': context,
-                                           'checked_at_utc': datetime.now(timezone.utc).isoformat()})
-                            continue
-                        if should_retry is not None and not should_retry({'external_fixture_id': external, 'source': context}):
-                            report['skipped'] += 1
-                            continue
-                        matches.append(match)
-                        if args.limit is not None and len(matches) >= args.limit - attempts:
-                            break
-                    if not matches:
-                        report['scopes'].append({'competition_id': competition_id, 'season': scope['season_name'],
-                                                 'scheduled': len(scope['matches'])})
+        for competition_id in args.competition_ids:
+            try:
+                scope = fetch_schedule(competition_id)
+                write_json(args.output_dir / f"schedule-{competition_id}.json", scope)
+                # 현재 공개 페이지의 시즌만 확인했어요. 과거 시즌을 현재 값으로 바꿔 수집하지 않아요.
+                if args.season and scope["season_name"] != args.season:
+                    raise ValueError(f"공개 일정은 {scope['season_name']} 시즌이에요. 요청 시즌: {args.season}")
+                matches = []
+                schedule = scope['matches']
+                if source_order is not None:
+                    schedule = sorted(schedule, key=lambda match: source_order({
+                        'external_fixture_id': match['external_fixture_id'],
+                        'source': source_context(match, competition_id, scope['season_name'])}))
+                for match in schedule:
+                    if match['date'] > args.to_date.isoformat() or (args.from_date and match['date'] < args.from_date.isoformat()):
                         continue
-                    fixtures, lineups = load_scope(competition_id, scope["season_name"],
-                                                  match_dates=sorted({m['date'] for m in matches}))
-                    if targets is not None:
-                        target_ids = {f['fixture_id'] for f in targets}
-                        fixtures = [f for f in fixtures if f['fixture_id'] in target_ids]
-                        lineups = [r for r in lineups if r['fixture_id'] in target_ids]
-                    if getattr(args, "refresh_details", False):
-                        lineups = refresh_recent_rosters(
-                            fixtures, lineups, from_date=args.from_date, to_date=args.to_date,
-                            stored_ids=set() if args.refresh else complete_fixture_ids, apply=not check,
-                        )
-                    report["scopes"].append({"competition_id": competition_id, "season": scope["season_name"],
-                                             "scheduled": len(scope["matches"])})
+                    external = match['external_fixture_id']
+                    if targets is not None and not matching_targets(match, targets, known):
+                        continue
+                    if retry_ids is not None and external not in retry_ids:
+                        continue
+                    context = source_context(match, competition_id, scope['season_name'])
+                    if external in stored and not args.refresh:
+                        report['skipped'] += 1
+                        if on_result is not None:
+                            on_result({'external_fixture_id': external,
+                                       'fixture_id': stored_fixture_ids[external], 'status': 'stored',
+                                       'source': context,
+                                       'checked_at_utc': datetime.now(timezone.utc).isoformat()})
+                        continue
+                    if should_retry is not None and not should_retry({'external_fixture_id': external, 'source': context}):
+                        report['skipped'] += 1
+                        continue
+                    matches.append(match)
+                    if args.limit is not None and len(matches) >= args.limit - attempts:
+                        break
+                scope_targets = targets
+                if matches and targets is not None:
+                    from .live_fixtures_loader import refresh_completed_details
+
+                    # 빈 배치는 상세를 다시 조회·저장하지 않아요. 수집 후보의 종료 확인은 계속 지켜요.
+                    pending = {f['fixture_id']: f for match in matches
+                               for f in matching_targets(match, targets, known)}
+                    completed = {p['id'] for p in refresh_completed_details(list(pending.values()), apply=not check)}
+                    scope_targets = [f for fid, f in pending.items() if fid in completed]
+                    matches = [match for match in matches if matching_targets(match, scope_targets, known)]
+                if not matches:
+                    report['scopes'].append({'competition_id': competition_id, 'season': scope['season_name'],
+                                             'scheduled': len(scope['matches'])})
+                    continue
+                fixtures, lineups = load_scope(competition_id, scope["season_name"],
+                                              match_dates=sorted({m['date'] for m in matches}))
+                if scope_targets is not None:
+                    target_ids = {f['fixture_id'] for f in scope_targets}
+                    fixtures = [f for f in fixtures if f['fixture_id'] in target_ids]
+                    lineups = [r for r in lineups if r['fixture_id'] in target_ids]
+                if getattr(args, "refresh_details", False):
+                    lineups = refresh_recent_rosters(
+                        fixtures, lineups, from_date=args.from_date, to_date=args.to_date,
+                        stored_ids=set() if args.refresh else complete_fixture_ids, apply=not check,
+                    )
+                report["scopes"].append({"competition_id": competition_id, "season": scope["season_name"],
+                                         "scheduled": len(scope["matches"])})
+            except Exception as error:
+                report["failed"] += 1
+                report["scopes"].append({"competition_id": competition_id, "error": str(error)[:800]})
+                print(f"FAIL: competition_id={competition_id} {error}", flush=True)
+                continue
+            for match in matches:
+                external = match["external_fixture_id"]
+                attempts += 1
+                item = {"external_fixture_id": external, "competition_id": competition_id, "date": match["date"],
+                        'source': source_context(match, competition_id, scope['season_name'])}
+                linked = scheduled_fixture(match, fixtures, known)
+                if linked is not None:
+                    item['fixture_id'] = linked['fixture_id']
+                try:
+                    # 매핑 실패는 이미 확보한 종료 경기 원본으로 재검증해요. 시간 초과는 원본이 없어 다시 읽어요.
+                    cached_path = retry_report.parent / f"{external}.raw.json" if retry_report else None
+                    raw = json.loads(cached_path.read_text(encoding="utf-8")) if cached_path and cached_path.is_file() else None
+                    if (raw is None or not raw.get("finished") or raw.get("available") is False
+                            or raw.get("dataset", "shots") != capture_dataset):
+                        # 같은 브라우저로 경기를 넘기면 메모리가 누적돼요. 경기마다 닫아 회수해요.
+                        with open_browser() as driver:
+                            raw = collect_snapshot(match["url"], driver, finished_only=True, dataset=capture_dataset)
+                    write_json(args.output_dir / f"{external}.raw.json", raw)
+                    if not raw["finished"]:
+                        report["not_finished"] += 1
+                        item["status"] = "not_finished"
+                        continue
+                    if raw.get("available") is False:
+                        report["unavailable"] += 1
+                        item.update(status="unavailable", reason="공개 화면에서 Chalkboard가 비어 있고 데이터 없음 안내를 확인했어요.")
+                        print(f"UNAVAILABLE: {external}", flush=True)
+                        continue
+                    # 분석 화면은 슈팅도 포함해요. 한 번 읽고 필요한 자료만 같은 저장 규칙으로 처리해요.
+                    needed = [kind for kind in datasets if args.refresh or external not in stored_by_dataset[kind]]
+                    results = {kind: normalizers[kind](raw) for kind in needed}
+                    plan = plan_match_ids(raw, match, fixtures, lineups, known)
+                    write_json(args.output_dir / f"{external}.mapping.json", plan)
+                    for kind, result in results.items():
+                        bind_events(result, plan, dataset=kind)
+                    write_json(args.output_dir / f"{external}.json", results if dataset == "both" else results[dataset])
+                    if not check:
+                        if dataset == "both":
+                            save_match_datasets(results, plan, known, raw["checked_at_utc"])
+                        else:
+                            save_match(results[dataset], plan, known, raw["checked_at_utc"], dataset=dataset)
+                        report["stored"] += 1
+                    for entity, mapping in plan["mappings"].items():
+                        known[entity].update(mapping)
+                    report["ready"] += 1
+                    item.update(status="verified" if check else "stored", fixture_id=plan["fixture"]["fixture_id"])
+                    for kind, result in results.items():
+                        collection = "shots" if kind == "shots" else "events"
+                        item[collection] = len(result[collection])
+                        if dataset != "both":
+                            item["counts"] = result["counts"]
+                    item["datasets"] = list(results)
+                    print(f"PASS: fixture_id={item['fixture_id']} datasets={','.join(results)} check={check}", flush=True)
                 except Exception as error:
                     report["failed"] += 1
-                    report["scopes"].append({"competition_id": competition_id, "error": str(error)[:800]})
-                    print(f"FAIL: competition_id={competition_id} {error}", flush=True)
-                    continue
-                for match in matches:
-                    external = match["external_fixture_id"]
-                    attempts += 1
-                    item = {"external_fixture_id": external, "competition_id": competition_id, "date": match["date"],
-                            'source': source_context(match, competition_id, scope['season_name'])}
-                    linked = scheduled_fixture(match, fixtures, known)
-                    if linked is not None:
-                        item['fixture_id'] = linked['fixture_id']
-                    try:
-                        # 매핑 실패는 이미 확보한 종료 경기 원본으로 재검증해요. 시간 초과는 원본이 없어 다시 읽어요.
-                        cached_path = retry_report.parent / f"{external}.raw.json" if retry_report else None
-                        raw = json.loads(cached_path.read_text(encoding="utf-8")) if cached_path and cached_path.is_file() else None
-                        if (raw is None or not raw.get("finished") or raw.get("available") is False
-                                or raw.get("dataset", "shots") != capture_dataset):
-                            if driver is None:
-                                driver = browsers.enter_context(open_browser())
-                            raw = collect_snapshot(match["url"], driver, finished_only=True, dataset=capture_dataset)
-                        write_json(args.output_dir / f"{external}.raw.json", raw)
-                        if not raw["finished"]:
-                            report["not_finished"] += 1
-                            item["status"] = "not_finished"
-                            continue
-                        if raw.get("available") is False:
-                            report["unavailable"] += 1
-                            item.update(status="unavailable", reason="공개 화면에서 Chalkboard가 비어 있고 데이터 없음 안내를 확인했어요.")
-                            print(f"UNAVAILABLE: {external}", flush=True)
-                            continue
-                        # 분석 화면은 슈팅도 포함해요. 한 번 읽고 필요한 자료만 같은 저장 규칙으로 처리해요.
-                        needed = [kind for kind in datasets if args.refresh or external not in stored_by_dataset[kind]]
-                        results = {kind: normalizers[kind](raw) for kind in needed}
-                        plan = plan_match_ids(raw, match, fixtures, lineups, known)
-                        write_json(args.output_dir / f"{external}.mapping.json", plan)
-                        for kind, result in results.items():
-                            bind_events(result, plan, dataset=kind)
-                        write_json(args.output_dir / f"{external}.json", results if dataset == "both" else results[dataset])
-                        if not check:
-                            if dataset == "both":
-                                save_match_datasets(results, plan, known, raw["checked_at_utc"])
-                            else:
-                                save_match(results[dataset], plan, known, raw["checked_at_utc"], dataset=dataset)
-                            report["stored"] += 1
-                        for entity, mapping in plan["mappings"].items():
-                            known[entity].update(mapping)
-                        report["ready"] += 1
-                        item.update(status="verified" if check else "stored", fixture_id=plan["fixture"]["fixture_id"])
-                        for kind, result in results.items():
-                            collection = "shots" if kind == "shots" else "events"
-                            item[collection] = len(result[collection])
-                            if dataset != "both":
-                                item["counts"] = result["counts"]
-                        item["datasets"] = list(results)
-                        print(f"PASS: fixture_id={item['fixture_id']} datasets={','.join(results)} check={check}", flush=True)
-                    except Exception as error:
-                        report["failed"] += 1
-                        item.update(status="failed", error=f"{type(error).__name__}: {str(error)[:800]}")
-                        print(f"FAIL: {external} {item['error']}", flush=True)
-                    finally:
-                        item['checked_at_utc'] = datetime.now(timezone.utc).isoformat()
-                        report["matches"].append(item)
-                        write_json(report_path, report)
-                        # 다른 경기의 실패나 중단이 이번 경기의 완료·미제공 기록을 지우지 않게 해요.
-                        if on_result is not None and 'status' in item:
-                            on_result(item)
-                if args.limit is not None and attempts >= args.limit:
-                    break
+                    item.update(status="failed", error=f"{type(error).__name__}: {str(error)[:800]}")
+                    print(f"FAIL: {external} {item['error']}", flush=True)
+                finally:
+                    item['checked_at_utc'] = datetime.now(timezone.utc).isoformat()
+                    report["matches"].append(item)
+                    write_json(report_path, report)
+                    # 다른 경기의 실패나 중단이 이번 경기의 완료·미제공 기록을 지우지 않게 해요.
+                    if on_result is not None and 'status' in item:
+                        on_result(item)
+            if args.limit is not None and attempts >= args.limit:
+                break
     finally:
         write_json(report_path, report)
     print(json.dumps({k: v for k, v in report.items() if k not in {"matches", "scopes"}}, ensure_ascii=False))

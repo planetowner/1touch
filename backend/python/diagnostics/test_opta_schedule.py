@@ -13,6 +13,7 @@ from diagnostics.test_opta_bulk import CASES, StorageTests, SqliteCursor, empty_
 from diagnostics.test_live_fixtures import live_payload
 from one_touch_loader.core import db
 from one_touch_loader.loaders import opta_shots_loader as loader, opta_shots_store as store
+from one_touch_loader.loaders import live_fixtures_loader as live
 
 
 class ScheduleTests(unittest.TestCase):
@@ -32,6 +33,7 @@ class ScheduleTests(unittest.TestCase):
                  patch.object(loader,'load_scope',return_value=(case['fixtures'],case['lineups'])), \
                  patch.object(loader,'open_browser',return_value=nullcontext(object())), \
                  patch.object(loader,'collect_snapshot',return_value=raw) as collect, \
+                 patch.object(live,'refresh_completed_details',return_value=[{'id':fid}]), \
                  patch.object(loader,'save_match_datasets') as save:
                 report = loader.sync_matches(args)
                 calls = save.call_args_list

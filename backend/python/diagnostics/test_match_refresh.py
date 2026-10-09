@@ -2,6 +2,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import json
 import sqlite3
 import unittest
 from unittest.mock import Mock, patch
@@ -13,9 +14,10 @@ with patch('mysql.connector.pooling.MySQLConnectionPool'):
     from one_touch_loader.loaders import standings_loader as standings
     from one_touch_loader.loaders import understat_common as understat
     from one_touch_loader.loaders import understat_loader, understat_ids_loader
+    from one_touch_loader.loaders import opta_shots_loader, probability_refresh, xg_standings_loader
     from one_touch_loader.api.repos import standings_repo
 from diagnostics.test_standings import _details
-from diagnostics.test_understat import SAMPLE
+from diagnostics.test_understat import RENNES_PSG, SAMPLE
 
 
 NOW = datetime(2026, 9, 22, 21, tzinfo=timezone.utc)
@@ -96,6 +98,39 @@ class MatchRefreshTests(unittest.TestCase):
             self.run_job(seconds=15)
         self.assertEqual(collect.call_count, 2)
 
+    def test_rennes_psg_unavailable_stops_retry_without_loading_or_writing_xg(self):
+        actual = next(f for f in RENNES_PSG['db_fixtures'] if f['fixture_id'] == 19715631)
+        self.rows = [fixture(**actual, competition_id=301)]
+        known = deepcopy(RENNES_PSG['known'])
+        client = Mock()
+        client.get_season.return_value = RENNES_PSG['source']
+        scope = [{'season_id': 28082, 'competition_id': 301, 'name': '2026/2027'}]
+        with (patch.object(live, 'refresh_completed_details', return_value=[{'id': 19715631}]) as details,
+              patch.object(understat_loader, 'UnderstatClient', return_value=client),
+              patch.object(understat_loader, 'load_understat_scope', return_value=scope),
+              patch.object(understat_loader, 'load_external_ids', side_effect=known.__getitem__),
+              patch.object(understat, 'load_mapping_fixtures', return_value=RENNES_PSG['db_fixtures']),
+              patch.object(understat_ids_loader, 'load_mapping_fixtures', return_value=RENNES_PSG['db_fixtures']),
+              patch.object(understat_ids_loader, 'load_player_observations', return_value=[]),
+              patch.object(understat_ids_loader, 'write_understat_report', return_value='report.json'),
+              patch.object(understat_loader, 'write_understat_report', return_value='report.json'),
+              patch.object(understat_ids_loader, 'transaction') as transaction,
+              patch.object(understat_loader, 'replace_understat_rows') as write_xg,
+              patch.object(xg_standings_loader, 'build_xg_standings') as standings):
+            first = self.run_job()
+            self.assertEqual((first['completed'], first['pending'], first['failures']), (1, 0, []))
+            self.assertEqual(json.loads(self.path.read_text())['19715631']['status'], 'withheld')
+            # 미제공 판정은 저장된 상태를 재사용해 5분 뒤나 다음 날에도 원본을 다시 읽지 않아요.
+            for seconds in (300, 86400):
+                self.assertEqual(self.run_job(seconds=seconds)['attempted'], 0)
+        details.assert_called_once()
+        self.assertEqual(client.get_season.call_count, 2)
+        client.get_match.assert_not_called()
+        write_xg.assert_not_called()
+        standings.assert_not_called()
+        transaction.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value.executemany.assert_not_called()
+        self.assertEqual(known['fixture'], {})
+
     def test_failure_remains_pending_even_if_xg_was_written_before_standings_failed(self):
         with patch.object(jobs, '_provider_refresh', side_effect=[RuntimeError('standings failed'), ({1}, set())]) as collect:
             self.assertEqual(len(self.run_job()['failures']), 1)
@@ -112,21 +147,19 @@ class MatchRefreshTests(unittest.TestCase):
     def test_completed_details_then_xg_then_expected_standings(self):
         events = []
         with patch.object(live, 'refresh_completed_details', side_effect=lambda *a, **k: events.append('details') or [{'id':1}]), \
-             patch.object(jobs, 'refresh_understat', side_effect=lambda *a, **k: events.append('xg') or
+             patch.object(understat_loader, 'refresh_understat', side_effect=lambda *a, **k: events.append('xg') or
                           {'processed_fixture_ids':[1], 'withheld_fixture_ids':[]}) as xg, \
-             patch.object(jobs, 'build_xg_standings', side_effect=lambda *a: events.append('standings') or {'unavailable':[]}):
+             patch.object(xg_standings_loader, 'build_xg_standings', side_effect=lambda *a: events.append('standings') or {'unavailable':[]}):
             self.assertEqual(jobs._provider_refresh('understat', self.rows, apply=True, output_dir=self.path), ({1}, set()))
         self.assertEqual(events, ['details','xg','standings'])
         self.assertEqual(xg.call_args.kwargs['fixture_ids'], {1})
 
-    def test_details_failure_does_not_call_either_provider(self):
+    def test_understat_details_failure_does_not_read_xg(self):
         with patch.object(live, 'refresh_completed_details', side_effect=RuntimeError('details failed')), \
-             patch.object(jobs, 'refresh_understat') as xg, patch.object(jobs.opta_shots_loader,'sync_matches') as opta:
-            for task in ('understat','opta'):
-                with self.assertRaisesRegex(RuntimeError, 'details failed'):
-                    jobs._provider_refresh(task, self.rows, apply=True, output_dir=self.path)
+             patch.object(understat_loader, 'refresh_understat') as xg:
+            with self.assertRaisesRegex(RuntimeError, 'details failed'):
+                jobs._provider_refresh('understat', self.rows, apply=True, output_dir=self.path)
         xg.assert_not_called()
-        opta.assert_not_called()
 
     def test_live_standings_every_thirty_seconds_and_official_on_completed_result(self):
         self.rows[0]['state_id'] = 2
@@ -145,7 +178,7 @@ class MatchRefreshTests(unittest.TestCase):
             self.assertTrue(collect.call_args.kwargs['clear_live'])
 
     def test_probabilities_daily_external_check_and_immediate_result_change(self):
-        with patch.object(jobs.probability_refresh, 'refresh', return_value={'europe': {'competitions': []}}) as calculate:
+        with patch.object(probability_refresh, 'refresh', return_value={'europe': {'competitions': []}}) as calculate:
             self.run_job('probability')
             self.run_job('probability', seconds=900)
             self.run_job('probability', seconds=86399)
@@ -158,7 +191,7 @@ class MatchRefreshTests(unittest.TestCase):
 
     def test_live_goal_does_not_trigger_final_result_probability_recalculation(self):
         self.rows[0]['state_id'] = 2
-        with patch.object(jobs.probability_refresh, 'refresh', return_value={'europe': {'competitions': []}}) as calculate:
+        with patch.object(probability_refresh, 'refresh', return_value={'europe': {'competitions': []}}) as calculate:
             self.run_job('probability')
             self.rows[0]['home_score'] = 9
             self.run_job('probability', seconds=30)
@@ -166,7 +199,7 @@ class MatchRefreshTests(unittest.TestCase):
 
     def test_missing_verified_bracket_remains_pending_and_retries(self):
         report = {'europe': {'competitions': [{'season_id': 100, 'status': 'verified_knockout_path_required'}]}}
-        with patch.object(jobs.probability_refresh, 'refresh', return_value=report) as calculate:
+        with patch.object(probability_refresh, 'refresh', return_value=report) as calculate:
             first = self.run_job('probability')
             self.assertEqual((first['completed'], first['pending']), (0, 1))
             self.run_job('probability', seconds=299)
@@ -175,7 +208,7 @@ class MatchRefreshTests(unittest.TestCase):
         self.assertEqual(calculate.call_count, 2)
 
     def test_probability_failure_retries_without_hiding_failure(self):
-        with patch.object(jobs.probability_refresh, 'refresh', side_effect=RuntimeError('source failed')) as calculate:
+        with patch.object(probability_refresh, 'refresh', side_effect=RuntimeError('source failed')) as calculate:
             self.assertEqual(len(self.run_job('probability')['failures']), 1)
             self.run_job('probability', seconds=299)
             calculate.assert_called_once()

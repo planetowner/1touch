@@ -1,5 +1,5 @@
 """수집 범위 축소와 확률 재사용이 입력 정정·선행 실패를 놓치지 않는지 확인해요."""
-from contextlib import ExitStack, nullcontext
+from contextlib import ExitStack, contextmanager, nullcontext
 from copy import deepcopy
 from datetime import date, datetime, timedelta, timezone
 import json
@@ -20,6 +20,7 @@ from one_touch_loader.loaders import opta_shots_loader as opta, opta_shots_store
 from one_touch_loader.loaders import probability_loader as common, cup_betting_loader as cup
 from one_touch_loader.loaders import european_probability_loader as europe
 from one_touch_loader.loaders import probability_refresh as pipeline
+from one_touch_loader.loaders import live_fixtures_loader as live
 
 
 class OptaWorkSelectionTests(unittest.TestCase):
@@ -73,11 +74,38 @@ class OptaWorkSelectionTests(unittest.TestCase):
         self.collect.assert_not_called()
         self.save.assert_not_called()
 
-    def test_multiple_new_matches_share_one_browser(self):
-        result = opta.sync_matches(self.args)
-        self.assertEqual(result['not_finished'], 2)
-        self.assertEqual(self.collect.call_count, 2)
-        self.browser.assert_called_once()
+    def test_each_match_closes_browser_before_next_even_after_capture_failure(self):
+        for fail_first in (False, True):
+            with self.subTest(fail_first=fail_first):
+                self.db.side_effect = [[(1,)], []]
+                events = []
+                sessions = iter((object(), object()))
+
+                @contextmanager
+                def browser():
+                    session = next(sessions)
+                    events.append(('open', session))
+                    try:
+                        yield session
+                    finally:
+                        events.append(('close', session))
+
+                def capture(url, session, **kwargs):
+                    events.append(('capture', session))
+                    if fail_first and len(events) == 2:
+                        raise RuntimeError('tab crashed')
+                    return {'finished': False}
+
+                self.browser.side_effect = browser
+                self.collect.side_effect = capture
+                result = opta.sync_matches(self.args)
+                self.assertEqual((result['not_finished'], result['failed']),
+                                 (1, 1) if fail_first else (2, 0))
+                self.assertEqual([event for event, _ in events],
+                                 ['open', 'capture', 'close', 'open', 'capture', 'close'])
+                self.assertTrue(all(session is events[0][1] for _, session in events[:3]))
+                self.assertTrue(all(session is events[3][1] for _, session in events[3:]))
+                self.assertIsNot(events[0][1], events[3][1])
 
     def test_reports_each_unavailable_or_failed_match_with_verified_fixture_id(self):
         first, second = CASES[:2]
@@ -124,6 +152,70 @@ class OptaWorkSelectionTests(unittest.TestCase):
         opta.sync_matches(self.args, should_retry=lambda row: False)
         self.scope.assert_not_called()
         self.browser.assert_not_called()
+
+    def test_targeted_waiting_or_saved_matches_do_not_refresh_completed_details(self):
+        case = CASES[1]
+        self.args.fixtures = [case['fixtures'][0]]
+        self.schedule.return_value['matches'] = [deepcopy(case['match'])]
+        for saved in (False, True):
+            with self.subTest(saved=saved):
+                self.db.side_effect = [[(1,)], [(case['match']['external_fixture_id'],
+                                               case['fixtures'][0]['fixture_id'])] if saved else []]
+                with patch.object(live, 'refresh_completed_details') as details:
+                    report = opta.sync_matches(self.args, should_retry=lambda row: False)
+                self.assertEqual(report['skipped'], 1)
+                details.assert_not_called()
+        self.scope.assert_not_called()
+        self.browser.assert_not_called()
+
+    def test_scheduled_batch_waiting_for_sources_skips_upstream_details(self):
+        from one_touch_loader.loaders import match_refresh as jobs
+        fixture = {**CASES[1]['fixtures'][0], 'season_name': '2026/2027',
+                   'competition_id': 564, 'has_opta': False}
+        self.db.side_effect = [[(1,)], [], [(1,)], []]
+        with patch.object(live, 'refresh_completed_details') as details:
+            result = jobs._provider_refresh('opta', [fixture], apply=True,
+                                            output_dir=self.root / 'scheduled', should_retry=lambda row: False)
+        self.assertEqual(result, (set(), set()))
+        details.assert_not_called()
+        self.scope.assert_not_called()
+        self.browser.assert_not_called()
+        self.save.assert_not_called()
+
+    def test_targeted_details_are_refreshed_before_rosters_and_capture_in_check_and_apply(self):
+        case = CASES[1]
+        self.args.fixtures = [case['fixtures'][0]]
+        self.schedule.return_value['matches'] = [deepcopy(case['match'])]
+        for apply in (False, True):
+            with self.subTest(apply=apply):
+                self.args.apply = apply
+                self.db.side_effect = [[(1,)], []]
+                events = []
+                self.scope.side_effect = lambda *a, **k: events.append('scope') or (case['fixtures'], case['lineups'])
+                self.browser.side_effect = lambda: events.append('browser') or nullcontext(object())
+                with patch.object(live, 'refresh_completed_details', side_effect=lambda *a, **k:
+                                  events.append('details') or [{'id': case['fixtures'][0]['fixture_id']}]) as details:
+                    report = opta.sync_matches(self.args)
+                self.assertEqual(events, ['details', 'scope', 'browser'])
+                details.assert_called_once_with(self.args.fixtures, apply=apply)
+                self.assertEqual(report['failed'], 0)
+        self.save.assert_not_called()
+
+    def test_targeted_details_failure_or_missing_completion_prevents_capture(self):
+        case = CASES[1]
+        self.args.fixtures = [case['fixtures'][0]]
+        self.schedule.return_value['matches'] = [deepcopy(case['match'])]
+        for fail in (False, True):
+            with self.subTest(fail=fail):
+                self.db.side_effect = [[(1,)], []]
+                with patch.object(live, 'refresh_completed_details', return_value=[],
+                                  side_effect=RuntimeError('details failed') if fail else None):
+                    report = opta.sync_matches(self.args)
+                self.assertEqual(report['failed'], int(fail))
+                self.assertEqual(report['matches'], [])
+        self.scope.assert_not_called()
+        self.browser.assert_not_called()
+        self.save.assert_not_called()
 
     def test_least_recent_source_attempt_is_ordered_before_applying_limit(self):
         from one_touch_loader.loaders import match_refresh as jobs
