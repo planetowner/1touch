@@ -5,8 +5,13 @@ import unicodedata
 from collections import defaultdict
 
 
-# 73643은 Toma Bašić의 중복 ID에 다른 선수의 생일이 섞여 있어요. 검증한 74062로 연결해요.
-SPORTMONKS_DUPLICATE_PLAYER_IDS = {73643: 74062}
+SPORTMONKS_DUPLICATE_PLAYER_IDS = {
+    # 73643은 Toma Bašić의 중복 ID에 다른 선수의 생일이 섞여 있어요. 검증한 74062로 연결해요.
+    73643: 74062,
+    # Sandro Lima의 이전 ID는 단건 조회가 사라졌어요. 현재 프로필·91번 명단의 ID를 써요.
+    # 2026-10-08 원본과 이전 응답은 diagnostics/fixtures/sandro_identity.json에 있어요.
+    37640040: 159536,
+}
 
 
 def canonical_sportmonks_player_id(player_id):
