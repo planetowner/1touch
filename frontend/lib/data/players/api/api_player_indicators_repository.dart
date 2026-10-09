@@ -26,10 +26,8 @@ class ApiPlayerIndicatorsRepository implements PlayerIndicatorsRepository {
       }
     }
     final decoded = _api.decodeJson<Map<String, dynamic>>(response);
-    final result = ApiPlayerIndicatorsResponse.fromJson(decoded).indicators;
-    if (result.playerId != playerId) {
-      throw const FormatException('Player indicator identity mismatch.');
-    }
-    return result;
+    return ApiPlayerIndicatorsResponse.fromJson(decoded,
+            expectedPlayerId: playerId)
+        .indicators;
   }
 }

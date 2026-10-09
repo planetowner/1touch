@@ -352,6 +352,46 @@ void main() {
     expect(find.text('—'), findsNWidgets(3));
   });
 
+  testWidgets('detail refresh updates indicators without another request',
+      (tester) async {
+    final pending = Completer<PlayerIndicators?>();
+    var requests = 0;
+    final repository = _Repository((id) {
+      requests++;
+      return pending.future;
+    });
+    Widget page(PlayerIndicators? initial) => MaterialApp(
+          home: Scaffold(
+            body: PlayerBioStatsBlock(
+              playerId: 997,
+              initialIndicators: initial,
+              repository: repository,
+            ),
+          ),
+        );
+
+    await tester.pumpWidget(page(null));
+    expect(requests, 1);
+    expect(find.text('Loading'), findsNWidgets(3));
+    await tester.pumpWidget(page(_indicators(997)));
+    expect(find.text('Crucial'), findsOneWidget);
+    expect(find.text('Fair'), findsOneWidget);
+    expect(find.text('Very Good'), findsOneWidget);
+    expect(find.text('Loading'), findsNothing);
+    pending.complete(null);
+    await tester.pump();
+    expect(find.text('Crucial'), findsOneWidget);
+
+    await tester.pumpWidget(
+        page(_indicators(997, squadRole: 'Important', missingWage: true)));
+    expect(find.text('Important'), findsOneWidget);
+    expect(find.text('Crucial'), findsNothing);
+    expect(find.text('Fair'), findsOneWidget);
+    expect(find.text('Very Good'), findsNothing);
+    expect(find.text('Loading'), findsNothing);
+    expect(requests, 1);
+  });
+
   testWidgets('request failure offers a working retry', (tester) async {
     var calls = 0;
     final repository = _Repository((id) async {

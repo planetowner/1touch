@@ -286,7 +286,10 @@ class PlayerOverviewTab extends StatelessWidget {
               ),
               const SizedBox(height: 48),
               PlayerBioStatsBlock(
-                  player: player, playerId: id, profile: detail.profile),
+                  player: player,
+                  playerId: id,
+                  profile: detail.profile,
+                  initialIndicators: detail.currentIndicators),
               const SizedBox(height: 48),
               PlayerSection(
                   title: tr(context, 'COMPETITION STATS'),
@@ -470,6 +473,7 @@ class PlayerBioStatsBlock extends StatefulWidget {
   int? get id => playerId ?? player?.externalPlayerId;
   final PlayerIndicatorsRepository? repository;
   final PlayerDetailProfile? profile;
+  final PlayerIndicators? initialIndicators;
 
   const PlayerBioStatsBlock({
     super.key,
@@ -477,6 +481,7 @@ class PlayerBioStatsBlock extends StatefulWidget {
     this.playerId,
     this.repository,
     this.profile,
+    this.initialIndicators,
   });
 
   @override
@@ -499,7 +504,8 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
   void didUpdateWidget(PlayerBioStatsBlock oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.id != widget.id ||
-        oldWidget.repository != widget.repository) {
+        oldWidget.repository != widget.repository ||
+        oldWidget.initialIndicators != widget.initialIndicators) {
       _load();
     }
   }
@@ -507,10 +513,11 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
   void _load() {
     final requestId = ++_requestId;
     final playerId = widget.id;
-    _indicators = null;
+    // 상세 응답과 캐시에 함께 받은 지표는 기본 정보와 같은 프레임에 보여줘요.
+    _indicators = widget.initialIndicators;
     _failed = false;
-    _loading = playerId != null;
-    if (playerId != null) unawaited(_fetch(playerId, requestId));
+    _loading = _indicators == null && playerId != null;
+    if (_loading) unawaited(_fetch(playerId!, requestId));
   }
 
   Future<void> _fetch(int playerId, int requestId) async {

@@ -12,8 +12,8 @@ class IndicatorsNotReadyError(RuntimeError):
     """현재 소속의 첫 계산이 아직 저장되지 않았어요."""
 
 
-def get_current_player_indicators(player_id: int) -> dict | None:
-    row = fetch_one_dict(
+def get_current_player_indicators(player_id: int, *, query=None) -> dict | None:
+    row = (query or fetch_one_dict)(
         f"""
         SELECT i.payload, sm.squad_role
         FROM team_squad_members sm

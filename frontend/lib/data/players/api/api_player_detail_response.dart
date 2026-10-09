@@ -1,5 +1,6 @@
 import 'package:onetouch/data/fixtures/api/api_fixture_detail_response.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_detail_mapper.dart';
+import 'package:onetouch/data/players/api/api_player_indicators_response.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/player_club_history.dart';
 import 'package:onetouch/models/player_detail.dart';
@@ -47,6 +48,12 @@ PlayerDetail playerDetailFromJson(Map<String, dynamic> j) {
   final a = j['analysis'] as _Json?;
   return PlayerDetail(
       playerId: j['player_id'] as int,
+      currentIndicators: j['current_indicators'] == null
+          ? null
+          : ApiPlayerIndicatorsResponse.fromJson(
+                  j['current_indicators'] as _Json,
+                  expectedPlayerId: j['player_id'] as int)
+              .indicators,
       profile: (
         name: p['name'] as String,
         image: p['image'] as String?,

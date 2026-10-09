@@ -385,6 +385,21 @@ class SnapshotRepositoryTests(unittest.TestCase):
             )
             self.assertEqual(client.get("/v1/players/2/indicators").status_code, 404)
 
+    def test_detail_embeds_the_same_current_indicators_as_the_dedicated_route(self):
+        loader.refresh(apply=True)
+        app = FastAPI()
+        app.include_router(route.router, prefix='/v1')
+        app.dependency_overrides[get_user_id] = lambda: 1
+        detail = json.loads((Path(__file__).resolve().parents[3]
+                            / 'frontend/test/fixtures/player_detail.json').read_text())
+        detail['player_id'] = 1
+        detail['current_indicators'] = repo.get_current_player_indicators(1)
+        with TestClient(app) as client, patch.object(route, 'get_player_detail', return_value=detail):
+            response = client.get('/v1/players/1/detail?season_id=5')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['current_indicators'],
+                             client.get('/v1/players/1/indicators').json())
+
     def test_preview_does_not_write_and_unchanged_inputs_do_not_retrain(self):
         self.assertEqual(loader.refresh()["status"], "preview")
         self.assertEqual(self.writes, [])
