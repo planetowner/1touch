@@ -4,11 +4,13 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import logging
 import requests
+import time
 import xml.etree.ElementTree as ET
 
 from one_touch_loader.core.news import (
-    ALIASES_PATH, NEWS_MAX_AGE, TeamNewsMatcher, article_links, load_sources,
+    ALIASES_PATH, NEWS_MAX_AGE, TeamNewsMatcher, article_links, fingerprint, load_sources,
     parse_article_image, parse_article_page, parse_feed,
 )
 from one_touch_loader.loaders.news_images import refresh_news_images
@@ -16,8 +18,22 @@ from one_touch_loader.loaders.news_images import refresh_news_images
 
 def _get_content(session, url: str) -> bytes:
     # 노컷뉴스는 XML 형식을 나열한 Accept에 406을 반환해요. 기본 */*로 요청해요.
-    response = session.get(url, timeout=20, headers={"User-Agent": "1Touch-News/1.0"})
-    response.raise_for_status()
+    started = time.monotonic()
+    try:
+        response = session.get(url, timeout=20, headers={"User-Agent": "1Touch-News/1.0"})
+    except requests.Timeout as exc:
+        # 시간 초과는 응답 전에 발생할 수 있어 HTTP 상태 로그와 별도로 요청을 식별해요.
+        logging.getLogger(__name__).warning(
+            "News request timeout: error=%s elapsed_seconds=%.3f url_hash=%s",
+            type(exc).__name__, time.monotonic() - started, fingerprint(url))
+        raise
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        # 재현되지 않는 HTTP 오류는 상태 코드와 기사 해시로 추적해요. URL·본문은 남기지 않아요.
+        logging.getLogger(__name__).warning("News HTTP failure: status=%s url_hash=%s",
+                                            response.status_code, fingerprint(url))
+        raise
     return response.content
 
 
@@ -107,8 +123,9 @@ def refresh(*, apply: bool, sources=None, teams=None, session=None, now=None) ->
                     if now - NEWS_MAX_AGE <= article["published_at"] <= now:
                         # 공급자 목록의 리그는 분류 정보예요. 이적·대륙 대회 기사의 다른 리그 팀도 연결해요.
                         article = {**article, "team_ids": matcher.match(article)}
-                        # 표시 대상 중 피드에 이미지가 없는 기사만 원문을 읽어요. HTML 공급자는 이미 읽었어요.
-                        if article["team_ids"] and not article["image_url"] and source.get("format") != "html":
+                        # 원문 조회가 가능한 공급자만 이미지를 보완해요. HTML 공급자는 이미 읽었어요.
+                        if (article["team_ids"] and not article["image_url"]
+                                and source.get("format") != "html" and source.get("fetch_article_images", True)):
                             try:
                                 article["image_url"] = parse_article_image(_get_content(session, article["url"]), source)
                             except (requests.RequestException, ValueError) as exc:

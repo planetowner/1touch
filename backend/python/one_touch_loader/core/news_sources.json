@@ -624,8 +624,9 @@
       "feed_url": "https://sempreinter.com/feed/",
       "timezone": null,
       "is_active": true,
+      "fetch_article_images": false,
       "verification_url": "https://sempreinter.com/feed/",
-      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
+      "note": "2026-10-09 서버에서 RSS 200과 원문 Cloudflare 403을 확인했어요. 기사는 RSS로 수집하고 피드에 포함된 이미지만 사용해요."
     },
     {
       "key": "f7810450b4d78bc9",
