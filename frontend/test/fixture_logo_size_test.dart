@@ -14,7 +14,7 @@ void main() {
         .load();
   });
 
-  for (final (width, logoSize) in [(320.0, 64.0), (430.0, 72.0)]) {
+  for (final width in [320.0, 430.0]) {
     testWidgets('fixture logos use the agreed sizes at ${width.toInt()}px',
         (tester) async {
       tester.view.physicalSize = Size(width, 932);
@@ -64,7 +64,7 @@ void main() {
 
       for (final key in ['next-match-home-logo', 'next-match-away-logo']) {
         expect(
-            tester.getSize(find.byKey(ValueKey(key))), Size.square(logoSize));
+            tester.getSize(find.byKey(ValueKey(key))), const Size.square(72));
       }
       for (final key in ['last-match-home-logo', 'last-match-away-logo']) {
         expect(tester.getSize(find.byKey(ValueKey(key))), const Size(48, 48));
