@@ -2,7 +2,6 @@
 from decimal import Decimal
 from datetime import timedelta
 
-from .probability import OUTCOMES, WDLModel
 from .fixture_states import COMPLETED_STATE_IDS
 
 WELCOME_POINTS = 1000
@@ -27,6 +26,9 @@ def total_return(stake: int, probability: Decimal) -> int:
 
 
 def prediction_options(coefficients, home_elo, away_elo, *, draw_allowed=True) -> list[dict]:
+    # 정산 상태·포인트 규칙을 읽을 때는 예측 모델을 초기화하지 않아요.
+    from .probability import OUTCOMES, WDLModel
+
     probabilities = WDLModel(tuple(coefficients)).predict(
         [float(home_elo) - float(away_elo)], draw_allowed=draw_allowed)[0]
     options = []

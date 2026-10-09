@@ -1,0 +1,5 @@
+# 같은 실행 경로를 쓰고, 작업별로 측정한 메모리 상한만 전달해요.
+services:
+  api:
+    cpus: 1.0
+    mem_limit: ${ONETOUCH_BATCH_MEMORY_LIMIT:-1g}

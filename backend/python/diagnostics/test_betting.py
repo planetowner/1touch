@@ -30,7 +30,7 @@ class BettingRuleTests(unittest.TestCase):
     def test_worker_selects_all_completed_states_without_applying_by_default(self):
         from one_touch_loader.loaders import betting_loader
         with patch.object(betting_loader, 'fetch_all_dict', return_value=[{'bet_id': 1}]) as fetch, \
-                patch.object(betting_loader, 'settle_bet', return_value=None) as settle, \
+                patch.object(repo, 'settle_bet', return_value=None) as settle, \
                 patch('sys.stdout', new=io.StringIO()):
             betting_loader.run_cli([])
         self.assertTrue({5, 7, 8} <= set(fetch.call_args.args[1]))

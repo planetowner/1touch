@@ -4,7 +4,8 @@ Description=Detect completed matches and retry Opta data according to match age
 [Timer]
 # 수집이 끝난 뒤 다시 확인해 같은 브라우저 작업을 겹쳐 실행하지 않아요.
 OnBootSec=45s
-OnUnitInactiveSec=15s
+# 자료가 없는 동안 컨테이너 기동과 일정 조회가 반복되는 비용을 줄여요.
+OnUnitInactiveSec=60s
 AccuracySec=1s
 
 [Install]

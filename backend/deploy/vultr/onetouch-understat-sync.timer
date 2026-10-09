@@ -3,7 +3,8 @@ Description=Detect completed matches and retry unpublished xG after five minutes
 
 [Timer]
 OnBootSec=45s
-OnUnitInactiveSec=15s
+# 새 수집 대상이 없는 동안 빈 배치가 반복 실행되는 비용을 줄여요.
+OnUnitInactiveSec=60s
 AccuracySec=1s
 
 [Install]

@@ -210,11 +210,14 @@ class SnapshotRepositoryTests(unittest.TestCase):
         self.fail_insert = False
         self.before_publish = None
         self.writes = []
+        self.queries = []
         self.db = self.connect()
         self.addCleanup(self.db.close)
         self.db.executescript("""
           PRAGMA journal_mode=WAL;
           CREATE TABLE players (player_id INTEGER PRIMARY KEY,position_id INTEGER);
+          CREATE TABLE competitions (competition_id INTEGER PRIMARY KEY);
+          INSERT INTO competitions VALUES (8);
           CREATE TABLE positions (position_id INTEGER PRIMARY KEY,position_group_id INTEGER);
           INSERT INTO positions VALUES (148,25),(150,26);
           INSERT INTO players VALUES (1,148),(2,148),(3,148);
@@ -306,6 +309,7 @@ class SnapshotRepositoryTests(unittest.TestCase):
                 self.cur.close()
 
             def execute(self, sql, params=()):
+                owner.queries.append((sql, params))
                 if not sql.lstrip().startswith("SELECT"):
                     owner.assertFalse(self.conn.readonly)
                     owner.writes.append(sql)
@@ -398,6 +402,30 @@ class SnapshotRepositoryTests(unittest.TestCase):
         self.assertEqual(new["as_of"], old["as_of"])
         self.assertEqual(new["calculated_at"], old["calculated_at"])
         self.assertGreater(new["checked_at"], old["checked_at"])
+
+    def test_publication_coordinates_with_squad_writes_only_after_calculation(self):
+        lock_sql = "SELECT competition_id FROM competitions WHERE competition_id=%s FOR UPDATE"
+        build = loader.build_snapshot
+
+        def calculate(*args, **kwargs):
+            self.assertFalse(any(sql == lock_sql for sql, _ in self.queries))
+            return build(*args, **kwargs)
+
+        with patch.object(loader, "build_snapshot", side_effect=calculate):
+            loader.refresh(apply=True)
+        lock_index = self.queries.index((lock_sql, (8,)))
+        delete_index = next(i for i, (sql, _) in enumerate(self.queries)
+                            if sql == "DELETE FROM player_indicator_snapshots")
+        self.assertLess(lock_index, delete_index)
+
+        # 입력 확인과 조회 모드는 선수 행을 저장하지 않으므로 공통 잠금이 필요 없어요.
+        self.queries.clear()
+        self.assertEqual(loader.refresh(apply=True)["status"], "unchanged")
+        self.assertFalse(any(sql == lock_sql for sql, _ in self.queries))
+        self.change("UPDATE player_wages SET estimated_weekly_gross_eur=20000")
+        self.queries.clear()
+        self.assertEqual(loader.refresh(apply=False)["status"], "preview")
+        self.assertFalse(any(sql == lock_sql for sql, _ in self.queries))
 
     def test_saved_top_grade_uses_current_name_without_recalculation(self):
         loader.refresh(apply=True)

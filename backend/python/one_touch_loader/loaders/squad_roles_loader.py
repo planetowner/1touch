@@ -9,7 +9,6 @@ from pathlib import Path
 from ..core.db import get_conn, transaction
 from ..core.fixture_states import COMPLETED_STATE_IDS
 from ..core.sportmonks import SportmonksClient
-from ..core.squad_roles import calculate_squad_roles
 from .team_squad_members_loader import BIG5_COMPETITION_IDS, SPORTMONKS_DUPLICATE_PLAYER_IDS
 
 
@@ -161,6 +160,9 @@ def _fixture_usage_snapshot(cur, fixture_id: int) -> tuple:
 
 
 def preview_squad_roles(*, connection=None, team_ids=None, as_of=None, recalibrate=False) -> dict:
+    # 라이브 확인마다 학습 모듈을 로드하지 않고, 역할을 다시 계산할 때만 가져와요.
+    from ..core.squad_roles import calculate_squad_roles
+
     as_of = as_of or datetime.now(timezone.utc).replace(tzinfo=None)
     data = read_squad_role_inputs(as_of, connection=connection, current_only=not recalibrate, team_ids=team_ids)
     data['absences'] = collect_fixture_absences(data['fixtures'])

@@ -1,9 +1,10 @@
 [Unit]
-Description=Check live league tables every 30 seconds
+Description=Check live league tables one minute after each run
 
 [Timer]
 OnBootSec=45s
-OnUnitInactiveSec=30s
+# 완료 후 1분마다 확인해 처리 대상이 없는 배치의 기동 비용을 줄여요.
+OnUnitInactiveSec=60s
 AccuracySec=1s
 
 [Install]

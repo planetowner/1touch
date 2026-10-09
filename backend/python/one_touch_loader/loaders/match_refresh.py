@@ -14,9 +14,6 @@ from ..core.cup_betting import utc_datetime
 from ..core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ..core.opta_schedule import COMPETITIONS as OPTA_COMPETITIONS
 from ..core.understat import UNDERSTAT_LEAGUES
-from . import live_fixtures_loader, opta_shots_loader, probability_refresh, standings_loader
-from .understat_loader import refresh_understat
-from .xg_standings_loader import build_xg_standings
 
 
 RETRY_SECONDS = 300
@@ -112,23 +109,33 @@ def opta_source_due(item, state, now):
 
 
 def _provider_refresh(task, fixtures, *, apply, output_dir, on_result=None, should_retry=None, source_order=None):
-    # 종료 상태만 저장됐어도 상세·실제 출전 명단은 늦을 수 있어 먼저 같은 저장 경로로 확인해요.
-    payloads = live_fixtures_loader.refresh_completed_details(fixtures, apply=apply)
-    completed = {p['id'] for p in payloads}
-    selected = [f for f in fixtures if f['fixture_id'] in completed]
-    if not selected:
-        return set(), set()
-    season, competition = selected[0]['season_name'], selected[0]['competition_id']
+    selected = fixtures
     if task == 'understat':
+        from . import live_fixtures_loader
+
+        # Understat는 상세·명단을 저장한 뒤 xG 입력을 검증해요.
+        payloads = live_fixtures_loader.refresh_completed_details(fixtures, apply=apply)
+        completed = {p['id'] for p in payloads}
+        selected = [f for f in fixtures if f['fixture_id'] in completed]
+        if not selected:
+            return set(), set()
+        season, competition = selected[0]['season_name'], selected[0]['competition_id']
         if not apply:
             # 미리보기의 새 명단은 DB에 없어요. 적재까지 성공한 것처럼 ID 검증을 이어 가지 않아요.
             return set(), set()
+        from .understat_loader import refresh_understat
+        from .xg_standings_loader import build_xg_standings
+
         report = refresh_understat(season, [competition], fixture_ids=completed)
         if report['processed_fixture_ids']:
             result = build_xg_standings(season, [competition])
             if result['unavailable']:
                 raise ValueError(f"xG standings inputs are unavailable: {result['unavailable']}")
         return set(report['processed_fixture_ids']), set(report['withheld_fixture_ids'])
+    from . import opta_shots_loader
+
+    # Opta는 재확인 대기·저장 완료 후보를 거른 뒤 같은 상세 저장 경로를 실행해요.
+    season, competition = selected[0]['season_name'], selected[0]['competition_id']
     dates = [datetime.fromisoformat(str(f['starting_at'])).date() for f in selected]
     args = SimpleNamespace(apply=apply, dataset='both', competition_ids=[competition], season=season,
                            fixtures=selected, from_date=min(dates), to_date=max(dates),
@@ -263,6 +270,8 @@ def refresh(task: str, *, state_path: Path, apply: bool = False, now=None) -> di
     for fixture in fixtures:
         groups[fixture['season_id']].append(fixture)
     if task == 'standings':
+        from . import standings_loader
+
         for season_id, selected in groups.items():
             competition = selected[0]['competition_id']
             if competition not in standings_loader.BIG5_COMPETITION_IDS:
@@ -299,6 +308,9 @@ def refresh(task: str, *, state_path: Path, apply: bool = False, now=None) -> di
     checkpoint('probability_attempt', {'signature': signature, 'attempted_at': stamp})
     flush()
     try:
+        # 변경 없는 확인 작업에는 수치 계산 모듈이 필요 없어요.
+        from . import probability_refresh
+
         result['attempted'] = 1
         report = probability_refresh.refresh(apply=apply)
         result['probability'] = report

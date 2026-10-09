@@ -12,7 +12,6 @@ from time import perf_counter
 
 from ..core.db import get_conn
 from ..core.fixture_states import COMPLETED_STATE_IDS
-from ..core.player_indicators import build_player_indicators
 from ..core.player_rating_percentile import RATING_COMPETITION_IDS
 
 
@@ -89,6 +88,9 @@ def build_snapshot(as_of: datetime, inputs: tuple) -> dict[int, dict]:
     roster, matches, fixtures, calibration = inputs
     if not roster:
         return {}
+    # 입력이 그대로인 확인 작업에는 학습 모듈이 필요 없어 실제 계산할 때만 가져와요.
+    from ..core.player_indicators import build_player_indicators
+
     items = build_player_indicators(roster, matches, fixtures, calibration, as_of=as_of)
     for result in items:
         result["form_calibration"] = calibration
@@ -171,6 +173,11 @@ def _refresh(cur, *, apply: bool) -> dict:
             )
             for item in snapshot.values()
         ]
+        # 외래 키 확인도 선수 행을 잠그므로 스쿼드·순위 저장과 같은 잠금을 먼저 잡아요.
+        # 계산 중에는 공통 잠금을 잡지 않아 다른 배치의 저장을 막지 않아요.
+        from .player_rating_rankings_loader import _lock_rating_pool
+
+        _lock_rating_pool(cur)
         cur.execute("DELETE FROM player_indicator_snapshots")
         if rows:
             cur.executemany(

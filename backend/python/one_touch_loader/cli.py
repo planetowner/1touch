@@ -2,102 +2,6 @@ import sys
 import json
 from datetime import date
 
-from one_touch_loader.loaders.teams_loader import (
-    collect_all_teams,
-    collect_teams_for_competition_season,
-)
-from one_touch_loader.loaders.fixtures_loader import (
-    collect_all_fixtures,
-    collect_fixtures_for_competition_season,
-)
-from one_touch_loader.loaders.team_seasons_loader import (
-    collect_all_team_seasons,
-    collect_team_seasons_for_name,
-)
-from one_touch_loader.loaders.seasons_loader import collect_all_seasons
-from one_touch_loader.loaders.standings_loader import (
-    collect_all_standings,
-    collect_standings_for_name,
-)
-from one_touch_loader.loaders.xg_standings_loader import build_xg_standings
-from one_touch_loader.loaders.understat_ids_loader import collect_understat_ids
-from one_touch_loader.loaders.understat_loader import collect_understat, refresh_understat
-from one_touch_loader.loaders.highlights_loader import run_cli as run_highlights_cli
-from one_touch_loader.loaders.news_loader import run_cli as run_news_cli
-from one_touch_loader.loaders.injuries_loader import (
-    refresh_current_injuries,
-    refresh_team_injuries,
-)
-from one_touch_loader.loaders.team_squad_members_loader import (
-    BIG5_COMPETITION_IDS,
-    collect_all_squads,
-    collect_squads_for_competition_season,
-    refresh_current_squads,
-    refresh_team_squad,
-)
-from one_touch_loader.loaders.players_loader import (
-    collect_all_players,
-    collect_players_for_competition_season,
-)
-from one_touch_loader.loaders.fixture_details_loader import (
-    collect_all_fixture_details,
-    collect_fixture_details,
-    collect_fixture_details_for_competition_season,
-)
-from one_touch_loader.loaders.capology_player_ids_loader import (
-    collect_all_capology_player_ids,
-    collect_capology_player_ids_for_competition_season,
-)
-from one_touch_loader.loaders.capology_team_slugs_loader import (
-    collect_all_capology_team_slugs,
-    collect_capology_team_slugs_for_competition_season,
-)
-from one_touch_loader.loaders.countries_loader import refresh_countries
-from one_touch_loader.loaders.player_team_honours_loader import (
-    refresh_player_team_honours,
-)
-from one_touch_loader.loaders.player_wage_loader import (
-    collect_all_wages,
-    collect_wages_for_competition_season,
-)
-from one_touch_loader.loaders.best_eleven_loader import (
-    rebuild_best_eleven,
-    validate_best_eleven,
-)
-from one_touch_loader.loaders.transfers_loader import (
-    collect_player_transfers,
-    collect_transfers_for_season,
-    refresh_current_transfers,
-    refresh_team_transfers,
-    set_transfer_window,
-)
-from one_touch_loader.loaders.player_contracts_loader import (
-    collect_player_contracts, refresh_current_contracts, refresh_departure_contracts,
-)
-from one_touch_loader.loaders.team_stats_loader import (
-    refresh_fixture_team_stats,
-    refresh_fixture_team_stats_for_season,
-    refresh_fixture_team_stats_for_current_seasons,
-)
-from one_touch_loader.loaders.team_attribute_training_features_loader import (
-    build_team_attribute_training_features_for_seasons,
-    build_current_team_attribute_training_features,
-)
-from one_touch_loader.loaders.team_attribute_regression_trainer import (
-    train_team_attribute_regression_weights,
-)
-from one_touch_loader.loaders.team_attribute_scores_loader import (
-    build_team_attribute_group_scores,
-    build_current_team_attribute_group_scores,
-)
-from one_touch_loader.loaders.team_attribute_refresh_loader import (
-    refresh_current_team_attributes,
-)
-from one_touch_loader.loaders.player_rating_rankings_loader import (
-    rebuild_player_rating_scores, build_player_rating_scores,
-)
-
-
 # 새 DB 재적재용으로 다시 만든 명령만 의존 순서대로 적어요.
 # fixtures는 team-seasons, players는 countries와 fixtures, squads는 players,
 # Capology 선수 ID와 주급은 앞 단계의 팀·선수 매핑을 사용해요.
@@ -289,6 +193,7 @@ def main():
 
     cmd = sys.argv[1]
 
+    # 짧은 주기의 배치마다 학습·브라우저 모듈을 함께 로드하지 않도록 필요한 분기에서 가져와요.
     if cmd == "community":
         if len(sys.argv) >= 3 and sys.argv[2] == "cleanup":
             from one_touch_loader.loaders.community_maintenance import main as cleanup
@@ -305,6 +210,8 @@ def main():
         opta_shots_main(sys.argv[2:])
 
     elif cmd == "countries":
+        from one_touch_loader.loaders.countries_loader import refresh_countries
+
         if len(sys.argv) == 3 and sys.argv[2] == "refresh":
             refresh_countries()
             print("Countries refresh done.")
@@ -335,6 +242,8 @@ def main():
         print(json.dumps(actions[args[0]](apply="--apply" in args), ensure_ascii=False))
 
     elif cmd == "seasons":
+        from one_touch_loader.loaders.seasons_loader import collect_all_seasons
+
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_seasons()
             print(
@@ -346,6 +255,11 @@ def main():
             print(USAGE)
 
     elif cmd == "teams":
+        from one_touch_loader.loaders.teams_loader import (
+            collect_all_teams,
+            collect_teams_for_competition_season,
+        )
+
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_teams()
             print(
@@ -376,6 +290,11 @@ def main():
             print(USAGE)
 
     elif cmd == "team-seasons":
+        from one_touch_loader.loaders.team_seasons_loader import (
+            collect_all_team_seasons,
+            collect_team_seasons_for_name,
+        )
+
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_team_seasons()
             print(
@@ -401,6 +320,8 @@ def main():
             from .loaders.live_fixtures_loader import refresh_live_fixtures
             print(refresh_live_fixtures(apply="--apply" in sys.argv[3:]))
         elif len(sys.argv) == 3 and sys.argv[2] == "all":
+            from one_touch_loader.loaders.fixtures_loader import collect_all_fixtures
+
             result = collect_all_fixtures()
             print(
                 "Fixtures all done: "
@@ -408,6 +329,8 @@ def main():
                 f"fixtures={result['stored_fixtures']}"
             )
         elif len(sys.argv) >= 4:
+            from one_touch_loader.loaders.fixtures_loader import collect_fixtures_for_competition_season
+
             season_name = sys.argv[2]
             # 다른 수집 명령처럼 중복 대회를 빼고 입력한 순서대로 처리해요.
             competition_ids = _parse_competition_ids(sys.argv[3:])
@@ -430,6 +353,11 @@ def main():
             print(USAGE)
 
     elif cmd == "standings":
+        from one_touch_loader.loaders.standings_loader import (
+            collect_all_standings,
+            collect_standings_for_name,
+        )
+
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_standings()
             print(
@@ -460,17 +388,28 @@ def main():
         season_name = None if arguments[0] == "all" else arguments[0]
         competition_ids = _parse_competition_ids(arguments[1:]) if len(arguments) > 1 else None
         # 매핑·수집·집계가 시즌과 대회 범위를 같은 방식으로 해석해요.
-        command = {"understat-ids": collect_understat_ids, "understat": collect_understat,
-                   "understat-refresh": refresh_understat,
-                   "xg-standings": build_xg_standings}[cmd]
+        if cmd == "understat-ids":
+            from one_touch_loader.loaders.understat_ids_loader import collect_understat_ids as command
+        elif cmd == "understat":
+            from one_touch_loader.loaders.understat_loader import collect_understat as command
+        elif cmd == "understat-refresh":
+            from one_touch_loader.loaders.understat_loader import refresh_understat as command
+        else:
+            from one_touch_loader.loaders.xg_standings_loader import build_xg_standings as command
         print(f"{cmd} done: {command(season_name, competition_ids, check=check)}")
 
     elif cmd == "news":
+        from one_touch_loader.loaders.news_loader import run_cli as run_news_cli
+
         run_news_cli(sys.argv[2:] or ["refresh"])
     elif cmd == "highlights":
+        from one_touch_loader.loaders.highlights_loader import run_cli as run_highlights_cli
+
         run_highlights_cli(sys.argv[2:] or ["refresh"])
 
     elif cmd == "injuries":
+        from one_touch_loader.loaders.injuries_loader import refresh_current_injuries, refresh_team_injuries
+
         if len(sys.argv) < 3:
             print(USAGE)
             return
@@ -495,6 +434,13 @@ def main():
             print(USAGE)
 
     elif cmd == "squads":
+        from one_touch_loader.loaders.team_squad_members_loader import (
+            collect_all_squads,
+            collect_squads_for_competition_season,
+            refresh_current_squads,
+            refresh_team_squad,
+        )
+
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_squads()
             print(
@@ -538,6 +484,12 @@ def main():
             print(USAGE)
 
     elif cmd == "players":
+        from one_touch_loader.loaders.players_loader import (
+            collect_all_players,
+            collect_players_for_competition_season,
+        )
+        from one_touch_loader.loaders.player_team_honours_loader import refresh_player_team_honours
+
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_players()
             print(
@@ -579,6 +531,13 @@ def main():
 
     elif cmd == "fixture-details":
         # 같은 시즌·대회 선택 규칙으로 과거 선수 통계만 보충할 수 있어요.
+        from one_touch_loader.loaders.team_squad_members_loader import BIG5_COMPETITION_IDS
+        from one_touch_loader.loaders.fixture_details_loader import (
+            collect_all_fixture_details,
+            collect_fixture_details,
+            collect_fixture_details_for_competition_season,
+        )
+
         player_stats_only = "--player-stats-only" in sys.argv
         if player_stats_only:
             sys.argv.remove("--player-stats-only")
@@ -617,6 +576,11 @@ def main():
             print(USAGE)
 
     elif cmd == "capology-team-slugs":
+        from one_touch_loader.loaders.capology_team_slugs_loader import (
+            collect_all_capology_team_slugs,
+            collect_capology_team_slugs_for_competition_season,
+        )
+
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_capology_team_slugs()
             print(
@@ -658,6 +622,11 @@ def main():
             print(USAGE)
 
     elif cmd == "capology-player-ids":
+        from one_touch_loader.loaders.capology_player_ids_loader import (
+            collect_all_capology_player_ids,
+            collect_capology_player_ids_for_competition_season,
+        )
+
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_capology_player_ids()
             print(
@@ -699,6 +668,11 @@ def main():
             print(USAGE)
 
     elif cmd == "wages":
+        from one_touch_loader.loaders.player_wage_loader import (
+            collect_all_wages,
+            collect_wages_for_competition_season,
+        )
+
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_wages()
             print(
@@ -739,6 +713,8 @@ def main():
             print(USAGE)
 
     elif cmd == "best-eleven":
+        from one_touch_loader.loaders.best_eleven_loader import rebuild_best_eleven, validate_best_eleven
+
         if len(sys.argv) == 4 and sys.argv[2] == "validate":
             season_name = None if sys.argv[3] == "all" else sys.argv[3]
             result = validate_best_eleven(season_name)
@@ -753,6 +729,8 @@ def main():
             raise SystemExit(2)
 
     elif cmd == "transfer-windows":
+        from one_touch_loader.loaders.transfers_loader import set_transfer_window
+
         if len(sys.argv) != 7:
             print(USAGE)
             raise SystemExit(2)
@@ -760,6 +738,14 @@ def main():
         print("Transfer window stored.")
 
     elif cmd == "transfers":
+        from one_touch_loader.loaders.team_squad_members_loader import BIG5_COMPETITION_IDS
+        from one_touch_loader.loaders.transfers_loader import (
+            collect_player_transfers,
+            collect_transfers_for_season,
+            refresh_current_transfers,
+            refresh_team_transfers,
+        )
+
         args = sys.argv[2:]
         check = "--check" in args
         args = [arg for arg in args if arg != "--check"]
@@ -780,6 +766,12 @@ def main():
             raise SystemExit(1)
 
     elif cmd == "contracts":
+        from one_touch_loader.loaders.player_contracts_loader import (
+            collect_player_contracts,
+            refresh_current_contracts,
+            refresh_departure_contracts,
+        )
+
         args = sys.argv[2:]
         check = "--check" in args
         args = [arg for arg in args if arg != "--check"]
@@ -795,6 +787,12 @@ def main():
         print(f"Contracts done: check={check} {result}")
 
     elif cmd == "team-stats":
+        from one_touch_loader.loaders.team_stats_loader import (
+            refresh_fixture_team_stats,
+            refresh_fixture_team_stats_for_season,
+            refresh_fixture_team_stats_for_current_seasons,
+        )
+
         if len(sys.argv) < 3:
             print(USAGE)
             return
@@ -840,6 +838,11 @@ def main():
             print(USAGE)
 
     elif cmd == "player-rankings":
+        from one_touch_loader.loaders.player_rating_rankings_loader import (
+            rebuild_player_rating_scores,
+            build_player_rating_scores,
+        )
+
         sub = sys.argv[2] if len(sys.argv) > 2 else None
         if sub == "rebuild" and (len(sys.argv) == 3 or
                                  len(sys.argv) == 4 and sys.argv[3] in ("--check", "--apply")):
@@ -858,26 +861,48 @@ def main():
         sub = sys.argv[2]
 
         if sub == "build-training-features" and len(sys.argv) == 3:
+            from one_touch_loader.loaders.team_attribute_training_features_loader import (
+                build_team_attribute_training_features_for_seasons,
+            )
+
             count = build_team_attribute_training_features_for_seasons()
             print(f"Team-attributes training features done: rows={count}")
 
         elif sub == "build-current-features" and len(sys.argv) == 3:
+            from one_touch_loader.loaders.team_attribute_training_features_loader import (
+                build_current_team_attribute_training_features,
+            )
+
             count = build_current_team_attribute_training_features()
             print(f"Team-attributes current training features done: rows={count}")
 
         elif sub == "train-regression" and len(sys.argv) == 3:
+            from one_touch_loader.loaders.team_attribute_regression_trainer import (
+                train_team_attribute_regression_weights,
+            )
+
             model_id = train_team_attribute_regression_weights()
             print(f"Team-attributes regression training done: model_id={model_id}")
 
         elif sub == "build-scores" and len(sys.argv) == 3:
+            from one_touch_loader.loaders.team_attribute_scores_loader import (
+                build_team_attribute_group_scores,
+            )
+
             count = build_team_attribute_group_scores()
             print(f"Team-attributes group scores done: rows={count}")
 
         elif sub == "build-current-scores" and len(sys.argv) == 3:
+            from one_touch_loader.loaders.team_attribute_scores_loader import (
+                build_current_team_attribute_group_scores,
+            )
+
             count = build_current_team_attribute_group_scores()
             print(f"Team-attributes current group scores done: rows={count}")
 
         elif sub == "refresh-current" and len(sys.argv) == 3:
+            from one_touch_loader.loaders.team_attribute_refresh_loader import refresh_current_team_attributes
+
             result = refresh_current_team_attributes()
             print(f"Team-attributes refresh-current done: {result}")
 
