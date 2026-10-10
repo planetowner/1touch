@@ -34,6 +34,8 @@ class PlayerFavorites extends StatefulWidget {
 }
 
 class _PlayerFavoritesState extends State<PlayerFavorites> {
+  static const _contentPadding = EdgeInsets.symmetric(horizontal: 24);
+
   @override
   void initState() {
     super.initState();
@@ -74,33 +76,40 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
           key: const ValueKey('players-favorites-section'),
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    trUpper(context, widget.title),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Body2_b.style,
+            Padding(
+              padding: _contentPadding,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      trUpper(context, widget.title),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Body2_b.style,
+                    ),
                   ),
-                ),
-                IconButton(
-                  tooltip: tr(context, 'Edit favorites'),
-                  onPressed:
-                      controller.loading || !controller.loaded ? null : _edit,
-                  icon: Icon(
-                    Icons.border_color,
-                    size: 24,
-                    color: colors.onSurface,
+                  IconButton(
+                    tooltip: tr(context, 'Edit favorites'),
+                    onPressed: controller.loading || !controller.loaded
+                        ? null
+                        : _edit,
+                    icon: Icon(
+                      Icons.border_color,
+                      size: 24,
+                      color: colors.onSurface,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             if (controller.error != null && controller.loaded)
-              TextButton(
-                onPressed: controller.loading ? null : controller.load,
-                child: Text(tr(context, 'Could not load favorites · Retry')),
+              Padding(
+                padding: _contentPadding,
+                child: TextButton(
+                  onPressed: controller.loading ? null : controller.load,
+                  child: Text(tr(context, 'Could not load favorites · Retry')),
+                ),
               ),
             if (controller.loading && !controller.loaded)
               const SizedBox(
@@ -108,45 +117,51 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
                 child: Center(child: FootballLoadingIndicator()),
               )
             else if (controller.error != null && !controller.loaded)
-              TextButton(
-                onPressed: controller.load,
-                child: Text(tr(context, 'Could not load favorites · Retry')),
+              Padding(
+                padding: _contentPadding,
+                child: TextButton(
+                  onPressed: controller.load,
+                  child: Text(tr(context, 'Could not load favorites · Retry')),
+                ),
               )
             else if (controller.players.isEmpty)
-              DottedBorder(
-                color: colors.onSurface.withValues(alpha: 0.5),
-                strokeWidth: 1,
-                dashPattern: const [6, 6],
-                borderType: BorderType.RRect,
-                radius: const Radius.circular(8),
-                child: Material(
-                  color: isDark
-                      ? const Color(0xFF272828)
-                      : AppColors.of(context).cardBackground,
-                  borderRadius: BorderRadius.circular(8),
-                  child: InkWell(
-                    key: const ValueKey('players-empty-favorites'),
-                    onTap: _edit,
+              Padding(
+                padding: _contentPadding,
+                child: DottedBorder(
+                  color: colors.onSurface.withValues(alpha: 0.5),
+                  strokeWidth: 1,
+                  dashPattern: const [6, 6],
+                  borderType: BorderType.RRect,
+                  radius: const Radius.circular(8),
+                  child: Material(
+                    color: isDark
+                        ? const Color(0xFF272828)
+                        : AppColors.of(context).cardBackground,
                     borderRadius: BorderRadius.circular(8),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.add, size: 32, color: colors.onSurface),
-                            const SizedBox(height: 8),
-                            Text(
-                              tr(context,
-                                  "You aren't following any players yet.\nAdd some now."),
-                              textAlign: TextAlign.center,
-                              style: Body1.style.copyWith(
-                                color: colors.onSurface,
-                                height: 1.6,
+                    child: InkWell(
+                      key: const ValueKey('players-empty-favorites'),
+                      onTap: _edit,
+                      borderRadius: BorderRadius.circular(8),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.add, size: 32, color: colors.onSurface),
+                              const SizedBox(height: 8),
+                              Text(
+                                tr(context,
+                                    "You aren't following any players yet.\nAdd some now."),
+                                textAlign: TextAlign.center,
+                                style: Body1.style.copyWith(
+                                  color: colors.onSurface,
+                                  height: 1.6,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -157,6 +172,8 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
               SizedBox(
                 height: 132,
                 child: ListView.separated(
+                  // 여백을 목록 안에 두어 화면 가장자리의 선수 사진도 보이게 해요.
+                  padding: _contentPadding,
                   scrollDirection: Axis.horizontal,
                   itemCount: controller.players.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 16),
