@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -51,7 +52,13 @@ String _minuteOrHourLabel(Duration difference, Locale locale) {
 String fixtureDateLabel(DateTime? kickoff, {required Locale locale}) {
   if (kickoff == null) return translateMessage(locale, 'Date TBD');
   final local = kickoff.toLocal();
-  final date = _fixtureDayLabel(local, locale);
+  // 오늘·내일만 상대 날짜로 표시하고, 모레부터는 기존 날짜 형식을 유지해요.
+  final days = _calendarDayDifference(local, clock.now().toLocal());
+  final date = switch (days) {
+    0 => translateMessage(locale, 'Today'),
+    1 => translateMessage(locale, 'Tomorrow'),
+    _ => _fixtureDayLabel(local, locale),
+  };
   final time = DateFormat.jm(locale.languageCode).format(local);
   return '$date\n$time';
 }
@@ -64,10 +71,7 @@ String relativeDateLabel(DateTime? date,
   if (date == null) return translateMessage(locale, missingDateLabel);
   final localDate = date.toLocal();
   final localNow = (now ?? DateTime.now()).toLocal();
-  // 현지 날짜끼리 비교해 자정과 서머타임에도 오늘·어제를 정확히 구분해요.
-  final days = DateTime.utc(localNow.year, localNow.month, localNow.day)
-      .difference(DateTime.utc(localDate.year, localDate.month, localDate.day))
-      .inDays;
+  final days = _calendarDayDifference(localNow, localDate);
   if (days == 0) {
     // 뉴스·하이라이트는 당일에 분·시간을 쓰고, 지난 경기는 오늘로 표시해요.
     return showTimeToday
@@ -83,6 +87,13 @@ String relativeDateLabel(DateTime? date,
   if (weeks == 1) return translateMessage(locale, 'Last week');
   return translateMessage(locale, '{count} weeks ago', {'count': weeks});
 }
+
+// 현지 날짜끼리 비교해 자정과 서머타임에도 하루 차이를 정확히 구분해요.
+int _calendarDayDifference(DateTime localDate, DateTime localReference) =>
+    DateTime.utc(localDate.year, localDate.month, localDate.day)
+        .difference(DateTime.utc(
+            localReference.year, localReference.month, localReference.day))
+        .inDays;
 
 String _fixtureDayLabel(DateTime local, Locale locale) =>
     locale.languageCode == 'ko'

@@ -1681,6 +1681,7 @@ const appMessages = <String, MessageTranslations>{
   "{count}d ago": (ko: "{count}일 전", ja: "{count}日前", zh: "{count}天前"),
   "{count} days ago": (ko: "{count}일 전", ja: "{count}日前", zh: "{count}天前"),
   "Today": (ko: "오늘", ja: "今日", zh: "今天"),
+  "Tomorrow": (ko: "내일", ja: "明日", zh: "明天"),
   "Yesterday": (ko: "어제", ja: "昨日", zh: "昨天"),
   "Last week": (ko: "지난주", ja: "先週", zh: "上周"),
   "{count} weeks ago": (ko: "{count}주 전", ja: "{count}週間前", zh: "{count}周前"),

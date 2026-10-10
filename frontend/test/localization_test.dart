@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -111,10 +112,62 @@ void main() {
   test('fixture dates share locale-aware formatting and missing-date labels',
       () {
     final kickoff = DateTime(2026, 9, 23, 15, 30);
-    expect(
-        fixtureDateLabel(kickoff, locale: const Locale('ko')), contains('9월'));
+    withClock(Clock.fixed(DateTime(2026, 9, 20)), () {
+      expect(fixtureDateLabel(kickoff, locale: const Locale('ko')),
+          '9월 23일 (수)\n오후 3:30');
+    });
     expect(fixtureDateLabel(null, locale: const Locale('ja')), '日程未定');
     expect(fixtureDateLabel(null, locale: const Locale('zh')), '日期待定');
+  });
+
+  test('fixture dates use today and tomorrow in all supported languages', () {
+    withClock(Clock.fixed(DateTime(2026, 10, 10, 12)), () {
+      for (final (day, expected) in [
+        (10, ['Today', '오늘', '今日', '今天']),
+        (11, ['Tomorrow', '내일', '明日', '明天']),
+      ]) {
+        expect(
+          appSupportedLocales.map((locale) =>
+              fixtureDateLabel(DateTime(2026, 10, day, 11, 30), locale: locale)
+                  .split('\n')
+                  .first),
+          expected,
+        );
+      }
+      for (final (day, label) in [
+        (9, '10월 9일 (금)'),
+        (10, '오늘'),
+        (11, '내일'),
+        (12, '10월 12일 (월)'),
+        (17, '10월 17일 (토)'),
+      ]) {
+        expect(
+          fixtureDateLabel(DateTime(2026, 10, day, 11, 30),
+              locale: const Locale('ko')),
+          '$label\n오전 11:30',
+        );
+      }
+    });
+  });
+
+  test('fixture dates use local calendar days across midnight and DST', () {
+    for (final (now, kickoff, expected) in [
+      (DateTime(2026, 10, 10, 0, 1), DateTime(2026, 10, 10, 23, 59), '오늘'),
+      (DateTime(2026, 10, 10, 23, 59), DateTime(2026, 10, 11, 0, 1), '내일'),
+      (DateTime(2026, 10, 10, 23, 59), DateTime(2026, 10, 12), '10월 12일 (월)'),
+      (DateTime(2026, 12, 31, 23, 59), DateTime(2027, 1, 1), '내일'),
+      (DateTime(2026, 3, 8), DateTime(2026, 3, 9), '내일'),
+      (DateTime(2026, 11, 1), DateTime(2026, 11, 2), '내일'),
+    ]) {
+      withClock(Clock.fixed(now.toUtc()), () {
+        expect(
+          fixtureDateLabel(kickoff.toUtc(), locale: const Locale('ko'))
+              .split('\n')
+              .first,
+          expected,
+        );
+      });
+    }
   });
 
   test('all Korean probability titles stay on one line', () {

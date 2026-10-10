@@ -1,6 +1,7 @@
 import 'support/app_catalog.dart';
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -433,8 +434,11 @@ void main() {
           _fixture(3, FixtureStatus.upcoming,
               kickoff: DateTime(2026, 10, 11, 11, 30)),
         ]);
-        await tester.pumpWidget(_app(repository, teamId: 9, locale: locale));
-        await tester.pumpAndSettle();
+        final today = DateTime(2026, 10, width == 320 ? 11 : 10);
+        await withClock(Clock.fixed(today), () async {
+          await tester.pumpWidget(_app(repository, teamId: 9, locale: locale));
+          await tester.pumpAndSettle();
+        });
 
         final korean = locale.languageCode == 'ko';
         expect(find.text(korean ? '지난 경기' : 'PAST'), findsOneWidget);
@@ -452,8 +456,8 @@ void main() {
         expect(
             labels.map((text) => text.data),
             korean
-                ? ['10월 11일 (일)', '오전 11:30']
-                : ['Sun, Oct 11', '11:30\u202fAM']);
+                ? [width == 320 ? '오늘' : '내일', '오전 11:30']
+                : [width == 320 ? 'Today' : 'Tomorrow', '11:30\u202fAM']);
         expect(
             labels
                 .every((text) => text.maxLines == 1 && text.softWrap == false),

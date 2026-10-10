@@ -1,4 +1,5 @@
 import 'support/app_catalog.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -27,13 +28,16 @@ void main() {
   });
 
   test('home card date format puts localized time on its own line', () {
-    expect(
-        fixtureDateLabel(DateTime(2026, 9, 20, 9), locale: const Locale('ko')),
-        "9월 20일 (일)\n오전 9:00");
-    expect(
-        fixtureDateLabel(DateTime(2026, 10, 11, 23, 30),
-            locale: const Locale('ko')),
-        "10월 11일 (일)\n오후 11:30");
+    withClock(Clock.fixed(DateTime(2026, 9, 18)), () {
+      expect(
+          fixtureDateLabel(DateTime(2026, 9, 20, 9),
+              locale: const Locale('ko')),
+          "9월 20일 (일)\n오전 9:00");
+      expect(
+          fixtureDateLabel(DateTime(2026, 10, 11, 23, 30),
+              locale: const Locale('ko')),
+          "10월 11일 (일)\n오후 11:30");
+    });
   });
 
   testWidgets('blank space in favorite team header opens the team',
@@ -88,7 +92,13 @@ void main() {
         (tester) async {
       await tester.binding.setSurfaceSize(Size(width, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      await _pumpCard(tester, position: 2, delta: 3);
+      final (today, dateLabel) = switch (width) {
+        320 => (DateTime(2026, 10, 11), '오늘'),
+        393 => (DateTime(2026, 10, 10), '내일'),
+        _ => (DateTime(2026, 10, 9), '10월 11일 (일)'),
+      };
+      await withClock(
+          Clock.fixed(today), () => _pumpCard(tester, position: 2, delta: 3));
 
       expect(find.text('프리미어리그 2위'), findsOneWidget);
       expect(
@@ -114,7 +124,7 @@ void main() {
 
       for (final label in [
         '프리미어리그 6R',
-        '10월 11일 (일)',
+        dateLabel,
         '오전 11:30',
         '5주 전',
       ]) {
