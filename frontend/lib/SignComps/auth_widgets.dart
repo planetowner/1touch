@@ -8,6 +8,8 @@ import 'package:onetouch/core/stylesheet.dart';
 /// 인증 화면에서도 앱의 현재 locale 타이포그래피를 사용해요.
 abstract final class AuthStyles {
   static const inputHeight = 40.0;
+  static const signupInputHeight = 56.0;
+  static double signupLabelInset(bool password) => password ? 6 : 8;
   static TextStyle get body => Body1.style;
   static TextStyle get label => Body2.style;
   static TextStyle get emphasis => Body2_b.style;
@@ -25,17 +27,39 @@ abstract final class AuthStyles {
           ? const Color(0xFF0A0A0A)
           : AppColors.of(context).pageBackground;
 
+  static InputDecoration signupInputDecoration(BuildContext context,
+      {bool password = false}) {
+    final style = signupTextStyle(body);
+    // 힌트 없는 EditableText의 정수 줄 높이에 맞춰 입력칸 높이 56을 유지해요.
+    final lineHeight = MediaQuery.textScalerOf(context)
+        .scale(style.fontSize! * style.height!)
+        .floorToDouble();
+    final inset = signupLabelInset(password);
+    return inputDecoration(context, null, textStyle: style, gapPadding: 0)
+        .copyWith(
+      // 라벨은 입력칸 안에 고정하고, 빈 값에는 예시나 비밀번호 점을 넣지 않아요.
+      contentPadding: EdgeInsets.fromLTRB(
+          12, signupInputHeight - lineHeight - inset, 8, inset),
+      counterText: '',
+      suffixIconConstraints:
+          const BoxConstraints.tightFor(width: 48, height: signupInputHeight),
+    );
+  }
+
   static InputDecoration inputDecoration(
     BuildContext context,
-    String hint, {
+    String? hint, {
     EdgeInsetsGeometry? contentPadding,
     TextStyle? textStyle,
     Widget? suffixIcon,
+    double gapPadding = 4,
   }) {
     final inputStyle = textStyle ?? body;
     final colors = Theme.of(context).colorScheme;
     final border = OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none);
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide.none,
+        gapPadding: gapPadding);
     // 언어별 줄 높이가 달라도 입력칸은 40으로 맞추고, 오류 문구는 아래에 펼쳐져요.
     // 힌트의 소수점 줄 높이는 올림되어 배치돼요(영문 19.5 → 20).
     final lineHeight =
@@ -63,6 +87,41 @@ abstract final class AuthStyles {
       disabledBorder: border,
     );
   }
+}
+
+/// 가입 화면의 라벨은 포커스나 입력값에 따라 움직이지 않아요.
+class AuthInsetLabel extends StatelessWidget {
+  const AuthInsetLabel({
+    super.key,
+    required this.label,
+    required this.child,
+    this.password = false,
+  });
+
+  final String label;
+  final Widget child;
+  final bool password;
+
+  @override
+  Widget build(BuildContext context) => Stack(children: [
+        Semantics(label: label, child: child),
+        Positioned(
+          left: 12,
+          right: 12,
+          top: AuthStyles.signupLabelInset(password),
+          child: IgnorePointer(
+            child: ExcludeSemantics(
+              child: Text(label,
+                  style: AuthStyles.signupTextStyle(Eyebrow.style).copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: .5),
+                  )),
+            ),
+          ),
+        ),
+      ]);
 }
 
 class AuthInput extends StatelessWidget {

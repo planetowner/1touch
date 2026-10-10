@@ -162,7 +162,9 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     final colors = Theme.of(context).colorScheme;
     final bodyStyle = AuthStyles.signupTextStyle(Body1.style);
     final labelStyle = AuthStyles.signupTextStyle(Eyebrow.style);
-    final bottomSafeInset = MediaQuery.viewPaddingOf(context).bottom;
+    // Figma의 하단 여백 72 안에 기기의 안전 영역을 포함해요.
+    final bottomSpacing =
+        MediaQuery.viewPaddingOf(context).bottom.clamp(72.0, double.infinity);
     final consentTemplate = tr(
       context,
       'By clicking sign up, I hereby agree and consent to 1touch’s {terms}; I confirm that I have read 1touch’s {privacy}.',
@@ -216,11 +218,11 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
             builder: (context, constraints) => SingleChildScrollView(
               key: const ValueKey('signup-fields-scroll'),
               padding: EdgeInsets.fromLTRB(24, 0, 24,
-                  bottomSafeInset + MediaQuery.viewInsetsOf(context).bottom),
+                  bottomSpacing + MediaQuery.viewInsetsOf(context).bottom),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight > bottomSafeInset
-                        ? constraints.maxHeight - bottomSafeInset
+                    minHeight: constraints.maxHeight > bottomSpacing
+                        ? constraints.maxHeight - bottomSpacing
                         : 0.0),
                 child: IntrinsicHeight(
                   child: Column(
@@ -230,8 +232,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                       for (final field in [
                         (
                           field: RegistrationField.username,
-                          label: 'Username',
-                          hint: 'john_doe',
+                          label: 'ID',
                           controller: _username,
                           maxLength: 30,
                           keyboardType: null,
@@ -240,7 +241,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         (
                           field: RegistrationField.displayName,
                           label: 'Nickname',
-                          hint: '불광동호날두',
                           controller: _displayName,
                           maxLength: 12,
                           keyboardType: null,
@@ -249,15 +249,12 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         (
                           field: RegistrationField.email,
                           label: 'Email',
-                          hint: 'johndoe@gmail.com',
                           controller: _email,
                           maxLength: null,
                           keyboardType: TextInputType.emailAddress,
                           validator: _emailValidationMessage,
                         ),
                       ]) ...[
-                        Text(tr(context, field.label), style: labelStyle),
-                        const SizedBox(height: 8),
                         SignupAvailabilityField(
                           key: ValueKey(
                               'signup-${field.field.apiValue.replaceAll('_', '-')}-field'),
@@ -265,10 +262,12 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                           maxLength: field.maxLength,
                           keyboardType: field.keyboardType,
                           enabled: !_submitting,
-                          decoration: AuthStyles.inputDecoration(
-                                  context, field.hint,
-                                  textStyle: bodyStyle)
-                              .copyWith(counterText: ''),
+                          insetLabel: tr(context, field.label),
+                          availableMessage:
+                              field.field == RegistrationField.username
+                                  ? 'This username is available!'
+                                  : 'Available.',
+                          decoration: AuthStyles.signupInputDecoration(context),
                           validator: field.validator,
                           checkAvailability: (value) =>
                               _authService.isRegistrationValueAvailable(
@@ -276,62 +275,75 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                           onAvailabilityChanged: (available) =>
                               _setAvailable(field.field, available),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                       ],
-                      Text(tr(context, 'Password'), style: labelStyle),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        key: const ValueKey('signup-password-field'),
-                        controller: _password,
-                        // 비밀번호 검증 오류도 커서 색상은 바꾸지 않아요.
-                        cursorErrorColor: colors.primary,
-                        obscureText: _obscure,
-                        decoration: AuthStyles.inputDecoration(
-                                context, '••••••••',
-                                textStyle: bodyStyle)
-                            .copyWith(
-                          suffixIcon: AuthPasswordVisibilityButton(
-                            obscureText: _obscure,
-                            onPressed: () =>
-                                setState(() => _obscure = !_obscure),
+                      for (final field in [
+                        (
+                          key: 'signup-password-field',
+                          label: 'Password',
+                          controller: _password,
+                          obscure: _obscure,
+                          toggle: () => setState(() => _obscure = !_obscure),
+                          validator: (String? value) => isValidNewPassword(
+                                  value ?? '')
+                              ? null
+                              : tr(context,
+                                  'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
+                          confirm: false,
+                        ),
+                        (
+                          key: 'signup-confirm-password-field',
+                          label: 'Retype Password',
+                          controller: _confirmPassword,
+                          obscure: _obscureConfirm,
+                          toggle: () => setState(
+                              () => _obscureConfirm = !_obscureConfirm),
+                          validator: (String? value) => value == _password.text
+                              ? null
+                              : tr(context, 'Passwords do not match.'),
+                          confirm: true,
+                        ),
+                      ]) ...[
+                        AuthInsetLabel(
+                          label: tr(context, field.label),
+                          password: true,
+                          child: TextFormField(
+                            key: ValueKey(field.key),
+                            controller: field.controller,
+                            enabled: !_submitting,
+                            // 비밀번호 검증 오류도 커서 색상은 바꾸지 않아요.
+                            cursorErrorColor: colors.primary,
+                            obscureText: field.obscure,
+                            autocorrect: false,
+                            enableSuggestions: false,
+                            // Outline의 위쪽 정렬은 큰 상단 여백을 무시하므로 아래 여백에 맞춰요.
+                            textAlignVertical: TextAlignVertical.bottom,
+                            autovalidateMode: field.confirm
+                                ? AutovalidateMode.onUserInteraction
+                                : AutovalidateMode.disabled,
+                            decoration: AuthStyles.signupInputDecoration(
+                                    context,
+                                    password: true)
+                                .copyWith(
+                              suffixIcon: AuthPasswordVisibilityButton(
+                                obscureText: field.obscure,
+                                onPressed: field.toggle,
+                              ),
+                            ),
+                            validator: field.validator,
+                            style: bodyStyle,
                           ),
                         ),
-                        validator: (v) => isValidNewPassword(v ?? '')
-                            ? null
-                            : tr(context,
-                                'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
-                        style: bodyStyle,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        tr(context,
-                            'Choose a password that is 8 or more characters long.'),
-                        style: labelStyle,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(tr(context, 'Retype Password'), style: labelStyle),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        key: const ValueKey('signup-confirm-password-field'),
-                        controller: _confirmPassword,
-                        cursorErrorColor: colors.primary,
-                        obscureText: _obscureConfirm,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: AuthStyles.inputDecoration(
-                                context, '••••••••',
-                                textStyle: bodyStyle)
-                            .copyWith(
-                          suffixIcon: AuthPasswordVisibilityButton(
-                            obscureText: _obscureConfirm,
-                            onPressed: () => setState(
-                                () => _obscureConfirm = !_obscureConfirm),
+                        if (!field.confirm) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            tr(context,
+                                'Choose a password that is 8 or more characters long.'),
+                            style: labelStyle,
                           ),
-                        ),
-                        validator: (value) => value == _password.text
-                            ? null
-                            : tr(context, 'Passwords do not match.'),
-                        style: bodyStyle,
-                      ),
+                          const SizedBox(height: 24),
+                        ],
+                      ],
                       const SizedBox(height: 24),
                       const Spacer(),
                       Padding(

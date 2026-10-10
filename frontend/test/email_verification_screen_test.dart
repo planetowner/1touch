@@ -99,8 +99,13 @@ void main() {
                         matching: find.byType(EditableText)))
                     .cursorColor,
                 normalCursorColors[index]);
-            // Figma 1529:17955의 입력칸 실측값으로 확인해요.
-            expect(inputRect(fields.at(index)).size, const Size(345, 40));
+            // Figma 7178:41928의 입력칸 실측값으로 확인해요.
+            expect(inputRect(fields.at(index)).size, const Size(345, 56));
+            final valueRect = tester.getRect(find.descendant(
+                of: fields.at(index), matching: find.byType(EditableText)));
+            expect(valueRect.left, 36);
+            expect(inputRect(fields.at(index)).bottom - valueRect.bottom,
+                index < 3 ? 8 : 6);
             final decorator = tester.widget<InputDecorator>(find.descendant(
                 of: fields.at(index), matching: find.byType(InputDecorator)));
             expect(
@@ -117,10 +122,10 @@ void main() {
         final headerTitle = find.descendant(
             of: find.byType(AppBar), matching: find.byType(Text));
         expect(tester.getRect(headerTitle).center, const Offset(196.5, 71));
-        expect(textRect('Username').top, 131);
+        expect(textRect('ID').top, 139);
         expect(
             tester.getRect(find.byKey(const ValueKey('email-sign-up-button'))),
-            const Rect.fromLTWH(24, 762, 345, 56));
+            const Rect.fromLTWH(24, 724, 345, 56));
         final backIcon = find.byWidgetPredicate((widget) =>
             widget is SvgPicture &&
             (widget.bytesLoader as SvgAssetLoader).assetName ==
@@ -128,29 +133,36 @@ void main() {
         expect(tester.getRect(backIcon), const Rect.fromLTWH(24, 59, 32, 24));
         final fields = find.byType(TextFormField);
         final labels = [
-          'Username',
+          'ID',
           'Nickname',
           'Email',
           'Password',
           'Retype Password'
         ];
         for (var i = 0; i < 5; i++) {
-          expect(inputRect(fields.at(i)).top - textRect(labels[i]).bottom, 8);
+          expect(textRect(labels[i]).top - inputRect(fields.at(i)).top,
+              i < 3 ? 8 : 6);
           final editable = tester.widget<EditableText>(find.descendant(
               of: fields.at(i), matching: find.byType(EditableText)));
           expect(editable.style.letterSpacing, 0);
           expect(
               editable.style.height, locale.languageCode == 'ko' ? 1.6 : 1.3);
           if (i < 3) {
-            expect(textRect(labels[i + 1]).top - inputRect(fields.at(i)).bottom,
-                16);
+            expect(
+                inputRect(fields.at(i + 1)).top -
+                    inputRect(fields.at(i)).bottom,
+                24);
           }
         }
         final help =
             textRect('Choose a password that is 8 or more characters long.');
         expect(help.top - inputRect(fields.at(3)).bottom, 8);
-        expect(textRect('Retype Password').top - help.bottom, 16);
-        expect(find.text('••••••••'), findsNWidgets(2));
+        expect(inputRect(fields.at(4)).top - help.bottom, 24);
+        expect(find.text('••••••••'), findsNothing);
+        for (final field
+            in tester.widgetList<EditableText>(find.byType(EditableText))) {
+          expect(field.controller.text, isEmpty);
+        }
         if (brightness == Brightness.dark) {
           final buttonText = tester.widget<Text>(find.descendant(
               of: find.byKey(const ValueKey('email-sign-up-button')),
@@ -172,22 +184,26 @@ void main() {
           expect(
               tester.getRect(find.byWidget(icon)),
               Rect.fromLTWH(
-                  337, inputRect(fields.at(index + 3)).top + 8, 24, 24));
+                  333, inputRect(fields.at(index + 3)).top + 16, 24, 24));
         }
-        final boundary = boundaryKey.currentContext!.findRenderObject()!
-            as RenderRepaintBoundary;
-        await tester.runAsync(() async {
-          final picture = await boundary.toImage(pixelRatio: 1);
-          final bytes =
-              (await picture.toByteData(format: ui.ImageByteFormat.png))!
-                  .buffer
-                  .asUint8List();
-          final file = File(
-              'build/signup-${locale.languageCode}-${brightness.name}.png');
-          await file.parent.create(recursive: true);
-          await file.writeAsBytes(bytes);
-          picture.dispose();
-        });
+        Future<void> savePreview([String suffix = '']) async {
+          final boundary = boundaryKey.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
+          await tester.runAsync(() async {
+            final picture = await boundary.toImage(pixelRatio: 1);
+            final bytes =
+                (await picture.toByteData(format: ui.ImageByteFormat.png))!
+                    .buffer
+                    .asUint8List();
+            final file = File(
+                'build/signup-${locale.languageCode}-${brightness.name}$suffix.png');
+            await file.parent.create(recursive: true);
+            await file.writeAsBytes(bytes);
+            picture.dispose();
+          });
+        }
+
+        await savePreview();
 
         final username = find.byKey(const ValueKey('signup-username-field'));
         await tester.enterText(username, 'member');
@@ -197,9 +213,58 @@ void main() {
         await tester.tap(find.byTooltip(translateMessage(locale, 'Try again')));
         await tester.pumpAndSettle();
         expect(
-            find.text(translateMessage(locale, 'Available.')), findsOneWidget);
-        expect(textRect('Available.').top - inputRect(username).bottom, 8);
-        expect(textRect('Nickname').top - textRect('Available.').bottom, 16);
+            find.text(translateMessage(locale, 'This username is available!')),
+            findsOneWidget);
+        expect(
+            textRect('This username is available!').top -
+                inputRect(username).bottom,
+            8);
+        expect(
+            inputRect(fields.at(1)).top -
+                textRect('This username is available!').bottom,
+            24);
+        expectInputGeometry();
+
+        for (final key in [
+          'signup-password-field',
+          'signup-confirm-password-field',
+        ]) {
+          final field = find.byKey(ValueKey(key));
+          final textField = tester.widget<TextField>(
+              find.descendant(of: field, matching: find.byType(TextField)));
+          expect(textField.decoration!.hintText, isNull);
+          await tester.enterText(field, 'Password123');
+          await tester.pumpAndSettle();
+          final editable = tester.widget<EditableText>(
+              find.descendant(of: field, matching: find.byType(EditableText)));
+          expect(editable.obscureText, isTrue);
+          expect(editable.controller.text, 'Password123');
+        }
+        FocusManager.instance.primaryFocus?.unfocus();
+        await tester.pumpAndSettle();
+        await savePreview('-filled');
+        for (final key in [
+          'signup-password-field',
+          'signup-confirm-password-field',
+        ]) {
+          final field = find.byKey(ValueKey(key));
+          final editable =
+              find.descendant(of: field, matching: find.byType(EditableText));
+          final visibility =
+              find.descendant(of: field, matching: find.byType(IconButton));
+          for (final obscure in [false, true]) {
+            await tester.tap(visibility);
+            await tester.pumpAndSettle();
+            expect(tester.widget<EditableText>(editable).obscureText, obscure);
+            expect(tester.widget<EditableText>(editable).controller.text,
+                'Password123');
+          }
+          await tester.enterText(field, '');
+          await tester.pumpAndSettle();
+          expect(
+              tester.widget<EditableText>(editable).controller.text, isEmpty);
+          expect(find.text('••••••••'), findsNothing);
+        }
         expectInputGeometry();
 
         final password = find.byKey(const ValueKey('signup-password-field'));
@@ -223,8 +288,8 @@ void main() {
             greaterThanOrEqualTo(inputRect(confirm).bottom));
         expect(
             tester
-                .widget<RichText>(find.descendant(
-                    of: error, matching: find.byType(RichText)))
+                .widget<RichText>(
+                    find.descendant(of: error, matching: find.byType(RichText)))
                 .text
                 .style!
                 .color,
@@ -269,7 +334,7 @@ void main() {
             .widget<SingleChildScrollView>(
                 find.byKey(const ValueKey('signup-fields-scroll')))
             .padding,
-        const EdgeInsets.fromLTRB(24, 0, 24, 280));
+        const EdgeInsets.fromLTRB(24, 0, 24, 352));
     expect(tester.takeException(), isNull);
   });
 
@@ -479,7 +544,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 250));
       await tester.pump();
       expect(
-          find.text(translateMessage(locale, 'Available.')), findsNWidgets(3));
+          find.text(translateMessage(locale, 'Available.')), findsNWidgets(2));
       final submit = find.byKey(const ValueKey('email-sign-up-button'));
       await tester.ensureVisible(submit);
       await tester.tap(submit);

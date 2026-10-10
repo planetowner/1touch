@@ -15,6 +15,8 @@ class SignupAvailabilityField extends StatefulWidget {
     this.maxLength,
     this.keyboardType,
     this.enabled = true,
+    this.insetLabel,
+    this.availableMessage = 'Available.',
   });
 
   final TextEditingController controller;
@@ -25,6 +27,8 @@ class SignupAvailabilityField extends StatefulWidget {
   final int? maxLength;
   final TextInputType? keyboardType;
   final bool enabled;
+  final String? insetLabel;
+  final String availableMessage;
 
   @override
   State<SignupAvailabilityField> createState() =>
@@ -69,7 +73,7 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
         : _availability.error != null
             ? 'Unable to check availability. Try again.'
             : _availability.result == true
-                ? 'Available.'
+                ? widget.availableMessage
                 : null;
     final border = widget.decoration.border;
     final statusInset = (widget.decoration.contentPadding
@@ -90,13 +94,15 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
                 style: style ?? AuthStyles.signupTextStyle(Eyebrow.style)),
           ),
         );
-    return TextFormField(
+    final input = TextFormField(
       controller: widget.controller,
       // 오류는 안내 문구로 표시하고 커서는 앱의 기본 색상을 유지해요.
       cursorErrorColor: Theme.of(context).colorScheme.primary,
       enabled: widget.enabled,
       maxLength: widget.maxLength,
       keyboardType: widget.keyboardType,
+      textAlignVertical:
+          widget.insetLabel == null ? null : TextAlignVertical.bottom,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: widget.decoration.copyWith(
         helper: helper == null
@@ -124,5 +130,8 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
       errorBuilder: (context, message) => alignStatus(message),
       style: AuthStyles.signupTextStyle(Body1.style),
     );
+    return widget.insetLabel == null
+        ? input
+        : AuthInsetLabel(label: widget.insetLabel!, child: input);
   }
 }

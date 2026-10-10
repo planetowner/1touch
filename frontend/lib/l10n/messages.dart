@@ -356,6 +356,12 @@ const appMessages = <String, MessageTranslations>{
   "Sign up": (ko: "회원가입", ja: "新規登録", zh: "注册"),
   "LOGIN": (ko: "로그인", ja: "ログイン", zh: "登录"),
   "Username": (ko: "아이디", ja: "ユーザー名", zh: "用户名"),
+  "ID": (ko: "아이디", ja: "ID", zh: "ID"),
+  "This username is available!": (
+    ko: "사용할 수 있는 아이디예요!",
+    ja: "このユーザー名は使用できます！",
+    zh: "此用户名可以使用！"
+  ),
   "Nickname": (ko: "닉네임", ja: "ニックネーム", zh: "昵称"),
   "Pick a nickname": (ko: "닉네임 정하기", ja: "ニックネームを決める", zh: "选择昵称"),
   "Unable to save your profile. Please try again.": (
