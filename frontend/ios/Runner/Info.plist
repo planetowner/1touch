@@ -90,11 +90,10 @@
 	<string>Main</string>
 	<key>UIStatusBarHidden</key>
 	<false/>
+	<!-- iPhone은 자동 회전 설정과 관계없이 시작 화면부터 세로로 유지해요. -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
