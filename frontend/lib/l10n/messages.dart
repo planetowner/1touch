@@ -666,11 +666,11 @@ const appMessages = <String, MessageTranslations>{
   "Cancel": (ko: "취소", ja: "キャンセル", zh: "取消"),
   "Postponed": (ko: "경기 연기", ja: "延期", zh: "延期"),
   "Cancelled": (ko: "경기 취소", ja: "中止", zh: "取消"),
-  "Log out?": (ko: "로그아웃할까요?", ja: "ログアウトしますか？", zh: "要退出登录吗？"),
-  "You will need to sign in again to use 1touch.": (
-    ko: "1touch를 사용하려면 다시 로그인해야 해요.",
-    ja: "1touchを利用するには、もう一度ログインする必要があります。",
-    zh: "要继续使用 1touch，您需要重新登录。"
+  "Half-time?": (ko: "전반전 종료", ja: "前半終了", zh: "上半场结束"),
+  "You can log back in anytime and pick up right where you left off.": (
+    ko: "언제든 다시 로그인해서 이어서 즐길 수 있어요.",
+    ja: "いつでもログインし直して、続きから楽しめます。",
+    zh: "随时重新登录，即可继续畅享。"
   ),
   "Log out": (ko: "로그아웃", ja: "ログアウト", zh: "退出登录"),
   "Logging out...": (ko: "로그아웃 중...", ja: "ログアウト中...", zh: "正在退出..."),

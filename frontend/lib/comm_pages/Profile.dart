@@ -6,6 +6,7 @@ import "package:flutter/material.dart";
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/core/app_confirmation_dialog.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -719,25 +720,16 @@ class _SettingsListState extends State<SettingsList> {
   Future<void> _logout() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        titlePadding: const EdgeInsets.all(24),
-        contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-        // TextButton's tap target adds about 16 px below the visible label.
-        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-        title: Text(tr(dialogContext, 'Log out?')),
-        content: Text(
-          tr(dialogContext, 'You will need to sign in again to use 1touch.'),
+      barrierColor: const Color(0x800A0A0A),
+      builder: (dialogContext) => AppConfirmationDialog(
+        cardKey: const ValueKey('profile-logout-confirmation-card'),
+        confirmButtonKey: const ValueKey('profile-confirm-logout'),
+        title: tr(dialogContext, 'Half-time?'),
+        message: tr(
+          dialogContext,
+          'You can log back in anytime and pick up right where you left off.',
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(tr(dialogContext, 'Cancel')),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(tr(dialogContext, 'Log out')),
-          ),
-        ],
+        confirmLabel: trUpper(dialogContext, 'Log out'),
       ),
     );
     if (confirmed != true || !mounted) return;

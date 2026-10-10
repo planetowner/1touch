@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/app_confirmation_dialog.dart';
 import 'package:onetouch/core/identity_name_rules.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart'
@@ -329,97 +330,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (_isDeletingAccount) return;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) {
-        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
-        final foreground = isDark ? AppPalette.white : AppPalette.black;
-        return Dialog(
-          insetPadding: const EdgeInsets.all(24),
-          backgroundColor:
-              isDark ? AppPalette.lightGrey : AppPalette.lightModeDarkGrey,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: SizedBox(
-            key: const ValueKey('profile-delete-confirmation-card'),
-            width: 345,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      tr(dialogContext, 'Leaving the pitch already?'),
-                      style: TextStyle(
-                        color: foreground,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        height: 1.10,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      tr(dialogContext,
-                          'Deleting your account will permanently remove your data, predictions, and points.'),
-                      style: TextStyle(
-                        color: foreground,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                        height: 1.30,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    TextButton(
-                      key: const ValueKey('profile-confirm-delete-account'),
-                      onPressed: () => Navigator.of(dialogContext).pop(true),
-                      style: TextButton.styleFrom(
-                        backgroundColor: AppPalette.white,
-                        padding: const EdgeInsets.all(16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: Text(
-                        trUpper(dialogContext, 'Delete account'),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Color(0xFFFF5B5B),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          height: 1.30,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(false),
-                      style: TextButton.styleFrom(
-                        foregroundColor: foreground,
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        trUpper(dialogContext, 'Cancel'),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: foreground,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          decoration: TextDecoration.underline,
-                          decorationColor: foreground,
-                          height: 1.30,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+      builder: (dialogContext) => AppConfirmationDialog(
+        cardKey: const ValueKey('profile-delete-confirmation-card'),
+        confirmButtonKey: const ValueKey('profile-confirm-delete-account'),
+        title: tr(dialogContext, 'Leaving the pitch already?'),
+        message: tr(dialogContext,
+            'Deleting your account will permanently remove your data, predictions, and points.'),
+        confirmLabel: trUpper(dialogContext, 'Delete account'),
+        confirmForegroundColor: const Color(0xFFFF5B5B),
+      ),
     );
     if (confirmed != true || !mounted) return;
 
