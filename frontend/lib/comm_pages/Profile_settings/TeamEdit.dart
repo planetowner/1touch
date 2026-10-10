@@ -14,6 +14,7 @@ import 'package:onetouch/data/teams/team_page_eligibility_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/features/team/team_name_with_favorite_star.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class FollowingTeamsEditResult {
@@ -477,8 +478,12 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                     if (teamCompetitionLabel(context, entry.competition)
                         .isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(teamCompetitionLabel(context, entry.competition),
-                          style: Eyebrow.style),
+                      CompetitionLabel(
+                        competitionId: entry.competition?.competitionId,
+                        label: teamCompetitionLabel(context, entry.competition),
+                        style: Eyebrow.style,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                      ),
                     ],
                   ],
                 ),
@@ -553,11 +558,11 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: teamCompetitionLabel(context, team.competition).isNotEmpty
-                ? Text(
-                    teamCompetitionLabel(context, team.competition),
+                ? CompetitionLabel(
+                    competitionId: team.competition?.competitionId,
+                    label: teamCompetitionLabel(context, team.competition),
                     style: Eyebrow.style,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    mainAxisAlignment: MainAxisAlignment.start,
                   )
                 : null,
             trailing: Icon(

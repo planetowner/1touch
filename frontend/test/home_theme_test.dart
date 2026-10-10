@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
@@ -556,9 +555,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final favoriteTeamId = currentUserPreferences.favoriteTeamId.value;
-    final expectedLabel = teamCompetitionContextResolver.labelFor(
-      favoriteTeamId,
-    );
+    final competition = teamCompetitionContextResolver.resolve(favoriteTeamId);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -576,8 +573,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(expectedLabel, isNotEmpty);
-    expect(expectedLabel, 'La Liga');
+    expect(competition?.competitionName, 'La Liga');
     expect(find.text('LA LIGA -'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

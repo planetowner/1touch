@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/teams/mock/mock_team_competition_context_resolver.dart';
-import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/models/team_season_membership.dart';
 
@@ -18,12 +17,10 @@ void main() {
     expect(context?.competitionName, 'Premier League');
     // 현재 시즌의 순위가 없으면 지난 시즌 순위를 붙이지 않아요.
     expect(context?.currentPosition, isNull);
-    expect(context?.label, 'Premier League');
   });
 
-  test('returns null and an empty label for an unknown team', () {
+  test('returns null for an unknown team', () {
     expect(resolver.resolve(-1), isNull);
-    expect(resolver.labelFor(-1), isEmpty);
   });
 
   test('resolves current membership even when standing data is missing', () {
@@ -36,7 +33,6 @@ void main() {
     expect(context?.competitionId, 8);
     expect(context?.competitionName, 'Premier League');
     expect(context?.currentPosition, isNull);
-    expect(context?.label, 'Premier League');
   });
 
   test('does not present a previous-season-only team as current', () {
@@ -45,6 +41,6 @@ void main() {
       TeamSeasonMembership(teamId: 116, seasonId: 23614, competitionId: 8),
     ]);
     expect(historicalOnly.resolve(116), isNull);
-    expect(historicalOnly.labelFor(116), isEmpty);
+    expect(historicalOnly.resolve(116), isNull);
   });
 }

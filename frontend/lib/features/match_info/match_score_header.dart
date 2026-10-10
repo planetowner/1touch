@@ -1,6 +1,7 @@
 part of 'match_info_features.dart';
 
 class MatchScoreHeader extends StatelessWidget {
+  final int competitionId;
   final String homeLogoAsset;
   final String awayLogoAsset;
   final int homeTeamId;
@@ -15,6 +16,7 @@ class MatchScoreHeader extends StatelessWidget {
 
   const MatchScoreHeader({
     super.key,
+    required this.competitionId,
     required this.homeLogoAsset,
     required this.awayLogoAsset,
     required this.homeTeamId,
@@ -113,12 +115,11 @@ class MatchScoreHeader extends StatelessWidget {
               // 양쪽 슬롯 폭이 달라 생기는 점수 중심에 제목도 맞춰요.
               left: homeWidth - awayWidth,
               right: 0,
-              child: Text(
-                roundLabel!,
+              child: CompetitionLabel(
+                competitionId: competitionId,
+                label: roundLabel!,
                 style: Body2.style.copyWith(height: 1.3),
                 textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
         ],

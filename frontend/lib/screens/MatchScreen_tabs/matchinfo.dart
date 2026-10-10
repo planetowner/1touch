@@ -360,6 +360,7 @@ class MatchInfoTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           MatchScoreHeader(
+            competitionId: fixture.competitionId,
             homeLogoAsset: homeTeam.imagePath ?? '',
             awayLogoAsset: awayTeam.imagePath ?? '',
             homeTeamId: homeTeam.teamId,

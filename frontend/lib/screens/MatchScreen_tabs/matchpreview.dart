@@ -250,11 +250,13 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           width: 104,
           child: Column(
             children: [
-              Text(
-                roundLabel,
-                key: const ValueKey('match-preview-round-label'),
+              CompetitionLabel(
+                competitionId: widget.fixture.competitionId,
+                label: roundLabel,
+                textKey: const ValueKey('match-preview-round-label'),
                 style: Body2.style,
                 textAlign: TextAlign.center,
+                maxLines: null,
               ),
               const SizedBox(height: 8),
               Container(
@@ -512,28 +514,21 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // League logo + name
-                    Row(
-                      children: [
-                        CompetitionLogo(
-                          competitionId: widget.fixture.competitionId,
-                          size: 24,
-                          trailingGap: 10,
-                        ),
-                        Expanded(
-                          child: Text(
-                            competitionNameLabel(context, league?.competitionId,
-                                league?.name ?? tr(context, 'Unknown')),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: foreground,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
+                    CompetitionLabel(
+                      competitionId: widget.fixture.competitionId,
+                      label: competitionNameLabel(
+                          context,
+                          league?.competitionId,
+                          league?.name ?? tr(context, 'Unknown')),
+                      iconSize: 24,
+                      gap: 10,
+                      mainAxisSize: MainAxisSize.max,
+                      style: TextStyle(
+                        color: foreground,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      mainAxisAlignment: MainAxisAlignment.start,
                     ),
                     const SizedBox(height: 20),
                     // Column labels

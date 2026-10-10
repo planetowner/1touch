@@ -14,6 +14,7 @@ import 'package:onetouch/screens/PlayerScreen.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/player/player_directory_widgets.dart';
 import 'package:onetouch/features/player/player_directory_sheets.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'support/player_detail_fixture.dart';
@@ -113,7 +114,8 @@ void main() {
       ),
       GoRoute(
         path: '/players/:id',
-        builder: (_, state) => Text('Opened player ${state.pathParameters['id']}'),
+        builder: (_, state) =>
+            Text('Opened player ${state.pathParameters['id']}'),
       ),
     ]);
     addTearDown(router.dispose);
@@ -124,7 +126,8 @@ void main() {
     await tester.pumpAndSettle();
 
     final favorites = find.byType(PlayerFavorites);
-    final list = find.descendant(of: favorites, matching: find.byType(ListView));
+    final list =
+        find.descendant(of: favorites, matching: find.byType(ListView));
     final viewport = tester.getRect(list);
     for (var id = 1; id <= 4; id++) {
       final circle = tester.getRect(
@@ -135,10 +138,10 @@ void main() {
       expect(circle.right, lessThanOrEqualTo(viewport.right));
     }
     expect(tester.getTopLeft(find.text('FAVORITE PLAYERS')).dx, 24);
-    expect(tester.getRect(find.byKey(const ValueKey('players-ranking-card'))).left,
+    expect(
+        tester.getRect(find.byKey(const ValueKey('players-ranking-card'))).left,
         24);
-    final fourthFinder =
-        find.byKey(const ValueKey('favorite-player-circle-4'));
+    final fourthFinder = find.byKey(const ValueKey('favorite-player-circle-4'));
     await tester.drag(list, const Offset(-200, 0));
     await tester.pumpAndSettle();
     expect(tester.getRect(fourthFinder).right, 393 - 24);
@@ -769,6 +772,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Filter'), findsOneWidget);
     expect(find.byIcon(Icons.expand_more), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('players-ranking-filter-sheet')),
+        matching: find.byType(CompetitionLogo),
+      ),
+      findsNothing,
+    );
     await tester.tap(find.text('Bundesliga'));
     await tester.tap(find.text('Goalkeeper'));
     await tester.tap(find.text('UPDATE FILTER'));
@@ -776,6 +786,13 @@ void main() {
     expect(repository.calls.last, (league: 82, position: 'GK', offset: 0));
     expect(find.byKey(const ValueKey('active-ranking-league-filter')),
         findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('active-ranking-league-filter')),
+        matching: find.byType(CompetitionLogo),
+      ),
+      findsNothing,
+    );
     expect(find.byKey(const ValueKey('active-ranking-position-filter')),
         findsOneWidget);
     expect(find.text('BUNDESLIGA'), findsOneWidget);

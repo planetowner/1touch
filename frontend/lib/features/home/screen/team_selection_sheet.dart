@@ -155,8 +155,9 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                   ),
                   subtitle: FutureBuilder<List<Standing>>(
                     future: option.standings,
-                    builder: (context, snapshot) => Text(
-                      leaguePositionLabel(
+                    builder: (context, snapshot) => CompetitionLabel(
+                      competitionId: competition.competitionId,
+                      label: leaguePositionLabel(
                         context,
                         competitionNameLabel(context, competition.competitionId,
                             competition.competitionName ?? ''),
@@ -166,6 +167,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                             ?.position,
                       ),
                       style: Body2.style,
+                      mainAxisAlignment: MainAxisAlignment.start,
                     ),
                   ),
                   trailing: team.teamId == _selectedTeamId

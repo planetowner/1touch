@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/probability_display.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
@@ -302,11 +303,10 @@ class _FixtureTime extends StatelessWidget {
     final locale = Localizations.localeOf(context);
     return Column(
       children: [
-        Text(
-          competitionRoundLabel(context,
+        CompetitionLabel(
+          competitionId: competitionId,
+          label: competitionRoundLabel(context,
               competitionId: competitionId, roundName: roundName),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: Body1.style,
         ),

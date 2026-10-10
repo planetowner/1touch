@@ -72,31 +72,6 @@ Widget teamLogoFallback(int teamId, {double size = 32}) {
 // UTILITIES & HELPERS
 //
 
-String leaguePositionLabel(
-    BuildContext context, String leagueName, int? position) {
-  final rank = position == null
-      ? '-'
-      : ordinal(position, locale: Localizations.localeOf(context));
-  return '$leagueName $rank';
-}
-
-String ordinal(int number, {Locale locale = const Locale('en')}) {
-  if (locale.languageCode != 'en') {
-    return translateMessage(locale, '{rank} place', {'rank': number});
-  }
-  if (number >= 11 && number <= 13) return '${number}th';
-  switch (number % 10) {
-    case 1:
-      return '${number}st';
-    case 2:
-      return '${number}nd';
-    case 3:
-      return '${number}rd';
-    default:
-      return '${number}th';
-  }
-}
-
 //
 // MAIN WIDGETS (MatchCards)
 //
@@ -198,6 +173,7 @@ class MatchCard extends StatelessWidget {
   }
 }
 
+// 지난 경기 요약 카드의 가운데에는 대회 로고 없이 날짜만 보여줘요.
 class MatchCard2 extends StatelessWidget {
   final String date,
       venue,

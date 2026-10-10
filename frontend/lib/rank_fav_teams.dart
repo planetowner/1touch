@@ -7,6 +7,7 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 
 class RankFavoriteTeamsScreen extends StatefulWidget {
   final List<Team> selectedTeams;
@@ -27,9 +28,6 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
     super.initState();
     _myTeams = List.from(widget.selectedTeams);
   }
-
-  String _leagueSubtitle(Team team) => teamCompetitionLabel(
-      context, teamCompetitionContextResolver.resolve(team.teamId));
 
   void _onReorder(int oldIndex, int newIndex) {
     setState(() {
@@ -223,7 +221,8 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
     final isFirst = index == 0;
     final primaryColor = Color(team.primaryColor);
     final darkerColor = Color.lerp(primaryColor, Colors.black, 0.55)!;
-    final subtitle = _leagueSubtitle(team);
+    final competition = teamCompetitionContextResolver.resolve(team.teamId);
+    final subtitle = teamCompetitionLabel(context, competition);
 
     return Container(
       key: ValueKey(team.teamId),
@@ -316,13 +315,13 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                             ),
                             if (subtitle.isNotEmpty) ...[
                               const SizedBox(height: 2),
-                              Text(
-                                subtitle,
-                                key: ValueKey(
+                              CompetitionLabel(
+                                competitionId: competition?.competitionId,
+                                label: subtitle,
+                                textKey: ValueKey(
                                   'rank-team-position-${team.teamId}',
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 style: Body2.style.copyWith(
                                   fontSize: 12,
                                   color: AppPalette.white,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/models/fixture.dart';
 
 import 'support/app_catalog.dart';
@@ -69,6 +70,19 @@ void main() {
       for (final key in ['last-match-home-logo', 'last-match-away-logo']) {
         expect(tester.getSize(find.byKey(ValueKey(key))), const Size(48, 48));
       }
+      expect(
+        find.descendant(
+          of: find.byType(MatchCard2),
+          matching: find.byType(CompetitionLogo),
+        ),
+        findsNothing,
+      );
+      expect(
+        tester
+            .getSize(find.byKey(const ValueKey('last-match-date-time')))
+            .height,
+        tester.getSize(find.text('Last week')).height,
+      );
       final lastWeek = tester.widget<Text>(find.descendant(
         of: find.byKey(const ValueKey('last-match-date-time')),
         matching: find.text('Last week'),

@@ -33,6 +33,7 @@ import 'package:onetouch/data/betting/betting_repository_provider.dart';
 import 'package:onetouch/data/notifications/notification_unread_controller_provider.dart';
 import 'package:onetouch/features/notifications/unread_notification_bell_icon.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 
 class Profile extends StatefulWidget {
   const Profile({
@@ -386,8 +387,8 @@ class _ProfileState extends State<Profile> {
 
                   PlayerFavorites(
                     title: 'Following Players',
-                    controller: widget.followingController ??
-                        playerFollowingController,
+                    controller:
+                        widget.followingController ?? playerFollowingController,
                     searchRepository: null,
                   ),
                   const SizedBox(height: 48),
@@ -625,8 +626,9 @@ class _ProfileState extends State<Profile> {
         itemBuilder: (context, index) {
           final team = teams[index];
           final isFavorite = team.teamId == favoriteId;
-          final label = teamCompetitionLabel(
-              context, teamCompetitionContextResolver.resolve(team.teamId));
+          final competition =
+              teamCompetitionContextResolver.resolve(team.teamId);
+          final label = teamCompetitionLabel(context, competition);
 
           return Semantics(
             button: true,
@@ -672,12 +674,10 @@ class _ProfileState extends State<Profile> {
                         const SizedBox(height: 4),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text(
-                            tr(context, label),
+                          child: CompetitionLabel(
+                            competitionId: competition?.competitionId,
+                            label: tr(context, label),
                             style: competitionStyle,
-                            maxLines: 1,
-                            softWrap: false,
-                            overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                           ),
                         ),

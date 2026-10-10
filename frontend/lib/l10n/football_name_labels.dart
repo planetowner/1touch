@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/l10n/app_localizations.dart' show tr;
 
 class FootballNamesScope extends InheritedWidget {
   const FootballNamesScope({
@@ -63,7 +64,40 @@ String teamCompetitionLabel(
         BuildContext context, TeamCompetitionContext? team) =>
     team?.competitionName == null
         ? ''
-        : team!.labelWithCompetitionName(
+        : leaguePositionLabel(
+            context,
             competitionNameLabel(
-                context, team.competitionId, team.competitionName!),
+                context, team!.competitionId, team.competitionName!),
+            team.currentPosition,
+            missingPositionLabel: null,
           );
+
+String leaguePositionLabel(
+  BuildContext context,
+  String leagueName,
+  int? position, {
+  String? missingPositionLabel = '-',
+}) {
+  // 홈에서는 순위가 없으면 '-'를, 팀 헤더와 목록에서는 리그명만 보여줘요.
+  if (position == null) {
+    return missingPositionLabel == null
+        ? leagueName
+        : '$leagueName $missingPositionLabel';
+  }
+  final rank = Localizations.localeOf(context).languageCode == 'en'
+      ? _englishOrdinal(position)
+      : tr(context, '{rank} place', {'rank': position});
+  return '$leagueName $rank';
+}
+
+String _englishOrdinal(int number) {
+  final lastTwoDigits = number % 100;
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 13) return '${number}th';
+  final suffix = switch (number % 10) {
+    1 => 'st',
+    2 => 'nd',
+    3 => 'rd',
+    _ => 'th',
+  };
+  return '$number$suffix';
+}

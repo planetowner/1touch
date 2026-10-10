@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/debounced_search_controller.dart';
@@ -395,6 +396,7 @@ class _SearchContentState extends State<SearchContent> {
 
   Widget _buildTeamCard(Team team) {
     final colors = Theme.of(context).colorScheme;
+    final competition = widget.competitionContextResolver.resolve(team.teamId);
     final isFollowing =
         widget.preferences.followedTeamIds.value.contains(team.teamId);
 
@@ -424,11 +426,10 @@ class _SearchContentState extends State<SearchContent> {
                     style: Heading4.style.copyWith(color: colors.onSurface),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    teamCompetitionLabel(context,
-                        widget.competitionContextResolver.resolve(team.teamId)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  CompetitionLabel(
+                    competitionId: competition?.competitionId,
+                    label: teamCompetitionLabel(context, competition),
+                    mainAxisAlignment: MainAxisAlignment.start,
                     style: Body1.style.copyWith(color: colors.onSurface),
                   ),
                 ],
@@ -526,14 +527,13 @@ class _SearchContentState extends State<SearchContent> {
                               color: colors.onSurface.withValues(alpha: 0.3),
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              competitionRoundLabel(context,
+                            CompetitionLabel(
+                              competitionId: fixture.competitionId,
+                              label: competitionRoundLabel(context,
                                   competitionId: fixture.competitionId,
                                   roundName: fixture.roundName,
                                   stageName: fixture.stageName,
                                   leg: fixture.leg),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
                               style: textStyle,
                             ),

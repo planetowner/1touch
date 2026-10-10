@@ -27,6 +27,8 @@ class AppDropdownOption<T> {
     this.dividerBefore = false,
     this.optionKey,
     this.selectedIconKey,
+    this.leading,
+    this.leadingSize = 12,
   });
 
   final T value;
@@ -36,6 +38,12 @@ class AppDropdownOption<T> {
   final bool dividerBefore;
   final Key? optionKey;
   final Key? selectedIconKey;
+  // 로고를 숨길 때 간격도 사라지도록 오른쪽 여백을 함께 전달해요.
+  final Widget? leading;
+  final double leadingSize;
+
+  double get leadingWidth =>
+      leading == null ? 0 : leadingSize + AppDropdownTokens.gap;
 }
 
 /// Shared dropdown trigger and overlay menu.
@@ -124,8 +132,9 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
         textScaler: textScaler,
         maxLines: 1,
       )..layout();
-      if (painter.width > longestOptionWidth) {
-        longestOptionWidth = painter.width;
+      final optionWidth = painter.width + option.leadingWidth;
+      if (optionWidth > longestOptionWidth) {
+        longestOptionWidth = optionWidth;
       }
     }
 
@@ -198,6 +207,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
             padding: AppDropdownTokens.optionPadding,
             child: Row(
               children: [
+                if (option.leading != null) option.leading!,
                 Expanded(
                   child: Text(
                     option.label,
@@ -264,8 +274,9 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
           textScaler: MediaQuery.textScalerOf(context),
           maxLines: 1,
         )..layout();
-        if (optionPainter.width > longestOptionWidth) {
-          longestOptionWidth = optionPainter.width;
+        final optionWidth = optionPainter.width + option.leadingWidth;
+        if (optionWidth > longestOptionWidth) {
+          longestOptionWidth = optionWidth;
         }
       }
       final optionChromeWidth = AppDropdownTokens.optionPadding.horizontal +

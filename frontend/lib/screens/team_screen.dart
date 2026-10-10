@@ -23,6 +23,7 @@ import 'package:onetouch/data/team_probability/team_probability_repository.dart'
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/team/team_standing_label.dart';
 import 'TeamScreen_tabs/index.dart';
 import '../models/fixture.dart';
 import '../models/fixture_clock.dart';
@@ -445,9 +446,8 @@ class _TeamScreenState extends State<TeamScreen>
     final rank = currentTeam.standing?.position;
     final positionLabel = leagueName == null
         ? ''
-        : rank == null
-            ? leagueName
-            : '$leagueName ${ordinal(rank, locale: Localizations.localeOf(context))}';
+        : leaguePositionLabel(context, leagueName, rank,
+            missingPositionLabel: null);
     final displayedTeamId = currentTeam.id;
     final rankChange = currentTeam.standing?.rankDelta;
     final appBarForeground = colors.onSurface;
@@ -560,47 +560,34 @@ class _TeamScreenState extends State<TeamScreen>
                                   ),
                                   if (positionLabel.isNotEmpty) ...[
                                     const SizedBox(height: 4),
-                                    Row(
+                                    TeamStandingLabel(
                                       key: const ValueKey('team-context-label'),
+                                      competitionId:
+                                          competitionContext?.competitionId,
+                                      label: positionLabel,
+                                      style: Body2.style
+                                          .copyWith(color: appBarForeground),
+                                      rankDelta: rankChange,
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            positionLabel,
-                                            style: Body2.style.copyWith(
-                                                color: appBarForeground),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        if (rankChange case final int delta
-                                            when delta != 0) ...[
-                                          Icon(
-                                            delta > 0
-                                                ? Icons.arrow_drop_up
-                                                : Icons.arrow_drop_down,
-                                            key: const ValueKey(
-                                              'team-rank-change-icon',
-                                            ),
-                                            size: 16,
-                                            color: delta > 0
-                                                ? Colors.green
-                                                : Colors.red,
-                                          ),
-                                          Text(
-                                            '${delta.abs()}',
-                                            key: const ValueKey(
-                                              'team-rank-change-value',
-                                            ),
-                                            style: Body2.style.copyWith(
-                                              color: delta > 0
-                                                  ? Colors.green
-                                                  : Colors.red,
-                                            ),
-                                          ),
-                                        ],
-                                      ],
+                                      risingIcon: const Icon(
+                                        Icons.arrow_drop_up,
+                                        key: ValueKey('team-rank-change-icon'),
+                                        size: 16,
+                                        color: Colors.green,
+                                      ),
+                                      fallingIcon: const Icon(
+                                        Icons.arrow_drop_down,
+                                        key: ValueKey('team-rank-change-icon'),
+                                        size: 16,
+                                        color: Colors.red,
+                                      ),
+                                      risingValueStyle: Body2.style
+                                          .copyWith(color: Colors.green),
+                                      fallingValueStyle: Body2.style
+                                          .copyWith(color: Colors.red),
+                                      movementValueKey: const ValueKey(
+                                          'team-rank-change-value'),
                                     ),
                                   ],
                                 ],

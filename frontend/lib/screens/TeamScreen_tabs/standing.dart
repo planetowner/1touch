@@ -659,6 +659,10 @@ class _StandingTabState extends State<StandingTab> {
           .map(
             (league) => AppDropdownOption<int>(
               value: league.competitionId,
+              leading: CompetitionLogo(
+                competitionId: league.competitionId,
+                trailingGap: AppDropdownTokens.gap,
+              ),
               label: competitionNameLabel(
                 context,
                 league.competitionId,

@@ -207,29 +207,21 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                               },
                               child: Padding(
                                 padding: AppDropdownTokens.triggerPadding,
-                                child: Row(
-                                  children: [
-                                    CompetitionLogo(
-                                      competitionId: league.competitionId,
-                                      size: 24,
-                                      trailingGap: AppDropdownTokens.gap,
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        competitionNameLabel(
-                                                context,
-                                                league.competitionId,
-                                                league.name)
-                                            .toUpperCase(),
-                                        style: isSelected
-                                            ? Body2_b.style.copyWith(
-                                                fontWeight: FontWeight.bold)
-                                            : Body2_b.style.copyWith(
-                                                color:
-                                                    appColors.mutedForeground),
-                                      ),
-                                    ),
-                                  ],
+                                child: CompetitionLabel(
+                                  competitionId: league.competitionId,
+                                  label: competitionNameLabel(context,
+                                          league.competitionId, league.name)
+                                      .toUpperCase(),
+                                  iconSize: 24,
+                                  gap: AppDropdownTokens.gap,
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  maxLines: null,
+                                  style: isSelected
+                                      ? Body2_b.style
+                                          .copyWith(fontWeight: FontWeight.bold)
+                                      : Body2_b.style.copyWith(
+                                          color: appColors.mutedForeground),
                                 ),
                               ),
                             );
@@ -599,24 +591,15 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                     right: 40,
                     top: 8,
                     bottom: 8,
-                    child: Row(
-                      children: [
-                        CompetitionLogo(
-                          competitionId: league.competitionId,
-                          size: 24,
-                          trailingGap: 8,
-                        ),
-                        Expanded(
-                          child: Text(
-                            competitionNameLabel(context, league.competitionId,
-                                    selectedLeague)
-                                .toUpperCase(),
-                            style: Body2_b.style.copyWith(color: onBrand),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+                    child: CompetitionLabel(
+                      competitionId: league.competitionId,
+                      label: competitionNameLabel(
+                              context, league.competitionId, selectedLeague)
+                          .toUpperCase(),
+                      iconSize: 24,
+                      mainAxisSize: MainAxisSize.max,
+                      style: Body2_b.style.copyWith(color: onBrand),
+                      mainAxisAlignment: MainAxisAlignment.start,
                     ),
                   ),
                   Positioned(

@@ -71,6 +71,7 @@ void main() {
           body: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),
             child: MatchScoreHeader(
+              competitionId: 8,
               homeLogoAsset: '',
               awayLogoAsset: '',
               homeTeamId: 1,
@@ -106,6 +107,7 @@ void main() {
           body: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),
             child: MatchScoreHeader(
+              competitionId: 8,
               homeLogoAsset: '',
               awayLogoAsset: '',
               homeTeamId: 1,
@@ -180,6 +182,7 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: MatchScoreHeader(
+              competitionId: 8,
               homeLogoAsset: '',
               awayLogoAsset: '',
               homeTeamId: 1,
@@ -213,6 +216,7 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: MatchScoreHeader(
+                competitionId: 8,
                 homeLogoAsset: '',
                 awayLogoAsset: '',
                 homeTeamId: 1,
@@ -253,6 +257,7 @@ Future<void> _pumpHeader(
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: MatchScoreHeader(
+          competitionId: 8,
           homeLogoAsset: '',
           awayLogoAsset: '',
           homeTeamId: 1,

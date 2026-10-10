@@ -72,21 +72,28 @@ class FavoriteTeamCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  leaguePositionLabel(
-                                      context, leagueName, rank),
-                                  key: const ValueKey('home-team-standing'),
-                                  style: Body2.style.copyWith(height: 1.3),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                          TeamStandingLabel(
+                            competitionId: competitionContext?.competitionId,
+                            label:
+                                leaguePositionLabel(context, leagueName, rank),
+                            textKey: const ValueKey('home-team-standing'),
+                            style: Body2.style.copyWith(height: 1.3),
+                            rankDelta: rankDelta,
+                            movementKey:
+                                const ValueKey('home-team-rank-movement'),
+                            risingIcon: SvgPicture.asset(
+                              'assets/standings/rank_up.svg',
+                              width: 24,
+                              height: 24,
+                            ),
+                            fallingIcon: Transform.flip(
+                              flipY: true,
+                              child: SvgPicture.asset(
+                                'assets/standings/rank_down.svg',
+                                width: 24,
+                                height: 24,
                               ),
-                              if (rankDelta != null && rankDelta != 0)
-                                _StandingMovement(delta: rankDelta),
-                            ],
+                            ),
                           ),
                         ],
                       ),
@@ -155,34 +162,6 @@ class FavoriteTeamCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _StandingMovement extends StatelessWidget {
-  const _StandingMovement({required this.delta});
-
-  final int delta;
-
-  @override
-  Widget build(BuildContext context) {
-    final rising = delta > 0;
-    return Row(
-      key: const ValueKey('home-team-rank-movement'),
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Transform.flip(
-          flipY: !rising,
-          child: SvgPicture.asset(
-            rising
-                ? 'assets/standings/rank_up.svg'
-                : 'assets/standings/rank_down.svg',
-            width: 24,
-            height: 24,
-          ),
-        ),
-        Text('${delta.abs()}', style: Body2.style.copyWith(height: 1.3)),
-      ],
     );
   }
 }

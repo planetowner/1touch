@@ -3,6 +3,7 @@ import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
@@ -123,24 +124,21 @@ class _CareerTabState extends State<CareerTab> {
         const SizedBox(height: 24),
         for (var index = 0; index < competitions.length; index++) ...[
           if (index > 0) const SizedBox(height: 20),
-          Row(
-            children: [
-              const Icon(Icons.emoji_events_outlined, size: 18),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  competitionNameLabel(
-                      context,
-                      competitions[index],
-                      honours
-                              .firstWhere((item) =>
-                                  item.competitionId == competitions[index])
-                              .competitionName ??
-                          'Competition unavailable'),
-                  style: Heading5.style,
-                ),
-              ),
-            ],
+          CompetitionLabel(
+            competitionId: competitions[index],
+            label: competitionNameLabel(
+                context,
+                competitions[index],
+                honours
+                        .firstWhere(
+                            (item) => item.competitionId == competitions[index])
+                        .competitionName ??
+                    'Competition unavailable'),
+            style: Heading5.style,
+            iconSize: 18,
+            gap: 6,
+            mainAxisAlignment: MainAxisAlignment.start,
+            maxLines: null,
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -199,6 +197,7 @@ class _CareerTabState extends State<CareerTab> {
                 alignment: Alignment.centerRight,
                 child: _FilterButton(
                   key: const Key('career-competition-filter'),
+                  competitionId: _competition,
                   label: label,
                   onTap: () => _showFilter(competitions),
                 ),
@@ -345,12 +344,11 @@ class _CareerTabState extends State<CareerTab> {
                 children: [
                   Expanded(
                     flex: 5,
-                    child: Text(
-                      competitionNameLabel(
+                    child: CompetitionLabel(
+                      competitionId: competition.id,
+                      label: competitionNameLabel(
                           context, competition.id, competition.name),
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       style: Body2_b.style.copyWith(
                         color: AppColors.of(context).mutedForeground,
                       ),
@@ -408,9 +406,11 @@ class _CareerTabState extends State<CareerTab> {
             ),
             for (final entry in competitions.entries)
               ListTile(
-                title: Text(
-                  entry.value.toUpperCase(),
+                title: CompetitionLabel(
+                  competitionId: entry.key,
+                  label: entry.value.toUpperCase(),
                   style: Body2_b.style,
+                  mainAxisAlignment: MainAxisAlignment.start,
                 ),
                 trailing:
                     _competition == entry.key ? const Icon(Icons.check) : null,
@@ -427,8 +427,13 @@ class _CareerTabState extends State<CareerTab> {
 }
 
 class _FilterButton extends StatelessWidget {
-  const _FilterButton({super.key, required this.label, required this.onTap});
+  const _FilterButton(
+      {super.key,
+      required this.competitionId,
+      required this.label,
+      required this.onTap});
 
+  final int? competitionId;
   final String label;
   final VoidCallback onTap;
 
@@ -447,10 +452,9 @@ class _FilterButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Flexible(
-                child: Text(
-                  tr(context, label).toUpperCase(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: CompetitionLabel(
+                  competitionId: competitionId,
+                  label: tr(context, label).toUpperCase(),
                   style: Body2_b.style,
                 ),
               ),

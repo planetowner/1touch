@@ -81,6 +81,10 @@ class CompetitionLabel extends StatelessWidget {
     this.iconSize = 12,
     this.gap = 8,
     this.textKey,
+    this.mainAxisSize = MainAxisSize.min,
+    this.mainAxisAlignment = MainAxisAlignment.center,
+    this.maxLines = 1,
+    this.textAlign,
   });
 
   final int? competitionId;
@@ -89,11 +93,15 @@ class CompetitionLabel extends StatelessWidget {
   final double iconSize;
   final double gap;
   final Key? textKey;
+  final MainAxisSize mainAxisSize;
+  final MainAxisAlignment mainAxisAlignment;
+  final int? maxLines;
+  final TextAlign? textAlign;
 
   @override
   Widget build(BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: mainAxisSize,
+        mainAxisAlignment: mainAxisAlignment,
         children: [
           if (competitionId != null) ...[
             CompetitionLogo(
@@ -106,8 +114,9 @@ class CompetitionLabel extends StatelessWidget {
             child: Text(
               label,
               key: textKey,
-              maxLines: 1,
-              softWrap: false,
+              maxLines: maxLines,
+              softWrap: maxLines != 1,
+              textAlign: textAlign,
               overflow: TextOverflow.ellipsis,
               style: style,
             ),

@@ -230,26 +230,16 @@ class _StandingState extends State<Standing> {
                         SizedBox(
                           height: 24,
                         ),
-                        // league title line
-                        Row(
-                          children: [
-                            CompetitionLogo(
-                              competitionId: leagueId,
-                              size: 24,
-                              trailingGap: 8,
-                            ),
-                            Expanded(
-                              child: Text(
-                                competitionNameLabel(
-                                    context,
-                                    league?.competitionId,
-                                    league?.name ?? tr(context, 'Unknown')),
-                                style: Heading4.style,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
+                        CompetitionLabel(
+                          competitionId: leagueId,
+                          label: competitionNameLabel(
+                              context,
+                              league?.competitionId,
+                              league?.name ?? tr(context, 'Unknown')),
+                          iconSize: 24,
+                          style: Heading4.style,
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.start,
                         ),
                         const SizedBox(height: 24),
                         // columns header line (uses same table grid as body)

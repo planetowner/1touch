@@ -257,6 +257,25 @@ void main() {
       expect(find.text('LA LIGA'), findsOneWidget);
       expect(find.text('LaLiga'), findsNothing);
       expect(tester.takeException(), isNull);
+
+      final option = find
+          .ancestor(of: find.text('LA LIGA'), matching: find.byType(InkWell))
+          .first;
+      final menuBounds = tester
+          .getRect(find.byKey(const ValueKey('favorite-league-menu-blur')));
+      final visibleRight =
+          menuBounds.right < size.width ? menuBounds.right : size.width;
+      final tapPosition = Offset(visibleRight - 8, tester.getCenter(option).dy);
+      // 화면에 보이는 라벨 오른쪽 빈 영역도 리그 선택에 포함돼야 해요.
+      expect(tapPosition.dx,
+          greaterThan(tester.getRect(find.text('LA LIGA')).right));
+      await tester.tapAt(tapPosition);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('favorite-league-menu-blur')),
+          findsNothing);
+      expect(find.text('LA LIGA'), findsOneWidget);
+      expect(find.text('PREMIER LEAGUE'), findsNothing);
+      expect(tester.takeException(), isNull);
     });
   }
 

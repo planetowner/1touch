@@ -231,6 +231,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     final away = fixtureAwayTeam(widget.fixture, teamRepository);
 
     return MatchScoreHeader(
+      competitionId: widget.fixture.competitionId,
       homeLogoAsset: home.imagePath ?? '',
       awayLogoAsset: away.imagePath ?? '',
       homeTeamId: home.teamId,

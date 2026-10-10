@@ -32,11 +32,20 @@ void main() {
                       value: 1,
                       label: 'SHORT',
                       optionKey: ValueKey('short-option'),
+                      leading: Padding(
+                        padding: EdgeInsets.only(right: 8),
+                        child: Icon(Icons.sports_soccer, size: 12),
+                      ),
                     ),
                     AppDropdownOption<int>(
                       value: 2,
                       label: 'LONG DROPDOWN',
                       optionKey: ValueKey('long-option'),
+                      leading: Padding(
+                        padding: EdgeInsets.only(right: 8),
+                        child: Icon(Icons.sports_soccer,
+                            key: ValueKey('long-option-logo'), size: 12),
+                      ),
                     ),
                   ],
                   onChanged: (_) {},
@@ -81,6 +90,17 @@ void main() {
     expect(
       tester.getTopLeft(find.text('SHORT').last).dx,
       tester.getTopLeft(find.text('LONG DROPDOWN')).dx,
+    );
+    expect(
+      tester.getRect(find.text('LONG DROPDOWN')).left -
+          tester.getRect(find.byKey(const ValueKey('long-option-logo'))).right,
+      8,
+    );
+    expect(
+      tester
+          .renderObject<RenderParagraph>(find.text('LONG DROPDOWN'))
+          .didExceedMaxLines,
+      isFalse,
     );
     final menuMaterials = tester.widgetList<Material>(
       find.ancestor(
