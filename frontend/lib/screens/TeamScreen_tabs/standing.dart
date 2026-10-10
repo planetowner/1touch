@@ -11,6 +11,7 @@ import 'package:onetouch/data/standings/api_xg_standing_repository_provider.dart
 import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
+import 'package:onetouch/models/season.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/features/standing_features.dart';
@@ -65,12 +66,12 @@ class _StandingTabState extends State<StandingTab> {
   int _xgRequestId = 0;
 
   int? currentTeamId;
-  List<int> _validLeagueIds = [];
+  List<Season> _teamSeasons = [];
 
   StandingView _selectedView = StandingView.standing;
 
   bool get _xgAvailable => _big5LeagueIds.contains(selectedLeagueId);
-  bool get _hasStandingContext => _validLeagueIds.isNotEmpty;
+  bool get _hasStandingContext => _teamSeasons.isNotEmpty;
 
   StandingRepository get _regularStandingRepository =>
       widget.regularStandingRepository ?? apiStandingRepository;
@@ -197,46 +198,81 @@ class _StandingTabState extends State<StandingTab> {
 
   void _setDefaultLeagueAndSeason() {
     currentTeamId = widget.team?.id;
-    _validLeagueIds = footballCatalog.memberships
+    final memberships = footballCatalog.memberships
         .where((m) => m.teamId == currentTeamId)
-        .map((m) => m.competitionId)
-        .toSet()
+        .map((m) => (m.seasonId, m.competitionId))
+        .toSet();
+    _teamSeasons = seasonRepository.allSeasons
+        .where((s) => memberships.contains((s.seasonId, s.competitionId)))
         .toList()
-      ..sort((a, b) => (_big5LeagueIds.contains(a) ? 0 : 1)
-          .compareTo(_big5LeagueIds.contains(b) ? 0 : 1));
-    if (_validLeagueIds.isEmpty) return;
-    final leagueId = _validLeagueIds.first;
+      ..sort((a, b) {
+        final bySeason =
+            compactSeasonLabel(b.name).compareTo(compactSeasonLabel(a.name));
+        if (bySeason != 0) return bySeason;
+        return (_big5LeagueIds.contains(a.competitionId) ? 0 : 1)
+            .compareTo(_big5LeagueIds.contains(b.competitionId) ? 0 : 1);
+      });
+    if (!_hasStandingContext) return;
 
-    final seasonId = _defaultSeasonForCompetition(leagueId).seasonId;
-
-    selectedLeagueId = leagueId;
-    selectedSeasonId = seasonId;
+    selectedLeagueId = _teamSeasons.first.competitionId;
+    selectedSeasonId = _teamSeasons.first.seasonId;
     _selectedView = _defaultView;
   }
 
   bool _applyRequestedCompetition(int? competitionId) {
-    if (competitionId == null || !_validLeagueIds.contains(competitionId)) {
-      return false;
-    }
-    final seasons = _seasonOptionsForCompetition(competitionId);
+    final seasons =
+        _teamSeasons.where((season) => season.competitionId == competitionId);
     if (seasons.isEmpty) return false;
 
-    final season = _defaultSeasonForCompetition(competitionId);
-    selectedLeagueId = competitionId;
+    final season = seasons.where((season) => season.isCurrent).firstOrNull ??
+        seasons.first;
+    selectedLeagueId = season.competitionId;
     selectedSeasonId = season.seasonId;
     _selectedView = _defaultView;
     return true;
   }
 
   void _selectOverviewCompetition(int competitionId) {
-    if (!_validLeagueIds.contains(competitionId) ||
-        _seasonOptionsForCompetition(competitionId).isEmpty) {
-      return;
-    }
-
-    setState(() => _applyRequestedCompetition(competitionId));
+    if (!_applyRequestedCompetition(competitionId)) return;
     _resetXgState();
     _startStandingLoad();
+  }
+
+  void _selectSeason(Season season) {
+    final previousView = _selectedView;
+    setState(() {
+      selectedLeagueId = season.competitionId;
+      selectedSeasonId = season.seasonId;
+      _selectedView = _viewAfterSelectionChange(previousView);
+    });
+    if (_selectedView == StandingView.xgTable && _xgAvailable) {
+      _startXgLoad();
+    } else {
+      _resetXgState();
+    }
+    _startStandingLoad();
+  }
+
+  Iterable<Season> get _selectedYearSeasons {
+    final selected = _teamSeasons
+        .firstWhere((season) => season.seasonId == selectedSeasonId);
+    // 같은 연도도 대회마다 시즌 ID가 달라서 공통 시즌 표기로 묶어요.
+    final label = compactSeasonLabel(selected.name);
+    return _teamSeasons
+        .where((season) => compactSeasonLabel(season.name) == label);
+  }
+
+  List<Season> get _seasonOptions {
+    final options = <String, Season>{};
+    for (final season in _teamSeasons) {
+      final label = compactSeasonLabel(season.name);
+      // 선택한 대회의 참가 이력이 없으면 그 시즌의 국내 리그를 먼저 열어요.
+      if (!options.containsKey(label) ||
+          season.competitionId == selectedLeagueId) {
+        options[label] = season;
+      }
+    }
+    return options.values.toList();
   }
 
   @override
@@ -621,11 +657,10 @@ class _StandingTabState extends State<StandingTab> {
   Widget _buildLeagueDropdown() {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
-    final availableLeagues = _validLeagueIds.isNotEmpty
-        ? competitionRepository.allCompetitions
-            .where((l) => _validLeagueIds.contains(l.competitionId))
-            .toList()
-        : competitionRepository.allCompetitions;
+    final leagueIds =
+        _selectedYearSeasons.map((season) => season.competitionId).toSet();
+    final availableLeagues = competitionRepository.allCompetitions
+        .where((league) => leagueIds.contains(league.competitionId));
 
     return AppDropdown<int>(
       key: const ValueKey('standing-league-filter-shell'),
@@ -641,19 +676,8 @@ class _StandingTabState extends State<StandingTab> {
       foregroundColor: colors.onSurface,
       textStyle: Body2_b.style,
       onChanged: (val) {
-        final season = _defaultSeasonForCompetition(val);
-        final previousView = _selectedView;
-        setState(() {
-          selectedLeagueId = val;
-          selectedSeasonId = season.seasonId;
-          _selectedView = _viewAfterSelectionChange(previousView);
-        });
-        if (_selectedView == StandingView.xgTable && _xgAvailable) {
-          _startXgLoad();
-        } else {
-          _resetXgState();
-        }
-        _startStandingLoad();
+        _selectSeason(_selectedYearSeasons
+            .firstWhere((season) => season.competitionId == val));
       },
       options: availableLeagues
           .map(
@@ -677,7 +701,7 @@ class _StandingTabState extends State<StandingTab> {
   Widget _buildSeasonDropdown() {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
-    final seasons = _seasonOptionsForCompetition(selectedLeagueId);
+    final seasons = _seasonOptions;
 
     return AppDropdown<int>(
       key: const ValueKey('standing-season-filter-shell'),
@@ -689,17 +713,7 @@ class _StandingTabState extends State<StandingTab> {
       foregroundColor: colors.onSurface,
       textStyle: Body2_b.style,
       onChanged: (val) {
-        final previousView = _selectedView;
-        setState(() {
-          selectedSeasonId = val;
-          _selectedView = _viewAfterSelectionChange(previousView);
-        });
-        if (_selectedView == StandingView.xgTable) {
-          _startXgLoad();
-        } else {
-          _resetXgState();
-        }
-        _startStandingLoad();
+        _selectSeason(seasons.firstWhere((season) => season.seasonId == val));
       },
       options: seasons
           .map(
@@ -711,37 +725,4 @@ class _StandingTabState extends State<StandingTab> {
           .toList(),
     );
   }
-
-  _StandingSeasonOption _defaultSeasonForCompetition(int competitionId) {
-    final catalogCurrent =
-        seasonRepository.currentForCompetition(competitionId);
-    if (catalogCurrent != null) {
-      return _StandingSeasonOption(
-          catalogCurrent.seasonId, catalogCurrent.name);
-    }
-
-    final options = _seasonOptionsForCompetition(competitionId);
-    if (options.isNotEmpty) return options.first;
-
-    throw StateError('No seasons for competition $competitionId');
-  }
-
-  List<_StandingSeasonOption> _seasonOptionsForCompetition(int competitionId) {
-    final options = <_StandingSeasonOption>[
-      ...seasonRepository.forCompetition(competitionId).map(
-            (season) => _StandingSeasonOption(season.seasonId, season.name),
-          ),
-    ];
-    final seen = <int>{};
-    return List.unmodifiable(
-      options.where((option) => seen.add(option.seasonId)),
-    );
-  }
-}
-
-class _StandingSeasonOption {
-  const _StandingSeasonOption(this.seasonId, this.name);
-
-  final int seasonId;
-  final String name;
 }

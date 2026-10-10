@@ -17,6 +17,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/models/season.dart';
 import 'package:onetouch/models/team_overview.dart';
+import 'package:onetouch/models/team_season_membership.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/standing.dart';
 
 void main() {
@@ -100,6 +101,82 @@ void main() {
 
     expect(find.text('Fresh United'), findsOneWidget);
     expect(find.text('Cached United'), findsNothing);
+  });
+
+  testWidgets('shows only the team competitions for each selected season',
+      (tester) async {
+    _setSeasonParticipation();
+    final repository = _successfulStandingRepository();
+    await tester.pumpWidget(_app(repository));
+    await tester.pump();
+
+    expect(
+        _leagueFilter(tester).options.map((option) => option.value), [8, 24]);
+    expect(_seasonFilter(tester).options.map((option) => option.label),
+        ['26/27', '25/26', '24/25']);
+
+    _seasonFilter(tester).onChanged(25583);
+    await tester.pump();
+    expect(_leagueFilter(tester).options.map((option) => option.value),
+        [8, 2, 24]);
+
+    _leagueFilter(tester).onChanged(24);
+    await tester.pump();
+    expect(_seasonFilter(tester).value, 25024);
+    expect(repository.requests.last, (competitionId: 24, seasonId: 25024));
+
+    _seasonFilter(tester).onChanged(23614);
+    await tester.pump();
+    expect(_leagueFilter(tester).options.map((option) => option.value), [8, 5]);
+    expect(_leagueFilter(tester).value, 8);
+    expect(repository.requests.last, (competitionId: 8, seasonId: 23614));
+
+    _leagueFilter(tester).onChanged(5);
+    await tester.pump();
+    expect(_seasonFilter(tester).value, 24005);
+    expect(repository.requests.last, (competitionId: 5, seasonId: 24005));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps all team seasons accessible from a European competition',
+      (tester) async {
+    _setSeasonParticipation();
+    final repository = _successfulStandingRepository();
+    await tester.pumpWidget(_app(repository, requestedCompetitionId: 2));
+    await tester.pump();
+
+    expect(_seasonFilter(tester).value, 25580);
+    expect(_seasonFilter(tester).options.map((option) => option.label),
+        ['26/27', '25/26', '24/25']);
+    await tester.tap(find.byKey(const ValueKey('standing-view-bracket')));
+    await tester.pump();
+
+    _seasonFilter(tester).onChanged(28083);
+    await tester.pump();
+    expect(_leagueFilter(tester).value, 8);
+    expect(
+        _leagueFilter(tester).options.map((option) => option.value), [8, 24]);
+    expect(repository.requests.last, (competitionId: 8, seasonId: 28083));
+    expect(find.byType(ApiKnockoutBracket), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('starts at the latest season the team actually participated in',
+      (tester) async {
+    _setSeasonParticipation();
+    footballCatalog.memberships = footballCatalog.memberships
+        .where((membership) => ![28083, 26024].contains(membership.seasonId))
+        .toList();
+    final repository = _successfulStandingRepository();
+    await tester.pumpWidget(_app(repository));
+    await tester.pump();
+
+    expect(repository.requests, [(competitionId: 8, seasonId: 25583)]);
+    expect(_seasonFilter(tester).options.map((option) => option.label),
+        ['25/26', '24/25']);
+    expect(_leagueFilter(tester).options.map((option) => option.value),
+        [8, 2, 24]);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('applies xG standing cache publications', (tester) async {
@@ -762,7 +839,11 @@ void main() {
   testWidgets('opens the 2017 UCL bracket and excludes earlier seasons',
       (tester) async {
     final originalSeasons = footballCatalog.seasons.value;
-    addTearDown(() => footballCatalog.seasons.value = originalSeasons);
+    final originalMemberships = footballCatalog.memberships;
+    addTearDown(() {
+      footballCatalog.seasons.value = originalSeasons;
+      footballCatalog.memberships = originalMemberships;
+    });
     footballCatalog.seasons.value = [
       ...originalSeasons,
       const Season(
@@ -772,6 +853,11 @@ void main() {
           isCurrent: false),
       const Season(
           seasonId: 1, competitionId: 2, name: '2016/2017', isCurrent: false),
+    ];
+    footballCatalog.memberships = [
+      ...originalMemberships,
+      const TeamSeasonMembership(teamId: 9, seasonId: 7907, competitionId: 2),
+      const TeamSeasonMembership(teamId: 9, seasonId: 1, competitionId: 2),
     ];
     await tester.pumpWidget(
         _app(_successfulStandingRepository(), requestedCompetitionId: 2));
@@ -828,6 +914,56 @@ void main() {
     );
     expect(find.byKey(const ValueKey('standing-filter-row')), findsNothing);
   });
+}
+
+AppDropdown<int> _leagueFilter(WidgetTester tester) =>
+    tester.widget<AppDropdown<int>>(
+      find.byKey(const ValueKey('standing-league-filter-shell')),
+    );
+
+AppDropdown<int> _seasonFilter(WidgetTester tester) =>
+    tester.widget<AppDropdown<int>>(
+      find.byKey(const ValueKey('standing-season-filter-shell')),
+    );
+
+void _setSeasonParticipation() {
+  final originalSeasons = footballCatalog.seasons.value;
+  final originalMemberships = footballCatalog.memberships;
+  addTearDown(() {
+    footballCatalog.seasons.value = originalSeasons;
+    footballCatalog.memberships = originalMemberships;
+  });
+  // 테스트용 참가 이력은 연도별로 달라요. 현재 시즌 표시만으로 참가를 정하지 않아요.
+  footballCatalog.seasons.value = const [
+    Season(
+        seasonId: 28083, competitionId: 8, name: '2026/2027', isCurrent: true),
+    Season(
+        seasonId: 25583, competitionId: 8, name: '2025/2026', isCurrent: false),
+    Season(
+        seasonId: 23614, competitionId: 8, name: '2024/2025', isCurrent: false),
+    Season(
+        seasonId: 26002, competitionId: 2, name: '2026/2027', isCurrent: true),
+    Season(
+        seasonId: 25580, competitionId: 2, name: '2025/26', isCurrent: false),
+    Season(
+        seasonId: 26005, competitionId: 5, name: '2026/2027', isCurrent: true),
+    Season(
+        seasonId: 24005, competitionId: 5, name: '2024/25', isCurrent: false),
+    Season(
+        seasonId: 26024, competitionId: 24, name: '2026/2027', isCurrent: true),
+    Season(
+        seasonId: 25024, competitionId: 24, name: '2025/26', isCurrent: false),
+  ];
+  footballCatalog.memberships = const [
+    TeamSeasonMembership(teamId: 9, seasonId: 28083, competitionId: 8),
+    TeamSeasonMembership(teamId: 9, seasonId: 25583, competitionId: 8),
+    TeamSeasonMembership(teamId: 9, seasonId: 23614, competitionId: 8),
+    TeamSeasonMembership(teamId: 9, seasonId: 25580, competitionId: 2),
+    TeamSeasonMembership(teamId: 9, seasonId: 24005, competitionId: 5),
+    TeamSeasonMembership(teamId: 9, seasonId: 26024, competitionId: 24),
+    TeamSeasonMembership(teamId: 9, seasonId: 25024, competitionId: 24),
+    TeamSeasonMembership(teamId: 19, seasonId: 26002, competitionId: 2),
+  ];
 }
 
 Widget _app(
