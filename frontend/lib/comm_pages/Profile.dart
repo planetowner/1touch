@@ -6,6 +6,7 @@ import "package:flutter/material.dart";
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/core/app_action_section_header.dart';
 import 'package:onetouch/core/app_confirmation_dialog.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -332,54 +333,44 @@ class _ProfileState extends State<Profile> {
                   // FOLLOWING TEAMS
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            trUpper(context, "Following Teams"),
-                            style: Body2_b.style,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    child: AppActionSectionHeader(
+                      title: Text(
+                        trUpper(context, "Following Teams"),
+                        style: Body2_b.style,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      icon: Icons.border_color,
+                      onPressed: () async {
+                        final result = await showModalBottomSheet<
+                            FollowingTeamsEditResult>(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => EditFollowingTeamsSheet(
+                            repository: _followingTeamsRepository,
+                            initialTeams: _followingTeams,
+                            initialFavoriteTeamId: _favoriteTeamId!,
                           ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.border_color,
-                              color: colors.onSurface, size: 20),
-                          onPressed: () async {
-                            final result = await showModalBottomSheet<
-                                FollowingTeamsEditResult>(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) => EditFollowingTeamsSheet(
-                                repository: _followingTeamsRepository,
-                                initialTeams: _followingTeams,
-                                initialFavoriteTeamId: _favoriteTeamId!,
-                              ),
-                            );
-                            if (!mounted || result == null) return;
-                            final supportedTeams = result.teams
-                                .where((team) =>
-                                    teamPageEligibility.supports(team.teamId))
-                                .toList(growable: false);
-                            if (!supportedTeams.any((team) =>
-                                team.teamId == result.favoriteTeamId)) {
-                              await _loadProfile();
-                              return;
-                            }
-                            setState(() {
-                              _followingTeams = supportedTeams;
-                              _favoriteTeamId = result.favoriteTeamId;
-                            });
-                            await _loadActivityCounts();
-                          },
-                        ),
-                      ],
+                        );
+                        if (!mounted || result == null) return;
+                        final supportedTeams = result.teams
+                            .where((team) =>
+                                teamPageEligibility.supports(team.teamId))
+                            .toList(growable: false);
+                        if (!supportedTeams.any(
+                            (team) => team.teamId == result.favoriteTeamId)) {
+                          await _loadProfile();
+                          return;
+                        }
+                        setState(() {
+                          _followingTeams = supportedTeams;
+                          _favoriteTeamId = result.favoriteTeamId;
+                        });
+                        await _loadActivityCounts();
+                      },
                     ),
                   ),
-                  const SizedBox(height: 16),
                   _buildTeamList(),
                   const SizedBox(height: 48),
 

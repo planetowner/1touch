@@ -77,30 +77,19 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
           children: [
             Padding(
               padding: _contentPadding,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      trUpper(context, widget.title),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Body2_b.style,
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: tr(context, 'Edit favorites'),
-                    onPressed:
-                        controller.loading || !controller.loaded ? null : _edit,
-                    icon: Icon(
-                      Icons.border_color,
-                      size: 24,
-                      color: colors.onSurface,
-                    ),
-                  ),
-                ],
+              child: AppActionSectionHeader(
+                title: Text(
+                  trUpper(context, widget.title),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Body2_b.style,
+                ),
+                icon: Icons.border_color,
+                tooltip: tr(context, 'Edit favorites'),
+                onPressed:
+                    controller.loading || !controller.loaded ? null : _edit,
               ),
             ),
-            const SizedBox(height: 16),
             if (controller.error != null && controller.loaded)
               Padding(
                 padding: _contentPadding,

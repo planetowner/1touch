@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// 팀·선수 편집과 필터처럼 제목 옆에 있는 동작 버튼의 크기와 간격을 함께 관리해요.
 class AppActionSectionHeader extends StatelessWidget {
   const AppActionSectionHeader({
     super.key,
