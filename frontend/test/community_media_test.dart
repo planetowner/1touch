@@ -5,6 +5,7 @@ import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/api_image_headers.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
+import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
@@ -76,9 +77,11 @@ void main() {
       ));
 
       final paragraph = tester.renderObject<RenderParagraph>(
-        find.descendant(of: find.text(body), matching: find.byType(RichText)),
+        find.descendant(
+            of: find.byType(CommunityLinkedText),
+            matching: find.byType(RichText)),
       );
-      final urlStart = body.indexOf('https://');
+      final urlStart = paragraph.text.toPlainText().indexOf('https://');
       final linkBounds = paragraph
           .getBoxesForSelection(
             TextSelection(baseOffset: urlStart, extentOffset: urlStart + 5),

@@ -15,6 +15,9 @@ abstract interface class PostCommentRepository {
     int? replyToId,
   });
 
+  Future<void> setCommentLiked({required int commentId, required bool liked});
+  Future<void> reportComment({required int commentId, required String reason});
+
   Future<void> deleteComment({required int commentId});
 
   Future<void> updateComment({required int commentId, required String body});

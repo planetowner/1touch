@@ -4,7 +4,7 @@
 enum PostCategory {
   general('General'),
   analysis('Analysis'),
-  news('News & Insights'),
+  news('News & Info'),
   fanart('Fan Art');
 
   const PostCategory(this.label);
@@ -24,6 +24,8 @@ class PostAttachment {
   final String? contentType;
   final int? byteSize;
 
+  bool get isVideo => contentType?.startsWith('video/') ?? false;
+
   const PostAttachment({
     required this.attachmentId,
     required this.position,
@@ -35,7 +37,11 @@ class PostAttachment {
   });
 }
 
+enum PostState { active, deleted }
+
 class Post {
+  final PostState state;
+  bool get isDeleted => state == PostState.deleted;
   final int postId;
   final int teamId;
   final String language;
@@ -59,9 +65,20 @@ class Post {
       .where((attachment) => attachment.mediaUrl == mediaUrl)
       .firstOrNull;
 
+  List<PostAttachment> get mediaAttachments {
+    final media = attachments.where((item) => item.mediaUrl != null).toList();
+    // 기존 캐시와 직접 전달된 게시글도 같은 첨부 UI를 사용해요.
+    if (media.isEmpty && mediaUrl != null) {
+      media.add(
+          PostAttachment(attachmentId: 0, position: 0, mediaUrl: mediaUrl));
+    }
+    return media;
+  }
+
   String? get mediaPreviewUrl => mediaAttachment?.previewUrl;
 
   const Post({
+    this.state = PostState.active,
     required this.postId,
     required this.teamId,
     required this.language,
@@ -83,6 +100,7 @@ class Post {
   });
 
   Post copyWith({
+    PostState? state,
     PostCategory? category,
     String? title,
     String? body,
@@ -90,6 +108,7 @@ class Post {
     List<PostAttachment>? attachments,
   }) =>
       Post(
+        state: state ?? this.state,
         postId: postId,
         teamId: teamId,
         language: language,
@@ -116,6 +135,7 @@ class Post {
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
+      state: json['state'] == 'deleted' ? PostState.deleted : PostState.active,
       postId: json['post_id'] as int,
       teamId: json['team_id'] as int,
       language: json['language'] as String,

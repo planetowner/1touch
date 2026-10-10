@@ -1,7 +1,8 @@
-import 'package:onetouch/l10n/date_labels.dart';
+import 'package:onetouch/features/community/community_ui.dart';
+import 'package:onetouch/features/community/community_media.dart';
+import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
-import 'package:onetouch/core/api_image_headers.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:onetouch/core/style.dart';
@@ -10,8 +11,6 @@ import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
-import 'package:onetouch/features/community/community_attachment_viewer.dart';
-import 'package:onetouch/features/community/community_post_image.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/features/community/community_delete_dialog.dart';
 import 'package:onetouch/features/community/community_post_share_link.dart';
@@ -46,6 +45,8 @@ class PostDetailContent extends StatelessWidget {
     this.onEditComment,
     this.onDeleteComment,
     this.shareInvoker,
+    this.onLikeComment,
+    this.onReportComment,
   });
 
   final Post post;
@@ -69,6 +70,8 @@ class PostDetailContent extends StatelessWidget {
   final VoidCallback? onDeletePost;
   final ValueChanged<PostComment>? onEditComment;
   final ValueChanged<PostComment>? onDeleteComment;
+  final ValueChanged<PostComment>? onLikeComment;
+  final Future<void> Function(PostComment, String)? onReportComment;
   final Future<ShareResult> Function(ShareParams params)? shareInvoker;
 
   Future<void> _sharePost(BuildContext context) async {
@@ -103,8 +106,8 @@ class PostDetailContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final hasMedia = showMedia && post.mediaUrl != null;
+    final hasMedia =
+        showMedia && !post.isDeleted && post.mediaAttachments.isNotEmpty;
     final showMediaStatus = showMedia &&
         post.attachments.isNotEmpty &&
         (mediaLoading || mediaLoadFailed);
@@ -114,41 +117,10 @@ class PostDetailContent extends StatelessWidget {
         [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: GestureDetector(
-              onTap: () => showGroundRulesModal(
-                context,
-                teamId: post.teamId,
-                repository: communityRepository,
-              ),
-              child: Container(
-                key: const ValueKey('community-detail-ground-rules-card'),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark ? AppPalette.lightGrey : AppPalette.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.push_pin_outlined,
-                      color: colors.onSurface,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        tr(context, 'Community Ground Rules'),
-                        style: Heading5.style.copyWith(color: colors.onSurface),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            child: CommunityGroundRulesCard(
+              cardKey: const ValueKey('community-detail-ground-rules-card'),
+              onTap: () => showGroundRulesModal(context,
+                  teamId: post.teamId, repository: communityRepository),
             ),
           ),
           const SizedBox(height: 24),
@@ -157,73 +129,55 @@ class PostDetailContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      key: ValueKey('community-post-avatar-${post.postId}'),
-                      radius: 12,
-                      backgroundColor:
-                          isDark ? Colors.white24 : AppPalette.lightGrey,
-                      backgroundImage: post.avatarUrl == null
-                          ? null
-                          : communityImageProvider(post.avatarUrl!),
-                      onBackgroundImageError:
-                          post.avatarUrl == null ? null : (_, __) {},
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            communityAuthorLabel(
-                              locale: Localizations.localeOf(context),
-                              username: post.username,
-                              displayName: post.displayName,
-                              authorDeleted: post.authorDeleted,
-                            ),
-                            style: Body1.style,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            communityPostTimeLabel(
-                              createdAt: post.createdAt,
-                              editedAt: post.editedAt,
-                              locale: Localizations.localeOf(context),
-                            ),
-                            style: Body2.style.copyWith(
-                              color: appColors.mutedForeground,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (currentUserId != null && post.userId == currentUserId)
-                      CommunityAuthorMenu(
-                        key: const ValueKey('community-post-delete-menu'),
-                        onEdit: onEditPost,
-                        onDelete: onDeletePost,
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(post.title, style: Body1_b.style),
+                Builder(
+                    builder: (headerContext) => CommunityAuthorHeader(
+                        userId: post.userId,
+                        username: post.username,
+                        displayName: post.displayName,
+                        avatarUrl: post.avatarUrl,
+                        authorDeleted: post.authorDeleted,
+                        createdAt: post.createdAt,
+                        editedAt: post.editedAt,
+                        avatarKey:
+                            ValueKey('community-post-avatar-${post.postId}'),
+                        trailing: !post.isDeleted &&
+                                currentUserId != null &&
+                                post.userId == currentUserId
+                            ? CommunityAuthorMenu(
+                                key: const ValueKey(
+                                    'community-post-delete-menu'),
+                                boundaryContext: headerContext,
+                                onEdit: onEditPost,
+                                onDelete: onDeletePost)
+                            : null)),
                 const SizedBox(height: 12),
-                CommunityLinkedText(text: post.body, style: Body2.style),
-                const SizedBox(height: 16),
+                if (post.isDeleted)
+                  Text(tr(context, 'This post was deleted.'),
+                      style: CommunityText.body(context)
+                          .copyWith(color: appColors.mutedForeground))
+                else ...[
+                  Text(post.title, style: CommunityText.title(context)),
+                  const SizedBox(height: 8),
+                  CommunityLinkedText(
+                      text: post.body,
+                      showLinkIcons: true,
+                      style: CommunityText.body(context)),
+                  for (final attachment
+                      in post.attachments.where((a) => a.linkUrl != null))
+                    CommunityLinkedText(
+                        text: attachment.linkUrl!,
+                        showLinkIcons: true,
+                        style: CommunityText.body(context)),
+                ],
+                const SizedBox(height: 28),
                 if (showMediaStatus)
                   _PostMediaStatus(
                     isLoading: mediaLoading,
                     onRetry: onRetryMedia,
                   )
                 else if (hasMedia)
-                  _PostMediaPreview(
-                    mediaUrl: post.mediaUrl!,
-                    previewUrl: post.mediaPreviewUrl,
-                  ),
-                if (showMediaStatus || hasMedia) const SizedBox(height: 16),
-                const SizedBox(height: 16),
+                  CommunityMediaGrid(attachments: post.mediaAttachments),
+                if (showMediaStatus || hasMedia) const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -231,9 +185,8 @@ class PostDetailContent extends StatelessWidget {
                       actionKey: const ValueKey(
                         'community-detail-like-action',
                       ),
-                      icon: liked
-                          ? Icons.thumb_up_alt
-                          : Icons.thumb_up_alt_outlined,
+                      icon: 'like',
+                      selected: liked,
                       label: formatCommunityEngagementCount(likeCount),
                       labelKey: const ValueKey(
                         'community-detail-like-count',
@@ -242,7 +195,7 @@ class PostDetailContent extends StatelessWidget {
                       onTap: onLike,
                     ),
                     _PostAction(
-                      icon: Icons.mode_comment_outlined,
+                      icon: 'comment',
                       label: formatCommunityEngagementCount(
                         commentCount,
                       ),
@@ -256,15 +209,15 @@ class PostDetailContent extends StatelessWidget {
                         actionKey: const ValueKey(
                           'community-detail-share-action',
                         ),
-                        icon: Icons.share,
-                        label: 'share',
+                        icon: 'share',
+                        label: 'Share',
                         color: colors.onSurface,
                         onTap: () => _sharePost(shareContext),
                       ),
                     ),
                     _PostAction(
-                      icon: Icons.report_gmailerrorred_outlined,
-                      label: 'report',
+                      icon: 'report',
+                      label: 'Report',
                       color: colors.onSurface,
                       onTap: onReport == null
                           ? null
@@ -278,7 +231,7 @@ class PostDetailContent extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 48),
           _PostComments(
             comments: comments,
             isLoading: commentsLoading,
@@ -288,6 +241,8 @@ class PostDetailContent extends StatelessWidget {
             currentUserId: currentUserId,
             onEditComment: onEditComment,
             onDeleteComment: onDeleteComment,
+            onLikeComment: onLikeComment,
+            onReportComment: onReportComment,
           ),
           const SizedBox(height: 64),
         ],
@@ -383,108 +338,117 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
 
     return Container(
       color: isDark ? AppPalette.darkGrey : AppPalette.white,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (widget.replyTarget != null || widget.editingTarget != null) ...[
+      padding: const EdgeInsets.all(12),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.replyTarget != null || widget.editingTarget != null) ...[
+              Row(
+                key: const ValueKey('community-reply-target'),
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.editingTarget != null
+                          ? tr(context, 'Edit comment')
+                          : tr(context, 'Replying to {name}', {
+                              'name': _commentAuthorLabel(
+                                  context, widget.replyTarget!)
+                            }),
+                      style: Body2.style.copyWith(
+                        color: appColors.mutedForeground,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  GestureDetector(
+                    key: const ValueKey('community-reply-cancel'),
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _isSubmitting
+                        ? null
+                        : widget.editingTarget != null
+                            ? widget.onCancelEdit
+                            : widget.onCancelReply,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.close,
+                        size: 18,
+                        color: colors.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
             Row(
-              key: const ValueKey('community-reply-target'),
               children: [
                 Expanded(
-                  child: Text(
-                    widget.editingTarget != null
-                        ? tr(context, 'Edit comment')
-                        : tr(context, 'Replying to {name}', {
-                            'name': _commentAuthorLabel(
-                                context, widget.replyTarget!)
-                          }),
-                    style: Body2.style.copyWith(
-                      color: appColors.mutedForeground,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppPalette.lightGrey
+                          : appColors.subtleBackground,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    child: TextField(
+                      key: const ValueKey('community-comment-input'),
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      readOnly: _isSubmitting,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(
+                          maxPostCommentBodyLength,
+                        ),
+                      ],
+                      textInputAction: TextInputAction.send,
+                      onChanged: (_) => setState(() {}),
+                      onSubmitted: (_) => _submit(),
+                      decoration: InputDecoration(
+                        hintText: widget.editingTarget != null
+                            ? tr(context, 'Edit comment')
+                            : widget.replyTarget == null
+                                ? tr(context, 'Write a comment...')
+                                : tr(context, 'Write a reply...'),
+                        isDense: true,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
+                        hintStyle: CommunityText.body(context)
+                            .copyWith(color: appColors.mutedForeground),
+                        border: InputBorder.none,
+                        filled: false,
+                      ),
+                      style: CommunityText.body(context)
+                          .copyWith(color: colors.onSurface),
+                      cursorColor: colors.onSurface,
+                    ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 GestureDetector(
-                  key: const ValueKey('community-reply-cancel'),
+                  key: const ValueKey('community-comment-send'),
                   behavior: HitTestBehavior.opaque,
-                  onTap: _isSubmitting
-                      ? null
-                      : widget.editingTarget != null
-                          ? widget.onCancelEdit
-                          : widget.onCancelReply,
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      Icons.close,
-                      size: 18,
-                      color: colors.onSurface,
-                    ),
+                  onTap: _canSubmit ? _submit : null,
+                  child: SizedBox(
+                    width: 43,
+                    height: 43,
+                    child: _isSubmitting
+                        ? const CircularProgressIndicator(
+                            key: ValueKey('community-comment-submitting'),
+                            strokeWidth: 2,
+                          )
+                        : const CommunityIcon('send',
+                            size: 43, originalColors: true),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
           ],
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppPalette.lightGrey
-                        : appColors.subtleBackground,
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: TextField(
-                    key: const ValueKey('community-comment-input'),
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    readOnly: _isSubmitting,
-                    inputFormatters: [
-                      LengthLimitingTextInputFormatter(
-                        maxPostCommentBodyLength,
-                      ),
-                    ],
-                    textInputAction: TextInputAction.send,
-                    onChanged: (_) => setState(() {}),
-                    onSubmitted: (_) => _submit(),
-                    decoration: InputDecoration(
-                      hintText: widget.editingTarget != null
-                          ? tr(context, 'Edit comment')
-                          : widget.replyTarget == null
-                              ? tr(context, 'Write a comment...')
-                              : tr(context, 'Write a reply...'),
-                      hintStyle: TextStyle(color: appColors.mutedForeground),
-                      border: InputBorder.none,
-                      filled: false,
-                    ),
-                    style: TextStyle(color: colors.onSurface),
-                    cursorColor: colors.onSurface,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                key: const ValueKey('community-comment-send'),
-                behavior: HitTestBehavior.opaque,
-                onTap: _canSubmit ? _submit : null,
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: _isSubmitting
-                      ? const CircularProgressIndicator(
-                          key: ValueKey('community-comment-submitting'),
-                          strokeWidth: 2,
-                        )
-                      : const Icon(Icons.send, color: Colors.blueAccent),
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -495,12 +459,14 @@ class _PostAction extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.color,
+    this.selected = false,
     this.actionKey,
     this.labelKey,
     this.onTap,
   });
 
-  final IconData icon;
+  final String icon;
+  final bool selected;
   final String label;
   final Color color;
   final Key? actionKey;
@@ -515,15 +481,19 @@ class _PostAction extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
+          padding: EdgeInsets.zero,
           child: FittedBox(
+            alignment: Alignment.centerLeft,
             fit: BoxFit.scaleDown,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 18, color: color),
+                CommunityIcon(icon,
+                    size: icon == 'comment' ? 20 : 24,
+                    color: selected ? const Color(0xFF5C92FF) : color),
                 const SizedBox(width: 4),
-                Text(tr(context, label), key: labelKey, style: Body2.style),
+                Text(tr(context, label),
+                    key: labelKey, style: CommunityText.body(context)),
               ],
             ),
           ),
@@ -579,38 +549,6 @@ class _PostMediaStatus extends StatelessWidget {
   }
 }
 
-class _PostMediaPreview extends StatelessWidget {
-  const _PostMediaPreview({required this.mediaUrl, this.previewUrl});
-
-  final String mediaUrl;
-  final String? previewUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      key: const ValueKey('community-detail-media-open'),
-      behavior: HitTestBehavior.opaque,
-      onTap: () => showCommunityAttachmentViewer(
-        context,
-        mediaUrl: mediaUrl,
-        previewUrl: previewUrl,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: AspectRatio(
-          aspectRatio: 16 / 9,
-          child: CommunityPostImage(
-            mediaUrl: mediaUrl,
-            previewUrl: previewUrl,
-            prepareOriginal: true,
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _PostComments extends StatelessWidget {
   const _PostComments({
     required this.comments,
@@ -621,6 +559,8 @@ class _PostComments extends StatelessWidget {
     required this.currentUserId,
     required this.onEditComment,
     required this.onDeleteComment,
+    required this.onLikeComment,
+    required this.onReportComment,
   });
 
   final List<PostComment> comments;
@@ -631,6 +571,8 @@ class _PostComments extends StatelessWidget {
   final int? currentUserId;
   final ValueChanged<PostComment>? onEditComment;
   final ValueChanged<PostComment>? onDeleteComment;
+  final ValueChanged<PostComment>? onLikeComment;
+  final Future<void> Function(PostComment, String)? onReportComment;
 
   @override
   Widget build(BuildContext context) {
@@ -683,18 +625,23 @@ class _PostComments extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: comments
-            .map(
-              (comment) => _PostCommentRow(
-                comment: comment,
-                isDark: isDark,
-                onReply: onReply,
-                currentUserId: currentUserId,
-                onEditComment: onEditComment,
-                onDeleteComment: onDeleteComment,
-              ),
-            )
-            .toList(growable: false),
+        children: [
+          for (var index = 0; index < comments.length; index++) ...[
+            // 댓글 묶음은 48, 같은 묶음의 답글은 24만큼 띄워요.
+            if (index > 0)
+              SizedBox(height: comments[index].replyToId == null ? 48 : 24),
+            _PostCommentRow(
+              comment: comments[index],
+              isDark: isDark,
+              onReply: onReply,
+              currentUserId: currentUserId,
+              onEditComment: onEditComment,
+              onDeleteComment: onDeleteComment,
+              onLikeComment: onLikeComment,
+              onReportComment: onReportComment,
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -708,6 +655,8 @@ class _PostCommentRow extends StatelessWidget {
     required this.currentUserId,
     required this.onEditComment,
     required this.onDeleteComment,
+    required this.onLikeComment,
+    required this.onReportComment,
   });
 
   final PostComment comment;
@@ -716,94 +665,112 @@ class _PostCommentRow extends StatelessWidget {
   final int? currentUserId;
   final ValueChanged<PostComment>? onEditComment;
   final ValueChanged<PostComment>? onDeleteComment;
+  final ValueChanged<PostComment>? onLikeComment;
+  final Future<void> Function(PostComment, String)? onReportComment;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final avatarUrl = comment.avatarUrl;
-
+    final active = comment.state == PostCommentState.active;
+    final own = currentUserId != null && comment.userId == currentUserId;
+    final reply = comment.replyToId != null;
     return Padding(
-      padding: EdgeInsets.only(
-        left: comment.replyToId == null ? 0 : 24,
-        bottom: 16,
-      ),
-      child: Row(
-        key: ValueKey('community-comment-${comment.commentId}'),
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            key: ValueKey('community-comment-avatar-${comment.commentId}'),
-            radius: 12,
-            backgroundColor: isDark ? Colors.white24 : AppPalette.lightGrey,
-            backgroundImage: avatarUrl == null
-                ? null
-                : NetworkImage(
-                    avatarUrl,
-                    headers: apiImageHeaders(avatarUrl),
-                  ),
-            onBackgroundImageError: avatarUrl == null ? null : (_, __) {},
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
+      padding: EdgeInsets.zero,
+      child: CommunityReplyIndent(
+          enabled: reply,
+          child: Column(
+              key: ValueKey('community-comment-${comment.commentId}'),
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_commentAuthorLabel(context, comment),
-                    style: Body2_b.style),
-                Text(_commentBodyLabel(context, comment), style: Body2.style),
-                if (comment.state == PostCommentState.active &&
-                    comment.editedAt != null)
-                  Text(
-                    communityPostTimeLabel(
-                      createdAt: comment.createdAt,
-                      editedAt: comment.editedAt,
-                      locale: Localizations.localeOf(context),
-                    ),
-                    style: Body2.style.copyWith(
-                      color: AppColors.of(context).mutedForeground,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          if (comment.state == PostCommentState.active)
-            GestureDetector(
-              key: ValueKey('community-comment-reply-${comment.commentId}'),
-              behavior: HitTestBehavior.opaque,
-              onTap: onReply == null ? null : () => onReply!(comment),
-              child: SizedBox.square(
-                dimension: 40,
-                child: Center(
-                  child: Icon(Icons.reply, size: 18, color: colors.onSurface),
-                ),
-              ),
-            ),
-          if (comment.state == PostCommentState.active &&
-              currentUserId != null &&
-              comment.userId == currentUserId)
-            CommunityAuthorMenu(
-              key: ValueKey('community-comment-delete-${comment.commentId}'),
-              onEdit:
-                  onEditComment == null ? null : () => onEditComment!(comment),
-              onDelete: onDeleteComment == null
-                  ? null
-                  : () => onDeleteComment!(comment),
-            ),
-        ],
-      ),
+                CommunityAuthorHeader(
+                    userId: comment.userId,
+                    username: comment.username,
+                    displayName: comment.state == PostCommentState.hidden ||
+                            comment.state == PostCommentState.blocked
+                        ? _commentAuthorLabel(context, comment)
+                        : comment.displayName,
+                    avatarUrl: comment.avatarUrl,
+                    authorDeleted: comment.state == PostCommentState.hidden ||
+                            comment.state == PostCommentState.blocked
+                        ? false
+                        : comment.authorDeleted,
+                    createdAt: comment.createdAt,
+                    editedAt: comment.editedAt,
+                    avatarKey: ValueKey(
+                        'community-comment-avatar-${comment.commentId}')),
+                const SizedBox(height: 8),
+                Text(_commentBodyLabel(context, comment),
+                    style: CommunityText.body(context).copyWith(
+                        color: active
+                            ? null
+                            : AppColors.of(context).mutedForeground)),
+                if (active || comment.state == PostCommentState.deleted) ...[
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    GestureDetector(
+                        key: active
+                            ? ValueKey(
+                                'community-comment-like-${comment.commentId}')
+                            : null,
+                        behavior: HitTestBehavior.opaque,
+                        onTap: !active || onLikeComment == null
+                            ? null
+                            : () => onLikeComment!(comment),
+                        child: Row(children: [
+                          CommunityIcon('like',
+                              color: comment.liked
+                                  ? const Color(0xFF5C92FF)
+                                  : null),
+                          const SizedBox(width: 4),
+                          Text(
+                              formatCommunityEngagementCount(comment.likeCount),
+                              style: CommunityText.body(context))
+                        ])),
+                    const SizedBox(width: 16),
+                    GestureDetector(
+                        key: active
+                            ? ValueKey(
+                                'community-comment-reply-${comment.commentId}')
+                            : null,
+                        onTap: !active || onReply == null
+                            ? null
+                            : () => onReply!(comment),
+                        child: const CommunityIcon('reply')),
+                    const SizedBox(width: 16),
+                    CommunityAuthorMenu(
+                        key: ValueKey(
+                            'community-comment-${own ? 'delete' : 'menu'}-${comment.commentId}'),
+                        boundaryContext: context,
+                        onEdit: active && own && onEditComment != null
+                            ? () => onEditComment!(comment)
+                            : null,
+                        onDelete: active && own && onDeleteComment != null
+                            ? () => onDeleteComment!(comment)
+                            : null,
+                        onReport: active && !own && onReportComment != null
+                            ? () => showReportDialog(context,
+                                targetLabel: 'comment',
+                                onSubmit: (reason) =>
+                                    onReportComment!(comment, reason))
+                            : null,
+                        onCopy: !active
+                            ? null
+                            : () => Clipboard.setData(
+                                ClipboardData(text: comment.body))),
+                  ]),
+                ],
+              ])),
     );
   }
 }
 
 String _commentAuthorLabel(BuildContext context, PostComment comment) {
   return switch (comment.state) {
-    PostCommentState.active => communityAuthorLabel(
+    PostCommentState.active || PostCommentState.deleted => communityAuthorLabel(
         locale: Localizations.localeOf(context),
         username: comment.username,
         displayName: comment.displayName,
         authorDeleted: comment.authorDeleted,
       ),
-    PostCommentState.deleted => tr(context, 'Deleted comment'),
     PostCommentState.hidden => tr(context, 'Hidden comment'),
     PostCommentState.blocked => tr(context, 'Blocked user'),
   };

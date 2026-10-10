@@ -343,6 +343,13 @@ void main() {
 }
 
 class _ScriptedPostCommentRepository implements PostCommentRepository {
+  @override
+  Future<void> setCommentLiked(
+      {required int commentId, required bool liked}) async {}
+  @override
+  Future<void> reportComment(
+      {required int commentId, required String reason}) async {}
+
   _ScriptedPostCommentRepository(
     this._responses, {
     Future<int> Function(int postId, String body, int? replyToId)? onCreate,

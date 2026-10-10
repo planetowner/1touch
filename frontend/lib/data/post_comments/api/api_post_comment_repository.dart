@@ -68,6 +68,30 @@ class ApiPostCommentRepository implements PostCommentRepository {
   }
 
   @override
+  Future<void> setCommentLiked(
+      {required int commentId, required bool liked}) async {
+    final uri = _api.baseUri.resolve('comments/$commentId/like');
+    final response = liked ? await _api.put(uri) : await _api.delete(uri);
+    if (_api.decodeJson<Map<String, dynamic>>(response)['ok'] != true) {
+      throw const FormatException(
+          'Expected comment like update to return ok=true.');
+    }
+    await _onMutation?.call();
+  }
+
+  @override
+  Future<void> reportComment(
+      {required int commentId, required String reason}) async {
+    final response = await _api.post(
+        _api.baseUri.resolve('comments/$commentId/report'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'reason': reason.trim()}));
+    if (_api.decodeJson<Map<String, dynamic>>(response)['ok'] != true) {
+      throw const FormatException('Expected comment report to return ok=true.');
+    }
+  }
+
+  @override
   Future<void> deleteComment({required int commentId}) async {
     if (commentId < 1) {
       throw RangeError.value(commentId, 'commentId', 'Must be positive');

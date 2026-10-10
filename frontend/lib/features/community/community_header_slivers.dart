@@ -1,10 +1,15 @@
+import 'package:onetouch/features/notifications/unread_notification_bell_icon.dart';
+import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/favorite_team.dart';
+import 'package:onetouch/data/notifications/notification_unread_controller_provider.dart';
+import 'package:onetouch/features/community/community_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:onetouch/core/app_header.dart';
+import 'package:onetouch/core/app_section_tab_bar.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/features/match_info/live_match_motion.dart';
-import 'package:onetouch/features/notifications/unread_notification_bell_icon.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -29,94 +34,15 @@ class CommunitySliverAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = Theme.of(context).colorScheme.onSurface;
-    return SliverAppBar(
-      backgroundColor:
-          scrollingAppBarBackground(context, pageBackground, opacityFactor),
-      foregroundColor: foreground,
-      elevation: 0,
-      floating: true,
-      snap: true,
-      toolbarHeight: 80,
-      centerTitle: false,
-      titleSpacing: 0,
-      flexibleSpace: ColoredBox(color: pageBackground),
-      title: Padding(
-        padding: const EdgeInsets.only(left: 24),
-        child: SvgPicture.asset(
-          key: const ValueKey('community-app-logo'),
-          'assets/app_logo.svg',
-          height: 23,
-          width: 120,
-          colorFilter: ColorFilter.mode(
-            foreground,
-            BlendMode.srcIn,
-          ),
-        ),
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 24),
-          child: Row(
-            children: [
-              IconButton(
-                key: const ValueKey('community-search-button'),
-                onPressed: onSearch,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 32,
-                  height: 32,
-                ),
-                style: IconButton.styleFrom(
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                icon: Icon(
-                  Icons.search,
-                  size: 32,
-                  color: foreground,
-                ),
-              ),
-              const SizedBox(width: 16),
-              IconButton(
-                key: const ValueKey('community-notifications-button'),
-                onPressed: onNotifications,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 32,
-                  height: 32,
-                ),
-                style: IconButton.styleFrom(
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                icon: UnreadNotificationBellIcon(
-                  color: foreground,
-                  hasUnread: hasUnreadNotifications,
-                  badgeKey: const ValueKey('community-notification-badge'),
-                ),
-              ),
-              const SizedBox(width: 16),
-              IconButton(
-                key: const ValueKey('community-activity-button'),
-                onPressed: onActivity,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 32,
-                  height: 32,
-                ),
-                style: IconButton.styleFrom(
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                icon: SvgPicture.asset(
-                  'assets/community_activity.svg',
-                  width: 32,
-                  height: 32,
-                  colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+    return AppBrandSliverHeader(
+      pageBackground: pageBackground,
+      opacityFactor: opacityFactor,
+      logoKey: const ValueKey('community-app-logo'),
+      actions: CommunityHeaderActions(
+          onSearch: onSearch,
+          onNotifications: onNotifications,
+          onActivity: onActivity,
+          hasUnread: hasUnreadNotifications),
     );
   }
 }
@@ -137,7 +63,6 @@ class CommunityTeamHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.light;
     final foreground = Theme.of(context).colorScheme.onSurface;
 
     return SliverToBoxAdapter(
@@ -175,7 +100,7 @@ class CommunityTeamHeader extends StatelessWidget {
                         child: Text(
                           teamNameLabel(context, team.teamId, team.name),
                           key: const ValueKey('community-team-name'),
-                          style: Heading4.style.copyWith(
+                          style: Heading3.style.copyWith(
                             color: foreground,
                           ),
                           maxLines: 1,
@@ -187,28 +112,24 @@ class CommunityTeamHeader extends StatelessWidget {
                         Container(
                           key: const ValueKey('community-live-badge'),
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
+                            horizontal: 6,
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.redAccent,
+                            color: const Color(0xFFFF5C5C),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               LivePulseDot(
-                                color: isLight
-                                    ? AppPalette.black
-                                    : AppPalette.white,
+                                color: AppPalette.white,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 trUpper(context, 'Live'),
                                 style: Body2_b.style.copyWith(
-                                  color: isLight
-                                      ? AppPalette.black
-                                      : AppPalette.white,
+                                  color: AppPalette.white,
                                 ),
                               ),
                             ],
@@ -226,6 +147,13 @@ class CommunityTeamHeader extends StatelessWidget {
                 ],
               ),
             ),
+            ValueListenableBuilder<int>(
+                valueListenable: FavoriteTeam.id,
+                builder: (context, favorite, _) => favorite == team.teamId
+                    ? const Padding(
+                        padding: EdgeInsets.only(left: 8),
+                        child: CommunityIcon('star', size: 32))
+                    : const SizedBox.shrink()),
           ],
         ),
       ),
@@ -248,33 +176,18 @@ class CommunityPostTabHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final appColors = AppColors.of(context);
-
     return SliverPersistentHeader(
       floating: true,
       pinned: false,
       delegate: _CommunityTabBarDelegate(
-        TabBar(
+        appSectionTabBar(
+          context,
           controller: controller,
           onTap: onTap,
-          isScrollable: true,
-          labelColor: colors.onSurface,
-          unselectedLabelColor: appColors.mutedForeground,
-          indicatorColor: colors.onSurface,
-          labelStyle: Heading5.style,
-          unselectedLabelStyle: Heading5.style,
-          indicatorSize: TabBarIndicatorSize.label,
-          dividerColor: Colors.transparent,
-          padding: const EdgeInsets.only(left: 8),
-          indicator: UnderlineTabIndicator(
-            borderSide: BorderSide(color: colors.onSurface, width: 2),
-          ),
-          tabs: [
+          labels: [
             for (final category in categories)
-              Tab(text: tr(context, category?.label ?? 'All')),
+              tr(context, category?.label ?? 'All'),
           ],
-          tabAlignment: TabAlignment.start,
         ),
       ),
     );
@@ -312,5 +225,61 @@ class _CommunityTabBarDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(_CommunityTabBarDelegate oldDelegate) => false;
+  bool shouldRebuild(_CommunityTabBarDelegate oldDelegate) =>
+      oldDelegate.tabBar != tabBar;
+}
+
+// 목록·상세·글쓰기·프로필에서 같은 이동과 알림 상태를 사용해요.
+class CommunityHeaderActions extends StatelessWidget {
+  const CommunityHeaderActions(
+      {super.key,
+      this.onSearch,
+      this.onNotifications,
+      this.onActivity,
+      this.hasUnread,
+      this.showActivity = true});
+  final VoidCallback? onSearch, onNotifications, onActivity;
+  final bool? hasUnread;
+  final bool showActivity;
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+      listenable: notificationUnreadController,
+      builder: (context, _) => AppHeaderActions(children: [
+            _button(
+                context,
+                'search',
+                onSearch ?? () => context.push('/search'),
+                const Icon(Icons.search)),
+            _button(
+                context,
+                'notifications',
+                onNotifications ?? () => context.push('/notifications'),
+                UnreadNotificationBellIcon(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  hasUnread:
+                      hasUnread ?? notificationUnreadController.hasUnread,
+                  badgeKey: const ValueKey('community-notification-badge'),
+                )),
+            if (showActivity) ...[
+              _button(
+                  context,
+                  'activity',
+                  onActivity ??
+                      () => context.push('/profile/activity?tab=posts'),
+                  const CommunityIcon('activity', size: 32))
+            ],
+          ]));
+  Widget _button(
+          BuildContext context, String name, VoidCallback onTap, Widget icon) =>
+      AppHeaderIconButton(
+          key: ValueKey('community-$name-button'),
+          onPressed: onTap,
+          tooltip: tr(
+              context,
+              name == 'activity'
+                  ? 'My activity'
+                  : name == 'search'
+                      ? 'Search'
+                      : 'Notifications'),
+          icon: icon);
 }

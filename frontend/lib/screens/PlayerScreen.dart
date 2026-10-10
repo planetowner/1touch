@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:onetouch/core/app_header.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_directory_repository.dart';
@@ -62,7 +62,6 @@ class _PlayersState extends State<Players> {
   @override
   Widget build(BuildContext context) {
     final pageBackground = mainPageBackground(context);
-    final colors = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: pageBackground,
       body: RefreshIndicator(
@@ -71,88 +70,26 @@ class _PlayersState extends State<Players> {
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            SliverAppBar(
+            AppBrandSliverHeader(
               key: const ValueKey('players-app-bar'),
-              backgroundColor: pageBackground,
-              foregroundColor: colors.onSurface,
-              elevation: 0,
-              floating: true,
-              snap: true,
-              toolbarHeight: 80,
-              centerTitle: false,
-              titleSpacing: 0,
-              flexibleSpace: ColoredBox(color: pageBackground),
-              clipBehavior: Clip.antiAlias,
-              title: Padding(
-                padding: const EdgeInsets.only(left: 24),
-                child: SvgPicture.asset(
-                  'assets/app_logo.svg',
-                  height: 23,
-                  width: 120,
-                  colorFilter: ColorFilter.mode(
-                    colors.onSurface,
-                    BlendMode.srcIn,
-                  ),
+              logoKey: const ValueKey('players-app-logo'),
+              pageBackground: pageBackground,
+              actions: AppHeaderActions(children: [
+                AppHeaderIconButton(
+                  key: const ValueKey('players-search-button'),
+                  onPressed: () => context.push('/search'),
+                  icon: const Icon(Icons.search),
                 ),
-              ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 24),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        key: const ValueKey('players-search-button'),
-                        onPressed: () => context.push('/search'),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints.tightFor(
-                          width: 32,
-                          height: 32,
-                        ),
-                        style: IconButton.styleFrom(
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        icon: Icon(
-                          Icons.search,
-                          size: 32,
-                          color: colors.onSurface,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      IconButton(
-                        onPressed: () => context.push('/compare'),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints.tightFor(
-                          width: 32,
-                          height: 32,
-                        ),
-                        style: IconButton.styleFrom(
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        icon: Icon(Icons.safety_divider,
-                            size: 32, color: colors.onSurface),
-                      ),
-                      const SizedBox(width: 16),
-                      IconButton(
-                        key: const ValueKey('players-profile-button'),
-                        onPressed: () => context.push('/profile'),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints.tightFor(
-                          width: 32,
-                          height: 32,
-                        ),
-                        style: IconButton.styleFrom(
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        icon: Icon(
-                          Icons.account_circle_outlined,
-                          size: 32,
-                          color: colors.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
+                AppHeaderIconButton(
+                  onPressed: () => context.push('/compare'),
+                  icon: const Icon(Icons.safety_divider),
                 ),
-              ],
+                AppHeaderIconButton(
+                  key: const ValueKey('players-profile-button'),
+                  onPressed: () => context.push('/profile'),
+                  icon: const Icon(Icons.account_circle_outlined),
+                ),
+              ]),
             ),
             SliverToBoxAdapter(
               child: SafeArea(

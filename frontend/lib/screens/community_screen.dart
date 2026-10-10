@@ -1,7 +1,6 @@
+import 'package:onetouch/features/community/community_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -488,7 +487,7 @@ class _CommunityState extends State<Community>
   @override
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
-    final pageBackground = mainPageBackground(context);
+    final pageBackground = communityPageBackground(context);
     final team = _team;
 
     return CommunityAccessBuilder(
@@ -498,24 +497,21 @@ class _CommunityState extends State<Community>
         backgroundColor: pageBackground,
         bottomNavigationBar:
             canParticipate ? null : const CommunityReadOnlyNotice(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         floatingActionButton: canParticipate &&
                 !(_banStatus?.endsAt.isAfter(DateTime.now()) ?? false)
-            ? FloatingActionButton(
-                backgroundColor: Colors.white,
-                elevation: 0,
-                shape: const CircleBorder(),
-                onPressed: _openPostComposer,
-                child: Center(
-                  child: Transform.translate(
-                    offset: const Offset(0, -2.5),
-                    child: SvgPicture.asset(
-                      'assets/addpost_icon.svg',
-                      height: 40,
-                      width: 40,
-                    ),
-                  ),
-                ),
-              )
+            ? Padding(
+                padding: const EdgeInsets.only(right: 8, bottom: 8),
+                child: SizedBox.square(
+                    dimension: 64,
+                    child: FloatingActionButton(
+                      backgroundColor: Colors.white,
+                      elevation: 0,
+                      shape: const CircleBorder(),
+                      onPressed: _openPostComposer,
+                      child: const CommunityIcon('compose',
+                          size: 40, color: Colors.black),
+                    )))
             : null,
         body: Stack(
           children: [

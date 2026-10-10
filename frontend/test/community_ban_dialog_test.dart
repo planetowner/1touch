@@ -52,7 +52,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(BackdropFilter), findsNothing);
 
-      TextButton confirmation() => tester.widget<TextButton>(
+      ButtonStyleButton confirmation() => tester.widget<ButtonStyleButton>(
             find.byKey(const ValueKey('community-ban-close')),
           );
       String countdown() => tester
@@ -62,7 +62,7 @@ void main() {
       expect(confirmation().onPressed, isNotNull);
       expect(countdown(), '00h 00m 02s');
       expect(
-          find.text('Your access to the community has been restricted for '
+          find.text('for '
               'harassing or insulting other users.'),
           findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -129,7 +129,7 @@ void main() {
           expect(countdown.textSpan!.toPlainText(), '01h 23m 45s');
           final close = find.byKey(const ValueKey('community-ban-close'));
           expect(find.text(copy.close), findsOneWidget);
-          expect(tester.widget<TextButton>(close).onPressed, isNotNull);
+          expect(tester.widget<ButtonStyleButton>(close).onPressed, isNotNull);
           await tester.ensureVisible(close);
           await tester.pumpAndSettle();
           expect(tester.getRect(close).bottom, lessThanOrEqualTo(size.height));
@@ -246,19 +246,19 @@ void main() {
     expect(find.byKey(const ValueKey('community-ground-rules-dialog')),
         findsOneWidget);
     final confirm = find.byKey(const ValueKey('community-rules-understand'));
-    expect(tester.widget<TextButton>(confirm).onPressed, isNull);
+    expect(tester.widget<ButtonStyleButton>(confirm).onPressed, isNull);
 
     await tester.pump(const Duration(milliseconds: 16));
     await tester.pump(const Duration(seconds: 5));
     final fill = find.byKey(const ValueKey('community-rules-reading-fill'));
     expect(
         tester.widget<FractionallySizedBox>(fill).widthFactor, greaterThan(0));
-    expect(tester.widget<TextButton>(confirm).onPressed, isNull);
+    expect(tester.widget<ButtonStyleButton>(confirm).onPressed, isNull);
     await tester.pump(const Duration(seconds: 5));
     expect(tester.widget<FractionallySizedBox>(fill).widthFactor,
         closeTo(1, 0.001));
     await tester.pump();
-    expect(tester.widget<TextButton>(confirm).onPressed, isNotNull);
+    expect(tester.widget<ButtonStyleButton>(confirm).onPressed, isNotNull);
     await tester.tap(confirm);
     await tester.pumpAndSettle();
     expect(await visits.shouldShow(), isFalse);
@@ -291,7 +291,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('커뮤니티 이용이 제한됐어요.'), findsOneWidget);
     expect(find.textContaining('이용규칙을 위반해'), findsNothing);
-    await tester.tap(find.text('닫기'));
+    await tester.tap(find.text('이해했습니다'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
@@ -365,30 +365,29 @@ final _copy = <String,
   String close
 })>{
   'en': (
-    title: 'TEMPORARILY SUSPENDED',
-    body: (reason) =>
-        'Your access to the community has been restricted for $reason.',
+    title: 'Sorry, you cannot use the community',
+    body: (reason) => 'for $reason.',
     notice:
         'You’ll be able to use the community again when the time above runs out.',
-    close: 'Close',
+    close: 'I understand',
   ),
   'ko': (
-    title: '지금은 커뮤니티를 이용할 수 없어요',
-    body: (reason) => '$reason 커뮤니티 이용이 제한됐어요.',
+    title: '죄송합니다. 커뮤니티를',
+    body: (reason) => '동안 $reason 이용할 수 없습니다.',
     notice: '남은 시간이 지나면 다시 이용할 수 있어요.',
-    close: '닫기',
+    close: '이해했습니다',
   ),
   'ja': (
-    title: '現在、コミュニティを利用できません',
-    body: (reason) => '$reasonため、コミュニティの利用が制限されています。',
+    title: '申し訳ありません。コミュニティを利用できません',
+    body: (reason) => '理由：$reason。',
     notice: '残り時間がなくなると、また利用できます。',
-    close: '閉じる',
+    close: '理解しました',
   ),
   'zh': (
-    title: '目前无法使用社区',
-    body: (reason) => '因$reason，你的社区使用权限已被限制。',
+    title: '抱歉，你暂时无法使用社区',
+    body: (reason) => '原因：$reason。',
     notice: '剩余时间结束后，就可以再次使用社区。',
-    close: '关闭',
+    close: '我明白了',
   ),
 };
 

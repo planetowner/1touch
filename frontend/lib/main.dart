@@ -554,6 +554,7 @@ final GoRouter _router = GoRouter(
       builder: (context, state) => _profilePage(
         context,
         ProfileActivityScreen(
+          userId: int.tryParse(state.uri.queryParameters['userId'] ?? ''),
           profile: state.extra is CurrentUserProfile
               ? state.extra as CurrentUserProfile
               : null,

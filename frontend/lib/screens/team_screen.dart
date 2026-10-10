@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_section_tab_bar.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -402,7 +403,6 @@ class _TeamScreenState extends State<TeamScreen>
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final appColors = AppColors.of(context);
     final pageBackground = mainPageBackground(context);
 
     if (isLoading) {
@@ -500,30 +500,15 @@ class _TeamScreenState extends State<TeamScreen>
                           height: kTextTabBarHeight + 8,
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: TabBar(
+                            child: appSectionTabBar(
+                              context,
                               controller: _tabController,
-                              isScrollable: true,
-                              tabAlignment: TabAlignment.start,
-                              labelColor: colors.onSurface,
-                              unselectedLabelColor: appColors.mutedForeground,
-                              indicatorColor: colors.onSurface,
-                              labelStyle: Heading5.style,
-                              unselectedLabelStyle: Heading5.style,
-                              indicatorSize: TabBarIndicatorSize.label,
-                              dividerColor: Colors.transparent,
-                              padding: const EdgeInsets.only(left: 8),
-                              indicator: UnderlineTabIndicator(
-                                borderSide: BorderSide(
-                                  color: colors.onSurface,
-                                  width: 2,
-                                ),
-                              ),
-                              tabs: [
-                                Tab(text: teamScreenLabel(context, "Overview")),
-                                Tab(text: teamScreenLabel(context, "Matches")),
-                                Tab(text: tr(context, "Standing")),
-                                Tab(text: tr(context, "Squad")),
-                                Tab(text: tr(context, "Analysis")),
+                              labels: [
+                                teamScreenLabel(context, 'Overview'),
+                                teamScreenLabel(context, 'Matches'),
+                                tr(context, 'Standing'),
+                                tr(context, 'Squad'),
+                                tr(context, 'Analysis'),
                               ],
                             ),
                           ),

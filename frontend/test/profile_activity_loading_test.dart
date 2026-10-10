@@ -156,11 +156,13 @@ void main() {
     await tester
         .tap(find.byKey(const ValueKey('profile-activity-tab-comments')));
     await tester.pumpAndSettle();
-    pending.complete(
-        http.Response(jsonEncode(activityPageJson([activityPostJson()])), 200));
+    pending.complete(http.Response(
+        jsonEncode(activityPageJson([activityPostJson(id: 77)])), 200));
     await tester.pumpAndSettle();
     expect(find.text('My comment 99'), findsOneWidget);
-    expect(find.text('Post body 42'), findsNothing);
+    // 댓글 탭에도 원문이 보여요. 늦게 도착한 다른 글만 섞이지 않는지 확인해요.
+    expect(find.text('Post body 42'), findsOneWidget);
+    expect(find.text('Post body 77'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

@@ -26,15 +26,7 @@ Post postFromApiResponse(ApiPostResponse response, {required Uri apiBaseUri}) {
 
   final attachments = response.attachments
       .map(
-        (item) => PostAttachment(
-          attachmentId: item.attachmentId,
-          position: item.position,
-          linkUrl: _resolveOptionalUri(apiBaseUri, item.linkUrl),
-          mediaUrl: _resolveOptionalUri(apiBaseUri, item.mediaUrl),
-          previewUrl: _resolveOptionalUri(apiBaseUri, item.previewUrl),
-          contentType: item.contentType,
-          byteSize: item.byteSize,
-        ),
+        (item) => postAttachmentFromApiResponse(item, apiBaseUri: apiBaseUri),
       )
       .toList(growable: false);
   final firstMediaUrl = attachments
@@ -43,6 +35,12 @@ Post postFromApiResponse(ApiPostResponse response, {required Uri apiBaseUri}) {
       ?.mediaUrl;
 
   return Post(
+    state: switch (response.state) {
+      'active' => PostState.active,
+      'deleted' => PostState.deleted,
+      _ => throw FormatException(
+          'Unexpected published post state: ${response.state}'),
+    },
     postId: response.postId,
     teamId: response.teamId,
     language: response.language,
@@ -77,3 +75,15 @@ String? _resolveOptionalUri(Uri baseUri, String? value) {
   }
   return resolved.toString();
 }
+
+PostAttachment postAttachmentFromApiResponse(ApiPostAttachmentResponse item,
+        {required Uri apiBaseUri}) =>
+    PostAttachment(
+      attachmentId: item.attachmentId,
+      position: item.position,
+      linkUrl: _resolveOptionalUri(apiBaseUri, item.linkUrl),
+      mediaUrl: _resolveOptionalUri(apiBaseUri, item.mediaUrl),
+      previewUrl: _resolveOptionalUri(apiBaseUri, item.previewUrl),
+      contentType: item.contentType,
+      byteSize: item.byteSize,
+    );

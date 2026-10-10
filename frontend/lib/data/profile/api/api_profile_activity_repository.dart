@@ -9,14 +9,17 @@ import 'package:onetouch/models/profile_activity_counts.dart';
 import 'package:onetouch/models/profile_comment_activity.dart';
 
 class ApiProfileActivityRepository implements ProfileActivityRepository {
-  ApiProfileActivityRepository({required ApiClient api}) : _api = api;
+  ApiProfileActivityRepository({required ApiClient api, this.userId})
+      : _api = api;
 
   final ApiClient _api;
+  final int? userId;
+  String get _userPath => 'users/${userId ?? 'me'}';
 
   @override
   Future<ProfileActivityCounts> loadCounts() async {
     final response =
-        await _api.get(_api.baseUri.resolve('users/me/activity/counts'));
+        await _api.get(_api.baseUri.resolve('$_userPath/activity/counts'));
     final json = _api.decodeJson<Map<String, dynamic>>(response);
     final posts = json['post_count'];
     final comments = json['comment_count'];
@@ -28,14 +31,14 @@ class ApiProfileActivityRepository implements ProfileActivityRepository {
 
   @override
   Future<List<Post>> loadPosts({int limit = 50, int offset = 0}) =>
-      _loadPage('users/me/posts', limit, offset, _post);
+      _loadPage('$_userPath/posts', limit, offset, _post);
 
   @override
   Future<List<ProfileCommentActivity>> loadComments({
     int limit = 50,
     int offset = 0,
   }) =>
-      _loadPage('users/me/comments', limit, offset, (json) {
+      _loadPage('$_userPath/comments', limit, offset, (json) {
         final post = _post(json['post'] as Map<String, dynamic>);
         final comment = postCommentFromApiResponse(
           ApiPostCommentResponse.fromJson(

@@ -4,7 +4,7 @@ from ..db import fetch_all_dict, transaction
 from ..deps import get_user_id
 from ..repos.users_repo import get_user, lock_user, profile_complete, update_profile
 from ..repos.player_directory_repo import get_following_players
-from ..repos import posts_repo, users_repo
+from ..repos import posts_repo, users_repo, community_profiles_repo
 from ..schemas.users import DeleteAccountBody, UserProfileUpdateBody
 from ..services.community_periods import public_row
 from ..services.profile_changes import ProfileChangeLimitError
@@ -97,4 +97,41 @@ def put_following_players(body: FollowingPlayersBody, user_id: int = Depends(get
         if ids:
             cur.executemany("INSERT INTO user_following_players VALUES (%s,%s,%s)",
                             [(user_id, player_id, position) for position, player_id in enumerate(ids)])
+    return {"ok": True}
+
+
+@router.get("/users/{author_id}/community")
+def community_profile(author_id: int, user_id: int = Depends(get_user_id)):
+    return community_profiles_repo.get_profile(user_id, author_id)
+
+
+@router.get("/users/{author_id}/activity/counts")
+def community_activity_counts(author_id: int, user_id: int = Depends(get_user_id)):
+    community_profiles_repo.get_profile(user_id, author_id)
+    return posts_repo.count_my_activity(user_id, author_id=author_id)
+
+
+@router.get("/users/{author_id}/posts")
+def community_posts(author_id: int, limit: int = Query(default=50, ge=1, le=100),
+                    offset: int = Query(default=0, ge=0), user_id: int = Depends(get_user_id)):
+    community_profiles_repo.get_profile(user_id, author_id)
+    return {"items": posts_repo.list_my_posts(user_id, limit, offset, author_id=author_id), "limit": limit, "offset": offset}
+
+
+@router.get("/users/{author_id}/comments")
+def community_comments(author_id: int, limit: int = Query(default=50, ge=1, le=100),
+                       offset: int = Query(default=0, ge=0), user_id: int = Depends(get_user_id)):
+    community_profiles_repo.get_profile(user_id, author_id)
+    return {"items": posts_repo.list_my_comments(user_id, limit, offset, author_id=author_id), "limit": limit, "offset": offset}
+
+
+@router.put("/users/{author_id}/follow")
+def follow_community_user(author_id: int, user_id: int = Depends(get_user_id)):
+    community_profiles_repo.set_following(user_id, author_id, True)
+    return {"ok": True}
+
+
+@router.delete("/users/{author_id}/follow")
+def unfollow_community_user(author_id: int, user_id: int = Depends(get_user_id)):
+    community_profiles_repo.set_following(user_id, author_id, False)
     return {"ok": True}

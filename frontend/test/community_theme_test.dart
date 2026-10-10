@@ -1,9 +1,10 @@
+import 'package:onetouch/features/community/community_ui.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -77,10 +78,10 @@ void main() {
           matching: find.byType(Icon),
         ),
       );
-      final notifications = tester.widget<Icon>(
+      final notifications = tester.widget<SvgPicture>(
         find.descendant(
           of: find.byKey(const ValueKey('community-notifications-button')),
-          matching: find.byType(Icon),
+          matching: find.byType(SvgPicture),
         ),
       );
       final activity = tester.widget<SvgPicture>(
@@ -96,12 +97,16 @@ void main() {
 
       expect(
           scaffold.backgroundColor,
-          app_style.mainPageBackground(
+          communityPageBackground(
             tester.element(find.byType(Scaffold).first),
           ));
       expect(logo.colorFilter, isNotNull);
-      expect(search.color, foreground);
-      expect(notifications.color, foreground);
+      expect(search.icon, Icons.search);
+      final bellAsset = notifications.bytesLoader as SvgAssetLoader;
+      expect(bellAsset.assetName, 'assets/community/bell_default.svg');
+      expect(
+          bellAsset.colorMapper!.substitute(null, 'path', 'fill', Colors.white),
+          foreground);
       expect(
           activity.colorFilter, ColorFilter.mode(foreground, BlendMode.srcIn));
       expect(find.byKey(const ValueKey('community-notification-badge')),
@@ -134,7 +139,7 @@ void main() {
         (tabBar.indicator! as UnderlineTabIndicator).borderSide.width,
         2,
       );
-      expect(tabBar.padding, const EdgeInsets.only(left: 8));
+      expect(tabBar.padding, const EdgeInsets.only(left: 18));
       final teamHeaderPadding = tester.widget<Padding>(
         find.byKey(const ValueKey('community-team-header-padding')),
       );
@@ -179,12 +184,12 @@ void main() {
               )
               .decoration as BoxDecoration)
           .color!;
-      final filterContext =
-          tester.element(find.byKey(const ValueKey('community-filter-newest')));
       expect(filterColor('newest'), app_style.AppPalette.white);
       expect(
         filterColor('popular'),
-        app_style.appPillBackground(filterContext, selected: false),
+        testCase.name == 'dark'
+            ? app_style.AppPalette.darkGrey
+            : app_style.AppPalette.lightGreyBox,
       );
 
       await tester.tap(
@@ -193,7 +198,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         filterColor('newest'),
-        app_style.appPillBackground(filterContext, selected: false),
+        testCase.name == 'dark'
+            ? app_style.AppPalette.darkGrey
+            : app_style.AppPalette.lightGreyBox,
       );
       expect(filterColor('popular'), app_style.AppPalette.white);
 
@@ -480,7 +487,7 @@ void main() {
     );
     expect(
       (mediaPicker.decoration as BoxDecoration).color,
-      const Color(0xFFC8C8C8),
+      app_style.AppPalette.white,
     );
     expect(
       find.byKey(const ValueKey('community-add-brand-gradient')),
@@ -489,7 +496,7 @@ void main() {
     final generalFilterSize = tester.getSize(
       find.byKey(const ValueKey('community-category-filter')),
     );
-    expect(generalFilterSize.height, AppDropdownTokens.height);
+    expect(generalFilterSize.height, 48);
     final categoryFilterTopLeft = tester.getTopLeft(
       find.byKey(const ValueKey('community-category-filter')),
     );
@@ -509,7 +516,7 @@ void main() {
     final analysisFilterSize = tester.getSize(
       find.byKey(const ValueKey('community-category-filter')),
     );
-    expect(analysisFilterSize.height, AppDropdownTokens.height);
+    expect(analysisFilterSize.height, 48);
     expect(analysisFilterSize.width, greaterThan(generalFilterSize.width));
     expect(find.byIcon(Icons.star_border), findsNothing);
     expect(tester.takeException(), isNull);

@@ -848,7 +848,7 @@ void main() {
     expect(tabBar.indicatorColor, app_style.AppPalette.black);
     expect(indicator.borderSide.color, app_style.AppPalette.black);
     expect(indicator.borderSide.width, 2);
-    expect(tabBar.padding, const EdgeInsets.only(left: 8));
+    expect(tabBar.padding, const EdgeInsets.only(left: 18));
     expect(find.byKey(const Key('team-profile-button')), findsNothing);
     expect(searchIcon.color, app_style.AppPalette.black);
     expect(nextMatch.backgroundColor, app_style.AppPalette.white);

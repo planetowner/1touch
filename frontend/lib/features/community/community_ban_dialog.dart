@@ -1,3 +1,7 @@
+import 'package:onetouch/core/app_action_button.dart';
+import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/data/profile/current_user_repository_provider.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -28,10 +32,20 @@ class _CommunityBanDialog extends StatefulWidget {
 
 class _CommunityBanDialogState extends State<_CommunityBanDialog> {
   late final Timer _timer;
+  String? _displayName;
+  Future<void> _loadName() async {
+    try {
+      final profile = await currentUserRepository.load();
+      if (mounted) setState(() => _displayName = profile.displayName);
+    } catch (_) {
+      // 이름 조회가 실패해도 이용 제한 시간과 사유는 안내해요.
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    if (authSession.isAuthenticated) unawaited(_loadName());
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (_secondsLeft == 0) {
         _timer.cancel();
@@ -61,12 +75,7 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
     final minutes = (remaining % 3600) ~/ 60;
     final seconds = remaining % 60;
     final reason = widget.ban.reason;
-    const numberStyle = TextStyle(
-      color: Colors.white,
-      fontSize: 32,
-      fontWeight: FontWeight.w700,
-      height: 1.2,
-    );
+    final numberStyle = Heading2.latinStyle.copyWith(color: Colors.white);
     final unitStyle = numberStyle.copyWith(color: Colors.white54);
     return Dialog(
       key: const ValueKey('community-ban-dialog'),
@@ -83,7 +92,10 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                tr(context, 'TEMPORARILY SUSPENDED'),
+                _displayName == null
+                    ? tr(context, 'Sorry, you cannot use the community')
+                    : tr(context, 'Sorry, {name}, you cannot use the community',
+                        {'name': _displayName!}),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 15,
@@ -98,7 +110,7 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF272828),
+                  color: const Color(0xFF282929),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: FittedBox(
@@ -130,7 +142,7 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
                         'Your access to the community has been restricted.')
                     : tr(
                         context,
-                        'Your access to the community has been restricted for {reason}.',
+                        'for {reason}.',
                         {'reason': tr(context, reason.messageKey)},
                       ),
                 style: const TextStyle(
@@ -151,21 +163,13 @@ class _CommunityBanDialogState extends State<_CommunityBanDialog> {
                 ),
               ),
               const SizedBox(height: 24),
-              ConstrainedBox(
-                constraints: const BoxConstraints(minHeight: 54),
-                child: TextButton(
-                  key: const ValueKey('community-ban-close'),
-                  // 닫기는 언제든 가능하지만 복귀 안내는 실제 만료 후에만 열어요.
-                  onPressed: () => Navigator.of(context).pop(_secondsLeft == 0),
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF090A0A),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Text(tr(context, 'Close')),
-                ),
+              AppActionButton(
+                buttonKey: const ValueKey('community-ban-close'),
+                label: tr(context, 'I understand'),
+                // 닫기는 언제든 가능하지만 복귀 안내는 실제 만료 후에만 열어요.
+                onPressed: () => Navigator.of(context).pop(_secondsLeft == 0),
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF0A0A0A),
               ),
             ],
           ),

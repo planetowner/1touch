@@ -376,7 +376,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('community-post-submit')));
     await tester.pumpAndSettle();
 
-    expect(attachments.uploadedNames, ['post-attachment']);
+    expect(attachments.uploadedNames, ['post-attachment-1']);
     final updated = (await posts.loadPosts(language: 'en', teamId: 83)).single;
     expect(updated.category, PostCategory.analysis);
     expect(updated.attachments.single.attachmentId, 8);
@@ -430,6 +430,13 @@ void _usePhone(WidgetTester tester) {
 }
 
 class _DeletingCommentsRepository implements PostCommentRepository {
+  @override
+  Future<void> setCommentLiked(
+      {required int commentId, required bool liked}) async {}
+  @override
+  Future<void> reportComment(
+      {required int commentId, required String reason}) async {}
+
   final deletedIds = <int>[];
   bool deleted = false;
   String body = 'My comment';

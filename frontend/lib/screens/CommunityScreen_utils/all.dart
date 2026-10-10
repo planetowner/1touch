@@ -30,49 +30,29 @@ class All extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+    return CommunityPostList(
+      posts: posts,
+      header: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: CommunitySortFilters(
-            selectedSort: selectedSort,
-            onChanged: onSortChanged,
-          ),
-        ),
+        CommunitySortFilters(
+            selectedSort: selectedSort, onChanged: onSortChanged),
         const SizedBox(height: 24),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: CommunityGroundRulesCard(
-            onTap: () => showGroundRulesModal(
-              context,
-              teamId: teamId,
-              repository: communityRepository,
-            ),
-          ),
-        ),
+        CommunityGroundRulesCard(
+            onTap: () => showGroundRulesModal(context,
+                teamId: teamId, repository: communityRepository)),
         const SizedBox(height: 24),
-        Expanded(
-          child: CommunityPostList(
-            posts: posts,
-            onPostTap: (post) async {
-              await Navigator.push<void>(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PostDetailScreen(
+      ]),
+      onPostTap: (post) async {
+        await Navigator.push<void>(
+            context,
+            MaterialPageRoute(
+                builder: (_) => PostDetailScreen(
                     post: post,
                     postRepository: postRepository,
                     communityRepository: communityRepository,
-                    onPostUpdated: onPostUpdated,
-                  ),
-                ),
-              );
-              await onPostDetailClosed();
-            },
-          ),
-        ),
-      ],
+                    onPostUpdated: onPostUpdated)));
+        await onPostDetailClosed();
+      },
     );
   }
 }

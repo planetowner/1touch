@@ -67,7 +67,8 @@ Future<List<XFile>> pickAssetMedia(
     if (file == null) {
       throw StateError('Unable to export selected media.');
     }
-    files.add(XFile(file.path));
+    files.add(XFile(file.path,
+        mimeType: asset.type == AssetType.video ? 'video/*' : null));
   }
   return files;
 }

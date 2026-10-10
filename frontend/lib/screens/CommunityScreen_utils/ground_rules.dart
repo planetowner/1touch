@@ -1,4 +1,5 @@
-import 'dart:ui';
+import 'package:onetouch/core/app_action_button.dart';
+import 'package:onetouch/features/community/community_ui.dart';
 
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
@@ -20,13 +21,10 @@ Future<bool?> showGroundRulesModal(
     context: context,
     barrierDismissible: readingDuration == Duration.zero,
     barrierColor: Colors.black.withValues(alpha: 0.4),
-    builder: (context) => BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-      child: _GroundRulesDialog(
-        teamId: teamId,
-        repository: repository ?? community_providers.communityRepository,
-        readingDuration: readingDuration,
-      ),
+    builder: (context) => _GroundRulesDialog(
+      teamId: teamId,
+      repository: repository ?? community_providers.communityRepository,
+      readingDuration: readingDuration,
     ),
   );
 }
@@ -87,12 +85,14 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog>
     return Dialog(
       key: const ValueKey('community-ground-rules-dialog'),
       backgroundColor: appColors.subtleBackground,
+      insetPadding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.86,
+          maxHeight: MediaQuery.sizeOf(context).height - 48,
+          maxWidth: 345,
         ),
         child: FutureBuilder<CommunityRules>(
           future: _rulesFuture,
@@ -115,12 +115,12 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog>
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Icon(Icons.push_pin_outlined, color: colors.onSurface),
-                      const SizedBox(width: 8),
+                      const CommunityIcon('pin', size: 20),
+                      const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           tr(context, rules?.title ?? 'Community Ground Rules'),
-                          style: Heading5.style.copyWith(
+                          style: CommunityText.title(context).copyWith(
                             color: colors.onSurface,
                           ),
                         ),
@@ -150,7 +150,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog>
                               Text(
                                 tr(context, 'Unable to load community rules.'),
                                 key: const ValueKey('community-rules-error'),
-                                style: Body1.style.copyWith(
+                                style: CommunityText.body(context).copyWith(
                                   color: colors.onSurface,
                                 ),
                                 textAlign: TextAlign.center,
@@ -175,18 +175,21 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog>
                             final index = entry.key;
                             final rule = entry.value;
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
+                              padding: EdgeInsets.only(
+                                  bottom:
+                                      index < rules.items.length - 1 ? 36 : 0),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   SizedBox(
-                                    width: 32,
+                                    width: 18,
                                     child: Text(
                                       '${index + 1}.',
                                       key: ValueKey(
                                         'ground-rule-number-${index + 1}',
                                       ),
-                                      style: Body1_b.style.copyWith(
+                                      style:
+                                          CommunityText.bold(context).copyWith(
                                         color: colors.onSurface,
                                       ),
                                     ),
@@ -201,17 +204,18 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog>
                                           key: ValueKey(
                                             'ground-rule-title-${index + 1}',
                                           ),
-                                          style: Body1_b.style.copyWith(
+                                          style: CommunityText.bold(context)
+                                              .copyWith(
                                             color: colors.onSurface,
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
                                         Text(
                                           tr(context, rule.body),
                                           key: ValueKey(
                                             'ground-rule-subtitle-${index + 1}',
                                           ),
-                                          style: Body1.style.copyWith(
+                                          style: CommunityText.body(context)
+                                              .copyWith(
                                             color: colors.onSurface,
                                           ),
                                         ),
@@ -226,7 +230,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog>
                       ),
                     ),
                   if (rules != null) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 48),
                     if (_readingController != null) ...[
                       Row(children: [
                         Icon(Icons.info_outline, color: colors.onSurface),
@@ -245,60 +249,38 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog>
                         animation: _readingController!,
                         builder: (context, _) => ClipRRect(
                           borderRadius: BorderRadius.circular(16),
-                          child: SizedBox(
+                          child: Stack(
                             key: const ValueKey(
                                 'community-rules-reading-button'),
-                            height: 54,
-                            child: Stack(children: [
+                            children: [
                               const Positioned.fill(
-                                child: ColoredBox(color: Colors.white54),
-                              ),
+                                  child: ColoredBox(color: Colors.white54)),
                               Positioned.fill(
-                                child: FractionallySizedBox(
-                                  key: const ValueKey(
-                                      'community-rules-reading-fill'),
-                                  alignment: Alignment.centerLeft,
-                                  widthFactor: _readingController!.value,
-                                  child: const ColoredBox(color: Colors.white),
-                                ),
+                                  child: FractionallySizedBox(
+                                key: const ValueKey(
+                                    'community-rules-reading-fill'),
+                                alignment: Alignment.centerLeft,
+                                widthFactor: _readingController!.value,
+                                child: const ColoredBox(color: Colors.white),
+                              )),
+                              AppActionButton(
+                                buttonKey: const ValueKey(
+                                    'community-rules-understand'),
+                                label: tr(context, 'I UNDERSTAND!'),
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: const Color(0xFF0A0A0A),
+                                onPressed: _readingController!.value >= 1
+                                    ? () => Navigator.of(context).pop(true)
+                                    : null,
                               ),
-                              Positioned.fill(
-                                child: TextButton(
-                                  key: const ValueKey(
-                                      'community-rules-understand'),
-                                  onPressed: _readingController!.value >= 1
-                                      ? () => Navigator.of(context).pop(true)
-                                      : null,
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: const Color(0xFF090A0A),
-                                    disabledForegroundColor:
-                                        const Color(0xFF090A0A),
-                                  ),
-                                  child: Text(tr(context, 'I UNDERSTAND!')),
-                                ),
-                              ),
-                            ]),
+                            ],
                           ),
                         ),
                       ),
                     ] else
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pop(true),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: colors.onSurface,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            tr(context, 'I UNDERSTAND!'),
-                            style: Body2_b.style.copyWith(
-                              color: colors.onPrimary,
-                            ),
-                          ),
-                        ),
+                      AppActionButton(
+                        label: tr(context, 'I UNDERSTAND!'),
+                        onPressed: () => Navigator.of(context).pop(true),
                       ),
                   ],
                 ],

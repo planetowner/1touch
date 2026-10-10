@@ -1,10 +1,16 @@
+import 'package:onetouch/core/app_action_button.dart';
+import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/data/profile/api/api_community_profile_repository.dart';
+import 'package:onetouch/data/profile/api/api_profile_activity_repository.dart';
+import 'package:onetouch/models/community_profile.dart';
+import 'package:onetouch/features/community/community_ui.dart';
+import 'package:onetouch/features/community/community_header_slivers.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart';
 import 'package:onetouch/data/profile/profile_activity_repository.dart';
 import 'package:onetouch/data/profile/profile_activity_repository_provider.dart';
@@ -23,8 +29,12 @@ class ProfileActivityScreen extends StatefulWidget {
     this.profile,
     this.initialTab = ProfileActivityTab.posts,
     this.repository,
+    this.userId,
+    this.publicProfileRepository,
   });
 
+  final int? userId;
+  final ApiCommunityProfileRepository? publicProfileRepository;
   final CurrentUserProfile? profile;
   final ProfileActivityTab initialTab;
   final ProfileActivityRepository? repository;
@@ -36,11 +46,57 @@ class ProfileActivityScreen extends StatefulWidget {
 class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
   late ProfileActivityTab _selectedTab = widget.initialTab;
   int _activityRevision = 0;
-  ProfileActivityRepository get _repository =>
-      widget.repository ?? profileActivityRepository;
-  late final Future<CurrentUserProfile> _profileFuture = widget.profile == null
-      ? currentUserRepository.load()
-      : Future.value(widget.profile!);
+  late final ProfileActivityRepository _repository = widget.repository ??
+      (widget.userId == null
+          ? profileActivityRepository
+          : ApiProfileActivityRepository(
+              api: apiClient, userId: widget.userId));
+  late final _publicProfiles = widget.publicProfileRepository ??
+      ApiCommunityProfileRepository(api: apiClient);
+  late Future<CommunityProfile> _profileFuture = _loadProfile();
+  bool? _following;
+  bool _updatingFollow = false;
+  Future<CommunityProfile> _loadProfile() async {
+    if (widget.userId != null) return _publicProfiles.load(widget.userId!);
+    final profile = widget.profile ?? await currentUserRepository.load();
+    return CommunityProfile(
+        userId: profile.userId,
+        username: profile.username,
+        displayName: profile.displayName,
+        avatarUri: profile.avatarUri,
+        isSelf: true);
+  }
+
+  Future<void> _follow(CommunityProfile profile) async {
+    if (_updatingFollow) return;
+    setState(() => _updatingFollow = true);
+    final next = !(_following ?? profile.following);
+    try {
+      await _publicProfiles.setFollowing(profile.userId, next);
+      if (mounted) setState(() => _following = next);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                tr(context, 'Unable to update follow. Please try again.'))));
+      }
+    } finally {
+      if (mounted) setState(() => _updatingFollow = false);
+    }
+  }
+
+  Future<void> _editProfile() async {
+    await context.push('/profile/edit');
+    if (mounted) {
+      setState(() => _profileFuture = currentUserRepository.load().then(
+          (profile) => CommunityProfile(
+              userId: profile.userId,
+              username: profile.username,
+              displayName: profile.displayName,
+              avatarUri: profile.avatarUri,
+              isSelf: true)));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,37 +104,22 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
     final appColors = AppColors.of(context);
     final background = Theme.of(context).brightness == Brightness.light
         ? AppPalette.lightGreyBox
-        : appColors.pageBackground;
+        : communityPageBackground(context);
+
+    const placeholder =
+        CommunityIcon('profile', size: 108, originalColors: true);
 
     return Scaffold(
       key: const ValueKey('profile-activity-screen'),
       backgroundColor: background,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: background,
-        toolbarHeight: 80,
-        titleSpacing: 24,
-        title: SvgPicture.asset(
-          'assets/app_logo.svg',
-          width: 120,
-          height: 23,
-          colorFilter: ColorFilter.mode(colors.onSurface, BlendMode.srcIn),
-        ),
-        actions: [
-          IconButton(
-            key: const ValueKey('profile-activity-notifications'),
-            onPressed: () => context.push('/notifications'),
-            icon: const Icon(Icons.notifications_none_rounded, size: 32),
-          ),
-          IconButton(
-            key: const ValueKey('profile-activity-search'),
-            onPressed: () => context.push('/search'),
-            icon: const Icon(Icons.search, size: 32),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: FutureBuilder<CurrentUserProfile>(
+          backgroundColor: background,
+          toolbarHeight: 56,
+          leading: IconButton(
+              icon: const CommunityIcon('back'),
+              onPressed: () => Navigator.pop(context)),
+          actions: const [CommunityHeaderActions(showActivity: false)]),
+      body: FutureBuilder<CommunityProfile>(
         future: _profileFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -89,36 +130,45 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
             return const Center(child: FootballLoadingIndicator());
           }
           final profile = snapshot.data!;
+          final following = _following ?? profile.following;
+          final listBottomPadding =
+              profile.isSelf ? 0.0 : MediaQuery.paddingOf(context).bottom + 104;
           return Column(
             children: [
-              const SizedBox(height: 48),
-              CircleAvatar(
-                radius: 54,
-                backgroundColor: appColors.subtleBackground,
-                child: ClipOval(
-                  child: profile.avatarUri == null
-                      ? Image.asset('assets/profileAvatar.png',
-                          width: 108, height: 108, fit: BoxFit.cover)
-                      : Image.network(
-                          profile.avatarUri.toString(),
-                          headers: currentUserMediaRequestHeaders,
-                          width: 108,
-                          height: 108,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Image.asset(
-                            'assets/profileAvatar.png',
-                            width: 108,
-                            height: 108,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                profile.profileHeading,
-                style: Heading5.style,
-              ),
+              const SizedBox(height: 24),
+              SizedBox.square(
+                  dimension: 108,
+                  child: Stack(clipBehavior: Clip.none, children: [
+                    ClipOval(
+                        child: ColoredBox(
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? AppPalette.lightGrey
+                                    : appColors.subtleBackground,
+                            child: profile.avatarUri == null
+                                ? placeholder
+                                : Image.network(profile.avatarUri.toString(),
+                                    headers: currentUserMediaRequestHeaders,
+                                    width: 108,
+                                    height: 108,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        placeholder))),
+                    if (profile.isSelf)
+                      Positioned(
+                          right: -4,
+                          bottom: -4,
+                          child: SizedBox.square(
+                              dimension: 48,
+                              child: IconButton.filled(
+                                  key:
+                                      const ValueKey('profile-activity-camera'),
+                                  onPressed: _editProfile,
+                                  style: IconButton.styleFrom(
+                                      backgroundColor: AppPalette.lightGrey),
+                                  icon: const CommunityIcon('camera',
+                                      color: Colors.white)))),
+                  ])),
               const SizedBox(height: 48),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -144,7 +194,56 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              Expanded(child: _buildActivity(context)),
+              Expanded(
+                  child: Stack(children: [
+                Positioned.fill(
+                    child: _buildActivity(context,
+                        bottomPadding: listBottomPadding)),
+                if (!profile.isSelf) ...[
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: IgnorePointer(
+                        child: SizedBox(
+                      height: 225,
+                      child: DecoratedBox(
+                          decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            background.withValues(alpha: 0),
+                            background.withValues(alpha: .7)
+                          ],
+                        ),
+                      )),
+                    )),
+                  ),
+                  Positioned(
+                    left: 24,
+                    right: 24,
+                    bottom: 16,
+                    child: SafeArea(
+                      top: false,
+                      left: false,
+                      right: false,
+                      child: AppActionButton(
+                        buttonKey: const ValueKey('profile-activity-follow'),
+                        label: trUpper(
+                            context, following ? 'Following' : 'Follow'),
+                        loading: _updatingFollow,
+                        onPressed: () => _follow(profile),
+                        backgroundColor: following
+                            ? appColors.subtleBackground
+                            : colors.onSurface,
+                        foregroundColor:
+                            following ? colors.onSurface : colors.surface,
+                      ),
+                    ),
+                  ),
+                ],
+              ])),
             ],
           );
         },
@@ -152,7 +251,7 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
     );
   }
 
-  Widget _buildActivity(BuildContext context) {
+  Widget _buildActivity(BuildContext context, {double bottomPadding = 0}) {
     if (_selectedTab == ProfileActivityTab.posts) {
       return _ActivityList<Post>(
         key: ValueKey((_selectedTab, _activityRevision)),
@@ -162,6 +261,7 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
         errorMessage: 'Unable to load community posts.',
         buildList: (items) => CommunityPostList(
           posts: items,
+          bottomPadding: bottomPadding,
           onPostTap: _openPost,
           physics: const AlwaysScrollableScrollPhysics(),
         ),
@@ -173,20 +273,18 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
       loadPage: _repository.loadComments,
       emptyMessage: 'No comments yet.',
       errorMessage: 'Unable to load comments.',
-      buildList: _buildComments,
+      buildList: (items) => _buildComments(items, bottomPadding: bottomPadding),
     );
   }
 
-  Widget _buildComments(List<ProfileCommentActivity> comments) {
+  Widget _buildComments(List<ProfileCommentActivity> comments,
+      {double bottomPadding = 0}) {
     return ListView.separated(
       key: const ValueKey('profile-activity-comments-list'),
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding),
       itemCount: comments.length,
-      separatorBuilder: (context, _) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 24),
-        child: Divider(height: 1, color: AppColors.of(context).divider),
-      ),
+      separatorBuilder: (context, _) => const CommunityPostSeparator(),
       itemBuilder: (context, index) {
         final activity = comments[index];
         return InkWell(
@@ -196,20 +294,31 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(activity.post.title, style: Body1_b.style),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(left: 16),
-                decoration: BoxDecoration(
-                  border: Border(
-                    left: BorderSide(
-                      width: 2,
-                      color: AppColors.of(context).divider,
-                    ),
-                  ),
-                ),
-                child: Text(activity.comment.body, style: Body1.style),
+              // 댓글 탭의 원문은 본문 한 줄만 보여주고 좋아요 행은 생략해요.
+              CommunityPostCard(
+                  post: activity.post,
+                  onTap: () => _openPost(activity.post),
+                  bodyMaxLines: 1,
+                  showEngagement: false),
+              const SizedBox(height: 16),
+              CommunityReplyIndent(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CommunityAuthorHeader(
+                          userId: activity.comment.userId,
+                          username: activity.comment.username,
+                          displayName: activity.comment.displayName,
+                          avatarUrl: activity.comment.avatarUrl,
+                          authorDeleted: activity.comment.authorDeleted,
+                          createdAt: activity.comment.createdAt,
+                          editedAt: activity.comment.editedAt),
+                      const SizedBox(height: 8),
+                      Text(activity.comment.body,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: CommunityText.body(context)),
+                    ]),
               ),
             ],
           ),

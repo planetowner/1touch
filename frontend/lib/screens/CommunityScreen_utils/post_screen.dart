@@ -1,3 +1,5 @@
+import 'package:onetouch/features/community/community_header_slivers.dart';
+import 'package:onetouch/features/community/community_ui.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -67,6 +69,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool _isRefreshingPost = false;
   bool _postRefreshFailed = false;
   final Set<int> _deletingCommentIds = {};
+  final Set<int> _likingCommentIds = {};
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
@@ -274,6 +277,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  Future<void> _likeComment(PostComment comment) async {
+    if (!_likingCommentIds.add(comment.commentId)) return;
+    try {
+      await _postCommentRepository.setCommentLiked(
+          commentId: comment.commentId, liked: !comment.liked);
+      if (mounted) await _loadComments(showLoading: false);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text(tr(context, 'Unable to update like. Please try again.'))));
+      }
+    } finally {
+      _likingCommentIds.remove(comment.commentId);
+    }
+  }
+
   Future<void> _deleteComment(PostComment comment) async {
     if (_currentUserId == null ||
         comment.userId != _currentUserId ||
@@ -442,8 +462,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
     final post = _post;
 
-    final pageBackground = mainPageBackground(context);
-    final colors = Theme.of(context).colorScheme;
+    final pageBackground = communityPageBackground(context);
 
     return CommunityAccessBuilder(
       teamId: post.teamId,
@@ -461,13 +480,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       context, pageBackground, opacityFactor),
                   elevation: 0,
                   leading: IconButton(
-                    icon: Icon(
-                      Icons.arrow_back_ios_new,
-                      color: colors.onSurface,
-                    ),
+                    icon: const CommunityIcon('back'),
                     onPressed: () => context.pop(),
                   ),
-                  toolbarHeight: 80,
+                  toolbarHeight: 56,
+                  actions: const [CommunityHeaderActions()],
                   flexibleSpace: ColoredBox(color: pageBackground),
                   floating: true,
                   snap: true,
@@ -477,7 +494,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   liked: _liked,
                   likeCount: _likeCount,
                   commentCount: _commentCount,
-                  onLike: !canParticipate || _isUpdatingLike
+                  onLike: !canParticipate || post.isDeleted || _isUpdatingLike
                       ? null
                       : _togglePostLike,
                   communityRepository: _communityRepository,
@@ -494,20 +511,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           ? null
                           : _editPost,
                   onDeletePost: _isDeletingPost ? null : _deletePost,
-                  onEditComment: _editComment,
-                  onDeleteComment: (comment) {
-                    if (!_deletingCommentIds.contains(comment.commentId)) {
-                      _deleteComment(comment);
-                    }
-                  },
-                  onRetryComments: _loadComments,
-                  onReply: !canParticipate || _isCreatingComment
+                  onLikeComment:
+                      canParticipate && !post.isDeleted ? _likeComment : null,
+                  onReportComment: canParticipate && !post.isDeleted
+                      ? (comment, reason) =>
+                          _postCommentRepository.reportComment(
+                              commentId: comment.commentId, reason: reason)
+                      : null,
+                  onEditComment: post.isDeleted ? null : _editComment,
+                  onDeleteComment: post.isDeleted
                       ? null
-                      : (comment) => setState(() {
-                            _editingComment = null;
-                            _replyTarget = comment;
-                          }),
-                  onReport: !canParticipate
+                      : (comment) {
+                          if (!_deletingCommentIds
+                              .contains(comment.commentId)) {
+                            _deleteComment(comment);
+                          }
+                        },
+                  onRetryComments: _loadComments,
+                  onReply:
+                      !canParticipate || post.isDeleted || _isCreatingComment
+                          ? null
+                          : (comment) => setState(() {
+                                _editingComment = null;
+                                _replyTarget = comment;
+                              }),
+                  onReport: !canParticipate || post.isDeleted
                       ? null
                       : (reason) => _postRepository.reportPost(
                             postId: post.postId,
@@ -518,24 +546,27 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
           ],
         ),
-        bottomNavigationBar: canParticipate
-            ? AnimatedPadding(
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOut,
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.viewInsetsOf(context).bottom,
-                ),
-                child: PostDetailReplyBar(
-                  replyTarget: _replyTarget,
-                  editingTarget: _editingComment,
-                  onCancelReply: () => setState(() => _replyTarget = null),
-                  onCancelEdit: () => setState(() => _editingComment = null),
-                  onSubmit: _editingComment == null
-                      ? _submitComment
-                      : _submitEditedComment,
-                ),
-              )
-            : const CommunityReadOnlyNotice(),
+        bottomNavigationBar: post.isDeleted
+            ? null
+            : canParticipate
+                ? AnimatedPadding(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOut,
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.viewInsetsOf(context).bottom,
+                    ),
+                    child: PostDetailReplyBar(
+                      replyTarget: _replyTarget,
+                      editingTarget: _editingComment,
+                      onCancelReply: () => setState(() => _replyTarget = null),
+                      onCancelEdit: () =>
+                          setState(() => _editingComment = null),
+                      onSubmit: _editingComment == null
+                          ? _submitComment
+                          : _submitEditedComment,
+                    ),
+                  )
+                : const CommunityReadOnlyNotice(),
       ),
     );
   }

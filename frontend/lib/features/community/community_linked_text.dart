@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/community/community_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Displays web addresses in post text as tappable links.
@@ -11,11 +12,15 @@ class CommunityLinkedText extends StatefulWidget {
     required this.text,
     required this.style,
     this.maxLines,
+    this.activateLinks = true,
+    this.showLinkIcons = false,
     this.overflow,
   });
 
   final String text;
   final TextStyle style;
+  final bool activateLinks;
+  final bool showLinkIcons;
   final int? maxLines;
   final TextOverflow? overflow;
 
@@ -91,11 +96,24 @@ class _CommunityLinkedTextState extends State<CommunityLinkedText> {
       if (start > cursor) {
         spans.add(TextSpan(text: widget.text.substring(cursor, start)));
       }
+      if (widget.showLinkIcons) {
+        // 아이콘을 첫 줄에만 넣어, 다음 줄은 본문 시작점에서 이어져요.
+        spans.add(WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: GestureDetector(
+            onTap: widget.activateLinks ? _recognizers[i].onTap : null,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: CommunityIcon('link', size: 16, color: widget.style.color),
+            ),
+          ),
+        ));
+      }
       spans.add(
         TextSpan(
           text: widget.text.substring(start, end),
           style: const TextStyle(decoration: TextDecoration.underline),
-          recognizer: _recognizers[i],
+          recognizer: widget.activateLinks ? _recognizers[i] : null,
         ),
       );
       cursor = end;

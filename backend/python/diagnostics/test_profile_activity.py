@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 # 테스트 수집과 실행 모두 운영 DB에 연결하지 않아요.
 with patch("mysql.connector.pooling.MySQLConnectionPool"):
     from one_touch_loader.api import deps
-    from one_touch_loader.api.repos import posts_repo, teams_repo, users_repo
+    from one_touch_loader.api.repos import posts_repo, teams_repo, users_repo, community_profiles_repo
     from one_touch_loader.api.routes import posts, users
     from one_touch_loader.api.services import content_visibility
 
@@ -23,6 +23,7 @@ class ProfileActivityTests(unittest.TestCase):
         self.db.executescript("""
             CREATE TABLE users (user_id INTEGER PRIMARY KEY, username TEXT, display_name TEXT, first_name TEXT,
                 last_name TEXT, favorite_team_id INTEGER, suspended_until TEXT);
+            CREATE TABLE user_following_users (user_id INTEGER, followed_user_id INTEGER);
             CREATE TABLE user_following_teams (user_id INTEGER, team_id INTEGER, position INTEGER);
             CREATE TABLE user_avatars (user_id INTEGER PRIMARY KEY);
             CREATE TABLE user_blocks (user_id INTEGER, blocked_user_id INTEGER);
@@ -67,7 +68,7 @@ class ProfileActivityTests(unittest.TestCase):
             INSERT INTO post_attachments VALUES (1,11,0,'https://example.com/',NULL,NULL),
                 (2,11,1,NULL,'image/png',20);
         """)
-        for module in (posts_repo, users_repo, teams_repo, content_visibility):
+        for module in (posts_repo, users_repo, teams_repo, content_visibility, community_profiles_repo):
             if hasattr(module, "fetch_all_dict"):
                 self.patch(module, "fetch_all_dict", side_effect=self.fetch_all)
             if hasattr(module, "fetch_one_dict"):
@@ -237,13 +238,42 @@ class ProfileActivityTests(unittest.TestCase):
                     self.assertEqual(self.get(f"/v1/users/me/{kind}").status_code, 403)
             self.db.execute(f"UPDATE users SET {field}=? WHERE user_id=1", (previous,))
 
+    def test_public_profile_activity_uses_the_viewers_team_access(self):
+        self.db.execute("INSERT INTO user_following_users VALUES (1,2)")
+        self.db.execute("INSERT INTO posts VALUES (25,30,2,'general','Private team','Body',?,NULL,'active')",
+                        (self.now.isoformat(),))
+        response = self.get("/v1/users/2/community")
+        self.assertEqual(response.status_code, 200, response.text)
+        profile = response.json()
+        self.assertEqual(profile["display_name"], "Friend")
+        self.assertTrue(profile["following"])
+        self.assertFalse(profile["is_self"])
+        self.assertNotIn("first_name", profile)
+        self.assertNotIn("favorite_team_id", profile)
+        posts = self.get("/v1/users/2/posts").json()["items"]
+        comments = self.get("/v1/users/2/comments").json()["items"]
+        self.assertEqual([row["post_id"] for row in posts], [13])
+        self.assertEqual([row["comment"]["comment_id"] for row in comments], [110])
+        self.assertEqual(self.get("/v1/users/2/activity/counts").json(),
+                         {"post_count": len(posts), "comment_count": len(comments)})
+
+    def test_public_profile_and_activity_hide_blocked_or_missing_authors(self):
+        for author in (3, 999):
+            for suffix in ("community", "posts", "comments", "activity/counts"):
+                self.assertEqual(self.get(f"/v1/users/{author}/{suffix}").status_code, 404)
+        self.assertTrue(self.get("/v1/users/1/community").json()["is_self"])
+
     def test_existing_detail_keeps_deleted_and_blocked_reply_placeholders(self):
         comments = {row["comment_id"]: row for row in self.get("/v1/posts/13/comments").json()["items"]}
         for comment_id, state in ((104, "hidden"), (105, "deleted"), (111, "blocked")):
             with self.subTest(comment_id=comment_id):
                 self.assertEqual(comments[comment_id]["state"], state)
                 self.assertEqual(comments[comment_id]["body"], "")
-                self.assertIsNone(comments[comment_id]["user_id"])
+                if state == "deleted":
+                    self.assertEqual(comments[comment_id]["user_id"], 1)
+                    self.assertEqual(comments[comment_id]["display_name"], "Me")
+                else:
+                    self.assertIsNone(comments[comment_id]["user_id"])
         self.assertEqual(comments[101]["reply_to_id"], 100)
 
 

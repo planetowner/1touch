@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:onetouch/core/app_header.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/app_action_section_header.dart';
@@ -489,134 +489,71 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                SliverAppBar(
-                  backgroundColor: scrollingAppBarBackground(
-                      context, pageBackground, opacityFactor),
-                  foregroundColor: appBarForeground,
-                  elevation: 0,
-                  floating: true,
-                  snap: true,
-                  toolbarHeight: 80,
-                  centerTitle: false,
-                  titleSpacing: 0,
-                  flexibleSpace: ColoredBox(color: pageBackground),
-                  clipBehavior: Clip.antiAlias,
-                  title: Padding(
-                    padding: const EdgeInsets.only(left: 24),
-                    child: SvgPicture.asset(
-                      key: const ValueKey('home-app-bar-logo'),
-                      'assets/app_logo.svg',
-                      height: 23,
-                      width: 120,
-                      colorFilter: ColorFilter.mode(
-                        appBarForeground,
-                        BlendMode.srcIn,
-                      ),
+                AppBrandSliverHeader(
+                  pageBackground: pageBackground,
+                  opacityFactor: opacityFactor,
+                  logoKey: const ValueKey('home-app-bar-logo'),
+                  actions: AppHeaderActions(children: [
+                    AppHeaderIconButton(
+                      key: const ValueKey('home-app-bar-search'),
+                      onPressed: () => context.push('/search'),
+                      icon: const Icon(Icons.search),
                     ),
-                  ),
-                  actions: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 24),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            key: const ValueKey('home-app-bar-search'),
-                            onPressed: () {
-                              context.push('/search');
-                            },
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints.tightFor(
-                              width: 32,
-                              height: 32,
-                            ),
-                            style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            icon: Icon(
-                              Icons.search,
-                              color: appBarForeground,
-                              size: 32,
-                            ),
+                    GestureDetector(
+                      onTap: () {
+                        final rankedIds =
+                            currentUserPreferences.followedTeamIds.value;
+                        final rankedTeams = [
+                          for (final id in rankedIds)
+                            ...homeData.followingTeams
+                                .where((team) => team.teamId == id),
+                          ...homeData.followingTeams.where(
+                              (team) => !rankedIds.contains(team.teamId)),
+                        ];
+                        TeamSelectionSheet.show(
+                          context,
+                          initialTeamId: viewedTeamId,
+                          favoriteTeamId:
+                              currentUserPreferences.favoriteTeamId.value,
+                          followingTeams: rankedTeams,
+                          onSwitch: _switchViewedTeam,
+                        );
+                      },
+                      child: Container(
+                        key: const ValueKey('home-app-bar-team-picker'),
+                        padding: AppDropdownTokens.compactPadding,
+                        decoration: BoxDecoration(
+                          color: isLightMode
+                              ? AppPalette.white
+                              : AppPalette.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(
+                            AppDropdownTokens.radius,
                           ),
-                          SizedBox(
-                            width: 16,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              final rankedIds =
-                                  currentUserPreferences.followedTeamIds.value;
-                              final rankedTeams = [
-                                for (final id in rankedIds)
-                                  ...homeData.followingTeams
-                                      .where((team) => team.teamId == id),
-                                ...homeData.followingTeams.where(
-                                    (team) => !rankedIds.contains(team.teamId)),
-                              ];
-                              TeamSelectionSheet.show(
-                                context,
-                                initialTeamId: viewedTeamId,
-                                favoriteTeamId:
-                                    currentUserPreferences.favoriteTeamId.value,
-                                followingTeams: rankedTeams,
-                                onSwitch: _switchViewedTeam,
-                              );
-                            },
-                            child: Container(
-                              key: const ValueKey('home-app-bar-team-picker'),
-                              padding: AppDropdownTokens.compactPadding,
-                              decoration: BoxDecoration(
-                                color: isLightMode
-                                    ? AppPalette.white
-                                    : AppPalette.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(
-                                  AppDropdownTokens.radius,
-                                ),
-                                boxShadow:
-                                    isLightMode ? lightModeCardShadows : null,
-                              ),
-                              child: Row(
-                                children: [
-                                  Image.network(
-                                    viewedTeam.imagePath,
-                                    height: 24,
-                                    width: 24,
-                                    errorBuilder: (_, __, ___) => Image.asset(
-                                      'TeamLogos/Barcelona.png',
-                                      height: 24,
-                                      width: 24,
-                                    ),
-                                  ),
-                                  AppDropdownChevron(color: appBarForeground),
-                                ],
+                          boxShadow: isLightMode ? lightModeCardShadows : null,
+                        ),
+                        child: Row(
+                          children: [
+                            Image.network(
+                              viewedTeam.imagePath,
+                              height: 24,
+                              width: 24,
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                'TeamLogos/Barcelona.png',
+                                height: 24,
+                                width: 24,
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 16,
-                          ),
-                          IconButton(
-                            key: const ValueKey('home-app-bar-profile'),
-                            onPressed: () {
-                              context.push('/profile');
-                            },
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints.tightFor(
-                              width: 32,
-                              height: 32,
-                            ),
-                            style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            icon: Icon(
-                              Icons.account_circle_outlined,
-                              color: appBarForeground,
-                              size: 32,
-                            ),
-                          ),
-                        ],
+                            AppDropdownChevron(color: appBarForeground),
+                          ],
+                        ),
                       ),
                     ),
-                  ],
+                    AppHeaderIconButton(
+                      key: const ValueKey('home-app-bar-profile'),
+                      onPressed: () => context.push('/profile'),
+                      icon: const Icon(Icons.account_circle_outlined),
+                    ),
+                  ]),
                 ),
                 SliverList(
                   delegate: SliverChildListDelegate([

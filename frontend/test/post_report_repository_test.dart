@@ -144,7 +144,7 @@ void main() {
 }
 
 Future<void> _openReportDialog(WidgetTester tester) async {
-  final reportAction = find.text('report');
+  final reportAction = find.text('Report');
   await tester.scrollUntilVisible(
     reportAction,
     150,

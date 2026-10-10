@@ -1,3 +1,5 @@
+import 'package:onetouch/core/app_action_button.dart';
+import 'package:onetouch/features/community/community_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -27,92 +29,70 @@ Future<void> showReportDialog(
     isScrollControlled: true,
     backgroundColor: isDark ? AppPalette.darkGrey : AppPalette.white,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setState) {
-          final colors = Theme.of(context).colorScheme;
-          final appColors = AppColors.of(context);
           return SafeArea(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title and close
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          tr(context, "Report"),
-                          style:
-                              Heading4.style.copyWith(color: colors.onSurface),
-                        ),
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Icon(Icons.close, color: colors.onSurface),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
+                    const _ReportHeader(),
+                    const SizedBox(height: 24),
                     Row(
                       children: [
-                        Icon(
-                          Icons.error_outline,
-                          color: appColors.mutedForeground,
-                        ),
-                        const SizedBox(width: 8),
+                        const CommunityIcon('error'),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: Text(
                             tr(
                                 context,
                                 'Tell us why you would like to report this {target}!',
                                 {'target': tr(context, targetLabel)}),
-                            style: Body2.style
-                                .copyWith(color: appColors.mutedForeground),
+                            style: CommunityText.secondary(context),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 24),
-
-                    // Radio list
-                    RadioGroup<int>(
-                      groupValue: selectedIndex,
-                      onChanged: (value) {
-                        setState(() {
-                          selectedIndex = value;
-                          errorMessage = null;
-                        });
-                      },
-                      child: Column(
-                        children: List.generate(reasons.length, (index) {
-                          return Column(
-                            children: [
-                              RadioListTile<int>(
-                                value: index,
-                                title: Text(
-                                  tr(context, reasons[index]),
-                                  style: Body1.style,
-                                ),
-                                activeColor: colors.onSurface,
-                                controlAffinity:
-                                    ListTileControlAffinity.trailing,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                              Divider(color: appColors.divider),
-                            ],
-                          );
-                        }),
+                    for (var index = 0; index < reasons.length; index++) ...[
+                      Semantics(
+                          checked: selectedIndex == index,
+                          inMutuallyExclusiveGroup: true,
+                          child: InkWell(
+                              onTap: isSubmitting
+                                  ? null
+                                  : () => setState(() {
+                                        selectedIndex = index;
+                                        errorMessage = null;
+                                      }),
+                              child: SizedBox(
+                                  height: 24,
+                                  child: Row(children: [
+                                    Expanded(
+                                        child: Text(tr(context, reasons[index]),
+                                            style:
+                                                CommunityText.body(context))),
+                                    CommunityIcon(selectedIndex == index
+                                        ? 'radio_checked'
+                                        : 'radio'),
+                                  ])))),
+                      Padding(
+                        padding: EdgeInsets.only(
+                            top: 16,
+                            bottom: index < reasons.length - 1 ? 16 : 0),
+                        child: Divider(
+                            height: 0,
+                            thickness: 2,
+                            color: communityDividerColor(context)),
                       ),
-                    ),
-
+                    ],
                     const SizedBox(height: 24),
-
                     if (errorMessage != null) ...[
                       Text(
                         errorMessage!,
@@ -123,11 +103,13 @@ Future<void> showReportDialog(
                       ),
                       const SizedBox(height: 12),
                     ],
-
-                    // Submit button
-                    GestureDetector(
-                      key: const ValueKey('community-report-submit'),
-                      onTap: selectedIndex == null || isSubmitting
+                    AppActionButton(
+                      buttonKey: const ValueKey('community-report-submit'),
+                      label: tr(context, 'SUBMIT'),
+                      loading: isSubmitting,
+                      progressKey:
+                          const ValueKey('community-report-submitting'),
+                      onPressed: selectedIndex == null || isSubmitting
                           ? null
                           : () async {
                               final reason = reasons[selectedIndex!];
@@ -151,34 +133,6 @@ Future<void> showReportDialog(
                                 });
                               }
                             },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          color: selectedIndex == null || isSubmitting
-                              ? appColors.mutedForeground
-                              : colors.onSurface,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        alignment: Alignment.center,
-                        child: isSubmitting
-                            ? SizedBox(
-                                key: const ValueKey(
-                                  'community-report-submitting',
-                                ),
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: colors.onPrimary,
-                                ),
-                              )
-                            : Text(
-                                tr(context, "SUBMIT"),
-                                style: Body2_b.style
-                                    .copyWith(color: colors.onPrimary),
-                              ),
-                      ),
                     ),
                   ],
                 ),
@@ -198,10 +152,9 @@ void showThanksDialog(BuildContext context) {
     isScrollControlled: true,
     backgroundColor: isDark ? AppPalette.darkGrey : AppPalette.white,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (context) {
-      final colors = Theme.of(context).colorScheme;
       return SafeArea(
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -210,58 +163,30 @@ void showThanksDialog(BuildContext context) {
           child: SingleChildScrollView(
             child: Padding(
               key: const ValueKey('community-report-thanks'),
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        tr(context, "Report"),
-                        style: Heading4.style.copyWith(color: colors.onSurface),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Icon(Icons.close, color: colors.onSurface),
-                      ),
-                    ],
-                  ),
+                  const _ReportHeader(),
                   const SizedBox(height: 24),
-                  Icon(
-                    Icons.check_circle_outline,
-                    size: 48,
-                    color: colors.onSurface,
-                  ),
-                  const SizedBox(height: 16),
+                  const CommunityIcon('check', size: 56),
+                  const SizedBox(height: 8),
                   Text(
                     tr(context, "Thanks for your report!"),
-                    style: Heading5.style,
+                    style: Heading4.style,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   Text(
                     tr(context,
                         "Thanks again for your report — we’ve got your back, and your fellow 1touchers too. Every report helps make 1touch a safer, better place for everyone."),
-                    style: Body2.style,
+                    style: CommunityText.body(context),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        color: colors.onSurface,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        trUpper(context, "Done"),
-                        style: Body2_b.style.copyWith(color: colors.onPrimary),
-                      ),
-                    ),
+                  AppActionButton(
+                    label: trUpper(context, 'Done'),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
@@ -271,4 +196,21 @@ void showThanksDialog(BuildContext context) {
       );
     },
   );
+}
+
+class _ReportHeader extends StatelessWidget {
+  const _ReportHeader();
+  @override
+  Widget build(BuildContext context) => SizedBox(
+      height: 24,
+      child: Stack(children: [
+        Center(
+            child: Text(tr(context, 'Report'),
+                style: CommunityText.title(context))),
+        Align(
+            alignment: Alignment.centerRight,
+            child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const CommunityIcon('close'))),
+      ]));
 }

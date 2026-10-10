@@ -800,18 +800,22 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual(self.request("PUT", f"/v1/posts/{post}", json={**body, "attachment_ids": [foreign]}).status_code, 400)
         self.assertEqual([row["attachment_id"] for row in posts_repo.get_post(self.a, post)["attachments"]], ids[::-1])
 
-    def test_deleted_post_hides_children_and_queues_only_its_file(self):
+    def test_deleted_post_keeps_placeholder_and_replies_but_removes_its_file(self):
         attachment = self.execute("INSERT INTO post_attachments (user_id,object_key,content_type,byte_size,created_at) VALUES (%s,'posts/remove','image/png',3,%s)", (self.a, utc_now()))
         post = self.post(attachment_ids=[attachment])
         comment = posts_repo.create_comment(self.a, post, "comment", None)
         posts_repo.report_content(self.a, "post", post, "report")
         self.assertEqual(self.request("DELETE", f"/v1/posts/{post}").status_code, 200)
         self.assertEqual(self.execute("SELECT object_key FROM media_deletions"), [{"object_key": "posts/remove"}])
-        for method, url, payload in [("GET", f"/v1/posts/{post}", None), ("GET", f"/v1/posts/{post}/comments", None),
-                                     ("PUT", f"/v1/comments/{comment}/like", None), ("GET", f"/v1/attachments/{attachment}/content", None),
+        for method, url, payload in [("PUT", f"/v1/comments/{comment}/like", None), ("GET", f"/v1/attachments/{attachment}/content", None),
                                      ("POST", f"/v1/posts/{post}/comments", {"body": "late"})]:
             self.assertEqual(self.request(method, url, json=payload).status_code, 404, url)
-        self.assertEqual(self.request("GET", "/v1/posts?team_id=6").json()["items"], [])
+        deleted = self.request("GET", f"/v1/posts/{post}").json()
+        self.assertEqual((deleted["state"], deleted["title"], deleted["body"], deleted["attachments"]),
+                         ("deleted", "", "", []))
+        self.assertEqual(self.request("GET", "/v1/posts?team_id=6").json()["items"], [deleted])
+        replies = self.request("GET", f"/v1/posts/{post}/comments").json()["items"]
+        self.assertEqual([item["comment_id"] for item in replies], [comment])
         self.assertEqual(len(self.execute("SELECT * FROM content_reports")), 1)
 
     def test_deleted_comment_keeps_nested_reply_ids_without_original_text(self):

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_section_tab_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/detail_navigation.dart';
 import 'package:onetouch/core/style.dart';
@@ -239,29 +240,17 @@ class _PlayerCardState extends State<PlayerCard>
                     floating: true,
                     pinned: false,
                     delegate: _TabBarDelegate(
-                      TabBar(
+                      appSectionTabBar(
+                        context,
                         controller: _tabController,
-                        isScrollable: true,
-                        labelColor: gradientForeground,
-                        unselectedLabelColor: gradientForeground,
-                        labelStyle: Heading5.style,
-                        unselectedLabelStyle: Heading5.style,
-                        indicatorSize: TabBarIndicatorSize.label,
-                        dividerColor: Colors.transparent,
-                        padding: const EdgeInsets.only(left: 8),
-                        indicator: UnderlineTabIndicator(
-                          borderSide: BorderSide(
-                            color: gradientForeground,
-                            width: 2,
-                          ),
-                        ),
-                        tabs: [
-                          Tab(text: tr(context, "Overview")),
-                          Tab(text: tr(context, "Analysis")),
-                          Tab(text: playerTabLabel(context, "Matches")),
-                          Tab(text: tr(context, "Career")),
+                        foreground: gradientForeground,
+                        unselectedForeground: gradientForeground,
+                        labels: [
+                          tr(context, 'Overview'),
+                          tr(context, 'Analysis'),
+                          playerTabLabel(context, 'Matches'),
+                          tr(context, 'Career'),
                         ],
-                        tabAlignment: TabAlignment.start,
                       ),
                       controller: _tabController,
                       backgroundGradient: tabBarGradient,

@@ -22,6 +22,7 @@ class ApiPostListResponse {
 
 class ApiPostResponse {
   ApiPostResponse({
+    this.state = 'active',
     required this.postId,
     required this.teamId,
     required this.language,
@@ -41,6 +42,7 @@ class ApiPostResponse {
     required List<ApiPostAttachmentResponse> attachments,
   }) : attachments = List.unmodifiable(attachments);
 
+  final String state;
   final int postId;
   final int teamId;
   final String language;
@@ -61,6 +63,7 @@ class ApiPostResponse {
 
   factory ApiPostResponse.fromJson(Map<String, dynamic> json) {
     return ApiPostResponse(
+      state: json['state'] as String? ?? 'active',
       postId: api_json.requiredInt(json, 'post_id'),
       teamId: api_json.requiredInt(json, 'team_id'),
       language: api_json.requiredString(json, 'language'),

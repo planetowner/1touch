@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
+import 'package:onetouch/features/community/community_ui.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/post_screen.dart';
@@ -74,12 +75,13 @@ void main() {
     await _showLikeAction(tester);
 
     expect(_likeCount(tester), '1,290');
-    expect(_likeIcon(tester), Icons.thumb_up_alt_outlined);
+    expect(_likeColor(tester),
+        Theme.of(tester.element(_likeAction)).colorScheme.onSurface);
 
     await tester.tap(_likeAction);
     await tester.pump();
     expect(_likeCount(tester), '1,291');
-    expect(_likeIcon(tester), Icons.thumb_up_alt);
+    expect(_likeColor(tester), const Color(0xFF5C92FF));
     expect(repository.updates, [(postId: 91, liked: true)]);
 
     await tester.tap(_likeAction);
@@ -97,7 +99,8 @@ void main() {
       (postId: 91, liked: false),
     ]);
     expect(_likeCount(tester), '1,290');
-    expect(_likeIcon(tester), Icons.thumb_up_alt_outlined);
+    expect(_likeColor(tester),
+        Theme.of(tester.element(_likeAction)).colorScheme.onSurface);
     expect(tester.takeException(), isNull);
   });
 
@@ -124,7 +127,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(_likeCount(tester), '1,290');
-    expect(_likeIcon(tester), Icons.thumb_up_alt_outlined);
+    expect(_likeColor(tester),
+        Theme.of(tester.element(_likeAction)).colorScheme.onSurface);
     expect(
       find.text('Unable to update like. Please try again.'),
       findsOneWidget,
@@ -144,12 +148,12 @@ String? _likeCount(WidgetTester tester) {
       .data;
 }
 
-IconData? _likeIcon(WidgetTester tester) {
+Color? _likeColor(WidgetTester tester) {
   return tester
-      .widget<Icon>(
-        find.descendant(of: _likeAction, matching: find.byType(Icon)),
+      .widget<CommunityIcon>(
+        find.descendant(of: _likeAction, matching: find.byType(CommunityIcon)),
       )
-      .icon;
+      .color;
 }
 
 Future<void> _showLikeAction(WidgetTester tester) async {

@@ -18,6 +18,15 @@ import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/screens/home_screen.dart';
+import 'package:onetouch/screens/community_screen.dart';
+import 'package:onetouch/screens/PlayerScreen.dart';
+import 'package:onetouch/core/locale_controller.dart';
+import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
+import 'package:onetouch/features/player/player_following_controller.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
+import 'support/stub_community_repository.dart';
+import 'support/player_detail_fixture.dart';
+import 'support/player_directory_fixture.dart';
 
 void main() {
   setUpAppCatalog();
@@ -479,6 +488,69 @@ void main() {
     expect(pickerDecoration.color, Colors.white);
     expect(pickerDecoration.boxShadow, app_style.lightModeCardShadows);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Korean community and players retain the home brand geometry',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    tester.view.padding = const FakeViewPadding(top: 59);
+    tester.view.viewPadding = const FakeViewPadding(top: 59);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewPadding);
+    appLocaleController.value = const Locale('ko');
+    addTearDown(() => appLocaleController.value = const Locale('en'));
+    Widget shell(Widget child) => MaterialApp(
+          theme: app_style.whitetheme,
+          locale: const Locale('ko'),
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
+          home: child,
+        );
+    final repository = _ControlledHomeRepository();
+    await tester.pumpWidget(shell(HomeScreen(
+      repository: repository,
+      newsRepository: _RecordingNewsRepository(),
+    )));
+    repository.calls.single.completer.complete(_homeData());
+    await tester.pumpAndSettle();
+    final homeLogo =
+        tester.getRect(find.byKey(const ValueKey('home-app-bar-logo')));
+    final homeSearch =
+        tester.getRect(find.byKey(const ValueKey('home-app-bar-search')));
+    final following =
+        PlayerFollowingController(repository: FakeFollowingPlayersRepository());
+    addTearDown(following.dispose);
+    for (final (screen, logoKey, searchKey, lastKey) in [
+      (
+        Community(
+            teamId: 9,
+            postRepository: MockPostRepository(),
+            communityRepository: const StubCommunityRepository()),
+        'community-app-logo',
+        'community-search-button',
+        'community-activity-button',
+      ),
+      (
+        Players(
+            repository: FakePlayerDirectoryRepository(),
+            detailRepository: FakePlayerDetailRepository(),
+            followingController: following),
+        'players-app-logo',
+        'players-search-button',
+        'players-profile-button',
+      ),
+    ]) {
+      await tester.pumpWidget(shell(screen));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(find.byKey(ValueKey(logoKey))), homeLogo);
+      final search = tester.getRect(find.byKey(ValueKey(searchKey)));
+      expect(search.size, homeSearch.size);
+      expect(search.center.dy, homeSearch.center.dy);
+      final last = tester.getRect(find.byKey(ValueKey(lastKey)));
+      expect(last.right, 393 - 24);
+      expect(last.center.dx - search.center.dx, 96);
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('home team picker keeps its dark mode surface', (tester) async {

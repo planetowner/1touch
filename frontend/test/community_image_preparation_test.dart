@@ -12,6 +12,7 @@ import 'package:onetouch/data/injuries/api/api_team_injury_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/data/transfers/mock/mock_transfer_repository.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
+import 'package:onetouch/features/community/community_media.dart';
 import 'package:onetouch/features/media/selected_team_media_preloader.dart';
 import 'package:onetouch/features/community/community_post_image.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
@@ -20,6 +21,66 @@ import 'package:onetouch/models/post.dart';
 import 'support/stub_community_repository.dart';
 
 void main() {
+  for (final width in [320.0, 430.0]) {
+    testWidgets('detail photos keep their original ratios at width $width',
+        (tester) async {
+      await tester.binding.setSurfaceSize(Size(width, 700));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final dimensions = width == 320
+          ? [const Size(90, 160), const Size(160, 90), const Size(80, 80)]
+          : [const Size(160, 90), const Size(90, 160), const Size(80, 80)];
+      final photos = <String, Uint8List>{};
+      final attachments = <PostAttachment>[];
+      for (var index = 0; index < dimensions.length; index++) {
+        final size = dimensions[index];
+        final url = 'https://images.example.test/ratio-$index/preview';
+        photos[url] = (await tester
+            .runAsync(() => _png(size.width.toInt(), size.height.toInt())))!;
+        attachments.add(PostAttachment(
+          attachmentId: index,
+          position: index,
+          mediaUrl: 'https://images.example.test/ratio-$index/content',
+          previewUrl: url,
+          contentType: 'image/png',
+        ));
+      }
+      debugNetworkImageHttpClientProvider = () => _PhotoHttpClient(
+          (uri) async => _PhotoResponse(photos[uri.toString()]!));
+      addTearDown(() {
+        debugNetworkImageHttpClientProvider = null;
+        PaintingBinding.instance.imageCache.clear();
+        PaintingBinding.instance.imageCache.clearLiveImages();
+      });
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: CommunityMediaGrid(attachments: attachments),
+            ),
+          ),
+        ),
+      ));
+      await tester.runAsync(() => Future.wait(photos.keys.map(_decoded)));
+      await tester.pump();
+
+      for (var index = 0; index < dimensions.length; index++) {
+        final photo = find.byKey(ValueKey(index == 0
+            ? 'community-detail-media'
+            : 'community-detail-media-$index'));
+        final expectedWidth = index == 0 ? width - 48 : (width - 48 - 16) / 2;
+        final bounds = tester.getRect(photo);
+        expect(bounds.width, closeTo(expectedWidth, .01));
+        expect(bounds.height,
+            closeTo(expectedWidth / dimensions[index].aspectRatio, .01));
+      }
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      debugNetworkImageHttpClientProvider = null;
+    });
+  }
+
   testWidgets(
       'prepares before tab entry and keeps the photo through feed and zoom',
       (tester) async {

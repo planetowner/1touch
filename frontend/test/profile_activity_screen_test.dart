@@ -33,7 +33,10 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('@Owner'), findsOneWidget);
+      expect(find.byKey(const ValueKey('profile-activity-camera')),
+          findsOneWidget);
+      expect(
+          find.byKey(const ValueKey('profile-activity-follow')), findsNothing);
       expect(
           find.byType(AppSegmentedToggle<ProfileActivityTab>), findsOneWidget);
       final indicator = tester.widget<DecoratedBox>(

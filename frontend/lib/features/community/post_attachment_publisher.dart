@@ -27,29 +27,33 @@ class PostAttachmentPublisher {
       throw RangeError.range(mediaFiles.length, 0, 10, 'mediaFiles.length');
     }
 
+    return withUploadedAttachments<int>(
+        mediaFiles: mediaFiles,
+        save: (ids) => _postRepository.createPost(CreatePostInput(
+            teamId: post.teamId,
+            language: post.language,
+            category: post.category,
+            title: post.title,
+            body: post.body,
+            attachmentIds: ids)));
+  }
+
+  // 새 글·수정·임시저장은 업로드와 실패 시 정리 규칙이 같아요.
+  Future<T> withUploadedAttachments<T>(
+      {required List<XFile> mediaFiles,
+      List<int> existingIds = const [],
+      required Future<T> Function(List<int>) save}) async {
     final uploadedAttachmentIds = <int>[];
     try {
-      for (var index = 0; index < mediaFiles.length; index++) {
-        final file = mediaFiles[index];
+      for (final (index, file) in mediaFiles.indexed) {
         final uploaded = await _attachmentRepository.upload(
-          bytes: await file.readAsBytes(),
-          filename: file.name.trim().isEmpty
-              ? 'post-attachment-${index + 1}'
-              : file.name,
-        );
+            bytes: await file.readAsBytes(),
+            filename: file.name.trim().isEmpty
+                ? 'post-attachment-${index + 1}'
+                : file.name);
         uploadedAttachmentIds.add(uploaded.attachmentId);
       }
-
-      return await _postRepository.createPost(
-        CreatePostInput(
-          teamId: post.teamId,
-          language: post.language,
-          category: post.category,
-          title: post.title,
-          body: post.body,
-          attachmentIds: uploadedAttachmentIds,
-        ),
-      );
+      return await save([...existingIds, ...uploadedAttachmentIds]);
     } on Object {
       await _deleteUnpublishedAttachments(uploadedAttachmentIds);
       rethrow;
@@ -63,8 +67,7 @@ class PostAttachmentPublisher {
       try {
         await _attachmentRepository.delete(attachmentId);
       } on Object {
-        // Cleanup is best-effort. The backend also expires unpublished files,
-        // while callers still need the original upload or publish failure.
+        // 원래 저장 오류를 전달해요. 정리하지 못한 미사용 파일은 서버에서도 만료돼요.
       }
     }
   }

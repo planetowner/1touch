@@ -1,3 +1,4 @@
+import 'package:onetouch/core/app_action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/locale_controller.dart';
@@ -177,30 +178,17 @@ class AuthPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return SizedBox(
-      width: double.infinity,
+    return AppActionButton(
+      label: label,
+      onPressed: onPressed,
+      loading: loading,
+      progressKey: progressKey,
+      buttonKey: buttonKey,
+      textStyle: textStyle ?? AuthStyles.emphasis,
+      backgroundColor: Theme.of(context).colorScheme.onSurface,
+      foregroundColor: AuthStyles.background(context),
       height: 56,
-      child: FilledButton(
-        key: buttonKey,
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: colors.onSurface,
-          foregroundColor: AuthStyles.background(context),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-        ),
-        child: loading
-            ? SizedBox.square(
-                key: progressKey,
-                dimension: 22,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: AuthStyles.background(context)))
-            : Text(label,
-                style: (textStyle ?? AuthStyles.emphasis)
-                    .copyWith(color: AuthStyles.background(context))),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
     );
   }
 }
