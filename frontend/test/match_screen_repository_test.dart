@@ -572,11 +572,7 @@ void main() {
       final pitch = tester.getRect(
         find.byKey(const ValueKey('match-lineup-card')),
       );
-      if (formation == null) {
-        expect(pitch.height, 784);
-      } else {
-        expect(pitch.height, greaterThan(784));
-      }
+      expect(pitch.height, closeTo(pitch.width * 784 / 345, 0.001));
       final positionedHalves =
           find.byType(FormationPlayerPositions<LineupPlayer>);
       expect(positionedHalves,
@@ -587,7 +583,8 @@ void main() {
               .byKey(ValueKey('match-lineup-player-${_fixture.awayTeamId}-1')),
           matching: find.byKey(const ValueKey('lineup-player-circle')),
         );
-        expect(tester.getRect(awayKeeper).top - pitch.top, closeTo(20, 1));
+        expect(tester.getRect(awayKeeper).center.dy - pitch.top,
+            closeTo(40 * pitch.height / 784, 0.001));
       }
       final rows = <List<Rect>>[];
       for (final teamId in [_fixture.homeTeamId, _fixture.awayTeamId]) {

@@ -1,20 +1,20 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:onetouch/core/formation_design_positions.dart';
+
 /// 베스트 11과 경기 라인업이 같은 기준 좌표를 사용해요.
-/// 선수 간격은 줄의 인원수로 계산하고, 실제 화면 크기에 맞춰 조정해요.
+/// Formations 시안의 원 중심을 실제 화면 크기에 맞춰 조정해요.
 class FormationLayout {
   const FormationLayout(this.rows);
 
   factory FormationLayout.forFormation(String formation) {
-    return buildFormationLayout(formationLayoutCode(formation));
+    return buildFormationLayout(formation);
   }
 
   static const Size designSize = Size(345, 392);
-  static final Offset goalkeeper = Offset(
-    designSize.width / 2,
-    designSize.height - 60,
-  );
+  static const double playerNameGap = 4;
+  static const Offset goalkeeper = Offset(173, 332);
 
   final List<List<Offset>> rows;
 
@@ -35,7 +35,11 @@ class FormationLayout {
 }
 
 FormationLayout buildFormationLayout(String formation) {
-  var counts = formation
+  final designRows = formationDesignRows[formationLayoutCode(formation)];
+  if (designRows != null) return FormationLayout(designRows);
+
+  // 시안에 없는 유효한 포메이션은 기존 인원수 기반 배치를 유지해요.
+  final counts = formation
       .split('-')
       .map(int.tryParse)
       .whereType<int>()
@@ -43,7 +47,7 @@ FormationLayout buildFormationLayout(String formation) {
       .toList();
   if (counts.fold<int>(0, (sum, count) => sum + count) != 10) {
     // 필드 선수 10명으로 해석할 수 없으면 기본 배치로 돌아가요.
-    counts = [4, 1, 2, 3];
+    return FormationLayout(formationDesignRows['4-1-2-3']!);
   }
 
   final centerX = FormationLayout.designSize.width / 2;
@@ -84,7 +88,6 @@ FormationLayout buildFormationLayout(String formation) {
       y = baseY;
     }
     // 345px 시안에서 두 명은 87.5px, 세 명은 220px, 그 이상은 252px 폭에 배치해요.
-    // 각 포메이션의 좌표를 따로 저장하지 않고 줄 인원수로 간격을 나눠요.
     final span = switch (count) {
       1 => 0.0,
       2 => 87.5,

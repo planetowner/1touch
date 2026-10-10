@@ -21,132 +21,41 @@ class LineupPitch extends StatelessWidget {
     required this.awayColor,
   });
 
-  static const double _centerGap = 64;
-  static const double _pitchHeight = 784;
-  static const double _verticalPadding = 20;
-  static const double _minimumPlayerGap = 8;
   static const double _playerWidth = 64;
-  static const double _meaningfulHorizontalOverlap = 8;
-
-  double _requiredHalfHeight(
-    List<List<LineupPlayer>> rows,
-    double playerHeight,
-  ) {
-    // 기본 높이에서 시작하고 선수 카드 사이에 최소 8px이 필요할 때만 늘려요.
-    const baseHalfHeight =
-        (_pitchHeight - 2 * _verticalPadding - _centerGap) / 2;
-    var halfHeight = baseHalfHeight;
-    final minimumCenterGap = playerHeight + _minimumPlayerGap;
-    final players = rows.expand((row) => row).toList();
-    if (players.isEmpty) return halfHeight;
-    if (players.any((player) => player.formationPosition == null)) {
-      // 좌표가 하나라도 없으면 줄 수와 카드 높이로 필요한 공간을 계산해요.
-      final required =
-          rows.length * playerHeight + (rows.length - 1) * _minimumPlayerGap;
-      return required > halfHeight ? required : halfHeight;
-    }
-
-    final positions = [
-      for (final player in players) player.formationPosition!,
-    ];
-    final outfieldRows = [
-      for (final row in rows)
-        if (row.any((player) =>
-            player.formationPosition!.dy < FormationLayout.goalkeeper.dy))
-          row,
-    ];
-    final outfield = [
-      for (final position in positions)
-        if (position.dy < FormationLayout.goalkeeper.dy) position,
-    ];
-    var visualRows = outfieldRows.length;
-    // 같은 원본 줄의 세로 좌표 차이가 피치 높이의 1/8보다 크면 두 줄로 세요.
-    for (final row in outfieldRows) {
-      final ys = row.map((player) => player.formationPosition!.dy).toList();
-      if (ys.reduce((a, b) => a > b ? a : b) -
-              ys.reduce((a, b) => a < b ? a : b) >
-          FormationLayout.designSize.height / 8) {
-        visualRows++;
-      }
-    }
-    if (visualRows > 1 && outfield.isNotEmpty) {
-      // 기준 좌표의 줄 간격을 화면 높이로 환산해 카드 간 최소 간격을 확보해요.
-      final highest = outfield
-          .map((position) => position.dy)
-          .reduce((a, b) => a < b ? a : b);
-      final lowest = outfield
-          .map((position) => position.dy)
-          .reduce((a, b) => a > b ? a : b);
-      final rowGap = (lowest - highest) / (visualRows - 1);
-      if (rowGap > 0) {
-        final required =
-            FormationLayout.designSize.height * minimumCenterGap / rowGap;
-        if (required > halfHeight) halfHeight = required;
-      }
-    }
-
-    // 가로로 8px 이하만 겹치는 선수 칸 때문에 피치 높이를 늘리지 않아요.
-    for (var i = 0; i < positions.length; i++) {
-      for (var j = i + 1; j < positions.length; j++) {
-        final dx = (positions[i].dx - positions[j].dx).abs();
-        final dy = (positions[i].dy - positions[j].dy).abs();
-        if (dx >= _playerWidth - _meaningfulHorizontalOverlap || dy == 0) {
-          continue;
-        }
-        final required =
-            FormationLayout.designSize.height * minimumCenterGap / dy;
-        if (required > halfHeight) halfHeight = required;
-      }
-    }
-    // 골키퍼 카드가 아래쪽 경계를 넘지 않도록 필요한 높이도 반영해요.
-    final keeperClearance = (playerHeight - 16) /
-        (1 - FormationLayout.goalkeeper.dy / FormationLayout.designSize.height);
-    if (keeperClearance > halfHeight) halfHeight = keeperClearance;
-    return halfHeight.ceilToDouble();
-  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
-    final playerHeight =
-        32 + 9 + 20 * MediaQuery.textScalerOf(context).scale(1);
-    final halfHeight = [
-      _requiredHalfHeight(homeRows, playerHeight),
-      _requiredHalfHeight(awayRows, playerHeight),
-    ].reduce((a, b) => a > b ? a : b);
-    final pitchHeight = 2 * halfHeight + _centerGap + 2 * _verticalPadding;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(tr(context, "LINEUP"), style: Body2_b.style),
-        const SizedBox(height: 12),
-        Container(
-          key: const ValueKey('match-lineup-card'),
-          height: pitchHeight,
-          decoration: BoxDecoration(
-            color: isDark ? AppPalette.darkGrey : AppPalette.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: appCardShadows(context),
-          ),
-          clipBehavior: Clip.hardEdge,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _PitchMarkingsPainter(
-                    isDark
-                        ? const Color(0xFFB2B2B2)
-                        : foreground.withValues(alpha: 0.3),
+        const SizedBox(height: 16),
+        AspectRatio(
+          aspectRatio: FormationLayout.designSize.width /
+              (FormationLayout.designSize.height * 2),
+          child: Container(
+            key: const ValueKey('match-lineup-card'),
+            decoration: BoxDecoration(
+              color: isDark ? AppPalette.darkGrey : AppPalette.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: appCardShadows(context),
+            ),
+            clipBehavior: Clip.hardEdge,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _PitchMarkingsPainter(
+                      isDark
+                          ? const Color(0xFFB2B2B2)
+                          : foreground.withValues(alpha: 0.3),
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: _verticalPadding,
-                  horizontal: 0,
-                ),
-                child: Column(
+                // Past 시안은 392px 진영 두 개를 추가 여백 없이 이어 붙여요.
+                Column(
                   children: [
                     Expanded(
                       child: _LineupHalf(
@@ -158,8 +67,6 @@ class LineupPitch extends StatelessWidget {
                             : (p) => onPlayerTap!(context, p),
                       ),
                     ),
-                    // Gap that the center circle overlaps
-                    const SizedBox(height: _centerGap),
                     Expanded(
                       child: _LineupHalf(
                         rows: homeRows,
@@ -172,8 +79,8 @@ class LineupPitch extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -201,50 +108,44 @@ class _LineupHalf extends StatelessWidget {
         players.every((player) => player.formationPosition != null)) {
       return LayoutBuilder(
         builder: (context, constraints) {
-          final scaleY =
-              constraints.maxHeight / FormationLayout.designSize.height;
-          final awayLift = reverseVertical
-              ? (FormationLayout.designSize.height -
-                          FormationLayout.goalkeeper.dy) *
-                      scaleY -
-                  16
-              : 0.0;
           final playerWidth = (LineupPitch._playerWidth *
                   constraints.maxWidth /
                   FormationLayout.designSize.width)
               .clamp(0.0, LineupPitch._playerWidth);
           return FormationPlayerPositions<LineupPlayer>(
             players: players,
-            positionOf: (player) => player.formationPosition,
+            positionOf: (player) {
+              final position = player.formationPosition!;
+              // 위쪽도 이름을 원 아래에 두므로 반전 후 20px 올려요.
+              // 시안의 골키퍼 중심은 위쪽 y=40, 아래쪽 y=724예요.
+              return reverseVertical ? position.translate(0, 20) : position;
+            },
             playerWidth: LineupPitch._playerWidth,
             reverseVertical: reverseVertical,
-            playerBuilder: (player) {
-              final dot = _PlayerDot(
-                player: player,
-                width: playerWidth,
-                playerCircleColor: playerCircleColor,
-                onTap: onTap == null ? null : () => onTap!(player),
-              );
-              return reverseVertical
-                  ? Transform.translate(
-                      offset: Offset(0, -awayLift), child: dot)
-                  : dot;
-            },
+            playerBuilder: (player) => _PlayerDot(
+              player: player,
+              width: playerWidth,
+              playerCircleColor: playerCircleColor,
+              onTap: onTap == null ? null : () => onTap!(player),
+            ),
           );
         },
       );
     }
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        for (final row in rows)
-          _PlayerRow(
-            players: row,
-            playerCircleColor: playerCircleColor,
-            onTap: onTap,
-          ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          for (final row in rows)
+            _PlayerRow(
+              players: row,
+              playerCircleColor: playerCircleColor,
+              onTap: onTap,
+            ),
+        ],
+      ),
     );
   }
 }
@@ -394,20 +295,17 @@ class _PlayerDot extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 9),
+          const SizedBox(height: FormationLayout.playerNameGap),
           SizedBox(
             width: width,
-            height: 20 * MediaQuery.textScalerOf(context).scale(1),
-            child: Center(
-              child: Text(
-                playerNameLabel(context, player.playerId, player.name,
-                    short: true),
-                style: Eyebrow.style,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
+            child: Text(
+              playerNameLabel(context, player.playerId, player.name,
+                  short: true),
+              style: Eyebrow.style,
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
           ),
         ],
