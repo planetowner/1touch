@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
-import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/app_action_section_header.dart';
@@ -90,9 +89,8 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
                   ),
                   IconButton(
                     tooltip: tr(context, 'Edit favorites'),
-                    onPressed: controller.loading || !controller.loaded
-                        ? null
-                        : _edit,
+                    onPressed:
+                        controller.loading || !controller.loaded ? null : _edit,
                     icon: Icon(
                       Icons.border_color,
                       size: 24,
@@ -149,7 +147,8 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.add, size: 32, color: colors.onSurface),
+                              Icon(Icons.add,
+                                  size: 32, color: colors.onSurface),
                               const SizedBox(height: 8),
                               Text(
                                 tr(context,
@@ -596,7 +595,7 @@ class _RankingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InkWell(
         key: ValueKey('ranking-player-${player.id}'),
-        onTap: () => context.push('/players/${player.id}'),
+        onTap: () => openPlayerPage(context, player.id.toString()),
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(
           height: 56,
@@ -860,7 +859,7 @@ class _WatchCard extends StatelessWidget {
           {'name': playerNameLabel(context, player.id, player.name)}),
       child: InkWell(
         key: ValueKey('ones-to-watch-player-${player.id}'),
-        onTap: () => context.push('/players/${player.id}'),
+        onTap: () => openPlayerPage(context, player.id.toString()),
         borderRadius: BorderRadius.circular(16),
         child: Container(
           key: const ValueKey('ones-to-watch-card'),

@@ -198,7 +198,7 @@ void main() {
           ),
         ),
         GoRoute(
-          path: '/match-player/:playerId',
+          path: '/players/:playerId',
           builder: (_, state) => Scaffold(
             body: Text('Player ${state.pathParameters['playerId']}'),
           ),

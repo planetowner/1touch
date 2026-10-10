@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/detail_navigation.dart';
 import 'package:onetouch/core/legal_document_content.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
@@ -30,13 +30,11 @@ class AboutDetailPage extends StatefulWidget {
     super.key,
     required this.section,
     this.showSearch = false,
-    this.onSearch,
     this.bottomNavigationBar,
   });
 
   final AboutSection section;
   final bool showSearch;
-  final VoidCallback? onSearch;
   final Widget? bottomNavigationBar;
 
   @override
@@ -108,8 +106,7 @@ class _AboutDetailPageState extends State<AboutDetailPage> {
                         if (widget.showSearch)
                           IconButton(
                             key: const ValueKey('about-detail-search'),
-                            onPressed: widget.onSearch ??
-                                () => context.push('/search'),
+                            onPressed: () => openDetailPage(context, '/search'),
                             padding: EdgeInsets.zero,
                             style: IconButton.styleFrom(
                               minimumSize: const Size(32, 32),

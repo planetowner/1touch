@@ -316,6 +316,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Player 1001'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('injured-player-1001')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

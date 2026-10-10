@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/detail_navigation.dart';
 import 'package:onetouch/core/player_navigation.dart';
+import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/features/player/player_directory_widgets.dart';
 import 'package:onetouch/features/player/player_directory_sheets.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
@@ -13,7 +15,7 @@ import 'support/player_detail_fixture.dart';
 
 void main() {
   setUpAppCatalog();
-  testWidgets('opening a player outside the shell selects the Players branch',
+  testWidgets('opening a player outside the shell returns to its source',
       (tester) async {
     final router = GoRouter(
       initialLocation: '/search',
@@ -86,7 +88,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Player lee-kang-in'), findsOneWidget);
-    expect(find.text('Selected branch 2'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.text('Open player'), findsOneWidget);
+    expect(find.text('Player lee-kang-in'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -131,9 +136,75 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Player 1'), findsOneWidget);
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(find.byKey(ValueKey(rowKey)), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('full ranking popup stays open after swiping back from a player',
+      (tester) async {
+    final root = GlobalKey<NavigatorState>();
+    final repository = FakePlayerDirectoryRepository();
+    final router = GoRouter(
+      navigatorKey: root,
+      initialLocation: '/players',
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (_, __, shell) => Scaffold(body: shell),
+          branches: [
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/players',
+                builder: (_, __) => Scaffold(
+                  body: SingleChildScrollView(
+                    child: PlayerRankingPanel(
+                      repository: repository,
+                      detailRepository: FakePlayerDetailRepository(),
+                    ),
+                  ),
+                ),
+                routes: [
+                  detailRoute(
+                    rootNavigatorKey: root,
+                    path: ':id',
+                    pageBuilder: (_, state) => MaterialPage<void>(
+                      key: state.pageKey,
+                      child: Scaffold(
+                        body: Center(
+                            child:
+                                Text('Player ${state.pathParameters['id']}')),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ]),
+          ],
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(
+      routerConfig: router,
+      theme: app_style.whitetheme.copyWith(platform: TargetPlatform.iOS),
+    ));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('See all'));
+    await tester.tap(find.text('See all'));
+    await tester.pumpAndSettle();
+    final sheetState = tester.state(find.byType(PlayerFullRankingSheet));
+    await tester.tap(find.byKey(const ValueKey('full-ranking-player-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Player 1'), findsOneWidget);
+    expect(find.byType(PlayerFullRankingSheet), findsNothing);
+    await tester.dragFrom(const Offset(24, 300), const Offset(520, 0));
+    await tester.pumpAndSettle();
+    expect(tester.state(find.byType(PlayerFullRankingSheet)), same(sheetState));
+    expect(find.byKey(const ValueKey('full-ranking-player-1')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('completed player match opens the past match route',
       (tester) async {

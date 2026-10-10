@@ -1,8 +1,27 @@
+import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/detail_navigation.dart';
+
 /// Keeps a notification destination while the current account is loading.
 /// A destination opened under one session must not carry over to another user.
 class NotificationNavigation {
   String? _destination;
   String? _sessionToken;
+
+  void open(
+    String destination, {
+    required GoRouter router,
+    required String? sessionToken,
+    required bool isSessionReady,
+  }) {
+    if (!isSupportedDestination(destination) || sessionToken == null) return;
+    final currentPath = router.routeInformationProvider.value.uri.path;
+    // 앱 준비 중에는 로그인 화면 위로 상세를 쌓지 않고 목적지만 보관해요.
+    if (!isSessionReady || currentPath == '/' || currentPath == '/session') {
+      queue(destination, sessionToken: sessionToken);
+      return;
+    }
+    pushDetailPage(router, destination);
+  }
 
   void queue(String destination, {required String sessionToken}) {
     if (!isSupportedDestination(destination)) return;

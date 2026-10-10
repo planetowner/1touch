@@ -570,7 +570,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Player 1'), findsOneWidget);
-    expect(router.routeInformationProvider.value.uri.path, '/players/1');
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.byType(Profile), findsOneWidget);
+    expect(followedPlayer, findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

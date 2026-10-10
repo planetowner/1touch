@@ -6,7 +6,7 @@ import 'package:onetouch/core/team_navigation.dart';
 
 void main() {
   setUpAppCatalog();
-  testWidgets('opening a team outside the shell selects the Team branch',
+  testWidgets('opening a team outside the shell returns to its source',
       (tester) async {
     final router = GoRouter(
       initialLocation: '/search',
@@ -80,11 +80,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Team 83'), findsOneWidget);
-    expect(find.text('Selected branch 1'), findsOneWidget);
 
     router.pop();
     await tester.pumpAndSettle();
-    expect(find.text('Previous team'), findsOneWidget);
+    expect(find.text('Open Barcelona'), findsOneWidget);
     expect(find.text('Team 83'), findsNothing);
     expect(tester.takeException(), isNull);
   });

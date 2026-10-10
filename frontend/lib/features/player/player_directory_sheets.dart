@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
-import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/app_close_header.dart';
 import 'package:onetouch/core/debounced_search_controller.dart';
@@ -718,7 +718,7 @@ class _FullRankingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InkWell(
         key: ValueKey('full-ranking-player-${player.id}'),
-        onTap: () => context.push('/players/${player.id}'),
+        onTap: () => openPlayerPage(context, player.id.toString()),
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(
           height: 56,

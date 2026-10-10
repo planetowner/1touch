@@ -415,6 +415,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('search-player-123')));
     await tester.pumpAndSettle();
     expect(find.text('Player ID 123'), findsOneWidget);
+    GoRouter.of(tester.element(find.text('Player ID 123'))).pop();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('search-player-123')), findsOneWidget);
+    expect(find.byKey(const ValueKey('search-team-8')), findsNothing);
+    expect(find.text('Example'), findsOneWidget);
   });
   testWidgets(
       'older responses cannot replace a newer query or restore cleared results',

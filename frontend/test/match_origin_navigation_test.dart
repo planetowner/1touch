@@ -54,7 +54,7 @@ void main() {
           ),
         ),
         GoRoute(
-          path: '/match-team/:teamId',
+          path: '/team/:teamId',
           parentNavigatorKey: rootNavigatorKey,
           builder: (context, state) => Scaffold(
             body: Column(
@@ -74,7 +74,7 @@ void main() {
           ),
         ),
         GoRoute(
-          path: '/match-player/:playerId',
+          path: '/players/:playerId',
           parentNavigatorKey: rootNavigatorKey,
           builder: (context, state) => Scaffold(
             body: Column(

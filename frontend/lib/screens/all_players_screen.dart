@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/detail_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
@@ -114,7 +115,7 @@ class _PlayerCardState extends State<PlayerCard>
 
   void _pushMatchesPage() {
     if (widget.id case final playerId?) {
-      context.push('/players/$playerId/matches');
+      openDetailPage(context, '/players/$playerId/matches');
     }
   }
 
