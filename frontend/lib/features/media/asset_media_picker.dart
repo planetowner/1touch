@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:insta_assets_picker/insta_assets_picker.dart';
@@ -39,30 +37,23 @@ Future<List<XFile>> pickAssetMedia(
   BuildContext context, {
   required int maxAssets,
   RequestType requestType = RequestType.common,
-  List<double> cropRatios = kDefaultInstaCropRatios,
 }) async {
-  final export = Completer<InstaAssetsExportDetails>();
-  final selected = await InstaAssetPicker.pickAssets(
+  // 목록 썸네일에서만 잘라 보여 주고, 첨부 파일에는 사진 전체를 보존해요.
+  final selected = await AssetPicker.pickAssets(
     context,
-    maxAssets: maxAssets,
-    requestType: requestType,
-    pickerConfig: InstaAssetPickerConfig(
-      closeOnComplete: true,
-      cropDelegate: InstaAssetCropDelegate(cropRatios: cropRatios),
+    pickerConfig: AssetPickerConfig(
+      maxAssets: maxAssets,
+      requestType: requestType,
+      textDelegate: InstaAssetPicker.defaultTextDelegate(context),
     ),
-    onCompleted: (stream) => export.complete(stream.last),
   );
   if (selected == null || selected.isEmpty) return [];
 
-  final details = await export.future;
-  if (details.data.length != selected.length) {
-    throw StateError('Unable to export all selected media.');
-  }
   final files = <XFile>[];
-  for (final item in details.data) {
-    final asset = item.selectedData.asset;
+  for (final asset in selected) {
+    // iOS의 file은 사진 전체 크기를 유지한 JPEG라 HEIC도 서버에 올릴 수 있어요.
     final file = asset.type == AssetType.image
-        ? item.croppedFile
+        ? await asset.file
         : await asset.originFile;
     if (file == null) {
       throw StateError('Unable to export selected media.');
