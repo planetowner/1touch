@@ -263,6 +263,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Player 101'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('transfer-1')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

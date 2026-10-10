@@ -80,6 +80,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final section in AboutSection.values) {
+    testWidgets('${section.name} search swipes back through the original pages',
+        (tester) async {
+      final router = _router('/profile');
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(
+        routerConfig: router,
+        theme: whitetheme.copyWith(platform: TargetPlatform.iOS),
+      ));
+      router.push('/profile/about');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(section.titleKey));
+      await tester.pumpAndSettle();
+      final documentState = tester.state(find.byType(AboutDetailPage));
+
+      await tester.tap(find.byKey(const ValueKey('about-detail-search')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('search-page')), findsOneWidget);
+      await _swipeBack(tester);
+      expect(find.byType(AboutDetailPage), findsOneWidget);
+      expect(tester.state(find.byType(AboutDetailPage)), same(documentState));
+
+      await _swipeBack(tester);
+      expect(find.byType(AboutDetailPage), findsNothing);
+      expect(find.text(section.titleKey), findsOneWidget);
+      await _swipeBack(tester);
+      expect(find.byKey(const ValueKey('profile-page')), findsOneWidget);
+      expect(router.canPop(), isFalse);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('signed-in detail search and bottom tabs navigate',
       (tester) async {
     final router = _router('/profile/about');
@@ -200,7 +232,7 @@ GoRouter _router(String initialLocation) {
       ),
       GoRoute(
         path: '/profile',
-        builder: (context, state) => const Scaffold(),
+        builder: (context, state) => const Scaffold(key: ValueKey('profile-page')),
       ),
       profileAboutRoute(navigatorKey: rootNavigatorKey),
       GoRoute(
@@ -220,6 +252,11 @@ GoRouter _router(String initialLocation) {
       ),
     ],
   );
+}
+
+Future<void> _swipeBack(WidgetTester tester) async {
+  await tester.dragFrom(const Offset(24, 300), const Offset(520, 0));
+  await tester.pumpAndSettle();
 }
 
 Future<void> _tapConsentLink(WidgetTester tester, String label) async {

@@ -5,6 +5,7 @@ import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
+import 'package:onetouch/core/detail_navigation.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
@@ -359,7 +360,8 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   void _openStandingCompetition(int competitionId) {
-    context.push(
+    openDetailPage(
+      context,
       '/team/${widget.teamId}/standing?competitionId=$competitionId',
     );
   }

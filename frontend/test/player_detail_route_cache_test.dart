@@ -36,7 +36,7 @@ class _CacheRepository extends FakePlayerDetailRepository
 }
 
 void main() {
-  for (final path in ['/players/1', '/match-player/1']) {
+  for (final path in ['/players/1', '/players/1/matches']) {
     testWidgets('$path waits for local detail before opening', (tester) async {
       final repository = _CacheRepository();
       final router = GoRouter(initialLocation: '/start', routes: [

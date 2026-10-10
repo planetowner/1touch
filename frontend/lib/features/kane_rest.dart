@@ -7,7 +7,6 @@ import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/player_navigation.dart';
-import 'package:onetouch/core/match_origin_navigation.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
@@ -159,15 +158,7 @@ class _Header extends StatelessWidget {
     void openPlayer() {
       final playerId = player.playerId;
       if (playerId == null) return;
-      final router = GoRouter.of(context);
-      final pushFromMatch = shouldPushFromMatch(context);
-      final destination = playerPageLocation(context, playerId.toString());
-      Navigator.of(context).pop();
-      if (pushFromMatch) {
-        router.push(destination);
-      } else {
-        router.go(destination);
-      }
+      openPlayerPage(context, playerId.toString(), dismissSheet: true);
     }
 
     return GestureDetector(

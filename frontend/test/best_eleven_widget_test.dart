@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/detail_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
@@ -95,7 +96,9 @@ void main() {
   }
 
   testWidgets('best XI player returns to the team on back', (tester) async {
+    final root = GlobalKey<NavigatorState>();
     final router = GoRouter(
+      navigatorKey: root,
       initialLocation: '/team/9',
       routes: [
         StatefulShellRoute.indexedStack(
@@ -140,10 +143,15 @@ void main() {
                 path: '/players',
                 builder: (_, __) => const Text('Players'),
                 routes: [
-                  GoRoute(
+                  detailRoute(
                     path: ':id',
-                    builder: (_, state) =>
-                        Text('Player ${state.pathParameters['id']}'),
+                    rootNavigatorKey: root,
+                    pageBuilder: (_, state) => MaterialPage<void>(
+                      key: state.pageKey,
+                      child: Scaffold(
+                        body: Text('Player ${state.pathParameters['id']}'),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -155,7 +163,7 @@ void main() {
     addTearDown(router.dispose);
 
     await tester.pumpWidget(MaterialApp.router(
-      theme: whitetheme,
+      theme: whitetheme.copyWith(platform: TargetPlatform.iOS),
       routerConfig: router,
     ));
     await tester.tap(
@@ -165,7 +173,7 @@ void main() {
 
     expect(find.text('Player 100'), findsOneWidget);
     expect(router.canPop(), isTrue);
-    router.pop();
+    await tester.dragFrom(const Offset(24, 300), const Offset(520, 0));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('team-best-eleven-card')), findsOneWidget);

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/detail_navigation.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -145,18 +146,12 @@ Future<void> _startNotificationServices(
   }
 }
 
-void _openNotificationPayload(String payload) {
-  if (!isSupportedDestination(payload) || !authSession.isAuthenticated) return;
-  final currentPath = _router.routeInformationProvider.value.uri.path;
-  if (!isAppSessionReady || currentPath == '/' || currentPath == '/session') {
-    notificationNavigation.queue(
+void _openNotificationPayload(String payload) => notificationNavigation.open(
       payload,
-      sessionToken: authSession.accessToken!,
+      router: _router,
+      sessionToken: authSession.accessToken,
+      isSessionReady: isAppSessionReady,
     );
-    return;
-  }
-  _router.go(payload);
-}
 
 Future<void> restorePlayerDetailBeforeNavigation(
   String? rawPlayerId, {
@@ -217,7 +212,6 @@ GoRoute profileAboutRoute({GlobalKey<NavigatorState>? navigatorKey}) => GoRoute(
           detailBuilder: (section) => AboutDetailPage(
             section: section,
             showSearch: true,
-            onSearch: () => context.go('/search'),
             bottomNavigationBar: _profileBottomNavigationBar(context),
           ),
         ),
@@ -384,20 +378,25 @@ final GoRouter _router = GoRouter(
               builder: (context, teamId, _) => TeamScreen(teamId: teamId),
             ),
             routes: [
-              GoRoute(
+              detailRoute(
                 path: ':id',
+                rootNavigatorKey: _rootNavigatorKey,
                 redirect: (context, state) =>
                     redirectUnsupportedTeamPath(state.pathParameters['id']),
                 pageBuilder: (context, state) {
                   final teamId = int.parse(state.pathParameters['id']!);
                   return MaterialPage<void>(
                     key: state.pageKey,
-                    child: TeamScreen(teamId: teamId),
+                    child: _DetailPage(
+                      selectedIndex: 1,
+                      child: TeamScreen(teamId: teamId),
+                    ),
                   );
                 },
               ),
-              GoRoute(
+              detailRoute(
                 path: ':id/standing',
+                rootNavigatorKey: _rootNavigatorKey,
                 redirect: (context, state) =>
                     redirectUnsupportedTeamPath(state.pathParameters['id']),
                 pageBuilder: (context, state) {
@@ -407,10 +406,13 @@ final GoRouter _router = GoRouter(
                   );
                   return _detailSlidePage(
                     state,
-                    TeamScreen(
-                      teamId: teamId,
-                      initialTabIndex: 2,
-                      initialStandingCompetitionId: competitionId,
+                    _DetailPage(
+                      selectedIndex: 1,
+                      child: TeamScreen(
+                        teamId: teamId,
+                        initialTabIndex: 2,
+                        initialStandingCompetitionId: competitionId,
+                      ),
                     ),
                   );
                 },
@@ -423,8 +425,9 @@ final GoRouter _router = GoRouter(
             path: '/players',
             builder: (context, state) => Players(),
             routes: [
-              GoRoute(
+              detailRoute(
                 path: ':id',
+                rootNavigatorKey: _rootNavigatorKey,
                 redirect: (context, state) async {
                   await restorePlayerDetailBeforeNavigation(
                       state.pathParameters['id']);
@@ -434,12 +437,16 @@ final GoRouter _router = GoRouter(
                   final playerId = state.pathParameters['id']!;
                   return MaterialPage<void>(
                     key: state.pageKey,
-                    child: PlayerCard(playerId: int.tryParse(playerId)),
+                    child: _DetailPage(
+                      selectedIndex: 2,
+                      child: PlayerCard(playerId: int.tryParse(playerId)),
+                    ),
                   );
                 },
               ),
-              GoRoute(
+              detailRoute(
                 path: ':id/matches',
+                rootNavigatorKey: _rootNavigatorKey,
                 redirect: (context, state) async {
                   await restorePlayerDetailBeforeNavigation(
                       state.pathParameters['id']);
@@ -447,9 +454,12 @@ final GoRouter _router = GoRouter(
                 },
                 pageBuilder: (context, state) => _detailSlidePage(
                   state,
-                  PlayerCard(
-                    playerId: int.tryParse(state.pathParameters['id']!),
-                    initialTabIndex: 2,
+                  _DetailPage(
+                    selectedIndex: 2,
+                    child: PlayerCard(
+                      playerId: int.tryParse(state.pathParameters['id']!),
+                      initialTabIndex: 2,
+                    ),
                   ),
                 ),
               ),
@@ -495,33 +505,6 @@ final GoRouter _router = GoRouter(
           initialFixture: routeData is Fixture ? routeData : null,
         );
       },
-    ),
-    GoRoute(
-      path: '/match-team/:teamId',
-      parentNavigatorKey: _rootNavigatorKey,
-      redirect: (context, state) =>
-          redirectUnsupportedTeamPath(state.pathParameters['teamId']),
-      builder: (context, state) => _MatchOriginDetailPage(
-        selectedIndex: 1,
-        child: TeamScreen(
-          teamId: int.parse(state.pathParameters['teamId']!),
-        ),
-      ),
-    ),
-    GoRoute(
-      path: '/match-player/:playerId',
-      parentNavigatorKey: _rootNavigatorKey,
-      redirect: (context, state) async {
-        await restorePlayerDetailBeforeNavigation(
-            state.pathParameters['playerId']);
-        return null;
-      },
-      builder: (context, state) => _MatchOriginDetailPage(
-        selectedIndex: 2,
-        child: PlayerCard(
-          playerId: int.tryParse(state.pathParameters['playerId']!),
-        ),
-      ),
     ),
     GoRoute(
       path: '/notifications',
@@ -711,11 +694,10 @@ class MainScreen extends StatelessWidget {
   }
 }
 
-/// 팀이나 선수 상세 화면 아래에 출발 경기를 남겨 시스템 뒤로 가기와 iOS 스와이프로 같은 경기로 돌아간다.
-/// Keeps the source match beneath a team or player detail page so system back
-/// and iOS swipe-back return to that exact match.
-class _MatchOriginDetailPage extends StatelessWidget {
-  const _MatchOriginDetailPage({
+/// 상세 화면은 루트 내비게이터에 열어 검색·팝업 위에서도 보이게 해요.
+/// 하단 메뉴는 상세 종류에 맞추고, 뒤로 가면 진입 화면을 그대로 보여줘요.
+class _DetailPage extends StatelessWidget {
+  const _DetailPage({
     required this.selectedIndex,
     required this.child,
   });

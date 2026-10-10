@@ -84,7 +84,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('notification rows open their API destination routes',
+  testWidgets('notification rows swipe back from their API destination routes',
       (tester) async {
     final router = GoRouter(
       initialLocation: '/notifications',
@@ -105,15 +105,20 @@ void main() {
     );
     addTearDown(router.dispose);
     await tester.pumpWidget(MaterialApp.router(
-      theme: app_style.darktheme,
+      theme: app_style.darktheme.copyWith(platform: TargetPlatform.iOS),
       routerConfig: router,
     ));
     await tester.pumpAndSettle();
+    final inboxState = tester.state(find.byType(NotificationInboxPage));
 
     await tester.tap(find.text('Reaction'));
     await tester.pumpAndSettle();
 
     expect(find.text('post 12'), findsOneWidget);
+    await tester.dragFrom(const Offset(24, 300), const Offset(520, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('Reaction'), findsOneWidget);
+    expect(tester.state(find.byType(NotificationInboxPage)), same(inboxState));
     expect(tester.takeException(), isNull);
   });
 }
