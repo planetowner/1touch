@@ -158,7 +158,7 @@ class _PlayersState extends State<Players> {
               child: SafeArea(
                 top: false,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                  padding: const EdgeInsets.only(top: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -167,18 +167,27 @@ class _PlayersState extends State<Players> {
                               playerFollowingController,
                           searchRepository: widget.detailRepository),
                       const SizedBox(height: 32),
-                      PlayerRankingPanel(
-                          key: _rankingKey,
-                          repository:
-                              widget.repository ?? playerDirectoryRepository,
-                          detailRepository: widget.detailRepository,
-                          followingController: widget.followingController ??
-                              playerFollowingController),
-                      const SizedBox(height: 48),
-                      PlayersToWatch(
-                        key: _watchKey,
-                        repository:
-                            widget.repository ?? playerDirectoryRepository,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            PlayerRankingPanel(
+                                key: _rankingKey,
+                                repository: widget.repository ??
+                                    playerDirectoryRepository,
+                                detailRepository: widget.detailRepository,
+                                followingController:
+                                    widget.followingController ??
+                                        playerFollowingController),
+                            const SizedBox(height: 48),
+                            PlayersToWatch(
+                              key: _watchKey,
+                              repository: widget.repository ??
+                                  playerDirectoryRepository,
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 24),
                     ],

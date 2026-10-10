@@ -91,6 +91,68 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('four favorite photos stay visible and tappable at 393px',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final following = FakeFollowingPlayersRepository()
+      ..players.value = [
+        for (var id = 1; id <= 4; id++)
+          FollowingPlayer(playerId: id, name: 'Player $id', imagePath: null),
+      ];
+    final controller = PlayerFollowingController(repository: following);
+    addTearDown(controller.dispose);
+    final router = GoRouter(routes: [
+      GoRoute(
+        path: '/',
+        builder: (_, __) => Players(
+          repository: FakePlayerDirectoryRepository(),
+          detailRepository: FakePlayerDetailRepository(),
+          followingController: controller,
+        ),
+      ),
+      GoRoute(
+        path: '/players/:id',
+        builder: (_, state) => Text('Opened player ${state.pathParameters['id']}'),
+      ),
+    ]);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(
+      theme: app_style.whitetheme,
+      routerConfig: router,
+    ));
+    await tester.pumpAndSettle();
+
+    final favorites = find.byType(PlayerFavorites);
+    final list = find.descendant(of: favorites, matching: find.byType(ListView));
+    final viewport = tester.getRect(list);
+    for (var id = 1; id <= 4; id++) {
+      final circle = tester.getRect(
+        find.byKey(ValueKey('favorite-player-circle-$id')),
+      );
+      expect(circle.size, const Size.square(74));
+      expect(circle.left, greaterThanOrEqualTo(viewport.left));
+      expect(circle.right, lessThanOrEqualTo(viewport.right));
+    }
+    expect(tester.getTopLeft(find.text('FAVORITE PLAYERS')).dx, 24);
+    expect(tester.getRect(find.byKey(const ValueKey('players-ranking-card'))).left,
+        24);
+    final fourthFinder =
+        find.byKey(const ValueKey('favorite-player-circle-4'));
+    await tester.drag(list, const Offset(-200, 0));
+    await tester.pumpAndSettle();
+    expect(tester.getRect(fourthFinder).right, 393 - 24);
+    await tester.drag(list, const Offset(200, 0));
+    await tester.pumpAndSettle();
+    final fourth = tester.getRect(
+      fourthFinder,
+    );
+    await tester.tapAt(Offset(fourth.right - 2, fourth.center.dy));
+    await tester.pumpAndSettle();
+    expect(find.text('Opened player 4'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     for (final dark in [false, true]) {
       testWidgets('real player directory fits $size dark=$dark',

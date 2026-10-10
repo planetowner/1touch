@@ -384,14 +384,11 @@ class _ProfileState extends State<Profile> {
                   _buildTeamList(),
                   const SizedBox(height: 48),
 
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: PlayerFavorites(
-                      title: 'Following Players',
-                      controller: widget.followingController ??
-                          playerFollowingController,
-                      searchRepository: null,
-                    ),
+                  PlayerFavorites(
+                    title: 'Following Players',
+                    controller: widget.followingController ??
+                        playerFollowingController,
+                    searchRepository: null,
                   ),
                   const SizedBox(height: 48),
 
