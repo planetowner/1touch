@@ -20,6 +20,7 @@ import 'package:onetouch/data/profile/profile_avatar_repository_provider.dart'
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/features/media/asset_media_picker.dart';
+import 'package:onetouch/features/media/profile_avatar.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/data/auth/social_identity_service.dart';
@@ -397,11 +398,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             children: [
               const SizedBox(height: 16),
 
-              // Profile Image Section
               Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
+                child: ProfileAvatar(
+                  actionKey: const ValueKey('profile-avatar-action'),
+                  onEdit: _showAvatarActions,
+                  isSaving: _isAvatarSaving,
+                  child: Stack(children: [
                     CircleAvatar(
                       radius: 54,
                       backgroundColor: appColors.subtleBackground,
@@ -436,28 +438,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         shape: BoxShape.circle,
                       ),
                     ),
-                    GestureDetector(
-                      key: const ValueKey('profile-avatar-action'),
-                      onTap: _isAvatarSaving ? null : _showAvatarActions,
-                      behavior: HitTestBehavior.opaque,
-                      child: SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: Center(
-                          child: _isAvatarSaving
-                              ? CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: colors.onSurface,
-                                )
-                              : Icon(
-                                  Icons.camera_alt_outlined,
-                                  color: colors.onSurface,
-                                  size: 26,
-                                ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ]),
                 ),
               ),
 

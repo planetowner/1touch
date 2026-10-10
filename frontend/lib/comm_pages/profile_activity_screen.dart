@@ -8,6 +8,7 @@ import 'package:onetouch/features/community/community_ui.dart';
 import 'package:onetouch/features/community/community_header_slivers.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
+import 'package:onetouch/features/media/profile_avatar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/core/style.dart';
@@ -138,8 +139,10 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
               const SizedBox(height: 24),
               SizedBox.square(
                   dimension: 108,
-                  child: Stack(clipBehavior: Clip.none, children: [
-                    ClipOval(
+                  child: ProfileAvatar(
+                    actionKey: const ValueKey('profile-activity-camera'),
+                    onEdit: profile.isSelf ? _editProfile : null,
+                    child: ClipOval(
                         child: ColoredBox(
                             color:
                                 Theme.of(context).brightness == Brightness.dark
@@ -154,21 +157,7 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, __, ___) =>
                                         placeholder))),
-                    if (profile.isSelf)
-                      Positioned(
-                          right: -4,
-                          bottom: -4,
-                          child: SizedBox.square(
-                              dimension: 48,
-                              child: IconButton.filled(
-                                  key:
-                                      const ValueKey('profile-activity-camera'),
-                                  onPressed: _editProfile,
-                                  style: IconButton.styleFrom(
-                                      backgroundColor: AppPalette.lightGrey),
-                                  icon: const CommunityIcon('camera',
-                                      color: Colors.white)))),
-                  ])),
+                  )),
               const SizedBox(height: 48),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),

@@ -27,8 +27,8 @@ void main() {
     await tester.tap(find.text('OPEN'));
     await tester.pumpAndSettle();
 
-    final avatarCenter = tester.getCenter(find.byType(CircleAvatar));
-    final cameraCenter = tester.getCenter(
+    final avatarRect = tester.getRect(find.byType(CircleAvatar));
+    final cameraRect = tester.getRect(
       find.byKey(const ValueKey('profile-avatar-action')),
     );
     final usernameField = tester.widget<TextField>(
@@ -40,7 +40,9 @@ void main() {
       find.byKey(const ValueKey('profile-email-field')),
     ];
 
-    expect(cameraCenter, avatarCenter);
+    expect(cameraRect.size, const Size.square(48));
+    expect(cameraRect.right, avatarRect.right + 4.5);
+    expect(cameraRect.bottom, avatarRect.bottom + 4);
     expect(usernameField.textAlign, TextAlign.right);
     expect(usernameField.decoration?.filled, isFalse);
     expect(find.byKey(const ValueKey('profile-password-field')), findsNothing);
