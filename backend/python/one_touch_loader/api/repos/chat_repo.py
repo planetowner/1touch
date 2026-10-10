@@ -3,9 +3,10 @@ from mysql.connector import IntegrityError
 from ...core.fixture_states import LIVE_STATE_IDS
 from ..db import fetch_all_dict, fetch_one_dict, transaction
 from ..services.chat_aliases import new_nickname, public_chat_message
-from ..services.community_access import require_favorite_team_access
+from ..services.community_access import require_followed_team_access
 from ..services.community_periods import utc_now
 from .users_repo import get_user, lock_user, require_profile
+from .teams_repo import list_following_team_ids
 from ..services.content_visibility import blocked_sql
 from ..schemas.community_language import CommunityLanguage
 
@@ -28,7 +29,8 @@ def live_fixture_teams(fixture_id: int, cur=None) -> tuple[int, int]:
 
 def check_chat_user(user: dict, fixture_id: int, cur=None) -> None:
     require_profile(user)
-    require_favorite_team_access(user["favorite_team_id"], live_fixture_teams(fixture_id, cur))
+    participants = live_fixture_teams(fixture_id, cur)
+    require_followed_team_access(list_following_team_ids(user["user_id"], cur=cur), participants)
 
 
 def history(user_id: int, fixture_id: int, before_id: int | None, after_id: int | None, limit: int, *, language: CommunityLanguage):

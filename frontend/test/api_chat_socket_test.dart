@@ -138,7 +138,7 @@ void main() {
       ),
     );
 
-    await connection.finish(4403, 'Favorite team is not participating');
+    await connection.finish(4403, 'Chat requires following a participating team');
 
     await error;
   });

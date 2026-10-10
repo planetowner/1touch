@@ -578,7 +578,7 @@ void main() {
     });
   }
 
-  testWidgets('shows the backend favorite-team restriction', (tester) async {
+  testWidgets('shows the backend followed-team restriction', (tester) async {
     await tester.pumpWidget(
       _app(
         repository: _ChatRepository(const []),
@@ -595,7 +595,7 @@ void main() {
     expect(find.text('Couldn\'t connect to chat'), findsOneWidget);
     expect(
       find.text(
-        'Chat is only available to supporters of the participating teams.',
+        'Chat is available when you follow either team in this match.',
       ),
       findsOneWidget,
     );

@@ -282,7 +282,7 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
       }
       if (error.isForbidden) {
         return tr(context,
-            'Chat is only available to supporters of the participating teams.');
+            'Chat is available when you follow either team in this match.');
       }
       return error.message;
     }
@@ -292,7 +292,7 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
     }
     if (text.contains('status 403')) {
       return tr(context,
-          'Chat is only available to supporters of the participating teams.');
+          'Chat is available when you follow either team in this match.');
     }
     return tr(context, 'Please check your connection and try again.');
   }
