@@ -1616,10 +1616,10 @@ const appMessages = <String, MessageTranslations>{
     ja: "ライブチャットは試合中のみ利用できます。",
     zh: "仅可在比赛进行时使用实时聊天。"
   ),
-  "Chat is only available to supporters of the participating teams.": (
-    ko: "경기에 참여한 팀의 팬만 채팅할 수 있어요.",
-    ja: "対戦チームのサポーターのみチャットに参加できます。",
-    zh: "仅对阵球队的支持者可参与聊天。"
+  "Chat is available when you follow either team in this match.": (
+    ko: "이 경기의 두 팀 중 한 팀을 팔로우하면 채팅할 수 있어요.",
+    ja: "対戦するどちらかのチームをフォローすると、チャットに参加できます。",
+    zh: "关注本场比赛任意一支球队即可参与聊天。"
   ),
   "Just now": (ko: "방금 전", ja: "たった今", zh: "刚刚"),
   "{count}m ago": (ko: "{count}분 전", ja: "{count}分前", zh: "{count}分钟前"),

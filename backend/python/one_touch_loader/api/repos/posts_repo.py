@@ -2,7 +2,7 @@
 from enum import Enum
 from fastapi import HTTPException
 from ..db import fetch_all_dict, fetch_one_dict, transaction
-from ..services.community_access import community_read_team_ids, require_favorite_team_access, require_community_read_access
+from ..services.community_access import community_read_team_ids, require_favorite_team_access, require_community_read_access, require_followed_team_access
 from ..services.community_periods import PostPeriod, period_bounds, public_row, utc_now
 from ..services.community_retention import UNPUBLISHED_RETENTION
 from .users_repo import get_user, lock_user, require_profile
@@ -394,7 +394,8 @@ def report_content(user_id: int, target: str, target_id: int, reason: str) -> No
             row = cur.fetchone()
             if row is None:
                 raise HTTPException(404, "Content not found")
-            require_favorite_team_access(user["favorite_team_id"], (row["home_team_id"], row["away_team_id"]))
+            require_followed_team_access(list_following_team_ids(user_id, cur=cur),
+                                         (row["home_team_id"], row["away_team_id"]))
             require_visible_author(user_id, row["user_id"])
         cur.execute(f"INSERT INTO content_reports (user_id,{column},reason,created_at) VALUES (%s,%s,%s,%s)",
                     (user_id, target_id, reason, utc_now()))

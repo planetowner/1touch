@@ -35,16 +35,19 @@ def get_teams(team_ids: List[int]) -> List[Dict[str, Any]]:
     )
 
 
-def list_following_team_ids(user_id: int) -> List[int]:
-    rows = fetch_all_dict(
-        """
+def list_following_team_ids(user_id: int, cur=None) -> List[int]:
+    sql = """
         SELECT team_id
         FROM user_following_teams
         WHERE user_id=%s
         ORDER BY position ASC
-        """,
-        (user_id,),
-    )
+        """
+    if cur is None:
+        rows = fetch_all_dict(sql, (user_id,))
+    else:
+        # 채팅 저장·신고는 팔로우 변경과 같은 사용자 잠금 안에서 목록을 읽어요.
+        cur.execute(sql, (user_id,))
+        rows = cur.fetchall()
     return [int(r["team_id"]) for r in rows]
 
 

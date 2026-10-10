@@ -237,7 +237,7 @@ ChatSocketException _exceptionForClose(int? code, String? reason) {
   final message = switch (code) {
     4400 => 'The chat server rejected an invalid message.',
     4401 => 'Your chat session has expired. Please sign in again.',
-    4403 => 'Chat is limited to supporters of the participating teams.',
+    4403 => 'Chat is available when you follow either team in this match.',
     4410 => 'Live chat is only available during the match.',
     _ => 'Fixture chat disconnected.',
   };

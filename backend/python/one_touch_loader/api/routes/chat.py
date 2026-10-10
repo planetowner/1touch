@@ -75,7 +75,7 @@ class ChatHub:
             # 같은 경기라도 선택한 언어가 같은 연결에만 전달해요.
             for peer in tuple(self.rooms.get(room, ())):
                 try:
-                    # 최초 연결 이후 최애팀 변경·로그아웃·만료도 매 전달 전에 반영해요.
+                    # 최초 연결 이후 팔로우 변경·로그아웃·만료도 매 전달 전에 반영해요.
                     recipient = await run_in_threadpool(_authorized, peer.token, fixture_id)
                     if await run_in_threadpool(is_blocked, recipient["user_id"], message["user_id"]):
                         continue

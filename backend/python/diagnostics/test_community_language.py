@@ -29,6 +29,8 @@ class LanguageRepositoryTests(unittest.TestCase):
             CREATE TABLE users (user_id INTEGER PRIMARY KEY, username TEXT, display_name TEXT,
                 favorite_team_id INTEGER, suspended_until TEXT);
             INSERT INTO users VALUES (1,'home','Home',6,NULL),(2,'away','Away',14,NULL);
+            CREATE TABLE user_following_teams (user_id INTEGER, team_id INTEGER, position INTEGER);
+            INSERT INTO user_following_teams VALUES (1,6,0),(2,14,0);
             CREATE TABLE user_blocks (user_id INTEGER, blocked_user_id INTEGER);
             CREATE TABLE user_avatars (user_id INTEGER);
             CREATE TABLE posts (post_id INTEGER PRIMARY KEY, team_id INTEGER, language TEXT NOT NULL,
