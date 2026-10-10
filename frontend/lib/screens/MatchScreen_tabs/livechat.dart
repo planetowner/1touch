@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/full_screen_back_gesture.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';
 import 'package:onetouch/data/chat/chat_repository_provider.dart'
     as chat_repository_provider;
@@ -448,7 +447,6 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backSwipeActive = FullScreenBackGesture.isSwipeActive(context);
     final appColors = AppColors.of(context);
     if (_initError != null) {
       return Center(
@@ -547,7 +545,7 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
                   child: ListView.builder(
                     key: const ValueKey('live-chat-message-list'),
                     controller: _scrollController,
-                    physics: _canScroll && !backSwipeActive
+                    physics: _canScroll
                         ? null
                         : const NeverScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),

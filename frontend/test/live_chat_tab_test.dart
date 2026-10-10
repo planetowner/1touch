@@ -558,18 +558,23 @@ void main() {
       await tester.pumpAndSettle();
 
       final list = find.byKey(const ValueKey('live-chat-message-list'));
-      expect(tester.widget<ListView>(list).physics,
-          isNot(isA<NeverScrollableScrollPhysics>()));
+      final scrollable = tester.state<ScrollableState>(
+        find.descendant(of: list, matching: find.byType(Scrollable)),
+      );
+      bool canScroll() => scrollable.position.physics
+          .shouldAcceptUserOffset(scrollable.position);
+      expect(canScroll(), isTrue);
 
       final gesture = await tester.startGesture(tester.getCenter(list));
       await gesture.moveBy(const Offset(40, 0));
       await tester.pump();
-      expect(tester.widget<ListView>(list).physics,
-          isA<NeverScrollableScrollPhysics>());
+      expect(canScroll(), isFalse);
       await gesture.up();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(canScroll(), isFalse);
       await tester.pumpAndSettle();
-      expect(tester.widget<ListView>(list).physics,
-          isNot(isA<NeverScrollableScrollPhysics>()));
+      expect(canScroll(), isTrue);
     });
   }
 

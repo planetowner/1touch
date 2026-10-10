@@ -3,7 +3,6 @@ import 'dart:ui' show ImageFilter, lerpDouble;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/app_dropdown.dart';
-import 'package:onetouch/core/interactive_back_page.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/theme_controller.dart';
@@ -364,10 +363,6 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                             height: carouselHeight,
                             child: PageView.builder(
                               controller: _pageController,
-                              physics:
-                                  InteractiveBackDragScope.isDragging(context)
-                                      ? const NeverScrollableScrollPhysics()
-                                      : null,
                               pageSnapping: true,
                               onPageChanged: (index) {
                                 setState(() {
