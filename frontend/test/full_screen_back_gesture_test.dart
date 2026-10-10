@@ -44,11 +44,18 @@ void main() {
     final diagonal = await tester.startGesture(const Offset(100, 300));
     await diagonal.moveBy(const Offset(60, 40));
     await tester.pump();
-    expect(find.text('false'), findsOneWidget);
-    await diagonal.moveBy(const Offset(150, 0));
+    expect(find.text('true'), findsOneWidget);
+    await diagonal.cancel();
+    await tester.pumpAndSettle();
+
+    final vertical = await tester.startGesture(const Offset(100, 300));
+    await vertical.moveBy(const Offset(40, 60));
     await tester.pump();
     expect(find.text('false'), findsOneWidget);
-    await diagonal.up();
+    await vertical.moveBy(const Offset(150, 0));
+    await tester.pump();
+    expect(find.text('false'), findsOneWidget);
+    await vertical.up();
     await tester.pumpAndSettle();
     expect(find.text('false'), findsOneWidget);
 
@@ -153,6 +160,208 @@ void main() {
     expect(detail, findsNothing);
     expect(find.text('Open pushed detail'), findsOneWidget);
   });
+
+  for (final verticalDelta in [-80.0, 80.0]) {
+    testWidgets('back swipe locks scrolling with vertical drift $verticalDelta',
+        (tester) async {
+      final scrollController = ScrollController(initialScrollOffset: 300);
+      addTearDown(scrollController.dispose);
+      await _openDetail(
+        tester,
+        ListView.builder(
+          controller: scrollController,
+          itemExtent: 80,
+          itemCount: 40,
+          itemBuilder: (_, index) => Text('Row $index'),
+        ),
+      );
+
+      final row = find.text('Row 5');
+      final initialPosition = tester.getTopLeft(row);
+      final gesture = await tester.startGesture(const Offset(100, 300));
+      await gesture.moveBy(Offset(80, verticalDelta / 4));
+      await tester.pump();
+      expect(tester.getTopLeft(row).dx, closeTo(initialPosition.dx + 80, 1));
+      expect(scrollController.offset, 300);
+
+      await gesture.moveBy(Offset(0, verticalDelta));
+      await tester.pump();
+      expect(scrollController.offset, 300);
+      expect(tester.getTopLeft(row).dy, closeTo(initialPosition.dy, 1));
+      expect(tester.getTopLeft(row).dx, closeTo(initialPosition.dx + 80, 1));
+      expect(
+        FullScreenBackGesture.isSwipeActive(tester.element(row)),
+        isTrue,
+      );
+
+      await gesture.up();
+      await tester.pump();
+      expect(
+          scrollController.position.physics
+              .shouldAcceptUserOffset(scrollController.position),
+          isFalse);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+          scrollController.position.physics
+              .shouldAcceptUserOffset(scrollController.position),
+          isFalse);
+      await tester.pumpAndSettle();
+      expect(scrollController.offset, 300);
+      expect(tester.getTopLeft(row), initialPosition);
+      expect(
+        FullScreenBackGesture.isSwipeActive(tester.element(row)),
+        isFalse,
+      );
+
+      await tester.dragFrom(const Offset(100, 300), const Offset(0, -120));
+      await tester.pumpAndSettle();
+      expect(scrollController.offset, greaterThan(300));
+      expect(tester.getTopLeft(row).dx, initialPosition.dx);
+    });
+  }
+
+  for (final physics in [
+    null,
+    const AlwaysScrollableScrollPhysics(),
+    const ClampingScrollPhysics(),
+  ]) {
+    testWidgets('back swipe preserves nested scroll positions with $physics',
+        (tester) async {
+      final nestedKey = GlobalKey<NestedScrollViewState>();
+      await _openDetail(
+        tester,
+        NestedScrollView(
+          key: nestedKey,
+          physics: physics,
+          headerSliverBuilder: (_, __) => [
+            const SliverAppBar(
+              pinned: true,
+              expandedHeight: 180,
+              flexibleSpace: FlexibleSpaceBar(title: Text('Header')),
+            ),
+          ],
+          body: ListView.builder(
+            physics: physics,
+            itemExtent: 80,
+            itemCount: 40,
+            itemBuilder: (_, index) => Text('Row $index'),
+          ),
+        ),
+      );
+      await tester.dragFrom(const Offset(100, 450), const Offset(0, -350));
+      await tester.pumpAndSettle();
+      final nested = nestedKey.currentState!;
+      final outerOffset = nested.outerController.offset;
+      final innerOffset = nested.innerController.offset;
+      expect(outerOffset, greaterThan(0));
+      expect(innerOffset, greaterThan(0));
+
+      final gesture = await tester.startGesture(const Offset(100, 300));
+      await gesture.moveBy(const Offset(80, 20));
+      await tester.pump();
+      expect(nested.outerController.offset, outerOffset);
+      expect(nested.innerController.offset, innerOffset);
+      await gesture.moveBy(const Offset(0, 100));
+      await tester.pump();
+      expect(nested.outerController.offset, outerOffset);
+      expect(nested.innerController.offset, innerOffset);
+
+      await gesture.cancel();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(FullScreenBackGesture.isSwipeActive(nested.context), isTrue);
+      expect(nested.outerController.offset, outerOffset);
+      expect(nested.innerController.offset, innerOffset);
+      await tester.pumpAndSettle();
+      expect(FullScreenBackGesture.isSwipeActive(nested.context), isFalse);
+      expect(nested.outerController.offset, outerOffset);
+      expect(nested.innerController.offset, innerOffset);
+
+      await tester.dragFrom(const Offset(100, 300), const Offset(0, -120));
+      await tester.pumpAndSettle();
+      expect(nested.innerController.offset, greaterThan(innerOffset));
+
+      await tester.dragFrom(const Offset(24, 300), const Offset(500, 30));
+      await tester.pumpAndSettle();
+      expect(find.byKey(nestedKey), findsNothing);
+      expect(find.text('Open detail'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('back swipe stops a running scroll animation', (tester) async {
+    final controller = ScrollController(initialScrollOffset: 300);
+    addTearDown(controller.dispose);
+    await _openDetail(
+      tester,
+      ListView.builder(
+        controller: controller,
+        itemExtent: 80,
+        itemCount: 40,
+        itemBuilder: (_, index) => Text('Row $index'),
+      ),
+    );
+    final animation = controller.animateTo(
+      900,
+      duration: const Duration(seconds: 2),
+      curve: Curves.linear,
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(controller.position.isScrollingNotifier.value, isTrue);
+    final offset = controller.offset;
+
+    final gesture = await tester.startGesture(const Offset(100, 300));
+    await gesture.moveBy(const Offset(80, 0));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(controller.offset, offset);
+    expect(controller.position.isScrollingNotifier.value, isFalse);
+    await gesture.cancel();
+    await tester.pumpAndSettle();
+    await animation;
+    expect(controller.offset, offset);
+  });
+
+  for (final fraction in [0.49, 0.5]) {
+    testWidgets('slow back swipe completes at half the width: $fraction',
+        (tester) async {
+      await _openDetail(tester, const Center(child: Text('Detail')));
+      final width =
+          tester.view.physicalSize.width / tester.view.devicePixelRatio;
+      final gesture = await tester.startGesture(const Offset(100, 300));
+      for (var step = 1; step <= 8; step++) {
+        await gesture.moveBy(
+          Offset(width * fraction / 8, 0),
+          timeStamp: Duration(milliseconds: step * 100),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await gesture.up(timeStamp: const Duration(milliseconds: 900));
+      await tester.pumpAndSettle();
+      expect(
+          find.text('Detail'), fraction < 0.5 ? findsOneWidget : findsNothing);
+    });
+  }
+
+  for (final velocity in [600.0, 800.0]) {
+    testWidgets('short right swipe closes only above 700 px/s: $velocity',
+        (tester) async {
+      await _openDetail(tester, const Center(child: Text('Detail')));
+      final gesture = await tester.startGesture(const Offset(100, 300));
+      for (var step = 1; step <= 4; step++) {
+        await gesture.moveBy(
+          Offset(velocity * 0.01, 0),
+          timeStamp: Duration(milliseconds: step * 10),
+        );
+        await tester.pump(const Duration(milliseconds: 10));
+      }
+      await gesture.up(timeStamp: const Duration(milliseconds: 50));
+      await tester.pumpAndSettle();
+      expect(
+          find.text('Detail'), velocity > 700 ? findsNothing : findsOneWidget);
+    });
+  }
 
   testWidgets('a screen that blocks popping also blocks the swipe',
       (tester) async {
@@ -328,6 +537,28 @@ void main() {
     expect(find.byKey(const ValueKey('horizontal-list')), findsOneWidget);
     expect(find.text('Open detail'), findsNothing);
   });
+}
+
+Future<void> _openDetail(WidgetTester tester, Widget child) async {
+  final router = GoRouter(routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, _) => Scaffold(
+        body: TextButton(
+          onPressed: () => context.push('/detail'),
+          child: const Text('Open detail'),
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/detail',
+      builder: (_, __) => Scaffold(body: child),
+    ),
+  ]);
+  addTearDown(router.dispose);
+  await tester.pumpWidget(_testApp(router));
+  await tester.tap(find.text('Open detail'));
+  await tester.pumpAndSettle();
 }
 
 Widget _testApp(GoRouter router) => MaterialApp.router(

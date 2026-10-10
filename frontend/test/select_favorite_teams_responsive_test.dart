@@ -72,6 +72,12 @@ void main() {
 
     final logo = find.byKey(const ValueKey('gradient-header-logo'));
     final initialX = tester.getTopLeft(logo).dx;
+    final scrollable = tester.state<ScrollableState>(
+      find.descendant(
+          of: find.byType(PageView), matching: find.byType(Scrollable)),
+    );
+    bool canScroll() =>
+        scrollable.position.physics.shouldAcceptUserOffset(scrollable.position);
     final drag = await tester.startGesture(
       tester.getCenter(find.byKey(const ValueKey('favorite-team-logo-region'))),
     );
@@ -79,13 +85,11 @@ void main() {
     await drag.moveBy(const Offset(80, 0));
     await tester.pump();
     expect(tester.getTopLeft(logo).dx - initialX, closeTo(80, 1));
-    expect(tester.widget<PageView>(find.byType(PageView)).physics,
-        isA<NeverScrollableScrollPhysics>());
+    expect(canScroll(), isFalse);
     await drag.up();
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(logo).dx, closeTo(initialX, 1));
-    expect(tester.widget<PageView>(find.byType(PageView)).physics,
-        isNot(isA<NeverScrollableScrollPhysics>()));
+    expect(canScroll(), isTrue);
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/full_screen_back_gesture.dart';
 
@@ -41,28 +42,17 @@ class InteractiveBackTransition extends StatefulWidget {
       _InteractiveBackTransitionState();
 }
 
-class InteractiveBackDragScope extends InheritedNotifier<ValueNotifier<bool>> {
-  const InteractiveBackDragScope({
-    required super.notifier,
-    required super.child,
-    super.key,
-  });
-
-  static bool isDragging(BuildContext context) =>
-      context
-          .dependOnInheritedWidgetOfExactType<InteractiveBackDragScope>()
-          ?.notifier
-          ?.value ??
-      false;
-}
-
 class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
-  static const _settleDuration = Duration(milliseconds: 250);
+  static const _returnDuration = Duration(milliseconds: 190);
+  static const _closeDuration = Duration(milliseconds: 170);
   static const _dragSlop = 8.0;
-  static const _horizontalDominance = 2.0;
+  static const _flingVelocity = 700.0;
   final ValueNotifier<bool> _dragActive = ValueNotifier(false);
+  final Set<ScrollHoldController> _scrollHolds = {};
   int? _pointer;
   Offset? _pointerStart;
+  Offset? _pointerLast;
+  VelocityTracker? _velocityTracker;
   bool _rejected = false;
   bool _dragging = false;
   bool _settling = false;
@@ -77,34 +67,33 @@ class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
     }
     _pointer = event.pointer;
     _pointerStart = event.position;
+    _pointerLast = event.position;
+    _velocityTracker = VelocityTracker.withKind(event.kind)
+      ..addPosition(event.timeStamp, event.position);
     _rejected = false;
   }
 
   void _onPointerMove(PointerMoveEvent event) {
     if (_pointer != event.pointer || _rejected) return;
+    _velocityTracker?.addPosition(event.timeStamp, event.position);
     final start = _pointerStart;
-    if (start == null) return;
+    final last = _pointerLast;
+    if (start == null || last == null) return;
     final distance = event.position - start;
     if (!_dragging &&
         distance.dx.abs() < _dragSlop &&
         distance.dy.abs() < _dragSlop) {
       return;
     }
-    // 대각선으로 움직이기 시작하거나 진행 중 꺾이면 뒤로가기를 중단해요.
-    if (distance.dx <= 0 ||
-        distance.dx < distance.dy.abs() * _horizontalDominance) {
-      if (_dragging) {
-        _onPointerEnd(event.pointer, cancelled: true);
-      } else {
-        _rejected = true;
-      }
-      return;
-    }
     if (!_dragging) {
-      if (!widget.route.popGestureEnabled) {
+      // 시작 방향만 판단하고, 뒤로가기가 시작되면 가로축을 유지해요.
+      if (distance.dx <= 0 ||
+          distance.dx <= distance.dy.abs() ||
+          !widget.route.popGestureEnabled) {
         _rejected = true;
         return;
       }
+      _lockScrolling();
       widget.route.navigator!.didStartUserGesture();
       _dragging = true;
       _dragActive.value = true;
@@ -114,13 +103,42 @@ class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
     if (width <= 0) return;
     // 공통 페이지 전환은 현재 라우트의 애니메이션 값을 직접 따라가야 해요.
     // ignore: invalid_use_of_protected_member
-    widget.route.controller!.value = (1 - distance.dx / width).clamp(0.0, 1.0);
+    final controller = widget.route.controller!;
+    controller.value =
+        (controller.value - (event.position.dx - last.dx) / width)
+            .clamp(0.0, 1.0);
+    _pointerLast = event.position;
+  }
+
+  void _lockScrolling() {
+    void lock(Element element) {
+      if (element is StatefulElement && element.state is ScrollableState) {
+        final position = (element.state as ScrollableState).position;
+        // 중첩 스크롤은 jumpTo가 다른 영역도 이동시켜 hold로 위치를 보존해요.
+        late final ScrollHoldController hold;
+        hold = position.hold(() => _scrollHolds.remove(hold));
+        _scrollHolds.add(hold);
+      }
+      element.visitChildElements(lock);
+    }
+
+    context.visitChildElements(lock);
+  }
+
+  void _unlockScrolling() {
+    for (final hold in _scrollHolds.toList()) {
+      hold.cancel();
+    }
+    _scrollHolds.clear();
   }
 
   void _onPointerEnd(int pointer, {bool cancelled = false}) {
     if (_pointer != pointer) return;
+    final velocity = _velocityTracker?.getVelocity().pixelsPerSecond.dx ?? 0;
     _pointer = null;
     _pointerStart = null;
+    _pointerLast = null;
+    _velocityTracker = null;
     _rejected = false;
     if (!_dragging) return;
     _dragging = false;
@@ -129,16 +147,21 @@ class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
     // ignore: invalid_use_of_protected_member
     final routeController = route.controller!;
     final routeNavigator = route.navigator!;
-    if (!cancelled && routeController.value <= 0.5 && route.isCurrent) {
+    if (!cancelled &&
+        (velocity > _flingVelocity || routeController.value <= 0.5) &&
+        route.isCurrent) {
       routeNavigator.pop();
       if (routeController.isAnimating) {
-        routeController.animateBack(0, duration: _settleDuration);
+        routeController.animateBack(0,
+            duration: _closeDuration, curve: Curves.easeOutCubic);
       }
     } else {
-      routeController.animateTo(1, duration: _settleDuration);
+      routeController.animateTo(1,
+          duration: _returnDuration, curve: Curves.easeOutCubic);
     }
 
     void finish() {
+      _unlockScrolling();
       _settling = false;
       if (mounted) {
         _dragActive.value = false;
@@ -161,6 +184,7 @@ class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
 
   @override
   void dispose() {
+    _unlockScrolling();
     _dragActive.dispose();
     super.dispose();
   }
@@ -173,9 +197,22 @@ class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
         onPointerUp: (event) => _onPointerEnd(event.pointer),
         onPointerCancel: (event) =>
             _onPointerEnd(event.pointer, cancelled: true),
-        child: InteractiveBackDragScope(
-          notifier: _dragActive,
+        child: ValueListenableBuilder<bool>(
+          valueListenable: _dragActive,
           child: widget.child,
+          builder: (context, locked, child) {
+            final behavior = ScrollConfiguration.of(context);
+            return ScrollConfiguration(
+              behavior: locked
+                  ? behavior.copyWith(
+                      physics: const NeverScrollableScrollPhysics(),
+                      // AlwaysScrollableScrollPhysics를 쓰는 목록도 잠가요.
+                      dragDevices: const <PointerDeviceKind>{},
+                    )
+                  : behavior,
+              child: child!,
+            );
+          },
         ),
       );
 }

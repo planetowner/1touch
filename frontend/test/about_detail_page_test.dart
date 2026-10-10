@@ -117,6 +117,46 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('terms content stays at the same height during a back swipe',
+      (tester) async {
+    final router = _router('/profile/about');
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(
+      routerConfig: router,
+      theme: whitetheme.copyWith(platform: TargetPlatform.iOS),
+    ));
+    router.push('/about/terms');
+    await tester.pumpAndSettle();
+
+    final page = find.byKey(const ValueKey('about-detail-page'));
+    final scrollable = tester.state<ScrollableState>(
+      find.descendant(of: page, matching: find.byType(Scrollable)).first,
+    );
+    scrollable.position.jumpTo(200);
+    await tester.pump();
+    final contents = find.text('Contents');
+    final initialPosition = tester.getTopLeft(contents);
+
+    final gesture = await tester.startGesture(const Offset(100, 300));
+    await gesture.moveBy(const Offset(80, -20));
+    await tester.pump();
+    await gesture.moveBy(const Offset(0, 120));
+    await tester.pump();
+    expect(scrollable.position.pixels, 200);
+    expect(tester.getTopLeft(contents).dy, initialPosition.dy);
+    expect(tester.getTopLeft(contents).dx, closeTo(initialPosition.dx + 80, 1));
+
+    await gesture.cancel();
+    await tester.pumpAndSettle();
+    expect(scrollable.position.pixels, 200);
+    expect(tester.getTopLeft(contents), initialPosition);
+
+    await tester.dragFrom(const Offset(100, 300), const Offset(0, -120));
+    await tester.pumpAndSettle();
+    expect(scrollable.position.pixels, greaterThan(200));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('sign up links open documents and keep consent on return',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(320, 568));

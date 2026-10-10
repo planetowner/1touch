@@ -42,15 +42,10 @@ void main() {
                   const Expanded(child: Center(child: Text('Choose teams'))),
                   SizedBox(
                     height: 120,
-                    child: Builder(
-                      builder: (context) => PageView(
-                        key: const ValueKey('team-carousel'),
-                        controller: carousel,
-                        physics: InteractiveBackDragScope.isDragging(context)
-                            ? const NeverScrollableScrollPhysics()
-                            : null,
-                        children: const [Text('Team A'), Text('Team B')],
-                      ),
+                    child: PageView(
+                      key: const ValueKey('team-carousel'),
+                      controller: carousel,
+                      children: const [Text('Team A'), Text('Team B')],
                     ),
                   ),
                 ],
@@ -117,7 +112,7 @@ void main() {
 
       await tester.dragFrom(
         Offset(24, size.height / 3),
-        Offset(size.width * 0.7, size.width * 0.45),
+        Offset(size.width * 0.45, size.width * 0.7),
       );
       await tester.pumpAndSettle();
       expect(tester.getTopLeft(label).dx, closeTo(originalX, 1));
@@ -128,8 +123,10 @@ void main() {
       expect(tester.getTopLeft(label).dx - originalX,
           closeTo(size.width * 0.6, 1));
       await curvedDrag.moveBy(Offset(0, size.width * 0.4));
-      await tester.pumpAndSettle();
-      await curvedDrag.up();
+      await tester.pump();
+      expect(tester.getTopLeft(label).dx - originalX,
+          closeTo(size.width * 0.6, 1));
+      await curvedDrag.cancel();
       await tester.pumpAndSettle();
       expect(tester.getTopLeft(label).dx, closeTo(originalX, 1));
       expect(label, findsOneWidget);
