@@ -201,8 +201,10 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
                                   width: 74,
                                   height: 74,
                                   child: ColoredBox(
-                                    color:
-                                        AppColors.of(context).subtleBackground,
+                                    // 라이트모드 기본 시안은 검정 20%를 겹쳐 원을 구분해요.
+                                    color: isDark
+                                        ? AppPalette.darkGrey
+                                        : const Color(0x330A0A0A),
                                     child: Align(
                                       alignment: Alignment.bottomCenter,
                                       child: PlayerRemoteImage(

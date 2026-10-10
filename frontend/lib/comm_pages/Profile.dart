@@ -219,10 +219,7 @@ class _ProfileState extends State<Profile> {
     // Logic copied from HomeScreen to fade out the gradient
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
     final colors = Theme.of(context).colorScheme;
-    final appColors = AppColors.of(context);
-    final isLight = Theme.of(context).brightness == Brightness.light;
-    final profileBackground =
-        isLight ? AppPalette.lightGreyBox : appColors.pageBackground;
+    final profileBackground = mainPageBackground(context);
 
     if (_isLoading) {
       return Scaffold(

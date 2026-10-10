@@ -145,7 +145,7 @@ void main() {
               .widgetList<InkWell>(playerLinks)
               .every((link) => link.onTap != null),
           isTrue);
-      expect(scaffold.backgroundColor, app_style.AppPalette.lightGreyBox);
+      expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
       expect(
         find.byKey(const ValueKey('profile-background-gradient')),
         findsNothing,
