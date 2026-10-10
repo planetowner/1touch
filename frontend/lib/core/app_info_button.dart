@@ -7,10 +7,13 @@ import 'package:onetouch/l10n/app_localizations.dart';
 class AppInfoButton extends StatelessWidget {
   const AppInfoButton({
     super.key,
+    required this.title,
     required this.message,
     this.layoutSize = 20,
   });
 
+  // 물음표 옆 항목명을 제목으로 받아 모든 안내 카드에 같은 규칙을 적용해요.
+  final String title;
   final String message;
   final double layoutSize;
 
@@ -46,6 +49,11 @@ class AppInfoButton extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppCloseHeader(
+                      title: tr(dialogContext, title),
+                      titleAlignment: TextAlign.start,
+                      titleStyle: Heading5.style.copyWith(
+                        color: Theme.of(dialogContext).colorScheme.onSurface,
+                      ),
                       closeKey: const ValueKey('app-info-close'),
                       onClose: () => Navigator.of(dialogContext).pop(),
                       buttonSize: 24,

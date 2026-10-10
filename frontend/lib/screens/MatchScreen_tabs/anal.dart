@@ -419,6 +419,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
               const SizedBox(width: 4),
               const AppInfoButton(
                 key: ValueKey('match-analysis-attack-info'),
+                title: 'Attack',
                 message:
                     'Shotmap showing where each shot on target was taken, with lines pointing to where it was aimed.',
                 layoutSize: 14,
@@ -746,6 +747,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
               SizedBox(width: 4),
               const AppInfoButton(
                 key: ValueKey('match-analysis-defense-info'),
+                title: 'DEFENSE',
                 message:
                     'Percentage of ball recovery locations across the lower, middle, and upper thirds compared against the league average.',
                 layoutSize: 14,

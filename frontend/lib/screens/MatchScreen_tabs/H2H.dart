@@ -396,6 +396,7 @@ class _H2HTabState extends State<H2HTab> {
             const SizedBox(width: 4),
             const AppInfoButton(
               key: ValueKey('match-h2h-bets-info'),
+              title: 'Bets',
               message:
                   'Calculated using proprietary performance metrics and predictive analytics model',
             ),

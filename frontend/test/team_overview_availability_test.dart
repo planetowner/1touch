@@ -63,6 +63,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('app-info-popup')), findsOneWidget);
       expect(
+          find.descendant(
+              of: find.byKey(const ValueKey('app-info-popup')),
+              matching: title),
+          findsOneWidget);
+      expect(
         find.text(locale.languageCode == 'ko'
             ? '이번 시즌 포지션별로 가장 많은 시간을 뛴 선수들을 보여줘요. 이 선수들이 팀에서 가장 자주 사용한 라인업을 이뤄요.'
             : "Shows the players who have played the most minutes in each position this season. Together they make up the team's most-used lineup."),

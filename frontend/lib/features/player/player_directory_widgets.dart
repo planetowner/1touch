@@ -441,6 +441,7 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
             const SizedBox(width: 4),
             const AppInfoButton(
               key: ValueKey('players-ranking-info'),
+              title: '1touch Ranking',
               message:
                   "Evaluates and ranks players using 1touch's own data-driven performance metrics.",
               layoutSize: 18,
@@ -808,6 +809,7 @@ class PlayersToWatchState extends State<PlayersToWatch> {
             const SizedBox(width: 4),
             const AppInfoButton(
               key: ValueKey('players-ones-to-watch-info'),
+              title: 'ONES TO WATCH',
               message:
                   'Compares average ratings in the latest 3 appearances with the previous 3 across all competitions. All 6 need ratings, and the latest 3 must be this season. Shows up to 10 players with the biggest increases.',
               layoutSize: 16,

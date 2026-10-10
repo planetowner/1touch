@@ -83,6 +83,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       title: tr(context, 'TOP STATS'),
       titleAccessory: const AppInfoButton(
         key: ValueKey('top-stats-help-icon'),
+        title: 'TOP STATS',
         message:
             'The 3 stats with the highest ranks among players in the same position in the selected league and season.',
       ),

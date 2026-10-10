@@ -106,6 +106,7 @@ class _OverviewTabState extends State<OverviewTab> {
                   title: tr(context, "BEST XI"),
                   accessory: const AppInfoButton(
                     key: ValueKey('best-xi-info'),
+                    title: 'BEST XI',
                     message:
                         "Shows the players who have played the most minutes in each position this season. Together they make up the team's most-used lineup.",
                   ),
