@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/bottom_navigation.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/features/betting/bet_settlement_notifications.dart';
 import 'package:onetouch/models/betting.dart';
 
@@ -24,19 +26,32 @@ void main() {
     WidgetTester tester, {
     required VoidCallback onDismiss,
     VoidCallback? onSeeResults,
+    String language = 'en',
+    double bottomInset = 0,
   }) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1;
+    tester.view.padding = FakeViewPadding(bottom: bottomInset);
+    addTearDown(tester.view.resetPadding);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeData.dark(),
+        locale: Locale(language),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
         home: Scaffold(
           body: Stack(
             fit: StackFit.expand,
             children: [
-              const ColoredBox(color: Colors.black),
+              Scaffold(
+                body: const ColoredBox(color: Colors.black),
+                bottomNavigationBar: OneTouchBottomNavigationBar(
+                  currentIndex: 0,
+                  onTap: (_) {},
+                ),
+              ),
               BetSettlementResultOverlay(
                 notice: notice,
                 onDismiss: onDismiss,
@@ -64,10 +79,29 @@ void main() {
       tester
           .getBottomRight(find.byKey(const ValueKey('bet-settlement-sheet')))
           .dy,
-      784,
+      tester.getTopLeft(find.byType(OneTouchBottomNavigationBar)).dy,
     );
     expect(tester.takeException(), isNull);
   });
+
+  for (final language in ['en', 'ko']) {
+    for (final inset in [0.0, 34.0]) {
+      testWidgets(
+          'sheet meets navigation at $language with bottom inset $inset',
+          (tester) async {
+        await pumpOverlay(tester,
+            onDismiss: () {}, language: language, bottomInset: inset);
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .getBottomLeft(find.byKey(const ValueKey('bet-settlement-sheet')))
+              .dy,
+          tester.getTopLeft(find.byType(OneTouchBottomNavigationBar)).dy,
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
 
   testWidgets('dismisses from the empty area, close, and maybe later',
       (tester) async {

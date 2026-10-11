@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/core/bottom_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/betting/bet_settlement_registry.dart';
@@ -261,7 +262,7 @@ class BetSettlementResultOverlay extends StatelessWidget {
     final colors = AppColors.of(context);
     final foreground = Theme.of(context).colorScheme.onSurface;
     final bottomOffset = reserveBottomNavigation
-        ? 68.0 + MediaQuery.paddingOf(context).bottom
+        ? OneTouchBottomNavigationBar.heightOf(context)
         : 0.0;
 
     return Material(

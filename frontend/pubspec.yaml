@@ -89,6 +89,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
+    - assets/navigation/
     - assets/community/
     - assets/auth/
     - assets/highlight1.png

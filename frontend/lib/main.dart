@@ -20,7 +20,7 @@ import 'package:onetouch/data/notifications/notification_unread_controller_provi
 // 핵심 코드와 데이터 계층이에요.
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
-import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/bottom_navigation.dart';
 import 'package:onetouch/core/api_config.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/locale_controller.dart';
@@ -729,112 +729,6 @@ class _DetailPage extends StatelessWidget {
             mainTabActions.select(index);
           });
         },
-      ),
-    );
-  }
-}
-
-class OneTouchBottomNavigationBar extends StatelessWidget {
-  const OneTouchBottomNavigationBar({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
-  });
-
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final foreground = Theme.of(context).colorScheme.onSurface;
-    final background = style.AppColors.of(context).cardBackground;
-
-    return ColoredBox(
-      color: background,
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          key: const ValueKey('main-bottom-navigation-content'),
-          height: 68,
-          child: Row(
-            children: [
-              _buildItem(
-                context: context,
-                index: 0,
-                label: tr(context, 'Home'),
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home,
-                foreground: foreground,
-              ),
-              _buildItem(
-                context: context,
-                index: 1,
-                label: tr(context, 'Team'),
-                icon: Icons.local_police_outlined,
-                activeIcon: Icons.local_police,
-                foreground: foreground,
-              ),
-              _buildItem(
-                context: context,
-                index: 2,
-                label: tr(context, 'Players'),
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
-                foreground: foreground,
-              ),
-              _buildItem(
-                context: context,
-                index: 3,
-                label: tr(context, 'Community'),
-                icon: Icons.people_alt_outlined,
-                activeIcon: Icons.people_alt,
-                foreground: foreground,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildItem({
-    required BuildContext context,
-    required int index,
-    required String label,
-    required IconData icon,
-    required IconData activeIcon,
-    required Color foreground,
-  }) {
-    final isSelected = currentIndex == index;
-    final itemColor =
-        isSelected ? foreground : foreground.withValues(alpha: 0.65);
-
-    return Expanded(
-      child: Semantics(
-        button: true,
-        selected: isSelected,
-        label: '$label tab',
-        child: InkWell(
-          key: ValueKey('main-bottom-navigation-$index'),
-          onTap: () => onTap(index),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isSelected ? activeIcon : icon,
-                color: itemColor,
-                size: 32,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                tr(context, label),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Body2.style.copyWith(color: itemColor),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

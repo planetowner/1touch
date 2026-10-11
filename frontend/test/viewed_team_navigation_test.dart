@@ -11,12 +11,16 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/main.dart';
+import 'package:onetouch/core/bottom_navigation.dart';
 import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/screens/community_screen.dart';
 import 'package:onetouch/screens/home_screen.dart';
 import 'package:onetouch/screens/team_screen.dart';
 
+import 'support/app_fonts.dart';
+
 void main() {
+  setUpAll(loadAppFonts);
   testWidgets('Home selection reaches retained Team and Community tabs',
       (tester) async {
     tester.view.physicalSize = const Size(430, 932);
