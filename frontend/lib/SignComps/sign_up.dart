@@ -34,6 +34,7 @@ class EmailSignUpScreen extends StatefulWidget {
 
 class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _confirmPasswordFieldKey = GlobalKey<FormFieldState<String>>();
 
   final _username = TextEditingController();
   final _displayName = TextEditingController();
@@ -74,6 +75,16 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       _emailValidationMessage(_email.text) == null &&
       isValidNewPassword(_password.text) &&
       _confirmPassword.text == _password.text;
+
+  void _onInputsChanged() {
+    final confirmation = _confirmPasswordFieldKey.currentState;
+    // 입력 중에는 새 오류를 띄우지 않고, 두 값이 같아지면 기존 오류만 지워요.
+    if (confirmation?.hasError == true &&
+        _confirmPassword.text == _password.text) {
+      confirmation!.validate();
+    }
+    setState(() {});
+  }
 
   Future<void> _submit() async {
     if (_submitting) return;
@@ -213,7 +224,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         bottom: false,
         child: Form(
           key: _formKey,
-          onChanged: () => setState(() {}),
+          onChanged: _onInputsChanged,
           child: LayoutBuilder(
             builder: (context, constraints) => SingleChildScrollView(
               key: const ValueKey('signup-fields-scroll'),
@@ -305,10 +316,11 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         ),
                       ]) ...[
                         AuthInsetLabel(
+                          key: ValueKey(field.key),
                           label: tr(context, field.label),
                           password: true,
                           child: TextFormField(
-                            key: ValueKey(field.key),
+                            key: field.confirm ? _confirmPasswordFieldKey : null,
                             controller: field.controller,
                             enabled: !_submitting,
                             // 비밀번호 검증 오류도 커서 색상은 바꾸지 않아요.
@@ -319,7 +331,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             // Outline의 위쪽 정렬은 큰 상단 여백을 무시하므로 아래 여백에 맞춰요.
                             textAlignVertical: TextAlignVertical.bottom,
                             autovalidateMode: field.confirm
-                                ? AutovalidateMode.onUserInteraction
+                                ? AutovalidateMode.onUnfocus
                                 : AutovalidateMode.disabled,
                             decoration: AuthStyles.signupInputDecoration(
                                     context,

@@ -283,6 +283,9 @@ void main() {
         await tester.pumpAndSettle();
         final error =
             find.text(translateMessage(locale, 'Passwords do not match.'));
+        expect(error, findsNothing);
+        FocusManager.instance.primaryFocus?.unfocus();
+        await tester.pumpAndSettle();
         expect(error, findsOneWidget);
         expect(tester.getRect(error).top,
             greaterThanOrEqualTo(inputRect(confirm).bottom));
@@ -297,6 +300,120 @@ void main() {
         expectInputGeometry();
       });
     }
+  }
+
+  testWidgets(
+      'signup shows a password mismatch only after confirmation loses focus',
+      (tester) async {
+    await _pumpSignup(tester, _FakeAuthRepository());
+    final password = find.byKey(const ValueKey('signup-password-field'));
+    final confirm = find.byKey(const ValueKey('signup-confirm-password-field'));
+    final error = find.text('Passwords do not match.');
+    final confirmEditable =
+        find.descendant(of: confirm, matching: find.byType(EditableText));
+
+    await tester.enterText(password, 'Password123');
+    await tester.enterText(confirm, 'Pass');
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 2));
+    expect(error, findsNothing);
+    expect(tester.widget<EditableText>(confirmEditable).focusNode.hasFocus,
+        isTrue);
+
+    await tester.tap(password);
+    await tester.pumpAndSettle();
+    expect(error, findsOneWidget);
+
+    await tester.enterText(confirm, 'Password12');
+    await tester.pumpAndSettle();
+    expect(error, findsOneWidget);
+    await tester.enterText(confirm, 'Password123');
+    await tester.pump();
+    expect(
+        tester
+            .state<FormFieldState<String>>(find.descendant(
+                of: confirm, matching: find.byType(TextFormField)))
+            .hasError,
+        isFalse);
+    await tester.pumpAndSettle();
+    expect(error, findsNothing);
+    expect(tester.widget<EditableText>(confirmEditable).focusNode.hasFocus,
+        isTrue);
+
+    await tester.enterText(confirm, 'Password1234');
+    await tester.pumpAndSettle();
+    expect(error, findsNothing);
+    await tester.tap(password);
+    await tester.pumpAndSettle();
+    expect(error, findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      'signup clears a mismatch when the first password is edited to match',
+      (tester) async {
+    await _pumpSignup(tester, _FakeAuthRepository());
+    final password = find.byKey(const ValueKey('signup-password-field'));
+    final confirm = find.byKey(const ValueKey('signup-confirm-password-field'));
+    final error = find.text('Passwords do not match.');
+
+    await tester.enterText(password, 'Password123');
+    await tester.enterText(confirm, 'Different123');
+    await tester.tap(password);
+    await tester.pumpAndSettle();
+    expect(error, findsOneWidget);
+
+    await tester.enterText(password, 'Different123');
+    await tester.pump();
+    expect(
+        tester
+            .state<FormFieldState<String>>(find.descendant(
+                of: confirm, matching: find.byType(TextFormField)))
+            .hasError,
+        isFalse);
+    await tester.pumpAndSettle();
+    expect(error, findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final confirmation in ['', 'Pass']) {
+    testWidgets(
+        'signup submission validates an unblurred confirmation "$confirmation"',
+        (tester) async {
+      final repository = _FakeAuthRepository();
+      await _pumpSignup(tester, repository);
+      final password = find.byKey(const ValueKey('signup-password-field'));
+      final confirm = find.byKey(const ValueKey('signup-confirm-password-field'));
+      final error = find.text('Passwords do not match.');
+
+      await tester.enterText(password, 'Password123');
+      await tester.enterText(confirm, confirmation);
+      await tester.pumpAndSettle();
+      expect(error, findsNothing);
+      final confirmEditable =
+          find.descendant(of: confirm, matching: find.byType(EditableText));
+      expect(tester.widget<EditableText>(confirmEditable).focusNode.hasFocus,
+          isTrue);
+
+      await tester.tap(find.byKey(const ValueKey('email-sign-up-button')));
+      await tester.pumpAndSettle();
+      expect(tester.widget<EditableText>(confirmEditable).focusNode.hasFocus,
+          isTrue);
+      expect(error, findsOneWidget);
+      expect(repository.requestedEmails, isEmpty);
+
+      await tester.enterText(confirm, 'Password123');
+      await tester.pump();
+      expect(
+          tester
+              .state<FormFieldState<String>>(find.descendant(
+                  of: confirm, matching: find.byType(TextFormField)))
+              .hasError,
+          isFalse);
+      await tester.pumpAndSettle();
+      expect(error, findsNothing);
+      expect(tester.takeException(), isNull);
+    });
   }
 
   testWidgets('signup terms and button scroll after the input fields',
