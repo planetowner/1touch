@@ -638,12 +638,37 @@ final GoRouter _router = GoRouter(
   ],
 );
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
 
-  // `StatefulShellRoute.indexedStack`에는 `child` 매개변수가 필요 없다.
-  // The 'child' parameter is not needed for StatefulShellRoute.indexedStack
   const MainScreen({super.key, required this.navigationShell});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  @override
+  void initState() {
+    super.initState();
+    mainTabActions.addListener(_handleMainTabAction);
+  }
+
+  void _handleMainTabAction() {
+    // 경로 초기화만으로는 Navigator.push로 연 화면이 닫히지 않아요.
+    // 프로필·알림의 하단 탭도 같은 선택 알림으로 목적지 화면을 정리해요.
+    final branch =
+        widget.navigationShell.route.branches[mainTabActions.tabIndex!];
+    // Page 경로는 라우터가 정리해야 비활성 탭의 이동 기록도 일치해요.
+    branch.navigatorKey.currentState
+        ?.popUntil((route) => route.settings is Page);
+  }
+
+  @override
+  void dispose() {
+    mainTabActions.removeListener(_handleMainTabAction);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -657,39 +682,17 @@ class MainScreen extends StatelessWidget {
           transferRepository: transferRepository,
           child: child!,
         ),
-        child: navigationShell,
+        child: widget.navigationShell,
       ),
       bottomNavigationBar: OneTouchBottomNavigationBar(
-        currentIndex: navigationShell.currentIndex,
+        currentIndex: widget.navigationShell.currentIndex,
         onTap: (index) {
-          // 목적지의 첫 프레임 전에 유지 중인 페이지 상태를 초기화한다.
-          // Reset persistent pages before the destination's first frame.
+          // 유지 중인 화면은 이동 전에, 처음 여는 화면은 첫 프레임 뒤에 초기화해요.
           mainTabActions.select(index);
-
-          void notifyRootScreen() {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              mainTabActions.select(index);
-            });
-          }
-
-          // 팀 탭도 다른 하단 탭처럼 분기 루트로 돌아가며 Overview를 열어요.
-          if (index == 1) {
-            navigationShell.goBranch(1, initialLocation: true);
-            notifyRootScreen();
-            // 특수 사례를 처리했으므로 여기서 종료한다.
-            return; // Exit after handling the special case
-          }
-
-          // 이 호출 하나로 탭 전환과 스택 초기화를 처리한다. `goBranch`는 다른 탭의 상태를 보존하고, 현재 탭을 다시 누르면 `initialLocation`으로 스택을 초기화한다.
-          // This single call handles both switching tabs and resetting the stack.
-          // goBranch preserves the state of other tabs.
-          // The 'initialLocation' parameter resets the stack if the tapped tab
-          // is already the current one.
-          navigationShell.goBranch(
-            index,
-            initialLocation: true,
-          );
-          notifyRootScreen();
+          widget.navigationShell.goBranch(index, initialLocation: true);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            mainTabActions.select(index);
+          });
         },
       ),
     );
