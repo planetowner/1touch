@@ -72,11 +72,11 @@ void main() {
     final rates = ExchangeRates.fromJson(exchangeRatesFixture());
     final expected = {
       DisplayCurrency.eur: '€22m',
-      DisplayCurrency.usd: '\$24.6m',
-      DisplayCurrency.gbp: '£18.6m',
-      DisplayCurrency.krw: '329.2억 원',
-      DisplayCurrency.jpy: '38.9億円',
-      DisplayCurrency.cny: '1.6亿元',
+      DisplayCurrency.usd: '\$25m',
+      DisplayCurrency.gbp: '£19m',
+      DisplayCurrency.krw: '329억 원',
+      DisplayCurrency.jpy: '39億円',
+      DisplayCurrency.cny: '2亿元',
     };
     for (final entry in expected.entries) {
       expect(
@@ -85,7 +85,7 @@ void main() {
     }
   });
 
-  test('keeps KRW, CNY and JPY in hundred millions at every amount', () {
+  test('rounds KRW, CNY and JPY to whole hundred millions', () {
     const units = {
       DisplayCurrency.krw: '억 원',
       DisplayCurrency.cny: '亿元',
@@ -94,19 +94,22 @@ void main() {
     const amounts = {
       0: '0',
       1000000: '0',
-      29931549: '0.3',
-      94000000: '0.9',
+      29931549: '0',
+      49000000: '0',
+      50000000: '1',
+      94000000: '1',
       96000000: '1',
       100000000: '1',
-      150000000: '1.5',
+      149000000: '1',
+      150000000: '2',
       1000000000: '10',
       6000000000: '60',
-      6060000000: '60.6',
-      99994000000: '999.9',
+      6060000000: '61',
+      99994000000: '1,000',
       99996000000: '1,000',
       140000000000: '1,400',
-      140050000000: '1,400.5',
-      123456780000000: '1,234,567.8',
+      140050000000: '1,401',
+      123456780000000: '1,234,568',
     };
     for (final unit in units.entries) {
       for (final amount in amounts.entries) {
@@ -116,7 +119,7 @@ void main() {
     }
   });
 
-  test('preserves compact formatting for EUR, USD and GBP', () {
+  test('rounds EUR, USD and GBP to whole compact units', () {
     const symbols = {
       DisplayCurrency.eur: '€',
       DisplayCurrency.usd: '\$',
@@ -125,13 +128,17 @@ void main() {
     const amounts = {
       0: '0',
       990: '990',
-      8500: '8.5k',
+      8499: '8k',
+      8500: '9k',
       1000000: '1m',
-      24600000: '24.6m',
+      24400000: '24m',
+      24500000: '25m',
+      24600000: '25m',
       1000000000: '1bn',
-      1500000000: '1.5bn',
+      1490000000: '1bn',
+      1500000000: '2bn',
       1400000000000: '1,400bn',
-      1400500000000: '1,400.5bn',
+      1400500000000: '1,401bn',
     };
     for (final symbol in symbols.entries) {
       for (final amount in amounts.entries) {

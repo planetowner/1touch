@@ -40,8 +40,8 @@ String formatTransferFee(num amount, DisplayCurrency currency) {
   return '${currency.symbol}$rounded';
 }
 
-// 화면 언어와 관계없이 천 단위 쉼표와 소수점 한 자리 표기를 함께 적용해요.
-final _feeNumberFormat = NumberFormat('#,##0.#', 'en_US');
+// 모든 통화는 표시 단위로 나눈 뒤 정수로 반올림하고 천 단위 쉼표를 넣어요.
+final _feeNumberFormat = NumberFormat('#,##0', 'en_US');
 
 String _formatScaledFee(num amount, int divisor) =>
     _feeNumberFormat.format(amount / divisor);

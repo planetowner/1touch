@@ -35,9 +35,9 @@ void main() {
       );
 
   for (final (languageCode, currency, expectedFee) in [
-    ('ko', DisplayCurrency.krw, '329.2억 원'),
-    ('zh', DisplayCurrency.cny, '1.6亿元'),
-    ('ja', DisplayCurrency.jpy, '38.9億円'),
+    ('ko', DisplayCurrency.krw, '329억 원'),
+    ('zh', DisplayCurrency.cny, '2亿元'),
+    ('ja', DisplayCurrency.jpy, '39億円'),
   ]) {
     testWidgets(
         'saving ${currency.code} updates an open fee and restores on restart',
@@ -103,8 +103,8 @@ void main() {
     await tester.pump();
     response.complete(http.Response(jsonEncode(exchangeRatesFixture()), 200));
     await tester.pumpAndSettle();
-    expect(find.text('38.9億円'), findsNWidgets(2));
-    expect(find.text('\$24.6m'), findsNothing);
+    expect(find.text('39億円'), findsNWidgets(2));
+    expect(find.text('\$25m'), findsNothing);
     expect(requests, 1);
   });
 
@@ -125,7 +125,7 @@ void main() {
     expect(find.text('\$22m'), findsNothing);
     await tester.tap(find.text('—'));
     await tester.pumpAndSettle();
-    expect(find.text('\$24.6m'), findsOneWidget);
+    expect(find.text('\$25m'), findsOneWidget);
     expect(requests, 2);
     expect(tester.takeException(), isNull);
   });
@@ -148,14 +148,14 @@ void main() {
         await tester.pumpWidget(
             app(TransferFee(amountInEuros: 22000000, repository: repository)));
         await tester.pumpAndSettle();
-        expect(find.text('\$24.6m'), findsOneWidget);
+        expect(find.text('\$25m'), findsOneWidget);
 
         now = now.add(const Duration(days: 1));
         appDisplayPreferences.value =
             const DisplayPreferences(currency: DisplayCurrency.krw);
         await tester.pump();
         expect(requests, 2);
-        expect(find.text('329.2억 원'), findsOneWidget);
+        expect(find.text('329억 원'), findsOneWidget);
         expect(find.text('…'), findsNothing);
 
         final updated = exchangeRatesFixture()
@@ -166,7 +166,7 @@ void main() {
             : http.Response('Unavailable', 503));
         await tester.pumpAndSettle();
         expect(
-            find.text(refreshSucceeds ? '330억 원' : '329.2억 원'), findsOneWidget);
+            find.text(refreshSucceeds ? '330억 원' : '329억 원'), findsOneWidget);
         expect(
             find.byTooltip(
                 'ECB exchange rate · ${refreshSucceeds ? '2026-10-08' : '2026-10-07'}'),

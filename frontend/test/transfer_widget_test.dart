@@ -144,7 +144,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Incoming Player With A Long Name'), findsOneWidget);
-    expect(find.text('€8.5m'), findsOneWidget);
+    expect(find.text('€9m'), findsOneWidget);
     expect(find.text('Loan'), findsOneWidget);
     expect(find.text('Unknown'), findsOneWidget);
     expect(find.text('FROM'), findsNWidgets(3));
