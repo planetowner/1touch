@@ -52,6 +52,7 @@ void main() {
       expect(event.minute, 27);
       expect(event.extraMinute, 1);
       expect(event.onBench, isFalse);
+      expect(event.injured, isTrue);
 
       final statistic = detail.statistics.single;
       expect(statistic.teamId, 8);
@@ -166,6 +167,7 @@ void main() {
       expect(event.relatedPlayerImage, isNull);
       expect(event.extraMinute, isNull);
       expect(event.onBench, isNull);
+      expect(event.injured, isNull);
 
       final lineup = detail.lineups.single;
       expect(lineup.playerImage, isNull);
@@ -267,6 +269,7 @@ ApiFixtureDetailResponse _fullResponse() {
         minute: 27,
         extraMinute: 1,
         onBench: false,
+        injured: true,
       ),
     ],
     statistics: const [

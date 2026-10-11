@@ -127,6 +127,7 @@ class FixtureEvent {
     required this.minute,
     required this.extraMinute,
     required this.onBench,
+    this.injured,
   });
 
   final int eventId;
@@ -143,6 +144,7 @@ class FixtureEvent {
   final int minute;
   final int? extraMinute;
   final bool? onBench;
+  final bool? injured;
 }
 
 @immutable

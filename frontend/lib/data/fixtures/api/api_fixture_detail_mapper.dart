@@ -74,6 +74,7 @@ FixtureDetail fixtureDetailFromApiResponse(
             minute: item.minute,
             extraMinute: item.extraMinute,
             onBench: item.onBench,
+            injured: item.injured,
           ),
         )
         .toList(growable: false),

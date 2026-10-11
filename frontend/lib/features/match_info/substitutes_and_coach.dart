@@ -3,6 +3,7 @@ part of 'match_info_features.dart';
 class SubstitutesAndCoach extends StatefulWidget {
   final List<Substitute> subsA;
   final List<Substitute> subsB;
+  final Map<int, List<LineupEvent>> eventsByPlayer;
   final String coachA;
   final String coachB;
   final String homeCode;
@@ -13,6 +14,7 @@ class SubstitutesAndCoach extends StatefulWidget {
     super.key,
     required this.subsA,
     required this.subsB,
+    required this.eventsByPlayer,
     required this.coachA,
     required this.coachB,
     required this.homeCode,
@@ -60,7 +62,11 @@ class _SubstitutesAndCoachState extends State<SubstitutesAndCoach> {
           if (selectedSubs.isEmpty)
             Text('—', style: Body1.style)
           else
-            _SubList(subs: selectedSubs, onPlayerTap: widget.onPlayerTap),
+            _SubList(
+              subs: selectedSubs,
+              eventsByPlayer: widget.eventsByPlayer,
+              onPlayerTap: widget.onPlayerTap,
+            ),
           const SizedBox(height: 16),
         ],
         Text(tr(context, "COACH"), style: Body2_b.style),
@@ -73,10 +79,12 @@ class _SubstitutesAndCoachState extends State<SubstitutesAndCoach> {
 
 class _SubList extends StatelessWidget {
   final List<Substitute> subs;
+  final Map<int, List<LineupEvent>> eventsByPlayer;
   final void Function(BuildContext context, Substitute player)? onPlayerTap;
 
   const _SubList({
     required this.subs,
+    required this.eventsByPlayer,
     required this.onPlayerTap,
   });
 
@@ -91,6 +99,16 @@ class _SubList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: subs.map((sub) {
         final name = playerNameLabel(context, sub.playerId, sub.name);
+        // 같은 분의 이벤트는 응답 순서를 유지해 부상과 교체 아웃을 일렬로 보여줘요.
+        final events = (eventsByPlayer[sub.playerId] ?? const <LineupEvent>[])
+            .asMap()
+            .entries
+            .toList()
+          ..sort((a, b) {
+            final byMinute =
+                (a.value.minute ?? 999).compareTo(b.value.minute ?? 999);
+            return byMinute != 0 ? byMinute : a.key.compareTo(b.key);
+          });
         final children = [
           if (sub.jerseyNumber == null)
             Text(name, style: Body1.style)
@@ -105,15 +123,31 @@ class _SubList extends StatelessWidget {
               ]),
               style: Body1.style,
             ),
-          if (sub.subIn) ...[
-            const MatchEventIcon(type: LineupEventType.subIn),
-          ],
-          if (sub.minute != null) ...[
-            Text("${sub.minute}'", style: Body1.style),
-          ],
-          if (sub.goal) ...[
-            const MatchEventIcon(type: LineupEventType.goal),
-          ],
+          for (final entry in events)
+            if ((entry.value.type == LineupEventType.subIn ||
+                    entry.value.type == LineupEventType.subOut) &&
+                entry.value.minute != null)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  MatchEventIcon(
+                    type: entry.value.type,
+                    size: 20,
+                    substituteCardStyle: true,
+                  ),
+                  const SizedBox(width: 3),
+                  Text("${entry.value.minute}'", style: Body1.style),
+                ],
+              )
+            else
+              MatchEventIcon(
+                type: entry.value.type,
+                substituteCardStyle: true,
+                size: entry.value.type == LineupEventType.subIn ||
+                        entry.value.type == LineupEventType.subOut
+                    ? 20
+                    : 16,
+              ),
         ];
 
         return GestureDetector(

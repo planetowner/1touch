@@ -230,13 +230,26 @@ class _PlayerDot extends StatelessWidget {
         .whereType<int>()
         .map((minute) => "$minute'")
         .join(' · ');
-    final cards =
-        cardEvents.isEmpty ? null : _EventBadges(events: cardEvents.toList());
+    // 카드 그림은 16px 배지 안에서 8px이므로 간격을 좁혀 실제 그림을 겹쳐요.
+    final cards = cardEvents.isEmpty
+        ? null
+        : _EventBadges(events: cardEvents.toList(), offset: 5);
     final scoring = scoringEvents.isEmpty
         ? null
         : _EventBadges(events: scoringEvents.toList());
     final right =
         rightEvents.isEmpty ? null : _EventBadges(events: rightEvents.toList());
+    // 한 개일 때의 위치를 중심으로 여러 배지를 양쪽에 펼쳐요.
+    final cardLeft = cards == null ? 0.0 : -4.0 - (cards.width - 16) / 2;
+    final rightLeft = right == null ? 21.0 : 21.0 - (right.width - 16) / 2;
+    final centeredScoringLeft =
+        scoring == null ? 0.0 : -4.0 - (scoring.width - 16) / 2;
+    // 오른쪽 교체 배지와 최소 2px 간격을 두고 필요할 때만 왼쪽으로 옮겨요.
+    final scoringLeft = scoring == null ||
+            right == null ||
+            centeredScoringLeft <= rightLeft - 2 - scoring.width
+        ? centeredScoringLeft
+        : rightLeft - 2 - scoring.width;
     return GestureDetector(
       key: ValueKey(
         'match-lineup-player-${player.teamId}-${player.playerId}',
@@ -261,21 +274,22 @@ class _PlayerDot extends StatelessWidget {
                     Positioned(
                       key: const ValueKey('lineup-card-badges'),
                       top: -4,
-                      left: -4,
+                      left: cardLeft,
                       child: cards,
                     ),
                   if (scoring != null)
                     Positioned(
                       key: const ValueKey('lineup-scoring-badges'),
-                      left: -4,
-                      bottom: -6,
+                      left: scoringLeft,
+                      bottom: -3,
                       child: scoring,
                     ),
                   if (right != null)
                     Positioned(
                       key: const ValueKey('lineup-pitch-out-badge'),
-                      left: 24,
-                      bottom: -6,
+                      left: rightLeft,
+                      // 오른쪽 이벤트는 이름과 1px 간격을 남기고 내려요.
+                      bottom: -3,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -353,10 +367,17 @@ class _PlayerCircle extends StatelessWidget {
 
 class _EventBadges extends StatelessWidget {
   final List<LineupEvent> events;
-  const _EventBadges({required this.events});
+  final double offset;
+  const _EventBadges({required this.events, this.offset = 9});
 
   static const double _badgeSize = 16;
-  static const double _badgeOffset = 9;
+
+  // 선발 명단의 교체 화살표와 부상 아이콘은 18px, 나머지는 16px이에요.
+  double _iconSize(LineupEventType type) => type == LineupEventType.subIn ||
+          type == LineupEventType.subOut ||
+          type == LineupEventType.injury
+      ? 18
+      : _badgeSize;
 
   List<LineupEvent> get _displayEvents {
     final otherEvents = events.where((event) {
@@ -415,23 +436,32 @@ class _EventBadges extends StatelessWidget {
       ];
 
   double get width {
-    final eventCount = _orderedEvents.length;
-    return eventCount == 0 ? 0 : _badgeSize + (eventCount - 1) * _badgeOffset;
+    var extent = 0.0;
+    for (var index = 0; index < _orderedEvents.length; index++) {
+      final end = index * offset + _iconSize(_orderedEvents[index].type);
+      if (end > extent) extent = end;
+    }
+    return extent;
   }
 
   @override
   Widget build(BuildContext context) {
     final orderedEvents = _orderedEvents;
+    final height =
+        orderedEvents.any((event) => _iconSize(event.type) > _badgeSize)
+            ? 18.0
+            : _badgeSize;
     return SizedBox(
       key: const ValueKey('lineup-event-badge-groups'),
       width: width,
-      height: _badgeSize,
+      height: height,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           for (var index = 0; index < orderedEvents.length; index++)
             Positioned(
-              left: index * _badgeOffset,
+              left: index * offset,
+              bottom: 0,
               child: KeyedSubtree(
                 key: ValueKey(
                   'lineup-event-${orderedEvents[index].type.name}-$index',
@@ -456,7 +486,7 @@ class _EventBadges extends StatelessWidget {
     return MatchEventIcon(
       key: key == null ? null : ValueKey(key),
       type: event.type,
-      size: _badgeSize,
+      size: _iconSize(event.type),
       outlined: true,
     );
   }

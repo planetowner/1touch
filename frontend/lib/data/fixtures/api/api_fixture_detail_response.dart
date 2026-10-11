@@ -233,6 +233,7 @@ class ApiFixtureEventResponse {
     required this.minute,
     required this.extraMinute,
     required this.onBench,
+    this.injured,
   });
 
   final int eventId;
@@ -249,6 +250,7 @@ class ApiFixtureEventResponse {
   final int minute;
   final int? extraMinute;
   final bool? onBench;
+  final bool? injured;
 
   factory ApiFixtureEventResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixtureEventResponse(
@@ -266,6 +268,7 @@ class ApiFixtureEventResponse {
       minute: api_json.requiredInt(json, 'minute'),
       extraMinute: _optionalInt(json, 'extra_minute'),
       onBench: _optionalBool(json, 'on_bench'),
+      injured: _optionalBool(json, 'injured'),
     );
   }
 }

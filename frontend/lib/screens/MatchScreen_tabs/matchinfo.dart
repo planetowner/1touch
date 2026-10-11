@@ -204,6 +204,10 @@ class MatchInfoTab extends StatelessWidget {
         add(event.playerId, LineupEventType.redCard, event.minute);
       } else if (code == 'substitution') {
         add(event.playerId, LineupEventType.subIn, event.minute);
+        // 부상 여부는 교체 아웃된 relatedPlayerId에만 적용해요.
+        if (event.injured == true) {
+          add(event.relatedPlayerId, LineupEventType.injury, event.minute);
+        }
         add(event.relatedPlayerId, LineupEventType.subOut, event.minute);
       }
     }
@@ -421,6 +425,7 @@ class MatchInfoTab extends StatelessWidget {
             key: ValueKey('match-substitutes-${fixture.fixtureId}'),
             subsA: homeSubstitutes,
             subsB: awaySubstitutes,
+            eventsByPlayer: _lineupEventsByPlayer(),
             coachA: coachNamesByTeam[fixture.homeTeamId] ?? '—',
             coachB: coachNamesByTeam[fixture.awayTeamId] ?? '—',
             homeCode: homeTeam.shortCode?.trim().isNotEmpty == true

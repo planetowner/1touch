@@ -62,6 +62,7 @@ void main() {
       expect(event.relatedPlayerId, 202);
       expect(event.extraMinute, 2);
       expect(event.onBench, isFalse);
+      expect(event.injured, isNull);
 
       final statistic = response.statistics.single;
       expect(statistic.statCode, 'ball-possession');
@@ -181,6 +182,22 @@ void main() {
         ApiFixtureDetailResponse.fromJson(integerJson).events.single.onBench,
         isTrue,
       );
+    });
+
+    test('keeps true, false, and unavailable substitution injury values', () {
+      for (final injured in [true, false, null]) {
+        final json = _detailJson();
+        (json['events'] as List).single['injured'] = injured;
+        final event = ApiFixtureDetailResponse.fromJson(json).events.single;
+        expect(event.injured, injured);
+        expect(
+            fixtureDetailFromApiResponse(
+                    ApiFixtureDetailResponse.fromJson(json))
+                .events
+                .single
+                .injured,
+            injured);
+      }
     });
 
     test('accepts an unavailable statistic value', () {

@@ -7,11 +7,13 @@ class MatchEventIcon extends StatelessWidget {
     required this.type,
     this.size = 16,
     this.outlined = false,
+    this.substituteCardStyle = false,
   });
 
   final LineupEventType type;
   final double size;
   final bool outlined;
+  final bool substituteCardStyle;
 
   @override
   Widget build(BuildContext context) => _buildIcon(size);
@@ -19,10 +21,14 @@ class MatchEventIcon extends StatelessWidget {
   Border? get _outline =>
       outlined ? Border.all(color: Colors.black, width: 1) : null;
 
-  Border get _subtleOrDarkOutline => Border.all(
-        color: outlined ? Colors.black : Colors.black.withValues(alpha: 0.08),
-        width: 1,
-      );
+  // 교체 명단의 카드만 피그마처럼 색상 면 바깥에 테두리를 그려요.
+  Border? get _cardOutline => substituteCardStyle
+      ? Border.all(
+          color: const Color(0xFF3D3D3D),
+          width: 1,
+          strokeAlign: BorderSide.strokeAlignOutside,
+        )
+      : _outline;
 
   Widget _buildIcon(double iconSize) {
     switch (type) {
@@ -35,8 +41,9 @@ class MatchEventIcon extends StatelessWidget {
               height: iconSize * 11 / 16,
               decoration: BoxDecoration(
                 color: const Color(0xFFFFCC00),
-                borderRadius: BorderRadius.circular(iconSize / 8),
-                border: _outline,
+                borderRadius: BorderRadius.circular(
+                    substituteCardStyle ? 1 : iconSize / 8),
+                border: _cardOutline,
               ),
             ),
           ),
@@ -50,9 +57,10 @@ class MatchEventIcon extends StatelessWidget {
               width: iconSize / 2,
               height: iconSize * 11 / 16,
               decoration: BoxDecoration(
-                color: const Color(0xFFE8000A),
-                borderRadius: BorderRadius.circular(iconSize / 8),
-                border: _outline,
+                color: const Color(0xFFFF5C5C),
+                borderRadius: BorderRadius.circular(
+                    substituteCardStyle ? 1 : iconSize / 8),
+                border: _cardOutline,
               ),
             ),
           ),
@@ -83,52 +91,24 @@ class MatchEventIcon extends StatelessWidget {
             ),
           ),
         );
+      // 파일명과 달리 right 에셋은 위쪽, left 에셋은 아래쪽 화살표예요.
       case LineupEventType.subIn:
-        return Container(
+        return SvgPicture.asset(
+          'assets/match_info/arrow_circle_right.svg',
           width: iconSize,
           height: iconSize,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: _subtleOrDarkOutline,
-          ),
-          child: Icon(
-            Icons.arrow_upward_rounded,
-            size: iconSize * 0.75,
-            color: Color(0xFF20B972),
-          ),
         );
       case LineupEventType.subOut:
-        return Container(
+        return SvgPicture.asset(
+          'assets/match_info/arrow_circle_left.svg',
           width: iconSize,
           height: iconSize,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: _subtleOrDarkOutline,
-          ),
-          child: Icon(
-            Icons.arrow_downward_rounded,
-            size: iconSize * 0.75,
-            color: Color(0xFFFF4F5E),
-          ),
         );
       case LineupEventType.injury:
-        return Container(
+        return SvgPicture.asset(
+          'assets/match_info/add_circle.svg',
           width: iconSize,
           height: iconSize,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: _subtleOrDarkOutline,
-          ),
-          child: Icon(
-            Icons.add,
-            size: iconSize * 5 / 6,
-            color: Color(0xFFFF4F5E),
-          ),
         );
     }
   }

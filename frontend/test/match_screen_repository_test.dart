@@ -477,6 +477,12 @@ void main() {
     );
     expect(coaches.coachA, 'Home Coach');
     expect(coaches.coachB, 'Away Coach');
+    expect(
+      coaches.eventsByPlayer[104]
+          ?.map((event) => (event.type, event.minute))
+          .toList(),
+      [(LineupEventType.subIn, 80)],
+    );
     expect(find.text('Test Stadium'), findsNothing);
     expect(find.text('Full Time'), findsOneWidget);
     expect(
@@ -557,7 +563,11 @@ void main() {
     expect(lineup.homeRows.first.single.name, 'Home Starter');
     expect(
       lineup.homeRows.first.single.events.map((event) => event.type),
-      containsAll([LineupEventType.goal, LineupEventType.subOut]),
+      containsAll([
+        LineupEventType.goal,
+        LineupEventType.injury,
+        LineupEventType.subOut,
+      ]),
     );
     expect(lineup.homeRows.last.single.name, 'Home Keeper');
     expect(lineup.awayRows.first.single.name, 'Away Keeper');
@@ -565,6 +575,13 @@ void main() {
       lineup.awayRows[1].single.events.map((event) => event.type),
       contains(LineupEventType.redCard),
     );
+    final ordinaryPitchOut = lineup.awayRows
+        .expand((row) => row)
+        .singleWhere((player) => player.playerId == 203)
+        .events
+        .map((event) => event.type);
+    expect(ordinaryPitchOut, contains(LineupEventType.subOut));
+    expect(ordinaryPitchOut, isNot(contains(LineupEventType.injury)));
     expect(coaches.subsA.single.name, 'Home Substitute');
     expect(coaches.subsA.single.minute, 80);
     expect(coaches.subsA.single.subIn, isTrue);
@@ -1351,6 +1368,7 @@ final List<FixtureEvent> _matchEvents = [
     minute: 75,
     extraMinute: null,
     onBench: true,
+    injured: false,
   ),
   FixtureEvent(
     eventId: 4,
@@ -1367,6 +1385,7 @@ final List<FixtureEvent> _matchEvents = [
     minute: 80,
     extraMinute: null,
     onBench: true,
+    injured: true,
   ),
 ];
 

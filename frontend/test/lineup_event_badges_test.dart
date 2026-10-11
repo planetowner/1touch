@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 
@@ -177,11 +178,13 @@ void main() {
     final pitchOutRect = tester.getRect(pitchOut);
     expect(pitchOutRect.center.dx, greaterThan(circleRect.center.dx));
     expect(pitchOutRect.center.dy, greaterThan(circleRect.center.dy));
-    expect(pitchOutRect.left, lessThan(circleRect.right));
-    expect(pitchOutRect.bottom, greaterThan(circleRect.top));
+    expect(pitchOutRect.left, circleRect.left + 20);
+    expect(pitchOutRect.top, circleRect.top + 17);
+    expect(tester.getRect(find.text('Yamal')).top - pitchOutRect.bottom, 1);
     final icon = find.byKey(const ValueKey('lineup-sub-out-icon'));
     final time = find.text("75'");
     expect(tester.getRect(time).left - tester.getRect(icon).right, 3);
+    expect(tester.getRect(icon).top, lessThan(circleRect.bottom));
   });
 
   testWidgets('renders the updated event icon set', (tester) async {
@@ -212,16 +215,28 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('lineup-sub-in-icon')),
-        matching: find.byIcon(Icons.arrow_upward_rounded),
+        matching: find.byType(SvgPicture),
       ),
       findsOneWidget,
     );
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('lineup-sub-out-icon')),
-        matching: find.byIcon(Icons.arrow_downward_rounded),
+        matching: find.byType(SvgPicture),
       ),
       findsOneWidget,
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey('lineup-sub-in-icon'))),
+      const Size.square(18),
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey('lineup-sub-out-icon'))),
+      const Size.square(18),
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey('lineup-injury-icon'))),
+      const Size.square(18),
     );
     final yellowCardIcon = tester
         .widgetList<MatchEventIcon>(find.byType(MatchEventIcon))
@@ -255,9 +270,161 @@ void main() {
     expect(tester.getCenter(badges).dx, lessThan(tester.getCenter(circle).dx));
     expect(
       tester.getBottomLeft(badges).dy,
-      greaterThan(tester.getBottomLeft(circle).dy),
+      tester.getBottomLeft(circle).dy + 3,
     );
+    expect(
+        tester.getRect(find.text('Yamal')).top -
+            tester.getBottomLeft(badges).dy,
+        1);
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('centers the injury and pitch-out overlap at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(subject(const [
+        LineupEvent(type: LineupEventType.subOut, minute: 82),
+      ]));
+      final single =
+          tester.getRect(find.byKey(const ValueKey('lineup-sub-out-icon')));
+
+      await tester.pumpWidget(subject(const [
+        LineupEvent(type: LineupEventType.injury, minute: 82),
+        LineupEvent(type: LineupEventType.subOut, minute: 82),
+      ]));
+      final injury =
+          tester.getRect(find.byKey(const ValueKey('lineup-injury-icon')));
+      final pitchOut =
+          tester.getRect(find.byKey(const ValueKey('lineup-sub-out-icon')));
+      final group = tester.getRect(find.descendant(
+        of: find.byKey(const ValueKey('lineup-pitch-out-badge')),
+        matching: find.byKey(const ValueKey('lineup-event-badge-groups')),
+      ));
+      expect(group.center.dx, closeTo(single.center.dx, 0.01));
+      expect(injury.left, lessThan(single.left));
+      expect(pitchOut.right, greaterThan(single.right));
+      expect(injury.overlaps(pitchOut), isTrue);
+      expect(injury.left, lessThan(pitchOut.left));
+      expect(injury.top, pitchOut.top);
+      expect(injury.bottom, pitchOut.bottom);
+      expect(tester.getRect(find.text('Yamal')).top - group.bottom, 1);
+      expect(find.text("82'"), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.pumpWidget(subject(const [
+        LineupEvent(type: LineupEventType.goal),
+        LineupEvent(type: LineupEventType.goal),
+        LineupEvent(type: LineupEventType.goal),
+        LineupEvent(type: LineupEventType.assist),
+        LineupEvent(type: LineupEventType.injury, minute: 82),
+        LineupEvent(type: LineupEventType.subOut, minute: 82),
+      ]));
+      final scoring =
+          tester.getRect(find.byKey(const ValueKey('lineup-scoring-badges')));
+      final overlappedOut =
+          tester.getRect(find.byKey(const ValueKey('lineup-injury-icon')));
+      expect(scoring.right, lessThan(overlappedOut.left));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('centers scoring badges and clears the pitch-out icon at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(subject(const [
+        LineupEvent(type: LineupEventType.goal),
+      ]));
+      final single =
+          tester.getRect(find.byKey(const ValueKey('lineup-scoring-badges')));
+
+      await tester.pumpWidget(subject(const [
+        LineupEvent(type: LineupEventType.goal),
+        LineupEvent(type: LineupEventType.assist),
+      ]));
+      final pair =
+          tester.getRect(find.byKey(const ValueKey('lineup-scoring-badges')));
+      expect(pair.center.dx, closeTo(single.center.dx, 0.01));
+      expect(pair.left, lessThan(single.left));
+      expect(pair.right, greaterThan(single.right));
+
+      await tester.pumpWidget(subject(const [
+        LineupEvent(type: LineupEventType.goal),
+        LineupEvent(type: LineupEventType.goal),
+        LineupEvent(type: LineupEventType.goal),
+        LineupEvent(type: LineupEventType.assist),
+      ]));
+      final four =
+          tester.getRect(find.byKey(const ValueKey('lineup-scoring-badges')));
+      expect(four.center.dx, closeTo(single.center.dx, 0.01));
+      expect(four.left, lessThan(pair.left));
+      expect(four.right, greaterThan(pair.right));
+
+      await tester.pumpWidget(subject(const [
+        LineupEvent(type: LineupEventType.goal),
+        LineupEvent(type: LineupEventType.goal),
+        LineupEvent(type: LineupEventType.goal),
+        LineupEvent(type: LineupEventType.assist),
+        LineupEvent(type: LineupEventType.subOut, minute: 82),
+      ]));
+      final scoring =
+          tester.getRect(find.byKey(const ValueKey('lineup-scoring-badges')));
+      final pitchOut =
+          tester.getRect(find.byKey(const ValueKey('lineup-sub-out-icon')));
+      expect(pitchOut.bottom, scoring.bottom);
+      expect(scoring.height, 16);
+      expect(pitchOut.height, 18);
+      expect(scoring.right, lessThan(pitchOut.left));
+      expect(find.text("82'"), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('centers overlapping yellow and red cards at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(subject(const [
+        LineupEvent(type: LineupEventType.yellowCard),
+      ]));
+      final single =
+          tester.getRect(find.byKey(const ValueKey('lineup-card-badges')));
+      final singleArtwork = tester.getRect(find.descendant(
+        of: find.byKey(const ValueKey('lineup-event-yellowCard-0')),
+        matching: find.byType(Container),
+      ));
+
+      await tester.pumpWidget(subject(const [
+        LineupEvent(type: LineupEventType.yellowCard, minute: 30),
+        LineupEvent(type: LineupEventType.secondYellowCard, minute: 70),
+      ]));
+      final pair =
+          tester.getRect(find.byKey(const ValueKey('lineup-card-badges')));
+      final yellow = tester.getRect(find.descendant(
+        of: find.byKey(const ValueKey('lineup-event-yellowCard-0')),
+        matching: find.byType(Container),
+      ));
+      final red = tester.getRect(find.descendant(
+        of: find.byKey(const ValueKey('lineup-event-redCard-1')),
+        matching: find.byType(Container),
+      ));
+      expect(pair.center.dx, closeTo(single.center.dx, 0.01));
+      expect(pair.left, lessThan(single.left));
+      expect(pair.right, greaterThan(single.right));
+      expect(yellow.center.dx, lessThan(singleArtwork.center.dx));
+      expect(red.center.dx, greaterThan(singleArtwork.center.dx));
+      expect(yellow.overlaps(red), isTrue);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('keeps cards top left and injury bottom right', (tester) async {
     await tester.pumpWidget(
@@ -323,10 +490,14 @@ void main() {
       LineupEvent(type: LineupEventType.secondYellowCard, minute: 70),
     ]));
 
-    final yellow =
-        tester.getRect(find.byKey(const ValueKey('lineup-event-yellowCard-0')));
-    final red =
-        tester.getRect(find.byKey(const ValueKey('lineup-event-redCard-1')));
+    final yellow = tester.getRect(find.descendant(
+      of: find.byKey(const ValueKey('lineup-event-yellowCard-0')),
+      matching: find.byType(Container),
+    ));
+    final red = tester.getRect(find.descendant(
+      of: find.byKey(const ValueKey('lineup-event-redCard-1')),
+      matching: find.byType(Container),
+    ));
     expect(yellow.overlaps(red), isTrue);
     expect(red.left, greaterThan(yellow.left));
   });
@@ -363,6 +534,10 @@ void main() {
 
   testWidgets('keeps the pitch size for long Korean player names',
       (tester) async {
+    tester.view.physicalSize = const Size(345, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final previousLocale = appLocaleController.value;
     appLocaleController.value = const Locale('ko');
     addTearDown(() => appLocaleController.value = previousLocale);
