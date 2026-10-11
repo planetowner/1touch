@@ -530,24 +530,26 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         auth_repo.login_password("alpha", "ChangedPassword123")
 
     def test_first_favorite_change_and_concurrent_second_change(self):
-        teams_repo.set_following_and_favorite(self.a, [6, 503], 503)
-        self.assertEqual(self.request("PUT", "/v1/users/me/following/teams",
-                                      json={"teamIds": [6, 503], "favoriteTeamId": 6}).status_code, 200)
-        r = self.request("PUT", "/v1/users/me/following/teams", json={"teamIds": [6, 503], "favoriteTeamId": 503})
+        # 횟수 제한은 예외 대상이 아닌 두 번째 회원으로 확인해요.
+        teams_repo.set_following_and_favorite(self.b, [6, 503], 6)
+        self.assertEqual(self.request("PUT", "/v1/users/me/following/teams", self.token_b,
+                                      json={"teamIds": [6, 503], "favoriteTeamId": 503}).status_code, 200)
+        r = self.request("PUT", "/v1/users/me/following/teams", self.token_b,
+                         json={"teamIds": [6, 503], "favoriteTeamId": 6})
         self.assertEqual(r.status_code, 409)
         self.assertIn("available_at", r.json()["detail"])
-        self.assertEqual(users_repo.get_favorite_team_id(self.a), 6)
+        self.assertEqual(users_repo.get_favorite_team_id(self.b), 503)
 
     def test_two_initial_changes_cannot_both_use_free_change(self):
-        teams_repo.set_following_and_favorite(self.a, [6, 503, 591], 503)
+        teams_repo.set_following_and_favorite(self.b, [6, 503, 591], 6)
         def change(team):
             try:
-                teams_repo.set_following_and_favorite(self.a, [6, 503, 591], team)
+                teams_repo.set_following_and_favorite(self.b, [6, 503, 591], team)
                 return "ok"
             except ValueError:
                 return "blocked"
         with ThreadPoolExecutor(2) as executor:
-            results = list(executor.map(change, [6, 591]))
+            results = list(executor.map(change, [503, 591]))
         self.assertCountEqual(results, ["ok", "blocked"])
 
     def test_display_name_and_favorite_team_have_independent_limits(self):

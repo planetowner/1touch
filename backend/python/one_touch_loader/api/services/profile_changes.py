@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 CHANGE_WINDOW = timedelta(days=14)
 MAX_CHANGES = 2
+FAVORITE_TEAM_CHANGE_EXEMPT_USER_IDS = frozenset({1, 3, 12, 13})
 
 
 class ProfileChangeLimitError(ValueError):
@@ -17,6 +18,9 @@ class ProfileChangeLimitError(ValueError):
 
 
 def check_change_limit(cur, user_id: int, change_type: str, now: datetime) -> None:
+    # 지정한 네 회원은 최애팀만 무제한으로 바꿀 수 있어요. 닉네임 제한은 유지해요.
+    if change_type == "favorite_team" and user_id in FAVORITE_TEAM_CHANGE_EXEMPT_USER_IDS:
+        return
     # 호출부가 사용자 행을 잠근 뒤 확인하므로 동시 요청도 같은 횟수를 봐요.
     cur.execute("""SELECT changed_at FROM user_profile_changes
         WHERE user_id=%s AND change_type=%s AND changed_at>%s

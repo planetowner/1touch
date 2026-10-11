@@ -43,15 +43,40 @@ class FavoriteTeamChangeTests(unittest.TestCase):
         self.assertEqual(favorite_changed_at_after_update(6, None, 503, self.now), self.now)
 
     def test_two_changes_are_allowed_then_oldest_expires_after_14_days(self):
-        cursor = Mock()
-        cursor.fetchall.return_value = [{"changed_at": self.now + timedelta(days=1)},
-                                        {"changed_at": self.now}]
-        with self.assertRaises(ProfileChangeLimitError) as raised:
-            check_change_limit(cursor, 7, "display_name", self.now + timedelta(days=13))
-        self.assertEqual(raised.exception.available_at, self.now + timedelta(days=14))
-        self.assertEqual(cursor.execute.call_args.args[1][1], "display_name")
-        cursor.fetchall.return_value = [{"changed_at": self.now + timedelta(days=1)}]
-        check_change_limit(cursor, 7, "display_name", self.now + timedelta(days=14))
+        for change_type in ("display_name", "favorite_team"):
+            with self.subTest(change_type=change_type):
+                cursor = Mock()
+                for recent in ([], [{"changed_at": self.now}]):
+                    cursor.fetchall.return_value = recent
+                    check_change_limit(cursor, 7, change_type, self.now + timedelta(days=1))
+                cursor.fetchall.return_value = [{"changed_at": self.now + timedelta(days=1)},
+                                                {"changed_at": self.now}]
+                with self.assertRaises(ProfileChangeLimitError) as raised:
+                    check_change_limit(cursor, 7, change_type, self.now + timedelta(days=13))
+                self.assertEqual(raised.exception.available_at, self.now + timedelta(days=14))
+                self.assertEqual(cursor.execute.call_args.args[1][1], change_type)
+                cursor.fetchall.return_value = [{"changed_at": self.now + timedelta(days=1)}]
+                check_change_limit(cursor, 7, change_type, self.now + timedelta(days=14))
+
+    def test_only_selected_users_can_keep_changing_favorite_team_at_the_limit(self):
+        for user_id in range(1, 16):
+            with self.subTest(user_id=user_id):
+                cursor = Mock()
+                cursor.fetchall.return_value = [{"changed_at": self.now}, {"changed_at": self.now}]
+                if user_id in (1, 3, 12, 13):
+                    for _ in range(10):
+                        check_change_limit(cursor, user_id, "favorite_team", self.now)
+                else:
+                    with self.assertRaises(ProfileChangeLimitError):
+                        check_change_limit(cursor, user_id, "favorite_team", self.now)
+
+    def test_favorite_team_exempt_users_still_have_display_name_limit(self):
+        for user_id in (1, 3, 12, 13):
+            with self.subTest(user_id=user_id):
+                cursor = Mock()
+                cursor.fetchall.return_value = [{"changed_at": self.now}, {"changed_at": self.now}]
+                with self.assertRaises(ProfileChangeLimitError):
+                    check_change_limit(cursor, user_id, "display_name", self.now)
 
     def test_same_home_team_does_not_consume_or_extend_change_interval(self):
         self.assertIsNone(favorite_changed_at_after_update(6, None, 6, self.now))
