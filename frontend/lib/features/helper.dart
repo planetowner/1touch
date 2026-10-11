@@ -415,12 +415,13 @@ class _MatchInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final roundLabel =
         fixtureRoundLabel(match, locale: Localizations.localeOf(context));
-    final competitionAndRound =
-        fixtureCompetitionLabel(context, match, competitionName: leagueName) ??
-            [
-              leagueName ?? 'League',
-              if (roundLabel != null) roundLabel,
-            ].join('  ');
+    final competitionAndRound = fixtureCompetitionLabel(context, match,
+            competitionName: leagueName,
+            abbreviateEuropeanCompetitions: true) ??
+        [
+          leagueName ?? 'League',
+          if (roundLabel != null) roundLabel,
+        ].join('  ');
 
     if (match!.status == FixtureStatus.live) {
       return _LiveMatchInfo(

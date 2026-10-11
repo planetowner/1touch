@@ -5,16 +5,20 @@ import 'package:onetouch/models/fixture.dart';
 
 const _abbreviatedCompetitionIds = {2, 5, 2286};
 
-// 일본어·중국어는 표기 규칙을 확정하기 전까지 각 화면의 기존 문구를 사용해요.
+// 일본어·중국어는 약어를 지정한 유럽 대회 외에는 각 화면의 기존 문구를 써요.
 String? fixtureCompetitionLabel(BuildContext context, Fixture? fixture,
-    {String? competitionName}) {
+    {String? competitionName, bool abbreviateEuropeanCompetitions = false}) {
   final locale = Localizations.localeOf(context);
-  if (fixture == null || !{'en', 'ko'}.contains(locale.languageCode)) {
+  if (fixture == null) return null;
+  if (!{'en', 'ko'}.contains(locale.languageCode) &&
+      !(abbreviateEuropeanCompetitions &&
+          _abbreviatedCompetitionIds.contains(fixture.competitionId))) {
     return null;
   }
   return competitionRoundLabel(context,
       competitionId: fixture.competitionId,
       competitionName: competitionName,
+      abbreviateEuropeanCompetitions: abbreviateEuropeanCompetitions,
       roundName: fixture.roundName,
       stageName: fixture.stageName,
       leg: fixture.leg);
@@ -24,6 +28,7 @@ String? fixtureCompetitionLabel(BuildContext context, Fixture? fixture,
 String competitionRoundLabel(BuildContext context,
     {required int? competitionId,
     String? competitionName,
+    bool abbreviateEuropeanCompetitions = false,
     String? roundName,
     String? stageName,
     String? leg}) {
@@ -39,6 +44,7 @@ String competitionRoundLabel(BuildContext context,
     competitionName: competitionNameLabel(context, competitionId,
         competition?.name ?? competitionName ?? 'Unknown'),
     competitionShortCode: competition?.shortCode,
+    abbreviateEuropeanCompetitions: abbreviateEuropeanCompetitions,
   );
 }
 
@@ -66,9 +72,11 @@ String _formatCompetitionRoundLabel({
   required Locale locale,
   required String competitionName,
   String? competitionShortCode,
+  bool abbreviateEuropeanCompetitions = false,
 }) {
   var name = normalizeCompetitionDisplayLabel(competitionName);
-  if (locale.languageCode == 'en' &&
+  // 좁은 경기 요약 영역은 언어와 무관하게 세 유럽 대회의 약어를 써요.
+  if ((abbreviateEuropeanCompetitions || locale.languageCode == 'en') &&
       _abbreviatedCompetitionIds.contains(competitionId)) {
     if (competitionShortCode == null || competitionShortCode.trim().isEmpty) {
       throw StateError('Competition $competitionId requires short_code.');

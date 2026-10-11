@@ -37,9 +37,9 @@ void main() {
     );
     for (final entry in {
       'en': 'UCL · Semi-final · Leg 2 of 2',
-      'ko': 'UEFA 챔피언스리그 준결승 2차전',
-      'ja': 'Champions League  Semi-finals • 第2戦',
-      'zh': 'Champions League  Semi-finals • 第2回合',
+      'ko': 'UCL 준결승 2차전',
+      'ja': 'UCL • Semi-finals • 第2戦',
+      'zh': 'UCL • Semi-finals • 第2回合',
     }.entries) {
       await tester.pumpWidget(MaterialApp(
         locale: Locale(entry.key),

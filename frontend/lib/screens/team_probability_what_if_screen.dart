@@ -306,7 +306,9 @@ class _FixtureTime extends StatelessWidget {
         CompetitionLabel(
           competitionId: competitionId,
           label: competitionRoundLabel(context,
-              competitionId: competitionId, roundName: roundName),
+              competitionId: competitionId,
+              roundName: roundName,
+              abbreviateEuropeanCompetitions: true),
           textAlign: TextAlign.center,
           style: Body1.style,
         ),

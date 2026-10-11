@@ -232,7 +232,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         matchKickoffLabels(kickoff, locale: Localizations.localeOf(context));
     final date = labels.date;
     final time = labels.time;
-    final roundLabel = fixtureCompetitionLabel(context, widget.fixture) ??
+    final roundLabel = fixtureCompetitionLabel(context, widget.fixture,
+            abbreviateEuropeanCompetitions: true) ??
         fixtureRoundLabel(widget.fixture,
             locale: Localizations.localeOf(context)) ??
         tr(context, 'Round TBD');
