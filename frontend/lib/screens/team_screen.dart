@@ -6,8 +6,6 @@ import 'package:onetouch/core/app_section_tab_bar.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/core/team_navigation.dart';
-import 'package:onetouch/core/detail_navigation.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
@@ -366,8 +364,7 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   void _openStandingCompetition(int competitionId) {
-    openDetailPage(
-      context,
+    context.pushReplacement(
       '/team/${widget.teamId}/standing?competitionId=$competitionId',
     );
   }
@@ -455,7 +452,6 @@ class _TeamScreenState extends State<TeamScreen>
         ? ''
         : leaguePositionLabel(context, leagueName, rank,
             missingPositionLabel: null);
-    final displayedTeamId = currentTeam.id;
     final rankChange = currentTeam.standing?.rankDelta;
     final appBarForeground = colors.onSurface;
     final topInset = appStatusBarInset(context);
@@ -528,21 +524,15 @@ class _TeamScreenState extends State<TeamScreen>
                         padding: const EdgeInsets.only(left: 8),
                         child: Row(
                           children: [
-                            GestureDetector(
-                              onTap: isTeamPageSupported(displayedTeamId)
-                                  ? () => openTeamPage(context, displayedTeamId)
-                                  : null,
-                              child: SizedBox.square(
-                                key: const ValueKey('team-app-bar-logo'),
-                                dimension: _teamAppBarLogoSize,
-                                child: Image.network(
-                                  currentTeam.imagePath,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (_, __, ___) =>
-                                      teamLogoFallback(
-                                    currentTeam.id,
-                                    size: 48,
-                                  ),
+                            SizedBox.square(
+                              key: const ValueKey('team-app-bar-logo'),
+                              dimension: _teamAppBarLogoSize,
+                              child: Image.network(
+                                currentTeam.imagePath,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => teamLogoFallback(
+                                  currentTeam.id,
+                                  size: 48,
                                 ),
                               ),
                             ),

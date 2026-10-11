@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/data/team_trophies/mock/mock_team_trophy_repository.dart';
@@ -14,8 +15,11 @@ import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'support/player_detail_fixture.dart';
+import 'support/app_catalog.dart';
 
 void main() {
+  setUpAppCatalog();
+
   test('2025/26 catalog has unique stable IDs and balanced coverage', () {
     final players = playerRepository.allPlayers;
     final ids = players.map((player) => player.id).toSet();
@@ -186,6 +190,68 @@ void main() {
     await tester.tap(season);
     await tester.pumpAndSettle();
     expect(competition, findsNothing);
+  });
+
+  group('career trophy team navigation', () {
+    testWidgets('only trophy team opens a stacked Team page', (tester) async {
+      final json = playerDetailJson();
+      json['honours'] = [
+        {
+          'team_id': 83,
+          'team_name': 'FC Barcelona',
+          'competition_id': 8,
+          'competition_name': 'La Liga',
+          'season_name': '2024/2025',
+        },
+      ];
+      final detail = playerDetailFromJson(json);
+      final router = GoRouter(initialLocation: '/player', routes: [
+        GoRoute(
+          path: '/player',
+          builder: (_, __) => Scaffold(
+            body: PlayerDetailScope(
+              store: PlayerDetailStore(
+                playerId: detail.playerId,
+                initial: detail,
+              ),
+              child: CareerTab(playerId: detail.playerId),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/team/:id',
+          builder: (_, state) => Scaffold(
+            body: Text('Team ${state.pathParameters['id']}'),
+          ),
+        ),
+      ]);
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('career-trophy-team-83')));
+      await tester.pumpAndSettle();
+      expect(find.text('Team 83'), findsOneWidget);
+
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('career-trophy-team-83')), findsOneWidget);
+      expect(find.text('Team 83'), findsNothing);
+
+      final first = detail.career.first;
+      final key = '${first.season}-${first.teamId}';
+      final season = find.byKey(Key('career-season-$key'));
+      final competition = find
+          .byKey(Key('career-competition-$key-${first.competitions.first.id}'));
+      await tester.ensureVisible(season);
+      await tester.pumpAndSettle();
+      expect(competition, findsOneWidget);
+      await tester.tap(season);
+      await tester.pumpAndSettle();
+      expect(competition, findsNothing);
+      expect(find.text('Team ${first.teamId}'), findsNothing);
+    });
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {

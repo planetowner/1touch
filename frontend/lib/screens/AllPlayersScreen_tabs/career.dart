@@ -3,6 +3,7 @@ import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
@@ -106,19 +107,25 @@ class _CareerTabState extends State<CareerTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            PlayerRemoteImage(first.teamImage, size: 28),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                teamNameLabel(context, first.teamId,
-                        first.teamName ?? tr(context, 'Team unavailable'))
-                    .toUpperCase(),
-                style: Body2_b.style,
+        InkWell(
+          key: Key('career-trophy-team-${first.teamId}'),
+          onTap: isTeamPageSupported(first.teamId)
+              ? () => openTeamPage(context, first.teamId)
+              : null,
+          child: Row(
+            children: [
+              PlayerRemoteImage(first.teamImage, size: 28),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  teamNameLabel(context, first.teamId,
+                          first.teamName ?? tr(context, 'Team unavailable'))
+                      .toUpperCase(),
+                  style: Body2_b.style,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 24),
         for (var index = 0; index < competitions.length; index++) ...[

@@ -170,7 +170,9 @@ class _ExpandableClubColumnState<T> extends State<_ExpandableClubColumn<T>> {
                   GestureDetector(
                     key: ValueKey('standing-logo-$teamId'),
                     onTap: isTeamPageSupported(teamId)
-                        ? () => openTeamPage(context, teamId)
+                        ? () => teamId == FavoriteTeam.id.value
+                            ? context.pushReplacement('/team/$teamId')
+                            : openTeamPage(context, teamId)
                         : null,
                     child: Image.network(
                       widget.teamLogoOf(team),

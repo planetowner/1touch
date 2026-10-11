@@ -1052,7 +1052,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
-    testWidgets('overview match arrow pushes matches over the page at $size',
+    testWidgets('overview match arrow replaces the player page at $size',
         (tester) async {
       await tester.binding.setSurfaceSize(size);
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -1101,7 +1101,7 @@ void main() {
       await tester.tap(arrow);
       await tester.pumpAndSettle();
       expect(router.canPop(), isTrue);
-      expect(find.byType(PlayerCard, skipOffstage: false), findsNWidgets(2));
+      expect(find.byType(PlayerCard, skipOffstage: false), findsOneWidget);
       expect(
           tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
           2);
@@ -1122,11 +1122,8 @@ void main() {
 
       router.pop();
       await tester.pumpAndSettle();
-      expect(find.byType(PlayerCard, skipOffstage: false), findsOneWidget);
-      expect(originalScroll.offset, originalOffset);
-      expect(
-          tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
-          0);
+      expect(find.text('Players root'), findsOneWidget);
+      expect(find.byType(PlayerCard, skipOffstage: false), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }

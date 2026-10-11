@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
@@ -14,6 +15,7 @@ import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
+import 'package:onetouch/features/standing_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/models/season.dart';
@@ -23,6 +25,109 @@ import 'package:onetouch/screens/TeamScreen_tabs/standing.dart';
 
 void main() {
   setUpAppCatalog();
+  for (final isXg in [false, true]) {
+    for (final tappedTeamId in [83, 9]) {
+      testWidgets(
+          '${isXg ? 'xG' : 'regular'} standing logo opens '
+          '${tappedTeamId == 83 ? 'favorite by replacement' : 'other team by push'}',
+          (tester) async {
+        final horizontalScrollController = ScrollController();
+        final router = GoRouter(
+          initialLocation: '/team/9/standing',
+          routes: [
+            GoRoute(
+              path: '/team',
+              builder: (_, __) => const Scaffold(body: Text('Team root')),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (_, state) => Scaffold(
+                    body: Text('Team ${state.pathParameters['id']}'),
+                  ),
+                ),
+                GoRoute(
+                  path: ':id/standing',
+                  builder: (_, __) => Scaffold(
+                    body: SingleChildScrollView(
+                      child: isXg
+                          ? XgTable(
+                              standings: const [
+                                XgStanding(
+                                  competitionId: 8,
+                                  seasonId: 28083,
+                                  teamId: 83,
+                                  position: 1,
+                                  matchesPlayed: 1,
+                                  xg: 1,
+                                  xga: 0,
+                                  xpts: 3,
+                                ),
+                                XgStanding(
+                                  competitionId: 8,
+                                  seasonId: 28083,
+                                  teamId: 9,
+                                  position: 2,
+                                  matchesPlayed: 1,
+                                  xg: 0,
+                                  xga: 1,
+                                  xpts: 0,
+                                ),
+                              ],
+                              currentTeamId: 9,
+                              leagueId: 8,
+                              horizontalScrollController:
+                                  horizontalScrollController,
+                              isScrolledToEnd: false,
+                            )
+                          : StandingTable(
+                              standings: [
+                                _standing(teamId: 83, position: 1),
+                                _standing(teamId: 9, position: 2),
+                              ],
+                              currentTeamId: 9,
+                              leagueId: 8,
+                              horizontalScrollController:
+                                  horizontalScrollController,
+                              isScrolledToEnd: false,
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+        addTearDown(() {
+          router.dispose();
+          horizontalScrollController.dispose();
+        });
+
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(ValueKey('standing-logo-$tappedTeamId')),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Team $tappedTeamId'), findsOneWidget);
+        expect(router.canPop(), isTrue);
+        router.pop();
+        await tester.pumpAndSettle();
+        if (tappedTeamId == 83) {
+          expect(find.text('Team root'), findsOneWidget);
+          expect(find.byType(StandingTable), findsNothing);
+          expect(find.byType(XgTable), findsNothing);
+        } else {
+          expect(
+            find.byType(isXg ? XgTable : StandingTable),
+            findsOneWidget,
+          );
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
   testWidgets('loads the selected competition and season from the repository',
       (tester) async {
     final repository = _ControlledStandingRepository(

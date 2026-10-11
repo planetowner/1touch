@@ -81,7 +81,7 @@ void main() {
   ];
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
-    testWidgets('overview standing card pushes a fresh standing page at $size',
+    testWidgets('overview standing card replaces the team page at $size',
         (tester) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
@@ -125,6 +125,13 @@ void main() {
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
       await tester.pumpAndSettle();
 
+      await tester.tap(find.byKey(const ValueKey('team-app-bar-logo')));
+      await tester.pumpAndSettle();
+      expect(find.byType(TeamScreen, skipOffstage: false), findsOneWidget);
+      expect(
+          tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
+          0);
+
       final standingCard = find.byKey(
         const ValueKey('overview-standing-card-8'),
       );
@@ -146,7 +153,7 @@ void main() {
       await tester.tap(standingCard);
       await tester.pumpAndSettle();
       expect(router.canPop(), isTrue);
-      expect(find.byType(TeamScreen, skipOffstage: false), findsNWidgets(2));
+      expect(find.byType(TeamScreen, skipOffstage: false), findsOneWidget);
       expect(
           tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
           2);
@@ -164,11 +171,8 @@ void main() {
 
       router.pop();
       await tester.pumpAndSettle();
-      expect(find.byType(TeamScreen, skipOffstage: false), findsOneWidget);
-      expect(originalScroll.offset, originalOffset);
-      expect(
-          tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
-          0);
+      expect(find.text('Team root'), findsOneWidget);
+      expect(find.byType(TeamScreen, skipOffstage: false), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }
