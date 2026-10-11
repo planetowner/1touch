@@ -178,7 +178,7 @@ class MatchRefreshTests(unittest.TestCase):
             self.assertTrue(collect.call_args.kwargs['clear_live'])
 
     def test_probabilities_daily_external_check_and_immediate_result_change(self):
-        with patch.object(probability_refresh, 'refresh', return_value={'europe': {'competitions': []}}) as calculate:
+        with patch.object(probability_refresh, 'refresh', return_value={'league': {'leagues': []}, 'europe': {'competitions': []}}) as calculate:
             self.run_job('probability')
             self.run_job('probability', seconds=900)
             self.run_job('probability', seconds=86399)
@@ -191,14 +191,15 @@ class MatchRefreshTests(unittest.TestCase):
 
     def test_live_goal_does_not_trigger_final_result_probability_recalculation(self):
         self.rows[0]['state_id'] = 2
-        with patch.object(probability_refresh, 'refresh', return_value={'europe': {'competitions': []}}) as calculate:
+        with patch.object(probability_refresh, 'refresh', return_value={'league': {'leagues': []}, 'europe': {'competitions': []}}) as calculate:
             self.run_job('probability')
             self.rows[0]['home_score'] = 9
             self.run_job('probability', seconds=30)
         calculate.assert_called_once()
 
     def test_missing_verified_bracket_remains_pending_and_retries(self):
-        report = {'europe': {'competitions': [{'season_id': 100, 'status': 'verified_knockout_path_required'}]}}
+        report = {'league': {'leagues': []},
+                  'europe': {'competitions': [{'season_id': 100, 'status': 'verified_knockout_path_required'}]}}
         with patch.object(probability_refresh, 'refresh', return_value=report) as calculate:
             first = self.run_job('probability')
             self.assertEqual((first['completed'], first['pending']), (0, 1))
@@ -214,6 +215,26 @@ class MatchRefreshTests(unittest.TestCase):
             calculate.assert_called_once()
             self.run_job('probability', seconds=300)
         self.assertEqual(calculate.call_count, 2)
+
+    def test_partial_league_failure_is_reported_retried_and_cleared_after_recovery(self):
+        failure = {'season_id': 100, 'status': 'failed', 'error': 'unsupported state_id=999'}
+        report = {'league': {'leagues': [failure, {'season_id': 200, 'status': 'updated'}]},
+                  'europe': {'competitions': [{'season_id': 300, 'status': 'updated'}]}}
+        with patch.object(probability_refresh, 'refresh', return_value=report) as calculate:
+            first = self.run_job('probability')
+            self.assertEqual((first['completed'], first['pending']), (0, 1))
+            self.assertEqual(first['failures'], [{'season_id': 100, 'error': failure['error']}])
+            self.assertNotIn('probability', json.loads(self.path.read_text()))
+            self.run_job('probability', seconds=299)
+            calculate.assert_called_once()
+            self.run_job('probability', seconds=300)
+            self.assertEqual(calculate.call_count, 2)
+            report['league']['leagues'][0] = {'season_id': 100, 'status': 'updated'}
+            self.rows[0]['home_score'] = 2
+            recovered = self.run_job('probability', seconds=315)
+            self.assertEqual((recovered['completed'], recovered['pending'], recovered['failures']), (1, 0, []))
+            self.assertEqual(calculate.call_count, 3)
+            self.assertIn('probability', json.loads(self.path.read_text()))
 
 
 class ScopedSourceTests(unittest.TestCase):

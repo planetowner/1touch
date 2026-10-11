@@ -275,11 +275,15 @@ def refresh(*, apply, simulations=100000, seed=20260917, cache_dir=None, histori
         # DATETIME(6)의 TIME을 문자열과 비교하면 자정도 누락돼요. 양쪽을 시간으로 비교해요.
         stored_days = {r["day"] for r in _fetch("""SELECT DISTINCT DATE(as_of) AS day FROM probability_runs
             WHERE season_id=%s AND model_id=%s AND TIME(as_of)=TIME('00:00:00')""", (season_id, report["model_id"]))}
-        runs, result = refresh_league(competition_id=competition_id, season_id=season_id,
-            teams=[t for t in teams if t["season_id"] == season_id],
-            fixtures=[f for f in fixtures if f["season_id"] == season_id], histories=histories,
-            model_report=report, observed_at=observed_at, simulations=simulations, seed=seed,
-            previous=latest_run(season_id), stored_days=stored_days)
+        try:
+            runs, result = refresh_league(competition_id=competition_id, season_id=season_id,
+                teams=[t for t in teams if t["season_id"] == season_id],
+                fixtures=[f for f in fixtures if f["season_id"] == season_id], histories=histories,
+                model_report=report, observed_at=observed_at, simulations=simulations, seed=seed,
+                previous=latest_run(season_id), stored_days=stored_days)
+        except ValueError as error:
+            # 한 리그의 입력 오류가 다른 리그·컵 갱신까지 막지 않도록 실패를 따로 보고해요.
+            runs, result = [], {"season_id": season_id, "status": "failed", "error": str(error)}
         if apply and runs:
             # 일별 기준선만 공개되고 현재 예측 저장이 실패하는 중간 상태를 남기지 않아요.
             store_runs(runs)
@@ -293,6 +297,14 @@ def store_model(report):
     with transaction() as connection, connection.cursor() as cursor:
         cursor.execute("INSERT INTO probability_models (model_id,payload) VALUES (%s,%s) ON DUPLICATE KEY UPDATE model_id=VALUES(model_id)",
                        (report["model_id"], _dump(report)))
+
+
+def raise_for_failed_leagues(report):
+    # 다른 대회 계산을 마친 뒤에도 CLI는 실패 종료 코드를 유지해요.
+    errors = [f"Season {item['season_id']}: {item['error']}" for item in report['leagues']
+              if item['status'] == 'failed']
+    if errors:
+        raise ValueError('; '.join(errors))
 
 
 def store_run(run):
@@ -404,7 +416,9 @@ def main(argv=None):
         print(_dump(reconstruct_betting(season=args.season, apply=args.apply)))
         return
     if args.command == "refresh":
-        print(_dump(refresh(apply=args.apply, simulations=args.simulations, seed=args.seed, cache_dir=args.cache_dir)))
+        result = refresh(apply=args.apply, simulations=args.simulations, seed=args.seed, cache_dir=args.cache_dir)
+        print(_dump(result))
+        raise_for_failed_leagues(result)
         return
     if args.command == "sync-elo":
         print(_dump(sync_elo(args.mapping_file, cache_dir=args.cache_dir, apply=args.apply)))

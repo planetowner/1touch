@@ -29,8 +29,9 @@ def main(argv=None):
     mode.add_argument("--apply", action="store_true")
     mode.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)
-    print(probability_loader._dump(refresh(apply=args.apply, simulations=args.simulations,
-                                          seed=args.seed, cache_dir=args.cache_dir)))
+    result = refresh(apply=args.apply, simulations=args.simulations, seed=args.seed, cache_dir=args.cache_dir)
+    print(probability_loader._dump(result))
+    probability_loader.raise_for_failed_leagues(result['league'])
 
 
 if __name__ == "__main__":

@@ -12,6 +12,11 @@ from .fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS, UPCOMING_STATE_
 from .probability import WDLModel, simulate_league, position_bounds
 
 
+# 중단·결과 확인 대기도 승점이 확정되기 전까지 잔여 경기로 계산해요.
+# https://docs.sportmonks.com/v3/tutorials-and-guides/tutorials/includes/states
+UNFINISHED_STATE_IDS = (*UPCOMING_STATE_IDS, *LIVE_STATE_IDS, 15, 19, 26)
+
+
 # 26/27 정규리그 범위예요. 독일·프랑스의 16위는 최종 강등이 아니라 플레이오프 진입이에요.
 # https://www.bundesliga.com/en/faq/what-are-the-rules-and-regulations-of-soccer/how-does-promotion-and-relegation-work-in-the-bundesliga-10645
 # https://ligue1.com/en/articles/l1_article_3812-
@@ -144,9 +149,10 @@ def forecast_day(*, competition_id: int, season_id: int, teams: list[dict], fixt
         day = date.fromisoformat(str(fixture["starting_at"])[:10])
         kickoff = datetime.fromisoformat(str(fixture["starting_at"])).replace(tzinfo=timezone.utc)
         state = fixture["state_id"]
-        allowed = (*COMPLETED_STATE_IDS, *UPCOMING_STATE_IDS, *(LIVE_STATE_IDS if observed_at else ()))
+        # 날짜가 지나도 미확정 경기는 남아요. 일별 복원과 현재 예측에 같은 규칙을 적용해요.
+        allowed = (*COMPLETED_STATE_IDS, *UNFINISHED_STATE_IDS)
         if (day < as_of or observed_at) and state not in allowed:
-            raise ValueError(f"Fixture {fixture['fixture_id']} is live or has an unresolved result")
+            raise ValueError(f"Fixture {fixture['fixture_id']} has unsupported state_id={state}")
         h, a = fixture["home_team_id"], fixture["away_team_id"]
         if state in COMPLETED_STATE_IDS and (kickoff < observed_at if observed_at else day < as_of):
             hs, aws = fixture["home_score"], fixture["away_score"]
@@ -158,11 +164,13 @@ def forecast_day(*, competition_id: int, season_id: int, teams: list[dict], fixt
             played[a] += 1
             finished.append(fixture)
         else:
-            # 진행 중인 경기의 임시 점수는 확정 승점에 넣지 않아요. 먼저 끝난 경기는 즉시 반영해요.
+            # 중단·진행 중인 경기의 임시 점수는 빼고, 먼저 끝난 경기의 승점은 바로 반영해요.
             # 복원 시점 이후 경기의 현재 결과는 읽지 않고, 당시 Elo로 새로 뽑아요.
             remaining.append({"fixture_id": fixture["fixture_id"], "home_team_id": h, "away_team_id": a,
                               "starting_at": str(fixture["starting_at"]), "round_name": fixture.get("round_name"),
-                              "schedule_confirmed": (kickoff >= observed_at if observed_at else day >= as_of) and state != 10,
+                              # 중단·연기·일정 미정 경기를 다음 확정 경기로 안내하지 않아요.
+                              "schedule_confirmed": (kickoff >= observed_at if observed_at else day >= as_of)
+                                                    and state in (1, 16, *COMPLETED_STATE_IDS),
                               "probabilities": model.predict([ratings[h] - ratings[a]])[0].tolist()})
     kwargs = dict(team_ids=team_ids, current_points=points, remaining_fixtures=remaining,
                   simulations=simulations, seed=seed)

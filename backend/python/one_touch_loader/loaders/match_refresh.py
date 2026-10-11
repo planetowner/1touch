@@ -314,10 +314,12 @@ def refresh(task: str, *, state_path: Path, apply: bool = False, now=None) -> di
         result['attempted'] = 1
         report = probability_refresh.refresh(apply=apply)
         result['probability'] = report
-        # 검증된 대진을 기다리는 시즌을 계산 완료로 감추지 않아요.
-        pending = [item for item in report['europe']['competitions']
+        # 리그 입력 오류와 대진 대기를 완료로 감추지 않아 다음 실행에서 다시 확인해요.
+        pending = [item for item in report['league']['leagues'] + report['europe']['competitions']
                    if item['status'] not in ('updated', 'unchanged')]
         result['pending'] = len(pending)
+        result['failures'].extend({'season_id': item['season_id'], 'error': item['error']}
+                                  for item in pending if item['status'] == 'failed')
         if not pending:
             checkpoint('probability', {'signature': signature, 'attempted_at': stamp})
             result['completed'] = 1

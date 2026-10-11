@@ -110,6 +110,36 @@ class ForecastPipelineTests(unittest.TestCase):
         self.assertEqual(result["remaining_fixtures"], 306)
         self.assertNotEqual(result["teams"]["1"]["what_if"]["fixture"]["fixture_id"], 1)
 
+    def test_unfinished_states_keep_remaining_game_and_ignore_provisional_scores(self):
+        for state in (2, 10, 11, 13, 15, 16, 18, 19, 26):
+            for observed in (None, datetime(2026, 9, 10, 17, tzinfo=timezone.utc)):
+                with self.subTest(state=state, observed=observed):
+                    args = league_input()
+                    args['observed_at'] = observed
+                    args['fixtures'][0].update(starting_at='2026-09-09 14:00:00', state_id=state,
+                                               home_score=4, away_score=2)
+                    args['fixtures'][1].update(starting_at='2026-09-09 16:00:00', state_id=5,
+                                               home_score=1, away_score=0)
+                    result = forecast_day(**args)
+                    self.assertEqual((result['finished_fixtures'], result['remaining_fixtures']), (1, 305))
+                    self.assertEqual(result['teams']['1']['current_points'], 3)
+                    self.assertEqual(result['teams']['1']['played'], 1)
+                    self.assertEqual(result['teams']['1']['maximum_points'], 102)
+                    args['fixtures'][0].update(state_id=1, home_score=None, away_score=None)
+                    self.assertEqual(result, forecast_day(**args))
+
+    def test_unconfirmed_states_do_not_offer_what_if_even_with_a_future_timestamp(self):
+        for state in (10, 11, 13, 15, 18, 19, 26):
+            with self.subTest(state=state):
+                args = league_input()
+                args['fixtures'][0].update(state_id=state, starting_at='2026-09-11 14:00:00')
+                args['observed_at'] = datetime(2026, 9, 10, 17, tzinfo=timezone.utc)
+                args['include_what_if'] = True
+                result = forecast_day(**args)
+                self.assertEqual(result['remaining_fixtures'], 306)
+                for team in ('1', '2'):
+                    self.assertNotEqual(result['teams'][team]['what_if']['fixture']['fixture_id'], 1)
+
     def test_european_title_is_not_mandatory_and_top_six_is_not_a_card_candidate(self):
         events = [{"event": name, "competition_id": competition, "category": category, "probability": p}
                   for name, competition, category, p in [("ucl_winner", 2, "TITLE", 0),

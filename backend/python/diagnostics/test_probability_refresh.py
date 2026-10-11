@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from diagnostics.test_probability_pipeline import league_input
 from one_touch_loader.loaders import probability_loader as loader
+from one_touch_loader.loaders import probability_refresh as pipeline
 
 
 class ProbabilityRefreshTests(unittest.TestCase):
@@ -90,10 +91,48 @@ class ProbabilityRefreshTests(unittest.TestCase):
             if team['what_if'] is not None:
                 self.assertNotEqual(team['what_if']['fixture']['fixture_id'], target['fixture_id'])
 
-    def test_unresolved_result_is_an_error_not_silently_treated_as_live(self):
-        self.args["fixtures"][0]["state_id"] = 15
-        with self.assertRaisesRegex(ValueError, "unresolved"):
-            loader.refresh_league(**self.args)
+    def test_abandoned_game_does_not_block_results_or_next_day_baseline(self):
+        self.args['fixtures'][1].update(state_id=15, starting_at='2026-09-10 14:00:00',
+                                        home_score=4, away_score=2)
+        self.args['fixtures'][2].update(state_id=5, starting_at='2026-09-10 16:00:00',
+                                        home_score=1, away_score=0)
+        runs, result = loader.refresh_league(**self.args)
+        self.assertEqual(result['status'], 'updated')
+        self.assertEqual(runs[-1]['teams']['1']['current_points'], 6)
+        self.assertEqual(runs[-1]['teams']['1']['played'], 2)
+        self.args['previous'] = runs[-1]
+        self.args['observed_at'] = datetime(2026, 9, 11, 1, tzinfo=timezone.utc)
+        runs, result = loader.refresh_league(**self.args)
+        self.assertEqual(result['daily_snapshots'], 1)
+        for run in runs:
+            self.assertEqual(run['teams']['1']['current_points'], 6)
+            self.assertEqual(run['remaining_fixtures'], 304)
+
+    def test_rescheduled_then_completed_game_updates_scenarios_and_counts_result_once(self):
+        target = self.args['fixtures'][1]
+        target.update(state_id=15, starting_at='2026-09-10 14:00:00', home_score=0, away_score=0)
+        runs, _ = loader.refresh_league(**self.args)
+        self.args['previous'] = runs[-1]
+        target.update(state_id=1, starting_at='2026-09-11 14:00:00', home_score=None, away_score=None)
+        runs, _ = loader.refresh_league(**self.args)
+        self.assertEqual(runs[-1]['teams']['1']['what_if']['fixture']['fixture_id'], target['fixture_id'])
+        self.assertEqual(runs[-1]['teams']['1']['current_points'], 3)
+        self.args['previous'] = runs[-1]
+        self.args['observed_at'] = datetime(2026, 9, 11, 17, tzinfo=timezone.utc)
+        target.update(state_id=5, home_score=2, away_score=0)
+        runs, _ = loader.refresh_league(**self.args)
+        self.assertEqual(runs[-1]['teams']['1']['current_points'], 6)
+        self.assertEqual(runs[-1]['teams']['1']['played'], 2)
+        self.args['previous'] = runs[-1]
+        self.args['stored_days'].add(date(2026, 9, 11))
+        self.assertEqual(loader.refresh_league(**self.args)[0], [])
+
+    def test_cancelled_awarded_and_unknown_states_are_not_invented_results(self):
+        for state in (12, 14, 17, 20, 999):
+            with self.subTest(state=state):
+                self.args['fixtures'][0]['state_id'] = state
+                with self.assertRaisesRegex(ValueError, f'unsupported state_id={state}'):
+                    loader.refresh_league(**self.args)
 
     def test_new_model_or_sampling_settings_recompute(self):
         for change in ("model", "simulations", "seed"):
@@ -135,11 +174,21 @@ class ProbabilityRefreshTests(unittest.TestCase):
                 self.assertEqual(store.call_args.args[0][-1]["teams"]["1"]["elo"], 3020)
 
     def test_cli_defaults_to_read_only(self):
-        with patch.object(loader, "refresh", return_value={}) as refresh, patch("sys.stdout", new=io.StringIO()):
+        with patch.object(loader, "refresh", return_value={'leagues': []}) as refresh, patch("sys.stdout", new=io.StringIO()):
             loader.main(["refresh"])
         self.assertFalse(refresh.call_args.kwargs["apply"])
 
-    def test_live_league_does_not_stop_another_league(self):
+    def test_both_cli_entrypoints_report_partial_failure_without_success_exit(self):
+        result = {'leagues': [{'season_id': 1, 'status': 'failed', 'error': 'unsupported state_id=999'},
+                              {'season_id': 2, 'status': 'updated'}]}
+        for module, args, report in ((loader, ['refresh'], result), (pipeline, [], {'league': result})):
+            with self.subTest(module=module.__name__), \
+                 patch.object(module, 'refresh', return_value=report), patch('sys.stdout', new=io.StringIO()) as output:
+                with self.assertRaisesRegex(ValueError, 'Season 1: unsupported state_id=999'):
+                    module.main(args)
+                self.assertIn('"status": "updated"', output.getvalue())
+
+    def test_invalid_league_reports_failure_and_does_not_stop_another_league(self):
         teams = self.args["teams"] + [{"team_id": 90, "season_id": 2, "competition_id": 8}]
         mappings = [{"external_team_id": f"Team{t['team_id']}", "team_id": t["team_id"]} for t in teams]
         current_run = {"season_id": 2}
@@ -153,11 +202,12 @@ class ProbabilityRefreshTests(unittest.TestCase):
              patch.object(loader, "collect_elo", return_value=[]), \
              patch.object(loader, "save_elo"), patch.object(loader, "store_runs") as store, \
              patch.object(loader, "refresh_league", side_effect=[
-                 ([], {"season_id": 1, "status": "live"}),
+                 ValueError('Fixture 1 has unsupported state_id=999'),
                  ([current_run], {"season_id": 2, "status": "updated"}),
              ]), patch("sys.stdout", new=io.StringIO()):
             result = loader.refresh(apply=True)
-        self.assertEqual([r["status"] for r in result["leagues"]], ["live", "updated"])
+        self.assertEqual([r["status"] for r in result["leagues"]], ["failed", "updated"])
+        self.assertEqual(result['leagues'][0]['error'], 'Fixture 1 has unsupported state_id=999')
         store.assert_called_once_with([current_run])
 
 
