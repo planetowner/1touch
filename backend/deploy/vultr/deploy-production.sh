@@ -98,10 +98,11 @@ fi
 for filename in compose.production.yaml compose.batch-resources.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-match-refresh.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh sync-current-season.sh sync-calendars.sh sync-notifications.sh sync-player-indicators.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
-# 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
-for filename in index.html styles.css assets/1touch-wordmark.jpg; do
-  install -D -m 644 "$release_directory/deploy/vultr/site/$filename" "$runtime_directory/site/$filename"
-done
+# 소개·약관과 글꼴·아이콘을 함께 복사해 다음 배포에서도 같은 화면을 보여줘요.
+while IFS= read -r -d '' source_file; do
+  filename="${source_file#"$release_directory/deploy/vultr/site/"}"
+  install -D -m 644 "$source_file" "$runtime_directory/site/$filename"
+done < <(find "$release_directory/deploy/vultr/site" -type f -print0)
 cd "$runtime_directory"
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh config --quiet
 # 첫 국가 DB가 준비되지 않으면 기존 API를 교체하기 전에 멈춰요.

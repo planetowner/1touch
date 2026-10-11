@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="gavel">
+<mask id="mask0_0_8" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+<rect id="Bounding box" width="32" height="32" fill="#D9D9D9"/>
+</mask>
+<g mask="url(#mask0_0_8)">
+<path id="gavel_2" d="M5.33304 28.0047V25.338H21.333V28.0047H5.33304ZM12.8664 21.538L5.33304 14.0047L8.13304 11.138L15.733 18.6714L12.8664 21.538ZM21.333 13.0714L13.7997 5.47137L16.6664 2.67137L24.1997 10.2047L21.333 13.0714ZM27.4664 26.6714L10.0664 9.27137L11.933 7.4047L29.333 24.8047L27.4664 26.6714Z" fill="white"/>
+</g>
+</g>
+</svg>

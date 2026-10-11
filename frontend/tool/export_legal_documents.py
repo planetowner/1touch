@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "backend/deploy/vultr/site/legal"
 OUTPUT = ROOT / "frontend/lib/core/legal_document_content.dart"
 BASE_URL = "https://1touch.football/legal/"
-VOID = {"meta", "link", "br", "hr", "img", "input"}
+VOID = {"meta", "link", "br", "hr", "img", "input", "source"}
 
 
 @dataclass
@@ -95,7 +95,17 @@ def sections(document, page):
                            "title": match[2] if match else title,
                            "body": text})
 
-    for node in main.children:
+    def content_nodes(nodes):
+        # 웹 레이아웃과 로고를 앱 약관 본문에 섞지 않아요.
+        for node in nodes:
+            if isinstance(node, Node) and node.attrs.get("class") == "legal-brand":
+                continue
+            if isinstance(node, Node) and node.tag in {"header", "div"}:
+                yield from content_nodes(node.children)
+            else:
+                yield node
+
+    for node in content_nodes(main.children):
         if isinstance(node, str) or node.tag in {"h1", "nav"}:
             continue
         if node.tag == "h2":

@@ -1,1 +1,168 @@
-:root{color-scheme:light;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17222d;background:#f5f6f8}*{box-sizing:border-box}body{margin:0;font-size:16px;line-height:1.75}main{max-width:960px;margin:32px auto;padding:36px 44px;background:#fff;border:1px solid #dde2e7;border-radius:12px}h1{font-size:32px;line-height:1.25;margin:28px 0 10px}h2{font-size:22px;line-height:1.4;margin-top:44px;scroll-margin-top:24px}h3{font-size:18px;margin-top:28px}p,li,td{overflow-wrap:anywhere}a{color:#135e9c;text-underline-offset:3px}a:focus-visible{outline:3px solid #bfddff;outline-offset:3px}small,.muted{color:#586574}nav{font-size:14px}.toc{columns:2;padding-left:24px}.toc li{break-inside:avoid;margin:7px 0}table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}th,td{border:1px solid #dbe1e6;padding:12px;text-align:left;vertical-align:top}th{background:#f2f5f7}.note{background:#edf4fa;padding:16px 20px;border-radius:8px}.regional{border-top:1px solid #dbe1e6;margin-top:32px;padding-top:8px}address{font-style:normal}.links{display:flex;flex-wrap:wrap;gap:16px}footer{border-top:1px solid #dbe1e6;margin-top:36px;padding-top:18px;font-size:14px}button{font:inherit}@media(max-width:650px){main{margin:0;border:0;border-radius:0;padding:24px 18px}.toc{columns:1}h1{font-size:28px}table{font-size:13px}th,td{padding:8px}}@media print{main{border:0;margin:0;max-width:none;padding:0}.toc{columns:1}a{color:inherit}}
+@font-face {
+  font-family: Archivo;
+  src: url("assets/Archivo-Variable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Pretendard;
+  src: url("assets/Pretendard-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Pretendard;
+  src: url("assets/Pretendard-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  font-family: Archivo, Pretendard, sans-serif;
+  color: #fff;
+  background: #0a0a0a;
+  --surface: #282929;
+  --line: #3d3d3d;
+  --gutter: 40px;
+  --section-gap: 56px;
+  --divider: url("assets/divider.svg");
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; font-size: 15px; line-height: 1.3; }
+h1, h2, h3, p, ul, ol { margin: 0; }
+p, li, th, td, h1, h2, h3, address { overflow-wrap: anywhere; }
+a { color: inherit; text-underline-offset: 2px; }
+a:focus-visible { outline: 2px solid #fff; outline-offset: 5px; }
+img { display: block; }
+address { font-style: normal; }
+
+/* 세 화면 모두 본문과 헤더가 같은 너비와 좌우 여백을 사용해요. */
+.legal-navigation, .legal-heading, .legal-content {
+  width: min(1080px, calc(100% - var(--gutter) * 2));
+  margin-inline: auto;
+}
+
+.legal-hero {
+  min-height: 360px;
+  padding-block: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 40px;
+  background: linear-gradient(to top, var(--surface), rgb(40 41 41 / 0));
+}
+
+.legal-hero-index { min-height: 280px; justify-content: flex-end; }
+.legal-heading { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
+.legal-brand, .legal-brand picture { display: block; }
+h1 { font-size: 48px; font-weight: 400; line-height: 1.2; text-box: trim-both cap alphabetic; }
+.legal-heading small, .legal-heading p { font-size: 15px; opacity: .7; }
+.legal-navigation { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; }
+.legal-navigation a {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 18px;
+}
+.legal-navigation a:hover, .legal-card:hover { background: var(--line); }
+.legal-content { padding-block: 40px; }
+.legal-content p + p, .legal-content address { margin-top: 19.5px; }
+.legal-content ul, .legal-content ol { padding-left: 22.5px; margin-block: 19.5px; }
+.legal-content li + li { margin-top: 16px; }
+
+h2, .legal-section-title { font-size: 18px; font-weight: 700; line-height: 1.1; }
+.legal-content h2, .legal-content .legal-section-start, .legal-content nav[aria-label="Contents"], .legal-content footer {
+  margin-top: var(--section-gap);
+  padding-top: calc(var(--section-gap) + 2px);
+  background: var(--divider) top left / 100% 2px no-repeat;
+}
+.legal-content h2 { margin-bottom: 24px; scroll-margin-top: 24px; }
+.legal-content nav h2 { padding-top: 0; margin-top: 0; background: none; }
+h3 { margin-block: 24px; font-size: 18px; line-height: 1.3; }
+.legal-section-title { display: block; margin-bottom: 24px; }
+.legal-section-title + br, .legal-intro > br { display: none; }
+.legal-intro-paragraph { display: block; }
+.legal-intro-item { display: list-item; margin: 16px 0 0 22.5px; }
+.legal-intro-paragraph + br + .legal-intro-item { margin-top: 19.5px; }
+.legal-intro-paragraph:last-child { margin-top: 19.5px; }
+
+.toc-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; }
+.legal-content .toc { margin-block: 0; }
+.toc li { break-inside: avoid; padding-left: 0; }
+
+/* 모바일 시안도 원문의 표 구조를 유지해 세 열을 나란히 보여줘요. */
+table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-block: 24px; font: inherit; }
+th, td { padding: 16px; text-align: left; vertical-align: top; font-weight: 400; }
+th { background: var(--line); }
+th + th, td + td { border-left: 1px solid rgb(255 255 255 / .3); }
+tr + tr td, tbody tr + tr th { border-top: 1px solid rgb(255 255 255 / .3); }
+.note { padding: 16px; background: var(--surface); border-radius: 16px; }
+.links { display: flex; flex-wrap: wrap; gap: 16px; }
+.muted { color: rgb(255 255 255 / .7); }
+
+.legal-links { display: flex; flex-direction: column; gap: 24px; }
+.legal-links > p { order: -1; }
+.legal-content .legal-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 0; padding: 0; list-style: none; }
+.legal-cards li + li { margin-top: 0; }
+.legal-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: 172px;
+  height: 100%;
+  gap: 16px;
+  padding: 24px;
+  background: var(--surface);
+  border-radius: 16px;
+  text-decoration: none;
+}
+.legal-card-label { display: flex; flex-direction: column; gap: 8px; }
+.legal-card-title { font-size: 24px; font-weight: 700; line-height: 1.2; }
+/* 원문의 구분 기호는 읽기 순서에 남기고, 화면에서는 두 줄로 나눠요. */
+.legal-card-separator { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* 1080px 본문과 양쪽 40px 여백이 들어가는 지점에서 데스크톱으로 전환해요. */
+@media (768px <= width < 1160px) {
+  :root { --divider: url("assets/divider-tablet.svg"); }
+}
+
+@media (width < 768px) {
+  :root { --gutter: 24px; --section-gap: 40px; --divider: url("assets/divider-mobile.svg"); }
+  .legal-hero { min-height: 400px; padding-block: 24px; }
+  .legal-hero-index { min-height: 320px; }
+  .legal-heading { gap: 12px; }
+  h1 { font-size: 32px; text-box: normal; }
+  .legal-heading small, .legal-heading p { font-size: 14px; }
+  .legal-navigation { padding-right: 40px; }
+  .legal-content { padding-block: 24px; }
+  .toc-columns { grid-template-columns: 1fr; gap: 16px; }
+  th, td { padding: 12px; }
+  .legal-content .legal-cards { grid-template-columns: 1fr; gap: 16px; }
+  .legal-card { min-height: 0; justify-content: flex-start; }
+  .legal-card-label { gap: 4px; }
+  .legal-card-title { font-size: 20px; }
+}
+
+@media print {
+  :root { color-scheme: light; color: #000; background: #fff; }
+  .legal-hero { min-height: 0; padding: 0; background: none; }
+  .legal-navigation, .legal-brand { display: none; }
+  .legal-heading, .legal-content { width: 100%; }
+  .legal-heading small, .legal-heading p { opacity: 1; }
+  .legal-content h2, .legal-content .legal-section-start, .legal-content nav[aria-label="Contents"], .legal-content footer { background: none; border-top: 1px solid #ccc; }
+  .legal-card, .note, th { background: #eee; color: #000; }
+  th, td { border: 1px solid #ccc; }
+  h2, h3 { break-after: avoid; }
+}
