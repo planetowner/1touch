@@ -217,6 +217,17 @@ def _audit_direct_player_profile(
     }
 
 
+def _complete_player_full_name(profile: Dict[str, object]) -> Dict[str, object]:
+    full_name = profile.get("full_name")
+    if full_name is None or (isinstance(full_name, str) and not full_name.strip()):
+        parts = [profile.get("firstname"), profile.get("lastname")]
+        # 19732669의 신규 선수는 전체 이름만 비어 있었어요. 같은 프로필의 이름·성이
+        # 모두 있을 때만 조합하고, 축약된 표시 이름을 전체 이름으로 저장하지 않아요.
+        if all(isinstance(part, str) and part.strip() for part in parts):
+            return {**profile, "full_name": " ".join(part.strip() for part in parts)}
+    return profile
+
+
 def _required_profile_string(
     profile: Dict[str, object],
     field_name: str,
@@ -224,7 +235,8 @@ def _required_profile_string(
     value = profile.get(field_name)
     if not isinstance(value, str) or not value.strip():
         raise ValueError(
-            f"Missing or invalid player profile string: {field_name}={value!r}"
+            f"Missing or invalid player profile string: player_id={profile.get('player_id')} "
+            f"{field_name}={value!r}"
         )
     return value.strip()
 
@@ -236,6 +248,8 @@ def _merge_embedded_player_profiles(
     if not profiles:
         raise ValueError(f"Missing embedded squad profile: player_id={player_id}")
 
+    # 프로필을 합치기 전에 보완해야 서로 다른 응답의 이름·성을 섞지 않아요.
+    profiles = [_complete_player_full_name(profile) for profile in profiles]
     merged: Dict[str, object] = {"player_id": player_id}
     fields = (
         "full_name",
@@ -308,6 +322,7 @@ def _build_player_row(
     if type(player_id) is not int:
         raise ValueError(f"Missing or invalid player_id: {player_id!r}")
 
+    primary_profile = _complete_player_full_name(primary_profile)
     full_name = _required_profile_string(primary_profile, "full_name")
     display_name = _required_profile_string(primary_profile, "display_name")
     provider_detailed_position_id = primary_profile.get("position_id")

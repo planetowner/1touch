@@ -1,0 +1,29 @@
+{
+  "fixture_id": 19732669,
+  "lineup_id": 14674944137,
+  "team_id": 106,
+  "jersey_number": 34,
+  "source": "Sportmonks fixtures/19732669 lineups.player and players/37605593, checked 2026-10-11",
+  "identity_source": "https://mrhfutbol.com/project/jesus-martinez/",
+  "expected_full_name": "Jesús Martínez Girón",
+  "player": {
+    "id": 37605593,
+    "sport_id": 1,
+    "country_id": 32,
+    "nationality_id": 32,
+    "city_id": null,
+    "position_id": 26,
+    "detailed_position_id": 153,
+    "type_id": 26,
+    "common_name": "J. Martínez Girón",
+    "firstname": "Jesús",
+    "lastname": "Martínez Girón",
+    "name": "",
+    "display_name": "Jesús Martínez",
+    "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+    "height": null,
+    "weight": null,
+    "date_of_birth": "2004-02-08",
+    "gender": "male"
+  }
+}

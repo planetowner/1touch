@@ -70,6 +70,15 @@ class LiveStorageTests(unittest.TestCase):
         self.assertEqual(self.connection.execute("SELECT stat_value FROM fixture_team_stats").fetchone(), (60,))
         self.assertEqual(self.connection.execute("SELECT minutes,seconds FROM fixture_clock").fetchone(), (30, 5))
 
+    def test_empty_full_name_does_not_block_live_update(self):
+        fixture = live_payload()
+        fixture["lineups"][0]["player"].update(name="", firstname="Jesús", lastname="Martínez Girón")
+        live.store_live_fixture(fixture, 10, 20, OBSERVED_AT)
+        self.assertEqual(self.connection.execute("SELECT full_name FROM players").fetchall(), [("Jesús Martínez Girón",)])
+        self.assertEqual(self.connection.execute("SELECT home_score,away_score FROM fixtures").fetchone(), (1, 0))
+        self.assertEqual(self.connection.execute("SELECT player_id FROM fixture_lineups").fetchall(), [(100,)])
+        self.assertEqual(self.connection.execute("SELECT minutes,seconds FROM fixture_clock").fetchone(), (28, 50))
+
     def test_clock_constraint_failure_rolls_back_entire_live_update(self):
         fixture = live_payload()
         fixture["lineups"][0]["details"].append({"type_id": 120, "data": {"value": 12}})

@@ -828,6 +828,19 @@ class FixtureDetailsStorageTests(unittest.TestCase):
         self.assertEqual(self.connection.execute("SELECT * FROM player_external_ids").fetchall(), [(100, "sportmonks", "100")])
         self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_lineups").fetchone(), (1,))
 
+    def test_empty_full_name_does_not_block_match_details(self):
+        payload = _payload()
+        payload["lineups"][0]["player"].update(name="", firstname="Jesús", lastname="Martínez Girón")
+        payload["lineups"][0]["details"].append({"type_id": 120, "data": {"value": 12}})
+        rows = _normalize_fixture_details(payload, 500)
+        self.assertEqual(details.replace_fixture_detail_rows(500, rows, payload["lineups"]), 1)
+        self.assertEqual(self.connection.execute("SELECT full_name FROM players").fetchall(), [("Jesús Martínez Girón",)])
+        for table in ("fixture_events", "fixture_team_stats", "fixture_lineups", "fixture_formations",
+                      "fixture_coaches", "fixture_pressures"):
+            with self.subTest(table=table):
+                self.assertEqual(self.connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone(), (1,))
+        self.assertEqual(self.connection.execute("SELECT stat_type_id,stat_value FROM fixture_player_stats").fetchall(), [(120, 12)])
+
     def test_player_insert_and_detail_deletes_roll_back_together(self):
         self.connection.execute("INSERT INTO fixture_formations VALUES (500, 10, '4-4-2')")
         self.connection.commit()

@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 import unittest
 
 from one_touch_loader.loaders.players_loader import (
@@ -21,6 +23,55 @@ class PlayersAuditTest(unittest.TestCase):
             "team_id": 19,
             "team_name": "West Ham United",
         }
+
+    def test_empty_full_name_uses_complete_parts_in_each_profile_path(self):
+        sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_player_empty_full_name.json").read_text())
+        player = sample["player"]
+        for missing_name in ("", " \t ", None):
+            raw = {**player, "name": missing_name}
+            direct = _audit_direct_player_profile(raw, raw["id"])
+            squad = _audit_squad_observation(
+                {"player_id": raw["id"], "player": raw}, self.scope, 0,
+            )
+            profiles = {
+                "player_endpoint": direct,
+                "squad_profile": _merge_embedded_player_profiles(raw["id"], [squad]),
+            }
+            for source, profile in profiles.items():
+                with self.subTest(missing_name=missing_name, source=source):
+                    row, _ = _build_player_row(profile, [squad], {153}, source)
+                    self.assertEqual(row[:3], (raw["id"], raw["display_name"], sample["expected_full_name"]))
+                    self.assertEqual(row[5], raw["date_of_birth"])
+            self.assertEqual(direct["full_name"], missing_name)
+
+    def test_valid_full_name_takes_priority_over_name_parts(self):
+        profile = {"player_id": 1, "full_name": "  Existing Name  ",
+                   "display_name": "Display Name", "firstname": "Other", "lastname": "Parts"}
+        row, _ = _build_player_row(profile, [], set(), "player_endpoint")
+        self.assertEqual(row[1:3], ("Display Name", "Existing Name"))
+
+    def test_incomplete_name_parts_still_fail_with_player_id(self):
+        for field in ("firstname", "lastname"):
+            for value in (None, "", " \t "):
+                with self.subTest(field=field, value=value):
+                    profile = {"player_id": 37605593, "full_name": "", "display_name": "Jesús Martínez",
+                               "firstname": "Jesús", "lastname": "Martínez Girón", field: value}
+                    with self.assertRaisesRegex(ValueError, "player_id=37605593.*full_name"):
+                        _build_player_row(profile, [], set(), "player_endpoint")
+
+    def test_name_parts_do_not_hide_invalid_field_types(self):
+        with self.assertRaisesRegex(ValueError, "Invalid string: player.name"):
+            _audit_direct_player_profile(
+                {"name": 123, "firstname": "Jesús", "lastname": "Martínez Girón"}, 37605593,
+            )
+
+    def test_name_parts_are_not_combined_across_profiles(self):
+        base = {"player_id": 37605593, "full_name": "", "display_name": "Jesús Martínez"}
+        profiles = [{**base, "firstname": "Jesús", "lastname": None},
+                    {**base, "firstname": None, "lastname": "Martínez Girón"}]
+        merged = _merge_embedded_player_profiles(37605593, profiles)
+        with self.assertRaisesRegex(ValueError, "player_id=37605593.*full_name"):
+            _build_player_row(merged, profiles, set(), "squad_profile")
 
     def test_missing_detailed_position_is_recorded_without_failing(self):
         observation = _audit_squad_observation(
