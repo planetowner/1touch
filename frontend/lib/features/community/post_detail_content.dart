@@ -120,6 +120,18 @@ class PostDetailContent extends StatelessWidget {
         post.isDeleted ? <CommunityPostPart>[] : communityPostParts(post);
     final hasLinks = parts.any((part) => part.uri != null);
     final lastLink = parts.lastOrNull?.uri;
+    final actionLabels = (
+      like: formatCommunityEngagementCount(likeCount),
+      comment: formatCommunityEngagementCount(commentCount),
+      share: tr(context, 'Share'),
+      report: tr(context, 'Report'),
+    );
+    final actionWidth = _PostAction.widthFor(context, [
+      actionLabels.like,
+      actionLabels.comment,
+      actionLabels.share,
+      actionLabels.report,
+    ]);
 
     return SliverList(
       delegate: SliverChildListDelegate(
@@ -196,6 +208,7 @@ class PostDetailContent extends StatelessWidget {
                   CommunityMediaGrid(attachments: post.mediaAttachments),
                 if (showMediaStatus || hasMedia) const SizedBox(height: 24),
                 Row(
+                  key: const ValueKey('community-detail-actions'),
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _PostAction(
@@ -203,8 +216,9 @@ class PostDetailContent extends StatelessWidget {
                         'community-detail-like-action',
                       ),
                       icon: 'like',
+                      width: actionWidth,
                       selected: liked,
-                      label: formatCommunityEngagementCount(likeCount),
+                      label: actionLabels.like,
                       labelKey: const ValueKey(
                         'community-detail-like-count',
                       ),
@@ -212,10 +226,12 @@ class PostDetailContent extends StatelessWidget {
                       onTap: onLike,
                     ),
                     _PostAction(
-                      icon: 'comment',
-                      label: formatCommunityEngagementCount(
-                        commentCount,
+                      actionKey: const ValueKey(
+                        'community-detail-comment-action',
                       ),
+                      icon: 'comment',
+                      width: actionWidth,
+                      label: actionLabels.comment,
                       labelKey: const ValueKey(
                         'community-detail-comment-count',
                       ),
@@ -227,14 +243,19 @@ class PostDetailContent extends StatelessWidget {
                           'community-detail-share-action',
                         ),
                         icon: 'share',
-                        label: 'Share',
+                        width: actionWidth,
+                        label: actionLabels.share,
                         color: colors.onSurface,
                         onTap: () => _sharePost(shareContext),
                       ),
                     ),
                     _PostAction(
+                      actionKey: const ValueKey(
+                        'community-detail-report-action',
+                      ),
                       icon: 'report',
-                      label: 'Report',
+                      width: actionWidth,
+                      label: actionLabels.report,
                       color: colors.onSurface,
                       onTap: onReport == null
                           ? null
@@ -476,6 +497,7 @@ class _PostAction extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.color,
+    required this.width,
     this.selected = false,
     this.actionKey,
     this.labelKey,
@@ -486,16 +508,46 @@ class _PostAction extends StatelessWidget {
   final bool selected;
   final String label;
   final Color color;
+  final double width;
   final Key? actionKey;
   final Key? labelKey;
   final VoidCallback? onTap;
 
+  static const _iconSize = 24.0;
+  static const _labelGap = 4.0;
+
+  static TextStyle _labelStyle(BuildContext context, String label) {
+    final style = DefaultTextStyle.of(context)
+        .style
+        .merge(CommunityText.body(context, text: label));
+    return MediaQuery.boldTextOf(context)
+        ? style.copyWith(fontWeight: FontWeight.bold)
+        : style;
+  }
+
+  static double widthFor(BuildContext context, Iterable<String> labels) {
+    var longestLabel = 0.0;
+    // 번역·숫자·글자 배율이 바뀌어도 가장 긴 항목에 네 버튼의 너비를 맞춰요.
+    for (final label in labels) {
+      final painter = TextPainter(
+        text: TextSpan(text: label, style: _labelStyle(context, label)),
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+        locale: Localizations.localeOf(context),
+        maxLines: 1,
+      )..layout();
+      if (painter.width > longestLabel) longestLabel = painter.width;
+      painter.dispose();
+    }
+    return _iconSize + _labelGap + longestLabel;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 시안의 너비 74를 유지하고, 좁은 화면에서만 가용 너비에 맞춰 줄여요.
+    // 네 항목이 화면보다 넓을 때만 기존처럼 같은 비율로 줄여요.
     return Flexible(
       child: SizedBox(
-        width: 74,
+        width: width,
         child: GestureDetector(
           key: actionKey,
           behavior: HitTestBehavior.opaque,
@@ -503,13 +555,13 @@ class _PostAction extends StatelessWidget {
           child: Row(
             children: [
               CommunityIcon(icon,
+                  size: _iconSize,
                   color: selected ? const Color(0xFF5C92FF) : color),
-              const SizedBox(width: 4),
+              const SizedBox(width: _labelGap),
               Flexible(
-                child: Text(tr(context, label),
+                child: Text(label,
                     key: labelKey,
-                    style:
-                        CommunityText.body(context, text: tr(context, label)),
+                    style: _labelStyle(context, label),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
               ),

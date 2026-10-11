@@ -1469,6 +1469,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "这是来自已屏蔽用户的评论。"
   ),
   "Copy Text": (ko: "텍스트 복사", ja: "テキストをコピー", zh: "复制文本"),
+  "Share": (ko: "공유", ja: "共有", zh: "分享"),
   "Report": (ko: "신고", ja: "報告", zh: "举报"),
   "Inappropriate Content": (ko: "부적절한 콘텐츠", ja: "不適切なコンテンツ", zh: "不当内容"),
   "Harassment & Bullying": (ko: "괴롭힘 및 따돌림", ja: "嫌がらせ・いじめ", zh: "骚扰与霸凌"),
