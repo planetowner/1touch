@@ -115,7 +115,8 @@ Future<void> runOneTouchApp({
   _prepareStartup = () async {
     await initializePlatform?.call();
     await appLocaleController.initialize();
-    await appDisplayPreferences.initialize();
+    await appDisplayPreferences.initialize(
+        languageCode: appLocaleController.value.languageCode);
     await (restoreSession ?? auth_provider.authService.restoreSession)();
     unawaited(_startNotificationServices(startPushServices));
     return _startupDestination();

@@ -22,7 +22,7 @@ void main() {
         expect(request.url.host, 'api.frankfurter.dev');
         expect(request.url.path, '/v1/latest');
         expect(request.url.queryParameters['base'], 'EUR');
-        expect(request.url.queryParameters['symbols'], 'USD,GBP,KRW,JPY');
+        expect(request.url.queryParameters['symbols'], 'USD,GBP,KRW,JPY,CNY');
         expect(request.headers.containsKey('Authorization'), isFalse);
         return response.future;
       }));
@@ -68,22 +68,76 @@ void main() {
     }
   });
 
-  test('formats converted values for all five currencies', () {
+  test('formats converted values for all supported currencies', () {
     final rates = ExchangeRates.fromJson(exchangeRatesFixture());
     final expected = {
       DisplayCurrency.eur: '€22m',
       DisplayCurrency.usd: '\$24.6m',
       DisplayCurrency.gbp: '£18.6m',
-      DisplayCurrency.krw: '₩32.9bn',
-      DisplayCurrency.jpy: '¥3.9bn',
+      DisplayCurrency.krw: '329.2억 원',
+      DisplayCurrency.jpy: '38.9億円',
+      DisplayCurrency.cny: '1.6亿元',
     };
     for (final entry in expected.entries) {
       expect(
           formatTransferFee(rates.convertEuros(22000000, entry.key), entry.key),
           entry.value);
     }
-    expect(formatTransferFee(0, DisplayCurrency.eur), '€0');
-    expect(formatTransferFee(8500, DisplayCurrency.eur), '€8.5k');
-    expect(formatTransferFee(990, DisplayCurrency.eur), '€990');
+  });
+
+  test('keeps KRW, CNY and JPY in hundred millions at every amount', () {
+    const units = {
+      DisplayCurrency.krw: '억 원',
+      DisplayCurrency.cny: '亿元',
+      DisplayCurrency.jpy: '億円',
+    };
+    const amounts = {
+      0: '0',
+      1000000: '0',
+      29931549: '0.3',
+      94000000: '0.9',
+      96000000: '1',
+      100000000: '1',
+      150000000: '1.5',
+      1000000000: '10',
+      6000000000: '60',
+      6060000000: '60.6',
+      99994000000: '999.9',
+      99996000000: '1,000',
+      140000000000: '1,400',
+      140050000000: '1,400.5',
+      123456780000000: '1,234,567.8',
+    };
+    for (final unit in units.entries) {
+      for (final amount in amounts.entries) {
+        expect(formatTransferFee(amount.key, unit.key),
+            '${amount.value}${unit.value}');
+      }
+    }
+  });
+
+  test('preserves compact formatting for EUR, USD and GBP', () {
+    const symbols = {
+      DisplayCurrency.eur: '€',
+      DisplayCurrency.usd: '\$',
+      DisplayCurrency.gbp: '£',
+    };
+    const amounts = {
+      0: '0',
+      990: '990',
+      8500: '8.5k',
+      1000000: '1m',
+      24600000: '24.6m',
+      1000000000: '1bn',
+      1500000000: '1.5bn',
+      1400000000000: '1,400bn',
+      1400500000000: '1,400.5bn',
+    };
+    for (final symbol in symbols.entries) {
+      for (final amount in amounts.entries) {
+        expect(formatTransferFee(amount.key, symbol.key),
+            '${symbol.value}${amount.value}');
+      }
+    }
   });
 }

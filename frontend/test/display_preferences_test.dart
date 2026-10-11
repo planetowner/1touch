@@ -12,6 +12,13 @@ import 'support/player_detail_fixture.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  const currenciesByLanguage = {
+    'en': [DisplayCurrency.eur, DisplayCurrency.gbp, DisplayCurrency.usd],
+    'ko': [DisplayCurrency.krw, DisplayCurrency.eur, DisplayCurrency.gbp],
+    'ja': [DisplayCurrency.jpy, DisplayCurrency.eur, DisplayCurrency.gbp],
+    'zh': [DisplayCurrency.cny, DisplayCurrency.eur, DisplayCurrency.gbp],
+  };
+
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     appDisplayPreferences.value = const DisplayPreferences();
@@ -23,21 +30,47 @@ void main() {
     appLocaleController.value = const Locale('en');
   });
 
-  test('restores the selected unit and every supported currency', () async {
-    for (final currency in DisplayCurrency.values) {
+  for (final language in currenciesByLanguage.entries) {
+    test('uses the default currency for ${language.key} without a saved choice',
+        () async {
+      final controller = DisplayPreferencesController();
+      await controller.initialize(languageCode: language.key);
+      expect(controller.value.currency, language.value.first);
+      controller.dispose();
+    });
+
+    test('restores the unit and allowed currency choices for ${language.key}',
+        () async {
+      for (final currency in language.value) {
+        final controller = DisplayPreferencesController();
+        await controller.save(DisplayPreferences(
+          unit: MeasurementUnit.imperial,
+          currency: currency,
+        ));
+        final restored = DisplayPreferencesController();
+        await restored.initialize(languageCode: language.key);
+        expect(restored.value.unit, MeasurementUnit.imperial);
+        expect(restored.value.currency, currency);
+        controller.dispose();
+        restored.dispose();
+      }
+    });
+
+    test(
+        'replaces an old unsupported currency with the ${language.key} default',
+        () async {
       final controller = DisplayPreferencesController();
       await controller.save(DisplayPreferences(
         unit: MeasurementUnit.imperial,
-        currency: currency,
+        currency:
+            language.key == 'en' ? DisplayCurrency.krw : DisplayCurrency.usd,
       ));
-      final restored = DisplayPreferencesController();
-      await restored.initialize();
-      expect(restored.value.unit, MeasurementUnit.imperial);
-      expect(restored.value.currency, currency);
+      await controller.initialize(languageCode: language.key);
+      expect(controller.value.currency, language.value.first);
+      expect(controller.value.unit, MeasurementUnit.imperial);
       controller.dispose();
-      restored.dispose();
-    }
-  });
+    });
+  }
 
   test('formats measurements and preserves unavailable values', () {
     expect(MeasurementUnit.metric.formatHeight(183), '183cm');
@@ -58,6 +91,32 @@ void main() {
         home: home,
       );
 
+  for (final language in currenciesByLanguage.entries) {
+    testWidgets('shows exactly three currencies in order for ${language.key}',
+        (tester) async {
+      appLocaleController.value = Locale(language.key);
+      await appDisplayPreferences.initialize(languageCode: language.key);
+      await tester.pumpWidget(MaterialApp(
+        locale: appLocaleController.value,
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        home: const PreferencePage(),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(language.value.first.label));
+      await tester.pumpAndSettle();
+
+      final options =
+          tester.widgetList<ListTile>(find.byType(ListTile)).toList();
+      expect(options.map((option) => (option.title! as Text).data),
+          language.value.map((currency) => currency.label));
+      expect(options.first.trailing, isA<Icon>());
+      expect(
+          options.skip(1).every((option) => option.trailing == null), isTrue);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('save retains selections after reopening and restarting',
       (tester) async {
     await tester.pumpWidget(app(Builder(
@@ -77,22 +136,34 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Imperial (ft/in)'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('EUR (€)'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('USD (\$)'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('KRW (₩)'));
-    await tester.pumpAndSettle();
     expect(appDisplayPreferences.value.unit, MeasurementUnit.metric);
-    expect(appDisplayPreferences.value.currency, DisplayCurrency.usd);
+    expect(appDisplayPreferences.value.currency, DisplayCurrency.eur);
 
     await tester.tap(find.text('UPDATE PREFERENCES'));
     await tester.pumpAndSettle();
     expect(find.text('Open settings'), findsOneWidget);
     appDisplayPreferences.value = const DisplayPreferences();
-    await appDisplayPreferences.initialize();
+    await appDisplayPreferences.initialize(languageCode: 'en');
     await tester.tap(find.text('Open settings'));
     await tester.pumpAndSettle();
     expect(find.text('Imperial (ft/in)'), findsOneWidget);
+    expect(find.text('USD (\$)'), findsOneWidget);
+
+    await tester.tap(find.text('English'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Korean'));
+    await tester.pumpAndSettle();
     expect(find.text('KRW (₩)'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('English'), findsOneWidget);
+    expect(find.text('USD (\$)'), findsOneWidget);
 
     await tester.tap(find.text('Imperial (ft/in)'));
     await tester.pumpAndSettle();

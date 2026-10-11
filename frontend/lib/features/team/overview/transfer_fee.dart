@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:onetouch/core/display_preferences.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/exchange_rates/exchange_rates_repository.dart';
@@ -15,6 +16,17 @@ Text transferValueText(String value, {Key? key}) => Text(
     );
 
 String formatTransferFee(num amount, DisplayCurrency currency) {
+  final fixedUnit = switch (currency) {
+    DisplayCurrency.krw => '억 원',
+    DisplayCurrency.cny => '亿元',
+    DisplayCurrency.jpy => '億円',
+    DisplayCurrency.usd || DisplayCurrency.eur || DisplayCurrency.gbp => null,
+  };
+  // 원·위안·엔은 금액이 작아도 억 단위를 유지해 이적료를 같은 기준으로 비교해요.
+  if (fixedUnit != null) {
+    return '${_formatScaledFee(amount, 100000000)}$fixedUnit';
+  }
+
   final rounded = amount.round();
   for (final (divisor, suffix) in [
     (1000000000, 'bn'),
@@ -22,13 +34,17 @@ String formatTransferFee(num amount, DisplayCurrency currency) {
     (1000, 'k'),
   ]) {
     if (rounded >= divisor) {
-      final scaled = rounded / divisor;
-      final label = scaled.toStringAsFixed(1).replaceFirst(RegExp(r'\.0$'), '');
-      return '${currency.symbol}$label$suffix';
+      return '${currency.symbol}${_formatScaledFee(rounded, divisor)}$suffix';
     }
   }
   return '${currency.symbol}$rounded';
 }
+
+// 화면 언어와 관계없이 천 단위 쉼표와 소수점 한 자리 표기를 함께 적용해요.
+final _feeNumberFormat = NumberFormat('#,##0.#', 'en_US');
+
+String _formatScaledFee(num amount, int divisor) =>
+    _feeNumberFormat.format(amount / divisor);
 
 class TransferFee extends StatefulWidget {
   const TransferFee({

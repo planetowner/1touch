@@ -29,6 +29,10 @@ class _PreferencePageState extends State<PreferencePage> {
   late DisplayCurrency _currency;
   bool _saving = false;
 
+  List<DisplayCurrency> get _currencyOptions =>
+      DisplayCurrency.optionsForLanguage(
+          _languageOptions[_language]!.languageCode);
+
   @override
   void initState() {
     super.initState();
@@ -116,7 +120,12 @@ class _PreferencePageState extends State<PreferencePage> {
                           _languageOptions.keys.toList(growable: false),
                           _language,
                           (language) => language,
-                          (value) => _language = value,
+                          (value) {
+                            if (value == _language) return;
+                            _language = value;
+                            // 언어를 바꾸면 기존 선택과 관계없이 새 기본 통화를 써요.
+                            _currency = _currencyOptions.first;
+                          },
                         ),
                       ),
                       _buildDivider(),
@@ -142,7 +151,7 @@ class _PreferencePageState extends State<PreferencePage> {
                           trUpper(context, "Currency"), _currency.label,
                           onTap: () => _navigateAndSelect(
                               tr(context, "Currency"),
-                              DisplayCurrency.values,
+                              _currencyOptions,
                               _currency,
                               (currency) => currency.label,
                               (currency) => _currency = currency)),

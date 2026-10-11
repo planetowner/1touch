@@ -23,7 +23,10 @@ void main() {
         const DisplayPreferences(currency: DisplayCurrency.eur);
     appLocaleController.value = const Locale('en');
   });
-  tearDown(() => appDisplayPreferences.value = const DisplayPreferences());
+  tearDown(() {
+    appDisplayPreferences.value = const DisplayPreferences();
+    appLocaleController.value = const Locale('en');
+  });
 
   Widget app(Widget child) => MaterialApp(
         supportedLocales: appSupportedLocales,
@@ -31,49 +34,58 @@ void main() {
         home: Scaffold(body: child),
       );
 
-  testWidgets('saving currency updates an open fee and restores on restart',
-      (tester) async {
-    var requests = 0;
-    final repository = ExchangeRatesRepository(client: MockClient((_) async {
-      requests++;
-      return http.Response(jsonEncode(exchangeRatesFixture()), 200);
-    }));
-    await tester.pumpWidget(app(Builder(
-        builder: (context) => Column(children: [
-              TransferFee(amountInEuros: 22000000, repository: repository),
-              TextButton(
-                onPressed: () =>
-                    Navigator.of(context).push(MaterialPageRoute<void>(
-                  builder: (_) => const PreferencePage(),
-                )),
-                child: const Text('Open settings'),
-              ),
-            ]))));
-    await tester.pumpAndSettle();
-    expect(find.text('€22m'), findsOneWidget);
-    expect(requests, 0);
+  for (final (languageCode, currency, expectedFee) in [
+    ('ko', DisplayCurrency.krw, '329.2억 원'),
+    ('zh', DisplayCurrency.cny, '1.6亿元'),
+    ('ja', DisplayCurrency.jpy, '38.9億円'),
+  ]) {
+    testWidgets(
+        'saving ${currency.code} updates an open fee and restores on restart',
+        (tester) async {
+      appLocaleController.value = Locale(languageCode);
+      var requests = 0;
+      final repository = ExchangeRatesRepository(client: MockClient((_) async {
+        requests++;
+        return http.Response(jsonEncode(exchangeRatesFixture()), 200);
+      }));
+      await tester.pumpWidget(app(Builder(
+          builder: (context) => Column(children: [
+                TransferFee(amountInEuros: 22000000, repository: repository),
+                TextButton(
+                  onPressed: () =>
+                      Navigator.of(context).push(MaterialPageRoute<void>(
+                    builder: (_) => const PreferencePage(),
+                  )),
+                  child: const Text('Open settings'),
+                ),
+              ]))));
+      await tester.pumpAndSettle();
+      expect(find.text('€22m'), findsOneWidget);
+      expect(requests, 0);
 
-    await tester.tap(find.text('Open settings'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('EUR (€)'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('KRW (₩)'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('UPDATE PREFERENCES'));
-    await tester.pumpAndSettle();
-    expect(find.text('₩32.9bn'), findsOneWidget);
-    expect(find.byTooltip('ECB exchange rate · 2026-10-07'), findsOneWidget);
-    expect(requests, 1);
-    final restored = DisplayPreferencesController();
-    await restored.initialize();
-    expect(restored.value.currency, DisplayCurrency.krw);
-    restored.dispose();
-    expect(tester.takeException(), isNull);
-  });
+      await tester.tap(find.text('Open settings'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('EUR (€)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(currency.label));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('UPDATE PREFERENCES'));
+      await tester.pumpAndSettle();
+      expect(find.text(expectedFee), findsOneWidget);
+      expect(find.byTooltip('ECB exchange rate · 2026-10-07'), findsOneWidget);
+      expect(requests, 1);
+      final restored = DisplayPreferencesController();
+      await restored.initialize(languageCode: languageCode);
+      expect(restored.value.currency, currency);
+      restored.dispose();
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('pending fees share a request and follow the latest selection',
       (tester) async {
-    appDisplayPreferences.value = const DisplayPreferences();
+    appDisplayPreferences.value =
+        const DisplayPreferences(currency: DisplayCurrency.usd);
     var requests = 0;
     final response = Completer<http.Response>();
     final repository = ExchangeRatesRepository(client: MockClient((_) {
@@ -91,14 +103,15 @@ void main() {
     await tester.pump();
     response.complete(http.Response(jsonEncode(exchangeRatesFixture()), 200));
     await tester.pumpAndSettle();
-    expect(find.text('¥3.9bn'), findsNWidgets(2));
+    expect(find.text('38.9億円'), findsNWidgets(2));
     expect(find.text('\$24.6m'), findsNothing);
     expect(requests, 1);
   });
 
   testWidgets('failed conversion has a working retry and never relabels euros',
       (tester) async {
-    appDisplayPreferences.value = const DisplayPreferences();
+    appDisplayPreferences.value =
+        const DisplayPreferences(currency: DisplayCurrency.usd);
     var requests = 0;
     final repository = ExchangeRatesRepository(client: MockClient((_) async {
       return ++requests == 1
@@ -123,7 +136,8 @@ void main() {
         (tester) async {
       var now = DateTime.utc(2026, 10, 7, 12);
       await withClock(Clock(() => now), () async {
-        appDisplayPreferences.value = const DisplayPreferences();
+        appDisplayPreferences.value =
+            const DisplayPreferences(currency: DisplayCurrency.usd);
         final refresh = Completer<http.Response>();
         var requests = 0;
         final repository =
@@ -141,7 +155,7 @@ void main() {
             const DisplayPreferences(currency: DisplayCurrency.krw);
         await tester.pump();
         expect(requests, 2);
-        expect(find.text('₩32.9bn'), findsOneWidget);
+        expect(find.text('329.2억 원'), findsOneWidget);
         expect(find.text('…'), findsNothing);
 
         final updated = exchangeRatesFixture()
@@ -152,7 +166,7 @@ void main() {
             : http.Response('Unavailable', 503));
         await tester.pumpAndSettle();
         expect(
-            find.text(refreshSucceeds ? '₩33bn' : '₩32.9bn'), findsOneWidget);
+            find.text(refreshSucceeds ? '330억 원' : '329.2억 원'), findsOneWidget);
         expect(
             find.byTooltip(
                 'ECB exchange rate · ${refreshSucceeds ? '2026-10-08' : '2026-10-07'}'),
