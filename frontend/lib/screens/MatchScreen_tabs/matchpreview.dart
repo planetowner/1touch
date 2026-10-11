@@ -19,6 +19,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
 import 'package:onetouch/features/team/attributes/match_attribute_comparison.dart';
 import 'package:onetouch/features/match_info/relevant_standings.dart';
+import 'package:onetouch/features/match_info/match_team_name.dart';
 import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';
@@ -309,13 +310,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            name,
-            style: Body1.style,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+          MatchTeamName(name: name),
         ],
       ),
     );

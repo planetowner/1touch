@@ -157,19 +157,7 @@ class _TeamBlock extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        // Figma처럼 이름은 로고 중심에 맞추고, 글자 폭으로 팀 슬롯을 넓히지 않아요.
-        OverflowBox(
-          minWidth: 0,
-          maxWidth: double.infinity,
-          fit: OverflowBoxFit.deferToChild,
-          child: Text(
-            name,
-            style: Body1.style.copyWith(height: 1.3),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            softWrap: false,
-          ),
-        ),
+        MatchTeamName(name: name),
       ],
     );
   }

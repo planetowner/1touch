@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/core/formation_layout.dart';
 import 'package:onetouch/core/formation_player_positions.dart';
-import 'package:flutter/rendering.dart' show OverflowBoxFit;
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/style.dart';
@@ -17,6 +16,7 @@ import 'package:onetouch/models/fixture_highlight.dart';
 import 'package:onetouch/models/match_data.dart';
 import 'match_event_view_data.dart';
 import 'match_motion.dart';
+import 'match_team_name.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 export 'match_event_view_data.dart';
