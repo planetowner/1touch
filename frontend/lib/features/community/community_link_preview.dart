@@ -129,6 +129,7 @@ class _SocialPreviewState extends State<_SocialPreview> {
   WebViewController? _controller;
   Timer? _timeout;
   String? _language;
+  bool? _isDark;
   double _height = 1;
   bool _ready = false;
   bool _failed = false;
@@ -137,8 +138,12 @@ class _SocialPreviewState extends State<_SocialPreview> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final language = Localizations.localeOf(context).languageCode;
-    if (_language == language) return;
+    final isDark = webLinkKind(widget.uri) == WebLinkKind.x &&
+        Theme.of(context).brightness == Brightness.dark;
+    if (_language == language && _isDark == isDark) return;
     _language = language;
+    _isDark = isDark;
+    // X 공식 임베드는 생성할 때 테마가 정해져, 앱 테마가 바뀌면 다시 불러와요.
     _load();
   }
 
@@ -197,8 +202,8 @@ class _SocialPreviewState extends State<_SocialPreview> {
       ));
       if (!mounted || controller != _controller) return;
       _timeout = Timer(const Duration(seconds: 20), _fail);
-      await controller.loadHtmlString(
-          communitySocialEmbedHtml(widget.uri, language: _language!));
+      await controller.loadHtmlString(communitySocialEmbedHtml(widget.uri,
+          language: _language!, isDark: _isDark!));
     } catch (_) {
       if (mounted && controller == _controller) _fail();
     }

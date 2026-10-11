@@ -167,6 +167,64 @@ void main() {
   });
 
   testWidgets(
+      'X embeds follow the app theme on first load and while the post stays open',
+      (tester) async {
+    final platform = FakeWebViewPlatform();
+    final previous = WebViewPlatform.instance;
+    WebViewPlatform.instance = platform;
+    addTearDown(
+        () => WebViewPlatform.instance = previous ?? FakeWebViewPlatform());
+    final uri = Uri.parse('https://x.com/a/status/123');
+    for (final initialTheme in [whitetheme, darktheme]) {
+      await tester.pumpWidget(const SizedBox());
+      for (final theme in [
+        initialTheme,
+        initialTheme.brightness == Brightness.light ? darktheme : whitetheme,
+        initialTheme,
+      ]) {
+        final count = platform.controllers.length;
+        await tester
+            .pumpWidget(app(CommunityLinkPreview(uri: uri), theme: theme));
+        await tester.pump(kThemeAnimationDuration);
+        expect(platform.controllers.length, count + 1);
+        final controller = platform.controllers.last;
+        expect(controller.html, contains("theme: '${theme.brightness.name}'"));
+        controller.message('{"height":654}');
+        await tester.pumpAndSettle();
+        expect(tester.getSize(find.byType(WebViewWidget)).height, 654);
+
+        await tester
+            .pumpWidget(app(CommunityLinkPreview(uri: uri), theme: theme));
+        await tester.pump();
+        expect(platform.controllers.length, count + 1);
+      }
+    }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Instagram stays loaded when only the app theme changes',
+      (tester) async {
+    final platform = FakeWebViewPlatform();
+    final previous = WebViewPlatform.instance;
+    WebViewPlatform.instance = platform;
+    addTearDown(
+        () => WebViewPlatform.instance = previous ?? FakeWebViewPlatform());
+    final uri = Uri.parse('https://www.instagram.com/p/Ab123/');
+    await tester
+        .pumpWidget(app(CommunityLinkPreview(uri: uri), theme: whitetheme));
+    await tester.pump();
+    final controller = platform.controllers.single;
+    controller.message('{"height":700}');
+    await tester.pumpAndSettle();
+    await tester
+        .pumpWidget(app(CommunityLinkPreview(uri: uri), theme: darktheme));
+    await tester.pumpAndSettle();
+    expect(platform.controllers, [controller]);
+    expect(tester.getSize(find.byType(WebViewWidget)).height, 700);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
       'social timeout keeps the original link and retry can load the embed',
       (tester) async {
     final platform = FakeWebViewPlatform();

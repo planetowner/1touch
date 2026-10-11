@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:onetouch/core/web_links.dart';
 
 // 서비스가 제공하는 임베드만 실행해요. 게시글 본문이나 외부 페이지 HTML은 넣지 않아요.
-String communitySocialEmbedHtml(Uri uri, {required String language}) {
+String communitySocialEmbedHtml(Uri uri,
+    {required String language, required bool isDark}) {
   final kind = webLinkKind(uri);
   final canonical = socialPostUri(uri);
   final url = const HtmlEscape().convert(canonical.toString());
@@ -11,9 +12,9 @@ String communitySocialEmbedHtml(Uri uri, {required String language}) {
 <script src="https://platform.x.com/widgets.js" onerror="fail()"></script>
 <script>
 if (window.twttr) twttr.ready(function(twitter) {
+  // WebView의 초기 너비가 0이어도, 카드가 이후 확정된 본문 너비를 따라가게 해요.
   twitter.widgets.createTweet(${jsonEncode(canonical.pathSegments.last)}, host, {
-    theme: 'light', dnt: true, lang: ${jsonEncode(language)},
-    width: host.clientWidth
+    theme: '${isDark ? 'dark' : 'light'}', dnt: true, lang: ${jsonEncode(language)}
   }).then(function(element) {
     if (element) { ready = true; measure(); } else { fail(); }
   }).catch(fail);
