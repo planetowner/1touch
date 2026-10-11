@@ -82,6 +82,25 @@ void main() {
     });
   }
 
+  testWidgets('converted small fees stay distinct from an actual zero',
+      (tester) async {
+    appDisplayPreferences.value =
+        const DisplayPreferences(currency: DisplayCurrency.cny);
+    final repository = ExchangeRatesRepository(
+        client: MockClient((_) async =>
+            http.Response(jsonEncode(exchangeRatesFixture()), 200)));
+    await tester.pumpWidget(app(Column(children: [
+      for (final amount in [0, 22000, 4000000, 22000000])
+        TransferFee(amountInEuros: amount, repository: repository),
+    ])));
+    await tester.pumpAndSettle();
+
+    for (final expected in ['0亿元', '<0.1亿元', '0.3亿元', '2亿元']) {
+      expect(find.text(expected), findsOneWidget);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('pending fees share a request and follow the latest selection',
       (tester) async {
     appDisplayPreferences.value =

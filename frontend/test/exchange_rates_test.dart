@@ -85,7 +85,7 @@ void main() {
     }
   });
 
-  test('rounds KRW, CNY and JPY to whole hundred millions', () {
+  test('keeps small positive fees visible in fixed hundred-million units', () {
     const units = {
       DisplayCurrency.krw: '억 원',
       DisplayCurrency.cny: '亿元',
@@ -93,13 +93,23 @@ void main() {
     };
     const amounts = {
       0: '0',
-      1000000: '0',
-      29931549: '0',
-      49000000: '0',
-      50000000: '1',
-      94000000: '1',
+      1: '<0.1',
+      1000000: '<0.1',
+      4999999: '<0.1',
+      5000000: '0.1',
+      5000001: '0.1',
+      14000000: '0.1',
+      15000000: '0.2',
+      29931549: '0.3',
+      49000000: '0.5',
+      50000000: '0.5',
+      76000000: '0.8',
+      94000000: '0.9',
+      95000000: '1',
       96000000: '1',
+      99999999: '1',
       100000000: '1',
+      100000001: '1',
       149000000: '1',
       150000000: '2',
       1000000000: '10',
@@ -119,14 +129,27 @@ void main() {
     }
   });
 
-  test('rounds EUR, USD and GBP to whole compact units', () {
+  test('keeps small EUR, USD and GBP fees visible and rounds larger units', () {
     const symbols = {
       DisplayCurrency.eur: '€',
       DisplayCurrency.usd: '\$',
       DisplayCurrency.gbp: '£',
     };
-    const amounts = {
+    final amounts = {
       0: '0',
+      0.05: '0.1',
+      0.050001: '0.1',
+      0.14: '0.1',
+      0.15: '0.2',
+      0.3: '0.3',
+      0.5: '0.5',
+      0.76: '0.8',
+      0.94: '0.9',
+      0.95: '1',
+      0.999999: '1',
+      1: '1',
+      1.49: '1',
+      1.5: '2',
       990: '990',
       8499: '8k',
       8500: '9k',
@@ -141,6 +164,9 @@ void main() {
       1400500000000: '1,401bn',
     };
     for (final symbol in symbols.entries) {
+      for (final amount in [0.000001, 0.01, 0.049999]) {
+        expect(formatTransferFee(amount, symbol.key), '<${symbol.value}0.1');
+      }
       for (final amount in amounts.entries) {
         expect(formatTransferFee(amount.key, symbol.key),
             '${symbol.value}${amount.value}');

@@ -24,7 +24,7 @@ String formatTransferFee(num amount, DisplayCurrency currency) {
   };
   // 원·위안·엔은 금액이 작아도 억 단위를 유지해 이적료를 같은 기준으로 비교해요.
   if (fixedUnit != null) {
-    return '${_formatScaledFee(amount, 100000000)}$fixedUnit';
+    return _formatScaledFee(amount, 100000000, suffix: fixedUnit);
   }
 
   final rounded = amount.round();
@@ -34,17 +34,26 @@ String formatTransferFee(num amount, DisplayCurrency currency) {
     (1000, 'k'),
   ]) {
     if (rounded >= divisor) {
-      return '${currency.symbol}${_formatScaledFee(rounded, divisor)}$suffix';
+      return _formatScaledFee(amount, divisor,
+          prefix: currency.symbol, suffix: suffix);
     }
   }
-  return '${currency.symbol}$rounded';
+  return _formatScaledFee(amount, 1, prefix: currency.symbol);
 }
 
-// 모든 통화는 표시 단위로 나눈 뒤 정수로 반올림하고 천 단위 쉼표를 넣어요.
 final _feeNumberFormat = NumberFormat('#,##0', 'en_US');
+final _fractionalFeeNumberFormat = NumberFormat('#,##0.#', 'en_US');
 
-String _formatScaledFee(num amount, int divisor) =>
-    _feeNumberFormat.format(amount / divisor);
+String _formatScaledFee(num amount, int divisor,
+    {String prefix = '', String suffix = ''}) {
+  final scaled = amount / divisor;
+  // 작은 양수가 0으로 보이지 않도록 표시 단위의 1 미만은 소수점 한 자리를 써요.
+  if (scaled > 0 && scaled < 1) {
+    if (scaled < 0.05) return '<${prefix}0.1$suffix';
+    return '$prefix${_fractionalFeeNumberFormat.format(scaled)}$suffix';
+  }
+  return '$prefix${_feeNumberFormat.format(scaled)}$suffix';
+}
 
 class TransferFee extends StatefulWidget {
   const TransferFee({
