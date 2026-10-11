@@ -44,6 +44,7 @@ def _payload() -> dict:
                 "minute": 28,
                 "extra_minute": None,
                 "on_bench": False,
+                "injured": None,
                 "type": {"id": 14, "code": "goal", "name": "Goal"},
             }
         ],
@@ -91,6 +92,17 @@ def _payload() -> dict:
 
 
 class FixtureDetailsLoaderTests(unittest.TestCase):
+    def test_injury_migration_preserves_existing_events_as_unknown(self):
+        sql = (Path(__file__).resolve().parents[1]
+               / "one_touch_loader/sql/migrate_fixture_event_injured.sql").read_text(encoding="utf-8")
+        with sqlite3.connect(":memory:") as connection:
+            connection.execute("CREATE TABLE fixture_events (event_id INTEGER PRIMARY KEY, on_bench BOOLEAN)")
+            connection.execute("INSERT INTO fixture_events VALUES (900, 0)")
+            connection.executescript(sql)
+            self.assertEqual(connection.execute(
+                "SELECT event_id,on_bench,injured FROM fixture_events"
+            ).fetchall(), [(900, 0, None)])
+
     def test_resume_starts_at_fixture_in_scope_order_for_both_fetch_modes(self):
         # 대회·시각 순서는 ID 오름차순과 달라요. 실패한 경기 자체도 다시 처리해야 해요.
         scope = [11974939, 1818704, 1818000]
@@ -197,7 +209,7 @@ class FixtureDetailsLoaderTests(unittest.TestCase):
         self.assertEqual(rows["event_types"], [(14, "goal", "Goal")])
         self.assertEqual(
             rows["events"],
-            [(900, 500, 10, 14, 100, None, 28, None, False)],
+            [(900, 500, 10, 14, 100, None, 28, None, False, None)],
         )
         self.assertEqual(
             rows["team_stats"],
@@ -366,7 +378,7 @@ class FixtureDetailsRepositoryTests(unittest.TestCase):
     ) -> None:
         get_fixture.return_value = {"fixture_id": 500, "home_team_id": 10, "away_team_id": 20}
         fetch_all_dict.side_effect = [
-            [{"event_id": 900}],
+            [{"event_id": 900, "injured": None}],
             [{"team_id": 10, "stat_type_id": 45, "value": 63}],
             [{"player_id": 100, "team_id": 10, "lineup_type_id": 11, "match_position_id": 25,
               "minutes_played": 90, "rating": 7.38}],
@@ -385,7 +397,7 @@ class FixtureDetailsRepositoryTests(unittest.TestCase):
         ):
             result = fixtures_repo.get_fixture_detail(500)
 
-        self.assertEqual(result["events"], [{"event_id": 900}])
+        self.assertEqual(result["events"], [{"event_id": 900, "injured": None}])
         self.assertEqual(result["statistics"], [
             {"team_id": 10, "stat_type_id": 45, "value": 63},
             {"team_id": 10, "stat_type_id": 120, "stat_code": "touches", "stat_name": "Touches", "value": 64},
@@ -437,6 +449,10 @@ class _SqliteCursor:
     def fetchall(self):
         return self.cursor.fetchall()
 
+    @property
+    def rowcount(self):
+        return self.cursor.rowcount
+
 
 class _SqliteConnection:
     def __init__(self, connection):
@@ -469,7 +485,8 @@ class FixtureDetailsStorageTests(unittest.TestCase):
         role_refresh.start()
         self.addCleanup(role_refresh.stop)
         # 운영 DB 대신 메모리 안에서 실제 INSERT·DELETE·FK·rollback을 확인해요.
-        self.connection = sqlite3.connect(":memory:")
+        # API 요청은 별도 스레드에서 실행되므로 같은 테스트 DB에 접근할 수 있게 해요.
+        self.connection = sqlite3.connect(":memory:", check_same_thread=False)
         self.connection.execute("PRAGMA foreign_keys = ON")
         self.connection.executescript("""
             CREATE TABLE fixtures (fixture_id INTEGER PRIMARY KEY);
@@ -510,6 +527,60 @@ class FixtureDetailsStorageTests(unittest.TestCase):
     def tearDown(self):
         self.mock_connection.stop()
         self.connection.close()
+
+    def test_substitution_injury_survives_storage_and_json_response(self):
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        from one_touch_loader.api.deps import get_user_id
+        from one_touch_loader.api.routes import fixtures
+
+        payload = _payload()
+        goal = {**payload["events"][0], "id": 901}
+        payload["events"][0].update(
+            type_id=18, type={"id": 18, "code": "substitution", "name": "Substitution"},
+            related_player_id=101,
+        )
+        payload["events"].append(goal)
+        self.connection.execute("INSERT INTO players(player_id,display_name) VALUES (101,'Player Out')")
+        self.connection.commit()
+
+        def read(sql, params):
+            if "FROM fixture_events fe" not in sql:
+                return []
+            cursor = self.connection.execute(sql.replace("%s", "?"), params)
+            columns = [column[0] for column in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        app = FastAPI()
+        app.include_router(fixtures.router, prefix="/v1")
+        app.dependency_overrides[get_user_id] = lambda: 1
+        client = TestClient(app)
+        with (
+            patch.object(fixtures_repo, "get_fixture", return_value={
+                "fixture_id": 500, "home_team_id": 10, "away_team_id": 20}),
+            patch.object(fixtures_repo, "fetch_all_dict", side_effect=read),
+            patch.object(fixtures_repo, "get_fixture_expected_goals", return_value=None),
+            patch.object(fixtures_repo, "list_fixture_player_expected_goals", return_value=[]),
+            patch.object(fixtures_repo, "list_fixture_shots", return_value=[]),
+            patch.object(fixtures_repo, "get_fixture_clock", return_value=None),
+        ):
+            # 같은 이벤트의 정정도 반영하며, null을 일반 교체로 바꾸지 않아요.
+            for injured in (True, False, None):
+                with self.subTest(injured=injured):
+                    payload["events"][0]["injured"] = injured
+                    rows = _normalize_fixture_details(payload, 500)
+                    details.replace_fixture_detail_rows(500, rows, payload["lineups"])
+                    self.assertEqual(self.connection.execute(
+                        "SELECT player_id,related_player_id,injured FROM fixture_events WHERE event_id=900"
+                    ).fetchone(), (100, 101, injured))
+                    response = client.get("/v1/fixtures/500")
+                    self.assertEqual(response.status_code, 200)
+                    events = {event["event_id"]: event for event in response.json()["events"]}
+                    self.assertEqual(len(events), 2)
+                    self.assertEqual(events[900]["event_type_code"], "substitution")
+                    self.assertEqual((events[900]["player_id"], events[900]["related_player_id"]), (100, 101))
+                    self.assertIs(events[900]["injured"], injured)
+                    self.assertIsNone(events[901]["injured"])
 
     def test_verified_atlantas_duplicate_rolls_back_then_stores_once(self):
         self._assert_verified_duplicate_lineup("sportmonks_atlantas_duplicate_lineup.json", 5681)
@@ -1051,7 +1122,7 @@ class FixtureDetailsStorageTests(unittest.TestCase):
                         self.connection.commit()
                         self.assertEqual(details.collect_fixture_details(fixture_id)["players"], 0)
                     for table, columns, key in (
-                        ("fixture_events", "event_id,fixture_id,team_id,event_type_id,player_id,related_player_id,minute,extra_minute,on_bench", "events"),
+                        ("fixture_events", "event_id,fixture_id,team_id,event_type_id,player_id,related_player_id,minute,extra_minute,on_bench,injured", "events"),
                         ("fixture_lineups", "fixture_id,team_id,player_id,lineup_type_id,formation_field,jersey_number,minutes_played,rating,match_position_id", "lineups"),
                         ("fixture_player_stats", "fixture_id,team_id,player_id,stat_type_id,stat_value", "player_stats"),
                     ):
@@ -1108,7 +1179,7 @@ class FixtureDetailsStorageTests(unittest.TestCase):
                 event_profiles = details.verified_event_player_profiles(corrected)
                 details.replace_fixture_detail_rows(fixture_id, {key: rows[key] for key in keys}, corrected["lineups"], event_profiles)
                 self.assertEqual(self.connection.execute(
-                    "SELECT event_id,fixture_id,team_id,event_type_id,player_id,related_player_id,minute,extra_minute,on_bench "
+                    "SELECT event_id,fixture_id,team_id,event_type_id,player_id,related_player_id,minute,extra_minute,on_bench,injured "
                     "FROM fixture_events WHERE fixture_id=? ORDER BY event_id", (fixture_id,),
                 ).fetchall(), sorted(rows["events"]))
                 expected_lineups = {19135801: [(37460555, 77, 5)], 19135802: [(37629806, 36, 18)], 19194448: []}

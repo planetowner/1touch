@@ -50,9 +50,9 @@ ON DUPLICATE KEY UPDATE code = VALUES(code), name = VALUES(name)
 SQL_INSERT_EVENT = """
 INSERT INTO fixture_events (
   event_id, fixture_id, team_id, event_type_id, player_id,
-  related_player_id, minute, extra_minute, on_bench
+  related_player_id, minute, extra_minute, on_bench, injured
 )
-VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
 """
 
 SQL_UPSERT_STAT_TYPE = """
@@ -167,6 +167,7 @@ def _normalize_fixture_details(payload: Dict, fixture_id: int) -> Dict[str, List
                 _canonical_player_id(event["player_id"]),
                 _canonical_player_id(event["related_player_id"]),
                 event["minute"], event["extra_minute"], event["on_bench"],
+                event["injured"],
             )
         )
     return {

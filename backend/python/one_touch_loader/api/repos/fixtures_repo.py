@@ -142,7 +142,8 @@ def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
           rp.image_path AS related_player_image,
           fe.minute,
           fe.extra_minute,
-          fe.on_bench
+          fe.on_bench,
+          fe.injured
         FROM fixture_events fe
         JOIN fixture_event_types fet
           ON fet.event_type_id = fe.event_type_id
@@ -153,6 +154,10 @@ def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
         """,
         (fixture_id,),
     )
+    for event in fixture["events"]:
+        # MySQL의 0·1은 JSON 불리언으로 바꾸고, 미수집·미제공 값은 null로 남겨요.
+        if event["injured"] is not None:
+            event["injured"] = bool(event["injured"])
     fixture["statistics"] = fetch_all_dict(
         """
         SELECT

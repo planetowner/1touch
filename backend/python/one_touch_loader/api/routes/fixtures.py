@@ -80,6 +80,8 @@ def fixture_shotmap(fixture_id: int, user_id: int = Depends(get_user_id)):
 def fixture_detail(fixture_id: int, user_id: int = Depends(get_user_id)):
     """경기 상세와 player_statistics의 포지션별 지표를 반환해요.
 
+    events의 injured는 true/false/null이며, null은 미수집·미제공 상태예요.
+    substitution 이벤트에서 injured=true이면 교체 아웃된 related_player_id의 부상 표시를 사용해요.
     player_statistics와 lineups는 (team_id, player_id)로 연결해요.
     categories의 순서대로 표시하고, 지표의 null은 미제공으로 구분해요.
     pair는 numerator/denominator, percentage는 0~100의 value를 사용해요.

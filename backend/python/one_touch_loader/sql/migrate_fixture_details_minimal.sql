@@ -41,6 +41,7 @@ CREATE TABLE fixture_events (
   minute SMALLINT UNSIGNED NOT NULL,
   extra_minute SMALLINT UNSIGNED NULL,
   on_bench BOOLEAN NULL,
+  injured BOOLEAN NULL,
   PRIMARY KEY (event_id),
   KEY idx_fixture_events_fixture_minute (fixture_id, minute, extra_minute),
   KEY idx_fixture_events_team (team_id),

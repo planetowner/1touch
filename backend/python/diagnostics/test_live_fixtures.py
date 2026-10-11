@@ -94,6 +94,22 @@ class LiveStorageTests(unittest.TestCase):
         live.store_live_fixture(fixture, 10, 20, OBSERVED_AT)
         self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_player_stats").fetchone(), (0,))
 
+    def test_live_refresh_preserves_and_corrects_substitution_injury(self):
+        fixture = live_payload()
+        fixture["events"][0].update(
+            type_id=18, type={"id": 18, "code": "substitution", "name": "Substitution"},
+            related_player_id=101,
+        )
+        self.connection.execute("INSERT INTO players(player_id) VALUES (101)")
+        self.connection.commit()
+        for injured in (True, False, None):
+            with self.subTest(injured=injured):
+                fixture["events"][0]["injured"] = injured
+                live.store_live_fixture(fixture, 10, 20, OBSERVED_AT)
+                self.assertEqual(self.connection.execute(
+                    "SELECT player_id,related_player_id,injured FROM fixture_events WHERE event_id=900"
+                ).fetchone(), (100, 101, injured))
+
     def test_real_substitution_both_profiles_share_live_transaction(self):
         sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_2017_braga_home_missing_lineups.json").read_text(encoding="utf-8"))
         fixture = sample["cases"][0]["fixture"]
