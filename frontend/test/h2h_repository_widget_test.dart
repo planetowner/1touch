@@ -7,11 +7,15 @@ import 'support/fake_betting_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/locale_controller.dart';
+import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
+import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/models/betting.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/H2H.dart';
 
@@ -216,6 +220,99 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     betting.dispose();
   });
+
+  for (final (language, size) in [
+    ('en', const Size(393, 852)),
+    ('ko', const Size(320, 568)),
+  ]) {
+    testWidgets('only winning H2H receipts occupy space in $language at $size',
+        (tester) async {
+      await _setSize(tester, size);
+      final repository = FakeBettingRepository();
+      final betting = BettingController(
+        fixtureId: _selectedFixture.fixtureId,
+        repository: repository,
+      );
+      final locale = Locale(language);
+      final previousLocale = appLocaleController.value;
+      appLocaleController.value = locale;
+      addTearDown(() => appLocaleController.value = previousLocale);
+      await tester.pumpWidget(MaterialApp(
+        locale: locale,
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        theme: language == 'ko'
+            ? app_style.darkThemeForLocale(locale)
+            : app_style.lightThemeForLocale(locale),
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: H2HTab(
+              fixture: _selectedFixture,
+              fixtureRepository: _RecordingFixtureRepository(
+                loader: (_, __) async => const [],
+              ),
+              bettingController: betting,
+            ),
+          ),
+        ),
+      ));
+
+      for (final status in [
+        null,
+        'open',
+        'won',
+        'lost',
+        'refunded',
+        'cancelled'
+      ]) {
+        repository.bet = status == null
+            ? null
+            : FixtureBet(
+                betId: 1,
+                fixtureId: _selectedFixture.fixtureId,
+                outcome: BetOutcome.draw,
+                stake: 100,
+                probabilityText: '0.250000000000000000',
+                decimalOdds: 4,
+                potentialReturn: 400,
+                status: status,
+                revision: 2,
+                payout: status == 'won' ? 400 : 100,
+              );
+        await betting.load();
+        await tester.pumpAndSettle();
+
+        final card = find.byKey(const ValueKey('match-h2h-bets-card'));
+        final receipt = find.byKey(const ValueKey('match-h2h-bet-receipt'));
+        final latest = find.text(translateMessage(locale, 'LATEST H2H'));
+        if (status == 'won') {
+          expect(receipt, findsOneWidget);
+          final text =
+              find.descendant(of: receipt, matching: find.byType(Text));
+          expect(find.textContaining('400 pts', findRichText: true),
+              findsOneWidget);
+          // Figma 3505:20041은 카드와 획득액 사이의 16px 간격이에요.
+          expect(tester.getTopLeft(text).dy - tester.getBottomLeft(card).dy,
+              closeTo(16, 0.1));
+          expect(tester.getTopLeft(text).dx, tester.getTopLeft(card).dx);
+        } else {
+          expect(receipt, findsNothing);
+          expect(tester.getBottomLeft(find.byType(BettingParticipationCard)).dy,
+              tester.getBottomLeft(card).dy);
+        }
+        // Figma 602:16497과 2526:53593은 문구 유무와 관계없이 48px이에요.
+        expect(
+          tester.getTopLeft(latest).dy -
+              tester.getBottomLeft(status == 'won' ? receipt : card).dy,
+          closeTo(48, 0.1),
+        );
+        expect(tester.takeException(), isNull);
+      }
+      await tester.pumpWidget(const SizedBox.shrink());
+      betting.dispose();
+    });
+  }
 
   testWidgets('falls back to the selected match home team perspective',
       (tester) async {

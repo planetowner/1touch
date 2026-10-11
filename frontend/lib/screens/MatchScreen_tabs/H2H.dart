@@ -180,7 +180,8 @@ class _H2HTabState extends State<H2HTab> {
             const SizedBox(height: 48),
             _buildBetsCard(),
             Padding(
-              padding: EdgeInsets.only(bottom: 8, top: 40),
+              // 획득액 문구 유무와 관계없이 다음 섹션까지 48px을 유지해요.
+              padding: EdgeInsets.only(bottom: 8, top: 48),
               child: Text(tr(context, 'LATEST H2H'), style: Body2_b.style),
             ),
             if (_h2hMatches.isEmpty)

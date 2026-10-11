@@ -1,3 +1,5 @@
+import 'package:onetouch/core/number_display.dart';
+
 // 화면 문구는 네 언어에서 같은 키로 관리해요.
 typedef MessageTranslations = ({String ko, String ja, String zh});
 
@@ -208,15 +210,15 @@ const appMessages = <String, MessageTranslations>{
     zh: "{player}因伤被换下 · {minute}'"
   ),
   "Open live match": (ko: "라이브 경기 보기", ja: "ライブ試合を見る", zh: "查看直播比赛"),
-  "You won {points} points!": (
-    ko: "{points}포인트를 획득했어요!",
-    ja: "{points}ポイント獲得しました！",
-    zh: "你赢得了{points}积分！"
+  "You won {points} pts!": (
+    ko: "{points} $pointUnit를 획득했어요!",
+    ja: "{points} $pointUnit獲得しました！",
+    zh: "你赢得了{points} $pointUnit！"
   ),
-  "{points} points returned": (
-    ko: "{points}포인트가 반환됐어요",
-    ja: "{points}ポイントが返還されました",
-    zh: "已返还{points}积分"
+  "{points} pts returned": (
+    ko: "{points} $pointUnit가 반환됐어요",
+    ja: "{points} $pointUnitが返還されました",
+    zh: "已返还{points} $pointUnit"
   ),
   "Your bet on {team} was correct.": (
     ko: "{team}에 대한 베팅이 적중했어요.",
@@ -1890,9 +1892,9 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Not enough points.": (ko: "포인트가 부족해요.", ja: "ポイントが足りません。", zh: "积分不足。"),
   "You need at least {points} pts to place a bet.": (
-    ko: "베팅하려면 최소 {points}포인트가 필요해요.",
-    ja: "予想には最低{points}ポイントが必要です。",
-    zh: "参与竞猜至少需要{points}积分。"
+    ko: "베팅하려면 최소 {points} $pointUnit가 필요해요.",
+    ja: "予想には最低{points} $pointUnitが必要です。",
+    zh: "参与竞猜至少需要{points} $pointUnit。"
   ),
   "Sign in to use points.": (
     ko: "포인트를 사용하려면 로그인해 주세요.",
@@ -1910,9 +1912,9 @@ const appMessages = <String, MessageTranslations>{
     zh: "竞猜内容已更改，请确认后重试。"
   ),
   "Not correct · 0 pts returned": (
-    ko: "적중 실패 · 반환 0포인트",
-    ja: "不的中 · 0ポイント返還",
-    zh: "未猜中 · 返还0积分"
+    ko: "적중 실패 · 반환 0 $pointUnit",
+    ja: "不的中 · 0 $pointUnit返還",
+    zh: "未猜中 · 返还0 $pointUnit"
   ),
   "You're on the bench for a moment": (
     ko: "잠시 벤치에서 쉬어가요",
@@ -2011,17 +2013,20 @@ const appMessages = <String, MessageTranslations>{
   "Round {round}": (ko: "{round}R", ja: "第{round}節", zh: "第{round}轮"),
   "{leg} Leg": (ko: "{leg}차전", ja: "第{leg}戦", zh: "第{leg}回合"),
   "{points} Pts": (ko: "승점 {points}", ja: "勝点{points}", zh: "{points}积分"),
-  "{points} pts": (ko: "{points} 포인트", ja: "{points}ポイント", zh: "{points}积分"),
-  "{points} points": (ko: "{points}포인트", ja: "{points}ポイント", zh: "{points}积分"),
+  "{points} pts": (
+    ko: "{points} $pointUnit",
+    ja: "{points} $pointUnit",
+    zh: "{points} $pointUnit"
+  ),
   "You earned {points} from this bet! 🎉": (
     ko: "이 베팅으로 {points}를 획득했어요! 🎉",
     ja: "このベットで{points}獲得しました！🎉",
     zh: "你从这次投注中赢得了{points}！🎉"
   ),
   "You used {stake} pts · {return} pts if correct": (
-    ko: "{stake}포인트 사용 · 적중 시 {return}포인트",
-    ja: "{stake}ポイント使用 · 的中時{return}ポイント",
-    zh: "使用{stake}积分 · 猜中可得{return}积分"
+    ko: "{stake} $pointUnit 사용 · 적중 시 {return} $pointUnit",
+    ja: "{stake} $pointUnit使用 · 的中時{return} $pointUnit",
+    zh: "使用{stake} $pointUnit · 猜中可得{return} $pointUnit"
   ),
   "You earned no points from this bet.": (
     ko: "이 베팅에서 획득한 포인트가 없어요.",
@@ -2034,15 +2039,15 @@ const appMessages = <String, MessageTranslations>{
     zh: "这次投注已退还{points}。"
   ),
   "You’ve got {points} pts!": (
-    ko: "{points}P를 가지고 있어요",
-    ja: "{points}Pあります",
-    zh: "你有{points}P"
+    ko: "{points} $pointUnit를 가지고 있어요",
+    ja: "{points} $pointUnitあります",
+    zh: "你有{points} $pointUnit"
   ),
   "You’re betting": (ko: "사용할 포인트", ja: "使用するポイント", zh: "使用的积分"),
   "You can use up to {points} pts!": (
-    ko: "최대 {points}P를 쓸 수 있어요",
-    ja: "最大{points}P使えます",
-    zh: "最多可使用{points}P"
+    ko: "최대 {points} $pointUnit를 쓸 수 있어요",
+    ja: "最大{points} $pointUnit使えます",
+    zh: "最多可使用{points} $pointUnit"
   ),
   "Your estimated win": (
     ko: "맞히면 더 받는 포인트",
@@ -2065,24 +2070,24 @@ const appMessages = <String, MessageTranslations>{
     zh: "就这样预测吗？"
   ),
   "{points} pts will be returned.": (
-    ko: "{points}포인트가 반환돼요.",
-    ja: "{points}ポイントが返還されます。",
-    zh: "将返还{points}积分。"
+    ko: "{points} $pointUnit가 반환돼요.",
+    ja: "{points} $pointUnitが返還されます。",
+    zh: "将返还{points} $pointUnit。"
   ),
   "Available: {points} pts": (
-    ko: "사용 가능: {points}포인트",
-    ja: "利用可能：{points}ポイント",
-    zh: "可用：{points}积分"
+    ko: "사용 가능: {points} $pointUnit",
+    ja: "利用可能：{points} $pointUnit",
+    zh: "可用：{points} $pointUnit"
   ),
   "If correct: +{points} pts": (
-    ko: "적중 시: +{points}포인트",
-    ja: "的中時：+{points}ポイント",
-    zh: "猜中后：+{points}积分"
+    ko: "적중 시: +{points} $pointUnit",
+    ja: "的中時：+{points} $pointUnit",
+    zh: "猜中后：+{points} $pointUnit"
   ),
   "Total return: {points} pts, including your stake.": (
-    ko: "베팅 포인트를 포함해 총 {points}포인트를 돌려받아요.",
-    ja: "賭けたポイントを含め、合計{points}ポイントが返還されます。",
-    zh: "包含投入积分在内，共返还{points}积分。"
+    ko: "베팅 포인트를 포함해 총 {points} $pointUnit를 돌려받아요.",
+    ja: "賭けたポイントを含め、合計{points} $pointUnitが返還されます。",
+    zh: "包含投入积分在内，共返还{points} $pointUnit。"
   ),
   "{count} participants": (
     ko: "{count}명 참여",
@@ -2090,19 +2095,19 @@ const appMessages = <String, MessageTranslations>{
     zh: "{count}人参与"
   ),
   "Return if correct: {points} pts (includes stake)": (
-    ko: "적중 시 반환: {points}포인트 (베팅 포인트 포함)",
-    ja: "的中時の返還：{points}ポイント（賭け分を含む）",
-    zh: "猜中后返还：{points}积分（包含投入积分）"
+    ko: "적중 시 반환: {points} $pointUnit (베팅 포인트 포함)",
+    ja: "的中時の返還：{points} $pointUnit（賭け分を含む）",
+    zh: "猜中后返还：{points} $pointUnit（包含投入积分）"
   ),
   "Won · {points} pts returned": (
-    ko: "적중 · {points}포인트 반환",
-    ja: "的中 · {points}ポイント返還",
-    zh: "猜中 · 返还{points}积分"
+    ko: "적중 · {points} $pointUnit 반환",
+    ja: "的中 · {points} $pointUnit返還",
+    zh: "猜中 · 返还{points} $pointUnit"
   ),
   "Refunded · {points} pts returned": (
-    ko: "환불 · {points}포인트 반환",
-    ja: "払い戻し · {points}ポイント返還",
-    zh: "已退款 · 返还{points}积分"
+    ko: "환불 · {points} $pointUnit 반환",
+    ja: "払い戻し · {points} $pointUnit返還",
+    zh: "已退款 · 返还{points} $pointUnit"
   ),
   "Match {number}": (ko: "{number}차전", ja: "第{number}戦", zh: "第{number}场"),
   "Replying to {name}": (

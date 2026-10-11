@@ -387,11 +387,11 @@ class BetSettlementResultOverlay extends StatelessWidget {
 
   String _title(BuildContext context) {
     if (notice.refunded) {
-      return tr(context, '{points} points returned', {
+      return tr(context, '{points} pts returned', {
         'points': notice.bet.payout,
       });
     }
-    return tr(context, 'You won {points} points!', {
+    return tr(context, 'You won {points} pts!', {
       'points': notice.bet.payout,
     });
   }

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/app_action_section_header.dart';
 import 'package:onetouch/core/app_confirmation_dialog.dart';
+import 'package:onetouch/core/number_display.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -479,7 +480,7 @@ class _ProfileState extends State<Profile> {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildStat(_pointBalance?.toString(), tr(context, "PTS"),
+                    _buildStat(_pointBalance?.toString(), pointUnit,
                         statKey: 'points',
                         width: statWidth,
                         tab: 'posts',

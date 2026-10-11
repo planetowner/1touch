@@ -101,6 +101,8 @@ void main() {
       expect(find.byKey(const ValueKey('profile-stat-comments-loading')),
           findsOneWidget);
       _expectStat('points', '1430');
+      _expectStat('points', 'pts');
+      _expectStat('points', '승점', absent: true);
       _expectStat('posts', '0', absent: true);
       _expectStat('comments', '0', absent: true);
 

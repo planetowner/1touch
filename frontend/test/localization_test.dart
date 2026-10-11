@@ -79,14 +79,33 @@ void main() {
       translateMessage(const Locale('zh'), '{team} Win', {'team': 'CEU'}),
       'CEU 胜',
     );
-    expect(
-      translateMessage(const Locale('ko'), '{points} pts', {'points': 120}),
-      '120 포인트',
-    );
+    for (final locale in appSupportedLocales) {
+      expect(
+          translateMessage(locale, '{points} pts', {'points': 120}), '120 pts');
+      expect(
+          translateMessage(
+              locale,
+              'You used {stake} pts · {return} pts if correct',
+              {'stake': 100, 'return': 400}),
+          allOf(contains('100 pts'), contains('400 pts')));
+      expect(translateMessage(locale, '{points} pts returned', {'points': 100}),
+          contains('100 pts'));
+    }
     expect(
       translateMessage(const Locale('ko'), 'You can use up to {points} pts!',
           {'points': '1,200'}),
-      '최대 1,200P를 쓸 수 있어요',
+      '최대 1,200 pts를 쓸 수 있어요',
+    );
+    for (final key in ['PTS', 'Pts']) {
+      expect(
+        appSupportedLocales.map((locale) => translateMessage(locale, key)),
+        [key, '승점', '勝点', '积分'],
+      );
+    }
+    expect(
+      appSupportedLocales.map((locale) =>
+          translateMessage(locale, '{points} Pts', {'points': 120})),
+      ['120 Pts', '승점 120', '勝点120', '120积分'],
     );
   });
 

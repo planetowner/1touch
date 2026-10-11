@@ -68,7 +68,7 @@ void main() {
       (tester) async {
     await pumpOverlay(tester, onDismiss: () {});
 
-    expect(find.text('You won 500 points!'), findsOneWidget);
+    expect(find.text('You won 500 pts!'), findsOneWidget);
     expect(
       find.textContaining('Barcelona', findRichText: true),
       findsOneWidget,
@@ -84,7 +84,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final language in ['en', 'ko']) {
+  for (final language in ['en', 'ko', 'ja', 'zh']) {
     for (final inset in [0.0, 34.0]) {
       testWidgets(
           'sheet meets navigation at $language with bottom inset $inset',
@@ -92,6 +92,7 @@ void main() {
         await pumpOverlay(tester,
             onDismiss: () {}, language: language, bottomInset: inset);
         await tester.pumpAndSettle();
+        expect(find.textContaining('500 pts'), findsOneWidget);
         expect(
           tester
               .getBottomLeft(find.byKey(const ValueKey('bet-settlement-sheet')))

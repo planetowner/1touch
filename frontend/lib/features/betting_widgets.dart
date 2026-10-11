@@ -562,7 +562,7 @@ class _BetValueBox extends StatelessWidget {
                   children: [
                     TextSpan(text: '$value', style: Heading5.style),
                     TextSpan(
-                      text: ' ${_pointsUnit(context)}',
+                      text: ' $pointUnit',
                       style: Heading5.style.copyWith(
                         color: Theme.of(context)
                             .colorScheme
@@ -607,7 +607,7 @@ class _BetReviewAmount extends StatelessWidget {
                 ),
               ),
               TextSpan(
-                text: ' ${_pointsUnit(context)}',
+                text: ' $pointUnit',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -667,7 +667,7 @@ class _BetAmountInput extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
                     child: Text(
-                      _pointsUnit(context),
+                      pointUnit,
                       style: TextStyle(
                           color: foreground,
                           fontSize: 18,
@@ -1019,18 +1019,11 @@ class BettingParticipationCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (market?.bet != null)
-                _BetReceipt(
+              // 적중한 내역에만 문구와 위쪽 여백을 함께 표시해요.
+              if (market?.bet?.status == 'won')
+                _BetWinReceipt(
                   key: const ValueKey('match-h2h-bet-receipt'),
-                  bet: market!.bet!,
-                  label: [
-                    'Home Win',
-                    'Draw',
-                    'Away Win'
-                  ][market.bet!.outcome.index],
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  textAlign: TextAlign.left,
-                  compact: true,
+                  payout: market!.bet!.payout,
                 ),
             ],
           );
@@ -1038,65 +1031,29 @@ class BettingParticipationCard extends StatelessWidget {
       );
 }
 
-class _BetReceipt extends StatelessWidget {
-  const _BetReceipt({
+class _BetWinReceipt extends StatelessWidget {
+  const _BetWinReceipt({
     super.key,
-    required this.bet,
-    required this.label,
-    this.crossAxisAlignment = CrossAxisAlignment.center,
-    this.textAlign = TextAlign.center,
-    this.compact = false,
+    required this.payout,
   });
 
-  final FixtureBet bet;
-  final String label;
-  final CrossAxisAlignment crossAxisAlignment;
-  final TextAlign textAlign;
-  final bool compact;
+  final int payout;
 
   @override
   Widget build(BuildContext context) {
-    if (compact) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 16),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text.rich(
-              _compactBetReceipt(context, bet),
-              maxLines: 1,
-              textAlign: TextAlign.left,
-            ),
-          ),
-        ),
-      );
-    }
-
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: Column(
-        crossAxisAlignment: crossAxisAlignment,
-        children: [
-          Text(
-            '${tr(context, label)} · ${tr(context, '{points} pts', {
-                  'points': bet.stake
-                })}',
-            textAlign: textAlign,
-            style: const TextStyle(fontWeight: FontWeight.w700),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text.rich(
+            _earnedPoints(context, payout),
+            maxLines: 1,
+            textAlign: TextAlign.left,
           ),
-          const SizedBox(height: 4),
-          Text(
-            bet.isOpen
-                ? tr(
-                    context,
-                    'Return if correct: {points} pts (includes stake)',
-                    {'points': bet.potentialReturn})
-                : _settled(context, bet),
-            textAlign: textAlign,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -1439,8 +1396,6 @@ Color _surface(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark
         ? AppPalette.darkGrey
         : AppPalette.white;
-String _pointsUnit(BuildContext context) =>
-    tr(context, '{points} pts', {'points': ''}).trim();
 // 베팅 화면에서는 팀 코드나 짧은 이름만 표시해요.
 String _teamBettingLabel(Team team) {
   final shortCode = team.shortCode?.trim();
@@ -1465,65 +1420,13 @@ String _unavailable(String? reason) => switch (reason) {
       'prediction_unavailable' => 'Prediction unavailable for this match.',
       _ => 'Betting is closed for this match.',
     };
-String _settled(BuildContext context, FixtureBet bet) => switch (bet.status) {
-      'won' =>
-        tr(context, 'Won · {points} pts returned', {'points': bet.payout}),
-      'lost' => tr(context, 'Not correct · 0 pts returned'),
-      'refunded' =>
-        tr(context, 'Refunded · {points} pts returned', {'points': bet.payout}),
-      'cancelled' =>
-        tr(context, 'Refunded · {points} pts returned', {'points': bet.payout}),
-      _ => tr(context, 'Waiting for the result'),
-    };
-
-TextSpan _compactBetReceipt(BuildContext context, FixtureBet bet) {
-  if (bet.isOpen) {
-    return TextSpan(
-      text: tr(
-        context,
-        'You used {stake} pts · {return} pts if correct',
-        {'stake': bet.stake, 'return': bet.potentialReturn},
-      ),
-      style: Body1.style,
-    );
-  }
-
-  if (bet.status == 'won') {
-    return _pointEmphasis(
-      context,
-      'You earned {points} from this bet! 🎉',
-      bet.payout,
-    );
-  }
-
-  if (bet.status == 'lost') {
-    return TextSpan(
-      text: tr(context, 'You earned no points from this bet.'),
-      style: Body1.style,
-    );
-  }
-
-  if (bet.status == 'refunded' || bet.status == 'cancelled') {
-    return _pointEmphasis(
-      context,
-      '{points} were refunded from this bet.',
-      bet.payout,
-    );
-  }
-
-  return TextSpan(
-    text: tr(context, 'Waiting for the result'),
-    style: Body1.style,
-  );
-}
-
-TextSpan _pointEmphasis(
+TextSpan _earnedPoints(
   BuildContext context,
-  String message,
   int points,
 ) {
-  final pointText = tr(context, '{points} points', {'points': points});
-  final sentence = tr(context, message, {'points': pointText});
+  final pointText = tr(context, '{points} pts', {'points': points});
+  final sentence = tr(
+      context, 'You earned {points} from this bet! 🎉', {'points': pointText});
   final pointStart = sentence.indexOf(pointText);
   if (pointStart < 0) return TextSpan(text: sentence, style: Body1.style);
 

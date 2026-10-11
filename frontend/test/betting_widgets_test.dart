@@ -402,7 +402,7 @@ void main() {
     controller.dispose();
   });
 
-  testWidgets('uses the localized point unit throughout the amount flow',
+  testWidgets('uses pts throughout the Korean amount and review flow',
       (tester) async {
     final repository = FakeBettingRepository()..balance = 1207;
     final controller = BettingController(fixtureId: 1, repository: repository);
@@ -420,7 +420,7 @@ void main() {
         ),
       ),
     ));
-    expect(find.text('1,207P를 가지고 있어요'), findsOneWidget);
+    expect(find.text('1,207 pts를 가지고 있어요'), findsOneWidget);
     await tester.tap(find.text('예측하기'));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(ListTile).first);
@@ -429,7 +429,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('사용할 포인트'), findsOneWidget);
-    expect(find.text('최대 1,200P를 쓸 수 있어요'), findsOneWidget);
+    expect(find.text('최대 1,200 pts를 쓸 수 있어요'), findsOneWidget);
     expect(find.text('100'), findsOneWidget);
     await tester.ensureVisible(find.byKey(const ValueKey('bet-decrease')));
     await tester.tap(find.byKey(const ValueKey('bet-decrease')));
@@ -438,8 +438,17 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('bet-increase')));
     await tester.pump();
     expect(find.text('100'), findsOneWidget);
-    expect(find.textContaining('포인트', findRichText: true), findsWidgets);
-    expect(find.textContaining('pts', findRichText: true), findsNothing);
+    expect(find.text('맞히면 더 받는 포인트'), findsOneWidget);
+    expect(find.text('총 돌려받는 포인트'), findsOneWidget);
+    expect(find.text('pts'), findsOneWidget);
+    expect(find.textContaining(' pts', findRichText: true), findsWidgets);
+    expect(find.textContaining(RegExp(r'\d\s*포인트'), findRichText: true),
+        findsNothing);
+    await tester.ensureVisible(find.text('계속하기'));
+    await tester.tap(find.text('계속하기'));
+    await tester.pumpAndSettle();
+    expect(find.text('예측에 사용할 포인트예요'), findsOneWidget);
+    expect(find.text('100 pts', findRichText: true), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
@@ -920,8 +929,7 @@ void main() {
         home: Scaffold(
       body: BettingParticipationCard(controller: controller),
     )));
-    expect(
-        find.text('You earned 400 points from this bet! 🎉'), findsOneWidget);
+    expect(find.text('You earned 400 pts from this bet! 🎉'), findsOneWidget);
     expect(find.text('Won · 400 pts returned'), findsNothing);
     expect(find.text('Draw · 100 pts'), findsNothing);
     expect(find.text('0 participants'), findsOneWidget);
@@ -940,7 +948,7 @@ void main() {
     expect(
       find.descendant(
         of: card,
-        matching: find.text('You earned 400 points from this bet! 🎉'),
+        matching: find.text('You earned 400 pts from this bet! 🎉'),
       ),
       findsNothing,
     );
@@ -948,6 +956,14 @@ void main() {
       of: receipt,
       matching: find.byType(Text),
     ));
+    expect(
+      tester
+              .getTopLeft(
+                  find.descendant(of: receipt, matching: find.byType(Text)))
+              .dy -
+          tester.getBottomLeft(card).dy,
+      closeTo(16, 0.1),
+    );
     expect(summary.textAlign, TextAlign.left);
     expect(summary.maxLines, 1);
 
