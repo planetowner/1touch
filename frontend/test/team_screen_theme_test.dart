@@ -1155,7 +1155,7 @@ void main() {
       homeScoreBox.padding,
       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     );
-    expect(homeScoreDecoration.color, const Color(0xFF090A0A));
+    expect(homeScoreDecoration.color, app_style.AppPalette.black);
     expect(
       (homeScoreDecoration.shape as RoundedRectangleBorder).borderRadius,
       BorderRadius.circular(4),

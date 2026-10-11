@@ -24,7 +24,7 @@ class _HeaderArea extends StatelessWidget {
     final secondColor = _comparisonColors(context, p1, p2).opponent;
 
     return SizedBox(
-      height: 295,
+      height: 295 + MediaQuery.paddingOf(context).top,
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
@@ -72,84 +72,92 @@ class _HeaderArea extends StatelessWidget {
                 ),
               ),
             ),
-          if (p1?.profile.teamImage != null)
-            _HeaderTeamLogo(image: p1!.profile.teamImage!, left: true),
-          if (p2?.profile.teamImage != null)
-            _HeaderTeamLogo(image: p2!.profile.teamImage!, left: false),
-          Positioned(
-            left: 24,
-            top: 51,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: onBack,
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Icon(
-                  Icons.arrow_back_ios_new,
-                  color: foreground,
-                  size: 24,
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 36,
-            top: 43,
-            child: IconButton(
-              onPressed: onSearch,
-              icon: Icon(Icons.search, color: foreground, size: 32),
-            ),
-          ),
-          Positioned(
-            left: 24,
-            right: 24,
-            top: 103,
-            height: 40,
-            child: Row(
-              children: [
-                Expanded(
-                  child: _PlayerChip(
-                    player: p1,
-                    initialPlayer: initialPlayer,
-                    slot: 1,
-                    onTap: onTap1,
+          // 배경은 끝까지 그리고, 헤더 내용만 시스템 안전 영역 아래에 놓아요.
+          Positioned.fill(
+            child: SafeArea(
+              bottom: false,
+              child: Stack(children: [
+                if (p1?.profile.teamImage != null)
+                  _HeaderTeamLogo(image: p1!.profile.teamImage!, left: true),
+                if (p2?.profile.teamImage != null)
+                  _HeaderTeamLogo(image: p2!.profile.teamImage!, left: false),
+                Positioned(
+                  left: 24,
+                  top: 51,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onBack,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.arrow_back_ios_new,
+                        color: foreground,
+                        size: 24,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _PlayerChip(
-                    player: p2,
-                    slot: 2,
-                    onTap: onTap2,
+                Positioned(
+                  right: 36,
+                  top: 43,
+                  child: IconButton(
+                    onPressed: onSearch,
+                    icon: Icon(Icons.search, color: foreground, size: 32),
                   ),
                 ),
-              ],
-            ),
-          ),
-          Positioned(
-            left: 24,
-            top: 167,
-            width: 130,
-            height: 128,
-            child:
-                _PlayerPhoto(player: p1, slot: 1, initialPlayer: initialPlayer),
-          ),
-          Positioned(
-            right: 24,
-            top: 167,
-            width: 130,
-            height: 128,
-            child: _PlayerPhoto(player: p2, slot: 2),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 239,
-            child: Center(
-              child: Text(
-                'VS',
-                style: Heading5.style,
-              ),
+                Positioned(
+                  left: 24,
+                  right: 24,
+                  top: 103,
+                  height: 40,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _PlayerChip(
+                          player: p1,
+                          initialPlayer: initialPlayer,
+                          slot: 1,
+                          onTap: onTap1,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _PlayerChip(
+                          player: p2,
+                          slot: 2,
+                          onTap: onTap2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  left: 24,
+                  top: 167,
+                  width: 130,
+                  height: 128,
+                  child: _PlayerPhoto(
+                      player: p1, slot: 1, initialPlayer: initialPlayer),
+                ),
+                Positioned(
+                  right: 24,
+                  top: 167,
+                  width: 130,
+                  height: 128,
+                  child: _PlayerPhoto(player: p2, slot: 2),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 239,
+                  child: Center(
+                    child: Text(
+                      'VS',
+                      style: Heading5.style,
+                    ),
+                  ),
+                ),
+              ]),
             ),
           ),
         ],

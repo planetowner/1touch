@@ -23,9 +23,7 @@ abstract final class AuthStyles {
       );
 
   static Color background(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xFF0A0A0A)
-          : AppColors.of(context).pageBackground;
+      AppColors.of(context).pageBackground;
 
   static InputDecoration signupInputDecoration(BuildContext context,
       {bool password = false}) {

@@ -7,6 +7,7 @@ Future<void> loadAppFonts() async {
   for (final font in [
     ('Archivo', 'assets/fonts/Archivo-Variable.ttf'),
     ('Pretendard', 'assets/fonts/Pretendard-Regular.otf'),
+    ('MaterialIcons', 'fonts/MaterialIcons-Regular.otf'),
   ]) {
     await (FontLoader(font.$1)..addFont(rootBundle.load(font.$2))).load();
   }

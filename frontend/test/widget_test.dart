@@ -21,7 +21,7 @@ void main() {
     await tester.pumpWidget(const MyApp());
 
     expect(find.byType(SplashScreen), findsOneWidget);
-    expect(tester.getTopLeft(find.byType(SplashScreen)).dy, 24);
+    expect(tester.getTopLeft(find.byType(SplashScreen)).dy, 0);
     expect(find.byType(OnboardingScreen), findsNothing);
     expect(find.byType(HomeScreen), findsNothing);
 
@@ -34,11 +34,13 @@ void main() {
     expect(find.byType(SplashScreen), findsNothing);
     if (ApiConfig.skipOnboardingForDevelopment) {
       expect(find.byType(HomeScreen), findsOneWidget);
-      expect(tester.getTopLeft(find.byType(HomeScreen)).dy, 54);
+      expect(tester.getTopLeft(find.byType(HomeScreen)).dy, 0);
       expect(find.byType(OnboardingScreen), findsNothing);
     } else {
       expect(find.byType(OnboardingScreen), findsOneWidget);
-      expect(tester.getTopLeft(find.byType(OnboardingScreen)).dy, 54);
+      expect(tester.getTopLeft(find.byType(OnboardingScreen)).dy, 0);
+      expect(tester.getRect(find.byKey(const ValueKey('onboarding-logo'))).top,
+          greaterThanOrEqualTo(54));
       expect(find.byType(HomeScreen), findsNothing);
     }
   });

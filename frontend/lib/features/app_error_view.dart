@@ -1,3 +1,4 @@
+import 'package:onetouch/core/app_system_ui.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -99,87 +100,91 @@ class _PhotoErrorView extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = isDark ? AppPalette.white : AppPalette.black;
 
-    return LayoutBuilder(
-      builder: (context, constraints) => Stack(
-        fit: StackFit.expand,
-        children: [
-          ColoredBox(color: background),
-          _FadedErrorPhoto(
-            asset: config.imageAsset!,
-            background: background,
-            height: constraints.maxHeight * 0.65,
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          key: const ValueKey('app-error-back'),
-                          onPressed: () {
-                            if (context.canPop()) {
-                              context.pop();
-                            } else {
-                              context.go('/home');
-                            }
-                          },
-                          icon: const Icon(Icons.arrow_back_ios_new),
-                          iconSize: 28,
-                          color: AppPalette.white,
-                        ),
-                        const AppThemeToggle(foregroundColor: AppPalette.white),
-                      ],
-                    ),
-                  ),
-                  const Spacer(flex: 3),
-                  Text(
-                    tr(context, config.title),
-                    key: ValueKey('app-error-$statusCode-title'),
-                    textAlign: TextAlign.center,
-                    style: Heading3.style.copyWith(color: foreground),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    tr(context, config.message),
-                    key: ValueKey('app-error-$statusCode-message'),
-                    textAlign: TextAlign.center,
-                    style: Body2.style.copyWith(color: foreground),
-                  ),
-                  const Spacer(),
-                  if (config.action != null && onAction != null)
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: FilledButton(
-                        key: ValueKey('app-error-$statusCode-action'),
-                        onPressed: onAction,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: isDark
-                              ? AppPalette.white.withValues(alpha: 0.5)
-                              : AppPalette.black.withValues(alpha: 0.5),
-                          foregroundColor:
-                              isDark ? AppPalette.black : AppPalette.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+    return AppSystemUi(
+      iconBrightness: Brightness.light,
+      child: LayoutBuilder(
+        builder: (context, constraints) => Stack(
+          fit: StackFit.expand,
+          children: [
+            ColoredBox(color: background),
+            _FadedErrorPhoto(
+              asset: config.imageAsset!,
+              background: background,
+              height: constraints.maxHeight * 0.65,
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            key: const ValueKey('app-error-back'),
+                            onPressed: () {
+                              if (context.canPop()) {
+                                context.pop();
+                              } else {
+                                context.go('/home');
+                              }
+                            },
+                            icon: const Icon(Icons.arrow_back_ios_new),
+                            iconSize: 28,
+                            color: AppPalette.white,
                           ),
-                        ),
-                        child: Text(
-                          tr(context, config.action!),
-                          style: Body2_b.style,
-                        ),
+                          const AppThemeToggle(
+                              foregroundColor: AppPalette.white),
+                        ],
                       ),
                     ),
-                  const SizedBox(height: 16),
-                ],
+                    const Spacer(flex: 3),
+                    Text(
+                      tr(context, config.title),
+                      key: ValueKey('app-error-$statusCode-title'),
+                      textAlign: TextAlign.center,
+                      style: Heading3.style.copyWith(color: foreground),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      tr(context, config.message),
+                      key: ValueKey('app-error-$statusCode-message'),
+                      textAlign: TextAlign.center,
+                      style: Body2.style.copyWith(color: foreground),
+                    ),
+                    const Spacer(),
+                    if (config.action != null && onAction != null)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: FilledButton(
+                          key: ValueKey('app-error-$statusCode-action'),
+                          onPressed: onAction,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: isDark
+                                ? AppPalette.white.withValues(alpha: 0.5)
+                                : AppPalette.black.withValues(alpha: 0.5),
+                            foregroundColor:
+                                isDark ? AppPalette.black : AppPalette.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            tr(context, config.action!),
+                            style: Body2_b.style,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

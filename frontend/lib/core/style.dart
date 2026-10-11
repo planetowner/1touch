@@ -1,11 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:onetouch/core/app_system_ui.dart';
 import 'package:onetouch/core/interactive_back_page.dart';
 
 abstract final class AppPalette {
-  static const black = Color(0xFF090A0A);
+  // Figma의 Black을 공통으로 써서 화면과 앱 바 사이의 색 차이를 없애요.
+  static const black = Color(0xFF0A0A0A);
   static const white = Color(0xFFFFFFFF);
   static const darkGrey = Color(0xFF282929);
   static const lightGrey = Color(0xFF3D3D3D);
@@ -168,8 +169,8 @@ const _lightColors = AppColors(
   pageBackground: AppPalette.white,
   cardBackground: AppPalette.white,
   subtleBackground: AppPalette.lightGreyBox,
-  mutedForeground: Color(0x99090A0A),
-  divider: Color(0x1F090A0A),
+  mutedForeground: Color(0x990A0A0A),
+  divider: Color(0x1F0A0A0A),
   onBrand: AppPalette.black,
 );
 
@@ -222,17 +223,14 @@ ThemeData _buildTheme(
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: colors.pageBackground,
+      // 아이콘도 각 앱 바의 전경색을 따라야 검은 사진 화면에서 잘 보여요.
       foregroundColor: foreground,
-      systemOverlayStyle: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-      ),
+      systemOverlayStyle:
+          appSystemUiStyle(isDark ? Brightness.light : Brightness.dark),
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       shadowColor: Colors.transparent,
-      iconTheme: IconThemeData(color: foreground),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: colors.cardBackground,

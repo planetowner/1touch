@@ -1,3 +1,4 @@
+import 'package:onetouch/core/app_system_ui.dart';
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -62,52 +63,56 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(
+  Widget build(BuildContext context) => AppSystemUi(
+        iconBrightness: Brightness.light,
+        child: Scaffold(
           backgroundColor: Colors.black,
-          foregroundColor: Colors.white,
-          leading: IconButton(
-            key: const ValueKey('avatar-crop-cancel'),
-            icon: const Icon(Icons.close),
-            onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-          ),
-          actions: [
-            TextButton(
-              key: const ValueKey('avatar-crop-save'),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                disabledForegroundColor: Colors.white54,
-              ),
-              onPressed: _isSaving ? null : _save,
-              child: _isSaving
-                  ? const SizedBox.square(
-                      dimension: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(tr(context, 'Done')),
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            leading: IconButton(
+              key: const ValueKey('avatar-crop-cancel'),
+              icon: const Icon(Icons.close),
+              onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
             ),
-          ],
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final side = math.min(constraints.maxWidth, constraints.maxHeight);
-            return Center(
-              child: SizedBox.square(
-                dimension: side,
-                child: Crop(
-                  key: _cropKey,
-                  size: widget.imageSize,
-                  aspectRatio: 1,
-                  disableResize: true,
-                  child: widget.image,
+            actions: [
+              TextButton(
+                key: const ValueKey('avatar-crop-save'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  disabledForegroundColor: Colors.white54,
                 ),
+                onPressed: _isSaving ? null : _save,
+                child: _isSaving
+                    ? const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(tr(context, 'Done')),
               ),
-            );
-          },
+            ],
+          ),
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final side =
+                  math.min(constraints.maxWidth, constraints.maxHeight);
+              return Center(
+                child: SizedBox.square(
+                  dimension: side,
+                  child: Crop(
+                    key: _cropKey,
+                    size: widget.imageSize,
+                    aspectRatio: 1,
+                    disableResize: true,
+                    child: widget.image,
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       );
 }

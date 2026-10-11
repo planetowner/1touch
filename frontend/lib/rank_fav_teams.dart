@@ -1,3 +1,4 @@
+import 'package:onetouch/core/app_system_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/welcome_loading_screen.dart';
 import 'package:onetouch/core/style.dart';
@@ -66,148 +67,152 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
     final gradientHeight = MediaQuery.paddingOf(context).top +
         responsiveBrandGradientHeight(context) * 0.58;
 
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: ColoredBox(
-            key: const ValueKey('rank-favorites-background'),
-            color: pageBackground,
+    return AppSystemUi(
+      iconBrightness: Brightness.light,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ColoredBox(
+              key: const ValueKey('rank-favorites-background'),
+              color: pageBackground,
+            ),
           ),
-        ),
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: gradientHeight,
-          child: DecoratedBox(
-            key: const ValueKey('rank-favorites-top-gradient'),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppPalette.lightGrey,
-                  AppPalette.lightGrey.withValues(alpha: 0.72),
-                  Colors.transparent,
-                ],
-                stops: const [0, 0.35, 1],
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: gradientHeight,
+            child: DecoratedBox(
+              key: const ValueKey('rank-favorites-top-gradient'),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppPalette.lightGrey,
+                    AppPalette.lightGrey.withValues(alpha: 0.72),
+                    Colors.transparent,
+                  ],
+                  stops: const [0, 0.35, 1],
+                ),
               ),
             ),
           ),
-        ),
-        Scaffold(
-          backgroundColor: Colors.transparent,
-          body: SafeArea(
-            child: Column(
-              children: [
-                // Header
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        key: const ValueKey('rank-favorites-back-button'),
-                        tooltip: tr(context, 'Back to team selection'),
-                        onPressed: () => Navigator.of(context).maybePop(),
-                        icon: const Icon(
-                          Icons.arrow_back_ios_new,
-                          color: AppPalette.white,
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          key: const ValueKey('rank-favorites-back-button'),
+                          tooltip: tr(context, 'Back to team selection'),
+                          onPressed: () => Navigator.of(context).maybePop(),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new,
+                            color: AppPalette.white,
+                          ),
                         ),
-                      ),
-                      const AppThemeToggle(
-                        key: ValueKey('gradient-header-theme-toggle'),
-                        foregroundColor: AppPalette.white,
-                      ),
-                    ],
+                        const AppThemeToggle(
+                          key: ValueKey('gradient-header-theme-toggle'),
+                          foregroundColor: AppPalette.white,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                // Draggable list
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      const cardHeight = 72.0;
-                      final teamCount = _myTeams.length;
-                      final verticalGap = teamCount == 0
-                          ? 20.0
-                          : ((constraints.maxHeight - cardHeight * teamCount) /
-                                  (teamCount + 1))
-                              .clamp(4.0, 20.0)
-                              .toDouble();
+                  // Draggable list
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        const cardHeight = 72.0;
+                        final teamCount = _myTeams.length;
+                        final verticalGap = teamCount == 0
+                            ? 20.0
+                            : ((constraints.maxHeight -
+                                        cardHeight * teamCount) /
+                                    (teamCount + 1))
+                                .clamp(4.0, 20.0)
+                                .toDouble();
 
-                      return ReorderableListView(
-                        key: const ValueKey('rank-team-list'),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: verticalGap,
-                        ),
-                        onReorderItem: _onReorder,
-                        proxyDecorator: (child, index, animation) => Material(
-                          color: Colors.transparent,
-                          elevation: 12,
-                          shadowColor: Colors.black54,
-                          child: Transform.scale(scale: 1.03, child: child),
-                        ),
-                        children: [
-                          for (int i = 0; i < _myTeams.length; i++)
-                            _buildTeamCard(
-                              i,
-                              _myTeams[i],
-                              cardHeight,
-                              verticalGap,
-                            ),
-                        ],
-                      );
-                    },
+                        return ReorderableListView(
+                          key: const ValueKey('rank-team-list'),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: verticalGap,
+                          ),
+                          onReorderItem: _onReorder,
+                          proxyDecorator: (child, index, animation) => Material(
+                            color: Colors.transparent,
+                            elevation: 12,
+                            shadowColor: Colors.black54,
+                            child: Transform.scale(scale: 1.03, child: child),
+                          ),
+                          children: [
+                            for (int i = 0; i < _myTeams.length; i++)
+                              _buildTeamCard(
+                                i,
+                                _myTeams[i],
+                                cardHeight,
+                                verticalGap,
+                              ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
 
-                // Bottom section
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  child: Column(
-                    children: [
-                      Text(tr(context, "Rank your clubs"),
-                          style: Heading4.style),
-                      const SizedBox(height: 8),
-                      Text(
-                        tr(context,
-                            "Hold and drag a team card up or down to reorder your favorites. Don't worry, you can always change this later."),
-                        textAlign: TextAlign.center,
-                        style: Body2.style,
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: _isSaving ? null : _completeOnboarding,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colors.onSurface,
-                          minimumSize: const Size(double.infinity, 56),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
+                  // Bottom section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                    child: Column(
+                      children: [
+                        Text(tr(context, "Rank your clubs"),
+                            style: Heading4.style),
+                        const SizedBox(height: 8),
+                        Text(
+                          tr(context,
+                              "Hold and drag a team card up or down to reorder your favorites. Don't worry, you can always change this later."),
+                          textAlign: TextAlign.center,
+                          style: Body2.style,
                         ),
-                        child: _isSaving
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: colors.surface,
-                                ),
-                              )
-                            : Text(trUpper(context, "Continue"),
-                                style: Body2_b.style
-                                    .copyWith(color: colors.surface)),
-                      ),
-                    ],
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: _isSaving ? null : _completeOnboarding,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.onSurface,
+                            minimumSize: const Size(double.infinity, 56),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                          ),
+                          child: _isSaving
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colors.surface,
+                                  ),
+                                )
+                              : Text(trUpper(context, "Continue"),
+                                  style: Body2_b.style
+                                      .copyWith(color: colors.surface)),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

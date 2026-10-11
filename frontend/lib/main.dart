@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/detail_navigation.dart';
-import 'package:flutter/services.dart';
+import 'package:onetouch/core/app_system_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/football_names_loader.dart';
@@ -69,7 +69,6 @@ import 'package:onetouch/SignComps/index.dart'; // Imports auth components
 import 'package:onetouch/splash.dart';
 import 'package:onetouch/onboarding.dart';
 import 'package:onetouch/SignComps/other_login_methods.dart';
-import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/select_favorite_teams.dart';
 import 'package:onetouch/welcome_screen.dart';
 
@@ -754,7 +753,8 @@ class MyApp extends StatelessWidget {
           localeListResolutionCallback: resolveAppLocale,
           builder: (context, child) {
             Intl.defaultLocale = Localizations.localeOf(context).languageCode;
-            return _StatusBarSurface(
+            // 내비게이터가 화면 끝까지 그려야 사진과 모달도 상태 표시줄 뒤를 덮어요.
+            return AppSystemUi(
               child: SessionSyncLifecycle(
                 child: AnimatedBuilder(
                   animation: _router.routeInformationProvider,
@@ -794,89 +794,6 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-}
-
-class _StatusBarSurface extends StatefulWidget {
-  const _StatusBarSurface({required this.child});
-
-  final Widget child;
-
-  @override
-  State<_StatusBarSurface> createState() => _StatusBarSurfaceState();
-}
-
-class _StatusBarSurfaceState extends State<_StatusBarSurface> {
-  bool _updateScheduled = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _router.routerDelegate.addListener(_onRouteChanged);
-  }
-
-  void _onRouteChanged() {
-    if (_updateScheduled) return;
-    _updateScheduled = true;
-    // 라우터가 화면을 만드는 중에도 알림을 보내므로 다음 프레임에 색을 갱신해요.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateScheduled = false;
-      if (mounted) setState(() {});
-    });
-    WidgetsBinding.instance.scheduleFrame();
-  }
-
-  @override
-  void dispose() {
-    _router.routerDelegate.removeListener(_onRouteChanged);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final matches = _router.routerDelegate.currentConfiguration.matches;
-    // push로 연 화면을 pop할 때도 실제 최상단 경로를 따라가요.
-    final visiblePath = matches.isEmpty
-        ? _router.routeInformationProvider.value.uri.path
-        : matches.last.matchedLocation;
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: Theme.of(context).appBarTheme.systemOverlayStyle!,
-      child: ColoredBox(
-        key: const ValueKey('app-status-bar-background'),
-        color: statusBarBackgroundForPath(context, visiblePath),
-        child: SafeArea(
-          left: false,
-          right: false,
-          bottom: false,
-          child: widget.child,
-        ),
-      ),
-    );
-  }
-}
-
-Color statusBarBackgroundForPath(BuildContext context, String path) {
-  if (path == '/') {
-    return Theme.of(context).brightness == Brightness.dark
-        ? Colors.black
-        : Colors.white;
-  }
-  if (path.startsWith('/auth/')) return AuthStyles.background(context);
-  if (path.startsWith('/onboarding') ||
-      path == '/session' ||
-      path.startsWith('/about/') ||
-      (path.startsWith('/profile/') && path != '/profile/activity')) {
-    return Theme.of(context).scaffoldBackgroundColor;
-  }
-  if (path == '/profile' || path == '/profile/activity') {
-    return Theme.of(context).brightness == Brightness.light
-        ? style.AppPalette.lightGreyBox
-        : Theme.of(context).scaffoldBackgroundColor;
-  }
-  if (path == '/compare' && Theme.of(context).brightness == Brightness.dark) {
-    return const Color(0xFF0A0A0A);
-  }
-  // 콘텐츠 화면의 상단 여백은 각 화면에서 쓰는 공통 배경색과 맞춰요.
-  return style.mainPageBackground(context);
 }
 
 bool _usesMainBottomNavigation(String path) =>

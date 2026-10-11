@@ -108,12 +108,24 @@ void main() {
           (tester) async {
         await tester.binding.setSurfaceSize(size);
         addTearDown(() => tester.binding.setSurfaceSize(null));
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetDevicePixelRatio);
+        tester.view.padding = FakeViewPadding(top: 59);
+        tester.view.viewPadding = FakeViewPadding(top: 59);
+        addTearDown(tester.view.resetPadding);
+        addTearDown(tester.view.resetViewPadding);
         await tester.pumpWidget(MaterialApp(
             theme: dark ? darktheme : whitetheme,
             home: PlayerComparisonScreen(
                 initialPlayerId: '1',
                 repository: FakePlayerDetailRepository())));
         await tester.pumpAndSettle();
+        final headerRect = tester
+            .getRect(find.byKey(const ValueKey('comparison-header-gradient')));
+        expect(headerRect.top, 0);
+        expect(headerRect.height, 295 + 59);
+        expect(tester.getRect(find.byIcon(Icons.arrow_back_ios_new)).top,
+            greaterThanOrEqualTo(59));
         await tester.tap(find.text('PLAYER 2'));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);

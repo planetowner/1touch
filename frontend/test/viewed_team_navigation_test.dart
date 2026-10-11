@@ -16,8 +16,11 @@ import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/screens/community_screen.dart';
 import 'package:onetouch/screens/home_screen.dart';
 import 'package:onetouch/screens/team_screen.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/post_screen.dart';
 
 import 'support/app_fonts.dart';
+import 'support/profile_activity_fixture.dart';
+import 'support/screen_pixels.dart';
 
 void main() {
   setUpAll(loadAppFonts);
@@ -27,6 +30,10 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.padding = FakeViewPadding(top: 59);
+    tester.view.viewPadding = FakeViewPadding(top: 59);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewPadding);
     final requests = <http.Request>[];
     final catalog =
         jsonDecode(File('test/fixtures/api_catalog.json').readAsStringSync())
@@ -94,6 +101,17 @@ void main() {
           };
         } else if (path == '/v1/posts') {
           body = {'items': [], 'limit': 50, 'offset': 0};
+        } else if (path == '/v1/users/me/posts') {
+          body = activityPageJson([
+            {
+              ...activityPostJson(),
+              'team_id': 8,
+              'avatar_url': null,
+              'body': List.filled(25, 'Scrollable post content').join('\n'),
+            },
+          ]);
+        } else if (path == '/v1/posts/42/comments') {
+          body = {'items': [], 'limit': 50, 'after_id': 0};
         } else if (path == '/v1/community/followers') {
           body = {'team_id': teamId, 'follower_count': 3};
         } else if (path == '/v1/users/me/points/initialize') {
@@ -113,7 +131,9 @@ void main() {
       }),
     );
     authSession.establish('viewed-team-test');
-    await tester.pumpWidget(const MyApp());
+    const captureKey = ValueKey('app-capture');
+    await tester
+        .pumpWidget(const RepaintBoundary(key: captureKey, child: MyApp()));
     final router = tester
         .widget<MaterialApp>(find.byType(MaterialApp))
         .routerConfig! as GoRouter;
@@ -180,18 +200,23 @@ void main() {
     appThemeController.value = ThemeMode.light;
     addTearDown(() => appThemeController.value = ThemeMode.dark);
     await tester.pumpAndSettle();
-    Color statusBarBackground() => tester
-        .widget<ColoredBox>(
-          find.byKey(const ValueKey('app-status-bar-background')),
-        )
-        .color;
-    expect(statusBarBackground(), app_style.AppPalette.lightGreyBox);
+    Future<void> expectSurface(Color color, String name) async {
+      final scaffold = find.byType(Scaffold).last;
+      expect(tester.getRect(scaffold).top, 0);
+      final pixels = await screenPixels(tester, find.byKey(captureKey),
+          [const Offset(8, 2), const Offset(8, 60)],
+          screenshotName: name);
+      expect(pixels, [color, color]);
+    }
+
+    await expectSurface(app_style.AppPalette.lightModeDarkGrey, 'profile');
     router.push('/profile/preference');
     await tester.pumpAndSettle();
-    expect(statusBarBackground(), app_style.AppPalette.white);
+    await expectSurface(app_style.AppPalette.white, 'preferences');
     Navigator.of(tester.element(find.text('Preferences').last)).pop();
     await tester.pumpAndSettle();
-    expect(statusBarBackground(), app_style.AppPalette.lightGreyBox);
+    await expectSurface(
+        app_style.AppPalette.lightModeDarkGrey, 'profile-return');
     expect(router.routeInformationProvider.value.uri.path, '/profile');
     expect(find.byType(OneTouchBottomNavigationBar), findsOneWidget);
     expect(
@@ -202,6 +227,30 @@ void main() {
           .currentIndex,
       2,
     );
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      appThemeController.value = mode;
+      router.go('/profile/activity');
+      await tester.pumpAndSettle();
+      final dark = mode == ThemeMode.dark;
+      final activityColor =
+          dark ? app_style.AppPalette.black : app_style.AppPalette.lightGreyBox;
+      final postColor = dark
+          ? app_style.AppPalette.black
+          : app_style.AppPalette.lightModeDarkGrey;
+      await expectSurface(activityColor, 'activity-${mode.name}');
+      await tester.tap(find.text('My post 42'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PostDetailScreen), findsOneWidget);
+      await expectSurface(postColor, 'post-${mode.name}');
+      await tester.drag(
+          find.byType(CustomScrollView).last, const Offset(0, -250));
+      await tester.pumpAndSettle();
+      await expectSurface(postColor, 'post-scrolled-${mode.name}');
+      Navigator.of(tester.element(find.byType(PostDetailScreen))).pop();
+      await tester.pumpAndSettle();
+      await expectSurface(activityColor, 'activity-return-${mode.name}');
+    }
+    appThemeController.value = ThemeMode.light;
     tester.view.physicalSize = const Size(320, 568);
     await tester.pump();
     expect(tester.takeException(), isNull);

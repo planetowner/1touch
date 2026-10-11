@@ -170,11 +170,9 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       key: const ValueKey('player-comparison-scaffold'),
-      backgroundColor:
-          isDark ? const Color(0xFF0A0A0A) : AppPalette.lightModeDarkGrey,
+      backgroundColor: mainPageBackground(context),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -268,9 +266,7 @@ TeamComparisonColors _comparisonColors(
   PlayerDetail? first,
   PlayerDetail? second,
 ) {
-  final background = Theme.of(context).brightness == Brightness.dark
-      ? const Color(0xFF0A0A0A)
-      : AppPalette.lightModeDarkGrey;
+  final background = mainPageBackground(context);
   return TeamComparisonColorResolver.resolve(
     anchorTeamName: first?.profile.teamName,
     anchorPrimaryFallback: _teamPrimary(first),

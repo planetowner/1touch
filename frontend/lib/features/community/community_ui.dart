@@ -8,9 +8,7 @@ import 'package:onetouch/features/community/community_post_image.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 
 Color communityPageBackground(BuildContext context) =>
-    Theme.of(context).brightness == Brightness.dark
-        ? const Color(0xFF0A0A0A)
-        : mainPageBackground(context);
+    mainPageBackground(context);
 
 Color communityDividerColor(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark
