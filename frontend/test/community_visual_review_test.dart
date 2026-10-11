@@ -268,6 +268,7 @@ const _post = Post(
     body:
         "FC Barcelona is more than just a football club; it's a symbol of passion and pride for its fans. The team's style of play, known as 'tiki-taka', showcases their commitment to teamwork and skill. With a rich history of success, including numerous La Liga and Champions League titles, Barcelona continues to inspire young athletes around the world.",
     createdAt: '2026-10-10T00:00:00Z',
+    editedAt: '2026-10-10T01:00:00Z',
     commentCount: 2,
     displayName: 'Username');
 PostComment _comment(int id, {bool reply = false}) => PostComment(
@@ -278,7 +279,7 @@ PostComment _comment(int id, {bool reply = false}) => PostComment(
     body:
         'First sentence goes here. Second sentence goes here. Third sentence goes here.',
     createdAt: '2026-10-10T00:00:00Z',
-    editedAt: null,
+    editedAt: id == 1 ? '2026-10-10T01:00:00Z' : null,
     state: PostCommentState.active,
     username: 'member',
     displayName: 'Username',

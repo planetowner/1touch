@@ -1415,7 +1415,7 @@ const appMessages = <String, MessageTranslations>{
   "Edit": (ko: "수정", ja: "編集", zh: "编辑"),
   "Edit post": (ko: "게시물 수정", ja: "投稿を編集", zh: "编辑帖子"),
   "Edit comment": (ko: "댓글 수정", ja: "コメントを編集", zh: "编辑评论"),
-  "Updated {time}": (ko: "{time}에 수정됨", ja: "{time}に更新", zh: "{time}更新"),
+  "Edited": (ko: "수정됨", ja: "編集済み", zh: "已编辑"),
   "Unable to load updated post. Please try again.": (
     ko: "수정된 게시물을 불러오지 못했어요. 다시 시도해 주세요.",
     ja: "編集した投稿を読み込めませんでした。もう一度お試しください。",

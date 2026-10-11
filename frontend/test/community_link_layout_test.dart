@@ -9,6 +9,9 @@ import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
+import 'package:onetouch/features/community/community_link_preview.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'support/fake_webview_platform.dart';
 import 'package:onetouch/features/community/community_ui.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -121,7 +124,9 @@ void main() {
         expect(opens, i + 1);
       }
       expect(heights[1], closeTo(heights[0] * 2, 1));
-      expect(heights[2], closeTo(heights[1], .01));
+      // URL 한 줄과 한글 한 줄은 각각의 행간을 써요. 앱 언어로 늘리지 않아요.
+      expect(heights[0], 20);
+      expect(heights[2], heights[0] + 24);
       expect(tester.takeException(), isNull);
 
       const output = String.fromEnvironment('COMMUNITY_CAPTURE_DIR');
@@ -143,8 +148,10 @@ void main() {
     });
   }
 
-  testWidgets('post detail keeps the original paragraph breaks',
+  testWidgets('post detail keeps text paragraphs after an inline link card',
       (tester) async {
+    final platform = FakeWebViewPlatform();
+    WebViewPlatform.instance = platform;
     await tester.pumpWidget(MaterialApp(
         theme: whitetheme,
         home: Scaffold(
@@ -171,14 +178,20 @@ void main() {
               onReply: null,
               onReport: null),
         ]))));
+    await tester.pump();
+    platform.controllers.single.message('{"height":200}');
     await tester.pumpAndSettle();
     final paragraph = tester.renderObject<RenderParagraph>(find
         .descendant(
             of: find.byType(CommunityLinkedText),
             matching: find.byType(RichText))
         .first);
+    expect(paragraph.text.toPlainText(includePlaceholders: false), _paragraph);
+    expect(find.byType(CommunityLinkPreview), findsOneWidget);
     expect(
-        paragraph.text.toPlainText(includePlaceholders: false), _paragraphBody);
+        tester.getTopLeft(find.byType(CommunityLinkedText)).dy -
+            tester.getBottomLeft(find.byType(CommunityLinkPreview)).dy,
+        24);
     expect(tester.takeException(), isNull);
   });
 

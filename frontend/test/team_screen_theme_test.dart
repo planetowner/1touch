@@ -595,7 +595,7 @@ void main() {
           expect(appBar.pinned, isFalse);
           expect(nestedScrollView.floatHeaderSlivers, isFalse);
           expect(appBar.bottom, same(tabHeader));
-          expect(tabHeader.preferredSize.height, kTextTabBarHeight + 8);
+          expect(tabHeader.preferredSize.height, 36);
           // SliverAppBar itself renders one internal persistent header. There
           // must not be a second, independently scrolling tab header.
           expect(find.byType(SliverPersistentHeader), findsOneWidget);
@@ -847,7 +847,7 @@ void main() {
     expect(tabBar.labelColor, app_style.AppPalette.black);
     expect(tabBar.indicatorColor, app_style.AppPalette.black);
     expect(indicator.borderSide.color, app_style.AppPalette.black);
-    expect(indicator.borderSide.width, 2);
+    expect(indicator.borderSide.width, 1);
     expect(tabBar.padding, const EdgeInsets.only(left: 18));
     expect(find.byKey(const Key('team-profile-button')), findsNothing);
     expect(searchIcon.color, app_style.AppPalette.black);

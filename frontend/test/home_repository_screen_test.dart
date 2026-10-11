@@ -1,7 +1,9 @@
 import 'support/app_catalog.dart';
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
@@ -550,6 +552,65 @@ void main() {
       expect(last.right, 393 - 24);
       expect(last.center.dx - search.center.dx, 96);
       expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('home team picker shadow extends past the 48px toolbar',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    tester.view.padding = const FakeViewPadding(top: 59);
+    tester.view.viewPadding = const FakeViewPadding(top: 59);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewPadding);
+    final previousShadows = debugDisableShadows;
+    debugDisableShadows = false;
+    try {
+      final repository = _ControlledHomeRepository();
+      final boundary = GlobalKey();
+      await tester.pumpWidget(RepaintBoundary(
+        key: boundary,
+        child: MaterialApp(
+            theme: app_style.whitetheme,
+            home: HomeScreen(
+                repository: repository,
+                newsRepository: _RecordingNewsRepository())),
+      ));
+      repository.calls.single.completer.complete(_homeData());
+      await tester.pumpAndSettle();
+      final toolbar = tester.getRect(find.byType(NavigationToolbar));
+      final picker = tester
+          .getRect(find.byKey(const ValueKey('home-app-bar-team-picker')));
+      expect(toolbar.height, 48);
+      expect(picker.size, const Size(64, 40));
+      expect(picker.center.dy, toolbar.center.dy);
+      final pixels = await tester.runAsync(() async {
+        final render = boundary.currentContext!.findRenderObject()!
+            as RenderRepaintBoundary;
+        final image = await render.toImage(pixelRatio: 1);
+        final bytes =
+            await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        image.dispose();
+        return bytes!;
+      });
+      final y = toolbar.bottom.toInt() + 6;
+      final shadow = pixels!.getUint8((y * 393 + picker.center.dx.toInt()) * 4);
+      final background = pixels.getUint8((y * 393 + 24) * 4);
+      // 장식 값만 확인하면 상위 ClipRect가 실제 그림자를 자르는 회귀를 놓쳐요.
+      expect(shadow, lessThan(background - 2));
+      final controller = tester
+          .widget<CustomScrollView>(find.byType(CustomScrollView))
+          .controller!;
+      controller.jumpTo(120);
+      await tester.pumpAndSettle();
+      expect(
+          find.byKey(const ValueKey('home-app-bar-team-picker')).hitTestable(),
+          findsNothing);
+      mainTabActions.select(0);
+      await tester.pumpAndSettle();
+      expect(tester.getRect(find.byType(NavigationToolbar)), toolbar);
+      expect(tester.takeException(), isNull);
+    } finally {
+      debugDisableShadows = previousShadows;
     }
   });
 

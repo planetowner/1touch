@@ -26,11 +26,12 @@ class AppBrandSliverHeader extends StatelessWidget {
         floating: true,
         snap: true,
         // 커뮤니티만 프레임 높이를 따로 쓰면 홈·선수와 세로 위치가 달라져요.
-        toolbarHeight: 80,
+        toolbarHeight: 48,
         centerTitle: false,
         titleSpacing: 0,
         flexibleSpace: ColoredBox(color: pageBackground),
-        clipBehavior: Clip.antiAlias,
+        // 48px 상단 바 밖으로 퍼지는 버튼 그림자를 자르지 않아요.
+        clipBehavior: Clip.none,
         title: Padding(
           padding: const EdgeInsets.only(left: 24),
           child: SvgPicture.asset(

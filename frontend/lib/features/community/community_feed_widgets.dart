@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
@@ -41,7 +40,7 @@ class CommunitySortFilters extends StatelessWidget {
                 child: Center(
                   widthFactor: 1,
                   child: Text(trUpper(context, label),
-                      style: Body2_b.style.copyWith(
+                      style: CommunityText.secondaryBold(context).copyWith(
                           color: appPillForeground(context,
                               selected: selectedSort == sort))),
                 ),
@@ -113,8 +112,9 @@ class CommunityPostSeparator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(top: 24, bottom: 16),
-        // Figma의 게시글 구분선(Line 92)은 실제 선 두께가 2예요.
+        // Figma의 선은 높이 0인 레이어 위쪽에 2만큼 그려져요.
+        // 선 높이를 위 여백에 포함해 게시글 사이 전체 간격 40을 유지해요.
+        padding: const EdgeInsets.only(top: 22, bottom: 16),
         child: Divider(
             height: 2, thickness: 2, color: communityDividerColor(context)),
       );
@@ -168,9 +168,10 @@ class CommunityPostCard extends StatelessWidget {
                                 color: AppColors.of(context).mutedForeground))
                       else ...[
                         Text(post.title,
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: CommunityText.bold(context)),
+                            style:
+                                CommunityText.bold(context, text: post.title)),
                         const SizedBox(height: 4),
                         CommunityLinkedText(
                             text: bodyPreview,
@@ -197,7 +198,9 @@ class CommunityPostCard extends StatelessWidget {
                           Text(formatCommunityEngagementCount(post.likeCount),
                               key: ValueKey(
                                   'community-post-${post.postId}-like-count'),
-                              style: CommunityText.body(context))
+                              style: CommunityText.body(context,
+                                  text: formatCommunityEngagementCount(
+                                      post.likeCount)))
                         ]),
                       ],
                     ])),

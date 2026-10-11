@@ -823,7 +823,7 @@ class OneTouchBottomNavigationBar extends StatelessWidget {
               Icon(
                 isSelected ? activeIcon : icon,
                 color: itemColor,
-                size: 24,
+                size: 32,
               ),
               const SizedBox(height: 8),
               Text(

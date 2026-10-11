@@ -69,7 +69,7 @@ void main() {
         final photo = find.byKey(ValueKey(index == 0
             ? 'community-detail-media'
             : 'community-detail-media-$index'));
-        final expectedWidth = index == 0 ? width - 48 : (width - 48 - 16) / 2;
+        final expectedWidth = index == 0 ? width - 48 : (width - 48 - 15) / 2;
         final bounds = tester.getRect(photo);
         expect(bounds.width, closeTo(expectedWidth, .01));
         expect(bounds.height,

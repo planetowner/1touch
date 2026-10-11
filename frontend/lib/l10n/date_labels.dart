@@ -28,16 +28,12 @@ String communityPostTimeLabel({
   required Locale locale,
   DateTime? now,
 }) {
-  final edited = DateTime.tryParse(editedAt ?? '');
-  if (edited != null) {
-    final relative = relativeTimeLabel(edited, locale: locale, now: now);
-    final time = locale.languageCode == 'en'
-        ? '${relative[0].toLowerCase()}${relative.substring(1)}'
-        : relative;
-    return translateMessage(locale, 'Updated {time}', {'time': time});
-  }
-  return relativeTimeLabel(DateTime.tryParse(createdAt),
-      locale: locale, now: now);
+  final time =
+      relativeTimeLabel(DateTime.tryParse(createdAt), locale: locale, now: now);
+  // 글·댓글은 작성 시간을 유지하고, 수정 여부만 같은 줄에 덧붙여요.
+  return DateTime.tryParse(editedAt ?? '') == null
+      ? time
+      : '$time • ${translateMessage(locale, 'Edited')}';
 }
 
 String _minuteOrHourLabel(Duration difference, Locale locale) {

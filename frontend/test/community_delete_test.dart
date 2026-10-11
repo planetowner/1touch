@@ -45,7 +45,8 @@ const _otherPost = Post(
 void main() {
   setUpAppCatalog(favoriteTeamId: 83);
 
-  test('edited posts use the existing relative time labels', () {
+  test('edited posts keep creation time and append the localized edited label',
+      () {
     final now = DateTime.parse('2026-09-30T12:00:00Z');
     const createdAt = '2026-09-29T12:00:00Z';
     const editedAt = '2026-09-30T11:00:00Z';
@@ -56,7 +57,7 @@ void main() {
         locale: const Locale('en'),
         now: now,
       ),
-      'Updated 1h ago',
+      '1d ago • Edited',
     );
     expect(
       communityPostTimeLabel(
@@ -65,7 +66,7 @@ void main() {
         locale: const Locale('ko'),
         now: now,
       ),
-      '1시간 전에 수정됨',
+      '1일 전 • 수정됨',
     );
     expect(
       communityPostTimeLabel(
@@ -205,7 +206,7 @@ void main() {
     expect(find.text('Updated title'), findsOneWidget);
     expect(find.text('Updated body'), findsOneWidget);
     expect(
-      find.textContaining(RegExp(r'^Updated (just now|\d+[mhd] ago)$')),
+      find.textContaining(RegExp(r'^(Just now|\d+[mhd] ago) • Edited$')),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
@@ -322,7 +323,7 @@ void main() {
     expect(comments.body, 'Updated comment');
     expect(find.text('Updated comment'), findsOneWidget);
     expect(
-      find.textContaining(RegExp(r'^Updated (just now|\d+[mhd] ago)$')),
+      find.textContaining(RegExp(r'^(Just now|\d+[mhd] ago) • Edited$')),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);

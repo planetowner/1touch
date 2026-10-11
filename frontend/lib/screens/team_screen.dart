@@ -493,11 +493,11 @@ class _TeamScreenState extends State<TeamScreen>
                     bottom: PreferredSize(
                       key: const ValueKey('team-tab-header'),
                       preferredSize:
-                          const Size.fromHeight(kTextTabBarHeight + 8),
+                          const Size.fromHeight(appSectionTabBarHeight),
                       child: ColoredBox(
                         color: pageBackground,
                         child: SizedBox(
-                          height: kTextTabBarHeight + 8,
+                          height: appSectionTabBarHeight,
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: appSectionTabBar(

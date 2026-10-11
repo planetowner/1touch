@@ -123,6 +123,7 @@ class CommunityTeamHeader extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               LivePulseDot(
+                                size: 7,
                                 color: AppPalette.white,
                               ),
                               const SizedBox(width: 4),
@@ -142,7 +143,8 @@ class CommunityTeamHeader extends StatelessWidget {
                   Text(
                     _formatFollowers(context, followerCount),
                     key: const ValueKey('community-follower-count'),
-                    style: Body2.style.copyWith(color: foreground),
+                    style: CommunityText.secondary(context)
+                        .copyWith(color: foreground),
                   ),
                 ],
               ),
@@ -207,7 +209,7 @@ String _formatFollowers(BuildContext context, int? count) {
 class _CommunityTabBarDelegate extends SliverPersistentHeaderDelegate {
   _CommunityTabBarDelegate(this.tabBar);
 
-  final TabBar tabBar;
+  final PreferredSizeWidget tabBar;
 
   @override
   double get minExtent => tabBar.preferredSize.height;

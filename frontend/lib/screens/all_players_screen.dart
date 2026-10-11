@@ -399,7 +399,7 @@ class _PlayerFollowButtonState extends State<PlayerFollowButton> {
 }
 
 class _TabBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar _tabBar;
+  final PreferredSizeWidget _tabBar;
   final TabController controller;
   final Gradient? backgroundGradient;
   final Color? backgroundColor;

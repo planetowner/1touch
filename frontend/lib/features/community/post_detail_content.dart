@@ -7,6 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/web_links.dart';
+import 'package:onetouch/data/link_previews/link_preview_repository.dart';
+import 'package:onetouch/features/community/community_post_rich_body.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
@@ -47,6 +50,7 @@ class PostDetailContent extends StatelessWidget {
     this.shareInvoker,
     this.onLikeComment,
     this.onReportComment,
+    this.linkPreviewRepository,
   });
 
   final Post post;
@@ -73,6 +77,7 @@ class PostDetailContent extends StatelessWidget {
   final ValueChanged<PostComment>? onLikeComment;
   final Future<void> Function(PostComment, String)? onReportComment;
   final Future<ShareResult> Function(ShareParams params)? shareInvoker;
+  final LinkPreviewRepository? linkPreviewRepository;
 
   Future<void> _sharePost(BuildContext context) async {
     final renderBox = context.findRenderObject();
@@ -111,6 +116,10 @@ class PostDetailContent extends StatelessWidget {
     final showMediaStatus = showMedia &&
         post.attachments.isNotEmpty &&
         (mediaLoading || mediaLoadFailed);
+    final parts =
+        post.isDeleted ? <CommunityPostPart>[] : communityPostParts(post);
+    final hasLinks = parts.any((part) => part.uri != null);
+    final lastLink = parts.lastOrNull?.uri;
 
     return SliverList(
       delegate: SliverChildListDelegate(
@@ -156,20 +165,28 @@ class PostDetailContent extends StatelessWidget {
                       style: CommunityText.body(context)
                           .copyWith(color: appColors.mutedForeground))
                 else ...[
-                  Text(post.title, style: CommunityText.title(context)),
-                  const SizedBox(height: 8),
-                  CommunityLinkedText(
-                      text: post.body,
-                      showLinkIcons: true,
-                      style: CommunityText.body(context)),
-                  for (final attachment
-                      in post.attachments.where((a) => a.linkUrl != null))
+                  Text(post.title,
+                      maxLines: hasLinks ? 1 : null,
+                      overflow: hasLinks ? TextOverflow.ellipsis : null,
+                      style: CommunityText.title(context, text: post.title)),
+                  SizedBox(
+                      height: hasLinks && parts.first.uri != null ? 24 : 8),
+                  if (hasLinks)
+                    CommunityPostRichBody(
+                        parts: parts, repository: linkPreviewRepository)
+                  else
                     CommunityLinkedText(
-                        text: attachment.linkUrl!,
+                        text: post.body,
                         showLinkIcons: true,
                         style: CommunityText.body(context)),
                 ],
-                const SizedBox(height: 28),
+                // Figma 상세에서 일반 카드 아래는 48px, 공식 임베드 아래는 24px이에요.
+                SizedBox(
+                    height: lastLink != null && !hasMedia && !showMediaStatus
+                        ? (webLinkKind(lastLink) == WebLinkKind.website
+                            ? 48
+                            : 24)
+                        : 28),
                 if (showMediaStatus)
                   _PostMediaStatus(
                     isLoading: mediaLoading,
@@ -475,27 +492,28 @@ class _PostAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        key: actionKey,
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.zero,
-          child: FittedBox(
-            alignment: Alignment.centerLeft,
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CommunityIcon(icon,
-                    size: icon == 'comment' ? 20 : 24,
-                    color: selected ? const Color(0xFF5C92FF) : color),
-                const SizedBox(width: 4),
-                Text(tr(context, label),
-                    key: labelKey, style: CommunityText.body(context)),
-              ],
-            ),
+    // 시안의 너비 74를 유지하고, 좁은 화면에서만 가용 너비에 맞춰 줄여요.
+    return Flexible(
+      child: SizedBox(
+        width: 74,
+        child: GestureDetector(
+          key: actionKey,
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Row(
+            children: [
+              CommunityIcon(icon,
+                  color: selected ? const Color(0xFF5C92FF) : color),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(tr(context, label),
+                    key: labelKey,
+                    style:
+                        CommunityText.body(context, text: tr(context, label)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+              ),
+            ],
           ),
         ),
       ),
@@ -699,10 +717,12 @@ class _PostCommentRow extends StatelessWidget {
                         'community-comment-avatar-${comment.commentId}')),
                 const SizedBox(height: 8),
                 Text(_commentBodyLabel(context, comment),
-                    style: CommunityText.body(context).copyWith(
-                        color: active
-                            ? null
-                            : AppColors.of(context).mutedForeground)),
+                    style: CommunityText.body(context,
+                            text: _commentBodyLabel(context, comment))
+                        .copyWith(
+                            color: active
+                                ? null
+                                : AppColors.of(context).mutedForeground)),
                 if (active || comment.state == PostCommentState.deleted) ...[
                   const SizedBox(height: 8),
                   Row(children: [
@@ -723,7 +743,9 @@ class _PostCommentRow extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                               formatCommunityEngagementCount(comment.likeCount),
-                              style: CommunityText.body(context))
+                              style: CommunityText.body(context,
+                                  text: formatCommunityEngagementCount(
+                                      comment.likeCount)))
                         ])),
                     const SizedBox(width: 16),
                     GestureDetector(

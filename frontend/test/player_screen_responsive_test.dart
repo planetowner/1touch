@@ -860,7 +860,7 @@ void main() {
         tester
             .getSize(find.byKey(const ValueKey('player-detail-tab-gradient')))
             .height,
-        closeTo(48, 0.01),
+        closeTo(36, 0.01),
       );
       expect(
         tester

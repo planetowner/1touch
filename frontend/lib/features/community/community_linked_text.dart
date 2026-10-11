@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/web_links.dart';
 import 'package:onetouch/features/community/community_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -29,12 +30,6 @@ class CommunityLinkedText extends StatefulWidget {
 }
 
 class _CommunityLinkedTextState extends State<CommunityLinkedText> {
-  static final _webAddress = RegExp(
-    r'(?:https?://|www\.)[^\s<>]+',
-    caseSensitive: false,
-  );
-  static final _trailingPunctuation = RegExp(r'[.,!?;:)\]}]+$');
-
   final _links = <(int, int, Uri)>[];
   final _recognizers = <TapGestureRecognizer>[];
 
@@ -58,18 +53,9 @@ class _CommunityLinkedTextState extends State<CommunityLinkedText> {
   void _parseLinks() {
     _links.clear();
     _recognizers.clear();
-    for (final match in _webAddress.allMatches(widget.text)) {
-      final address = match.group(0)!.replaceFirst(_trailingPunctuation, '');
-      final target = address.toLowerCase().startsWith('www.')
-          ? 'https://$address'
-          : address;
-      final uri = Uri.tryParse(target);
-      if (uri == null ||
-          (uri.scheme != 'http' && uri.scheme != 'https') ||
-          uri.host.isEmpty) {
-        continue;
-      }
-      _links.add((match.start, match.start + address.length, uri));
+    for (final link in webLinks(widget.text)) {
+      final (_, _, uri) = link;
+      _links.add(link);
       _recognizers.add(
         TapGestureRecognizer()
           ..onTap = () => unawaited(
@@ -90,11 +76,13 @@ class _CommunityLinkedTextState extends State<CommunityLinkedText> {
   @override
   Widget build(BuildContext context) {
     final spans = <InlineSpan>[];
+    TextSpan contentSpan(String text) => TextSpan(
+        text: text, style: CommunityText.forContent(widget.style, text));
     var cursor = 0;
     for (var i = 0; i < _links.length; i++) {
       final (start, end, _) = _links[i];
       if (start > cursor) {
-        spans.add(TextSpan(text: widget.text.substring(cursor, start)));
+        spans.add(contentSpan(widget.text.substring(cursor, start)));
       }
       if (widget.showLinkIcons) {
         // 아이콘을 첫 줄에만 넣어, 다음 줄은 본문 시작점에서 이어져요.
@@ -112,19 +100,21 @@ class _CommunityLinkedTextState extends State<CommunityLinkedText> {
       spans.add(
         TextSpan(
           text: widget.text.substring(start, end),
-          style: const TextStyle(decoration: TextDecoration.underline),
+          style: CommunityText.forContent(widget.style, '')
+              .copyWith(decoration: TextDecoration.underline),
           recognizer: widget.activateLinks ? _recognizers[i] : null,
         ),
       );
       cursor = end;
     }
     if (cursor < widget.text.length || spans.isEmpty) {
-      spans.add(TextSpan(text: widget.text.substring(cursor)));
+      spans.add(contentSpan(widget.text.substring(cursor)));
     }
 
     return Text.rich(
       TextSpan(children: spans),
-      style: widget.style,
+      // 기본 행간을 영문에 맞춰야 URL만 있는 줄까지 한글 행간으로 늘어나지 않아요.
+      style: CommunityText.forContent(widget.style, ''),
       maxLines: widget.maxLines,
       overflow: widget.overflow,
     );

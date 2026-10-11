@@ -137,7 +137,7 @@ void main() {
       expect(tabBar.indicatorColor, testCase.tabColor);
       expect(
         (tabBar.indicator! as UnderlineTabIndicator).borderSide.width,
-        2,
+        1,
       );
       expect(tabBar.padding, const EdgeInsets.only(left: 18));
       final teamHeaderPadding = tester.widget<Padding>(

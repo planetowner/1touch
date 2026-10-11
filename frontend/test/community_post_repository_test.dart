@@ -273,10 +273,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester
-          .widget<TabBar>(find.byType(TabBar))
-          .tabs
-          .cast<Tab>()
-          .map((tab) => tab.text),
+          .widgetList<Text>(find.descendant(
+              of: find.byType(TabBar), matching: find.byType(Text)))
+          .map((text) => text.data),
       ['전체', '자유', '분석', '뉴스·정보', '팬아트'],
     );
     await tester.tap(find.text('자유'));

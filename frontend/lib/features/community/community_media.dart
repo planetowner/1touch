@@ -45,7 +45,7 @@ class CommunityMediaPreview extends StatelessWidget {
                       color: const Color(0xFF0A0A0A),
                       borderRadius: BorderRadius.circular(4)),
                   child: Text('+$remaining',
-                      style: CommunityText.body(context)
+                      style: CommunityText.body(context, text: '+$remaining')
                           .copyWith(color: Colors.white, fontSize: 12)),
                 )),
         ]),
@@ -85,7 +85,7 @@ class CommunityMediaGrid extends StatelessWidget {
             padding: const EdgeInsets.only(top: 16),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Expanded(child: media(index)),
-              const SizedBox(width: 16),
+              const SizedBox(width: 15),
               Expanded(
                   child: index + 1 < attachments.length
                       ? media(index + 1)

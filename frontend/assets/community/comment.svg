@@ -1,8 +1,10 @@
-<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<mask id="mask0_7041_22458" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
-<rect width="20" height="20" fill="#D9D9D9"/>
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="chat_bubble">
+<mask id="mask0_0_4" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+<rect id="Bounding box" width="24" height="24" fill="#D9D9D9"/>
 </mask>
-<g mask="url(#mask0_7041_22458)">
-<path d="M2 18V3.5C2 3.0875 2.14688 2.73438 2.44063 2.44063C2.73438 2.14688 3.0875 2 3.5 2H16.5C16.9125 2 17.2656 2.14688 17.5594 2.44063C17.8531 2.73438 18 3.0875 18 3.5V13.5C18 13.9125 17.8531 14.2656 17.5594 14.5594C17.2656 14.8531 16.9125 15 16.5 15H5L2 18ZM4.375 13.5H16.5V3.5H3.5V14.375L4.375 13.5Z" fill="white"/>
+<g mask="url(#mask0_0_4)">
+<path id="chat_bubble_2" d="M2.4 21.6V4.2C2.4 3.705 2.57625 3.28125 2.92875 2.92875C3.28125 2.57625 3.705 2.4 4.2 2.4H19.8C20.295 2.4 20.7188 2.57625 21.0713 2.92875C21.4238 3.28125 21.6 3.705 21.6 4.2V16.2C21.6 16.695 21.4238 17.1188 21.0713 17.4713C20.7188 17.8238 20.295 18 19.8 18H6L2.4 21.6ZM5.25 16.2H19.8V4.2H4.2V17.25L5.25 16.2Z" fill="white"/>
+</g>
 </g>
 </svg>

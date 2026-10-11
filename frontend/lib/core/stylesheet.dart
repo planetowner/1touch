@@ -76,6 +76,9 @@ class Heading5 {
 
   static TextStyle get style =>
       _localizedStyle(_englishStyle, KoreanHeading5.style);
+
+  // 사용자 글의 언어가 앱 설정과 다를 때도 같은 영문 토큰을 써요.
+  static const TextStyle latinStyle = _englishStyle;
 }
 
 class Body1 {
