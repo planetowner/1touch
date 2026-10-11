@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
-import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/features/community/community_media.dart';
 import 'package:onetouch/features/community/community_ui.dart';
@@ -210,15 +209,13 @@ class CommunityPostCard extends StatelessWidget {
                   top: 0,
                   bottom: 0,
                   width: mediaWidth,
-                  child: GestureDetector(
+                  // 목록 썸네일도 카드의 탭 동작을 따라 게시글 상세로 이동해요.
+                  child: CommunityMediaPreview(
                       key: ValueKey('community-post-${post.postId}-media-open'),
-                      onTap: () => showCommunityAttachmentViewer(context,
-                          mediaUrl: media.first.mediaUrl!, attachments: media),
-                      child: CommunityMediaPreview(
-                          attachment: media.first,
-                          remaining: media.length - 1,
-                          imageKey: ValueKey(
-                              'community-post-${post.postId}-media')))),
+                      attachment: media.first,
+                      remaining: media.length - 1,
+                      imageKey:
+                          ValueKey('community-post-${post.postId}-media'))),
           ]);
         }));
   }

@@ -139,8 +139,7 @@ void main() {
     expect(drafts.publishedId, 41);
   });
 
-  testWidgets(
-      'multiple media keep the right thumbnail and open the complete gallery',
+  testWidgets('multiple media thumbnail and count badge open the post',
       (tester) async {
     var opens = 0;
     await tester.pumpWidget(MaterialApp(
@@ -151,12 +150,12 @@ void main() {
     expect(find.text('+2'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('community-post-1-media-open')));
     await tester.pumpAndSettle();
-    expect(find.byType(CommunityAttachmentViewer), findsOneWidget);
-    expect(find.text('1 / 3'), findsOneWidget);
-    await tester.drag(find.byType(PageView), const Offset(-600, 0));
+    expect(find.byType(CommunityAttachmentViewer), findsNothing);
+    expect(opens, 1);
+    await tester.tap(find.text('+2'));
     await tester.pumpAndSettle();
-    expect(find.text('2 / 3'), findsOneWidget);
-    expect(opens, 0);
+    expect(find.byType(CommunityAttachmentViewer), findsNothing);
+    expect(opens, 2);
   });
 
   testWidgets(

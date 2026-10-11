@@ -6,6 +6,7 @@ import 'package:onetouch/core/api_image_headers.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
+import 'package:onetouch/features/community/community_ui.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
@@ -51,7 +52,8 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('post link opens the post at width $width', (tester) async {
+    testWidgets('post body and attachment links open the post at width $width',
+        (tester) async {
       await tester.binding.setSurfaceSize(Size(width, 700));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       var opens = 0;
@@ -68,6 +70,12 @@ void main() {
                 category: PostCategory.general,
                 title: 'Link post',
                 body: body,
+                attachments: const [
+                  PostAttachment(
+                      attachmentId: 1,
+                      position: 0,
+                      linkUrl: 'https://example.com/attachment'),
+                ],
                 createdAt: '2026-09-27T12:00:00Z',
               ),
             ],
@@ -76,24 +84,30 @@ void main() {
         ),
       ));
 
-      final paragraph = tester.renderObject<RenderParagraph>(
-        find.descendant(
-            of: find.byType(CommunityLinkedText),
-            matching: find.byType(RichText)),
-      );
-      final urlStart = paragraph.text.toPlainText().indexOf('https://');
-      final linkBounds = paragraph
-          .getBoxesForSelection(
-            TextSelection(baseOffset: urlStart, extentOffset: urlStart + 5),
-          )
-          .first;
-      await tester.tapAt(paragraph.localToGlobal(linkBounds.toRect().center));
-      expect(opens, 1);
+      for (var i = 0; i < 2; i++) {
+        final linkedText = find.byType(CommunityLinkedText).at(i);
+        final paragraph = tester.renderObject<RenderParagraph>(
+          find.descendant(of: linkedText, matching: find.byType(RichText)),
+        );
+        final urlStart = paragraph.text.toPlainText().indexOf('https://');
+        final linkBounds = paragraph
+            .getBoxesForSelection(
+              TextSelection(baseOffset: urlStart, extentOffset: urlStart + 5),
+            )
+            .first;
+        await tester.tapAt(paragraph.localToGlobal(linkBounds.toRect().center));
+        expect(opens, i * 2 + 1);
+        await tester.tap(find.descendant(
+            of: linkedText,
+            matching: find.byWidgetPredicate(
+                (widget) => widget is CommunityIcon && widget.name == 'link')));
+        expect(opens, i * 2 + 2);
+      }
       expect(tester.takeException(), isNull);
     });
   }
 
-  testWidgets('community media sends auth to the API attachment endpoint',
+  testWidgets('feed photo uses API authentication and opens the post',
       (tester) async {
     final previousToken = authSession.accessToken;
     authSession.establish('community-media-token');
@@ -144,19 +158,9 @@ void main() {
 
     expect(
       find.byKey(const ValueKey('community-attachment-viewer')),
-      findsOneWidget,
-    );
-    expect(find.byType(InteractiveViewer), findsNothing);
-
-    await tester.tap(
-      find.byKey(const ValueKey('community-attachment-close')),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const ValueKey('community-attachment-viewer')),
       findsNothing,
     );
-    expect(openedPosts, 0);
+    expect(openedPosts, 1);
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {

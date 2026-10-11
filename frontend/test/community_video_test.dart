@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
+import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/features/community/community_media.dart';
+import 'package:onetouch/features/community/community_ui.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 import 'support/fake_video_platform.dart';
@@ -53,6 +55,34 @@ void main() {
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pump();
     expect(video.disposed, {0, 1});
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      'feed video play overlay opens the post without opening or playing media',
+      (tester) async {
+    var openedPosts = 0;
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: CommunityPostList(posts: [
+      Post(
+          language: 'en',
+          postId: 1,
+          teamId: 83,
+          userId: 1,
+          category: PostCategory.general,
+          title: 'Video post',
+          body: 'Post body',
+          createdAt: '2026-10-06T12:00:00Z',
+          attachments: [_attachment(1)]),
+    ], onPostTap: (_) => openedPosts++))));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byWidgetPredicate(
+        (widget) => widget is CommunityIcon && widget.name == 'play'));
+    await tester.pumpAndSettle();
+    expect(openedPosts, 1);
+    expect(find.byType(CommunityAttachmentViewer), findsNothing);
+    expect(video.playing, isEmpty);
     expect(tester.takeException(), isNull);
   });
 

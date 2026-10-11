@@ -217,6 +217,12 @@ void main() {
     _expectPhoto(tester, 40);
     await tester.tap(find.byKey(const ValueKey('community-post-9-media-open')));
     await tester.pumpAndSettle();
+    expect(find.byType(PostDetailContent), findsOneWidget);
+    expect(find.byKey(const ValueKey('community-attachment-viewer')),
+        findsNothing);
+    _expectPhoto(tester, 40);
+    await tester.tap(find.byKey(const ValueKey('community-detail-media-open')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('community-attachment-viewer')),
         findsOneWidget);
     expect(find.byType(InteractiveViewer), findsNothing);
@@ -234,7 +240,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('community-attachment-close')));
     await tester.pumpAndSettle();
     _expectPhoto(tester, 40);
+    Navigator.of(tester.element(find.byType(PostDetailContent))).pop();
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('community-post-9-media-open')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('community-detail-media-open')));
     await tester.pumpAndSettle();
     _expectPhoto(tester, 400);
     expect(
