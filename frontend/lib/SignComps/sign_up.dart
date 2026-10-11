@@ -42,6 +42,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _password = TextEditingController();
   final _availableFields = <RegistrationField>{};
   final _confirmPassword = TextEditingController();
+  final _fieldFocusNodes = List.generate(5, (_) => FocusNode());
 
   bool _obscure = true;
   bool _obscureConfirm = true;
@@ -165,6 +166,9 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     _email.dispose();
     _password.dispose();
     _confirmPassword.dispose();
+    for (final node in _fieldFocusNodes) {
+      node.dispose();
+    }
     super.dispose();
   }
 
@@ -226,216 +230,237 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
           key: _formKey,
           onChanged: _onInputsChanged,
           child: LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              key: const ValueKey('signup-fields-scroll'),
-              padding: EdgeInsets.fromLTRB(24, 0, 24,
-                  bottomSpacing + MediaQuery.viewInsetsOf(context).bottom),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight > bottomSpacing
-                        ? constraints.maxHeight - bottomSpacing
-                        : 0.0),
-                child: IntrinsicHeight(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 48),
-                      for (final field in [
-                        (
-                          field: RegistrationField.username,
-                          label: 'ID',
-                          controller: _username,
-                          maxLength: 30,
-                          keyboardType: null,
-                          validator: usernameValidationMessage,
-                        ),
-                        (
-                          field: RegistrationField.displayName,
-                          label: 'Nickname',
-                          controller: _displayName,
-                          maxLength: 12,
-                          keyboardType: null,
-                          validator: displayNameValidationMessage,
-                        ),
-                        (
-                          field: RegistrationField.email,
-                          label: 'Email',
-                          controller: _email,
-                          maxLength: null,
-                          keyboardType: TextInputType.emailAddress,
-                          validator: _emailValidationMessage,
-                        ),
-                      ]) ...[
-                        SignupAvailabilityField(
-                          key: ValueKey(
-                              'signup-${field.field.apiValue.replaceAll('_', '-')}-field'),
-                          controller: field.controller,
-                          maxLength: field.maxLength,
-                          keyboardType: field.keyboardType,
-                          enabled: !_submitting,
-                          insetLabel: tr(context, field.label),
-                          availableMessage:
-                              field.field == RegistrationField.username
-                                  ? 'This username is available!'
-                                  : 'Available.',
-                          decoration: AuthStyles.signupInputDecoration(context),
-                          validator: field.validator,
-                          checkAvailability: (value) =>
-                              _authService.isRegistrationValueAvailable(
-                                  field: field.field, value: value),
-                          onAvailabilityChanged: (available) =>
-                              _setAvailable(field.field, available),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                      for (final field in [
-                        (
-                          key: 'signup-password-field',
-                          label: 'Password',
-                          controller: _password,
-                          obscure: _obscure,
-                          toggle: () => setState(() => _obscure = !_obscure),
-                          validator: (String? value) => isValidNewPassword(
-                                  value ?? '')
-                              ? null
-                              : tr(context,
-                                  'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
-                          confirm: false,
-                        ),
-                        (
-                          key: 'signup-confirm-password-field',
-                          label: 'Retype Password',
-                          controller: _confirmPassword,
-                          obscure: _obscureConfirm,
-                          toggle: () => setState(
-                              () => _obscureConfirm = !_obscureConfirm),
-                          validator: (String? value) => value == _password.text
-                              ? null
-                              : tr(context, 'Passwords do not match.'),
-                          confirm: true,
-                        ),
-                      ]) ...[
-                        AuthInsetLabel(
-                          key: ValueKey(field.key),
-                          label: tr(context, field.label),
-                          password: true,
-                          child: TextFormField(
-                            key: field.confirm ? _confirmPasswordFieldKey : null,
-                            controller: field.controller,
-                            enabled: !_submitting,
-                            // 비밀번호 검증 오류도 커서 색상은 바꾸지 않아요.
-                            cursorErrorColor: colors.primary,
-                            obscureText: field.obscure,
-                            autocorrect: false,
-                            enableSuggestions: false,
-                            // Outline의 위쪽 정렬은 큰 상단 여백을 무시하므로 아래 여백에 맞춰요.
-                            textAlignVertical: TextAlignVertical.bottom,
-                            autovalidateMode: field.confirm
-                                ? AutovalidateMode.onUnfocus
-                                : AutovalidateMode.disabled,
-                            decoration: AuthStyles.signupInputDecoration(
-                                    context,
-                                    password: true)
-                                .copyWith(
-                              suffixIcon: AuthPasswordVisibilityButton(
-                                obscureText: field.obscure,
-                                onPressed: field.toggle,
-                              ),
-                            ),
-                            validator: field.validator,
-                            style: bodyStyle,
+            builder: (context, constraints) => Padding(
+              // 키보드 높이는 스크롤 영역에서 빼고, 기존 콘텐츠 배치는 유지해요.
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.viewInsetsOf(context).bottom),
+              child: SingleChildScrollView(
+                key: const ValueKey('signup-fields-scroll'),
+                padding: EdgeInsets.fromLTRB(24, 0, 24, bottomSpacing),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight > bottomSpacing
+                          ? constraints.maxHeight - bottomSpacing
+                          : 0.0),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 48),
+                        for (final (index, field) in [
+                          (
+                            field: RegistrationField.username,
+                            label: 'ID',
+                            controller: _username,
+                            maxLength: 30,
+                            keyboardType: null,
+                            validator: usernameValidationMessage,
                           ),
-                        ),
-                        if (!field.confirm) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            tr(context,
-                                'Choose a password that is 8 or more characters long.'),
-                            style: labelStyle,
+                          (
+                            field: RegistrationField.displayName,
+                            label: 'Nickname',
+                            controller: _displayName,
+                            maxLength: 12,
+                            keyboardType: null,
+                            validator: displayNameValidationMessage,
+                          ),
+                          (
+                            field: RegistrationField.email,
+                            label: 'Email',
+                            controller: _email,
+                            maxLength: null,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: _emailValidationMessage,
+                          ),
+                        ].indexed) ...[
+                          SignupAvailabilityField(
+                            key: ValueKey(
+                                'signup-${field.field.apiValue.replaceAll('_', '-')}-field'),
+                            controller: field.controller,
+                            maxLength: field.maxLength,
+                            keyboardType: field.keyboardType,
+                            focusNode: _fieldFocusNodes[index],
+                            nextFocusNode: _fieldFocusNodes[index + 1],
+                            enabled: !_submitting,
+                            insetLabel: tr(context, field.label),
+                            availableMessage:
+                                field.field == RegistrationField.username
+                                    ? 'This username is available!'
+                                    : 'Available.',
+                            decoration:
+                                AuthStyles.signupInputDecoration(context),
+                            validator: field.validator,
+                            checkAvailability: (value) =>
+                                _authService.isRegistrationValueAvailable(
+                                    field: field.field, value: value),
+                            onAvailabilityChanged: (available) =>
+                                _setAvailable(field.field, available),
                           ),
                           const SizedBox(height: 24),
                         ],
-                      ],
-                      const SizedBox(height: 24),
-                      const Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              padding: EdgeInsets.zero,
-                              alignment: Alignment.topLeft,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: Checkbox(
-                                      value: _agreed,
-                                      onChanged: (v) =>
-                                          setState(() => _agreed = v ?? false),
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(4)),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Text.rich(
-                                      TextSpan(
-                                        style: Body2.style
-                                            .copyWith(color: colors.onSurface),
-                                        children: [
-                                          TextSpan(text: consentParts[0]),
-                                          TextSpan(
-                                            text:
-                                                tr(context, 'Terms of Service'),
-                                            style: const TextStyle(
-                                                decoration:
-                                                    TextDecoration.underline),
-                                            recognizer: _termsTap,
-                                          ),
-                                          TextSpan(text: consentParts[1]),
-                                          TextSpan(
-                                            text: tr(context, 'Privacy Policy'),
-                                            style: const TextStyle(
-                                                decoration:
-                                                    TextDecoration.underline),
-                                            recognizer: _privacyTap,
-                                          ),
-                                          TextSpan(text: consentParts[2]),
-                                        ],
-                                      ),
-                                      key:
-                                          const ValueKey('signup-consent-text'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            AuthPrimaryButton(
-                              buttonKey: const ValueKey('email-sign-up-button'),
-                              label: trUpper(context, 'Sign up'),
-                              textStyle:
-                                  AuthStyles.signupTextStyle(Body2_b.style),
-                              loading: _submitting,
-                              onPressed: _submitting ||
-                                      (_validInputs &&
-                                          _availableFields.length !=
-                                              RegistrationField.values.length)
+                        for (final field in [
+                          (
+                            key: 'signup-password-field',
+                            label: 'Password',
+                            controller: _password,
+                            obscure: _obscure,
+                            toggle: () => setState(() => _obscure = !_obscure),
+                            validator: (String? value) => isValidNewPassword(
+                                    value ?? '')
+                                ? null
+                                : tr(context,
+                                    'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
+                            confirm: false,
+                          ),
+                          (
+                            key: 'signup-confirm-password-field',
+                            label: 'Retype Password',
+                            controller: _confirmPassword,
+                            obscure: _obscureConfirm,
+                            toggle: () => setState(
+                                () => _obscureConfirm = !_obscureConfirm),
+                            validator: (String? value) =>
+                                value == _password.text
+                                    ? null
+                                    : tr(context, 'Passwords do not match.'),
+                            confirm: true,
+                          ),
+                        ]) ...[
+                          AuthInsetLabel(
+                            key: ValueKey(field.key),
+                            label: tr(context, field.label),
+                            password: true,
+                            child: TextFormField(
+                              key: field.confirm
+                                  ? _confirmPasswordFieldKey
+                                  : null,
+                              controller: field.controller,
+                              focusNode:
+                                  _fieldFocusNodes[field.confirm ? 4 : 3],
+                              textInputAction: field.confirm
+                                  ? TextInputAction.done
+                                  : TextInputAction.next,
+                              // 보기 버튼에 멈추지 않고 비밀번호 재입력 칸으로 이동해요.
+                              onEditingComplete: field.confirm
                                   ? null
-                                  : _submit,
+                                  : _fieldFocusNodes[4].requestFocus,
+                              enabled: !_submitting,
+                              // 비밀번호 검증 오류도 커서 색상은 바꾸지 않아요.
+                              cursorErrorColor: colors.primary,
+                              obscureText: field.obscure,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              // Outline의 위쪽 정렬은 큰 상단 여백을 무시하므로 아래 여백에 맞춰요.
+                              textAlignVertical: TextAlignVertical.bottom,
+                              autovalidateMode: field.confirm
+                                  ? AutovalidateMode.onUnfocus
+                                  : AutovalidateMode.disabled,
+                              decoration: AuthStyles.signupInputDecoration(
+                                      context,
+                                      password: true)
+                                  .copyWith(
+                                suffixIcon: AuthPasswordVisibilityButton(
+                                  obscureText: field.obscure,
+                                  onPressed: field.toggle,
+                                ),
+                              ),
+                              validator: field.validator,
+                              style: bodyStyle,
                             ),
+                          ),
+                          if (!field.confirm) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              tr(context,
+                                  'Choose a password that is 8 or more characters long.'),
+                              style: labelStyle,
+                            ),
+                            const SizedBox(height: 24),
                           ],
+                        ],
+                        const SizedBox(height: 24),
+                        const Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.zero,
+                                alignment: Alignment.topLeft,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: Checkbox(
+                                        value: _agreed,
+                                        onChanged: (v) => setState(
+                                            () => _agreed = v ?? false),
+                                        materialTapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(4)),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Text.rich(
+                                        TextSpan(
+                                          style: Body2.style.copyWith(
+                                              color: colors.onSurface),
+                                          children: [
+                                            TextSpan(text: consentParts[0]),
+                                            TextSpan(
+                                              text: tr(
+                                                  context, 'Terms of Service'),
+                                              style: const TextStyle(
+                                                  decoration:
+                                                      TextDecoration.underline),
+                                              recognizer: _termsTap,
+                                            ),
+                                            TextSpan(text: consentParts[1]),
+                                            TextSpan(
+                                              text:
+                                                  tr(context, 'Privacy Policy'),
+                                              style: const TextStyle(
+                                                  decoration:
+                                                      TextDecoration.underline),
+                                              recognizer: _privacyTap,
+                                            ),
+                                            TextSpan(text: consentParts[2]),
+                                          ],
+                                        ),
+                                        key: const ValueKey(
+                                            'signup-consent-text'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              AuthPrimaryButton(
+                                buttonKey:
+                                    const ValueKey('email-sign-up-button'),
+                                label: trUpper(context, 'Sign up'),
+                                textStyle:
+                                    AuthStyles.signupTextStyle(Body2_b.style),
+                                loading: _submitting,
+                                onPressed: _submitting ||
+                                        (_validInputs &&
+                                            _availableFields.length !=
+                                                RegistrationField.values.length)
+                                    ? null
+                                    : _submit,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

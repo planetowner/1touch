@@ -77,6 +77,33 @@ void main() {
     expect(find.text('Home destination'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final route in ['/onboarding', '/auth/signin']) {
+    testWidgets('keyboard advances to password and submits login at $route',
+        (tester) async {
+      await _setScreenSize(tester, const Size(393, 852));
+      final repository = _FakeAuthRepository();
+      final router =
+          _router(_service(AuthSession(), repository), initialLocation: route);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('sign-in-username')));
+      tester.testTextInput.enterText('member');
+      await tester.testTextInput.receiveAction(TextInputAction.next);
+      await tester.pumpAndSettle();
+      final password = find.descendant(
+          of: find.byKey(const ValueKey('sign-in-password')),
+          matching: find.byType(EditableText));
+      expect(tester.widget<EditableText>(password).focusNode.hasFocus, isTrue);
+      tester.testTextInput.enterText('Password123');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(repository.passwordCredentials, [('member', 'Password123')]);
+      expect(find.text('Home destination'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
 
 AuthService _service(AuthSession session, AuthRepository repository) =>

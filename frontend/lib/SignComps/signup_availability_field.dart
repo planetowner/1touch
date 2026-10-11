@@ -14,6 +14,8 @@ class SignupAvailabilityField extends StatefulWidget {
     required this.onAvailabilityChanged,
     this.maxLength,
     this.keyboardType,
+    this.focusNode,
+    this.nextFocusNode,
     this.enabled = true,
     this.insetLabel,
     this.availableMessage = 'Available.',
@@ -26,6 +28,8 @@ class SignupAvailabilityField extends StatefulWidget {
   final ValueChanged<bool> onAvailabilityChanged;
   final int? maxLength;
   final TextInputType? keyboardType;
+  final FocusNode? focusNode;
+  final FocusNode? nextFocusNode;
   final bool enabled;
   final String? insetLabel;
   final String availableMessage;
@@ -101,6 +105,11 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
       enabled: widget.enabled,
       maxLength: widget.maxLength,
       keyboardType: widget.keyboardType,
+      focusNode: widget.focusNode,
+      textInputAction: widget.nextFocusNode == null
+          ? TextInputAction.done
+          : TextInputAction.next,
+      onEditingComplete: widget.nextFocusNode?.requestFocus,
       textAlignVertical:
           widget.insetLabel == null ? null : TextAlignVertical.bottom,
       autovalidateMode: AutovalidateMode.onUserInteraction,

@@ -1,5 +1,6 @@
 import 'package:onetouch/core/app_action_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart';
@@ -101,7 +102,8 @@ class AuthInsetLabel extends StatelessWidget {
   final bool password;
 
   @override
-  Widget build(BuildContext context) => Stack(children: [
+  Widget build(BuildContext context) => _AuthFieldScrollPadding(
+          child: Stack(children: [
         Semantics(label: label, child: child),
         Positioned(
           left: 12,
@@ -119,7 +121,33 @@ class AuthInsetLabel extends StatelessWidget {
             ),
           ),
         ),
-      ]);
+      ]));
+}
+
+class _AuthFieldScrollPadding extends SingleChildRenderObjectWidget {
+  const _AuthFieldScrollPadding({required super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderAuthFieldScrollPadding();
+}
+
+class _RenderAuthFieldScrollPadding extends RenderProxyBox {
+  @override
+  void showOnScreen({
+    RenderObject? descendant,
+    Rect? rect,
+    Duration duration = Duration.zero,
+    Curve curve = Curves.ease,
+  }) {
+    // 커서·선택 핸들 대신 입력칸 전체를 기준으로 키보드 위 여백 24를 확보해요.
+    super.showOnScreen(
+      descendant: this,
+      rect: Rect.fromLTRB(0, 0, size.width, size.height + 24),
+      duration: duration,
+      curve: curve,
+    );
+  }
 }
 
 class AuthInput extends StatelessWidget {

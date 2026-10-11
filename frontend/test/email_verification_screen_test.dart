@@ -383,7 +383,8 @@ void main() {
       final repository = _FakeAuthRepository();
       await _pumpSignup(tester, repository);
       final password = find.byKey(const ValueKey('signup-password-field'));
-      final confirm = find.byKey(const ValueKey('signup-confirm-password-field'));
+      final confirm =
+          find.byKey(const ValueKey('signup-confirm-password-field'));
       final error = find.text('Passwords do not match.');
 
       await tester.enterText(password, 'Password123');
@@ -414,6 +415,88 @@ void main() {
       expect(error, findsNothing);
       expect(tester.takeException(), isNull);
     });
+  }
+
+  for (final lookupFails in [false, true]) {
+    testWidgets(
+        'signup keyboard advances through fields (lookupFails: $lookupFails)',
+        (tester) async {
+      await _pumpSignup(tester,
+          _FakeAuthRepository(availability: (_, __) async {
+        if (lookupFails) throw StateError('Connection failed');
+        return true;
+      }));
+      final fields = find.byType(EditableText);
+      await tester.tap(find.byKey(const ValueKey('signup-username-field')));
+      addTearDown(tester.view.resetViewInsets);
+      tester.view.viewInsets = const FakeViewPadding(bottom: 340);
+      await tester.pumpAndSettle();
+      for (final (index, value) in [
+        'member',
+        'Supporter',
+        'member@example.com',
+        'Password123',
+        'Password123',
+      ].indexed) {
+        expect(tester.widget<EditableText>(fields.at(index)).focusNode.hasFocus,
+            isTrue,
+            reason:
+                'Field $index should be focused; current focus: ${FocusManager.instance.primaryFocus}');
+        tester.testTextInput.enterText(value);
+        await tester.pumpAndSettle();
+        final input = tester.widget<EditableText>(fields.at(index));
+        expect(input.textInputAction,
+            index == 4 ? TextInputAction.done : TextInputAction.next);
+        if (index == 4) {
+          final confirm =
+              find.byKey(const ValueKey('signup-confirm-password-field'));
+          expect(852 - 340 - tester.getRect(confirm).bottom, closeTo(24, 0.1));
+        }
+        await tester.testTextInput.receiveAction(input.textInputAction!);
+        await tester.pumpAndSettle();
+      }
+      expect(
+          tester.widget<EditableText>(fields.last).focusNode.hasFocus, isFalse);
+      expect(find.text('Verification destination'), findsNothing);
+      expect(tester.takeException(), isNull);
+    }, variant: TargetPlatformVariant.mobile());
+  }
+
+  for (final size in [const Size(320, 568), const Size(393, 852)]) {
+    testWidgets('signup confirmation stays 24px above keyboard at $size',
+        (tester) async {
+      await _pumpSignup(tester, _FakeAuthRepository());
+      tester.view.physicalSize = size;
+      addTearDown(tester.view.resetViewInsets);
+      await tester.pumpAndSettle();
+      for (final (key, value) in [
+        ('signup-username-field', 'member'),
+        ('signup-display-name-field', 'Supporter'),
+        ('signup-email-field', 'member@example.com'),
+        ('signup-password-field', 'Password123'),
+      ]) {
+        await tester.enterText(find.byKey(ValueKey(key)), value);
+        await tester.pumpAndSettle();
+      }
+      final confirm =
+          find.byKey(const ValueKey('signup-confirm-password-field'));
+      if (tester.getRect(confirm).bottom > size.height) {
+        await tester.ensureVisible(confirm);
+      }
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+      for (final keyboardHeight in [340.0, 380.0]) {
+        tester.view.viewInsets = FakeViewPadding(bottom: keyboardHeight);
+        await tester.pumpAndSettle();
+        expect(size.height - keyboardHeight - tester.getRect(confirm).bottom,
+            closeTo(24, 0.1));
+      }
+      tester.testTextInput.enterText('Password123');
+      await tester.pumpAndSettle();
+      expect(
+          size.height - 380 - tester.getRect(confirm).bottom, closeTo(24, 0.1));
+      expect(tester.takeException(), isNull);
+    }, variant: TargetPlatformVariant.mobile());
   }
 
   testWidgets('signup terms and button scroll after the input fields',
@@ -448,10 +531,9 @@ void main() {
     expect(tester.getTopLeft(button).dy, scrolledButtonTop);
     expect(
         tester
-            .widget<SingleChildScrollView>(
-                find.byKey(const ValueKey('signup-fields-scroll')))
-            .padding,
-        const EdgeInsets.fromLTRB(24, 0, 24, 352));
+            .getRect(find.byKey(const ValueKey('signup-fields-scroll')))
+            .bottom,
+        568 - 280);
     expect(tester.takeException(), isNull);
   });
 
