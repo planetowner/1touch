@@ -152,7 +152,14 @@ void main() {
     expect(repository.calls, hasLength(4));
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     expect(repository.calls, hasLength(5));
-    repository.calls.last.complete(_detail(stateId: 5, clock: clock));
+    repository.calls.last.complete(_detail(
+      stateId: 5,
+      clock: clock,
+      coaches: [
+        FixtureCoach(
+            teamId: _fixture.homeTeamId, coachId: 1, name: 'Home Coach'),
+      ],
+    ));
     await tester.pump();
     await tester.pump();
     expect(find.text('Full Time'), findsOneWidget);
@@ -162,6 +169,61 @@ void main() {
     expect(repository.calls, hasLength(5));
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('refreshes empty finished detail until match info recovers',
+      (tester) async {
+    final repository = _ControlledFixtureRepository();
+    await tester.pumpWidget(MaterialApp(
+      home: MatchScreen(
+        matchId: '${_fixture.fixtureId}',
+        matchStatus: 'past',
+        repository: repository,
+      ),
+    ));
+    repository.calls.single.complete(_detail());
+    await tester.pump();
+
+    await tester.pump(const Duration(seconds: 14));
+    expect(repository.calls, hasLength(1));
+    await tester.pump(const Duration(seconds: 1));
+    expect(repository.calls, hasLength(2));
+    await tester.pump(const Duration(seconds: 30));
+    expect(repository.calls, hasLength(2));
+    repository.calls.last.completeError(StateError('offline'));
+    await tester.pump();
+    expect(find.text('Unable to load match.'), findsNothing);
+    expect(find.byType(MatchScoreHeader), findsOneWidget);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump(const Duration(minutes: 1));
+    expect(repository.calls, hasLength(2));
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    expect(repository.calls, hasLength(3));
+    repository.calls.last.complete(_detail());
+    await tester.pump();
+
+    await tester.pump(const Duration(seconds: 15));
+    expect(repository.calls, hasLength(4));
+    final recovered = _detail(coaches: [
+      FixtureCoach(teamId: _fixture.homeTeamId, coachId: 1, name: 'Home Coach'),
+    ]);
+    repository.calls.last.complete(recovered);
+    await tester.pump();
+    await tester.pump();
+    expect(tester.widget<MatchInfoTab>(find.byType(MatchInfoTab)).detail,
+        same(recovered));
+    expect(
+        tester
+            .widget<SubstitutesAndCoach>(find.byType(SubstitutesAndCoach))
+            .coachA,
+        'Home Coach');
+    await tester.pump(const Duration(minutes: 1));
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    expect(repository.calls, hasLength(4));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets('loads a fixture detail asynchronously on a compact screen',

@@ -41,6 +41,18 @@ class FixtureDetail {
   final List<FixtureFormation> formations;
   final List<FixtureCoach> coaches;
   final List<FixturePressurePoint> pressure;
+
+  // 점수·경기장·별도로 수집한 xG만 있어도 경기 정보 본문은 비어 있을 수 있어요.
+  // 캐시 복원과 화면 갱신에서 같은 기준으로 빈 종료 경기를 다시 확인해요.
+  bool get isPastWithoutMatchInfo =>
+      fixture.status == FixtureStatus.past &&
+      events.isEmpty &&
+      statistics.isEmpty &&
+      playerStatistics.isEmpty &&
+      lineups.isEmpty &&
+      formations.isEmpty &&
+      coaches.isEmpty &&
+      pressure.isEmpty;
 }
 
 @immutable

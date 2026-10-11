@@ -61,7 +61,7 @@ class ApiFixtureRepository implements FixtureRepository {
   Future<FixtureDetail> loadDetail(int fixtureId) {
     final cached = cachedDetail(fixtureId);
     if (cached != null) {
-      _refreshDetailIfStale(fixtureId, cached.fixture.status);
+      _refreshDetailIfStale(fixtureId, cached);
       return Future.value(cached);
     }
     final inFlight = _inFlightDetailLoads[fixtureId];
@@ -86,14 +86,17 @@ class ApiFixtureRepository implements FixtureRepository {
   Future<FixtureDetail> _restoreOrFetchDetail(int fixtureId) async {
     final restored = await _restoreDetail(fixtureId);
     if (restored != null) {
-      _refreshDetailIfStale(fixtureId, restored.fixture.status);
+      _refreshDetailIfStale(fixtureId, restored);
       return restored;
     }
     return _fetchDetail(fixtureId);
   }
 
-  void _refreshDetailIfStale(int fixtureId, FixtureStatus status) {
-    final tier = switch (status) {
+  void _refreshDetailIfStale(int fixtureId, FixtureDetail detail) {
+    final tier = switch (detail.fixture.status) {
+      // 수집 실패로 빈 응답을 저장했어도 재진입하면 복구된 데이터를 바로 받아요.
+      FixtureStatus.past when detail.isPastWithoutMatchInfo =>
+        CacheTier.realtime,
       FixtureStatus.past => CacheTier.staticData,
       FixtureStatus.upcoming => CacheTier.standard,
       _ => CacheTier.realtime,

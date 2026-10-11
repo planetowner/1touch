@@ -399,6 +399,108 @@ void main() {
     expect(requests, 2);
   });
 
+  for (final recreate in [false, true]) {
+    test('rechecks empty finished detail from ${recreate ? 'disk' : 'memory'}',
+        () async {
+      final store = MemoryLocalCacheStore();
+      final response = Completer<http.Response>();
+      var requests = 0;
+      ApiFixtureRepository repository() => ApiFixtureRepository(
+            api: ApiClient(
+              client: MockClient((_) {
+                requests++;
+                if (requests == 1) {
+                  return Future.value(http.Response(
+                      jsonEncode(_emptyFinishedDetailJson()), 200));
+                }
+                return response.future;
+              }),
+              baseUri: Uri.parse('http://localhost:8000/v1/'),
+              requestHeaders: () => const {},
+            ),
+            cacheStore: store,
+          );
+
+      final writer = repository();
+      await writer.loadDetail(19712345);
+      final reader = recreate ? repository() : writer;
+      final empty = await reader.loadDetail(19712345);
+      await reader.loadDetail(19712345);
+      await Future<void>.delayed(Duration.zero);
+      expect(empty.statistics, isEmpty);
+      expect(empty.pressure, isEmpty);
+      expect(requests, 2);
+      expect(reader.isRefreshingDetail(19712345), isTrue);
+
+      final refreshed = reader.refreshDetail(19712345);
+      response.complete(http.Response(
+          jsonEncode({..._fixtureDetailJson(), 'status': 'past'}), 200));
+      final restored = await refreshed;
+      expect(restored.pressure, hasLength(1));
+      expect(reader.cachedDetail(19712345), same(restored));
+      await reader.loadDetail(19712345);
+      final reopened = await repository().loadDetail(19712345);
+      expect(reopened.pressure, hasLength(1));
+      expect(requests, 2);
+    });
+  }
+
+  test('keeps empty finished detail offline and retries on the next entry',
+      () async {
+    final store = MemoryLocalCacheStore();
+    await store.write(
+        LocalCacheKeys.fixtureDetail(19712345), _emptyFinishedDetailJson(),
+        schemaVersion: 2);
+    var requests = 0;
+    final repository = ApiFixtureRepository(
+      api: ApiClient(
+        client: MockClient((_) async {
+          requests++;
+          return http.Response('Offline', 503);
+        }),
+        baseUri: Uri.parse('http://localhost:8000/v1/'),
+        requestHeaders: () => const {},
+      ),
+      cacheStore: store,
+    );
+
+    final empty = await repository.loadDetail(19712345);
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, 1);
+    expect(repository.cachedDetail(19712345), same(empty));
+    await repository.loadDetail(19712345);
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, 2);
+    expect(repository.cachedDetail(19712345), same(empty));
+  });
+
+  for (final age in [const Duration(days: 6), const Duration(days: 8)]) {
+    test('keeps the seven-day TTL for populated finished detail at $age',
+        () async {
+      final store = _AgedCacheStore(age: age);
+      await store.write(LocalCacheKeys.fixtureDetail(19712345),
+          {..._fixtureDetailJson(), 'status': 'past'},
+          schemaVersion: 2);
+      var requests = 0;
+      final repository = ApiFixtureRepository(
+        api: ApiClient(
+          client: MockClient((_) async {
+            requests++;
+            return http.Response('Offline', 503);
+          }),
+          baseUri: Uri.parse('http://localhost:8000/v1/'),
+          requestHeaders: () => const {},
+        ),
+        cacheStore: store,
+      );
+
+      final cached = await repository.loadDetail(19712345);
+      await Future<void>.delayed(Duration.zero);
+      expect(cached.pressure, hasLength(1));
+      expect(requests, age.inDays == 6 ? 0 : 1);
+    });
+  }
+
   test('replaces cached lineup metrics from the previous schema', () async {
     Map<String, dynamic> detailWithMetrics(
             List<Map<String, dynamic>> metrics) =>
@@ -656,6 +758,9 @@ void main() {
 }
 
 class _AgedCacheStore implements LocalCacheStore {
+  _AgedCacheStore({this.age = const Duration(days: 8)});
+
+  final Duration age;
   final MemoryLocalCacheStore _delegate = MemoryLocalCacheStore();
 
   @override
@@ -666,7 +771,7 @@ class _AgedCacheStore implements LocalCacheStore {
     if (record == null) return null;
     return LocalCacheRecord(
       payload: record.payload,
-      savedAt: DateTime.now().toUtc().subtract(const Duration(days: 8)),
+      savedAt: DateTime.now().toUtc().subtract(age),
       schemaVersion: record.schemaVersion,
     );
   }
@@ -718,6 +823,22 @@ Map<String, dynamic> _fixtureJson({
     'away_team_logo': null,
   };
 }
+
+Map<String, dynamic> _emptyFinishedDetailJson() => {
+      ..._fixtureDetailJson(),
+      'status': 'past',
+      'pressure': [],
+      // 수집 실패 응답에도 값이 null인 파생 통계가 포함돼요.
+      'statistics': [
+        {
+          'team_id': 8,
+          'stat_type_id': 97,
+          'stat_code': 'blocked-shots',
+          'stat_name': 'Blocks',
+          'value': null,
+        },
+      ],
+    };
 
 Map<String, dynamic> _fixtureDetailJson({int fixtureId = 19712345}) {
   return {

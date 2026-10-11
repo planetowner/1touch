@@ -74,6 +74,11 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
   FixtureRepository get _repository =>
       widget.repository ?? fixture_provider.fixtureDetailRepository;
 
+  bool get _shouldRefreshDetail =>
+      fixture?.status == FixtureStatus.live ||
+      fixture?.status == FixtureStatus.upcoming ||
+      (_fixtureDetail?.isPastWithoutMatchInfo ?? false);
+
   void _handleCachedDetail() {
     final fixtureId = _fixtureId;
     if (fixtureId == null) return;
@@ -170,11 +175,8 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
     if (!mounted || _fixtureId == null || _fixtureDetail == null) return;
     final lifecycle = WidgetsBinding.instance.lifecycleState;
     if (lifecycle != null && lifecycle != AppLifecycleState.resumed) return;
-    if (fixture?.status != FixtureStatus.live &&
-        fixture?.status != FixtureStatus.upcoming) {
-      return;
-    }
-    // 서버의 라이브 수집 주기에 맞춰 점수·상태·시계를 함께 다시 받아요.
+    if (!_shouldRefreshDetail) return;
+    // 빈 종료 경기도 기존 갱신 주기로 다시 확인하고, 상세가 들어오면 멈춰요.
     _refreshTimer = Timer(const Duration(seconds: 15),
         () => _loadFixture(_fixtureId!, refresh: true));
   }
@@ -184,8 +186,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
     _refreshTimer?.cancel();
     if (state == AppLifecycleState.resumed &&
         _fixtureId != null &&
-        (fixture?.status == FixtureStatus.live ||
-            fixture?.status == FixtureStatus.upcoming)) {
+        _shouldRefreshDetail) {
       _loadFixture(_fixtureId!, refresh: true);
     }
   }
