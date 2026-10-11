@@ -236,8 +236,10 @@ class _AnalysisTabState extends State<AnalysisTab> {
       awayLogoAsset: away.imagePath ?? '',
       homeTeamId: home.teamId,
       awayTeamId: away.teamId,
-      homeTeamName: teamNameLabel(context, home.teamId, home.name),
-      awayTeamName: teamNameLabel(context, away.teamId, away.name),
+      homeTeamName:
+          teamNameLabel(context, home.teamId, home.displayName, short: true),
+      awayTeamName:
+          teamNameLabel(context, away.teamId, away.displayName, short: true),
       homeScore: widget.fixture.homeScore?.toString() ?? '#',
       awayScore: widget.fixture.awayScore?.toString() ?? '#',
       status: MatchStatusLabel(
