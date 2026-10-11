@@ -25,7 +25,8 @@ void main() {
     Size(430, 932),
   ];
 
-  testWidgets('dragging over the real team carousel moves the page',
+  testWidgets(
+      'swiping the first team keeps the screen fixed and scroll unlocked',
       (tester) async {
     const size = Size(393, 852);
     tester.view.physicalSize = size;
@@ -84,16 +85,17 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     await drag.moveBy(const Offset(80, 0));
     await tester.pump();
-    expect(tester.getTopLeft(logo).dx - initialX, closeTo(80, 1));
-    expect(canScroll(), isFalse);
+    expect(tester.getTopLeft(logo).dx, closeTo(initialX, 1));
+    expect(canScroll(), isTrue);
     await drag.up();
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(logo).dx, closeTo(initialX, 1));
     expect(canScroll(), isTrue);
+    expect(find.byType(SelectFavoriteTeamsScreen), findsOneWidget);
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
-    testWidgets('iOS carousel swipe returns to the first team at $size',
+    testWidgets('iOS carousel swipes stay on team selection at $size',
         (tester) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
@@ -140,14 +142,22 @@ void main() {
       expect(pageController.page, 0);
       expect(find.byType(SelectFavoriteTeamsScreen), findsOneWidget);
       expect(
-          ModalRoute.of(tester.element(carousel))!.popGestureEnabled, isTrue);
+          ModalRoute.of(tester.element(carousel))!.popGestureEnabled, isFalse);
       await tester.dragFrom(
         Offset(24, size.height / 2),
         Offset(size.width * 0.7, 0),
       );
       await tester.pumpAndSettle();
-      expect(find.byType(SelectFavoriteTeamsScreen), findsNothing);
-      expect(find.text('Welcome'), findsOneWidget);
+      expect(find.byType(SelectFavoriteTeamsScreen), findsOneWidget);
+      expect(find.text('Welcome'), findsNothing);
+
+      await tester.dragFrom(
+        Offset(size.width * 0.25, size.height * 0.75),
+        Offset(size.width * 0.7, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(SelectFavoriteTeamsScreen), findsOneWidget);
+      expect(find.text('Welcome'), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }
@@ -468,6 +478,147 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+    for (final size in [const Size(320, 568), const Size(430, 932)]) {
+      testWidgets(
+          'team carousel mixes single steps and momentum on $platform at $size',
+          (tester) async {
+        await _pumpTeamCarousel(tester, platform: platform, size: size);
+        final carousel = find.byType(PageView);
+        final controller = tester.widget<PageView>(carousel).controller!;
+        final pageWidth = size.width * controller.viewportFraction;
+
+        await tester.timedDrag(
+          carousel,
+          Offset(-pageWidth * 0.7, 0),
+          const Duration(seconds: 1),
+        );
+        await tester.pumpAndSettle();
+        expect(controller.page, 1);
+
+        for (final speed in [500.0, 800.0, 1100.0]) {
+          controller.jumpToPage(0);
+          await tester.pumpAndSettle();
+          await tester.fling(carousel, const Offset(-100, 0), speed);
+          await tester.pumpAndSettle();
+          expect(controller.page, 1,
+              reason: 'Single-team swipe at $speed px/s');
+        }
+
+        controller.jumpToPage(0);
+        await tester.pumpAndSettle();
+        await tester.fling(carousel, const Offset(-100, 0), 1800);
+        await tester.pumpAndSettle();
+        final fastPage = controller.page!;
+        expect(fastPage, greaterThan(1));
+        expect(fastPage, fastPage.roundToDouble());
+
+        controller.jumpToPage(0);
+        await tester.pumpAndSettle();
+        await tester.fling(carousel, const Offset(-100, 0), 2800);
+        await tester.pumpAndSettle();
+        final fasterPage = controller.page!;
+        expect(fasterPage, greaterThan(fastPage));
+        expect(fasterPage, fasterPage.roundToDouble());
+        expect(find.text(mockTeams[fasterPage.toInt()].name), findsOneWidget);
+
+        await tester.fling(carousel, const Offset(100, 0), 1800);
+        await tester.pumpAndSettle();
+        expect(controller.page, lessThan(fasterPage - 1));
+        expect(controller.page, controller.page!.roundToDouble());
+
+        final lastPage = tester
+                .widget<PageView>(carousel)
+                .childrenDelegate
+                .estimatedChildCount! -
+            1;
+        controller.jumpToPage(lastPage - 1);
+        await tester.pumpAndSettle();
+        await tester.fling(carousel, const Offset(-100, 0), 5000);
+        await tester.pumpAndSettle();
+        expect(controller.page, lastPage);
+
+        controller.jumpToPage(1);
+        await tester.pumpAndSettle();
+        await tester.fling(carousel, const Offset(100, 0), 5000);
+        await tester.pumpAndSettle();
+        expect(controller.page, 0);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
+  testWidgets('holding a spinning carousel allows a precise next-team drag',
+      (tester) async {
+    await _pumpTeamCarousel(tester);
+    final carousel = find.byType(PageView);
+    final controller = tester.widget<PageView>(carousel).controller!;
+    await tester.fling(carousel, const Offset(-100, 0), 2800);
+    await tester.pump(const Duration(milliseconds: 120));
+    expect(controller.position.isScrollingNotifier.value, isTrue);
+
+    final touch = await tester.startGesture(tester.getCenter(carousel));
+    final heldPage = controller.page!;
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(controller.page, heldPage);
+    await touch.up();
+    await tester.pumpAndSettle();
+    final stoppedPage = controller.page!;
+    expect(stoppedPage, stoppedPage.roundToDouble());
+    expect(
+      tester
+          .widget<ElevatedButton>(
+            find.byKey(const ValueKey('select-favorites-continue')),
+          )
+          .onPressed,
+      isNull,
+    );
+
+    await tester.timedDrag(
+      carousel,
+      Offset(-tester.getSize(carousel).width * controller.viewportFraction, 0),
+      const Duration(seconds: 1),
+    );
+    await tester.pumpAndSettle();
+    expect(controller.page, stoppedPage + 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('switching league stops momentum at the new league first team',
+      (tester) async {
+    await _pumpTeamCarousel(tester);
+    final carousel = find.byType(PageView);
+    final controller = tester.widget<PageView>(carousel).controller!;
+    await tester.fling(carousel, const Offset(-100, 0), 2800);
+    await tester.pump(const Duration(milliseconds: 120));
+    expect(controller.position.isScrollingNotifier.value, isTrue);
+
+    await tester.tap(find.byIcon(Icons.keyboard_arrow_down));
+    await tester.pump();
+    await tester.tap(find.text('LA LIGA'));
+    await tester.pumpAndSettle();
+    expect(controller.page, 0);
+    expect(find.text('FC Barcelona'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a gentle swipe during momentum stops at the next team',
+      (tester) async {
+    await _pumpTeamCarousel(tester);
+    final carousel = find.byType(PageView);
+    final controller = tester.widget<PageView>(carousel).controller!;
+    await tester.fling(carousel, const Offset(-100, 0), 2800);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(controller.position.isScrollingNotifier.value, isTrue);
+
+    await tester.fling(carousel, const Offset(-100, 0), 800);
+    final releasedPage = controller.page!;
+    await tester.pumpAndSettle();
+    expect(controller.page, releasedPage.ceilToDouble());
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('rank favorites returns to team selection at compact width',
       (tester) async {
     const size = Size(320, 568);
@@ -698,6 +849,22 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+}
+
+Future<void> _pumpTeamCarousel(
+  WidgetTester tester, {
+  TargetPlatform platform = TargetPlatform.iOS,
+  Size size = const Size(375, 667),
+}) async {
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  await tester.pumpWidget(MaterialApp(
+    theme: app_style.darktheme.copyWith(platform: platform),
+    home: const SelectFavoriteTeamsScreen(),
+  ));
+  await tester.pumpAndSettle();
 }
 
 class _RecordingPreferencesRepository implements UserPreferencesRepository {

@@ -2,6 +2,7 @@ import 'package:onetouch/core/app_system_ui.dart';
 import 'dart:math' as math;
 import 'dart:ui' show ImageFilter, lerpDouble;
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
@@ -259,9 +260,8 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
         children: [
           // 1) Animated background
           PopScope<void>(
-            // iOS에서는 첫 팀을 벗어나면 캐러셀 드래그가 페이지 뒤로가기보다 먼저 동작해요.
-            canPop: Theme.of(context).platform != TargetPlatform.iOS ||
-                _focusedIndex == 0,
+            // 첫 팀에서도 오른쪽으로 밀다 이전 화면으로 돌아가지 않도록 막아요.
+            canPop: Theme.of(context).platform != TargetPlatform.iOS,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 350),
               curve: Curves.easeInOut,
@@ -359,7 +359,9 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                               height: carouselHeight,
                               child: PageView.builder(
                                 controller: _pageController,
-                                pageSnapping: true,
+                                // 기본 스냅이 관성 이동을 한 팀으로 제한하지 않도록 직접 처리해요.
+                                pageSnapping: false,
+                                physics: const _TeamCarouselScrollPhysics(),
                                 onPageChanged: (index) {
                                   setState(() {
                                     _focusedIndex = index;
@@ -631,6 +633,51 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _TeamCarouselScrollPhysics extends PageScrollPhysics {
+  const _TeamCarouselScrollPhysics({super.parent});
+
+  static const _momentumMinVelocity = 1500.0;
+
+  @override
+  _TeamCarouselScrollPhysics applyTo(ScrollPhysics? ancestor) =>
+      _TeamCarouselScrollPhysics(parent: buildParent(ancestor));
+
+  // 이전 관성을 더하면 다시 천천히 밀어도 연속 넘김으로 바뀔 수 있어요.
+  @override
+  double carriedMomentum(double existingVelocity) => 0;
+
+  @override
+  Simulation? createBallisticSimulation(
+      ScrollMetrics position, double velocity) {
+    final metrics = position as PageMetrics;
+    final pageExtent = metrics.viewportDimension * metrics.viewportFraction;
+
+    // 팀 간격에 비례하면 작은 화면에서 평범한 스와이프도 여러 팀을 넘겨요.
+    // 화면 크기와 관계없이 빠르게 튕길 때만 관성 이동을 시작해요.
+    // 양 끝에서는 플랫폼의 기본 복귀 동작을 사용해요.
+    if (velocity.abs() < _momentumMinVelocity ||
+        (velocity <= 0 && metrics.pixels <= metrics.minScrollExtent) ||
+        (velocity >= 0 && metrics.pixels >= metrics.maxScrollExtent)) {
+      return super.createBallisticSimulation(position, velocity);
+    }
+
+    final friction = FrictionSimulation(0.135, metrics.pixels, velocity);
+    final projectedPage =
+        metrics.page! + (friction.finalX - metrics.pixels) / pageExtent;
+    final target = (metrics.pixels +
+            (projectedPage.roundToDouble() - metrics.page!) * pageExtent)
+        .clamp(metrics.minScrollExtent, metrics.maxScrollExtent);
+
+    // 손을 뗀 속도로 출발해 감속하고, 도착할 팀의 중앙에 맞춰 멈춰요.
+    return FrictionSimulation.through(
+      metrics.pixels,
+      target,
+      velocity,
+      toleranceFor(metrics).velocity * velocity.sign,
     );
   }
 }
