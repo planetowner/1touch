@@ -41,6 +41,8 @@ void main() {
       () => repository.cachedReports.value.clear(),
       throwsUnsupportedError,
     );
+    await repository.loadForTeam(83, forceRefresh: true);
+    expect(requestCount, 2);
   });
 
   test('supports a trailing base-URI slash and an empty player list', () async {

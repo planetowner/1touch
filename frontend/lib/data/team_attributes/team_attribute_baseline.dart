@@ -8,15 +8,16 @@ Future<
           List<TeamAttributeScores> scores,
           List<TeamAttributeSeasonOption> options
         })>
-    loadTeamAttributeBaseline(
-        TeamAttributeRepository repository, int teamId) async {
+    loadTeamAttributeBaseline(TeamAttributeRepository repository, int teamId,
+        {bool forceRefresh = false}) async {
   final List<TeamAttributeSeasonOption> options;
   try {
-    options = await repository.loadOptionsForTeam(teamId);
+    options =
+        await repository.loadOptionsForTeam(teamId, forceRefresh: forceRefresh);
   } on Object {
     // Preserve the team page's current-season fallback on options failures.
     return (
-      scores: await repository.loadForTeam(teamId),
+      scores: await repository.loadForTeam(teamId, forceRefresh: forceRefresh),
       options: const <TeamAttributeSeasonOption>[],
     );
   }
@@ -28,7 +29,8 @@ Future<
     orElse: () => options.first,
   );
   return (
-    scores: await repository.loadForTeam(teamId, seasonId: baseline.seasonId),
+    scores: await repository.loadForTeam(teamId,
+        seasonId: baseline.seasonId, forceRefresh: forceRefresh),
     options: options,
   );
 }

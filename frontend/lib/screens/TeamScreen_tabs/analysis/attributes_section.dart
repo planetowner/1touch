@@ -19,7 +19,20 @@ class AttributesSection extends StatefulWidget {
   State<AttributesSection> createState() => _AttributesSectionState();
 }
 
-class _AttributesSectionState extends State<AttributesSection> {
+class _AttributesSectionState extends State<AttributesSection>
+    with PageRefreshParticipant<AttributesSection> {
+  @override
+  Future<void> refreshPage() async {
+    final comparisonTeamId = _selectedComparisonTeamId;
+    final comparisonSeasonId = _selectedComparisonSeasonId;
+    await Future.wait([
+      _loadAttributes(forceRefresh: true),
+      if (comparisonTeamId != null && comparisonSeasonId != null)
+        _loadComparison(comparisonTeamId, comparisonSeasonId,
+            forceRefresh: true),
+    ]);
+  }
+
   TeamAttributeScores? _myScores;
   TeamAttributeScores? _comparisonScores;
   List<TeamAttributeSeasonOption> _comparisonOptions = const [];
@@ -54,7 +67,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     }
   }
 
-  Future<void> _loadAttributes() async {
+  Future<void> _loadAttributes({bool forceRefresh = false}) async {
     final requestId = ++_requestId;
     final teamId = _teamId;
 
@@ -68,7 +81,8 @@ class _AttributesSectionState extends State<AttributesSection> {
     }
 
     try {
-      final baseline = await loadTeamAttributeBaseline(_repository, teamId);
+      final baseline = await loadTeamAttributeBaseline(_repository, teamId,
+          forceRefresh: forceRefresh);
       if (!mounted || requestId != _requestId || teamId != _teamId) return;
       setState(() {
         _applyAttributes(baseline.scores, baseline.options);
@@ -76,6 +90,7 @@ class _AttributesSectionState extends State<AttributesSection> {
       });
     } on Object {
       if (!mounted || requestId != _requestId || teamId != _teamId) return;
+      if (forceRefresh) return;
       setState(() {
         _myScores = null;
         _comparisonScores = null;
@@ -89,14 +104,15 @@ class _AttributesSectionState extends State<AttributesSection> {
     }
   }
 
-  Future<void> _loadComparison(int teamId, int seasonId) async {
+  Future<void> _loadComparison(int teamId, int seasonId,
+      {bool forceRefresh = false}) async {
     final requestId = ++_comparisonRequestId;
 
     setState(() {
       _selectedComparisonSeasonId = seasonId;
       _selectedComparisonTeamId = teamId;
-      _comparisonScores = null;
-      _isComparisonLoading = true;
+      if (!forceRefresh) _comparisonScores = null;
+      _isComparisonLoading = _comparisonScores == null;
       _comparisonFailed = false;
     });
 
@@ -104,6 +120,7 @@ class _AttributesSectionState extends State<AttributesSection> {
       final loaded = await _repository.loadForTeam(
         teamId,
         seasonId: seasonId,
+        forceRefresh: forceRefresh,
       );
       if (!mounted ||
           requestId != _comparisonRequestId ||
@@ -133,9 +150,8 @@ class _AttributesSectionState extends State<AttributesSection> {
         return;
       }
       setState(() {
-        _comparisonScores = null;
         _isComparisonLoading = false;
-        _comparisonFailed = true;
+        _comparisonFailed = _comparisonScores == null;
       });
     }
   }
@@ -157,13 +173,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     List<TeamAttributeSeasonOption> options,
   ) {
     _myScores = null;
-    _comparisonScores = null;
     _comparisonOptions = const [];
-    _selectedComparisonSeasonId = null;
-    _selectedComparisonTeamId = null;
-    _isComparisonLoading = false;
-    _comparisonFailed = false;
-    _comparisonRequestId++;
     if (all.isEmpty) return;
 
     final currentSeasonIds = options

@@ -200,6 +200,8 @@ void main() {
       expect(first.single.leagueId, 564);
       expect(repository.cachedOptionsFor(83), same(first));
       expect(requestCount, 1);
+      await repository.loadOptions(83, forceRefresh: true);
+      expect(requestCount, 2);
     });
 
     test('normalizes search and keeps each limit in a separate cache key',
@@ -330,6 +332,12 @@ void main() {
         ),
         same(first),
       );
+      await repository.loadComparison(83,
+          seasonId: 25659,
+          compareTeamId: 3468,
+          compareSeasonId: 23621,
+          forceRefresh: true);
+      expect(requestCount, 2);
     });
 
     test('omits the optional current season', () async {

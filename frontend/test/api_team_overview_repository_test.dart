@@ -35,6 +35,8 @@ void main() {
     expect(repository.cachedForTeam(83), same(first));
     expect(requestCount, 1);
     expect(() => repository.cachedTeams.value.clear(), throwsUnsupportedError);
+    await repository.loadForTeam(83, forceRefresh: true);
+    expect(requestCount, 2);
   });
 
   test('supports a trailing base URI and separate team cache entries',

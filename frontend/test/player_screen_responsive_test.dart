@@ -2028,7 +2028,8 @@ class _OverviewLeadershipRepository implements TeamContractRepository {
   TeamContractRoster? cachedForTeam(int teamId, {int? seasonId}) => null;
 
   @override
-  Future<TeamContractRoster> loadForTeam(int teamId, {int? seasonId}) async {
+  Future<TeamContractRoster> loadForTeam(int teamId,
+      {bool forceRefresh = false, int? seasonId}) async {
     requestedTeamId = teamId;
     requestedSeasonId = seasonId;
     return TeamContractRoster(

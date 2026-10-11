@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_section_tab_bar.dart';
 import 'package:go_router/go_router.dart';
@@ -72,6 +73,8 @@ class _PlayerCardState extends State<PlayerCard>
   double _scrollOffset = 0.0;
   double _overviewTopBlockHeight = _playerDetailTopBlockHeight;
   late PlayerDetailStore _detailStore;
+  final _tabRefreshControllers =
+      List.generate(4, (_) => PageRefreshController());
 
   @override
   void initState() {
@@ -99,6 +102,7 @@ class _PlayerCardState extends State<PlayerCard>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.id != widget.id ||
         oldWidget.detailRepository != widget.detailRepository) {
+      _detailStore.dispose();
       _detailStore = PlayerDetailStore(
           playerId: widget.id,
           repository: widget.detailRepository,
@@ -108,6 +112,7 @@ class _PlayerCardState extends State<PlayerCard>
 
   @override
   void dispose() {
+    _detailStore.dispose();
     _scrollController.dispose();
     _tabController.dispose();
 
@@ -204,87 +209,105 @@ class _PlayerCardState extends State<PlayerCard>
                   ),
                 ),
               ),
-              NestedScrollView(
-                controller: _scrollController,
-                physics: const ClampingScrollPhysics(),
-                headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                  SliverAppBar(
-                    automaticallyImplyLeading: false,
-                    backgroundColor: scrollingAppBarBackground(
-                        context, pageBackground, opacityFactor),
-                    elevation: 0,
-                    floating: true,
-                    snap: true,
-                    pinned: false,
-                    toolbarHeight: _playerDetailAppBarHeight,
-                    flexibleSpace: AnimatedBuilder(
-                      animation: tabAnimation,
-                      builder: (context, child) => Container(
-                        key: const ValueKey('player-detail-gradient'),
-                        decoration: BoxDecoration(
-                          gradient: _playerGradientProgress(_tabController) >= 1
-                              ? appBarGradient
-                              : null,
-                        ),
-                        child: child,
-                      ),
-                      child: PlayerScreenHeader(
-                        player: widget.player,
-                        playerId: widget.id,
-                        horizontalPadding: 24,
-                        foregroundColor: gradientForeground,
-                      ),
-                    ),
-                  ),
-                  SliverPersistentHeader(
-                    floating: true,
-                    pinned: false,
-                    delegate: _TabBarDelegate(
-                      appSectionTabBar(
-                        context,
-                        controller: _tabController,
-                        foreground: gradientForeground,
-                        unselectedForeground: gradientForeground,
-                        labels: [
-                          tr(context, 'Overview'),
-                          tr(context, 'Analysis'),
-                          playerTabLabel(context, 'Matches'),
-                          tr(context, 'Career'),
-                        ],
-                      ),
-                      controller: _tabController,
-                      backgroundGradient: tabBarGradient,
+              PageRefreshIndicator(
+                notificationDepth: 2,
+                onRefresh: () async {
+                  await Future.wait([
+                    _detailStore.refresh(null),
+                    _tabRefreshControllers[_tabController.index].refresh(),
+                  ]);
+                },
+                builder: (context, physics) => NestedScrollView(
+                  controller: _scrollController,
+                  physics: physics,
+                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                    SliverAppBar(
+                      automaticallyImplyLeading: false,
                       backgroundColor: scrollingAppBarBackground(
                           context, pageBackground, opacityFactor),
+                      elevation: 0,
+                      floating: true,
+                      snap: true,
+                      pinned: false,
+                      toolbarHeight: _playerDetailAppBarHeight,
+                      flexibleSpace: AnimatedBuilder(
+                        animation: tabAnimation,
+                        builder: (context, child) => Container(
+                          key: const ValueKey('player-detail-gradient'),
+                          decoration: BoxDecoration(
+                            gradient:
+                                _playerGradientProgress(_tabController) >= 1
+                                    ? appBarGradient
+                                    : null,
+                          ),
+                          child: child,
+                        ),
+                        child: PlayerScreenHeader(
+                          player: widget.player,
+                          playerId: widget.id,
+                          horizontalPadding: 24,
+                          foregroundColor: gradientForeground,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-                body: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    PlayerOverviewTab(
+                    SliverPersistentHeader(
+                      floating: true,
+                      pinned: false,
+                      delegate: _TabBarDelegate(
+                        appSectionTabBar(
+                          context,
+                          controller: _tabController,
+                          foreground: gradientForeground,
+                          unselectedForeground: gradientForeground,
+                          labels: [
+                            tr(context, 'Overview'),
+                            tr(context, 'Analysis'),
+                            playerTabLabel(context, 'Matches'),
+                            tr(context, 'Career'),
+                          ],
+                        ),
+                        controller: _tabController,
+                        backgroundGradient: tabBarGradient,
+                        backgroundColor: scrollingAppBarBackground(
+                            context, pageBackground, opacityFactor),
+                      ),
+                    ),
+                  ],
+                  body: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      PlayerOverviewTab(
+                          player: widget.player,
+                          playerId: widget.id,
+                          contractRepository: widget.contractRepository,
+                          onMatches: _pushMatchesPage,
+                          onTopBlockHeightChanged: (height) {
+                            final nextHeight =
+                                height < _playerDetailTopBlockHeight
+                                    ? _playerDetailTopBlockHeight
+                                    : height;
+                            if (nextHeight == _overviewTopBlockHeight ||
+                                !mounted) {
+                              return;
+                            }
+                            setState(
+                                () => _overviewTopBlockHeight = nextHeight);
+                          }),
+                      AnalysisTab(player: widget.player, playerId: widget.id),
+                      MatchesTab(
                         player: widget.player,
                         playerId: widget.id,
-                        contractRepository: widget.contractRepository,
-                        onMatches: _pushMatchesPage,
-                        onTopBlockHeightChanged: (height) {
-                          final nextHeight =
-                              height < _playerDetailTopBlockHeight
-                                  ? _playerDetailTopBlockHeight
-                                  : height;
-                          if (nextHeight == _overviewTopBlockHeight ||
-                              !mounted) {
-                            return;
-                          }
-                          setState(() => _overviewTopBlockHeight = nextHeight);
-                        }),
-                    AnalysisTab(player: widget.player, playerId: widget.id),
-                    MatchesTab(
-                      player: widget.player,
-                      playerId: widget.id,
-                    ),
-                    CareerTab(player: widget.player, playerId: widget.id),
-                  ],
+                      ),
+                      CareerTab(player: widget.player, playerId: widget.id),
+                    ]
+                        .asMap()
+                        .entries
+                        .map((entry) => PageRefreshScope(
+                              controller: _tabRefreshControllers[entry.key],
+                              child: entry.value,
+                            ))
+                        .toList(),
+                  ),
                 ),
               ),
             ],

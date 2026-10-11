@@ -14,7 +14,15 @@ class CurrentFormSection extends StatefulWidget {
   State<CurrentFormSection> createState() => _CurrentFormSectionState();
 }
 
-class _CurrentFormSectionState extends State<CurrentFormSection> {
+class _CurrentFormSectionState extends State<CurrentFormSection>
+    with PageRefreshParticipant<CurrentFormSection> {
+  @override
+  Future<void> refreshPage() async {
+    final teamId = _teamId;
+    if (teamId == null) return;
+    await _loadOptions(teamId, ++_loadRequestId, forceRefresh: true);
+  }
+
   List<CurrentFormOption> _options = const [];
   CurrentFormOption? _selectedOption;
   CurrentFormComparison? _comparison;
@@ -98,14 +106,16 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     }
   }
 
-  Future<void> _loadOptions(int teamId, int requestId) async {
+  Future<void> _loadOptions(int teamId, int requestId,
+      {bool forceRefresh = false}) async {
     try {
-      final options =
-          await _repository.loadOptions(teamId, seasonName: _currentSeasonName);
+      final options = await _repository.loadOptions(teamId,
+          seasonName: _currentSeasonName, forceRefresh: forceRefresh);
       if (!mounted || requestId != _loadRequestId) return;
 
       final baselineOption = _baselineOption(options, teamId);
-      final bootstrapOption = baselineOption;
+      final bootstrapOption =
+          forceRefresh ? _selectedOption ?? baselineOption : baselineOption;
       final cachedComparison = bootstrapOption == null
           ? null
           : _repository.cachedComparisonFor(
@@ -117,28 +127,28 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       setState(() {
         _options = options;
         _baselineSeasonId = baselineOption?.seasonId;
-        _selectedOption = null;
-        _comparison = cachedComparison;
-        _isLoading = bootstrapOption != null && cachedComparison == null;
+        if (!forceRefresh) _selectedOption = null;
+        _comparison = cachedComparison ?? _comparison;
+        _isLoading = bootstrapOption != null && _comparison == null;
+        _loadFailed = false;
       });
 
       if (baselineOption != null &&
           bootstrapOption != null &&
-          cachedComparison == null) {
-        unawaited(
-          _loadComparison(
-            teamId,
-            baselineOption.seasonId,
-            bootstrapOption,
-            requestId,
-          ),
+          (forceRefresh || cachedComparison == null)) {
+        await _loadComparison(
+          teamId,
+          baselineOption.seasonId,
+          bootstrapOption,
+          requestId,
+          forceRefresh: forceRefresh,
         );
       }
     } on Object {
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
         _isLoading = false;
-        _loadFailed = true;
+        _loadFailed = _comparison == null;
       });
     }
   }
@@ -147,25 +157,28 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     int teamId,
     int baselineSeasonId,
     CurrentFormOption option,
-    int requestId,
-  ) async {
+    int requestId, {
+    bool forceRefresh = false,
+  }) async {
     try {
       final comparison = await _repository.loadComparison(
         teamId,
         seasonId: baselineSeasonId,
         compareTeamId: option.teamId,
         compareSeasonId: option.seasonId,
+        forceRefresh: forceRefresh,
       );
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
         _comparison = comparison;
         _isLoading = false;
+        _loadFailed = false;
       });
     } on Object {
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
         _isLoading = false;
-        _loadFailed = true;
+        _loadFailed = _comparison == null;
       });
     }
   }

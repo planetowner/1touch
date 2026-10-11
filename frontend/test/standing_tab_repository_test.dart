@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 import 'support/app_catalog.dart';
 import 'dart:async';
 
@@ -206,16 +207,18 @@ void main() {
 
   testWidgets('manual refresh bypasses the regular standing cache',
       (tester) async {
+    final refreshController = PageRefreshController();
     final repository = _ControlledStandingRepository(
       (_, seasonId) async => [_standing(seasonId: seasonId!)],
       cached: [_standing(seasonId: 28083)],
     );
 
-    await tester.pumpWidget(_app(repository));
+    await tester
+        .pumpWidget(_app(repository, refreshController: refreshController));
     await tester.pump();
     expect(repository.requests, hasLength(1));
 
-    await tester.pumpWidget(_app(repository, refreshRequestId: 1));
+    await refreshController.refresh();
     await tester.pump();
 
     expect(repository.requests, hasLength(2));
@@ -223,6 +226,7 @@ void main() {
   });
 
   testWidgets('manual refresh bypasses the visible xG cache', (tester) async {
+    final refreshController = PageRefreshController();
     final regularRepository = _successfulStandingRepository();
     final xgRepository = _ControlledXgStandingRepository(
       (_, seasonId) async => [_xgStanding(seasonId: seasonId!)],
@@ -232,17 +236,14 @@ void main() {
     await tester.pumpWidget(_app(
       regularRepository,
       xgRepository: xgRepository,
+      refreshController: refreshController,
     ));
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
     await tester.pump();
     expect(xgRepository.requests, hasLength(1));
 
-    await tester.pumpWidget(_app(
-      regularRepository,
-      xgRepository: xgRepository,
-      refreshRequestId: 1,
-    ));
+    await refreshController.refresh();
     await tester.pump();
 
     expect(xgRepository.requests, hasLength(2));
@@ -971,7 +972,7 @@ Widget _app(
   XgStandingRepository? xgRepository,
   int? requestedCompetitionId,
   int selectionRequestId = 0,
-  int refreshRequestId = 0,
+  PageRefreshController? refreshController,
   Locale? locale,
 }) {
   return MaterialApp(
@@ -980,19 +981,20 @@ Widget _app(
     localizationsDelegates: appLocalizationDelegates,
     theme: app_style.whitetheme,
     home: Scaffold(
-      body: StandingTab(
-        team: const TeamOverview(
-          id: 9,
-          name: 'Team 9',
-          shortName: 'T9',
-          imagePath: '',
-        ),
-        regularStandingRepository: repository,
-        xgStandingRepository: xgRepository,
-        requestedCompetitionId: requestedCompetitionId,
-        selectionRequestId: selectionRequestId,
-        refreshRequestId: refreshRequestId,
-      ),
+      body: PageRefreshScope(
+          controller: refreshController ?? PageRefreshController(),
+          child: StandingTab(
+            team: const TeamOverview(
+              id: 9,
+              name: 'Team 9',
+              shortName: 'T9',
+              imagePath: '',
+            ),
+            regularStandingRepository: repository,
+            xgStandingRepository: xgRepository,
+            requestedCompetitionId: requestedCompetitionId,
+            selectionRequestId: selectionRequestId,
+          )),
     ),
   );
 }

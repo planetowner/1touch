@@ -42,9 +42,11 @@ class ApiTeamContractRepository implements TeamContractRepository {
   @override
   Future<TeamContractRoster> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
   }) async {
     final query = TeamContractQuery(teamId: teamId, seasonId: seasonId);
+    if (forceRefresh) return _fetch(query);
     final cached = _cachedRosters.value[query];
     if (cached != null) {
       _refreshIfStale(query);

@@ -40,6 +40,8 @@ void main() {
       () => repository.cachedLineups.value.clear(),
       throwsUnsupportedError,
     );
+    await repository.loadForTeam(83, forceRefresh: true);
+    expect(requestCount, 2);
   });
 
   test('sends the requested season and normalized formation', () async {

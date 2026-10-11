@@ -6,5 +6,6 @@ abstract interface class TransferRepository {
 
   TeamTransferWindow? cachedForTeam(int teamId);
 
-  Future<TeamTransferWindow> loadForTeam(int teamId);
+  Future<TeamTransferWindow> loadForTeam(int teamId,
+      {bool forceRefresh = false});
 }

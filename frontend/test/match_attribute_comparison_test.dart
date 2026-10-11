@@ -119,8 +119,8 @@ class _Repository implements TeamAttributeRepository {
   Completer<List<TeamAttributeScores>>? pending;
 
   @override
-  Future<List<TeamAttributeSeasonOption>> loadOptionsForTeam(
-          int teamId) async =>
+  Future<List<TeamAttributeSeasonOption>> loadOptionsForTeam(int teamId,
+          {bool forceRefresh = false}) async =>
       missing
           ? []
           : const [
@@ -140,7 +140,7 @@ class _Repository implements TeamAttributeRepository {
 
   @override
   Future<List<TeamAttributeScores>> loadForTeam(int teamId,
-      {int? seasonId}) async {
+      {bool forceRefresh = false, int? seasonId}) async {
     requests.add((teamId, seasonId));
     if (fail) throw StateError('Temporary failure');
     if (teamId == 83 && pending != null) return pending!.future;

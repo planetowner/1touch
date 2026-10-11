@@ -96,6 +96,8 @@ void main() {
       () => repository.cachedSnapshots.value.clear(),
       throwsUnsupportedError,
     );
+    await repository.loadForTeam(83, forceRefresh: true);
+    expect(requestCount, 2);
   });
 
   test('requests and verifies an explicit season', () async {

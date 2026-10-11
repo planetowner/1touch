@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 // ignore_for_file: file_names
 
 import 'dart:async';
@@ -185,7 +186,6 @@ class PlayerOverviewTab extends StatelessWidget {
         final foreground = Theme.of(context).colorScheme.onSurface;
         return SingleChildScrollView(
             key: const ValueKey('player-overview-scroll'),
-            physics: const ClampingScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -355,7 +355,23 @@ class _PlayerLeadershipBadge extends StatefulWidget {
   State<_PlayerLeadershipBadge> createState() => _PlayerLeadershipBadgeState();
 }
 
-class _PlayerLeadershipBadgeState extends State<_PlayerLeadershipBadge> {
+class _PlayerLeadershipBadgeState extends State<_PlayerLeadershipBadge>
+    with PageRefreshParticipant<_PlayerLeadershipBadge> {
+  @override
+  Future<void> refreshPage() async {
+    try {
+      final roster =
+          await (widget.repository ?? teamContractRepository).loadForTeam(
+        widget.teamId,
+        seasonId: footballCatalog.resolve(widget.teamId)?.seasonId,
+        forceRefresh: true,
+      );
+      if (mounted) setState(() => _roster = Future.value(roster));
+    } on Object {
+      // 갱신에 실패하면 기존 주장 표시를 유지해요.
+    }
+  }
+
   late Future<TeamContractRoster> _roster;
 
   @override

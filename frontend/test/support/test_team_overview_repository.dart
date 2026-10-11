@@ -26,7 +26,8 @@ class TestTeamOverviewRepository implements TeamOverviewRepository {
   TeamOverview? cachedForTeam(int teamId) => _cached.value[teamId];
 
   @override
-  Future<TeamOverview> loadForTeam(int teamId) async {
+  Future<TeamOverview> loadForTeam(int teamId,
+      {bool forceRefresh = false}) async {
     requestedTeamIds.add(teamId);
     final cached = cachedForTeam(teamId);
     if (cached != null) return cached;

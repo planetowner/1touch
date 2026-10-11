@@ -6,5 +6,5 @@ abstract interface class TeamInjuryRepository {
 
   TeamInjuryReport? cachedForTeam(int teamId);
 
-  Future<TeamInjuryReport> loadForTeam(int teamId);
+  Future<TeamInjuryReport> loadForTeam(int teamId, {bool forceRefresh = false});
 }

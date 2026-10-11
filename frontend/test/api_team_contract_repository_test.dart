@@ -41,6 +41,8 @@ void main() {
       () => repository.cachedRosters.value.clear(),
       throwsUnsupportedError,
     );
+    await repository.loadForTeam(83, forceRefresh: true);
+    expect(requestCount, 2);
   });
 
   test('restores a fresh roster after the repository is recreated', () async {

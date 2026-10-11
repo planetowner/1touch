@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -248,7 +249,20 @@ class SquadTab extends StatefulWidget {
   State<SquadTab> createState() => _SquadTabState();
 }
 
-class _SquadTabState extends State<SquadTab> {
+class _SquadTabState extends State<SquadTab>
+    with PageRefreshParticipant<SquadTab> {
+  @override
+  Future<void> refreshPage() async {
+    final team = widget.team;
+    if (team == null) return;
+    await _loadRoster(
+        requestId: ++_loadRequestId,
+        teamId: team.id,
+        teamName: team.name,
+        seasonId: _selectedSeasonId,
+        forceRefresh: true);
+  }
+
   List<SquadPlayer> _players = [];
   bool _isLoading = true;
   SortOption _sortOption = SortOption.position;
@@ -401,11 +415,13 @@ class _SquadTabState extends State<SquadTab> {
     required int teamId,
     required String teamName,
     required int? seasonId,
+    bool forceRefresh = false,
   }) async {
     try {
       final roster = await _repository.loadForTeam(
         teamId,
         seasonId: seasonId,
+        forceRefresh: forceRefresh,
       );
       if (!mounted || requestId != _loadRequestId) return;
 
@@ -451,12 +467,12 @@ class _SquadTabState extends State<SquadTab> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Center(
+      return PageRefreshPlaceholder(
         child: const FootballLoadingIndicator(),
       );
     }
     if (_loadError != null && _players.isEmpty) {
-      return Center(
+      return PageRefreshPlaceholder(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -477,7 +493,7 @@ class _SquadTabState extends State<SquadTab> {
       );
     }
     if (_players.isEmpty) {
-      return Center(
+      return PageRefreshPlaceholder(
         child: Text(
           tr(context, 'No players found'),
           key: const ValueKey('squad-empty'),

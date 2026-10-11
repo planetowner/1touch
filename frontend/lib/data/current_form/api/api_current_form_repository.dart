@@ -69,6 +69,7 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
   @override
   Future<List<CurrentFormOption>> loadOptions(
     int teamId, {
+    bool forceRefresh = false,
     String search = '',
     String? seasonName,
     int limit = 200,
@@ -83,6 +84,7 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
       seasonName: seasonName,
       limit: limit,
     );
+    if (forceRefresh) return _fetchOptions(query);
     final cached = _cachedOptions.value[query];
     if (cached != null) {
       _refreshOptionsIfStale(query);
@@ -236,6 +238,7 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
   @override
   Future<CurrentFormComparison?> loadComparison(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
     required int compareTeamId,
     required int compareSeasonId,
@@ -246,6 +249,7 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
       compareTeamId: compareTeamId,
       compareSeasonId: compareSeasonId,
     );
+    if (forceRefresh) return _fetchComparison(query);
     final cached = _cachedComparisons.value[query];
     if (cached != null) {
       _refreshComparisonIfStale(query);

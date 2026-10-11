@@ -526,6 +526,7 @@ class _StubProbabilityRepository implements TeamProbabilityRepository {
   @override
   Future<TeamProbabilitySnapshot> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
   }) async {
     requestedTeamIds.add(teamId);

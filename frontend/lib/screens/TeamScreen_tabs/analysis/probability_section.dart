@@ -14,7 +14,15 @@ class ProbabilitySection extends StatefulWidget {
   State<ProbabilitySection> createState() => _ProbabilitySectionState();
 }
 
-class _ProbabilitySectionState extends State<ProbabilitySection> {
+class _ProbabilitySectionState extends State<ProbabilitySection>
+    with PageRefreshParticipant<ProbabilitySection> {
+  @override
+  Future<void> refreshPage() async {
+    final teamId = widget.teamId;
+    if (teamId == null) return;
+    await _load(teamId, ++_requestId, _repository, forceRefresh: true);
+  }
+
   TeamProbabilitySnapshot? _snapshot;
   bool _isLoading = false;
   bool _isUnavailable = false;
@@ -75,10 +83,12 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
   Future<void> _load(
     int teamId,
     int requestId,
-    TeamProbabilityRepository repository,
-  ) async {
+    TeamProbabilityRepository repository, {
+    bool forceRefresh = false,
+  }) async {
     try {
-      final snapshot = await repository.loadForTeam(teamId);
+      final snapshot =
+          await repository.loadForTeam(teamId, forceRefresh: forceRefresh);
       if (!mounted || requestId != _requestId || teamId != widget.teamId) {
         return;
       }
@@ -104,7 +114,7 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
       }
       setState(() {
         _isLoading = false;
-        _loadError = error;
+        if (_snapshot == null) _loadError = error;
       });
     }
   }

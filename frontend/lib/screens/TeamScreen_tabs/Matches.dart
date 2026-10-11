@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 // ignore_for_file: file_names
 
 import 'dart:async';
@@ -30,7 +31,6 @@ class MatchesTab extends StatefulWidget {
   final VoidCallback? onTopOverscroll;
   final ValueChanged<bool>? onHeaderVisibilityChanged;
   final bool isActive;
-  final int refreshRequestId;
 
   const MatchesTab({
     super.key,
@@ -40,14 +40,19 @@ class MatchesTab extends StatefulWidget {
     this.onTopOverscroll,
     this.onHeaderVisibilityChanged,
     this.isActive = true,
-    this.refreshRequestId = 0,
   });
 
   @override
   State<MatchesTab> createState() => _MatchesTabState();
 }
 
-class _MatchesTabState extends State<MatchesTab> {
+class _MatchesTabState extends State<MatchesTab>
+    with PageRefreshParticipant<MatchesTab> {
+  @override
+  Future<void> refreshPage() async {
+    await _loadFixtures(forceRefresh: true);
+  }
+
   // 공유 미리보기에서 디자이너가 확정한 높이와 알파 값을 사용해요.
   static const _topFadeHeight = 40.0;
   static const _directionThreshold = 28.0;
@@ -209,8 +214,6 @@ class _MatchesTabState extends State<MatchesTab> {
         _applyCachedMatches();
       });
       unawaited(_loadFixtures());
-    } else if (widget.refreshRequestId != oldWidget.refreshRequestId) {
-      unawaited(_loadFixtures(forceRefresh: true));
     }
     if (!identical(
       widget.realtimeLiveMatches,
@@ -482,7 +485,7 @@ class _MatchesTabState extends State<MatchesTab> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(
+      return const PageRefreshPlaceholder(
         child: FootballLoadingIndicator(
           key: ValueKey('matches-loading'),
         ),
@@ -490,7 +493,7 @@ class _MatchesTabState extends State<MatchesTab> {
     }
 
     if (_loadError != null) {
-      return Center(
+      return PageRefreshPlaceholder(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -512,7 +515,7 @@ class _MatchesTabState extends State<MatchesTab> {
 
     final sections = _sections;
     if (sections.isEmpty) {
-      return Center(
+      return PageRefreshPlaceholder(
         child: Text(
           tr(context, 'No matches available'),
           key: const ValueKey('matches-empty'),

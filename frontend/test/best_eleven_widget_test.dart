@@ -70,7 +70,11 @@ void main() {
             teamId: teamId,
             variant: TeamBestElevenVariant.overview,
             repository: repository,
-            onUnavailable: onUnavailable,
+            onAvailabilityChanged: onUnavailable == null
+                ? null
+                : (available) {
+                    if (!available) onUnavailable();
+                  },
           ),
         ),
       ),
@@ -561,6 +565,7 @@ class _TestBestElevenRepository implements BestElevenRepository {
   @override
   Future<TeamBestEleven?> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
     String? formation,
   }) async {

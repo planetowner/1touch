@@ -41,7 +41,6 @@ class _MatchesTabState extends State<MatchesTab> {
       seasonId: _seasonId,
       builder: (context, detail) => SingleChildScrollView(
           key: const ValueKey('player-matches-scroll'),
-          physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
           child: Column(children: [
             Align(

@@ -27,6 +27,7 @@ abstract interface class TeamProbabilityRepository {
 
   Future<TeamProbabilitySnapshot> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
   });
 }

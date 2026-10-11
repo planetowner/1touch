@@ -32,7 +32,9 @@ class ApiTeamInjuryRepository implements TeamInjuryRepository {
   TeamInjuryReport? cachedForTeam(int teamId) => _cachedReports.value[teamId];
 
   @override
-  Future<TeamInjuryReport> loadForTeam(int teamId) {
+  Future<TeamInjuryReport> loadForTeam(int teamId,
+      {bool forceRefresh = false}) {
+    if (forceRefresh) return _fetch(teamId);
     final cached = cachedForTeam(teamId);
     if (cached != null) {
       _refreshIfStale(teamId);

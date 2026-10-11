@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -84,7 +85,8 @@ class _TeamScreenState extends State<TeamScreen>
   Timer? _liveMatchTimer;
   int _liveMatchRequestId = 0;
   bool? _wasTickerEnabled;
-  final List<int> _tabRefreshEpochs = List<int>.filled(5, 0);
+  final _tabRefreshControllers =
+      List.generate(5, (_) => PageRefreshController());
 
   TeamOverviewRepository get _teamOverviewRepository =>
       widget.teamOverviewRepository ??
@@ -276,9 +278,9 @@ class _TeamScreenState extends State<TeamScreen>
   Future<void> _refreshTeam() async {
     final requestId = ++_loadRequestId;
     final selectedTab = _selectedTabIndex;
-    setState(() => _tabRefreshEpochs[selectedTab] += 1);
     await Future.wait<void>([
-      _loadOverview(widget.teamId, requestId),
+      _loadOverview(widget.teamId, requestId, forceRefresh: true),
+      _tabRefreshControllers[selectedTab].refresh(),
       _refreshLiveMatches(),
     ]);
   }
@@ -335,9 +337,11 @@ class _TeamScreenState extends State<TeamScreen>
     unawaited(_loadOverview(widget.teamId, requestId));
   }
 
-  Future<void> _loadOverview(int teamId, int requestId) async {
+  Future<void> _loadOverview(int teamId, int requestId,
+      {bool forceRefresh = false}) async {
     try {
-      final overview = await _teamOverviewRepository.loadForTeam(teamId);
+      final overview = await _teamOverviewRepository.loadForTeam(teamId,
+          forceRefresh: forceRefresh);
       if (!mounted || requestId != _loadRequestId || teamId != widget.teamId) {
         return;
       }
@@ -417,18 +421,21 @@ class _TeamScreenState extends State<TeamScreen>
       return Scaffold(
         key: const ValueKey('team-load-error'),
         backgroundColor: pageBackground,
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(tr(context, 'Unable to load team'), style: Body1.style),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                key: const ValueKey('team-retry'),
-                onPressed: _loadError == null ? null : _retryOverviewLoad,
-                child: Text(trUpper(context, 'Retry')),
-              ),
-            ],
+        body: PageRefreshIndicator(
+          onRefresh: _refreshTeam,
+          builder: (context, physics) => PageRefreshPlaceholder(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(tr(context, 'Unable to load team'), style: Body1.style),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  key: const ValueKey('team-retry'),
+                  onPressed: _loadError == null ? null : _retryOverviewLoad,
+                  child: Text(trUpper(context, 'Retry')),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -467,14 +474,14 @@ class _TeamScreenState extends State<TeamScreen>
         bottom: false,
         child: Stack(
           children: [
-            RefreshIndicator(
+            PageRefreshIndicator(
               onRefresh: _refreshTeam,
-              notificationPredicate: (notification) => notification.depth <= 1,
-              child: NestedScrollView(
+              notificationDepth: 2,
+              builder: (context, physics) => NestedScrollView(
                 key: _nestedScrollKey,
                 controller: _scrollController,
                 floatHeaderSlivers: false,
-                physics: const AlwaysScrollableScrollPhysics(),
+                physics: physics,
                 headerSliverBuilder: (context, innerBoxIsScrolled) => [
                   SliverAppBar(
                     automaticallyImplyLeading: false,
@@ -624,9 +631,7 @@ class _TeamScreenState extends State<TeamScreen>
                       : null,
                   children: [
                     OverviewTab(
-                      key: ValueKey(
-                        'team-overview-refresh-${_tabRefreshEpochs[0]}',
-                      ),
+                      key: const ValueKey('team-overview'),
                       team: team,
                       liveMatch: _liveMatches?.firstOrNull,
                       liveMatchClock: _liveMatchClock,
@@ -641,7 +646,6 @@ class _TeamScreenState extends State<TeamScreen>
                       onTopOverscroll: _revealTeamAppBar,
                       onHeaderVisibilityChanged: _setMatchHeaderVisible,
                       isActive: _selectedTabIndex == 1,
-                      refreshRequestId: _tabRefreshEpochs[1],
                     ),
                     StandingTab(
                       key: const ValueKey('team-standing'),
@@ -650,28 +654,30 @@ class _TeamScreenState extends State<TeamScreen>
                       xgStandingRepository: widget.xgStandingRepository,
                       requestedCompetitionId: _requestedStandingCompetitionId,
                       selectionRequestId: 0,
-                      refreshRequestId: _tabRefreshEpochs[2],
                       onBracketInteractionChanged: (isInteracting) {
                         if (_isBracketInteracting == isInteracting) return;
                         setState(() => _isBracketInteracting = isInteracting);
                       },
                     ),
                     SquadTab(
-                      key: ValueKey(
-                        'team-squad-refresh-${_tabRefreshEpochs[3]}',
-                      ),
+                      key: const ValueKey('team-squad'),
                       team: team,
                     ),
                     AnalysisTab(
-                      key: ValueKey(
-                        'team-analysis-refresh-${_tabRefreshEpochs[4]}',
-                      ),
+                      key: const ValueKey('team-analysis'),
                       team: team,
                       repository: widget.teamAttributeRepository,
                       probabilityRepository: widget.teamProbabilityRepository,
                       currentFormRepository: widget.currentFormRepository,
                     ),
-                  ],
+                  ]
+                      .asMap()
+                      .entries
+                      .map((entry) => PageRefreshScope(
+                            controller: _tabRefreshControllers[entry.key],
+                            child: entry.value,
+                          ))
+                      .toList(),
                 ),
               ),
             ),

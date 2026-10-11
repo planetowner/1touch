@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -27,6 +28,7 @@ class PlayerDetailStore extends ChangeNotifier {
   final _visible = <int?, PlayerDetail>{};
   final _refreshing = <int?>{};
   bool _disposed = false;
+  final _refreshRequests = <int?, Future<void>>{};
 
   @override
   void dispose() {
@@ -91,6 +93,22 @@ class PlayerDetailStore extends ChangeNotifier {
     }).whenComplete(() => _refreshing.remove(seasonId)));
   }
 
+  Future<void> refresh(int? seasonId) {
+    if (playerId == null) return Future.value();
+    return _refreshRequests.putIfAbsent(seasonId, () async {
+      try {
+        final detail = await (repository ?? playerDetailRepository)
+            .load(playerId!, seasonId: seasonId);
+        _requests[seasonId] = Future.value(detail);
+        _show(seasonId, detail);
+      } on Object {
+        // 갱신에 실패해도 마지막으로 확인한 정보를 유지해요.
+      } finally {
+        _refreshRequests.remove(seasonId);
+      }
+    });
+  }
+
   void invalidate(int? seasonId) {
     _requests.remove(seasonId);
     _visible.remove(seasonId);
@@ -119,12 +137,22 @@ class PlayerDetailView extends StatefulWidget {
   State<PlayerDetailView> createState() => _PlayerDetailViewState();
 }
 
-class _PlayerDetailViewState extends State<PlayerDetailView> {
+class _PlayerDetailViewState extends State<PlayerDetailView>
+    with PageRefreshParticipant<PlayerDetailView> {
+  @override
+  Future<void> refreshPage() async {
+    final shared = PlayerDetailScope.maybeOf(context);
+    final store = shared?.playerId == widget.playerId ? shared : _local;
+    await store?.refresh(widget.seasonId);
+    if (mounted) setState(() {});
+  }
+
   PlayerDetailStore? _local;
   @override
   Widget build(BuildContext context) {
     if (widget.playerId == null) {
-      return Center(child: Text(tr(context, 'Player data unavailable')));
+      return PageRefreshPlaceholder(
+          child: Text(tr(context, 'Player data unavailable')));
     }
     final shared = PlayerDetailScope.maybeOf(context);
     if (_local?.playerId != widget.playerId) {
@@ -139,13 +167,13 @@ class _PlayerDetailViewState extends State<PlayerDetailView> {
             ? snapshot.data ?? store.snapshot(widget.seasonId)
             : store.snapshot(widget.seasonId);
         if (detail == null && !snapshot.hasError) {
-          return const Center(
+          return const PageRefreshPlaceholder(
               child: Padding(
                   padding: EdgeInsets.all(24),
                   child: FootballLoadingIndicator()));
         }
         if (detail == null && snapshot.hasError) {
-          return Center(
+          return PageRefreshPlaceholder(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
             Text(tr(context, 'Could not load player data')),
             TextButton(

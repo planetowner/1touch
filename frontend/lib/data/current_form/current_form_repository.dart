@@ -25,6 +25,7 @@ abstract interface class CurrentFormRepository {
   /// 시즌 이름을 지정하면 리그별 시즌 ID와 관계없이 해당 시즌만 조회해요.
   Future<List<CurrentFormOption>> loadOptions(
     int teamId, {
+    bool forceRefresh = false,
     String search = '',
     String? seasonName,
     int limit = 200,
@@ -38,6 +39,7 @@ abstract interface class CurrentFormRepository {
 
   Future<CurrentFormComparison?> loadComparison(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
     required int compareTeamId,
     required int compareSeasonId,

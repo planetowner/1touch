@@ -23,9 +23,10 @@ class ApiTransferRepository implements TransferRepository {
   TeamTransferWindow? cachedForTeam(int teamId) => _cachedWindows.value[teamId];
 
   @override
-  Future<TeamTransferWindow> loadForTeam(int teamId) {
+  Future<TeamTransferWindow> loadForTeam(int teamId,
+      {bool forceRefresh = false}) {
     final cached = cachedForTeam(teamId);
-    if (cached != null) return Future.value(cached);
+    if (!forceRefresh && cached != null) return Future.value(cached);
 
     // 홈 선로딩 도중 팀 화면을 열어도 명단을 중복 요청하지 않아요.
     return _inFlightLoads[teamId] ??= _fetchAndCache(teamId).whenComplete(() {

@@ -1386,6 +1386,7 @@ class _TestCurrentFormRepository implements CurrentFormRepository {
   @override
   Future<List<CurrentFormOption>> loadOptions(
     int teamId, {
+    bool forceRefresh = false,
     String search = '',
     String? seasonName,
     int limit = 200,
@@ -1418,6 +1419,7 @@ class _TestCurrentFormRepository implements CurrentFormRepository {
   @override
   Future<CurrentFormComparison?> loadComparison(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
     required int compareTeamId,
     required int compareSeasonId,

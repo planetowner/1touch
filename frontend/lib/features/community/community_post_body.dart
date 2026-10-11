@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -38,14 +39,14 @@ class CommunityPostBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(
+      return const PageRefreshPlaceholder(
         child: FootballLoadingIndicator(
           key: ValueKey('community-posts-loading'),
         ),
       );
     }
     if (loadError != null) {
-      return Center(
+      return PageRefreshPlaceholder(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(

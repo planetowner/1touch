@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -27,19 +28,28 @@ class TeamBestElevenSection extends StatefulWidget {
     required this.teamId,
     required this.variant,
     this.repository,
-    this.onUnavailable,
+    this.onAvailabilityChanged,
   });
 
   final int? teamId;
   final TeamBestElevenVariant variant;
   final BestElevenRepository? repository;
-  final VoidCallback? onUnavailable;
+  final ValueChanged<bool>? onAvailabilityChanged;
 
   @override
   State<TeamBestElevenSection> createState() => _TeamBestElevenSectionState();
 }
 
-class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
+class _TeamBestElevenSectionState extends State<TeamBestElevenSection>
+    with PageRefreshParticipant<TeamBestElevenSection> {
+  @override
+  Future<void> refreshPage() async {
+    final teamId = widget.teamId;
+    if (teamId == null) return;
+    await _loadLineup(teamId, ++_loadRequestId,
+        formation: _selectedFormation, forceRefresh: true);
+  }
+
   TeamBestEleven? _lineup;
   List<BestElevenFormationOption> _formations = const [];
   String? _selectedFormation;
@@ -88,14 +98,17 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
     int teamId,
     int requestId, {
     String? formation,
+    bool forceRefresh = false,
   }) async {
     try {
       final lineup = await _repository.loadForTeam(
         teamId,
         formation: formation,
+        forceRefresh: forceRefresh,
       );
       if (!mounted || requestId != _loadRequestId) return;
-      final isUnavailable = lineup == null && widget.onUnavailable != null;
+      final isUnavailable =
+          lineup == null && widget.onAvailabilityChanged != null;
       setState(() {
         _lineup = lineup;
         if (lineup != null) {
@@ -103,14 +116,15 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
           _selectedFormation = lineup.formation;
         }
         _isLoading = false;
+        _loadFailed = false;
         _isUnavailable = isUnavailable;
       });
-      if (isUnavailable) widget.onUnavailable?.call();
+      widget.onAvailabilityChanged?.call(!isUnavailable);
     } on Object {
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
         _isLoading = false;
-        _loadFailed = true;
+        _loadFailed = _lineup == null;
       });
     }
   }

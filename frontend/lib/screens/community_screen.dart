@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 import 'package:onetouch/features/community/community_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -515,13 +516,13 @@ class _CommunityState extends State<Community>
             : null,
         body: Stack(
           children: [
-            RefreshIndicator(
+            PageRefreshIndicator(
               onRefresh: _refreshCommunity,
-              notificationPredicate: (notification) => notification.depth <= 1,
-              child: NestedScrollView(
+              notificationDepth: 2,
+              builder: (context, physics) => NestedScrollView(
                 key: _nestedScrollKey,
                 controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
+                physics: physics,
                 headerSliverBuilder: (context, innerBoxIsScrolled) => [
                   ListenableBuilder(
                     listenable: notificationUnreadController,

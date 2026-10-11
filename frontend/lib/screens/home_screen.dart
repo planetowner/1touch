@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -483,11 +484,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          RefreshIndicator(
+          PageRefreshIndicator(
             onRefresh: _refreshHome,
-            child: CustomScrollView(
+            builder: (context, physics) => CustomScrollView(
               controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
+              physics: physics,
               slivers: [
                 AppBrandSliverHeader(
                   pageBackground: pageBackground,

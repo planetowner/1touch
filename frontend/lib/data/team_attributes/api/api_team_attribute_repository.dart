@@ -30,7 +30,9 @@ class ApiTeamAttributeRepository implements TeamAttributeRepository {
   final Map<(int, int?), DateTime> _scoresSavedAt = {};
 
   @override
-  Future<List<TeamAttributeSeasonOption>> loadOptionsForTeam(int teamId) async {
+  Future<List<TeamAttributeSeasonOption>> loadOptionsForTeam(int teamId,
+      {bool forceRefresh = false}) async {
+    if (forceRefresh) return _fetchOptions(teamId);
     final memory = _options[teamId];
     if (memory != null) {
       _refreshOptionsIfStale(teamId);
@@ -105,9 +107,11 @@ class ApiTeamAttributeRepository implements TeamAttributeRepository {
   @override
   Future<List<TeamAttributeScores>> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
   }) async {
     final query = (teamId, seasonId);
+    if (forceRefresh) return _fetchScores(query);
     final memory = _scores[query];
     if (memory != null) {
       _refreshScoresIfStale(query);

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:onetouch/core/page_refresh.dart';
 import 'support/app_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +34,56 @@ void main() {
     await (FontLoader('Archivo')
           ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
         .load();
+  });
+  testWidgets(
+      'pull refresh preserves squad season and wage sort through success and failure',
+      (tester) async {
+    final repository = _FakeTeamContractRepository();
+    final controller = PageRefreshController();
+    await tester.pumpWidget(MaterialApp(
+      theme: whitetheme,
+      home: Scaffold(
+          body: PageRefreshIndicator(
+        onRefresh: controller.refresh,
+        builder: (context, physics) => PageRefreshScope(
+            controller: controller,
+            child: SquadTab(team: _barcelona, contractRepository: repository)),
+      )),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('squad-season-trigger')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('squad-season-option-23621')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('squad-sort-trigger')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('squad-sort-option-wage')));
+    await tester.pumpAndSettle();
+
+    repository.refreshSignal = Completer<void>();
+    await tester.dragFrom(const Offset(200, 300), const Offset(0, 400));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Kane'), findsOneWidget);
+    expect(find.text('24/25'), findsOneWidget);
+    expect(find.text('WAGE'), findsOneWidget);
+    expect(find.byType(RefreshProgressIndicator), findsOneWidget);
+    repository.playerName = 'Updated player';
+    repository.refreshSignal!.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('Updated player'), findsOneWidget);
+    expect(find.text('24/25'), findsOneWidget);
+    expect(find.text('WAGE'), findsOneWidget);
+    expect(repository.requestedSeasonIds.last, 23621);
+    expect(repository.forcedLoads, 1);
+    repository.failuresRemaining = 1;
+    await tester.dragFrom(const Offset(200, 300), const Offset(0, 400));
+    await tester.pumpAndSettle();
+    expect(find.text('Updated player'), findsOneWidget);
+    expect(find.text('24/25'), findsOneWidget);
+    expect(find.text('WAGE'), findsOneWidget);
+    expect(repository.forcedLoads, 2);
+    expect(tester.takeException(), isNull);
   });
   test('exposes the nullable wage sort option', () {
     expect(SortOption.wage.label, 'Wage');
@@ -456,7 +509,9 @@ class _FakeTeamContractRepository implements TeamContractRepository {
   final bool returnEmpty;
   final bool includeLeadershipPlayers;
   final bool includeMultiplePositions;
-  final String playerName;
+  String playerName;
+  Completer<void>? refreshSignal;
+  int forcedLoads = 0;
 
   @override
   ValueListenable<Map<TeamContractQuery, TeamContractRoster>>
@@ -468,8 +523,13 @@ class _FakeTeamContractRepository implements TeamContractRepository {
   }
 
   @override
-  Future<TeamContractRoster> loadForTeam(int teamId, {int? seasonId}) async {
+  Future<TeamContractRoster> loadForTeam(int teamId,
+      {bool forceRefresh = false, int? seasonId}) async {
     requestedSeasonIds.add(seasonId);
+    if (forceRefresh) {
+      forcedLoads++;
+      await refreshSignal?.future;
+    }
     if (failuresRemaining > 0) {
       failuresRemaining--;
       throw StateError('Test roster failure');

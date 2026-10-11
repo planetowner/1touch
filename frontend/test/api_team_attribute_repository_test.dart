@@ -8,6 +8,43 @@ import 'package:onetouch/data/team_attributes/api/api_team_attribute_repository.
 import 'package:onetouch/data/local/local_cache_store.dart';
 
 void main() {
+  test('manual refresh bypasses both attribute caches for the selected season',
+      () async {
+    final requests = <Uri>[];
+    final repository = ApiTeamAttributeRepository(
+        api: ApiClient(
+      baseUri: Uri.parse('https://api.test/v1/'),
+      requestHeaders: () => const {},
+      client: MockClient((request) async {
+        requests.add(request.url);
+        return http.Response(
+            jsonEncode(request.url.path.endsWith('/options')
+                ? {
+                    'team_id': 83,
+                    'items': [
+                      {
+                        'competition_id': 564,
+                        'season_id': 27965,
+                        'season_name': '2026/2027',
+                        'is_current': true,
+                      }
+                    ]
+                  }
+                : _attributeJson()),
+            200);
+      }),
+    ));
+    await repository.loadOptionsForTeam(83);
+    await repository.loadForTeam(83, seasonId: 27965);
+    await repository.loadOptionsForTeam(83);
+    await repository.loadForTeam(83, seasonId: 27965);
+    expect(requests, hasLength(2));
+    await repository.loadOptionsForTeam(83, forceRefresh: true);
+    await repository.loadForTeam(83, seasonId: 27965, forceRefresh: true);
+    expect(requests, hasLength(4));
+    expect(requests.last.queryParameters, {'season_id': '27965'});
+  });
+
   group('loadOptionsForTeam', () {
     test('requests and maps the available attribute seasons', () async {
       final repository = ApiTeamAttributeRepository(

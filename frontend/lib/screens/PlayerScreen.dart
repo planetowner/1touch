@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
@@ -64,11 +65,11 @@ class _PlayersState extends State<Players> {
     final pageBackground = mainPageBackground(context);
     return Scaffold(
       backgroundColor: pageBackground,
-      body: RefreshIndicator(
+      body: PageRefreshIndicator(
         onRefresh: _refreshPlayers,
-        child: CustomScrollView(
+        builder: (context, physics) => CustomScrollView(
           controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
+          physics: physics,
           slivers: [
             AppBrandSliverHeader(
               key: const ValueKey('players-app-bar'),

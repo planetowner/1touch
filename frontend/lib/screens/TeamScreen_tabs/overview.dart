@@ -58,19 +58,19 @@ class _OverviewTabState extends State<OverviewTab> {
     }
   }
 
-  void _hideBestElevenSection() {
-    if (!_showBestElevenSection || !mounted) return;
-    setState(() => _showBestElevenSection = false);
+  void _setBestElevenAvailability(bool available) {
+    if (_showBestElevenSection == available || !mounted) return;
+    setState(() => _showBestElevenSection = available);
   }
 
-  void _hideInjurySection() {
-    if (!_showInjurySection || !mounted) return;
-    setState(() => _showInjurySection = false);
+  void _setInjuryAvailability(bool available) {
+    if (_showInjurySection == available || !mounted) return;
+    setState(() => _showInjurySection = available);
   }
 
-  void _hideTransferSection() {
-    if (!_showTransferSection || !mounted) return;
-    setState(() => _showTransferSection = false);
+  void _setTransferAvailability(bool available) {
+    if (_showTransferSection == available || !mounted) return;
+    setState(() => _showTransferSection = available);
   }
 
   @override
@@ -78,9 +78,11 @@ class _OverviewTabState extends State<OverviewTab> {
     final hasStanding = widget.team?.standing != null;
     return CustomScrollView(
       slivers: [
-        SliverList(
-          delegate: SliverChildListDelegate(
-            [
+        // 섹션을 유지해야 화면 아래의 데이터와 선택 상태도 함께 갱신돼요.
+        SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               const SizedBox(height: 24),
               SectionHeader(title: tr(context, "FIXTURE")),
               // Pass the whole team map
@@ -111,37 +113,40 @@ class _OverviewTabState extends State<OverviewTab> {
                         "Shows the players who have played the most minutes in each position this season. Together they make up the team's most-used lineup.",
                   ),
                 ),
-                TeamBestElevenSection(
-                  teamId: _teamId,
-                  variant: TeamBestElevenVariant.overview,
-                  repository: widget.bestElevenRepository,
-                  onUnavailable: _hideBestElevenSection,
-                ),
               ],
+              TeamBestElevenSection(
+                key: const ValueKey('overview-best-eleven'),
+                teamId: _teamId,
+                variant: TeamBestElevenVariant.overview,
+                repository: widget.bestElevenRepository,
+                onAvailabilityChanged: _setBestElevenAvailability,
+              ),
 
               if (_showInjurySection) ...[
                 const SizedBox(height: 32),
                 SectionHeader(title: tr(context, "INJURY STATUS")),
-                InjuryStatus(
-                  teams: widget.team,
-                  repository: widget.injuryRepository,
-                  onUnavailable: _hideInjurySection,
-                ),
               ],
+              InjuryStatus(
+                key: const ValueKey('overview-injuries'),
+                teams: widget.team,
+                repository: widget.injuryRepository,
+                onAvailabilityChanged: _setInjuryAvailability,
+              ),
 
               if (_showTransferSection) ...[
                 const SizedBox(height: 20),
                 SectionHeader(title: tr(context, "TRANSFERS")),
-                Transfer(
-                  teams: widget.team,
-                  repository: widget.transferRepository,
-                  onUnavailable: _hideTransferSection,
-                  showIncoming: _showIncomingTransfers,
-                  onDirectionChanged: (showIncoming) {
-                    setState(() => _showIncomingTransfers = showIncoming);
-                  },
-                ),
               ],
+              Transfer(
+                key: const ValueKey('overview-transfers'),
+                teams: widget.team,
+                repository: widget.transferRepository,
+                onAvailabilityChanged: _setTransferAvailability,
+                showIncoming: _showIncomingTransfers,
+                onDirectionChanged: (showIncoming) {
+                  setState(() => _showIncomingTransfers = showIncoming);
+                },
+              ),
 
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),

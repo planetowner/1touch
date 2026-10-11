@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -26,7 +27,6 @@ class StandingTab extends StatefulWidget {
   final XgStandingRepository? xgStandingRepository;
   final int? requestedCompetitionId;
   final int selectionRequestId;
-  final int refreshRequestId;
   final ValueChanged<bool>? onBracketInteractionChanged;
 
   const StandingTab({
@@ -36,7 +36,6 @@ class StandingTab extends StatefulWidget {
     this.xgStandingRepository,
     this.requestedCompetitionId,
     this.selectionRequestId = 0,
-    this.refreshRequestId = 0,
     this.onBracketInteractionChanged,
   });
 
@@ -44,7 +43,26 @@ class StandingTab extends StatefulWidget {
   State<StandingTab> createState() => _StandingTabState();
 }
 
-class _StandingTabState extends State<StandingTab> {
+class _StandingTabState extends State<StandingTab>
+    with PageRefreshParticipant<StandingTab> {
+  @override
+  Future<void> refreshPage() async {
+    if (!_hasStandingContext) return;
+    await Future.wait([
+      _loadStandings(
+          competitionId: selectedLeagueId,
+          seasonId: selectedSeasonId,
+          requestId: ++_standingRequestId,
+          forceRefresh: true),
+      if (_selectedView == StandingView.xgTable && _xgAvailable)
+        _loadXgStandings(
+            competitionId: selectedLeagueId,
+            seasonId: selectedSeasonId,
+            requestId: ++_xgRequestId,
+            forceRefresh: true),
+    ]);
+  }
+
   // xG standings are only available for Big 5 leagues
   static const _big5LeagueIds = {8, 82, 301, 384, 564};
 
@@ -151,13 +169,6 @@ class _StandingTabState extends State<StandingTab> {
       }
       _startStandingLoad();
       return;
-    }
-
-    if (widget.refreshRequestId != oldWidget.refreshRequestId) {
-      _startStandingLoad(forceRefresh: true);
-      if (_selectedView == StandingView.xgTable && _xgAvailable) {
-        _startXgLoad(forceRefresh: true);
-      }
     }
 
     if (widget.selectionRequestId != oldWidget.selectionRequestId) {
@@ -478,7 +489,7 @@ class _StandingTabState extends State<StandingTab> {
   @override
   Widget build(BuildContext context) {
     if (!_hasStandingContext) {
-      return Center(
+      return PageRefreshPlaceholder(
         child: Text(
           tr(context, 'No standings available'),
           key: ValueKey('standing-unavailable'),

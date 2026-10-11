@@ -11,7 +11,8 @@ class MockTeamAttributeRepository implements TeamAttributeRepository {
   final List<TeamAttributeScores> _scores;
 
   @override
-  Future<List<TeamAttributeSeasonOption>> loadOptionsForTeam(int teamId) async {
+  Future<List<TeamAttributeSeasonOption>> loadOptionsForTeam(int teamId,
+      {bool forceRefresh = false}) async {
     final seasonsById = {
       for (final season in mockSeasons) season.seasonId: season,
     };
@@ -33,6 +34,7 @@ class MockTeamAttributeRepository implements TeamAttributeRepository {
   @override
   Future<List<TeamAttributeScores>> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
   }) async {
     final result = _scores

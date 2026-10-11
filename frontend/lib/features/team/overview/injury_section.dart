@@ -5,19 +5,26 @@ class InjuryStatus extends StatefulWidget {
     super.key,
     this.teams,
     this.repository,
-    this.onUnavailable,
+    this.onAvailabilityChanged,
   });
 
   final TeamOverview? teams;
   final TeamInjuryRepository? repository;
-  final VoidCallback? onUnavailable;
+  final ValueChanged<bool>? onAvailabilityChanged;
 
   @override
   State<InjuryStatus> createState() => _InjuryStatusState();
 }
 
 class _InjuryStatusState extends State<InjuryStatus>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, PageRefreshParticipant<InjuryStatus> {
+  @override
+  Future<void> refreshPage() async {
+    final teamId = _teamId;
+    if (teamId == null) return;
+    await _loadInjuries(teamId, ++_loadRequestId, forceRefresh: true);
+  }
+
   late TeamInjuryRepository _observedRepository;
   TeamInjuryReport? _report;
   bool _isLoading = false;
@@ -78,7 +85,7 @@ class _InjuryStatusState extends State<InjuryStatus>
         _report = null;
         _isUnavailable = true;
       });
-      widget.onUnavailable?.call();
+      widget.onAvailabilityChanged?.call(false);
       return;
     }
     if (identical(latest, _report)) return;
@@ -104,26 +111,31 @@ class _InjuryStatusState extends State<InjuryStatus>
     }
   }
 
-  Future<void> _loadInjuries(int teamId, int requestId) async {
+  Future<void> _loadInjuries(int teamId, int requestId,
+      {bool forceRefresh = false}) async {
     try {
-      final report = await _repository.loadForTeam(teamId);
+      final report =
+          await _repository.loadForTeam(teamId, forceRefresh: forceRefresh);
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
         _report = _repository.cachedForTeam(teamId) ?? report;
         _isLoading = false;
+        _loadFailed = false;
+        _isUnavailable = false;
       });
+      widget.onAvailabilityChanged?.call(true);
     } on TeamFeatureUnavailableException {
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
         _isLoading = false;
         _isUnavailable = true;
       });
-      widget.onUnavailable?.call();
+      widget.onAvailabilityChanged?.call(false);
     } on Object {
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
         _isLoading = false;
-        _loadFailed = true;
+        _loadFailed = _report == null;
       });
     }
   }

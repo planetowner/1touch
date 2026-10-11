@@ -42,7 +42,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
         seasonId: _seasonId,
         builder: (context, detail) => SingleChildScrollView(
           key: const ValueKey('player-analysis-scroll'),
-          physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

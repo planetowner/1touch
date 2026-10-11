@@ -40,7 +40,11 @@ void main() {
           child: InjuryStatus(
             teams: _team(teamId),
             repository: repository,
-            onUnavailable: onUnavailable,
+            onAvailabilityChanged: onUnavailable == null
+                ? null
+                : (available) {
+                    if (!available) onUnavailable();
+                  },
           ),
         ),
       ),
@@ -521,7 +525,8 @@ class _TestTeamInjuryRepository implements TeamInjuryRepository {
   TeamInjuryReport? cachedForTeam(int teamId) => _cachedReports.value[teamId];
 
   @override
-  Future<TeamInjuryReport> loadForTeam(int teamId) async {
+  Future<TeamInjuryReport> loadForTeam(int teamId,
+      {bool forceRefresh = false}) async {
     loadCalls++;
     final cached = cachedForTeam(teamId);
     if (cached != null) return cached;

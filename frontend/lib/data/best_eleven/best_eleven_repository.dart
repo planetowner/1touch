@@ -12,6 +12,7 @@ abstract interface class BestElevenRepository {
 
   Future<TeamBestEleven?> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
     String? formation,
   });

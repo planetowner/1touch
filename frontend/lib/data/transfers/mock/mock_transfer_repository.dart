@@ -27,7 +27,8 @@ class MockTransferRepository implements TransferRepository {
   TeamTransferWindow? cachedForTeam(int teamId) => _cachedWindows.value[teamId];
 
   @override
-  Future<TeamTransferWindow> loadForTeam(int teamId) async {
+  Future<TeamTransferWindow> loadForTeam(int teamId,
+      {bool forceRefresh = false}) async {
     final cached = cachedForTeam(teamId);
     if (cached != null) return cached;
 

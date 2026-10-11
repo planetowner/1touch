@@ -3,7 +3,8 @@ import 'package:onetouch/models/team_attribute_season_option.dart';
 
 abstract interface class TeamAttributeRepository {
   /// Returns seasons that have stored attribute scores for [teamId].
-  Future<List<TeamAttributeSeasonOption>> loadOptionsForTeam(int teamId);
+  Future<List<TeamAttributeSeasonOption>> loadOptionsForTeam(int teamId,
+      {bool forceRefresh = false});
 
   /// Returns the available scores for [teamId], newest first.
   ///
@@ -13,6 +14,7 @@ abstract interface class TeamAttributeRepository {
   /// team has no attribute data. The API returns one season per request.
   Future<List<TeamAttributeScores>> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
   });
 }

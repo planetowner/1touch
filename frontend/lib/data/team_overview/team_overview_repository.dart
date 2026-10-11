@@ -6,5 +6,5 @@ abstract interface class TeamOverviewRepository {
 
   TeamOverview? cachedForTeam(int teamId);
 
-  Future<TeamOverview> loadForTeam(int teamId);
+  Future<TeamOverview> loadForTeam(int teamId, {bool forceRefresh = false});
 }

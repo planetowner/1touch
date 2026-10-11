@@ -5,14 +5,14 @@ class Transfer extends StatefulWidget {
     super.key,
     this.teams,
     this.repository,
-    this.onUnavailable,
+    this.onAvailabilityChanged,
     this.showIncoming,
     this.onDirectionChanged,
   });
 
   final TeamOverview? teams;
   final TransferRepository? repository;
-  final VoidCallback? onUnavailable;
+  final ValueChanged<bool>? onAvailabilityChanged;
   final bool? showIncoming;
   final ValueChanged<bool>? onDirectionChanged;
 
@@ -20,7 +20,15 @@ class Transfer extends StatefulWidget {
   State<Transfer> createState() => _TransferState();
 }
 
-class _TransferState extends State<Transfer> {
+class _TransferState extends State<Transfer>
+    with PageRefreshParticipant<Transfer> {
+  @override
+  Future<void> refreshPage() async {
+    final teamId = _teamId;
+    if (teamId == null) return;
+    await _loadTransfers(teamId, ++_loadRequestId, forceRefresh: true);
+  }
+
   bool showIn = true; // true = IN, false = OUT
   TeamTransferWindow? _window;
   bool _isLoading = false;
@@ -70,26 +78,31 @@ class _TransferState extends State<Transfer> {
     }
   }
 
-  Future<void> _loadTransfers(int teamId, int requestId) async {
+  Future<void> _loadTransfers(int teamId, int requestId,
+      {bool forceRefresh = false}) async {
     try {
-      final window = await _repository.loadForTeam(teamId);
+      final window =
+          await _repository.loadForTeam(teamId, forceRefresh: forceRefresh);
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
         _window = window;
         _isLoading = false;
+        _loadFailed = false;
+        _isUnavailable = false;
       });
+      widget.onAvailabilityChanged?.call(true);
     } on TeamFeatureUnavailableException {
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
         _isLoading = false;
         _isUnavailable = true;
       });
-      widget.onUnavailable?.call();
+      widget.onAvailabilityChanged?.call(false);
     } on Object {
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
         _isLoading = false;
-        _loadFailed = true;
+        _loadFailed = _window == null;
       });
     }
   }

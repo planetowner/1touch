@@ -16,7 +16,16 @@ class Standing extends StatefulWidget {
   State<Standing> createState() => _StandingState();
 }
 
-class _StandingState extends State<Standing> {
+class _StandingState extends State<Standing>
+    with PageRefreshParticipant<Standing> {
+  @override
+  Future<void> refreshPage() async {
+    final competitionId = _domesticCompetitionId;
+    if (competitionId == null) return;
+    await _loadCurrentTable(competitionId, ++_requestId, _repository,
+        forceRefresh: true);
+  }
+
   static const double _rankW = 24;
   static const double _clubToStatsGap = 16;
   static const double _statGap = 15;
@@ -93,12 +102,15 @@ class _StandingState extends State<Standing> {
   Future<void> _loadCurrentTable(
     int competitionId,
     int requestId,
-    StandingRepository repository,
-  ) async {
+    StandingRepository repository, {
+    bool forceRefresh = false,
+  }) async {
     try {
       // Deliberately omit seasonId. The backend resolves the current season,
       // so Overview cannot become stale when the season rolls over.
-      final rows = await repository.loadForCompetition(competitionId);
+      final rows = await (forceRefresh
+          ? repository.refreshForCompetition(competitionId)
+          : repository.loadForCompetition(competitionId));
       if (!mounted ||
           requestId != _requestId ||
           competitionId != _domesticCompetitionId) {

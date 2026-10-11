@@ -52,7 +52,11 @@ void main() {
           child: Transfer(
             teams: _team(teamId),
             repository: repository,
-            onUnavailable: onUnavailable,
+            onAvailabilityChanged: onUnavailable == null
+                ? null
+                : (available) {
+                    if (!available) onUnavailable();
+                  },
           ),
         ),
       ),
@@ -631,7 +635,8 @@ class _TestTransferRepository implements TransferRepository {
   TeamTransferWindow? cachedForTeam(int teamId) => _cachedWindows.value[teamId];
 
   @override
-  Future<TeamTransferWindow> loadForTeam(int teamId) async {
+  Future<TeamTransferWindow> loadForTeam(int teamId,
+      {bool forceRefresh = false}) async {
     final cached = cachedForTeam(teamId);
     if (cached != null) return cached;
 

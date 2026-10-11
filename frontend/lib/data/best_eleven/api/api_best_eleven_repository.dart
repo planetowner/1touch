@@ -43,6 +43,7 @@ class ApiBestElevenRepository implements BestElevenRepository {
   @override
   Future<TeamBestEleven?> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
     String? formation,
   }) async {
@@ -51,6 +52,7 @@ class ApiBestElevenRepository implements BestElevenRepository {
       seasonId: seasonId,
       formation: formation,
     );
+    if (forceRefresh) return _fetch(query);
     final cached = _cachedLineups.value[query];
     if (cached != null) {
       _refreshIfStale(query);

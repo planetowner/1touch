@@ -32,6 +32,7 @@ abstract interface class TeamContractRepository {
 
   Future<TeamContractRoster> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
   });
 }

@@ -37,9 +37,11 @@ class ApiTeamProbabilityRepository implements TeamProbabilityRepository {
   @override
   Future<TeamProbabilitySnapshot> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
   }) async {
     final query = TeamProbabilityQuery(teamId: teamId, seasonId: seasonId);
+    if (forceRefresh) return _fetch(query);
     final cached = _cachedSnapshots.value[query];
     if (cached != null) {
       _refreshIfStale(query);

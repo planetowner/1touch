@@ -198,7 +198,9 @@ class _AvailableTransferRepository implements TransferRepository {
   TeamTransferWindow? cachedForTeam(int teamId) => window;
 
   @override
-  Future<TeamTransferWindow> loadForTeam(int teamId) async => window;
+  Future<TeamTransferWindow> loadForTeam(int teamId,
+          {bool forceRefresh = false}) async =>
+      window;
 
   void dispose() => _cache.dispose();
 }
@@ -222,6 +224,7 @@ class _EmptyBestElevenRepository implements BestElevenRepository {
   @override
   Future<TeamBestEleven?> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
     String? formation,
   }) async =>
@@ -234,6 +237,7 @@ class _AvailableBestElevenRepository extends _EmptyBestElevenRepository {
   @override
   Future<TeamBestEleven?> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
     String? formation,
   }) async =>
@@ -257,7 +261,8 @@ class _UnavailableInjuryRepository implements TeamInjuryRepository {
   TeamInjuryReport? cachedForTeam(int teamId) => null;
 
   @override
-  Future<TeamInjuryReport> loadForTeam(int teamId) =>
+  Future<TeamInjuryReport> loadForTeam(int teamId,
+          {bool forceRefresh = false}) =>
       Future<TeamInjuryReport>.error(
         TeamFeatureUnavailableException(
           teamId: teamId,
@@ -279,7 +284,8 @@ class _UnavailableTransferRepository implements TransferRepository {
   TeamTransferWindow? cachedForTeam(int teamId) => null;
 
   @override
-  Future<TeamTransferWindow> loadForTeam(int teamId) =>
+  Future<TeamTransferWindow> loadForTeam(int teamId,
+          {bool forceRefresh = false}) =>
       Future<TeamTransferWindow>.error(
         TeamFeatureUnavailableException(
           teamId: teamId,

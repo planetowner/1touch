@@ -32,6 +32,7 @@ class MockBestElevenRepository implements BestElevenRepository {
   @override
   Future<TeamBestEleven?> loadForTeam(
     int teamId, {
+    bool forceRefresh = false,
     int? seasonId,
     String? formation,
   }) async {
