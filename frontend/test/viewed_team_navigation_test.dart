@@ -183,6 +183,23 @@ void main() {
       expect(find.byType(FloatingActionButton),
           id == 8 ? findsOneWidget : findsNothing);
       expect(tester.state(find.byType(Community)), same(communityState));
+      if (id == 19) {
+        final notice =
+            find.byKey(const ValueKey('community-read-only-rule-notice'));
+        final close = find.descendant(
+          of: notice,
+          matching: find.byKey(const ValueKey('app-rule-notice-close')),
+        );
+        await tester.tap(close);
+        await tester.pumpAndSettle();
+        expect(notice, findsNothing);
+        await tab(3);
+        expect(notice, findsNothing);
+        await tab(0);
+        await tab(3);
+        expect(notice, findsOneWidget);
+        expect(tester.state(find.byType(Community)), same(communityState));
+      }
       expect(
         requests.any((request) =>
             request.url.path == '/v1/posts' &&

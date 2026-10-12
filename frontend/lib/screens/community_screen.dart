@@ -73,6 +73,7 @@ class _CommunityState extends State<Community>
   int _postRequestId = 0;
   int _tabViewEpoch = 0;
   bool _isActiveTab = true;
+  int _readOnlyNoticeVisit = 0;
   bool _checkedRulesThisVisit = false;
   int _rulesVisitGeneration = 0;
   CommunityBanStatus? _banStatus;
@@ -201,6 +202,8 @@ class _CommunityState extends State<Community>
       _rulesVisitGeneration++;
       _checkedRulesThisVisit = false;
       if (active) {
+        // 유지된 커뮤니티 탭으로 돌아오면 닫힌 안내문만 새 방문 상태로 열어요.
+        setState(() => _readOnlyNoticeVisit++);
         if (authSession.isAuthenticated) {
           notificationUnreadController.refresh();
         }
@@ -496,8 +499,12 @@ class _CommunityState extends State<Community>
       builder: (context, canParticipate) => Scaffold(
         extendBodyBehindAppBar: true,
         backgroundColor: pageBackground,
-        bottomNavigationBar:
-            canParticipate ? null : const CommunityReadOnlyNotice(),
+        bottomNavigationBar: canParticipate
+            ? null
+            : CommunityReadOnlyNotice(
+                key:
+                    ValueKey('community-read-only-visit-$_readOnlyNoticeVisit'),
+              ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         floatingActionButton: canParticipate &&
                 !(_banStatus?.endsAt.isAfter(DateTime.now()) ?? false)

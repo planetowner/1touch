@@ -12,6 +12,67 @@ import 'package:onetouch/models/team.dart';
 void main() {
   setUpAppCatalog();
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    for (final theme in [app_style.darktheme, app_style.whitetheme]) {
+      testWidgets(
+          'team rule notice fits and dismisses at $size in ${theme.brightness}',
+          (tester) async {
+        await tester.binding.setSurfaceSize(size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await tester.pumpWidget(MaterialApp(
+          theme: theme,
+          home:
+              _EditSheetHost(repository: _RecordingFollowingTeamsRepository()),
+        ));
+        await tester.tap(find.text('OPEN'));
+        await tester.pumpAndSettle();
+
+        final notice = find.byKey(const ValueKey('team-edit-rule-notice'));
+        final message = find
+            .text('You can change your favorite team up to twice in 14 days.');
+        final close = find.descendant(
+          of: notice,
+          matching: find.byKey(const ValueKey('app-rule-notice-close')),
+        );
+        expect(notice, findsOneWidget);
+        expect(message, findsOneWidget);
+        expect(tester.getRect(message).left - tester.getRect(notice).left, 24);
+        expect(tester.getRect(notice).right - tester.getRect(close).right, 14);
+        expect(tester.getSize(close), const Size(40, 40));
+        final icon = find.descendant(
+          of: close,
+          matching: find.byIcon(Icons.close),
+        );
+        expect(tester.widget<Icon>(icon).size, 20);
+        final expectedBackground = theme.brightness == Brightness.dark
+            ? app_style.AppPalette.white
+            : app_style.AppPalette.black;
+        final expectedForeground = theme.brightness == Brightness.dark
+            ? const Color(0xFF090A0A)
+            : app_style.AppPalette.white;
+        final background = find.descendant(
+          of: notice,
+          matching: find.byType(ColoredBox),
+        );
+        expect(tester.widget<ColoredBox>(background).color, expectedBackground);
+        expect(tester.widget<Text>(message).style?.color, expectedForeground);
+        expect(tester.widget<Icon>(icon).color, expectedForeground);
+        expect(tester.widget<Text>(message).style?.fontSize, 12);
+        expect(tester.widget<Text>(message).style?.height, 1.30);
+        expect(tester.takeException(), isNull);
+
+        await tester.tap(message);
+        await tester.pumpAndSettle();
+        expect(notice, findsOneWidget);
+        await tester.tapAt(tester.getTopLeft(close) + const Offset(4, 4));
+        await tester.pumpAndSettle();
+        expect(notice, findsNothing);
+        expect(find.byKey(const ValueKey('profile-team-edit-sheet')),
+            findsOneWidget);
+      });
+    }
+  }
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
     for (final target in ['name', 'logo']) {
       testWidgets('selects a searched team by tapping its $target at $size',
           (tester) async {

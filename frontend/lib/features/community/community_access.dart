@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_rule_notice.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -21,17 +22,25 @@ class CommunityAccessBuilder extends StatelessWidget {
       );
 }
 
-class CommunityReadOnlyNotice extends StatelessWidget {
+class CommunityReadOnlyNotice extends StatefulWidget {
   const CommunityReadOnlyNotice({super.key});
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Text(
-          tr(context,
+  State<CommunityReadOnlyNotice> createState() =>
+      _CommunityReadOnlyNoticeState();
+}
+
+class _CommunityReadOnlyNoticeState extends State<CommunityReadOnlyNotice> {
+  bool _visible = true;
+
+  @override
+  Widget build(BuildContext context) => _visible
+      ? AppRuleNotice(
+          key: const ValueKey('community-read-only-rule-notice'),
+          message: tr(context,
               'You can post, comment and like only in your favorite team community.'),
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      );
+          // 현재 방문에서만 숨기고, 커뮤니티 탭에 다시 들어오면 표시해요.
+          onClose: () => setState(() => _visible = false),
+        )
+      : const SizedBox.shrink();
 }

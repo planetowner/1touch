@@ -774,6 +774,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "投稿・コメント・いいねは、最も好きなチームのコミュニティでのみ利用できます。",
     zh: "仅可在最喜欢的球队社区发帖、评论和点赞。"
   ),
+  "You can change your favorite team up to twice in 14 days.": (
+    ko: "최애팀은 14일 동안 최대 2번 변경할 수 있어요.",
+    ja: "お気に入りのチームは14日間で最大2回変更できます。",
+    zh: "14天内最多可更改两次最喜欢的球队。"
+  ),
   "Unable to change favorite team. Please try again.": (
     ko: "가장 좋아하는 팀을 변경하지 못했어요. 다시 시도해 주세요.",
     ja: "お気に入りのチームを変更できませんでした。もう一度お試しください。",

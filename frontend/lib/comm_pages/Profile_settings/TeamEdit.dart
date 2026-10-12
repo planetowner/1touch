@@ -4,6 +4,7 @@ import 'package:onetouch/models/profile_change_limit_exception.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_rule_notice.dart';
 import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -78,6 +79,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
   bool _isSearching = false;
   bool _updateEnabled = false;
   bool _isSaving = false;
+  bool _showRuleNotice = true;
 
   @override
   void initState() {
@@ -254,159 +256,192 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           ),
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SizedBox(width: 48),
-                  Expanded(
-                    child: Text(
-                      tr(context, "Following Teams"),
-                      style: Heading5.style,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close, color: colors.onSurface),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Search bar
-              Container(
-                key: const ValueKey('profile-team-edit-search'),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? AppPalette.lightGrey
-                      : appColors.subtleBackground,
-                  borderRadius:
-                      BorderRadius.circular(AppSearchFieldTokens.radius),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  style: Body1.style,
-                  decoration: InputDecoration(
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                    hintText: tr(context, "Search teams to add!"),
-                    hintStyle:
-                        Body1.style.copyWith(color: appColors.mutedForeground),
-                    border: InputBorder.none,
-                    suffixIcon: _isSearching
-                        ? IconButton(
-                            icon: Icon(
-                              Icons.close,
-                              color: colors.onSurface,
-                              size: 20,
-                            ),
-                            onPressed: _searchController.clear,
-                          )
-                        : Icon(
-                            Icons.search,
-                            color: colors.onSurface,
-                            size: 24,
-                          ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Team list (followed or search results)
               Expanded(
-                child: _isSearching
-                    ? _buildSearchResultList(scrollController)
-                    : _buildFollowedTeamList(scrollController),
-              ),
-
-              // Conflict warning
-              if (_isSearching &&
-                  _selectedTeam != null &&
-                  _conflictTeam != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Row(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: appColors.mutedForeground,
-                        size: 18,
+                      // Title
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SizedBox(width: 48),
+                          Expanded(
+                            child: Text(
+                              tr(context, "Following Teams"),
+                              style: Heading5.style,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.close, color: colors.onSurface),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(
-                            style: Body2.style
-                                .copyWith(color: appColors.mutedForeground),
-                            text: tr(
-                                context,
-                                'You can follow one team per league. Following this team will replace {team}. Continue?',
-                                {
-                                  'team': teamNameLabel(
-                                      context,
-                                      _conflictTeam!.teamId,
-                                      _conflictTeam!.name)
-                                }),
+                      const SizedBox(height: 12),
+
+                      // Search bar
+                      Container(
+                        key: const ValueKey('profile-team-edit-search'),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? AppPalette.lightGrey
+                              : appColors.subtleBackground,
+                          borderRadius: BorderRadius.circular(
+                            AppSearchFieldTokens.radius,
+                          ),
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          style: Body1.style,
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 8,
+                            ),
+                            hintText: tr(context, "Search teams to add!"),
+                            hintStyle: Body1.style.copyWith(
+                              color: appColors.mutedForeground,
+                            ),
+                            border: InputBorder.none,
+                            suffixIcon: _isSearching
+                                ? IconButton(
+                                    icon: Icon(
+                                      Icons.close,
+                                      color: colors.onSurface,
+                                      size: 20,
+                                    ),
+                                    onPressed: _searchController.clear,
+                                  )
+                                : Icon(
+                                    Icons.search,
+                                    color: colors.onSurface,
+                                    size: 24,
+                                  ),
                           ),
                         ),
                       ),
+                      const SizedBox(height: 16),
+
+                      // Team list (followed or search results)
+                      Expanded(
+                        child: _isSearching
+                            ? _buildSearchResultList(scrollController)
+                            : _buildFollowedTeamList(scrollController),
+                      ),
+
+                      // Conflict warning
+                      if (_isSearching &&
+                          _selectedTeam != null &&
+                          _conflictTeam != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: appColors.mutedForeground,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: RichText(
+                                  text: TextSpan(
+                                    style: Body2.style.copyWith(
+                                      color: appColors.mutedForeground,
+                                    ),
+                                    text: tr(
+                                      context,
+                                      'You can follow one team per league. Following this team will replace {team}. Continue?',
+                                      {
+                                        'team': teamNameLabel(
+                                          context,
+                                          _conflictTeam!.teamId,
+                                          _conflictTeam!.name,
+                                        ),
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      const SizedBox(height: 16),
+
+                      // UPDATE button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _updateEnabled && !_isSaving
+                              ? _saveChanges
+                              : null,
+                          style: ButtonStyle(
+                            backgroundColor:
+                                WidgetStateProperty.resolveWith<Color>(
+                                  (states) =>
+                                      states.contains(WidgetState.disabled)
+                                      ? appColors.subtleBackground
+                                      : colors.onSurface,
+                                ),
+                            foregroundColor:
+                                WidgetStateProperty.resolveWith<Color>(
+                                  (states) =>
+                                      states.contains(WidgetState.disabled)
+                                      ? appColors.mutedForeground
+                                      : colors.onPrimary,
+                                ),
+                            padding: WidgetStateProperty.all(
+                              const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            shape: WidgetStateProperty.all(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                          child: _isSaving
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colors.onPrimary,
+                                  ),
+                                )
+                              : Text(
+                                  tr(context, "UPDATE"),
+                                  style: Body2_b.style.copyWith(
+                                    color: colors.onPrimary,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
-
-              const SizedBox(height: 16),
-
-              // UPDATE button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _updateEnabled && !_isSaving ? _saveChanges : null,
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                      (states) => states.contains(WidgetState.disabled)
-                          ? appColors.subtleBackground
-                          : colors.onSurface,
-                    ),
-                    foregroundColor: WidgetStateProperty.resolveWith<Color>(
-                      (states) => states.contains(WidgetState.disabled)
-                          ? appColors.mutedForeground
-                          : colors.onPrimary,
-                    ),
-                    padding: WidgetStateProperty.all(
-                      const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    shape: WidgetStateProperty.all(
-                      RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                    ),
-                  ),
-                  child: _isSaving
-                      ? SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: colors.onPrimary,
-                          ),
-                        )
-                      : Text(
-                          tr(context, "UPDATE"),
-                          style:
-                              Body2_b.style.copyWith(color: colors.onPrimary),
-                        ),
-                ),
               ),
-              const SizedBox(height: 24),
+              if (_showRuleNotice)
+                AppRuleNotice(
+                  key: const ValueKey('team-edit-rule-notice'),
+                  message: tr(
+                    context,
+                    'You can change your favorite team up to twice in 14 days.',
+                  ),
+                  // 현재 편집 팝업에서만 숨기고, 다시 열면 표시해요.
+                  onClose: () => setState(() => _showRuleNotice = false),
+                ),
             ],
           ),
         );
