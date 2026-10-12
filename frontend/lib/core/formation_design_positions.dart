@@ -15,7 +15,7 @@ const formationDesignRows = <String, List<List<Offset>>>{
   '3-1-4-2': [
     [Offset(80, 250), Offset(173, 250), Offset(266, 250)],
     [Offset(173, 180)],
-    [Offset(56, 110), Offset(134, 110), Offset(212, 110), Offset(290, 110)],
+    [Offset(47, 110), Offset(131, 110), Offset(215, 110), Offset(299, 110)],
     [Offset(132, 40), Offset(214, 40)],
   ],
   '3-2-3-2': [
@@ -27,25 +27,25 @@ const formationDesignRows = <String, List<List<Offset>>>{
   '3-2-4-1': [
     [Offset(78, 260), Offset(173, 260), Offset(265.5, 260)],
     [Offset(132, 186), Offset(214, 186)],
-    [Offset(50, 96), Offset(132, 112), Offset(214, 112), Offset(296, 96)],
+    [Offset(47, 96), Offset(131, 112), Offset(215, 112), Offset(299, 96)],
     _singleForward,
   ],
   '3-3-1-3': [
-    [Offset(74, 256), Offset(173, 256), Offset(269.5, 256)],
-    [Offset(96, 184), Offset(173, 184), Offset(250, 184)],
+    [Offset(65, 256), Offset(171, 256), Offset(278.5, 256)],
+    [Offset(83, 182), Offset(173, 182), Offset(263, 182)],
     [Offset(173, 112)],
     [Offset(48, 56), Offset(173, 40), Offset(298, 56)],
   ],
   '3-3-2-2': [
     [Offset(62, 262), Offset(173, 262), Offset(281.5, 262)],
-    [Offset(96, 188), Offset(173, 188), Offset(250, 188)],
+    [Offset(91, 188), Offset(173, 188), Offset(255, 188)],
     [Offset(132, 114), Offset(214, 114)],
     _forwardPair,
   ],
   '3-3-3-1': [
-    [Offset(78, 262), Offset(173, 262), Offset(265.5, 262)],
-    [Offset(100, 188), Offset(173, 188), Offset(246, 188)],
-    [Offset(72, 114), Offset(173, 114), Offset(274, 114)],
+    [Offset(67, 262), Offset(173, 262), Offset(280.5, 262)],
+    [Offset(91, 188), Offset(173, 188), Offset(255, 188)],
+    [Offset(67, 114), Offset(173, 114), Offset(279, 114)],
     _singleForward,
   ],
   '3-4-1-2': [
@@ -56,35 +56,37 @@ const formationDesignRows = <String, List<List<Offset>>>{
   ],
   '3-4-2-1': [
     [Offset(80, 258), Offset(173, 258), Offset(266, 258)],
-    [Offset(52, 180), Offset(134, 188), Offset(209.5, 188), Offset(293, 180)],
+    [Offset(45, 180), Offset(129, 188), Offset(214.5, 188), Offset(300, 180)],
     [Offset(120, 110), Offset(226, 110)],
     _singleForward,
   ],
   '3-4-3': [
     [Offset(80, 248), Offset(173, 256), Offset(266, 248)],
-    [Offset(49.5, 154), Offset(133, 170), Offset(215, 170), Offset(297, 154)],
+    [Offset(46.5, 154), Offset(132, 170), Offset(216, 170), Offset(300, 154)],
     [Offset(80, 76), Offset(173, 40), Offset(266, 76)],
   ],
   '3-5-1-1': [
     [Offset(76, 264), Offset(173, 264), Offset(270, 264)],
+    // 바깥 두 명은 위에 두고, 아래쪽 좌우 두 명은 시안대로 16px 더 벌려요.
     [
-      Offset(48, 144),
-      Offset(108, 192),
+      Offset(48, 140),
+      Offset(100, 192),
       Offset(173, 192),
-      Offset(238, 192),
-      Offset(298, 144)
+      Offset(246, 192),
+      Offset(298, 140)
     ],
     [Offset(173, 108)],
     _singleForward,
   ],
   '3-5-2': [
     [Offset(80, 256), Offset(173, 256), Offset(266, 256)],
+    // 교체 시간과 아래 선수 이름의 간격을 위해 다섯 명의 높이를 벌려요.
     [
-      Offset(48, 148),
-      Offset(116, 168),
-      Offset(173, 128),
-      Offset(230, 168),
-      Offset(298, 148)
+      Offset(48, 138),
+      Offset(116, 182),
+      Offset(173, 126),
+      Offset(230, 182),
+      Offset(298, 138)
     ],
     _forwardPair,
   ],
@@ -110,7 +112,7 @@ const formationDesignRows = <String, List<List<Offset>>>{
   '4-1-4-1': [
     _backFour,
     [Offset(173, 188)],
-    [Offset(48, 104), Offset(132, 120), Offset(214, 120), Offset(298, 104)],
+    [Offset(47, 104), Offset(131, 120), Offset(215, 120), Offset(299, 104)],
     _singleForward,
   ],
   '4-2-1-3': [
@@ -144,8 +146,8 @@ const formationDesignRows = <String, List<List<Offset>>>{
   ],
   '4-3-2-1': [
     [Offset(48, 238), Offset(132, 268), Offset(214, 268), Offset(298, 238)],
-    [Offset(90, 172), Offset(173, 200), Offset(253.5, 172)],
-    [Offset(131.5, 106), Offset(215, 106)],
+    [Offset(85, 172), Offset(171, 200), Offset(258.5, 172)],
+    [Offset(129.5, 106), Offset(217, 106)],
     _singleForward,
   ],
   '4-4-1-1': [
@@ -161,10 +163,11 @@ const formationDesignRows = <String, List<List<Offset>>>{
   ],
   '4-5-1': [
     _backFour,
+    // 시안에서는 중앙 미드필더만 2px 위에 있어요.
     [
       Offset(46, 106),
       Offset(105, 154),
-      Offset(173, 130),
+      Offset(173, 128),
       Offset(240, 154),
       Offset(299, 106)
     ],

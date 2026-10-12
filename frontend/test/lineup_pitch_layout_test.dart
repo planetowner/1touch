@@ -172,51 +172,74 @@ void main() {
   }
 
   for (final size in [const Size(320, 700), const Size(430, 1100)]) {
-    testWidgets('five-player rows keep the pitch compact at $size',
-        (tester) async {
-      tester.view.physicalSize = size;
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+    for (final formation in ['3-5-2', '3-5-1-1', '4-5-1']) {
+      testWidgets('$formation keeps substitution times clear at $size',
+          (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
 
-      final names = List.generate(11, (index) => 'Player ${index + 1}');
-      final away = _rows(2, '3-5-2', names);
-      final home = _rows(1, '5-3-2', names).reversed.toList();
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: LineupPitch(
-                awayRows: away,
-                homeRows: home,
-                awayColor: const Color(0xFF1E70BF),
-                homeColor: const Color(0xFFEF1935),
+        final names = List.generate(11, (index) => 'Player ${index + 1}');
+        final away = _rows(2, formation, names, midfieldSubOut: true);
+        final home = _rows(1, '5-3-2', names).reversed.toList();
+        await tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: LineupPitch(
+                  awayRows: away,
+                  homeRows: home,
+                  awayColor: const Color(0xFF1E70BF),
+                  homeColor: const Color(0xFFEF1935),
+                ),
               ),
             ),
           ),
-        ),
-      ));
-      await tester.pumpAndSettle();
-
-      final pitch = tester.getRect(
-        find.byKey(const ValueKey('match-lineup-card')),
-      );
-      expect(pitch.height, closeTo(pitch.width * 784 / 345, 0.001));
-      for (final player in [...away, ...home].expand((row) => row)) {
-        final rect = tester.getRect(find.byKey(
-          ValueKey('match-lineup-player-${player.teamId}-${player.playerId}'),
         ));
-        expect(pitch.contains(rect.topLeft), isTrue);
-        expect(pitch.contains(rect.bottomRight), isTrue);
-      }
-      expect(tester.takeException(), isNull);
-    });
+        await tester.pumpAndSettle();
+
+        final pitch = tester.getRect(
+          find.byKey(const ValueKey('match-lineup-card')),
+        );
+        expect(pitch.height, closeTo(pitch.width * 784 / 345, 0.001));
+        for (final player in [...away, ...home].expand((row) => row)) {
+          final rect = tester.getRect(find.byKey(
+            ValueKey('match-lineup-player-${player.teamId}-${player.playerId}'),
+          ));
+          expect(pitch.contains(rect.topLeft), isTrue);
+          expect(pitch.contains(rect.bottomRight), isTrue);
+        }
+        for (final midfielder in away[2]) {
+          final player = find.byKey(ValueKey(
+            'match-lineup-player-${midfielder.teamId}-${midfielder.playerId}',
+          ));
+          final time = tester.getRect(find.descendant(
+            of: player,
+            matching: find.text("76'"),
+          ));
+          for (final other in away.expand((row) => row)) {
+            if (other.playerId == midfielder.playerId) continue;
+            final otherPlayer = find.byKey(ValueKey(
+              'match-lineup-player-${other.teamId}-${other.playerId}',
+            ));
+            final name = tester.getRect(find.descendant(
+              of: otherPlayer,
+              matching: find.text(other.name),
+            ));
+            expect(time.overlaps(name), isFalse,
+              reason: '$formation ${midfielder.name} time $time and ${other.name} $name');
+          }
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
   }
 }
 
-List<List<LineupPlayer>> _rows(
-    int teamId, String formation, List<String> names) {
+List<List<LineupPlayer>> _rows(int teamId, String formation, List<String> names,
+    {bool midfieldSubOut = false}) {
   final layout = FormationLayout.forFormation(formation);
   final counts = [1, ...formation.split('-').map(int.parse)];
   var index = 0;
@@ -231,7 +254,7 @@ List<List<LineupPlayer>> _rows(
             name: names[index++],
             formationPosition: layout.positionForSlot('$row:$column'),
             events: [
-              if (row >= 4)
+              if (row >= 4 || (midfieldSubOut && row == 3))
                 const LineupEvent(type: LineupEventType.subOut, minute: 76),
               if (row == counts.length)
                 const LineupEvent(type: LineupEventType.goal),
