@@ -5,6 +5,7 @@ import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/competitions/competition_display_order.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
 import 'package:onetouch/data/standings/api_standing_repository_provider.dart';
@@ -671,7 +672,10 @@ class _StandingTabState extends State<StandingTab>
     final leagueIds =
         _selectedYearSeasons.map((season) => season.competitionId).toSet();
     final availableLeagues = competitionRepository.allCompetitions
-        .where((league) => leagueIds.contains(league.competitionId));
+        .where((league) => leagueIds.contains(league.competitionId))
+        .toList()
+      ..sort((a, b) =>
+          compareCompetitionDisplayOrder(a.competitionId, b.competitionId));
 
     return AppDropdown<int>(
       key: const ValueKey('standing-league-filter-shell'),

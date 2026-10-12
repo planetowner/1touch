@@ -4,6 +4,7 @@ import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
+import 'package:onetouch/data/competitions/competition_display_order.dart';
 import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
@@ -269,7 +270,8 @@ class _CareerTabState extends State<CareerTab> {
         (_expanded.contains(key) || (newest && !_collapsed.contains(key)));
     final competitions = season.competitions
         .where((item) => _competition == null || item.id == _competition)
-        .toList();
+        .toList()
+      ..sort((a, b) => compareCompetitionDisplayOrder(a.id, b.id));
     final record =
         _competition == null ? season.record : competitions.first.record;
     return Column(
@@ -395,6 +397,8 @@ class _CareerTabState extends State<CareerTab> {
       );
 
   Future<void> _showFilter(Map<int, String> competitions) async {
+    final options = competitions.entries.toList()
+      ..sort((a, b) => compareCompetitionDisplayOrder(a.key, b.key));
     final selected = await showModalBottomSheet<int>(
       context: context,
       builder: (context) => SafeArea(
@@ -410,7 +414,7 @@ class _CareerTabState extends State<CareerTab> {
               trailing: _competition == null ? const Icon(Icons.check) : null,
               onTap: () => Navigator.pop(context, 0),
             ),
-            for (final entry in competitions.entries)
+            for (final entry in options)
               ListTile(
                 title: CompetitionLabel(
                   competitionId: entry.key,
