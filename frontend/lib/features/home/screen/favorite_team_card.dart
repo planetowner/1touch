@@ -153,6 +153,16 @@ class FavoriteTeamCard extends StatelessWidget {
                           teamNameLabel(context, away.teamId, away.name),
                       team2Logo: away.imagePath ?? '',
                       team2Id: away.teamId,
+                      competitionId: last.competitionId,
+                      fixture: last,
+                      competitionName: competitionNameLabel(
+                        context,
+                        last.competitionId,
+                        competitionRepository
+                                .findById(last.competitionId)
+                                ?.name ??
+                            tr(context, 'Unknown League'),
+                      ),
                       homeScore: last.homeScore ?? 0,
                       awayScore: last.awayScore ?? 0,
                     );

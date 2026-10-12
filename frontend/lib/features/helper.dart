@@ -173,7 +173,7 @@ class MatchCard extends StatelessWidget {
   }
 }
 
-// 지난 경기 요약 카드의 가운데에는 대회 로고 없이 날짜만 보여줘요.
+// 지난 경기 요약 카드에는 날짜 아래에 대회명과 경기 라운드를 보여줘요.
 class MatchCard2 extends StatelessWidget {
   final String date,
       venue,
@@ -183,6 +183,9 @@ class MatchCard2 extends StatelessWidget {
       team2Logo;
   final int team1Id;
   final int team2Id;
+  final int competitionId;
+  final String competitionName;
+  final Fixture? fixture;
   final int? homeScore;
   final int? awayScore;
   final Color? backgroundColor;
@@ -202,6 +205,9 @@ class MatchCard2 extends StatelessWidget {
     required this.team2shortname,
     required this.team2Logo,
     required this.team2Id,
+    required this.competitionId,
+    required this.competitionName,
+    this.fixture,
     required this.homeScore,
     required this.awayScore,
     this.backgroundColor,
@@ -236,7 +242,6 @@ class MatchCard2 extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               const teamWidth = 48.0;
-              final resolvedDateStyle = dateTextStyle ?? Body2.style;
               final homeDimmed = homeScore != null &&
                   awayScore != null &&
                   homeScore! < awayScore!;
@@ -263,20 +268,18 @@ class MatchCard2 extends StatelessWidget {
                   textWidth(homeScore?.toString() ?? '-', scoreStyle) + 24;
               final awayScoreWidth =
                   textWidth(awayScore?.toString() ?? '-', scoreStyle) + 24;
-              final fixedContentWidth =
-                  teamWidth * 2 + homeScoreWidth + awayScoreWidth;
-              final dateWidth = date
-                  .split('\n')
-                  .map((line) => textWidth(line, resolvedDateStyle))
-                  .fold(
-                      0.0, (widest, width) => width > widest ? width : widest);
-              // 로고·점수·날짜 사이 네 간격을 남는 폭에 맞춰 균등하게 나눠요.
-              // 날짜가 더 길면 글자 크기 대신 가운데 영역만 스크롤해요.
-              final gap =
-                  ((constraints.maxWidth - fixedContentWidth - dateWidth - 8) /
-                          4)
-                      .clamp(4.0, 16.0)
-                      .toDouble();
+              final scoreWidth = homeScoreWidth > awayScoreWidth
+                  ? homeScoreWidth
+                  : awayScoreWidth;
+              final sideWidth = teamWidth + scoreWidth;
+              final resolvedDateStyle = dateTextStyle ?? Body2.style;
+              // 양쪽 묶음의 폭을 같게 해 날짜·대회 영역을 카드의 정중앙에 둬요.
+              // 좁은 화면에서는 가운데 영역이 사라지지 않도록 간격만 줄여요.
+              final outerGap = ((constraints.maxWidth - sideWidth * 2 - 48) / 4)
+                  .clamp(0.0, 16.0)
+                  .toDouble();
+              // 점수판과 가운데 정보 사이의 간격만 최대 12로 제한해 날짜 폭을 확보해요.
+              final innerGap = outerGap.clamp(0.0, 12.0).toDouble();
               final matchRow = Row(
                 children: [
                   Row(
@@ -294,33 +297,44 @@ class MatchCard2 extends StatelessWidget {
                           logoKey: const ValueKey('last-match-home-logo'),
                         ),
                       ),
-                      SizedBox(width: gap),
-                      _ScoreBoard(
-                        key: const ValueKey('last-match-home-score'),
-                        score: homeScore,
-                        isDimmed: homeDimmed,
+                      SizedBox(width: outerGap),
+                      SizedBox(
+                        width: scoreWidth,
+                        child: _ScoreBoard(
+                          key: const ValueKey('last-match-home-score'),
+                          score: homeScore,
+                          isDimmed: homeDimmed,
+                        ),
                       ),
                     ],
                   ),
-                  SizedBox(width: gap),
+                  SizedBox(width: innerGap),
                   Expanded(
-                    child: _MatchInfo2(
-                      key: const ValueKey('last-match-date-time'),
+                    child: _LastMatchCompetitionInfo(
+                      key: const ValueKey('last-match-competition-info'),
                       date: date,
-                      venue: venue,
-                      textStyle: resolvedDateStyle,
+                      dateTextStyle: resolvedDateStyle,
+                      competitionId: competitionId,
+                      competitionName: competitionName,
+                      roundLabel: fixtureRoundLabel(
+                        fixture,
+                        locale: Localizations.localeOf(context),
+                      ),
                     ),
                   ),
-                  SizedBox(width: gap),
+                  SizedBox(width: innerGap),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _ScoreBoard(
-                        key: const ValueKey('last-match-away-score'),
-                        score: awayScore,
-                        isDimmed: awayDimmed,
+                      SizedBox(
+                        width: scoreWidth,
+                        child: _ScoreBoard(
+                          key: const ValueKey('last-match-away-score'),
+                          score: awayScore,
+                          isDimmed: awayDimmed,
+                        ),
                       ),
-                      SizedBox(width: gap),
+                      SizedBox(width: outerGap),
                       SizedBox(
                         width: teamWidth,
                         child: _TeamDisplay(
@@ -436,6 +450,7 @@ class _MatchInfo extends StatelessWidget {
         FixtureDateTime(
           label: fixtureDateLabel(match!.kickoff,
               locale: Localizations.localeOf(context)),
+          scrollOnOverflow: true,
         ),
         const SizedBox(height: 8),
         Container(
@@ -449,6 +464,7 @@ class _MatchInfo extends StatelessWidget {
           label: competitionAndRound,
           style: Body2.style,
           gap: 4,
+          scrollOnOverflow: true,
         ),
         const SizedBox(height: 4),
       ],
@@ -611,28 +627,55 @@ class _LiveMatchClockLabelState extends State<_LiveMatchClockLabel> {
   }
 }
 
-class _MatchInfo2 extends StatelessWidget {
-  final String date, venue;
-  final TextStyle textStyle;
+class _LastMatchCompetitionInfo extends StatelessWidget {
+  final String date;
+  final TextStyle dateTextStyle;
+  final int competitionId;
+  final String competitionName;
+  final String? roundLabel;
 
-  const _MatchInfo2({
+  const _LastMatchCompetitionInfo({
     super.key,
     required this.date,
-    required this.venue,
-    required this.textStyle,
+    required this.dateTextStyle,
+    required this.competitionId,
+    required this.competitionName,
+    required this.roundLabel,
   });
 
   @override
   Widget build(BuildContext context) {
+    final name = competitionNameLabel(context, competitionId, competitionName);
+    final competitionAndRound = roundLabel == null || roundLabel!.isEmpty
+        ? name
+        : '$name ${roundLabel!.replaceAll(' · ', ' ')}';
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (final line in date.split('\n'))
-          OverflowScrollingText(
-            text: line,
-            style: textStyle,
+        SizedBox(
+          key: const ValueKey('last-match-date-time'),
+          width: double.infinity,
+          child: OverflowScrollingText(
+            text: date,
+            style: dateTextStyle,
             alignment: Alignment.center,
           ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          key: const ValueKey('last-match-divider'),
+          width: 24,
+          height: 1,
+          color: AppColors.of(context).divider,
+        ),
+        const SizedBox(height: 8),
+        CompetitionLabel(
+          competitionId: competitionId,
+          label: competitionAndRound,
+          style: Body2.style,
+          gap: 4,
+          scrollOnOverflow: true,
+        ),
       ],
     );
   }
@@ -647,6 +690,7 @@ class FixtureDateTime extends StatelessWidget {
     this.overflow = TextOverflow.ellipsis,
     this.maxLines = 1,
     this.softWrap = false,
+    this.scrollOnOverflow = false,
   });
 
   final String label;
@@ -654,6 +698,7 @@ class FixtureDateTime extends StatelessWidget {
   final TextOverflow overflow;
   final int maxLines;
   final bool softWrap;
+  final bool scrollOnOverflow;
 
   @override
   Widget build(BuildContext context) {
@@ -661,14 +706,20 @@ class FixtureDateTime extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (final line in label.split('\n'))
-          Text(
-            line,
-            maxLines: maxLines,
-            softWrap: softWrap,
-            overflow: overflow,
-            textAlign: TextAlign.center,
-            style: textStyle ?? Body2.style,
-          ),
+          scrollOnOverflow
+              ? OverflowScrollingText(
+                  text: line,
+                  style: textStyle ?? Body2.style,
+                  alignment: Alignment.center,
+                )
+              : Text(
+                  line,
+                  maxLines: maxLines,
+                  softWrap: softWrap,
+                  overflow: overflow,
+                  textAlign: TextAlign.center,
+                  style: textStyle ?? Body2.style,
+                ),
       ],
     );
   }

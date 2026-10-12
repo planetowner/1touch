@@ -1104,7 +1104,7 @@ void main() {
     final matchDateLines = tester.widgetList<Text>(
       find.descendant(
         of: find.byKey(const ValueKey('last-match-date-time')),
-        matching: find.byType(Text),
+        matching: find.text(lastMatch.date),
       ),
     );
     expect(matchDateLines, hasLength(1));
@@ -1133,7 +1133,7 @@ void main() {
       find.byKey(const ValueKey('last-match-home-score')),
     );
     final dateTimeRect = tester.getRect(
-      find.byKey(const ValueKey('last-match-date-time')),
+      find.byKey(const ValueKey('last-match-competition-info')),
     );
     final awayScoreRect = tester.getRect(
       find.byKey(const ValueKey('last-match-away-score')),

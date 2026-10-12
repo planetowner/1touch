@@ -410,6 +410,14 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 teamNameLabel(context, away.teamId, away.name),
             team2Logo: away.imagePath ?? '',
             team2Id: away.teamId,
+            competitionId: h2h.competitionId,
+            fixture: h2h,
+            competitionName: competitionNameLabel(
+              context,
+              h2h.competitionId,
+              competitionRepository.findById(h2h.competitionId)?.name ??
+                  tr(context, 'Unknown League'),
+            ),
             homeScore: h2h.homeScore,
             awayScore: h2h.awayScore,
             backgroundColor: isDark ? AppPalette.darkGrey : AppPalette.white,

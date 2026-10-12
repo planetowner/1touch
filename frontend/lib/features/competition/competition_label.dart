@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/overflow_scrolling_text.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 
 const _localCompetitionLogos = <int, String>{
@@ -85,6 +86,8 @@ class CompetitionLabel extends StatelessWidget {
     this.mainAxisAlignment = MainAxisAlignment.center,
     this.maxLines = 1,
     this.textAlign,
+    this.overflow = TextOverflow.ellipsis,
+    this.scrollOnOverflow = false,
   });
 
   final int? competitionId;
@@ -97,9 +100,10 @@ class CompetitionLabel extends StatelessWidget {
   final MainAxisAlignment mainAxisAlignment;
   final int? maxLines;
   final TextAlign? textAlign;
+  final TextOverflow overflow;
+  final bool scrollOnOverflow;
 
-  @override
-  Widget build(BuildContext context) => Row(
+  Widget _labelRow() => Row(
         mainAxisSize: mainAxisSize,
         mainAxisAlignment: mainAxisAlignment,
         children: [
@@ -111,16 +115,29 @@ class CompetitionLabel extends StatelessWidget {
             ),
           ],
           Flexible(
-            child: Text(
-              label,
-              key: textKey,
-              maxLines: maxLines,
-              softWrap: maxLines != 1,
-              textAlign: textAlign,
-              overflow: TextOverflow.ellipsis,
-              style: style,
-            ),
+            child: scrollOnOverflow
+                ? OverflowScrollingText(
+                    key: textKey,
+                    text: label,
+                    style: style,
+                    alignment: Alignment.center,
+                  )
+                : Text(
+                    label,
+                    key: textKey,
+                    maxLines: maxLines,
+                    softWrap: maxLines != 1,
+                    textAlign: textAlign,
+                    overflow: overflow,
+                    style: style,
+                  ),
           ),
         ],
       );
+
+  @override
+  Widget build(BuildContext context) {
+    if (!scrollOnOverflow) return _labelRow();
+    return Align(alignment: Alignment.center, child: _labelRow());
+  }
 }

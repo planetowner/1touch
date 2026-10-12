@@ -15,6 +15,7 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/standings/api/api_standing_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/features/betting_widgets.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -230,12 +231,22 @@ void main() {
     final card = tester.widget<MatchCard2>(find.byType(MatchCard2));
     expect(card.showTitle, isFalse);
     expect(card.date, '6일 전');
+    expect(card.competitionId, 8);
+    expect(card.fixture, same(previousMeeting));
+    expect(card.competitionName, 'Premier League');
     expect(
       card.contentPadding,
       const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
     );
     expect(card.borderRadius, BorderRadius.circular(24));
     expect(find.text('6일 전'), findsOneWidget);
+    final competition = find.descendant(
+      of: find.byKey(const ValueKey('last-match-competition-info')),
+      matching: find.byType(CompetitionLabel),
+    );
+    expect(competition, findsOneWidget);
+    expect(tester.widget<CompetitionLabel>(competition).label,
+        'Premier League 5R');
     expect(find.text('LAST MATCH'), findsNothing);
     expect(find.text('지난 경기'), findsNothing);
     expect(tester.takeException(), isNull);

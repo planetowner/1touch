@@ -84,6 +84,16 @@ class _FixturesState extends State<Fixtures> {
                           teamNameLabel(context, away.teamId, away.name),
                       team2Logo: away.imagePath ?? '',
                       team2Id: away.teamId,
+                      competitionId: lastMatch.competitionId,
+                      fixture: lastMatch,
+                      competitionName: competitionNameLabel(
+                        context,
+                        lastMatch.competitionId,
+                        competitionRepository
+                                .findById(lastMatch.competitionId)
+                                ?.name ??
+                            tr(context, 'Unknown League'),
+                      ),
                       homeScore: lastMatch.homeScore ?? 0,
                       awayScore: lastMatch.awayScore ?? 0,
                       backgroundColor: lastMatchBackground,

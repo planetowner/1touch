@@ -343,10 +343,12 @@ void main() {
         closeTo(tester.getTopLeft(lastFinder).dy, 0.1),
       );
       final lastMatchDate = tester.widget<Text>(
-        find.descendant(
-          of: find.byKey(const ValueKey('last-match-date-time')),
-          matching: find.byType(Text),
-        ),
+        find
+            .descendant(
+              of: find.byKey(const ValueKey('last-match-date-time')),
+              matching: find.byType(Text),
+            )
+            .first,
       );
       expect(lastMatchDate.style, Body2.style);
       expect(tester.takeException(), isNull);
