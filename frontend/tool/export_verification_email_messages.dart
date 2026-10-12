@@ -10,7 +10,7 @@ String verificationEmailMessagesJson() => serverMessagesJson(
           'title': 'Email Verification Code',
           'code_label': 'Your 1touch code is',
           'signup':
-              'To continue signing up, enter this code within {minutes} minutes.',
+              'Use it to create your account. It expires in {minutes} minutes.',
           'password_reset':
               'To reset your password, enter this code within {minutes} minutes.',
           'username_recovery':
@@ -18,7 +18,7 @@ String verificationEmailMessagesJson() => serverMessagesJson(
           'email_change':
               'To change your email address, enter this code within {minutes} minutes.',
           'ignore':
-              "If you didn't request this verification code, you can ignore this email.",
+              'If you did not request this code, you can ignore this email.',
         },
       },
       generator: _generator,

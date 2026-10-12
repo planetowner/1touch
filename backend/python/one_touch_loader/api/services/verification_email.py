@@ -19,13 +19,13 @@ def render_verification_email(code: str, purpose: str, language: str) -> tuple[s
     values = {"language": language, "title": copy["title"], "code_label": copy["code_label"],
               "instructions": instructions, "ignore": copy["ignore"]}
     values = {key: escape(value) for key, value in values.items()}
-    # 원본의 여섯 밑줄 위에 번호를 넣고, 복사할 때 공백이 섞이지 않게 이어 붙여요.
-    # 밑줄 위치는 높이로 유지해요. 줄 높이는 박스 안쪽 높이에 4px을 더해 숫자가 위로 뜨는 글꼴 여백을 보정해요.
+    # 박스 간격은 CSS로만 넣어 인증번호를 복사할 때 공백이 섞이지 않게 해요.
     values["code_digits"] = "".join(
-        '<span class="verification-digit" style="display: inline-block; width: 27.42086px; '
-        'height: 44.45774px; margin: 0 4.98562px; border-bottom: 2.49296px solid #9e9e9e; '
-        'font-size: 28px; line-height: 60.50704px; font-weight: 700; text-align: center; vertical-align: top;">'
-        f'{escape(digit)}</span>' for digit in code
+        '<span class="verification-digit" style="display: inline-block; width: 26.03390px; '
+        f'height: 32px; margin-left: {6 if index else 0}px; border-radius: 2.71186px; '
+        'background-color: #3d3d3d; color: #ffffff; font-size: 20px; line-height: 32px; '
+        'font-weight: 700; text-align: center; vertical-align: top;">'
+        f'{escape(digit)}</span>' for index, digit in enumerate(code)
     )
     template = Template((TEMPLATE_DIRECTORY / "verification.html").read_text(encoding="utf-8"))
     html = template.substitute(values)
