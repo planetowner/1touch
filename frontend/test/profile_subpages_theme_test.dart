@@ -18,6 +18,7 @@ import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/notifications/notification_preferences.dart';
 import 'package:onetouch/data/notifications/notification_preferences_repository.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/models/following_player.dart';
 import 'package:onetouch/models/player_detail.dart';
 
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
@@ -399,22 +400,128 @@ void main() {
 
       final top = find.byKey(const ValueKey('following-search-top-fade'));
       final bottom = find.byKey(const ValueKey('following-search-bottom-fade'));
+      final list = find.descendant(of: bottom, matching: find.byType(ListView));
+      final firstImage = find
+          .descendant(
+            of: list,
+            matching: find.byType(ClipOval),
+          )
+          .first;
+      expect(
+        tester
+            .getRect(find.byKey(const ValueKey('following-players-search')))
+            .bottom,
+        tester.getRect(top).top,
+      );
+      expect(tester.getRect(list).top, tester.getRect(top).top);
+      expect(
+        tester.getRect(firstImage).top -
+            tester
+                .getRect(find.byKey(const ValueKey('following-players-search')))
+                .bottom,
+        closeTo(24, 1),
+      );
       expect(tester.widget<ShaderMask>(top).blendMode, BlendMode.dst);
       expect(tester.widget<ShaderMask>(bottom).blendMode, BlendMode.dstIn);
 
       await tester.drag(
-        find.descendant(of: bottom, matching: find.byType(ListView)),
+        list,
         const Offset(0, -120),
       );
       await tester.pumpAndSettle();
       expect(tester.widget<ShaderMask>(top).blendMode, BlendMode.dstIn);
+      expect(tester.getRect(list).top, tester.getRect(top).top);
       expect(tester.widget<ShaderMask>(bottom).blendMode, BlendMode.dstIn);
-      await tester.drag(
-        find.descendant(of: bottom, matching: find.byType(ListView)),
-        const Offset(0, -2400),
+      final scrollable = find.descendant(
+        of: list,
+        matching: find.byType(Scrollable),
       );
-      await tester.pumpAndSettle();
+      final position = tester.state<ScrollableState>(scrollable).position;
+      for (var attempt = 0;
+          attempt < 3 && position.extentAfter > 0.5;
+          attempt++) {
+        position.jumpTo(position.maxScrollExtent);
+        await tester.pumpAndSettle();
+      }
+      expect(position.extentAfter, lessThan(0.5));
       expect(tester.widget<ShaderMask>(bottom).blendMode, BlendMode.dst);
+      position.jumpTo(0);
+      await tester.pumpAndSettle();
+      expect(tester.widget<ShaderMask>(top).blendMode, BlendMode.dst);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final size in [const Size(320, 568), const Size(393, 852)]) {
+    testWidgets('following player list fades while scrolling at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: Scaffold(
+          body: FollowingPlayersEditorSheet(
+            players: [
+              for (var id = 1; id <= 20; id++)
+                FollowingPlayer(
+                    playerId: id, name: 'Player $id', imagePath: null),
+            ],
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final top = find.byKey(const ValueKey('following-list-top-fade'));
+      final bottom = find.byKey(const ValueKey('following-list-bottom-fade'));
+      final list = find.descendant(
+        of: bottom,
+        matching: find.byType(ReorderableListView),
+      );
+      final firstImage = find
+          .descendant(
+            of: list,
+            matching: find.byType(ClipOval),
+          )
+          .first;
+      expect(
+        tester
+            .getRect(find.byKey(const ValueKey('following-players-search')))
+            .bottom,
+        tester.getRect(top).top,
+      );
+      expect(
+        tester.getRect(firstImage).top -
+            tester
+                .getRect(find.byKey(const ValueKey('following-players-search')))
+                .bottom,
+        closeTo(24, 1),
+      );
+      expect(tester.widget<ShaderMask>(top).blendMode, BlendMode.dst);
+      expect(tester.widget<ShaderMask>(bottom).blendMode, BlendMode.dstIn);
+
+      await tester.drag(list, const Offset(0, -120));
+      await tester.pumpAndSettle();
+      expect(tester.widget<ShaderMask>(top).blendMode, BlendMode.dstIn);
+      expect(tester.getRect(list).top, tester.getRect(top).top);
+      expect(tester.widget<ShaderMask>(bottom).blendMode, BlendMode.dstIn);
+
+      final scrollable = find.descendant(
+        of: list,
+        matching: find.byType(Scrollable),
+      );
+      final position = tester.state<ScrollableState>(scrollable).position;
+      position.jumpTo(position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      expect(tester.widget<ShaderMask>(top).blendMode, BlendMode.dstIn);
+      expect(tester.widget<ShaderMask>(bottom).blendMode, BlendMode.dst);
+
+      position.jumpTo(0);
+      await tester.pumpAndSettle();
+      expect(tester.widget<ShaderMask>(top).blendMode, BlendMode.dst);
+      expect(tester.widget<ShaderMask>(bottom).blendMode, BlendMode.dstIn);
       expect(tester.takeException(), isNull);
     });
   }

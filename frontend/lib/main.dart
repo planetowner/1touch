@@ -546,7 +546,14 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/profile',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _profilePage(context, const Profile()),
+      builder: (context, state) => _profilePage(
+        context,
+        Navigator(
+          onGenerateRoute: (_) => MaterialPageRoute<void>(
+            builder: (_) => const Profile(),
+          ),
+        ),
+      ),
     ),
     GoRoute(
       path: '/profile/activity',

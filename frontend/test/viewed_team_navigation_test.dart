@@ -227,6 +227,49 @@ void main() {
     }
 
     await expectSurface(app_style.AppPalette.lightModeDarkGrey, 'profile');
+    Future<Rect> expectEditorAboveNavigation(
+        Finder editButton, Key sheetKey) async {
+      await tester.ensureVisible(editButton);
+      await tester.pumpAndSettle();
+      await tester.tap(editButton);
+      await tester.pumpAndSettle();
+
+      final sheet = find.byKey(sheetKey);
+      final navigation = find.byType(OneTouchBottomNavigationBar);
+      expect(sheet, findsOneWidget);
+      expect(navigation, findsOneWidget);
+      final search = find.byKey(
+          sheetKey == const ValueKey('profile-team-edit-sheet')
+              ? const ValueKey('profile-team-edit-search')
+              : const ValueKey('following-players-search'));
+      final fade = find.byKey(
+          sheetKey == const ValueKey('profile-team-edit-sheet')
+              ? const ValueKey('profile-team-edit-top-fade')
+              : const ValueKey('following-list-top-fade'));
+      expect(tester.getRect(search).bottom, tester.getRect(fade).top);
+      final sheetRect = tester.getRect(sheet);
+      expect(
+          sheetRect.bottom, lessThanOrEqualTo(tester.getRect(navigation).top));
+      Navigator.of(tester.element(sheet)).pop();
+      await tester.pumpAndSettle();
+      expect(sheet, findsNothing);
+      expect(router.routeInformationProvider.value.uri.path, '/profile');
+      return sheetRect;
+    }
+
+    final teamEditorRect = await expectEditorAboveNavigation(
+      find.byIcon(Icons.border_color).first,
+      const ValueKey('profile-team-edit-sheet'),
+    );
+    final playerEditorRect = await expectEditorAboveNavigation(
+      find.descendant(
+        of: find.byKey(const ValueKey('players-favorites-section')),
+        matching: find.byIcon(Icons.border_color),
+      ),
+      const ValueKey('following-players-sheet'),
+    );
+    expect(teamEditorRect.top, closeTo(playerEditorRect.top, 1));
+    expect(teamEditorRect.height, closeTo(playerEditorRect.height, 1));
     router.push('/profile/preference');
     await tester.pumpAndSettle();
     await expectSurface(app_style.AppPalette.white, 'preferences');

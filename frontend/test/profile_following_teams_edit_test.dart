@@ -12,6 +12,192 @@ import 'package:onetouch/models/team.dart';
 void main() {
   setUpAppCatalog();
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets(
+        'sheet keeps player editor height for two search results at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: _EditSheetHost(
+          repository: _RecordingFollowingTeamsRepository(),
+          initialTeams: const [
+            Team(teamId: 83, name: 'FC Barcelona'),
+            Team(teamId: 19, name: 'Arsenal'),
+            Team(teamId: 9, name: 'Manchester City'),
+            Team(teamId: 503, name: 'FC Bayern München'),
+            Team(teamId: 3468, name: 'Atlético Madrid'),
+          ],
+        ),
+      ));
+      await tester.tap(find.text('OPEN'));
+      await tester.pumpAndSettle();
+
+      final sheet = find.byKey(const ValueKey('profile-team-edit-sheet'));
+      final topFade = find.byKey(const ValueKey('profile-team-edit-top-fade'));
+      final fade = find.byKey(const ValueKey('profile-team-edit-bottom-fade'));
+      final search = find.byKey(const ValueKey('profile-team-edit-search'));
+      final fullHeight = tester.getSize(sheet).height;
+      expect(fullHeight, closeTo(size.height * 0.92, 1));
+      expect(tester.getRect(search).bottom, tester.getRect(topFade).top);
+      expect(tester.getRect(fade).top, tester.getRect(search).bottom);
+      final firstTeamLogo = find
+          .descendant(
+            of: find.byKey(const ValueKey(83)),
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is SizedBox &&
+                  widget.width == 52 &&
+                  widget.height == 52,
+            ),
+          )
+          .first;
+      expect(tester.getRect(firstTeamLogo).top - tester.getRect(search).bottom,
+          closeTo(24, 1));
+      final update = find.widgetWithText(ElevatedButton, 'UPDATE');
+      expect(tester.widget<ShaderMask>(topFade).blendMode, BlendMode.dst);
+      expect(tester.widget<ShaderMask>(fade).blendMode,
+          size.height < 800 ? BlendMode.dstIn : BlendMode.dst);
+      if (size.height > 800) {
+        final teamList = find.descendant(
+          of: sheet,
+          matching: find.byType(ReorderableListView),
+        );
+        expect(
+          tester.getRect(update).top - tester.getRect(teamList).bottom,
+          closeTo(16, 1),
+        );
+      }
+      expect(tester.takeException(), isNull);
+
+      await tester.enterText(find.byType(TextField), 'Manchester');
+      await tester.pumpAndSettle();
+      expect(tester.getRect(search).bottom, tester.getRect(topFade).top);
+      expect(tester.getRect(fade).top, tester.getRect(search).bottom);
+      final teamList = find.descendant(
+        of: sheet,
+        matching: find.byType(ListView),
+      );
+      final results = find.descendant(
+        of: teamList,
+        matching: find.byType(InkWell),
+      );
+      expect(results, findsNWidgets(2));
+      final firstResultLogo = find
+          .descendant(
+            of: results.first,
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is SizedBox &&
+                  widget.width == 52 &&
+                  widget.height == 52,
+            ),
+          )
+          .first;
+      expect(
+          tester.getRect(firstResultLogo).top - tester.getRect(search).bottom,
+          closeTo(24, 1));
+      expect(tester.getSize(sheet).height, closeTo(fullHeight, 1));
+      expect(tester.widget<ShaderMask>(topFade).blendMode, BlendMode.dst);
+      expect(tester.widget<ShaderMask>(fade).blendMode, BlendMode.dst);
+      expect(
+        tester.getRect(update).top - tester.getRect(teamList).bottom,
+        closeTo(16, 1),
+      );
+      expect(tester.takeException(), isNull);
+
+      if (size.width == 320) {
+        tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+        addTearDown(tester.view.resetViewInsets);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(update, findsOneWidget);
+        expect(tester.widget<ShaderMask>(fade).blendMode, BlendMode.dstIn);
+      }
+    });
+  }
+
+  testWidgets('team list fade clears after scrolling to the last team',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: _EditSheetHost(
+        repository: _RecordingFollowingTeamsRepository(),
+        initialTeams: const [
+          Team(teamId: 83, name: 'FC Barcelona'),
+          Team(teamId: 19, name: 'Arsenal'),
+          Team(teamId: 9, name: 'Manchester City'),
+          Team(teamId: 503, name: 'FC Bayern München'),
+          Team(teamId: 3468, name: 'Atlético Madrid'),
+        ],
+      ),
+    ));
+    await tester.tap(find.text('OPEN'));
+    await tester.pumpAndSettle();
+
+    final fade = find.byKey(const ValueKey('profile-team-edit-bottom-fade'));
+    final topFade = find.byKey(const ValueKey('profile-team-edit-top-fade'));
+    final search = find.byKey(const ValueKey('profile-team-edit-search'));
+    final list = find.descendant(
+      of: fade,
+      matching: find.byType(ReorderableListView),
+    );
+    expect(tester.widget<ShaderMask>(topFade).blendMode, BlendMode.dst);
+    expect(tester.widget<ShaderMask>(fade).blendMode, BlendMode.dstIn);
+    await tester.drag(list, const Offset(0, -1000));
+    await tester.pumpAndSettle();
+    expect(tester.widget<ShaderMask>(topFade).blendMode, BlendMode.dstIn);
+    expect(tester.getRect(list).top, tester.getRect(search).bottom);
+    expect(tester.widget<ShaderMask>(fade).blendMode, BlendMode.dst);
+    await tester.drag(list, const Offset(0, 1000));
+    await tester.pumpAndSettle();
+    expect(tester.widget<ShaderMask>(topFade).blendMode, BlendMode.dst);
+    expect(tester.widget<ShaderMask>(fade).blendMode, BlendMode.dstIn);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('search result fade clears after scrolling to the last result',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: _EditSheetHost(repository: _RecordingFollowingTeamsRepository()),
+    ));
+    await tester.tap(find.text('OPEN'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'a');
+    await tester.pumpAndSettle();
+
+    final fade = find.byKey(const ValueKey('profile-team-edit-bottom-fade'));
+    final topFade = find.byKey(const ValueKey('profile-team-edit-top-fade'));
+    final search = find.byKey(const ValueKey('profile-team-edit-search'));
+    final list = find.descendant(
+      of: fade,
+      matching: find.byType(ListView),
+    );
+    expect(tester.widget<ShaderMask>(topFade).blendMode, BlendMode.dst);
+    expect(tester.widget<ShaderMask>(fade).blendMode, BlendMode.dstIn);
+    final scrollable = find.descendant(
+      of: list,
+      matching: find.byType(Scrollable),
+    );
+    final position = tester.state<ScrollableState>(scrollable).position;
+    position.jumpTo(position.maxScrollExtent);
+    await tester.pumpAndSettle();
+    expect(tester.widget<ShaderMask>(topFade).blendMode, BlendMode.dstIn);
+    expect(tester.getRect(list).top, tester.getRect(search).bottom);
+    expect(tester.widget<ShaderMask>(fade).blendMode, BlendMode.dst);
+    position.jumpTo(0);
+    await tester.pumpAndSettle();
+    expect(tester.widget<ShaderMask>(topFade).blendMode, BlendMode.dst);
+    expect(tester.widget<ShaderMask>(fade).blendMode, BlendMode.dstIn);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
     for (final theme in [app_style.darktheme, app_style.whitetheme]) {
       testWidgets(
           'team rule notice fits and dismisses at $size in ${theme.brightness}',
@@ -88,11 +274,21 @@ void main() {
         await tester.enterText(find.byType(TextField), 'Real Madrid');
         await tester.pumpAndSettle();
 
-        final teamRow = find.widgetWithText(ListTile, 'Real Madrid');
+        final teamRow = find.byKey(const ValueKey('team-search-result-3468'));
         expect(teamRow, findsOneWidget);
         if (target == 'logo') {
-          final rowRect = tester.getRect(teamRow);
-          await tester.tapAt(Offset(rowRect.left + 26, rowRect.center.dy));
+          final logo = find
+              .descendant(
+                of: teamRow,
+                matching: find.byWidgetPredicate(
+                  (widget) =>
+                      widget is SizedBox &&
+                      widget.width == 52 &&
+                      widget.height == 52,
+                ),
+              )
+              .first;
+          await tester.tap(logo);
         } else {
           await tester.tap(find.descendant(
             of: teamRow,
@@ -159,7 +355,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Manchester City');
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ListTile, 'Manchester City'));
+      await tester.tap(find.byKey(const ValueKey('team-search-result-9')));
       await tester.pump();
       await tester.ensureVisible(find.text('UPDATE'));
       await tester.tap(find.text('UPDATE'));
@@ -237,9 +433,15 @@ void main() {
 }
 
 class _EditSheetHost extends StatelessWidget {
-  const _EditSheetHost({required this.repository});
+  const _EditSheetHost(
+      {required this.repository,
+      this.initialTeams = const [
+        Team(teamId: 83, name: 'FC Barcelona'),
+        Team(teamId: 19, name: 'Arsenal'),
+      ]});
 
   final FollowingTeamsRepository repository;
+  final List<Team> initialTeams;
 
   @override
   Widget build(BuildContext context) {
@@ -251,11 +453,8 @@ class _EditSheetHost extends StatelessWidget {
             isScrollControlled: true,
             builder: (_) => EditFollowingTeamsSheet(
               repository: repository,
-              initialTeams: const [
-                Team(teamId: 83, name: 'FC Barcelona'),
-                Team(teamId: 19, name: 'Arsenal'),
-              ],
-              initialFavoriteTeamId: 83,
+              initialTeams: initialTeams,
+              initialFavoriteTeamId: initialTeams.first.teamId,
             ),
           ),
           child: const Text('OPEN'),

@@ -180,8 +180,8 @@ class FollowingPlayersEditorSheet extends StatefulWidget {
 
 class _FollowingPlayersEditorSheetState
     extends State<FollowingPlayersEditorSheet> {
-  static const _searchFadeHeight = 40.0;
-  static const _searchFadeGradient = LinearGradient(
+  static const _listFadeHeight = 40.0;
+  static const _listFadeGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [
@@ -203,8 +203,8 @@ class _FollowingPlayersEditorSheetState
   late final List<FollowingPlayer> _players = [...widget.players];
   PlayerCandidate? _selected;
   bool get _searching => _candidateSearch.query.isNotEmpty;
-  bool _fadeSearchTop = false;
-  bool _fadeSearchBottom = false;
+  bool _fadeListTop = false;
+  bool _fadeListBottom = false;
   bool _changed = false;
   PlayerDetailRepository get _repository =>
       widget.repository ?? playerDetailRepository;
@@ -220,26 +220,75 @@ class _FollowingPlayersEditorSheetState
     final query = _search.text.trim();
     if (query == _candidateSearch.query) return;
     _selected = null;
-    _fadeSearchTop = false;
-    _fadeSearchBottom = false;
+    _fadeListTop = false;
+    _fadeListBottom = false;
     _candidateSearch.updateQuery(query);
   }
 
   void _onSearchChanged() => setState(() {});
 
-  void _updateSearchFade(ScrollMetrics metrics) {
+  void _updateListFade(ScrollMetrics metrics) {
     final top = metrics.extentBefore > 0.5;
     final bottom = metrics.extentAfter > 0.5;
-    if (top == _fadeSearchTop && bottom == _fadeSearchBottom) return;
+    if (top == _fadeListTop && bottom == _fadeListBottom) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || (top == _fadeSearchTop && bottom == _fadeSearchBottom)) {
+      if (!mounted || (top == _fadeListTop && bottom == _fadeListBottom)) {
         return;
       }
       setState(() {
-        _fadeSearchTop = top;
-        _fadeSearchBottom = bottom;
+        _fadeListTop = top;
+        _fadeListBottom = bottom;
       });
     });
+  }
+
+  Widget _fadingList(ScrollController controller, Color divider) {
+    return NotificationListener<ScrollMetricsNotification>(
+      onNotification: (notification) {
+        _updateListFade(notification.metrics);
+        return false;
+      },
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          _updateListFade(notification.metrics);
+          return false;
+        },
+        child: ShaderMask(
+          key: ValueKey(_searching
+              ? 'following-search-top-fade'
+              : 'following-list-top-fade'),
+          blendMode: _fadeListTop ? BlendMode.dstIn : BlendMode.dst,
+          shaderCallback: (bounds) {
+            final height = bounds.height.clamp(0.0, _listFadeHeight);
+            return _listFadeGradient
+                .createShader(Rect.fromLTWH(0, 0, bounds.width, height));
+          },
+          child: ShaderMask(
+            key: ValueKey(_searching
+                ? 'following-search-bottom-fade'
+                : 'following-list-bottom-fade'),
+            blendMode: _fadeListBottom ? BlendMode.dstIn : BlendMode.dst,
+            shaderCallback: (bounds) {
+              final height = bounds.height.clamp(0.0, _listFadeHeight);
+              return LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: _listFadeGradient.colors,
+                stops: _listFadeGradient.stops,
+              ).createShader(Rect.fromLTWH(
+                0,
+                bounds.height - height,
+                bounds.width,
+                height,
+              ));
+            },
+            child: _searching
+                ? _searchResults(controller, divider)
+                : _followedPlayers(controller, divider),
+          ),
+        ),
+      ),
+    );
   }
 
   bool _contains(int id) => _players.any((player) => player.playerId == id);
@@ -313,11 +362,7 @@ class _FollowingPlayersEditorSheetState
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Expanded(
-                child: _searching
-                    ? _searchResults(controller, divider)
-                    : _followedPlayers(controller, divider)),
+            Expanded(child: _fadingList(controller, divider)),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: SizedBox(
@@ -355,6 +400,7 @@ class _FollowingPlayersEditorSheetState
   Widget _followedPlayers(ScrollController controller, Color divider) =>
       ReorderableListView.builder(
         scrollController: controller,
+        padding: const EdgeInsets.only(top: 24),
         buildDefaultDragHandles: false,
         itemCount: _players.length,
         onReorderItem: (oldIndex, newIndex) {
@@ -368,6 +414,7 @@ class _FollowingPlayersEditorSheetState
           return _FollowingPlayerRow(
             key: ValueKey('following-editor-${player.playerId}'),
             player: player,
+            isFirst: index == 0,
             divider: divider,
             dragHandle: ReorderableDragStartListener(
               index: index,
@@ -401,57 +448,21 @@ class _FollowingPlayersEditorSheetState
     if (results.isEmpty) {
       return Center(child: Text(tr(context, 'No players found')));
     }
-    return NotificationListener<ScrollMetricsNotification>(
-      onNotification: (notification) {
-        _updateSearchFade(notification.metrics);
-        return false;
+    return ListView.builder(
+      controller: controller,
+      padding: const EdgeInsets.only(top: 24),
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final player = results[index];
+        final selected = _selected?.id == player.id;
+        return _SearchPlayerRow(
+          player: player,
+          divider: divider,
+          selected: selected,
+          isFirst: index == 0,
+          onSelect: () => setState(() => _selected = player),
+        );
       },
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          _updateSearchFade(notification.metrics);
-          return false;
-        },
-        child: ShaderMask(
-          key: const ValueKey('following-search-top-fade'),
-          blendMode: _fadeSearchTop ? BlendMode.dstIn : BlendMode.dst,
-          shaderCallback: (bounds) => _searchFadeGradient.createShader(
-            Rect.fromLTWH(0, 0, bounds.width,
-                bounds.height.clamp(0.0, _searchFadeHeight)),
-          ),
-          child: ShaderMask(
-            key: const ValueKey('following-search-bottom-fade'),
-            blendMode: _fadeSearchBottom ? BlendMode.dstIn : BlendMode.dst,
-            shaderCallback: (bounds) {
-              final height = bounds.height.clamp(0.0, _searchFadeHeight);
-              return LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: _searchFadeGradient.colors,
-                stops: _searchFadeGradient.stops,
-              ).createShader(Rect.fromLTWH(
-                0,
-                bounds.height - height,
-                bounds.width,
-                height,
-              ));
-            },
-            child: ListView.builder(
-              controller: controller,
-              itemCount: results.length,
-              itemBuilder: (context, index) {
-                final player = results[index];
-                final selected = _selected?.id == player.id;
-                return _SearchPlayerRow(
-                  player: player,
-                  divider: divider,
-                  selected: selected,
-                  onSelect: () => setState(() => _selected = player),
-                );
-              },
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -460,10 +471,12 @@ class _FollowingPlayerRow extends StatelessWidget {
   const _FollowingPlayerRow(
       {super.key,
       required this.player,
+      required this.isFirst,
       required this.divider,
       required this.dragHandle,
       required this.onRemove});
   final FollowingPlayer player;
+  final bool isFirst;
   final Color divider;
   final Widget dragHandle;
   final VoidCallback onRemove;
@@ -471,7 +484,9 @@ class _FollowingPlayerRow extends StatelessWidget {
   // 상세 응답을 기다리지 않고 이미 받은 목록 정보로 첫 프레임을 그려요.
   Widget build(BuildContext context) => Column(children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          // 첫 사진의 위쪽 간격은 고정된 목록 위치가 담당해요.
+          padding:
+              EdgeInsets.only(top: isFirst ? 0 : 12, bottom: isFirst ? 24 : 12),
           child: Row(children: [
             IconButton(
               tooltip: tr(context, 'Remove player'),
@@ -505,17 +520,19 @@ class _SearchPlayerRow extends StatelessWidget {
       {required this.player,
       required this.divider,
       required this.selected,
+      required this.isFirst,
       required this.onSelect});
   final PlayerCandidate player;
   final Color divider;
   final bool selected;
+  final bool isFirst;
   final VoidCallback? onSelect;
   @override
   Widget build(BuildContext context) => Column(children: [
         InkWell(
           onTap: onSelect,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: EdgeInsets.only(top: isFirst ? 0 : 12, bottom: 12),
             child: Row(children: [
               ClipOval(
                   child: ColoredBox(
