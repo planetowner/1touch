@@ -103,7 +103,7 @@ class ApiStandingRepository implements StandingRepository {
 
   void _refreshIfStale(StandingQuery query) {
     if (!AppCachePolicy.shouldRefresh(
-      tier: CacheTier.extended,
+      tier: CacheTier.shortLived,
       trigger: CacheSyncTrigger.screenEnter,
       savedAt: _savedAt[query],
     )) {

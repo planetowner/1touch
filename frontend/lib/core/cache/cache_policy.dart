@@ -1,3 +1,5 @@
+import 'package:clock/clock.dart';
+
 /// Events that are allowed to synchronize local data with the server.
 ///
 /// Cache freshness is event-driven instead of being controlled by unrelated
@@ -27,10 +29,13 @@ enum CacheFreshness { missing, fresh, stale }
 /// TTLs are product decisions and therefore live in one place instead of being
 /// copied into screens or endpoint implementations.
 abstract final class AppCachePolicy {
+  // 대회·시즌 기준정보는 오래 보관하고, 경기로 바뀌는 데이터는 더 자주 확인해요.
   static const staticTtl = Duration(days: 7);
-  static const extendedTtl = Duration(hours: 6);
-  static const standardTtl = Duration(hours: 1);
-  static const shortLivedTtl = Duration(minutes: 5);
+  // 종료 경기 상세도 늦게 수집된 기록과 정정 결과를 반영해야 해요.
+  static const extendedTtl = Duration(hours: 1);
+  static const standardTtl = Duration(minutes: 15);
+  // 경기 목록·순위·피드는 새 항목이 생기므로 정적 데이터로 취급하지 않아요.
+  static const shortLivedTtl = Duration(minutes: 1);
   static const realtimeTtl = Duration.zero;
 
   static Duration? ttl(CacheTier tier) => switch (tier) {
@@ -52,7 +57,7 @@ abstract final class AppCachePolicy {
     if (savedAt == null) return CacheFreshness.missing;
     final duration = ttl(tier);
     if (duration == null) return CacheFreshness.fresh;
-    final current = (now ?? DateTime.now()).toUtc();
+    final current = (now ?? clock.now()).toUtc();
     return current.difference(savedAt.toUtc()) < duration
         ? CacheFreshness.fresh
         : CacheFreshness.stale;

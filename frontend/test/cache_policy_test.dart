@@ -24,12 +24,12 @@ void main() {
     );
   });
 
-  test('keeps standard data fresh for one hour', () {
-    expect(AppCachePolicy.standardTtl, const Duration(hours: 1));
+  test('keeps standard data fresh for fifteen minutes', () {
+    expect(AppCachePolicy.standardTtl, const Duration(minutes: 15));
     expect(
       AppCachePolicy.freshness(
         CacheTier.standard,
-        savedAt: now.subtract(const Duration(minutes: 59)),
+        savedAt: now.subtract(const Duration(minutes: 14, seconds: 59)),
         now: now,
       ),
       CacheFreshness.fresh,
@@ -37,6 +37,26 @@ void main() {
     expect(
       AppCachePolicy.freshness(
         CacheTier.standard,
+        savedAt: now.subtract(const Duration(minutes: 15)),
+        now: now,
+      ),
+      CacheFreshness.stale,
+    );
+  });
+
+  test('keeps extended data fresh for one hour', () {
+    expect(AppCachePolicy.extendedTtl, const Duration(hours: 1));
+    expect(
+      AppCachePolicy.freshness(
+        CacheTier.extended,
+        savedAt: now.subtract(const Duration(minutes: 59, seconds: 59)),
+        now: now,
+      ),
+      CacheFreshness.fresh,
+    );
+    expect(
+      AppCachePolicy.freshness(
+        CacheTier.extended,
         savedAt: now.subtract(const Duration(hours: 1)),
         now: now,
       ),
@@ -44,32 +64,12 @@ void main() {
     );
   });
 
-  test('keeps extended data fresh for six hours', () {
-    expect(AppCachePolicy.extendedTtl, const Duration(hours: 6));
-    expect(
-      AppCachePolicy.freshness(
-        CacheTier.extended,
-        savedAt: now.subtract(const Duration(hours: 5, minutes: 59)),
-        now: now,
-      ),
-      CacheFreshness.fresh,
-    );
-    expect(
-      AppCachePolicy.freshness(
-        CacheTier.extended,
-        savedAt: now.subtract(const Duration(hours: 6)),
-        now: now,
-      ),
-      CacheFreshness.stale,
-    );
-  });
-
-  test('community data becomes stale after five minutes', () {
-    expect(AppCachePolicy.shortLivedTtl, const Duration(minutes: 5));
+  test('lists, standings and community become stale after one minute', () {
+    expect(AppCachePolicy.shortLivedTtl, const Duration(minutes: 1));
     expect(
       AppCachePolicy.freshness(
         CacheTier.shortLived,
-        savedAt: now.subtract(const Duration(minutes: 4)),
+        savedAt: now.subtract(const Duration(seconds: 59)),
         now: now,
       ),
       CacheFreshness.fresh,
@@ -77,7 +77,7 @@ void main() {
     expect(
       AppCachePolicy.freshness(
         CacheTier.shortLived,
-        savedAt: now.subtract(const Duration(minutes: 5)),
+        savedAt: now.subtract(const Duration(minutes: 1)),
         now: now,
       ),
       CacheFreshness.stale,

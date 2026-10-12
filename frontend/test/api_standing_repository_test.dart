@@ -201,7 +201,7 @@ void main() {
     final store = _SeededStandingCacheStore(
       key: LocalCacheKeys.standings(8, 25583),
       payload: _responseJson(),
-      savedAt: DateTime.now().toUtc().subtract(const Duration(hours: 7)),
+      savedAt: DateTime.now().toUtc().subtract(const Duration(minutes: 1)),
     );
     final repository = ApiStandingRepository(
       api: _api((_) {
@@ -251,7 +251,7 @@ void main() {
       cacheStore: _SeededStandingCacheStore(
         key: LocalCacheKeys.standings(8, 25583),
         payload: _responseJson(),
-        savedAt: DateTime.now().toUtc().subtract(const Duration(hours: 7)),
+        savedAt: DateTime.now().toUtc().subtract(const Duration(minutes: 1)),
       ),
     );
 

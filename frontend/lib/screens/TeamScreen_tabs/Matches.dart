@@ -274,10 +274,19 @@ class _MatchesTabState extends State<MatchesTab>
         return;
       }
 
+      // 초기 로딩 중 갱신된 목록을 먼저 읽었던 옛 캐시로 덮어쓰지 않아요.
+      List<Fixture> latestPage(FixtureStatus status, List<Fixture> loaded) =>
+          repository.cachedForTeamMatches(teamId, status: status, limit: 200) ??
+          loaded;
+
       setState(() {
-        pastMatches = _sortFixturesByKickoff(results[0], nullsFirst: true);
-        liveMatches = _sortFixturesByKickoff(results[1]);
-        upcomingMatches = _sortFixturesByKickoff(results[2]);
+        pastMatches = _sortFixturesByKickoff(
+            latestPage(FixtureStatus.past, results[0]),
+            nullsFirst: true);
+        liveMatches =
+            _sortFixturesByKickoff(latestPage(FixtureStatus.live, results[1]));
+        upcomingMatches = _sortFixturesByKickoff(
+            latestPage(FixtureStatus.upcoming, results[2]));
         _visibleHeaderCount = 1;
         _hasEarlierMatches = _opensAroundCurrentMatch;
         _isLoading = false;

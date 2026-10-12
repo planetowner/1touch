@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:clock/clock.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -8,8 +10,275 @@ import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_repository.dart';
 import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/screens/team_screen.dart';
+
+import 'support/app_catalog.dart';
+import 'support/test_team_overview_repository.dart';
 
 void main() {
+  group('automatic match list refresh', () {
+    late ApiFixtureRepository repository;
+    late List<http.Request> requests;
+    late List<Map<String, dynamic>> serverFixtures;
+    late bool failPast;
+    late MemoryLocalCacheStore store;
+
+    setUp(() {
+      requests = [];
+      serverFixtures = [];
+      failPast = false;
+      store = MemoryLocalCacheStore();
+      repository = ApiFixtureRepository(
+        api: ApiClient(
+          baseUri: Uri.parse('http://localhost:8000/v1/'),
+          requestHeaders: () => const {},
+          client: MockClient((request) async {
+            requests.add(request);
+            if (request.url.path.startsWith('/v1/fixtures/')) {
+              final id = int.parse(request.url.pathSegments.last);
+              return http.Response(
+                  jsonEncode({
+                    ..._fixtureDetailJson(fixtureId: id),
+                    ...serverFixtures.singleWhere((f) => f['fixture_id'] == id),
+                  }),
+                  200);
+            }
+            final params = request.url.queryParameters;
+            final status = params['status'];
+            if (status == 'past' && failPast) {
+              return http.Response('Offline', 503);
+            }
+            final team = int.parse(request.url.pathSegments[2]);
+            return http.Response(
+                jsonEncode({
+                  'items': serverFixtures
+                      .where((f) =>
+                          f['status'] == status &&
+                          (f['home_team_id'] == team ||
+                              f['away_team_id'] == team))
+                      .toList(),
+                  'limit': int.parse(params['limit']!),
+                  'offset': int.parse(params['offset']!),
+                }),
+                200);
+          }),
+        ),
+        cacheStore: store,
+      );
+    });
+
+    List<int> cachedIds(FixtureStatus status, {int team = 8}) => repository
+        .cachedForTeamMatches(team, status: status)!
+        .map((fixture) => fixture.fixtureId)
+        .toList();
+
+    Future<void> loadPages({int team = 8}) async {
+      for (final status in [
+        FixtureStatus.live,
+        FixtureStatus.past,
+        FixtureStatus.upcoming
+      ]) {
+        await repository.loadForTeam(team, status: status);
+      }
+    }
+
+    test('a disappearing live match refreshes fresh past and upcoming pages',
+        () async {
+      serverFixtures = [
+        {..._fixtureJson(fixtureId: 8), 'status': 'live'}
+      ];
+      await loadPages();
+      await loadPages(team: 99);
+      requests.clear();
+      serverFixtures = [
+        {..._fixtureJson(fixtureId: 8), 'status': 'past'}
+      ];
+
+      await repository.refreshForTeam(8, status: FixtureStatus.live);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cachedIds(FixtureStatus.past), [8]);
+      expect(cachedIds(FixtureStatus.live), isEmpty);
+      expect(requests.map((r) => r.url.queryParameters['status']),
+          containsAll(['live', 'past', 'upcoming']));
+      expect(
+          requests.every((r) => r.url.path == '/v1/teams/8/matches'), isTrue);
+      final persisted = await store
+          .read(LocalCacheKeys.teamMatches(8, 'past', null, null, 50, 0));
+      expect((persisted!.payload as Map)['items'], hasLength(1));
+    });
+
+    test(
+        'starting a match refreshes upcoming without duplicating the live match',
+        () async {
+      serverFixtures = [_fixtureJson(fixtureId: 8)];
+      await loadPages();
+      serverFixtures = [
+        {..._fixtureJson(fixtureId: 8), 'status': 'live'}
+      ];
+
+      await repository.refreshForTeam(8, status: FixtureStatus.live);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cachedIds(FixtureStatus.upcoming), isEmpty);
+      expect(cachedIds(FixtureStatus.live), [8]);
+    });
+
+    test('live polling discovers a newly added past match without a live event',
+        () async {
+      var now = DateTime.now().toUtc();
+      await withClock(Clock(() => now), () async {
+        await loadPages();
+        requests.clear();
+        serverFixtures = [
+          {..._fixtureJson(fixtureId: 8), 'status': 'past'}
+        ];
+
+        now = now.add(const Duration(seconds: 30));
+        await repository.refreshForTeam(8, status: FixtureStatus.live);
+        await Future<void>.delayed(Duration.zero);
+        expect(requests, hasLength(1));
+        expect(cachedIds(FixtureStatus.past), isEmpty);
+
+        now = now.add(const Duration(seconds: 30));
+        await repository.refreshForTeam(8, status: FixtureStatus.live);
+        await Future<void>.delayed(Duration.zero);
+        expect(cachedIds(FixtureStatus.past), [8]);
+        expect(requests.where((r) => r.url.queryParameters['status'] == 'past'),
+            hasLength(1));
+      });
+    });
+
+    test('finished detail refreshes cached pages for both participating teams',
+        () async {
+      serverFixtures = [
+        {..._fixtureJson(fixtureId: 8), 'status': 'live'}
+      ];
+      await loadPages();
+      await loadPages(team: 19);
+      serverFixtures = [
+        {..._fixtureJson(fixtureId: 8), 'status': 'past'}
+      ];
+
+      await repository.refreshDetail(8);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cachedIds(FixtureStatus.past), [8]);
+      expect(cachedIds(FixtureStatus.past, team: 19), [8]);
+      requests.clear();
+      await repository.refreshDetail(8);
+      await Future<void>.delayed(Duration.zero);
+      expect(requests, hasLength(1));
+    });
+
+    test(
+        'failed transition refresh keeps the page and retries on the next poll',
+        () async {
+      serverFixtures = [
+        {..._fixtureJson(fixtureId: 7), 'status': 'past'},
+        {..._fixtureJson(fixtureId: 8), 'status': 'live'},
+      ];
+      await loadPages();
+      serverFixtures[1] = {...serverFixtures[1], 'status': 'past'};
+      failPast = true;
+
+      await repository.refreshForTeam(8, status: FixtureStatus.live);
+      await Future<void>.delayed(Duration.zero);
+      expect(cachedIds(FixtureStatus.past), [7]);
+      failPast = false;
+      await repository.refreshForTeam(8, status: FixtureStatus.live);
+      await Future<void>.delayed(Duration.zero);
+      expect(cachedIds(FixtureStatus.past), [7, 8]);
+    });
+
+    group('team screen', () {
+      setUpAppCatalog();
+
+      Widget screen() => MaterialApp(
+            home: TeamScreen(
+              teamId: 8,
+              initialTabIndex: 1,
+              fixtureRepository: repository,
+              teamOverviewRepository: TestTeamOverviewRepository(initial: {
+                8: testTeamOverview(teamId: 8, name: 'Liverpool'),
+              }),
+            ),
+          );
+
+      testWidgets(
+          'existing thirty-second polling moves a finished match to past',
+          (tester) async {
+        serverFixtures = [
+          {..._fixtureJson(fixtureId: 7), 'status': 'past'},
+          {..._fixtureJson(fixtureId: 8), 'status': 'live'},
+          _fixtureJson(fixtureId: 9),
+        ];
+        await tester.pumpWidget(screen());
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.byKey(const ValueKey('matches-inline-live-header')),
+            findsOneWidget);
+
+        serverFixtures[1] = {...serverFixtures[1], 'status': 'past'};
+        await tester.pump(const Duration(seconds: 30));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(
+            repository
+                .cachedForTeamMatches(8,
+                    status: FixtureStatus.past, limit: 200)!
+                .map((f) => f.fixtureId),
+            [7, 8]);
+        expect(find.byKey(const ValueKey('matches-inline-live-header')),
+            findsNothing);
+        expect(
+            find.byKey(const ValueKey('team-fixture-card-8')), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      });
+
+      testWidgets('entry and app resume display newly added completed matches',
+          (tester) async {
+        var now = DateTime.now().toUtc();
+        await withClock(Clock(() => now), () async {
+          serverFixtures = [
+            {..._fixtureJson(fixtureId: 7), 'status': 'past'},
+            _fixtureJson(fixtureId: 10),
+          ];
+          for (final status in [
+            FixtureStatus.past,
+            FixtureStatus.live,
+            FixtureStatus.upcoming
+          ]) {
+            await repository.loadForTeam(8, status: status, limit: 200);
+          }
+          now = now.add(const Duration(minutes: 2));
+          serverFixtures.add({..._fixtureJson(fixtureId: 8), 'status': 'past'});
+          await tester.pumpWidget(screen());
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 300));
+          expect(find.byKey(const ValueKey('team-fixture-card-8')),
+              findsOneWidget);
+
+          tester.binding
+              .handleAppLifecycleStateChanged(AppLifecycleState.paused);
+          await tester.pump();
+          now = now.add(const Duration(minutes: 2));
+          serverFixtures.add({..._fixtureJson(fixtureId: 9), 'status': 'past'});
+          tester.binding
+              .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 300));
+          expect(find.byKey(const ValueKey('team-fixture-card-9')),
+              findsOneWidget);
+          expect(tester.takeException(), isNull);
+          await tester.pumpWidget(const SizedBox());
+        });
+      });
+    });
+  });
+
   test('requests, maps, and caches a verified team-match page', () async {
     final client = MockClient((request) async {
       expect(request.method, 'GET');
@@ -215,7 +484,7 @@ void main() {
   });
 
   test('keeps an expired page visible during one background refresh', () async {
-    final store = _AgedCacheStore();
+    final store = _AgedCacheStore(age: const Duration(minutes: 1));
     await store.write(
       LocalCacheKeys.teamMatches(8, 'upcoming', null, null, 1, 0),
       {
@@ -474,8 +743,8 @@ void main() {
     expect(repository.cachedDetail(19712345), same(empty));
   });
 
-  for (final age in [const Duration(days: 6), const Duration(days: 8)]) {
-    test('keeps the seven-day TTL for populated finished detail at $age',
+  for (final age in [const Duration(minutes: 59), const Duration(hours: 1)]) {
+    test('keeps the one-hour TTL for populated finished detail at $age',
         () async {
       final store = _AgedCacheStore(age: age);
       await store.write(LocalCacheKeys.fixtureDetail(19712345),
@@ -497,7 +766,7 @@ void main() {
       final cached = await repository.loadDetail(19712345);
       await Future<void>.delayed(Duration.zero);
       expect(cached.pressure, hasLength(1));
-      expect(requests, age.inDays == 6 ? 0 : 1);
+      expect(requests, age.inMinutes < 60 ? 0 : 1);
     });
   }
 

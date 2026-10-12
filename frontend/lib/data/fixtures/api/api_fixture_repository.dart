@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/cache/cache_policy.dart';
@@ -19,7 +20,7 @@ class ApiFixtureRepository implements FixtureRepository {
       : _api = api,
         _cacheStore = cacheStore;
 
-  // 라인업 지표 구성이 바뀌어 종료 경기의 7일 캐시도 새로 받아야 해요.
+  // 라인업 지표 구성이 바뀌어 이전에 저장한 종료 경기 상세도 새로 받아야 해요.
   static const _detailCacheSchemaVersion = 2;
 
   final ApiClient _api;
@@ -97,8 +98,8 @@ class ApiFixtureRepository implements FixtureRepository {
       // 수집 실패로 빈 응답을 저장했어도 재진입하면 복구된 데이터를 바로 받아요.
       FixtureStatus.past when detail.isPastWithoutMatchInfo =>
         CacheTier.realtime,
-      FixtureStatus.past => CacheTier.staticData,
-      FixtureStatus.upcoming => CacheTier.standard,
+      FixtureStatus.past => CacheTier.extended,
+      FixtureStatus.upcoming => CacheTier.shortLived,
       _ => CacheTier.realtime,
     };
     if (AppCachePolicy.shouldRefresh(
@@ -155,7 +156,15 @@ class ApiFixtureRepository implements FixtureRepository {
     final uri = _api.baseUri.resolve('fixtures/$fixtureId');
     final decoded = _api.decodeJson<Map<String, dynamic>>(await _api.get(uri));
     final detail = _mapDetail(decoded, fixtureId);
-    _publishDetail(fixtureId, detail, DateTime.now().toUtc());
+    final previousStatus = findById(fixtureId)?.status;
+    _publishDetail(fixtureId, detail, clock.now().toUtc());
+    if (previousStatus != detail.fixture.status) {
+      // 상세 조회에서 경기 시작·종료를 확인해도 두 팀의 일정에 함께 반영해요.
+      _refreshRelatedMatches(
+        {detail.fixture.homeTeamId, detail.fixture.awayTeamId},
+        forceRefresh: true,
+      );
+    }
     try {
       await _cacheStore?.write(
         LocalCacheKeys.fixtureDetail(fixtureId),
@@ -317,10 +326,14 @@ class ApiFixtureRepository implements FixtureRepository {
     return _fetchMatches(query);
   }
 
-  void _refreshMatchesIfStale(TeamMatchesQuery query) {
+  void _refreshMatchesIfStale(TeamMatchesQuery query,
+      {bool forceRefresh = false}) {
+    if (forceRefresh) {
+      // 재조회가 실패해도 다음 라이브 조회에서 다시 시도할 수 있게 해요.
+      _matchSavedAt.remove(query);
+    }
     final tier = switch (query.status) {
-      FixtureStatus.past => CacheTier.staticData,
-      FixtureStatus.upcoming => CacheTier.standard,
+      FixtureStatus.past || FixtureStatus.upcoming => CacheTier.shortLived,
       FixtureStatus.live => CacheTier.realtime,
       _ => CacheTier.realtime,
     };
@@ -331,6 +344,17 @@ class ApiFixtureRepository implements FixtureRepository {
     )) {
       unawaited(
           _fetchMatches(query).then<void>((_) {}, onError: (Object _) {}));
+    }
+  }
+
+  void _refreshRelatedMatches(Set<int> teamIds, {bool forceRefresh = false}) {
+    // 화면의 기존 캐시 구독을 재사용하고, 날짜·페이지 조건은 서버 조회로 유지해요.
+    for (final query in _cachedTeamMatches.value.keys.toList()) {
+      if (teamIds.contains(query.teamId) &&
+          (query.status == FixtureStatus.past ||
+              query.status == FixtureStatus.upcoming)) {
+        _refreshMatchesIfStale(query, forceRefresh: forceRefresh);
+      }
     }
   }
 
@@ -386,7 +410,17 @@ class ApiFixtureRepository implements FixtureRepository {
         );
     final decoded = _api.decodeJson<Map<String, dynamic>>(await _api.get(uri));
     final loaded = _mapMatches(decoded, query);
-    _publishMatches(query, loaded, DateTime.now().toUtc());
+    final previous = _cachedTeamMatches.value[query];
+    _publishMatches(query, loaded, clock.now().toUtc());
+    if (query.status == FixtureStatus.live) {
+      final liveChanged = !setEquals(
+        previous?.map((fixture) => fixture.fixtureId).toSet(),
+        loaded.map((fixture) => fixture.fixtureId).toSet(),
+      );
+      // 기존 라이브 조회를 이용해 새로 등록된 경기도 확인해요.
+      // 라이브 구성이 바뀌면 TTL을 기다리지 않고 지난·예정 경기를 갱신해요.
+      _refreshRelatedMatches({query.teamId}, forceRefresh: liveChanged);
+    }
     if (query.status != null) {
       try {
         await _cacheStore?.write(_matchesKey(query), decoded);

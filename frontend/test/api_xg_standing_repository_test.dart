@@ -179,7 +179,7 @@ void main() {
     final store = _SeededXgStandingCacheStore(
       key: LocalCacheKeys.xgStandings(8, 25583),
       payload: _responseJson(),
-      savedAt: DateTime.now().toUtc().subtract(const Duration(hours: 7)),
+      savedAt: DateTime.now().toUtc().subtract(const Duration(minutes: 1)),
     );
     final repository = ApiXgStandingRepository(
       api: _api((_) {
@@ -229,7 +229,7 @@ void main() {
       cacheStore: _SeededXgStandingCacheStore(
         key: LocalCacheKeys.xgStandings(8, 25583),
         payload: _responseJson(),
-        savedAt: DateTime.now().toUtc().subtract(const Duration(hours: 7)),
+        savedAt: DateTime.now().toUtc().subtract(const Duration(minutes: 1)),
       ),
     );
 

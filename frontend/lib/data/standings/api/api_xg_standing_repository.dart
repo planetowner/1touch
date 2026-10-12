@@ -93,7 +93,7 @@ class ApiXgStandingRepository implements XgStandingRepository {
 
   void _refreshIfStale(XgStandingQuery query) {
     if (!AppCachePolicy.shouldRefresh(
-      tier: CacheTier.extended,
+      tier: CacheTier.shortLived,
       trigger: CacheSyncTrigger.screenEnter,
       savedAt: _savedAt[query],
     )) {
