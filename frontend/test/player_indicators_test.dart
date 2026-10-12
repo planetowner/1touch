@@ -97,7 +97,6 @@ void main() {
                 score: score,
                 loading: false,
                 failed: false,
-                explanation: '',
                 onRetry: () {},
               ),
           ]),

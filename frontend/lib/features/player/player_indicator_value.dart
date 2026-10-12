@@ -11,7 +11,6 @@ class PlayerIndicatorValue extends StatelessWidget {
     this.label,
     required this.loading,
     required this.failed,
-    required this.explanation,
     required this.onRetry,
   });
 
@@ -19,7 +18,6 @@ class PlayerIndicatorValue extends StatelessWidget {
   final String? label;
   final bool loading;
   final bool failed;
-  final String explanation;
   final VoidCallback onRetry;
 
   @override
@@ -29,52 +27,48 @@ class PlayerIndicatorValue extends StatelessWidget {
         : failed
             ? tr(context, 'Unavailable')
             : label ?? score?.grade ?? '—';
-    return Tooltip(
-      message: explanation,
-      triggerMode: TooltipTriggerMode.tap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(
-              tr(context, value),
-              maxLines: 1,
-              softWrap: false,
-              overflow: TextOverflow.ellipsis,
-              style: Heading5.style,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+          child: Text(
+            tr(context, value),
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+            style: Heading5.style,
+          ),
+        ),
+        const SizedBox(width: 8),
+        if (loading)
+          const SizedBox.square(
+            dimension: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        else if (failed)
+          InkResponse(
+            onTap: onRetry,
+            child: Icon(
+              Icons.refresh,
+              size: 20,
+              semanticLabel: tr(context, 'Retry'),
+            ),
+          )
+        else if (score?.band != null)
+          Semantics(
+            label: score!.percentile == null
+                ? score!.grade!
+                : tr(context, '{value} percentile',
+                    {'value': score!.percentile!.toStringAsFixed(1)}),
+            child: ExcludeSemantics(
+              child: RatingLevelRing(
+                rating: score!.grade!,
+                level: score!.band! + 1,
+                size: 20,
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          if (loading)
-            const SizedBox.square(
-              dimension: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          else if (failed)
-            InkResponse(
-              onTap: onRetry,
-              child: Icon(
-                Icons.refresh,
-                size: 20,
-                semanticLabel: tr(context, 'Retry'),
-              ),
-            )
-          else if (score?.band != null)
-            Semantics(
-              label: score!.percentile == null
-                  ? score!.grade!
-                  : tr(context, '{value} percentile',
-                      {'value': score!.percentile!.toStringAsFixed(1)}),
-              child: ExcludeSemantics(
-                child: RatingLevelRing(
-                  rating: score!.grade!,
-                  level: score!.band! + 1,
-                  size: 20,
-                ),
-              ),
-            ),
-        ],
-      ),
+      ],
     );
   }
 }
