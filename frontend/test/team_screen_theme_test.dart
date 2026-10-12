@@ -1,5 +1,6 @@
 import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -1556,82 +1557,87 @@ void main() {
   for (final scenario in <({
     String name,
     int? rankDelta,
-    IconData? icon,
-    Color? color,
+    String? iconAsset,
     String? value,
   })>[
     (
       name: 'upward movement',
       rankDelta: 2,
-      icon: Icons.arrow_drop_up,
-      color: Colors.green,
+      iconAsset: 'assets/standings/rank_up.svg',
       value: '2',
     ),
     (
       name: 'downward movement',
       rankDelta: -3,
-      icon: Icons.arrow_drop_down,
-      color: Colors.red,
+      iconAsset: 'assets/standings/rank_down.svg',
       value: '3',
     ),
     (
       name: 'unchanged position',
       rankDelta: 0,
-      icon: null,
-      color: null,
+      iconAsset: null,
       value: null,
     ),
     (
       name: 'unavailable movement',
       rankDelta: null,
-      icon: null,
-      color: null,
+      iconAsset: null,
       value: null,
     ),
   ]) {
-    testWidgets('Team header renders ${scenario.name}', (tester) async {
-      final overview = testTeamOverview(rankDelta: scenario.rankDelta);
-      final repository = TestTeamOverviewRepository(initial: {9: overview});
+    for (final theme in [
+      (name: 'light', data: app_style.whitetheme, size: const Size(320, 568)),
+      (name: 'dark', data: app_style.darktheme, size: const Size(430, 932)),
+    ]) {
+      testWidgets('Team header renders ${scenario.name} in ${theme.name}',
+          (tester) async {
+        await tester.binding.setSurfaceSize(theme.size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final overview = testTeamOverview(rankDelta: scenario.rankDelta);
+        final repository = TestTeamOverviewRepository(initial: {9: overview});
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: app_style.whitetheme,
-          home: TeamScreen(
-            fixtureRepository: fixtureRepository,
-            standingRepository: standingRepository,
-            currentFormRepository: currentFormRepository,
-            teamId: 9,
-            teamAttributeRepository: teamAttributeRepository,
-            teamOverviewRepository: repository,
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: theme.data,
+            home: TeamScreen(
+              fixtureRepository: fixtureRepository,
+              standingRepository: standingRepository,
+              currentFormRepository: currentFormRepository,
+              teamId: 9,
+              teamAttributeRepository: teamAttributeRepository,
+              teamOverviewRepository: repository,
+            ),
           ),
-        ),
-      );
-      await tester.pump();
-
-      final iconFinder = find.byKey(const ValueKey('team-rank-change-icon'));
-      final valueFinder = find.byKey(const ValueKey('team-rank-change-value'));
-      if (scenario.icon == null) {
-        expect(iconFinder, findsNothing);
-        expect(valueFinder, findsNothing);
-      } else {
-        final icon = tester.widget<Icon>(iconFinder);
-        final value = tester.widget<Text>(valueFinder);
-        expect(icon.icon, scenario.icon);
-        expect(icon.color, scenario.color);
-        expect(value.data, scenario.value);
-        expect(value.style?.color, scenario.color);
-        final position = tester.widget<Text>(
-          find
-              .descendant(
-                of: find.byKey(const ValueKey('team-context-label')),
-                matching: find.byType(Text),
-              )
-              .first,
         );
-        expect(value.style?.fontSize, position.style?.fontSize);
-      }
-      expect(tester.takeException(), isNull);
-    });
+        await tester.pump();
+
+        final iconFinder = find.byKey(const ValueKey('team-rank-change-icon'));
+        final valueFinder =
+            find.byKey(const ValueKey('team-rank-change-value'));
+        if (scenario.iconAsset == null) {
+          expect(iconFinder, findsNothing);
+          expect(valueFinder, findsNothing);
+        } else {
+          final icon = tester.widget<SvgPicture>(iconFinder);
+          final value = tester.widget<Text>(valueFinder);
+          expect((icon.bytesLoader as SvgAssetLoader).assetName,
+              scenario.iconAsset);
+          expect(tester.getSize(iconFinder), const Size(24, 24));
+          expect(value.data, scenario.value);
+          final position = tester.widget<Text>(
+            find
+                .descendant(
+                  of: find.byKey(const ValueKey('team-context-label')),
+                  matching: find.byType(Text),
+                )
+                .first,
+          );
+          expect(value.style?.color, position.style?.color);
+          expect(value.style?.fontSize, position.style?.fontSize);
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
   }
 }
 

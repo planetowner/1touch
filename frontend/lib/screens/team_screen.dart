@@ -2,6 +2,7 @@ import 'package:onetouch/core/page_refresh.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/app_section_tab_bar.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/style.dart';
@@ -562,27 +563,26 @@ class _TeamScreenState extends State<TeamScreen>
                                       competitionId:
                                           competitionContext?.competitionId,
                                       label: positionLabel,
-                                      style: Body2.style
-                                          .copyWith(color: appBarForeground),
+                                      style: Body2.style.copyWith(
+                                          color: appBarForeground, height: 1.3),
                                       rankDelta: rankChange,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      risingIcon: const Icon(
-                                        Icons.arrow_drop_up,
-                                        key: ValueKey('team-rank-change-icon'),
-                                        size: 16,
-                                        color: Colors.green,
+                                      risingIcon: SvgPicture.asset(
+                                        'assets/standings/rank_up.svg',
+                                        key: const ValueKey(
+                                            'team-rank-change-icon'),
+                                        width: 24,
+                                        height: 24,
                                       ),
-                                      fallingIcon: const Icon(
-                                        Icons.arrow_drop_down,
-                                        key: ValueKey('team-rank-change-icon'),
-                                        size: 16,
-                                        color: Colors.red,
+                                      fallingIcon: Transform.flip(
+                                        flipY: true,
+                                        child: SvgPicture.asset(
+                                          'assets/standings/rank_down.svg',
+                                          key: const ValueKey(
+                                              'team-rank-change-icon'),
+                                          width: 24,
+                                          height: 24,
+                                        ),
                                       ),
-                                      risingValueStyle: Body2.style
-                                          .copyWith(color: Colors.green),
-                                      fallingValueStyle: Body2.style
-                                          .copyWith(color: Colors.red),
                                       movementValueKey: const ValueKey(
                                           'team-rank-change-value'),
                                     ),
