@@ -5,7 +5,6 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/display_preferences.dart';
 import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/style.dart';
@@ -554,45 +553,6 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
     }
   }
 
-  String _explanation({required bool cost}) {
-    final score = cost ? _indicators?.costEffectiveness : _indicators?.form;
-    final definition = cost
-        ? tr(
-            context,
-            'Compares season rating and share of playing time with expectations '
-            "for the player's estimated gross wage, club wage level, league "
-            'and position. The two differences carry equal weight. '
-            'Fair means within the usual prediction error; higher grades mean '
-            'more return for the wage. Transfer fees are not included.')
-        : tr(
-            context,
-            'Recent performance over the latest 5 league appearances this season, '
-            'weighted by playing time and calibrated recency. '
-            'Compared with all positions across the five leagues.');
-    final season = _indicators?.seasonName;
-    final scope = season == null
-        ? tr(context, 'Current season only.')
-        : tr(context, 'Current season: {season}.',
-            {'season': compactSeasonLabel(season)});
-    final evidence = score?.grade == null
-        ? switch (score?.unavailableReason) {
-            'wage_unavailable' => tr(context, 'Wage data is unavailable.'),
-            'no_rated_matches' =>
-              tr(context, 'No rated appearances are available.'),
-            _ => _failed
-                ? tr(context,
-                    'Could not load the indicators. Tap retry to try again.')
-                : tr(context,
-                    'An indicator is shown when enough data is available.'),
-          }
-        : '${tr(context, '{matches} rated appearances. {players} players across the five leagues.', {
-                'matches': score!.ratedMatches,
-                'players': score.referenceCount
-              })} '
-            '${cost ? tr(context, 'Grades are based on prediction error, not equal-sized groups.') : ''}';
-    return '$definition\n\n$scope $evidence';
-  }
-
   @override
   Widget build(BuildContext context) =>
       ValueListenableBuilder<DisplayPreferences>(
@@ -641,7 +601,6 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
             score: _indicators?.form,
             loading: _loading,
             failed: _failed,
-            explanation: _explanation(cost: false),
             onRetry: () => setState(_load),
           ),
           explanation: null,
@@ -664,12 +623,6 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
             label: _indicators?.squadRole,
             loading: _loading,
             failed: _failed,
-            explanation:
-                'Based on league playing time while available at this club, '
-                'excluding recorded injuries and suspensions. '
-                'Prospect means low usage and age 21 or younger on the date the '
-                'role is calculated. A role is shown after it has been calculated '
-                'from verified data.',
             onRetry: () => setState(_load),
           ),
           explanation: null
@@ -681,10 +634,10 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
             score: _indicators?.costEffectiveness,
             loading: _loading,
             failed: _failed,
-            explanation: _explanation(cost: true),
             onRetry: () => setState(_load),
           ),
-          explanation: _explanation(cost: true),
+          explanation:
+              'Measured by comparing actual salary against 1touch’s predicted market value based on performance and playtime.',
         ),
       ],
     ];
@@ -763,8 +716,7 @@ class _PlayerBioCell extends StatelessWidget {
                     child: AppInfoButton(
                       key: const ValueKey('player-cost-effectiveness-info'),
                       title: label,
-                      message:
-                          'Measured by comparing actual salary against 1touch’s predicted market value based on performance and playtime.',
+                      message: explanation!,
                       layoutSize: 16,
                     ),
                   ),
