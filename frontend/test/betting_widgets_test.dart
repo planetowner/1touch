@@ -353,7 +353,8 @@ void main() {
     await tester.ensureVisible(find.text('CONTINUE'));
     await tester.tap(find.text('CONTINUE'));
     await tester.pumpAndSettle();
-    expect(find.text('75'), findsOneWidget);
+    final amountField = find.byKey(const ValueKey('bet-amount-text-field'));
+    expect(tester.widget<TextField>(amountField).controller!.text, '75');
     expect(find.text('You can use up to 75 pts!'), findsOneWidget);
     expect(
       tester
@@ -366,10 +367,10 @@ void main() {
     await tester.ensureVisible(find.byKey(const ValueKey('bet-decrease')));
     await tester.tap(find.byKey(const ValueKey('bet-decrease')));
     await tester.pump();
-    expect(find.text('50'), findsOneWidget);
+    expect(tester.widget<TextField>(amountField).controller!.text, '50');
     await tester.tap(find.byKey(const ValueKey('bet-increase')));
     await tester.pump();
-    expect(find.text('75'), findsOneWidget);
+    expect(tester.widget<TextField>(amountField).controller!.text, '75');
     expect(
         tester
             .widget<IconButton>(find.byKey(const ValueKey('bet-increase')))
@@ -379,7 +380,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('bet-decrease')));
       await tester.pump();
     }
-    expect(find.text('25'), findsOneWidget);
+    expect(tester.widget<TextField>(amountField).controller!.text, '25');
     expect(
         tester
             .widget<IconButton>(find.byKey(const ValueKey('bet-decrease')))
@@ -391,7 +392,7 @@ void main() {
     await tester.ensureVisible(find.text('CONTINUE'));
     await tester.tap(find.text('CONTINUE'));
     await tester.pumpAndSettle();
-    expect(find.text('25'), findsOneWidget);
+    expect(tester.widget<TextField>(amountField).controller!.text, '25');
     expect(
       find.textContaining('225', findRichText: true),
       findsOneWidget,
@@ -430,17 +431,18 @@ void main() {
 
     expect(find.text('사용할 포인트'), findsOneWidget);
     expect(find.text('최대 1,200 pts를 쓸 수 있어요'), findsOneWidget);
-    expect(find.text('100'), findsOneWidget);
+    final amountField = find.byKey(const ValueKey('bet-amount-text-field'));
+    expect(tester.widget<TextField>(amountField).controller!.text, '100');
     await tester.ensureVisible(find.byKey(const ValueKey('bet-decrease')));
     await tester.tap(find.byKey(const ValueKey('bet-decrease')));
     await tester.pump();
-    expect(find.text('90'), findsOneWidget);
+    expect(tester.widget<TextField>(amountField).controller!.text, '90');
     await tester.tap(find.byKey(const ValueKey('bet-increase')));
     await tester.pump();
-    expect(find.text('100'), findsOneWidget);
+    expect(tester.widget<TextField>(amountField).controller!.text, '100');
     expect(find.text('맞히면 더 받는 포인트'), findsOneWidget);
     expect(find.text('총 돌려받는 포인트'), findsOneWidget);
-    expect(find.text('pts'), findsOneWidget);
+    expect(find.textContaining('pts', findRichText: true), findsWidgets);
     expect(find.textContaining(' pts', findRichText: true), findsWidgets);
     expect(find.textContaining(RegExp(r'\d\s*포인트'), findRichText: true),
         findsNothing);
@@ -453,6 +455,142 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets(
+        'amount editing uses the keyboard and dismisses outside at $size',
+        (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = size;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      final repository = FakeBettingRepository()..balance = 1207;
+      final controller =
+          BettingController(fixtureId: 1, repository: repository);
+      await controller.load();
+      final teams = MockTeamRepository();
+      await tester.pumpWidget(MaterialApp(
+        theme: whitetheme,
+        home: Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: MatchBettingSection(
+            controller: controller,
+            homeTeam: teams.requireById(6),
+            awayTeam: teams.requireById(14),
+          ),
+        ),
+      ));
+      await tester.tap(find.text('PLACE A BET'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Draw').last);
+      await tester.pump();
+      await tester.ensureVisible(find.text('CONTINUE'));
+      await tester.tap(find.text('CONTINUE'));
+      await tester.pumpAndSettle();
+
+      final field = find.byKey(const ValueKey('bet-amount-text-field'));
+      expect(tester.widget<TextField>(field).keyboardType, TextInputType.text);
+      final unit = find.descendant(
+        of: find.byKey(const ValueKey('match-betting-amount-input')),
+        matching: find.text('pts'),
+      );
+      final amountRow =
+          find.ancestor(of: unit, matching: find.byType(Row)).first;
+      expect(tester.widget<Row>(amountRow).crossAxisAlignment,
+          CrossAxisAlignment.baseline);
+      expect(
+          tester.widget<Row>(amountRow).textBaseline, TextBaseline.alphabetic);
+      final estimatedBox =
+          find.byKey(const ValueKey('bet-value-Your estimated win'));
+      final totalBox =
+          find.byKey(const ValueKey('bet-value-Total you’re getting back'));
+      final initialResultTop = tester.getRect(totalBox).top;
+      await tester.tap(field);
+      await tester.pump();
+      tester.view.viewInsets = const FakeViewPadding(bottom: 140);
+      await tester.pumpAndSettle();
+      final halfwayKeyboardTop = size.height - 140;
+      expect(tester.getRect(totalBox).bottom,
+          lessThanOrEqualTo(halfwayKeyboardTop));
+      final halfwayResultTop = tester.getRect(totalBox).top;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 280);
+      await tester.pumpAndSettle();
+      final keyboardTop =
+          size.height - MediaQuery.viewInsetsOf(tester.element(field)).bottom;
+      final continueButton = find.ancestor(
+        of: find.text('CONTINUE'),
+        matching: find.byType(ElevatedButton),
+      );
+      expect(continueButton, findsOneWidget);
+      expect(tester.getRect(totalBox).top, lessThan(initialResultTop));
+      expect(tester.getRect(totalBox).top, lessThan(halfwayResultTop));
+      expect(
+          tester.getRect(continueButton).top, greaterThanOrEqualTo(keyboardTop),
+          reason:
+              'button=${tester.getRect(continueButton)}, result=${tester.getRect(totalBox)}, keyboard=$keyboardTop');
+      expect(tester.getRect(field).bottom, lessThanOrEqualTo(keyboardTop));
+      expect(
+          tester.getRect(estimatedBox).bottom, lessThanOrEqualTo(keyboardTop));
+      expect(tester.getRect(totalBox).bottom, lessThanOrEqualTo(keyboardTop));
+
+      await tester.enterText(field, '120');
+      await tester.pump();
+      final editing = tester.widget<TextField>(field).controller!.value;
+      expect(editing.text, '120');
+      expect(editing.selection.baseOffset, editing.text.length);
+      expect(find.text('Your estimated win'), findsOneWidget);
+      tester.testTextInput.updateEditingValue(const TextEditingValue(
+        text: '12',
+        selection: TextSelection.collapsed(offset: 2),
+      ));
+      await tester.pump();
+      expect(tester.widget<TextField>(field).controller!.text, '12');
+      await tester.enterText(field, '120');
+      await tester.pump();
+
+      await tester.tapAt(Offset(20, keyboardTop - 20));
+      await tester.pump();
+      expect(tester.testTextInput.isVisible, isFalse);
+      tester.view.viewInsets = FakeViewPadding.zero;
+      await tester.pumpAndSettle();
+      expect(find.text('CONTINUE'), findsOneWidget);
+      expect(
+          tester.getRect(continueButton).bottom, lessThanOrEqualTo(size.height),
+          reason:
+              'button=${tester.getRect(continueButton)}, result=${tester.getRect(totalBox)}');
+
+      await tester.tap(field);
+      await tester.enterText(field, '15');
+      await tester.pump();
+      expect(tester.widget<TextField>(field).controller!.text, '15');
+      expect(find.text('Your estimated win'), findsOneWidget);
+      expect(find.text('Total you’re getting back'), findsOneWidget);
+      expect(find.byKey(const ValueKey('bet-value-Your estimated win')),
+          findsOneWidget);
+      expect(find.byKey(const ValueKey('bet-value-Total you’re getting back')),
+          findsOneWidget);
+      await tester.enterText(field, '');
+      await tester.pump();
+      expect(find.text('0 pts', findRichText: true), findsNWidgets(2));
+      await tester.enterText(field, '15');
+      await tester.pump();
+      tester.view.viewInsets = FakeViewPadding.zero;
+      await tester.tap(find.text('You’re betting'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<ElevatedButton>(continueButton).onPressed, isNull);
+
+      await tester.tap(field);
+      await tester.enterText(field, '120');
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('bet-increase')));
+      await tester.pump();
+      expect(tester.widget<TextField>(field).controller!.text, '130');
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
+    });
+  }
 
   for (final drawAllowed in [true, false]) {
     testWidgets(

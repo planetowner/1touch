@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/core/style.dart';
@@ -192,6 +193,11 @@ enum _BettingFlowStep { selection, amount, review, submitted }
 class _BettingFlowModalState extends State<BettingFlowModal> {
   BetOutcome? _selected;
   int _amount = 100;
+  late final TextEditingController _amountController;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _amountResultsKey = GlobalKey();
+  double _lastKeyboardInset = 0;
+  double? _scrollOffsetBeforeKeyboard;
   _BettingFlowStep _step = _BettingFlowStep.selection;
 
   @override
@@ -209,19 +215,77 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
           math.min(widget.controller.spendingLimit ~/ unit, initialUnits) *
               unit;
     }
+    _amountController = TextEditingController(text: '$_amount');
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _keepAmountResultsAboveKeyboard(double keyboardInset) {
+    if (_step != _BettingFlowStep.amount ||
+        keyboardInset == _lastKeyboardInset) {
+      return;
+    }
+    _lastKeyboardInset = keyboardInset;
+    // 키보드가 움직이는 매 프레임 결과 행을 함께 옮기고, 닫히면 원래 위치로 돌려요.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      final position = _scrollController.position;
+      if (keyboardInset == 0) {
+        _scrollController.jumpTo(
+          (_scrollOffsetBeforeKeyboard ?? _scrollController.offset)
+              .clamp(0.0, position.maxScrollExtent),
+        );
+        _scrollOffsetBeforeKeyboard = null;
+        return;
+      }
+      _scrollOffsetBeforeKeyboard ??= _scrollController.offset;
+      final box =
+          _amountResultsKey.currentContext?.findRenderObject() as RenderBox?;
+      if (box == null) return;
+      final keyboardTop = MediaQuery.sizeOf(context).height - keyboardInset;
+      final resultsBottom = box.localToGlobal(Offset(0, box.size.height)).dy;
+      final overlap = resultsBottom + 16 - keyboardTop;
+      _scrollController.jumpTo(
+        (_scrollController.offset + overlap).clamp(
+          _scrollOffsetBeforeKeyboard!,
+          position.maxScrollExtent,
+        ),
+      );
+    });
+  }
+
+  void _setAmount(int amount) {
+    setState(() => _amount = amount);
+    final text = '$amount';
+    _amountController.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
   }
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
         animation: widget.controller,
         builder: (context, _) {
+          final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+          _keepAmountResultsAboveKeyboard(keyboardInset);
           final controller = widget.controller;
           final market = controller.market!;
           final selectedOption = market.options
               .where((option) => option.outcome == _selected)
               .firstOrNull;
-          final total = selectedOption?.totalReturn(_amount);
-          final estimatedWin = total == null ? null : total - _amount;
+          final validAmount = _amount >= market.stakeUnit &&
+              _amount <= controller.spendingLimit &&
+              _amount % market.stakeUnit == 0;
+          final total = _amount <= controller.spendingLimit
+              ? selectedOption?.totalReturn(_amount)
+              : null;
+          final estimatedWin = total == null ? 0 : total - _amount;
           final optionDividerColor =
               Theme.of(context).brightness == Brightness.dark
                   ? AppPalette.lightGrey
@@ -237,6 +301,27 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
               color: Theme.of(context).colorScheme.onSurface,
             ),
           );
+          final continueButton = _BetButton(
+            text: controller.saving
+                ? tr(context, 'SUBMITTING…')
+                : trUpper(context, 'Continue'),
+            onPressed: _selected == null || !controller.canBet || !validAmount
+                ? null
+                : () async {
+                    if (_step == _BettingFlowStep.selection) {
+                      setState(() => _step = _BettingFlowStep.amount);
+                      return;
+                    }
+                    if (_step == _BettingFlowStep.amount) {
+                      setState(() => _step = _BettingFlowStep.review);
+                      return;
+                    }
+                    final saved = await controller.save(_selected!, _amount);
+                    if (mounted && saved) {
+                      setState(() => _step = _BettingFlowStep.submitted);
+                    }
+                  },
+          );
           return Container(
             key: const ValueKey('match-betting-modal'),
             constraints: BoxConstraints(
@@ -249,225 +334,220 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
             ),
             child: SafeArea(
               top: false,
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(
-                  24,
-                  24,
-                  24,
-                  24 + MediaQuery.viewInsetsOf(context).bottom,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _BetFlowHeader(
-                      onBack: controller.saving ? null : _goBack,
-                      closeButton: closeButton,
-                      showBack: _step != _BettingFlowStep.submitted,
+              child: Stack(
+                children: [
+                  SingleChildScrollView(
+                    controller: _scrollController,
+                    padding: EdgeInsets.fromLTRB(
+                      24,
+                      24,
+                      24,
+                      24 + keyboardInset + (keyboardInset > 0 ? 32 : 0),
                     ),
-                    if (_step == _BettingFlowStep.submitted) ...[
-                      const SizedBox(height: 32),
-                      const Icon(Icons.check_circle_outline, size: 56),
-                      const SizedBox(height: 24),
-                      Text(tr(context, 'Bet Submitted!'),
-                          style: Heading3.style),
-                      const SizedBox(height: 16),
-                      Text(
-                        tr(context, 'Check back after the final whistle…'),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                      const SizedBox(height: 48),
-                      _BetButton(
-                        text: trUpper(context, 'Done'),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ] else ...[
-                      if (_step != _BettingFlowStep.review) ...[
-                        const SizedBox(height: 24),
-                        MatchStatsHeader(
-                          homeTeam: widget.homeTeam,
-                          awayTeam: widget.awayTeam,
-                          options: market.options,
-                          anchorTeamId: widget.anchorTeamId,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _BetFlowHeader(
+                          onBack: controller.saving ? null : _goBack,
+                          closeButton: closeButton,
+                          showBack: _step != _BettingFlowStep.submitted,
                         ),
-                      ],
-                      if (_step == _BettingFlowStep.selection) ...[
-                        const SizedBox(height: 32),
-                        ...market.options.map(
-                          (option) => Column(
-                            children: [
-                              Material(
-                                type: MaterialType.transparency,
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  titleAlignment: ListTileTitleAlignment.center,
-                                  leading: SizedBox.square(
-                                    dimension: 48,
-                                    child: option.outcome == BetOutcome.draw
-                                        ? _DrawTeamLogos(
-                                            homeTeam: widget.homeTeam,
-                                            awayTeam: widget.awayTeam,
-                                          )
-                                        : Center(
-                                            child: _TeamLogo(
-                                              team: option.outcome ==
-                                                      BetOutcome.homeWin
-                                                  ? widget.homeTeam
-                                                  : widget.awayTeam,
-                                            ),
-                                          ),
-                                  ),
-                                  title: Text(
-                                    _label(
-                                      context,
-                                      option.outcome,
-                                      widget.homeTeam,
-                                      widget.awayTeam,
+                        if (_step == _BettingFlowStep.submitted) ...[
+                          const SizedBox(height: 32),
+                          const Icon(Icons.check_circle_outline, size: 56),
+                          const SizedBox(height: 24),
+                          Text(tr(context, 'Bet Submitted!'),
+                              style: Heading3.style),
+                          const SizedBox(height: 16),
+                          Text(
+                            tr(context, 'Check back after the final whistle…'),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                          const SizedBox(height: 48),
+                          _BetButton(
+                            text: trUpper(context, 'Done'),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ] else ...[
+                          if (_step != _BettingFlowStep.review) ...[
+                            const SizedBox(height: 24),
+                            MatchStatsHeader(
+                              homeTeam: widget.homeTeam,
+                              awayTeam: widget.awayTeam,
+                              options: market.options,
+                              anchorTeamId: widget.anchorTeamId,
+                            ),
+                          ],
+                          if (_step == _BettingFlowStep.selection) ...[
+                            const SizedBox(height: 32),
+                            ...market.options.map(
+                              (option) => Column(
+                                children: [
+                                  Material(
+                                    type: MaterialType.transparency,
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      titleAlignment:
+                                          ListTileTitleAlignment.center,
+                                      leading: SizedBox.square(
+                                        dimension: 48,
+                                        child: option.outcome == BetOutcome.draw
+                                            ? _DrawTeamLogos(
+                                                homeTeam: widget.homeTeam,
+                                                awayTeam: widget.awayTeam,
+                                              )
+                                            : Center(
+                                                child: _TeamLogo(
+                                                  team: option.outcome ==
+                                                          BetOutcome.homeWin
+                                                      ? widget.homeTeam
+                                                      : widget.awayTeam,
+                                                ),
+                                              ),
+                                      ),
+                                      title: Text(
+                                        _label(
+                                          context,
+                                          option.outcome,
+                                          widget.homeTeam,
+                                          widget.awayTeam,
+                                        ),
+                                        style: Heading5.style,
+                                      ),
+                                      trailing: Icon(
+                                        _selected == option.outcome
+                                            ? Icons.radio_button_checked
+                                            : Icons.radio_button_unchecked,
+                                      ),
+                                      onTap: controller.saving
+                                          ? null
+                                          : () => setState(
+                                                () =>
+                                                    _selected = option.outcome,
+                                              ),
                                     ),
-                                    style: Heading5.style,
                                   ),
-                                  trailing: Icon(
-                                    _selected == option.outcome
-                                        ? Icons.radio_button_checked
-                                        : Icons.radio_button_unchecked,
+                                  Divider(
+                                    key: ValueKey(
+                                      'match-betting-option-divider-'
+                                      '${option.outcome.name}',
+                                    ),
+                                    color: optionDividerColor,
                                   ),
-                                  onTap: controller.saving
-                                      ? null
-                                      : () => setState(
-                                            () => _selected = option.outcome,
-                                          ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          if (_step == _BettingFlowStep.amount) ...[
+                            const SizedBox(height: 32),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                tr(context, 'You’re betting'),
+                                style: Body2.style,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            _BetAmountInput(
+                              controller: _amountController,
+                              onChanged: (amount) =>
+                                  setState(() => _amount = amount),
+                              onDecrease: controller.saving ||
+                                      _amount <= market.stakeUnit ||
+                                      _amount % market.stakeUnit != 0
+                                  ? null
+                                  : () =>
+                                      _setAmount(_amount - market.stakeUnit),
+                              onIncrease: controller.saving ||
+                                      _amount + market.stakeUnit >
+                                          controller.spendingLimit ||
+                                      _amount % market.stakeUnit != 0
+                                  ? null
+                                  : () =>
+                                      _setAmount(_amount + market.stakeUnit),
+                            ),
+                            const SizedBox(height: 12),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Opacity(
+                                opacity: .7,
+                                child: Text(
+                                  tr(context,
+                                      'You can use up to {points} pts!', {
+                                    'points': NumberFormat.decimalPattern()
+                                        .format(controller.spendingLimit),
+                                  }),
+                                  style: Body2.style,
                                 ),
                               ),
-                              Divider(
-                                key: ValueKey(
-                                  'match-betting-option-divider-'
-                                  '${option.outcome.name}',
+                            ),
+                            const SizedBox(height: 24),
+                            Row(
+                              key: _amountResultsKey,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: _BetValueBox(
+                                    label: tr(context, 'Your estimated win'),
+                                    value: estimatedWin,
+                                  ),
                                 ),
-                                color: optionDividerColor,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      if (_step == _BettingFlowStep.amount) ...[
-                        const SizedBox(height: 32),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            tr(context, 'You’re betting'),
-                            style: Body2.style,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _BetAmountInput(
-                          amount: _amount,
-                          onDecrease: controller.saving ||
-                                  _amount <= market.stakeUnit
-                              ? null
-                              : () =>
-                                  setState(() => _amount -= market.stakeUnit),
-                          onIncrease: controller.saving ||
-                                  _amount + market.stakeUnit >
-                                      controller.spendingLimit
-                              ? null
-                              : () =>
-                                  setState(() => _amount += market.stakeUnit),
-                        ),
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Opacity(
-                            opacity: .7,
-                            child: Text(
-                              tr(context, 'You can use up to {points} pts!', {
-                                'points': NumberFormat.decimalPattern()
-                                    .format(controller.spendingLimit),
-                              }),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _BetValueBox(
+                                    label: tr(
+                                        context, 'Total you’re getting back'),
+                                    value: total ?? 0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                          if (_step == _BettingFlowStep.review) ...[
+                            const SizedBox(height: 32),
+                            Text(
+                              tr(context, 'You’re about to place a bet of'),
+                              textAlign: TextAlign.center,
                               style: Body2.style,
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        if (total != null && estimatedWin != null)
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: _BetValueBox(
-                                  label: tr(context, 'Your estimated win'),
-                                  value: estimatedWin,
-                                ),
+                            const SizedBox(height: 16),
+                            _BetReviewAmount(amount: _amount),
+                            const SizedBox(height: 16),
+                            Text(
+                              tr(context, 'Would you like to proceed?'),
+                              textAlign: TextAlign.center,
+                              style: Body2.style,
+                            ),
+                          ],
+                          if (controller.error != null)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text(
+                                tr(context, controller.error!),
+                                textAlign: TextAlign.center,
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: _BetValueBox(
-                                  label:
-                                      tr(context, 'Total you’re getting back'),
-                                  value: total,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          if (!controller.beforeKickoff)
+                            Text(tr(
+                                context, 'Betting is closed for this match.')),
+                          const SizedBox(height: 24),
+                          if (_step == _BettingFlowStep.amount)
+                            const SizedBox(height: 52)
+                          else
+                            continueButton,
+                        ],
                       ],
-                      if (_step == _BettingFlowStep.review) ...[
-                        const SizedBox(height: 32),
-                        Text(
-                          tr(context, 'You’re about to place a bet of'),
-                          textAlign: TextAlign.center,
-                          style: Body2.style,
-                        ),
-                        const SizedBox(height: 16),
-                        _BetReviewAmount(amount: _amount),
-                        const SizedBox(height: 16),
-                        Text(
-                          tr(context, 'Would you like to proceed?'),
-                          textAlign: TextAlign.center,
-                          style: Body2.style,
-                        ),
-                      ],
-                      if (controller.error != null)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Text(
-                            tr(context, controller.error!),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      if (!controller.beforeKickoff)
-                        Text(tr(context, 'Betting is closed for this match.')),
-                      const SizedBox(height: 24),
-                      _BetButton(
-                        text: controller.saving
-                            ? tr(context, 'SUBMITTING…')
-                            : trUpper(context, 'Continue'),
-                        onPressed: _selected == null ||
-                                !controller.canBet ||
-                                _amount > controller.spendingLimit
-                            ? null
-                            : () async {
-                                if (_step == _BettingFlowStep.selection) {
-                                  setState(
-                                      () => _step = _BettingFlowStep.amount);
-                                  return;
-                                }
-                                if (_step == _BettingFlowStep.amount) {
-                                  setState(
-                                      () => _step = _BettingFlowStep.review);
-                                  return;
-                                }
-                                final saved = await controller.save(
-                                  _selected!,
-                                  _amount,
-                                );
-                                if (mounted && saved) {
-                                  setState(
-                                      () => _step = _BettingFlowStep.submitted);
-                                }
-                              },
-                      ),
-                    ],
-                  ],
-                ),
+                    ),
+                  ),
+                  if (_step == _BettingFlowStep.amount)
+                    Positioned(
+                      left: 24,
+                      right: 24,
+                      bottom: 24,
+                      child: continueButton,
+                    ),
+                ],
               ),
             ),
           );
@@ -626,12 +706,14 @@ class _BetReviewAmount extends StatelessWidget {
 
 class _BetAmountInput extends StatelessWidget {
   const _BetAmountInput({
-    required this.amount,
+    required this.controller,
+    required this.onChanged,
     required this.onDecrease,
     required this.onIncrease,
   });
 
-  final int amount;
+  final TextEditingController controller;
+  final ValueChanged<int> onChanged;
   final VoidCallback? onDecrease;
   final VoidCallback? onIncrease;
 
@@ -639,7 +721,7 @@ class _BetAmountInput extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final foreground = theme.colorScheme.onSurface;
-    // 서버의 금액 규칙은 유지하고, 기존 금액 박스와 오른쪽 버튼 배치를 복원해요.
+    // 단위를 입력값 밖에 두어 백스페이스가 숫자만 자연스럽게 지우도록 해요.
     return Container(
       key: const ValueKey('match-betting-amount-input'),
       padding: const EdgeInsets.only(top: 12, left: 16, right: 12, bottom: 12),
@@ -653,29 +735,70 @@ class _BetAmountInput extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Flexible(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('$amount',
-                      style: TextStyle(
-                          color: foreground,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Text(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final numberStyle = TextStyle(
+                  color: foreground,
+                  fontSize: 32,
+                  fontFamily: 'Archivo',
+                  fontWeight: FontWeight.bold,
+                  height: 1.20,
+                );
+                final numberPainter = TextPainter(
+                  text: TextSpan(
+                    text: controller.text.isEmpty ? '0' : controller.text,
+                    style: numberStyle,
+                  ),
+                  textDirection: Directionality.of(context),
+                )..layout();
+                final numberWidth = math.min(
+                  math.max(28.0, numberPainter.width + 8),
+                  math.max(28.0, constraints.maxWidth - 36),
+                );
+                numberPainter.dispose();
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    SizedBox(
+                      width: numberWidth,
+                      child: TextField(
+                        key: const ValueKey('bet-amount-text-field'),
+                        controller: controller,
+                        keyboardType: TextInputType.text,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        maxLines: 1,
+                        style: numberStyle,
+                        cursorColor: foreground.withValues(alpha: .5),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        onChanged: (value) =>
+                            onChanged(int.tryParse(value) ?? 0),
+                        onTapOutside: (_) =>
+                            FocusManager.instance.primaryFocus?.unfocus(),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
                       pointUnit,
                       style: TextStyle(
-                          color: foreground,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
+                        color: foreground.withValues(alpha: .5),
+                        fontSize: 18,
+                        fontFamily: 'Archivo',
+                        fontWeight: FontWeight.bold,
+                        height: 1.10,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                );
+              },
             ),
           ),
           Row(

@@ -210,15 +210,20 @@ const appMessages = <String, MessageTranslations>{
     zh: "{player}因伤被换下 · {minute}'"
   ),
   "Open live match": (ko: "라이브 경기 보기", ja: "ライブ試合を見る", zh: "查看直播比赛"),
-  "You won {points} pts!": (
-    ko: "{points} $pointUnit를 획득했어요!",
-    ja: "{points} $pointUnit獲得しました！",
-    zh: "你赢得了{points} $pointUnit！"
+  "You won {points} points!": (
+    ko: "{points} 포인트를 획득했어요!",
+    ja: "{points}ポイントを獲得しました！",
+    zh: "你赢得了{points}积分！"
   ),
-  "{points} pts returned": (
-    ko: "{points} $pointUnit가 반환됐어요",
-    ja: "{points} $pointUnitが返還されました",
-    zh: "已返还{points} $pointUnit"
+  "No points this time.": (
+    ko: "이번엔 포인트를 얻지 못했어요.",
+    ja: "今回はポイントを獲得できませんでした。",
+    zh: "这次没有获得积分。"
+  ),
+  "{points} points returned.": (
+    ko: "{points} 포인트가 반환됐어요.",
+    ja: "{points}ポイントが返還されました。",
+    zh: "已返还{points}积分。"
   ),
   "Your bet on {team} was correct.": (
     ko: "{team}에 대한 베팅이 적중했어요.",

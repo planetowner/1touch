@@ -88,8 +88,10 @@ void main() {
               'You used {stake} pts · {return} pts if correct',
               {'stake': 100, 'return': 400}),
           allOf(contains('100 pts'), contains('400 pts')));
-      expect(translateMessage(locale, '{points} pts returned', {'points': 100}),
-          contains('100 pts'));
+      expect(
+        translateMessage(locale, '{points} points returned.', {'points': 100}),
+        contains('100'),
+      );
     }
     expect(
       translateMessage(const Locale('ko'), 'You can use up to {points} pts!',

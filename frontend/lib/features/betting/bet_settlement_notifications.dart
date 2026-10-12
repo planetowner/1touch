@@ -259,8 +259,9 @@ class BetSettlementResultOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    final foreground = Theme.of(context).colorScheme.onSurface;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = isDark ? AppPalette.white : const Color(0xFF090A0A);
+    final sheetColor = isDark ? const Color(0xFF272828) : AppPalette.white;
     final bottomOffset = reserveBottomNavigation
         ? OneTouchBottomNavigationBar.heightOf(context)
         : 0.0;
@@ -298,7 +299,7 @@ class BetSettlementResultOverlay extends StatelessWidget {
               child: Container(
                 key: const ValueKey('bet-settlement-sheet'),
                 decoration: BoxDecoration(
-                  color: colors.cardBackground,
+                  color: sheetColor,
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(24),
                   ),
@@ -338,13 +339,13 @@ class BetSettlementResultOverlay extends StatelessWidget {
                               size: 56,
                               color: foreground,
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 16),
                             Text(
                               _title(context),
                               textAlign: TextAlign.center,
                               style: Heading4.style.copyWith(color: foreground),
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 8),
                             _ResultDescription(
                               notice: notice,
                               foreground: foreground,
@@ -359,16 +360,22 @@ class BetSettlementResultOverlay extends StatelessWidget {
                             _ResultButton(
                               key: const ValueKey('bet-settlement-see-results'),
                               label: tr(context, 'SEE RESULTS'),
-                              background: AppPalette.white,
-                              foreground: AppPalette.black,
+                              background: isDark
+                                  ? AppPalette.white
+                                  : const Color(0xFF090A0A),
+                              foreground: isDark
+                                  ? const Color(0xFF090A0A)
+                                  : AppPalette.white,
                               onTap: onSeeResults,
                             ),
                             const SizedBox(height: 16),
                             _ResultButton(
                               key: const ValueKey('bet-settlement-maybe-later'),
                               label: tr(context, 'MAYBE LATER'),
-                              background: AppPalette.lightGrey,
-                              foreground: AppPalette.white,
+                              background: isDark
+                                  ? AppPalette.lightGrey
+                                  : AppPalette.lightModeDarkGrey,
+                              foreground: foreground,
                               onTap: onDismiss,
                             ),
                           ],
@@ -387,13 +394,16 @@ class BetSettlementResultOverlay extends StatelessWidget {
 
   String _title(BuildContext context) {
     if (notice.refunded) {
-      return tr(context, '{points} pts returned', {
+      return tr(context, '{points} points returned.', {
         'points': notice.bet.payout,
       });
     }
-    return tr(context, 'You won {points} pts!', {
-      'points': notice.bet.payout,
-    });
+    if (notice.won) {
+      return tr(context, 'You won {points} points!', {
+        'points': notice.bet.payout,
+      });
+    }
+    return tr(context, 'No points this time.');
   }
 }
 
@@ -420,7 +430,12 @@ class _ResultDescription extends StatelessWidget {
                 'team': notice.selectionName,
               });
     final teamStart = template.indexOf(notice.selectionName);
-    final regular = Body1.style.copyWith(color: foreground);
+    final lineHeight =
+        Localizations.localeOf(context).languageCode == 'ko' ? 1.60 : 1.30;
+    final regular = Body1.style.copyWith(
+      color: foreground,
+      height: lineHeight,
+    );
     if (teamStart < 0) {
       return Text(template, textAlign: TextAlign.center, style: regular);
     }
@@ -430,7 +445,10 @@ class _ResultDescription extends StatelessWidget {
           TextSpan(text: template.substring(0, teamStart), style: regular),
           TextSpan(
             text: notice.selectionName,
-            style: Body1_b.style.copyWith(color: foreground),
+            style: Body1_b.style.copyWith(
+              color: foreground,
+              height: lineHeight,
+            ),
           ),
           TextSpan(
             text: template.substring(teamStart + notice.selectionName.length),
@@ -471,7 +489,12 @@ class _ResultButton extends StatelessWidget {
               child: Text(
                 label,
                 textAlign: TextAlign.center,
-                style: Body2_b.style.copyWith(color: foreground),
+                style: Body2_b.style.copyWith(
+                  color: foreground,
+                  height: Localizations.localeOf(context).languageCode == 'ko'
+                      ? 1.60
+                      : 1.30,
+                ),
               ),
             ),
           ),
