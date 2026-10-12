@@ -5,9 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>$title</title>
   <style>
+    /* 웹폰트를 지원하는 메일 앱에서는 Figma의 글꼴과 굵기를 그대로 사용해요. */
+    @font-face {
+      font-family: Pretendard;
+      font-style: normal;
+      font-weight: 500;
+      src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/web/static/woff2/Pretendard-Medium.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: Pretendard;
+      font-style: normal;
+      font-weight: 600;
+      src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/web/static/woff2/Pretendard-SemiBold.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: Pretendard;
+      font-style: normal;
+      font-weight: 700;
+      src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/web/static/woff2/Pretendard-Bold.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: Pretendard;
+      font-style: normal;
+      font-weight: 900;
+      src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/web/static/woff2/Pretendard-Black.woff2') format('woff2');
+    }
     @media screen and (max-width: 480px) {
-      .verification-code { height: 46.49296px !important; border-radius: 4.41195px / 6.20423px !important; }
-      .verification-digit { width: 13.05756px !important; height: 32.52112px !important; margin: 0 2.3741px !important; font-size: 18px !important; line-height: 45.50704px !important; }
+      .verification-instructions { padding-top: 19px !important; padding-bottom: 152px !important; font-size: 10px !important; line-height: 12px !important; }
     }
   </style>
 </head>
@@ -15,7 +39,7 @@
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; border-collapse: collapse; font-family: Pretendard, Arial, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; text-align: center;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ebebeb" style="width: 100%; max-width: 600px; border-collapse: collapse; background-color: #ebebeb; font-family: Pretendard, Arial, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; letter-spacing: 0; text-align: center;">
           <tr>
             <!-- Figma의 로고 벡터를 원래 배치대로 PNG로 묶어 메일에 함께 넣어요. -->
             <td height="117" align="center" bgcolor="#000000" style="height: 117px; background-color: #000000;">
@@ -23,26 +47,23 @@
             </td>
           </tr>
           <tr>
-            <td style="padding: 40px 16px 28px;">
-              <h1 style="margin: 0; font-size: 25px; line-height: 30px; font-weight: 700;">$title</h1>
+            <td style="padding: 40px 16px 18px;">
+              <h1 style="margin: 0; font-size: 20px; line-height: 24px; font-weight: 900;">$code_label</h1>
             </td>
           </tr>
           <tr>
-            <td style="padding: 0 16px 18px;">
-              <p style="margin: 0; font-size: 20px; line-height: 24px; font-weight: 700;">$code_label</p>
+            <td height="32" style="height: 32px; padding: 0; font-size: 0; line-height: 0;">
+              <div class="verification-code" style="height: 32px; font-size: 0; line-height: 0; white-space: nowrap;">$code_digits</div>
             </td>
           </tr>
           <tr>
-            <td height="59" valign="middle" style="height: 59px; padding: 0 69px; font-size: 0; line-height: 0;">
-              <!-- Figma의 가운데 정렬된 선은 도형 바깥으로도 뻗어요. 선 두께의 절반만큼 여백을 보정해요. -->
-              <div class="verification-code" style="box-sizing: border-box; height: 61.49296px; margin: -1.24648px; border: 2.49296px solid #9e9e9e; border-radius: 7.89437px; background-color: #e6e6e6; font-size: 0; line-height: 0; white-space: nowrap;">$code_digits</div>
-            </td>
-          </tr>
-          <tr>
-            <!-- 모바일에서는 고정 너비 대신 줄바꿈으로 안내 문구가 잘리지 않게 해요. -->
-            <td style="padding: 18px 6px 152px; font-size: 14px; line-height: 17px; overflow-wrap: break-word; word-break: normal;">
-              <p style="margin: 0;">$instructions</p>
-              <p style="margin: 0;">$ignore</p>
+            <!-- 본문 아래 여백은 데스크톱 204px, 모바일 152px로 푸터 위치를 맞춰요. -->
+            <td class="verification-instructions" style="padding: 18px 0 204px; font-size: 14px; line-height: 17px; font-weight: 600; overflow-wrap: break-word; word-break: normal;">
+              <!-- Gmail은 음수 여백을 제거해요. 본문은 최대 373px로 두고 좁은 화면에서는 메일 너비에 맞춰요. -->
+              <div style="width: 100%; max-width: 373px; margin: 0 auto;">
+                <p style="margin: 0;">$instructions</p>
+                <p style="margin: 5px 0 0;">$ignore</p>
+              </div>
             </td>
           </tr>
           <tr>

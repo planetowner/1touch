@@ -74,12 +74,12 @@ const appMessages = <String, MessageTranslations>{
   // 인증 메일도 이 문구를 원본으로 삼고 서버용 JSON을 생성해요.
   "Email Verification Code": (ko: "이메일 인증번호", ja: "メール認証コード", zh: "邮箱验证码"),
   "Your 1touch code is": (
-    ko: "1touch 인증번호예요",
+    ko: "이메일 인증번호",
     ja: "1touchの認証コードです",
     zh: "这是你的1touch验证码"
   ),
-  "To continue signing up, enter this code within {minutes} minutes.": (
-    ko: "회원가입을 계속하려면 {minutes}분 안에 이 번호를 입력해 주세요.",
+  "Use it to create your account. It expires in {minutes} minutes.": (
+    ko: "회원가입을 계속 하려면 {minutes}분 안에 이 번호를 입력해 주세요.",
     ja: "新規登録を続けるには、{minutes}分以内にこのコードを入力してください。",
     zh: "要继续注册，请在{minutes}分钟内输入此验证码。"
   ),
@@ -98,7 +98,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "メールアドレスを変更するには、{minutes}分以内にこのコードを入力してください。",
     zh: "要更改邮箱地址，请在{minutes}分钟内输入此验证码。"
   ),
-  "If you didn't request this verification code, you can ignore this email.": (
+  "If you did not request this code, you can ignore this email.": (
     ko: "이 인증번호를 요청한 적이 없다면 이 이메일은 무시해도 돼요.",
     ja: "この認証コードに心当たりがない場合は、このメールを無視してかまいません。",
     zh: "如果你没有申请此验证码，可以忽略这封邮件。"

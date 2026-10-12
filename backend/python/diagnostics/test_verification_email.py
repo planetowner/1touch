@@ -25,9 +25,9 @@ SETTINGS = {
 
 
 HEADINGS = {
-    "ko": ("이메일 인증번호", "1touch 인증번호예요", "이 인증번호를 요청한 적이 없다면 이 이메일은 무시해도 돼요."),
+    "ko": ("이메일 인증번호", "이메일 인증번호", "이 인증번호를 요청한 적이 없다면 이 이메일은 무시해도 돼요."),
     "en": ("Email Verification Code", "Your 1touch code is",
-           "If you didn't request this verification code, you can ignore this email."),
+           "If you did not request this code, you can ignore this email."),
     "ja": ("メール認証コード", "1touchの認証コードです",
            "この認証コードに心当たりがない場合は、このメールを無視してかまいません。"),
     "zh": ("邮箱验证码", "这是你的1touch验证码", "如果你没有申请此验证码，可以忽略这封邮件。"),
@@ -38,13 +38,13 @@ class VerificationEmailTests(unittest.TestCase):
     def test_approved_copy_survives_mime_encoding_for_every_purpose_and_language(self):
         instructions = {
             "ko": {
-                "signup": "회원가입을 계속하려면 10분 안에 이 번호를 입력해 주세요.",
+                "signup": "회원가입을 계속 하려면 10분 안에 이 번호를 입력해 주세요.",
                 "password_reset": "비밀번호를 다시 설정하려면 10분 안에 이 번호를 입력해 주세요.",
                 "username_recovery": "아이디를 찾으려면 10분 안에 이 번호를 입력해 주세요.",
                 "email_change": "이메일 주소를 바꾸려면 10분 안에 이 번호를 입력해 주세요.",
             },
             "en": {
-                "signup": "To continue signing up, enter this code within 10 minutes.",
+                "signup": "Use it to create your account. It expires in 10 minutes.",
                 "password_reset": "To reset your password, enter this code within 10 minutes.",
                 "username_recovery": "To find your username, enter this code within 10 minutes.",
                 "email_change": "To change your email address, enter this code within 10 minutes.",
@@ -77,7 +77,7 @@ class VerificationEmailTests(unittest.TestCase):
                     html = message.get_body(preferencelist=("html",)).get_content()
                     document = BeautifulSoup(html, "html.parser")
                     self.assertEqual(document.html["lang"], language)
-                    self.assertEqual(document.h1.get_text(), title)
+                    self.assertEqual(document.h1.get_text(), label)
                     self.assertEqual(document.select_one(".verification-code").get_text(), "012345")
                     for text in (label, instruction, ignore):
                         self.assertIn(text, document.get_text())
@@ -99,7 +99,7 @@ class VerificationEmailTests(unittest.TestCase):
 
     def test_expiry_copy_uses_the_code_lifetime_setting(self):
         with patch.object(verification_email, "CODE_LIFETIME_MINUTES", 7):
-            for language, expected in (("ko", "7분 안에"), ("en", "within 7 minutes"),
+            for language, expected in (("ko", "7분 안에"), ("en", "in 7 minutes"),
                                        ("ja", "7分以内"), ("zh", "7分钟内")):
                 _, plain, html = verification_email.render_verification_email("012345", "signup", language)
                 self.assertIn(expected, plain)
