@@ -58,6 +58,7 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli fixture-details fixture <fixture_id>
   python -m one_touch_loader.cli fixture-details all
   python -m one_touch_loader.cli fixture-details <season_name> <competition_id> [competition_id ...]
+  # --player-stats-only도 라인업 좌표와 함께 포메이션을 갱신해요.
   python -m one_touch_loader.cli fixture-details <season_name> --player-stats-only
   python -m one_touch_loader.cli fixture-details <season_name> --player-stats-only --from-fixture <fixture_id>
 

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ..core.db import fetch_all, transaction
 from ..core.fixture_states import COMPLETED_STATE_IDS
-from ..core.sportmonks import SportmonksClient
+from ..core.sportmonks import SportmonksClient, SPORTMONKS_FIXTURE_FORMATION_OVERRIDES
 from ..core.identity import SPORTMONKS_DUPLICATE_PLAYER_IDS, canonical_sportmonks_player_id as _canonical_player_id
 from ..core.player_match_metrics import STORED_STAT_TYPE_IDS
 from .players_loader import insert_missing_player_profiles
@@ -115,6 +115,18 @@ def normalize_fixture_statistics(payload: Dict, fixture_id: int) -> Dict[str, Li
     return {"stat_types": list(stat_types.values()), "team_stats": team_stats}
 
 
+def normalize_fixture_formations(payload: Dict, fixture_id: int) -> List[Tuple]:
+    formations = []
+    for row in payload["formations"]:
+        team_id, formation = row["participant_id"], row["formation"]
+        if team_id is None or not formation:
+            continue
+        # 원본 오타가 재수집으로 돌아오지 않도록 전체·명단·라이브·보충 저장에 함께 적용해요.
+        formation = SPORTMONKS_FIXTURE_FORMATION_OVERRIDES.get((fixture_id, team_id, formation), formation)
+        formations.append((fixture_id, team_id, formation))
+    return formations
+
+
 def normalize_fixture_lineups(payload: Dict, fixture_id: int) -> Dict[str, List[Tuple]]:
     lineups = []
     player_stats = []
@@ -147,12 +159,8 @@ def normalize_fixture_lineups(payload: Dict, fixture_id: int) -> Dict[str, List[
             # 명시적인 null을 남겨야 생략된 0회와 미제공 값을 조회할 때 구분할 수 있어요.
             if type_id in STORED_STAT_TYPE_IDS
         )
-    formations = [
-        (fixture_id, formation["participant_id"], formation["formation"])
-        for formation in payload["formations"]
-        if formation["participant_id"] is not None and formation["formation"]
-    ]
-    return {"lineups": lineups, "player_stats": player_stats, "formations": formations}
+    return {"lineups": lineups, "player_stats": player_stats,
+            "formations": normalize_fixture_formations(payload, fixture_id)}
 
 
 def _normalize_fixture_details(payload: Dict, fixture_id: int) -> Dict[str, List[Tuple]]:
@@ -328,9 +336,8 @@ def _collect_fixture_details(
             fixture_id = payload["id"]
             event_profiles = {}
             if player_stats_only:
-                normalized = normalize_fixture_lineups(payload, fixture_id)
-                # 팀 통계·이벤트·포메이션은 다시 적재하지 않아요. 출전 정보와 선수 통계만 같이 갱신해요.
-                rows = {key: normalized[key] for key in ("lineups", "player_stats")}
+                # 컵 명단 보충에서 포메이션만 빠졌어요. 좌표와 포메이션은 같은 응답으로 갱신해요.
+                rows = normalize_fixture_lineups(payload, fixture_id)
             else:
                 rows = _normalize_fixture_details(payload, fixture_id)
                 event_profiles = verified_event_player_profiles(payload)

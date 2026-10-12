@@ -169,7 +169,7 @@ class FixtureDetailsLoaderTests(unittest.TestCase):
     @patch.object(details, "replace_fixture_detail_rows", return_value=0)
     @patch.object(details, "SportmonksClient")
     @patch.object(details, "_load_scope", return_value=list(range(500, 551)))
-    def test_player_backfill_batches_and_replaces_only_player_collections(self, scope, client, write):
+    def test_player_backfill_batches_and_keeps_formations_with_lineups(self, scope, client, write):
         payload = _payload()
         payload["lineups"][0]["details"].append({"type_id": 120, "data": {"value": 64}})
         client.return_value.get_fixture_details_batch.side_effect = lambda ids: [
@@ -182,10 +182,12 @@ class FixtureDetailsLoaderTests(unittest.TestCase):
         self.assertEqual([len(call.args[0]) for call in client.return_value.get_fixture_details_batch.call_args_list], [50, 1])
         self.assertEqual(result["fixtures"], 51)
         self.assertEqual(result["player_stats"], 51)
+        self.assertEqual(result["formations"], 51)
         self.assertEqual(result["events"], 0)
         self.assertEqual(result["team_stats"], 0)
         for call in write.call_args_list:
-            self.assertEqual(set(call.args[1]), {"lineups", "player_stats"})
+            self.assertEqual(set(call.args[1]), {"lineups", "player_stats", "formations"})
+            self.assertEqual(call.args[1]["formations"], [(call.args[0], 10, "4-3-3")])
             self.assertEqual(call.args[1]["player_stats"][0][-1], 64)
 
     def test_andy_substitution_uses_the_verified_gomez_identity(self):
@@ -473,6 +475,25 @@ class _SqliteConnection:
 
 
 class FixtureDetailsStorageTests(unittest.TestCase):
+    def test_player_backfill_stores_formation_and_preserves_unrelated_details(self):
+        payload = _payload()
+        details.replace_fixture_detail_rows(500, _normalize_fixture_details(payload, 500), payload["lineups"])
+        tables = ("fixture_events", "fixture_team_stats", "fixture_coaches", "fixture_pressures")
+        before = {table: self.connection.execute(f"SELECT * FROM {table}").fetchall() for table in tables}
+        self.connection.execute("DELETE FROM fixture_formations")
+        self.connection.commit()
+        with patch.object(details, "_load_scope", return_value=[500]), \
+                patch.object(details, "SportmonksClient") as client, patch("builtins.print"):
+            client.return_value.get_fixture_details_batch.return_value = [payload]
+            for formation in ("4-3-3", "4-2-3-1", None):
+                payload["formations"] = [] if formation is None else [{"participant_id": 10, "formation": formation}]
+                details.collect_fixture_details(500, player_stats_only=True)
+                expected = [] if formation is None else [(500, 10, formation)]
+                self.assertEqual(self.connection.execute("SELECT * FROM fixture_formations").fetchall(), expected)
+                self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_lineups").fetchone(), (1,))
+        for table in tables:
+            self.assertEqual(self.connection.execute(f"SELECT * FROM {table}").fetchall(), before[table])
+
     def setUp(self):
         # 이 테스트는 경기 상세 저장을 검증해요. 실제 랭킹 연동은 test_player_rating_refresh에서 확인해요.
         from contextlib import nullcontext

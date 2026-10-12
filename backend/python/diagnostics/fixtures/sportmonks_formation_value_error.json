@@ -1,0 +1,25 @@
+{
+  "fixture_id": 5932877,
+  "name": "Chelsea vs Nottingham Forest",
+  "starting_at": "2017-09-20 18:45:00",
+  "participants": [
+    {"id": 18, "location": "home"},
+    {"id": 63, "location": "away"}
+  ],
+  "formations": [
+    {"id": 38176, "fixture_id": 5932877, "participant_id": 63, "formation": "3-5-2", "location": "away"},
+    {"id": 38175, "fixture_id": 5932877, "participant_id": 18, "formation": "4-3-4", "location": "home"}
+  ],
+  "verified_formation": "3-4-3",
+  "verified_team_id": 18,
+  "evidence": [
+    {
+      "url": "https://www.sportsmole.co.uk/football/chelsea/league-cup/live-commentary/chelsea-5-1-forest-as-it-happened_307756.html",
+      "note": "6:47pm 선발 배치와 6:51pm·6:53pm 설명에서 수비 3명, 중원 4명, 공격 3명을 확인했어요."
+    },
+    {
+      "url": "https://fbref.com/en/squads/cff3d9bb/2017-2018/matchlogs/all_comps/schedule/Chelsea-Scores-and-Fixtures-All-Competitions",
+      "note": "2017-09-20 행의 첼시 포메이션은 3-4-3이에요."
+    }
+  ]
+}

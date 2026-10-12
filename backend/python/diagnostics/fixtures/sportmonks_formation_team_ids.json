@@ -1,0 +1,552 @@
+{
+  "checked_at_utc": "2026-10-12T00:17:07.597343+00:00",
+  "source": "Sportmonks fixtures/multi; include=participants;formations;lineups",
+  "cases": [
+    {
+      "fixture": {
+        "id": 1818730,
+        "participants": [
+          {
+            "id": 3529,
+            "name": "Sarajevo",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 248074,
+            "name": "CSF Bălți",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 26130,
+            "fixture_id": 1818730,
+            "participant_id": 3529,
+            "formation": "4-2-3-1",
+            "location": "away"
+          },
+          {
+            "id": 26129,
+            "fixture_id": 1818730,
+            "participant_id": 6349,
+            "formation": "4-2-3-1",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Zaria vs Sarajevo",
+      "lineup_team_ids": [
+        3529,
+        248074
+      ]
+    },
+    {
+      "fixture": {
+        "id": 1818731,
+        "participants": [
+          {
+            "id": 248074,
+            "name": "CSF Bălți",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 3529,
+            "name": "Sarajevo",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 26132,
+            "fixture_id": 1818731,
+            "participant_id": 6349,
+            "formation": "4-4-1-1",
+            "location": "away"
+          },
+          {
+            "id": 26131,
+            "fixture_id": 1818731,
+            "participant_id": 3529,
+            "formation": "4-2-3-1",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Sarajevo vs Zaria",
+      "lineup_team_ids": [
+        3529,
+        248074
+      ]
+    },
+    {
+      "fixture": {
+        "id": 2571698,
+        "participants": [
+          {
+            "id": 248074,
+            "name": "CSF Bălți",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 6315,
+            "name": "Apollon",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 31886,
+            "fixture_id": 2571698,
+            "participant_id": 6349,
+            "formation": "4-2-3-1",
+            "location": "away"
+          },
+          {
+            "id": 31885,
+            "fixture_id": 2571698,
+            "participant_id": 6315,
+            "formation": "4-3-3",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Apollon vs Zaria",
+      "lineup_team_ids": [
+        6315,
+        248074
+      ]
+    },
+    {
+      "fixture": {
+        "id": 2571700,
+        "participants": [
+          {
+            "id": 6315,
+            "name": "Apollon",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 248074,
+            "name": "CSF Bălți",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 31888,
+            "fixture_id": 2571700,
+            "participant_id": 6315,
+            "formation": "4-3-3",
+            "location": "away"
+          },
+          {
+            "id": 31887,
+            "fixture_id": 2571700,
+            "participant_id": 6349,
+            "formation": "4-2-3-1",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Zaria vs Apollon",
+      "lineup_team_ids": [
+        6315,
+        248074
+      ]
+    },
+    {
+      "fixture": {
+        "id": 10336767,
+        "participants": [
+          {
+            "id": 3781,
+            "name": "Górnik Zabrze",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 248074,
+            "name": "CSF Bălți",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 49328,
+            "fixture_id": 10336767,
+            "participant_id": 3781,
+            "formation": "4-4-2",
+            "location": "away"
+          },
+          {
+            "id": 49327,
+            "fixture_id": 10336767,
+            "participant_id": 6349,
+            "formation": "4-3-3",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Zaria vs Górnik Zabrze",
+      "lineup_team_ids": [
+        3781,
+        248074
+      ]
+    },
+    {
+      "fixture": {
+        "id": 10411340,
+        "participants": [
+          {
+            "id": 249160,
+            "name": "Calcio Padova",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 8513,
+            "name": "Bologna",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 55158,
+            "fixture_id": 10411340,
+            "participant_id": 10860,
+            "formation": "3-5-2",
+            "location": "away"
+          },
+          {
+            "id": 55157,
+            "fixture_id": 10411340,
+            "participant_id": 8513,
+            "formation": "3-5-2",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Bologna vs Padova",
+      "lineup_team_ids": [
+        8513,
+        249160
+      ]
+    },
+    {
+      "fixture": {
+        "id": 19135226,
+        "participants": [
+          {
+            "id": 11833,
+            "name": "Larne",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 6556,
+            "name": "Rīgas FS",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 8225296,
+            "fixture_id": 19135226,
+            "participant_id": 11833,
+            "formation": "4-3-3",
+            "location": "away"
+          },
+          {
+            "id": 8225297,
+            "fixture_id": 19135226,
+            "participant_id": 268859,
+            "formation": "3-4-3",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Rīgas FS vs Larne",
+      "lineup_team_ids": [
+        6556,
+        11833
+      ]
+    },
+    {
+      "fixture": {
+        "id": 19135227,
+        "participants": [
+          {
+            "id": 6556,
+            "name": "Rīgas FS",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 11833,
+            "name": "Larne",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 8228321,
+            "fixture_id": 19135227,
+            "participant_id": 268859,
+            "formation": "3-4-3",
+            "location": "away"
+          },
+          {
+            "id": 8228322,
+            "fixture_id": 19135227,
+            "participant_id": 11833,
+            "formation": "4-3-3",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Larne vs Rīgas FS",
+      "lineup_team_ids": [
+        6556,
+        11833
+      ]
+    },
+    {
+      "fixture": {
+        "id": 19135791,
+        "participants": [
+          {
+            "id": 6556,
+            "name": "Rīgas FS",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 1668,
+            "name": "Bodø / Glimt",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 8231390,
+            "fixture_id": 19135791,
+            "participant_id": 268859,
+            "formation": "3-4-3",
+            "location": "away"
+          },
+          {
+            "id": 8231391,
+            "fixture_id": 19135791,
+            "participant_id": 1668,
+            "formation": "4-3-3",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Bodø / Glimt vs Rīgas FS",
+      "lineup_team_ids": [
+        1668,
+        6556
+      ]
+    },
+    {
+      "fixture": {
+        "id": 19135792,
+        "participants": [
+          {
+            "id": 1668,
+            "name": "Bodø / Glimt",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 6556,
+            "name": "Rīgas FS",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 8235485,
+            "fixture_id": 19135792,
+            "participant_id": 1668,
+            "formation": "4-3-3",
+            "location": "away"
+          },
+          {
+            "id": 8235486,
+            "fixture_id": 19135792,
+            "participant_id": 268859,
+            "formation": "4-2-3-1",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Rīgas FS vs Bodø / Glimt",
+      "lineup_team_ids": [
+        1668,
+        6556
+      ]
+    },
+    {
+      "fixture": {
+        "id": 19231196,
+        "participants": [
+          {
+            "id": 6556,
+            "name": "Rīgas FS",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 17318,
+            "name": "UE Santa Coloma",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 8240123,
+            "fixture_id": 19231196,
+            "participant_id": 268859,
+            "formation": "4-3-3",
+            "location": "away"
+          },
+          {
+            "id": 8240124,
+            "fixture_id": 19231196,
+            "participant_id": 17318,
+            "formation": "4-3-3",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "UE Santa Coloma vs Rīgas FS",
+      "lineup_team_ids": [
+        6556,
+        17318
+      ]
+    },
+    {
+      "fixture": {
+        "id": 19231197,
+        "participants": [
+          {
+            "id": 17318,
+            "name": "UE Santa Coloma",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 6556,
+            "name": "Rīgas FS",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 8244543,
+            "fixture_id": 19231197,
+            "participant_id": 17318,
+            "formation": "4-3-3",
+            "location": "away"
+          },
+          {
+            "id": 8244544,
+            "fixture_id": 19231197,
+            "participant_id": 268859,
+            "formation": "4-3-3",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Rīgas FS vs UE Santa Coloma",
+      "lineup_team_ids": [
+        6556,
+        17318
+      ]
+    },
+    {
+      "fixture": {
+        "id": 19238551,
+        "participants": [
+          {
+            "id": 2604,
+            "name": "APOEL",
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 6556,
+            "name": "Rīgas FS",
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "formations": [
+          {
+            "id": 8250942,
+            "fixture_id": 19238551,
+            "participant_id": 2604,
+            "formation": "4-3-3",
+            "location": "away"
+          },
+          {
+            "id": 8250943,
+            "fixture_id": 19238551,
+            "participant_id": 268859,
+            "formation": "3-4-1-2",
+            "location": "home"
+          }
+        ]
+      },
+      "name": "Rīgas FS vs APOEL",
+      "lineup_team_ids": [
+        2604,
+        6556
+      ]
+    }
+  ]
+}
