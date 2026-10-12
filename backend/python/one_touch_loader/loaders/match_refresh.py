@@ -46,7 +46,7 @@ def read_current_fixtures() -> list[dict]:
     return fetch_all_dict("""
         SELECT f.fixture_id,f.home_team_id,f.away_team_id,f.starting_at,f.state_id,
                f.home_score,f.away_score,f.home_penalty_score,f.away_penalty_score,
-               s.season_id,s.competition_id,s.name AS season_name,
+               s.season_id,s.competition_id,s.name AS season_name,st.stage_type_id,
                x.fixture_id IS NOT NULL AS has_xg,
                shots.fixture_id IS NOT NULL AND analysis.fixture_id IS NOT NULL AS has_opta
         FROM fixtures f JOIN stages st ON st.stage_id=f.stage_id
@@ -274,7 +274,12 @@ def refresh(task: str, *, state_path: Path, apply: bool = False, now=None) -> di
 
         for season_id, selected in groups.items():
             competition = selected[0]['competition_id']
-            if competition not in standings_loader.BIG5_COMPETITION_IDS:
+            if competition not in standings_loader.SUPPORTED_COMPETITION_IDS:
+                continue
+            # 예선·토너먼트 경기로 리그 페이즈의 라이브 순위를 갱신하지 않아요.
+            if competition in standings_loader.EUROPE_COMPETITION_IDS:
+                selected = [f for f in selected if f['stage_type_id'] == 223]
+            if not selected:
                 continue
             signature = fingerprint([fixture_result(f) for f in selected])
             live = any(f['state_id'] in LIVE_STATE_IDS for f in selected)

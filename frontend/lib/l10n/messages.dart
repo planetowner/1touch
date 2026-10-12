@@ -944,6 +944,8 @@ const appMessages = <String, MessageTranslations>{
   "QUARTERFINAL": (ko: "8강", ja: "準々決勝", zh: "四分之一决赛"),
   "QUARTERFINALS": (ko: "8강", ja: "準々決勝", zh: "四分之一决赛"),
   "R16": (ko: "16강", ja: "ベスト16", zh: "十六强"),
+  "Round of 16": (ko: "16강 직행", ja: "ベスト16進出", zh: "直通十六强"),
+  "Play-offs": (ko: "플레이오프", ja: "プレーオフ", zh: "附加赛"),
   "QF": (ko: "8강", ja: "準々決勝", zh: "八强"),
   "SF": (ko: "4강", ja: "準決勝", zh: "四强"),
   "Club": (ko: "팀", ja: "クラブ", zh: "俱乐部"),

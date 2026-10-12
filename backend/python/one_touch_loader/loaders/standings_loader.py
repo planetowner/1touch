@@ -3,18 +3,21 @@ from __future__ import annotations
 from typing import Dict, List, Sequence, Tuple
 
 from ..core.db import fetch_all, transaction
+from ..core.cup_betting import EUROPE_COMPETITION_IDS
 from ..core.sportmonks import SportmonksClient
 
 
 BIG5_COMPETITION_IDS = (8, 82, 301, 384, 564)
+SUPPORTED_COMPETITION_IDS = (*BIG5_COMPETITION_IDS, *EUROPE_COMPETITION_IDS)
 MIN_SEASON_START_YEAR = 2017
 
-SQL_SELECT_ALL_TARGETS = """
+SQL_SELECT_ALL_TARGETS = f"""
 SELECT season_id, competition_id, name
 FROM seasons
-WHERE competition_id IN (8,82,301,384,564)
-  AND CAST(LEFT(name, 4) AS UNSIGNED) >= %s
-ORDER BY name, competition_id
+WHERE ((competition_id IN ({','.join(map(str, BIG5_COMPETITION_IDS))})
+        AND CAST(LEFT(name, 4) AS UNSIGNED) >= %s)
+    OR (competition_id IN ({','.join(map(str, EUROPE_COMPETITION_IDS))})
+        AND CAST(LEFT(name, 4) AS UNSIGNED) >= 2024))
 """
 
 SQL_INSERT_STANDING = """
@@ -37,21 +40,14 @@ def _targets(
     season_name: str | None = None,
     competition_ids: Sequence[int] | None = None,
 ) -> List[Tuple[int, int, str]]:
-    if season_name is None:
-        rows = fetch_all(SQL_SELECT_ALL_TARGETS, (MIN_SEASON_START_YEAR,))
-    else:
+    # 유럽대항전은 2024/25부터 단일 리그 페이즈 순위를 제공해요.
+    sql = SQL_SELECT_ALL_TARGETS
+    params = (MIN_SEASON_START_YEAR,)
+    if season_name is not None:
         placeholders = ",".join("%s" for _ in competition_ids)
-        rows = fetch_all(
-            f"""
-            SELECT season_id, competition_id, name
-            FROM seasons
-            WHERE name = %s
-              AND competition_id IN ({placeholders})
-              AND competition_id IN (8,82,301,384,564)
-            ORDER BY competition_id
-            """,
-            (season_name, *competition_ids),
-        )
+        sql += f" AND name = %s AND competition_id IN ({placeholders})"
+        params += (season_name, *competition_ids)
+    rows = fetch_all(sql + " ORDER BY name, competition_id", params)
 
     return [(int(row[0]), int(row[1]), str(row[2])) for row in rows]
 
@@ -130,7 +126,13 @@ def refresh_current_table(season_id: int, competition_id: int, *, live: bool, ap
         raise ValueError(f'Standings are not available: {competition_id} {season_id}')
     if any(row['season_id'] != season_id for row in source):
         raise ValueError('Standings source season differs from the requested season')
-    expected = {r[0] for r in fetch_all('SELECT team_id FROM team_seasons WHERE season_id=%s', (season_id,))}
+    # 유럽대항전의 시즌 참가팀에는 예선 탈락팀도 있어 리그 페이즈 경기로 범위를 정해요.
+    membership_sql = ("""SELECT f.home_team_id,f.away_team_id FROM fixtures f
+        JOIN stages st ON st.stage_id=f.stage_id
+        WHERE st.season_id=%s AND st.stage_type_id=223"""
+        if competition_id in EUROPE_COMPETITION_IDS else
+        'SELECT team_id FROM team_seasons WHERE season_id=%s')
+    expected = {team for row in fetch_all(membership_sql, (season_id,)) for team in row}
     if {r['participant_id'] for r in source} != expected or len(source) != len(expected):
         raise ValueError('Standings must cover every season participant exactly once')
     previous = dict(fetch_all('SELECT team_id,previous_position FROM standings WHERE season_id=%s',
@@ -147,18 +149,16 @@ def collect_standings(
 ) -> Dict[str, int]:
     targets = _targets(season_name, competition_ids)
     if not targets:
-        raise ValueError("No matching Big 5 league seasons found")
+        raise ValueError("No matching standings seasons found")
 
-    sm = SportmonksClient()
     stored_rows = 0
 
     for season_id, competition_id, resolved_name in targets:
-        rows = _standing_rows(sm, season_id)
-        _replace_season(season_id, rows)
-        stored_rows += len(rows)
+        result = refresh_current_table(season_id, competition_id, live=False, apply=True)
+        stored_rows += result['rows']
         print(
             f"[standings] season={resolved_name} "
-            f"competition={competition_id} rows={len(rows)}"
+            f"competition={competition_id} rows={result['rows']}"
         )
 
     return {"processed_seasons": len(targets), "stored_rows": stored_rows}

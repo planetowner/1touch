@@ -128,6 +128,60 @@ void main() {
     }
   }
 
+  for (final competitionId in [2, 5, 2286]) {
+    testWidgets(
+        'league phase $competitionId reuses the table and qualification markers',
+        (tester) async {
+      final originalSeasons = footballCatalog.seasons.value;
+      final originalMemberships = footballCatalog.memberships;
+      addTearDown(() {
+        footballCatalog.seasons.value = originalSeasons;
+        footballCatalog.memberships = originalMemberships;
+      });
+      footballCatalog.seasons.value = [
+        Season(
+            seasonId: 100,
+            competitionId: competitionId,
+            name: '2026/2027',
+            isCurrent: true),
+      ];
+      footballCatalog.memberships = [
+        TeamSeasonMembership(
+            teamId: 9, seasonId: 100, competitionId: competitionId),
+      ];
+      final repository = _ControlledStandingRepository((_, __) async => [
+            for (var rank = 1; rank <= 36; rank++)
+              _standing(
+                  competitionId: competitionId,
+                  seasonId: 100,
+                  teamId: 1000 + rank,
+                  position: rank),
+          ]);
+      await tester.pumpWidget(_app(repository,
+          requestedCompetitionId: competitionId, locale: const Locale('ko')));
+      await tester.pumpAndSettle();
+
+      expect(
+          repository.requests, [(competitionId: competitionId, seasonId: 100)]);
+      expect(find.byType(StandingTable), findsOneWidget);
+      expect(find.byKey(const ValueKey('standing-empty')), findsNothing);
+      expect(find.text('16강 직행'), findsOneWidget);
+      expect(find.text('플레이오프'), findsOneWidget);
+      for (final rank in [1, 8, 9, 24, 25, 36]) {
+        final marker = tester.widget<Container>(find
+            .byKey(ValueKey('standing-qualification-marker-${1000 + rank}')));
+        expect(
+            marker.color,
+            rank <= 8
+                ? const Color(0xFF2D8CFF)
+                : rank <= 24
+                    ? const Color(0xFF22C55E)
+                    : Colors.transparent);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('loads the selected competition and season from the repository',
       (tester) async {
     final repository = _ControlledStandingRepository(
@@ -1111,13 +1165,14 @@ _ControlledStandingRepository _successfulStandingRepository() {
 }
 
 Standing _standing({
+  int competitionId = 8,
   int seasonId = 25583,
   int teamId = 9,
   int position = 1,
   String teamName = 'API United',
 }) {
   return Standing(
-    competitionId: 8,
+    competitionId: competitionId,
     seasonId: seasonId,
     phase: StandingPhase.league,
     groupName: '',

@@ -47,6 +47,7 @@ def _last_five_by_team(season_id: int) -> Dict[int, List[str]]:
         JOIN stages st ON st.stage_id = f.stage_id
         JOIN rounds r ON r.round_id = f.round_id
         WHERE st.season_id = %s
+          AND st.stage_type_id = 223
           AND f.state_id IN ({placeholders})
           AND r.name REGEXP '^[0-9]+$'
         ORDER BY f.starting_at DESC, f.fixture_id DESC
@@ -71,6 +72,7 @@ def list_standings(
     active = fetch_all_dict(f"""
         SELECT f.fixture_id FROM fixtures f JOIN stages st ON st.stage_id=f.stage_id
         WHERE st.season_id=%s AND f.state_id IN ({live_marks})
+          AND st.stage_type_id=223
           AND EXISTS (SELECT 1 FROM live_standings ls WHERE ls.season_id=st.season_id) LIMIT 1
     """, (season_id, *LIVE_STATE_IDS))
     # 종료 후에는 공식 순위를 보여줘요. 다른 계산은 계속 standings만 읽어요.

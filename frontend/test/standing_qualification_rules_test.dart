@@ -8,43 +8,43 @@ void main() {
     test('Premier League uses five UCL and three relegation places', () {
       final rules = rulesForLeague(8)!;
 
-      expect(rules.uclPositions, {1, 2, 3, 4, 5});
-      expect(rules.relegationPlayoffPositions, isEmpty);
-      expect(rules.relegationPositions, {18, 19, 20});
+      expect(rules.positions[QualificationTier.ucl], {1, 2, 3, 4, 5});
+      expect(rules.qualifyingPositions[QualificationTier.relegation], isNull);
+      expect(rules.positions[QualificationTier.relegation], {18, 19, 20});
     });
 
     test('La Liga uses five UCL and three relegation places', () {
       final rules = rulesForLeague(564)!;
 
-      expect(rules.uclPositions, {1, 2, 3, 4, 5});
-      expect(rules.relegationPlayoffPositions, isEmpty);
-      expect(rules.relegationPositions, {18, 19, 20});
+      expect(rules.positions[QualificationTier.ucl], {1, 2, 3, 4, 5});
+      expect(rules.qualifyingPositions[QualificationTier.relegation], isNull);
+      expect(rules.positions[QualificationTier.relegation], {18, 19, 20});
     });
 
     test('Bundesliga uses four UCL places and a relegation play-off', () {
       final rules = rulesForLeague(82)!;
 
-      expect(rules.uclPositions, {1, 2, 3, 4});
-      expect(rules.relegationPlayoffPositions, {16});
-      expect(rules.relegationPositions, {17, 18});
+      expect(rules.positions[QualificationTier.ucl], {1, 2, 3, 4});
+      expect(rules.qualifyingPositions[QualificationTier.relegation], {16});
+      expect(rules.positions[QualificationTier.relegation], {17, 18});
     });
 
     test('Serie A uses four UCL and three relegation places', () {
       final rules = rulesForLeague(384)!;
 
-      expect(rules.uclPositions, {1, 2, 3, 4});
-      expect(rules.relegationPlayoffPositions, isEmpty);
-      expect(rules.relegationPositions, {18, 19, 20});
+      expect(rules.positions[QualificationTier.ucl], {1, 2, 3, 4});
+      expect(rules.qualifyingPositions[QualificationTier.relegation], isNull);
+      expect(rules.positions[QualificationTier.relegation], {18, 19, 20});
       expect(rules.markerFor(17), isNull);
     });
 
     test('Ligue 1 distinguishes UCL qualifying and relegation play-off', () {
       final rules = rulesForLeague(301)!;
 
-      expect(rules.uclPositions, {1, 2, 3});
-      expect(rules.uclQualifyingPositions, {4});
-      expect(rules.relegationPlayoffPositions, {16});
-      expect(rules.relegationPositions, {17, 18});
+      expect(rules.positions[QualificationTier.ucl], {1, 2, 3});
+      expect(rules.qualifyingPositions[QualificationTier.ucl], {4});
+      expect(rules.qualifyingPositions[QualificationTier.relegation], {16});
+      expect(rules.positions[QualificationTier.relegation], {17, 18});
     });
   });
 

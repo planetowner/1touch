@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import unittest
+import re
+import sqlite3
 from unittest.mock import Mock, patch
 
-from one_touch_loader.api.repos import standings_repo
-from one_touch_loader.loaders.standings_loader import (
-    _previous_positions,
-    _standing_rows,
-)
+# 단독 실행에서도 운영 DB에 연결하지 않아요.
+with patch('mysql.connector.pooling.MySQLConnectionPool'):
+    from one_touch_loader.api.repos import standings_repo
+    from one_touch_loader.loaders import standings_loader as loader
+    from one_touch_loader.loaders.standings_loader import _previous_positions, _standing_rows
 
 
 def _details() -> list[dict]:
@@ -25,6 +27,58 @@ def _details() -> list[dict]:
 
 
 class StandingsLoaderTests(unittest.TestCase):
+    def test_targets_keep_domestic_history_and_start_europe_at_league_phase(self):
+        with sqlite3.connect(':memory:') as db:
+            db.execute('CREATE TABLE seasons(season_id,competition_id,name)')
+            db.executemany('INSERT INTO seasons VALUES(?,?,?)', [
+                (1, 8, '2017/2018'), (2, 8, '2016/2017'), (3, 24, '2024/2025'),
+                (4, 2, '2023/2024'), (23619, 2, '2024/2025'),
+                (23620, 5, '2024/2025'), (23616, 2286, '2024/2025'),
+            ])
+            def fetch(sql, params):
+                return db.execute(sql.replace('%s', '?').replace(
+                    'LEFT(name, 4)', 'substr(name, 1, 4)'), params).fetchall()
+            with patch.object(loader, 'fetch_all', side_effect=fetch):
+                self.assertEqual([r[0] for r in loader._targets()], [1, 23619, 23620, 23616])
+                self.assertEqual(loader._targets('2024/2025', [5]), [(23620, 5, '2024/2025')])
+                self.assertEqual(loader._targets('2023/2024', [2]), [])
+
+    def test_european_tables_validate_league_phase_members_and_share_row_mapping(self):
+        with sqlite3.connect(':memory:') as db:
+            db.executescript('''
+                CREATE TABLE stages(stage_id,season_id,stage_type_id);
+                CREATE TABLE fixtures(stage_id,home_team_id,away_team_id);
+                CREATE TABLE team_seasons(season_id,team_id);
+                CREATE TABLE standings(season_id,team_id,previous_position);
+                INSERT INTO stages VALUES(1,100,223),(2,100,225);
+                INSERT INTO fixtures VALUES(1,10,20),(2,10,99);
+                INSERT INTO team_seasons VALUES(100,10),(100,20),(100,99);
+                INSERT INTO standings VALUES(100,10,2),(100,20,1);
+            ''')
+            source = [dict(season_id=100, participant_id=team, position=rank,
+                           points=11, details=_details())
+                      for rank, team in enumerate((10, 20), 1)]
+            def fetch(sql, params):
+                return db.execute(sql.replace('%s', '?'), params).fetchall()
+            with patch.object(loader, 'SportmonksClient') as client, \
+                 patch.object(loader, 'fetch_all', side_effect=fetch), \
+                 patch.object(loader, '_replace_season') as save:
+                client.return_value.get_standings_for_season.return_value = source
+                client.return_value.get_live_standings.return_value = source
+                client.return_value.get_rounds_for_season.return_value = []
+                for competition in (2, 5, 2286):
+                    for live in (False, True):
+                        with self.subTest(competition=competition, live=live):
+                            result = loader.refresh_current_table(100, competition, live=live, apply=False)
+                            self.assertEqual(result['rows'], 2)
+                            save.assert_not_called()
+                loader.refresh_current_table(100, 2, live=True, apply=True)
+                self.assertEqual(save.call_args.args[1][0], (100, 10, 1, 2, 3, 2, 1, 10, 4, 11))
+                source.pop()
+                with self.assertRaisesRegex(ValueError, 'every season participant'):
+                    loader.refresh_current_table(100, 2, live=True, apply=True)
+                self.assertEqual(save.call_count, 1)
+
     def test_builds_only_stored_columns_from_observed_fields(self) -> None:
         client = Mock()
         client.get_rounds_for_season.return_value = [
@@ -60,6 +114,28 @@ class StandingsLoaderTests(unittest.TestCase):
 
 
 class StandingsRepositoryTests(unittest.TestCase):
+    def test_last_five_excludes_qualifying_and_knockout_matches(self):
+        with sqlite3.connect(':memory:') as db:
+            db.row_factory = sqlite3.Row
+            db.create_function('REGEXP', 2, lambda pattern, value: bool(re.search(pattern, value)))
+            db.executescript('''
+                CREATE TABLE stages(stage_id,season_id,stage_type_id);
+                CREATE TABLE rounds(round_id,name);
+                CREATE TABLE fixtures(fixture_id,stage_id,round_id,home_team_id,away_team_id,
+                                      home_score,away_score,state_id,starting_at);
+                INSERT INTO stages VALUES(1,100,223),(2,100,225),(3,100,224);
+                INSERT INTO rounds VALUES(1,'1'),(2,'2');
+                INSERT INTO fixtures VALUES
+                    (1,1,1,10,20,1,0,5,'2026-09-01'),
+                    (2,1,2,10,20,0,0,5,'2026-09-08'),
+                    (3,2,1,10,99,0,1,5,'2026-09-09'),
+                    (4,3,1,10,20,0,1,5,'2026-09-10');
+            ''')
+            def fetch(sql, params):
+                return [dict(row) for row in db.execute(sql.replace('%s', '?'), params)]
+            with patch.object(standings_repo, 'fetch_all_dict', side_effect=fetch):
+                self.assertEqual(standings_repo._last_five_by_team(100), {10: ['W', 'D'], 20: ['L', 'D']})
+
     @patch("one_touch_loader.api.repos.standings_repo.fetch_all_dict")
     def test_derives_display_values_from_stored_rows_and_fixtures(
         self,

@@ -26,7 +26,7 @@ NOW = datetime(2026, 9, 22, 21, tzinfo=timezone.utc)
 def fixture(**changes):
     return dict(fixture_id=1, home_team_id=10, away_team_id=20, starting_at='2026-09-22 18:00:00',
                 state_id=5, home_score=1, away_score=0, season_id=100, competition_id=8,
-                season_name='2026/2027', has_xg=False, has_opta=False) | changes
+                season_name='2026/2027', stage_type_id=223, has_xg=False, has_opta=False) | changes
 
 
 class MatchRefreshTests(unittest.TestCase):
@@ -177,6 +177,28 @@ class MatchRefreshTests(unittest.TestCase):
             self.assertFalse(collect.call_args.kwargs['live'])
             self.assertTrue(collect.call_args.kwargs['clear_live'])
 
+    def test_european_refresh_uses_only_league_phase_results_and_live_state(self):
+        self.rows = [fixture(competition_id=competition, season_id=competition)
+                     for competition in (2, 5, 2286)]
+        self.rows.append(fixture(fixture_id=2, competition_id=2, season_id=2,
+                                 stage_type_id=224, state_id=2))
+        with patch.object(standings, 'refresh_current_table') as collect:
+            self.run_job('standings')
+            self.assertEqual([call.args[1] for call in collect.call_args_list], [2, 5, 2286])
+            self.assertTrue(all(not call.kwargs['live'] for call in collect.call_args_list))
+            self.rows[-1]['state_id'] = 5
+            self.run_job('standings', seconds=15)
+            self.assertEqual(collect.call_count, 3)
+            self.rows[0]['state_id'] = 2
+            self.run_job('standings', seconds=30)
+            self.assertTrue(collect.call_args.kwargs['live'])
+
+    def test_european_qualifying_without_league_phase_does_not_request_standings(self):
+        self.rows = [fixture(competition_id=2286, stage_type_id=225)]
+        with patch.object(standings, 'refresh_current_table') as collect:
+            self.run_job('standings')
+        collect.assert_not_called()
+
     def test_probabilities_daily_external_check_and_immediate_result_change(self):
         with patch.object(probability_refresh, 'refresh', return_value={'league': {'leagues': []}, 'europe': {'competitions': []}}) as calculate:
             self.run_job('probability')
@@ -260,13 +282,13 @@ class ScopedSourceTests(unittest.TestCase):
             connection.row_factory = sqlite3.Row
             connection.executescript('''
                 CREATE TABLE seasons(season_id,competition_id);
-                CREATE TABLE stages(stage_id,season_id);
+                CREATE TABLE stages(stage_id,season_id,stage_type_id);
                 CREATE TABLE fixtures(fixture_id,stage_id,state_id);
                 CREATE TABLE teams(team_id,name,short_name,image_path);
                 CREATE TABLE standings(season_id,team_id,position,previous_position,won,draw,lost,goals_for,goals_against,points);
                 CREATE TABLE live_standings AS SELECT * FROM standings;
                 INSERT INTO seasons VALUES(100,8);
-                INSERT INTO stages VALUES(200,100);
+                INSERT INTO stages VALUES(200,100,223);
                 INSERT INTO fixtures VALUES(1,200,2);
                 INSERT INTO teams VALUES(10,'Home','H',NULL);
                 INSERT INTO standings VALUES(100,10,2,2,0,0,0,0,0,0);
@@ -277,6 +299,9 @@ class ScopedSourceTests(unittest.TestCase):
             with patch.object(standings_repo, 'fetch_all_dict', side_effect=fetch), \
                  patch.object(standings_repo, '_last_five_by_team', return_value={}):
                 self.assertEqual(standings_repo.list_standings(8, 100)[0]['points'], 3)
+                connection.execute('UPDATE stages SET stage_type_id=224')
+                self.assertEqual(standings_repo.list_standings(8, 100)[0]['points'], 0)
+                connection.execute('UPDATE stages SET stage_type_id=223')
                 connection.execute('UPDATE fixtures SET state_id=5')
                 self.assertEqual(standings_repo.list_standings(8, 100)[0]['points'], 0)
                 connection.execute('UPDATE fixtures SET state_id=2')
