@@ -22,60 +22,101 @@ import 'support/stub_community_repository.dart';
 
 void main() {
   for (final width in [320.0, 430.0]) {
-    testWidgets('detail photos keep their original ratios at width $width',
+    testWidgets('detail media uses the count-based grid at width $width',
         (tester) async {
-      await tester.binding.setSurfaceSize(Size(width, 700));
+      await tester.binding
+          .setSurfaceSize(Size(width, width == 320 ? 568 : 932));
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      final dimensions = width == 320
-          ? [const Size(90, 160), const Size(160, 90), const Size(80, 80)]
-          : [const Size(160, 90), const Size(90, 160), const Size(80, 80)];
-      final photos = <String, Uint8List>{};
-      final attachments = <PostAttachment>[];
-      for (var index = 0; index < dimensions.length; index++) {
-        final size = dimensions[index];
-        final url = 'https://images.example.test/ratio-$index/preview';
-        photos[url] = (await tester
-            .runAsync(() => _png(size.width.toInt(), size.height.toInt())))!;
-        attachments.add(PostAttachment(
-          attachmentId: index,
-          position: index,
-          mediaUrl: 'https://images.example.test/ratio-$index/content',
-          previewUrl: url,
-          contentType: 'image/png',
-        ));
-      }
-      debugNetworkImageHttpClientProvider = () => _PhotoHttpClient(
-          (uri) async => _PhotoResponse(photos[uri.toString()]!));
+      final photoBytes = (await tester.runAsync(() => _png(40, 40)))!;
+      debugNetworkImageHttpClientProvider =
+          () => _PhotoHttpClient((_) async => _PhotoResponse(photoBytes));
       addTearDown(() {
         debugNetworkImageHttpClientProvider = null;
         PaintingBinding.instance.imageCache.clear();
         PaintingBinding.instance.imageCache.clearLiveImages();
       });
 
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: CommunityMediaGrid(attachments: attachments),
+      final attachments = [
+        for (var index = 0; index < 10; index++)
+          PostAttachment(
+            attachmentId: index,
+            position: index,
+            mediaUrl: 'https://images.example.test/photo-$index',
+            contentType: 'image/png',
+          ),
+      ];
+      final fullWidth = width - 48;
+      final halfWidth = (fullWidth - 12) / 2;
+      final thirdWidth = (fullWidth - 24) / 3;
+
+      for (final count in [1, 2, 3, 4, 5, 6, 10]) {
+        await tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: CommunityMediaGrid(
+                    attachments: attachments.take(count).toList()),
+              ),
             ),
           ),
-        ),
-      ));
-      await tester.runAsync(() => Future.wait(photos.keys.map(_decoded)));
-      await tester.pump();
+        ));
+        await tester.pump();
 
-      for (var index = 0; index < dimensions.length; index++) {
-        final photo = find.byKey(ValueKey(index == 0
-            ? 'community-detail-media'
-            : 'community-detail-media-$index'));
-        final expectedWidth = index == 0 ? width - 48 : (width - 48 - 15) / 2;
-        final bounds = tester.getRect(photo);
-        expect(bounds.width, closeTo(expectedWidth, .01));
-        expect(bounds.height,
-            closeTo(expectedWidth / dimensions[index].aspectRatio, .01));
+        for (var index = 0; index < count.clamp(0, 5); index++) {
+          final photo = find.byKey(ValueKey(index == 0
+              ? 'community-detail-media'
+              : 'community-detail-media-$index'));
+          final bounds = tester.getRect(photo);
+          final expectedWidth = count == 1 || (count == 3 && index == 0)
+              ? fullWidth
+              : count < 5
+                  ? halfWidth
+                  : index < 2
+                      ? halfWidth
+                      : thirdWidth;
+          final ratio = switch (count) {
+            1 || 4 => 1.0,
+            2 => 3 / 4,
+            3 => 4 / 3,
+            _ => index < 2 ? 1.0 : 3 / 4,
+          };
+          expect(bounds.width, closeTo(expectedWidth, .01));
+          expect(bounds.height, closeTo(expectedWidth / ratio, .01));
+        }
+        if (count >= 2) {
+          final first = tester
+              .getRect(find.byKey(const ValueKey('community-detail-media')));
+          final second = tester
+              .getRect(find.byKey(const ValueKey('community-detail-media-1')));
+          if (count != 3) {
+            expect(second.left - first.right, closeTo(12, .01));
+          }
+          if (count >= 3) {
+            final lowerIndex = count == 3 ? 1 : 2;
+            final lower = tester.getRect(
+                find.byKey(ValueKey('community-detail-media-$lowerIndex')));
+            final nextLower = tester.getRect(find
+                .byKey(ValueKey('community-detail-media-${lowerIndex + 1}')));
+            expect(lower.top - first.bottom, closeTo(12, .01));
+            expect(nextLower.left - lower.right, closeTo(12, .01));
+          }
+        }
+        final overflow =
+            find.byKey(const ValueKey('community-detail-media-open-4'));
+        expect(overflow, count >= 5 ? findsOneWidget : findsNothing);
+        if (count == 5) expect(find.text('+1'), findsNothing);
+        if (count > 5) expect(find.text('+${count - 5}'), findsOneWidget);
+        if (count == 6) {
+          await tester.tap(overflow);
+          await tester.pumpAndSettle();
+          expect(find.text('5 / 6'), findsOneWidget);
+          await tester
+              .tap(find.byKey(const ValueKey('community-attachment-close')));
+          await tester.pumpAndSettle();
+        }
+        expect(tester.takeException(), isNull);
       }
-      expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       debugNetworkImageHttpClientProvider = null;
     });

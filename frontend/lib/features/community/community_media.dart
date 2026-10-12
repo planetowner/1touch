@@ -57,40 +57,93 @@ class CommunityMediaGrid extends StatelessWidget {
   final List<PostAttachment> attachments;
   @override
   Widget build(BuildContext context) {
-    Widget media(int index) {
+    void openMedia(int index) => showCommunityAttachmentViewer(context,
+        mediaUrl: attachments[index].mediaUrl!,
+        attachments: attachments,
+        initialIndex: index);
+
+    Widget media(int index, double aspectRatio) {
       final preview = CommunityMediaPreview(
           attachment: attachments[index],
           imageKey: ValueKey(index == 0
               ? 'community-detail-media'
               : 'community-detail-media-$index'));
-      return GestureDetector(
-        key: ValueKey(index == 0
-            ? 'community-detail-media-open'
-            : 'community-detail-media-open-$index'),
-        onTap: () => showCommunityAttachmentViewer(context,
-            mediaUrl: attachments[index].mediaUrl!,
-            attachments: attachments,
-            initialIndex: index),
-        child: attachments[index].isVideo
-            ? AspectRatio(
-                aspectRatio: index == 0 ? 16 / 9 : 4 / 3, child: preview)
-            : preview,
+      return AspectRatio(
+        aspectRatio: aspectRatio,
+        child: GestureDetector(
+          key: ValueKey(index == 0
+              ? 'community-detail-media-open'
+              : 'community-detail-media-open-$index'),
+          onTap: () => openMedia(index),
+          child: preview,
+        ),
       );
     }
 
+    Widget overflowTile() {
+      return AspectRatio(
+        aspectRatio: 3 / 4,
+        child: GestureDetector(
+          key: const ValueKey('community-detail-media-open-4'),
+          onTap: () => openMedia(4),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Stack(fit: StackFit.expand, children: [
+              CommunityMediaPreview(
+                attachment: attachments[4],
+                imageKey: const ValueKey('community-detail-media-4'),
+              ),
+              ColoredBox(color: AppPalette.black.withValues(alpha: 0.72)),
+              Center(
+                child: Text(
+                  '+${attachments.length - 5}',
+                  style: CommunityText.bold(context)
+                      .copyWith(color: AppPalette.white),
+                ),
+              ),
+            ]),
+          ),
+        ),
+      );
+    }
+
+    Widget row(List<Widget> children) => Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var index = 0; index < children.length; index++) ...[
+              if (index > 0) const SizedBox(width: 12),
+              Expanded(child: children[index]),
+            ],
+          ],
+        );
+
+    final count = attachments.length;
+    if (count == 1) return media(0, 1);
+    if (count == 2) return row([media(0, 3 / 4), media(1, 3 / 4)]);
+    if (count == 3) {
+      return Column(children: [
+        media(0, 4 / 3),
+        const SizedBox(height: 12),
+        row([media(1, 4 / 3), media(2, 4 / 3)]),
+      ]);
+    }
+    final firstRow = row([media(0, 1), media(1, 1)]);
+    if (count == 4) {
+      return Column(children: [
+        firstRow,
+        const SizedBox(height: 12),
+        row([media(2, 1), media(3, 1)]),
+      ]);
+    }
+    // 다섯 장은 전부 보여주고, 여섯 장부터 다섯 번째 사진 위에 남은 장수를 표시해요.
     return Column(children: [
-      media(0),
-      for (var index = 1; index < attachments.length; index += 2)
-        Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(child: media(index)),
-              const SizedBox(width: 15),
-              Expanded(
-                  child: index + 1 < attachments.length
-                      ? media(index + 1)
-                      : const SizedBox.shrink()),
-            ])),
+      firstRow,
+      const SizedBox(height: 12),
+      row([
+        media(2, 3 / 4),
+        media(3, 3 / 4),
+        count == 5 ? media(4, 3 / 4) : overflowTile(),
+      ]),
     ]);
   }
 }

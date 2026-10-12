@@ -164,6 +164,65 @@ void main() {
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('photo swipes do not close the viewer at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Builder(builder: (context) {
+            return TextButton(
+              onPressed: () => showCommunityAttachmentViewer(
+                context,
+                mediaUrl: 'https://example.com/second.jpg',
+                initialIndex: 1,
+                attachments: const [
+                  PostAttachment(
+                    attachmentId: 1,
+                    position: 0,
+                    mediaUrl: 'https://example.com/first.jpg',
+                  ),
+                  PostAttachment(
+                    attachmentId: 2,
+                    position: 1,
+                    mediaUrl: 'https://example.com/second.jpg',
+                  ),
+                ],
+              ),
+              child: const Text('Open photos'),
+            );
+          }),
+        ),
+      ));
+
+      await tester.tap(find.text('Open photos'));
+      await tester.pumpAndSettle();
+      expect(find.text('2 / 2'), findsOneWidget);
+
+      await tester.dragFrom(
+        Offset(40, size.height / 2),
+        Offset(size.width * 0.7, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('1 / 2'), findsOneWidget);
+      expect(find.byKey(const ValueKey('community-attachment-viewer')),
+          findsOneWidget);
+
+      await tester.dragFrom(
+        Offset(40, size.height / 2),
+        Offset(size.width * 0.7, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('community-attachment-viewer')),
+          findsOneWidget);
+
+      await tester
+          .tap(find.byKey(const ValueKey('community-attachment-close')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('community-attachment-viewer')),
+          findsNothing);
+    });
+
     testWidgets(
         'attachment stays centered while pinching and dragging at $size',
         (tester) async {

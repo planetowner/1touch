@@ -2,7 +2,6 @@ import 'package:onetouch/core/app_system_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/features/community/community_media.dart';
-import 'package:onetouch/core/interactive_back_page.dart';
 import 'package:onetouch/features/community/community_post_image.dart';
 
 Future<void> showCommunityAttachmentViewer(
@@ -23,31 +22,10 @@ Future<void> showCommunityAttachmentViewer(
         attachments: attachments,
         initialIndex: initialIndex,
       ),
-      transitionsBuilder: (context, animation, _, child) {
-        final route = ModalRoute.of(context)! as PageRoute<dynamic>;
-        return InteractiveBackTransition(
-          route: route,
-          child: AnimatedBuilder(
-            animation: animation,
-            child: FadeTransition(
-              opacity: CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOut,
-              ),
-              child: child,
-            ),
-            builder: (context, child) => Transform.translate(
-              offset: Offset(
-                route.popGestureInProgress
-                    ? (1 - animation.value) * MediaQuery.sizeOf(context).width
-                    : 0,
-                0,
-              ),
-              child: child,
-            ),
-          ),
-        );
-      },
+      transitionsBuilder: (_, animation, __, child) => FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+        child: child,
+      ),
     ),
   );
 }
