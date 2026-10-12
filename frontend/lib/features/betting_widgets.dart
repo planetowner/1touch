@@ -1047,10 +1047,12 @@ class BettingParticipationCard extends StatelessWidget {
     super.key,
     required this.controller,
     this.barColors,
+    this.isLive = false,
   }) : assert(barColors == null || barColors.length == 3);
 
   final BettingController controller;
   final List<Color>? barColors;
+  final bool isLive;
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
@@ -1129,7 +1131,8 @@ class BettingParticipationCard extends StatelessWidget {
                       ),
                     ],
                     if (market?.bet?.isOpen == true &&
-                        !controller.beforeKickoff)
+                        !controller.beforeKickoff &&
+                        !isLive)
                       TextButton(
                         onPressed: controller.loading ? null : controller.load,
                         child: Text(tr(context, 'REFRESH RESULT')),

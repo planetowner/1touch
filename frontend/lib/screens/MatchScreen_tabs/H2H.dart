@@ -407,6 +407,7 @@ class _H2HTabState extends State<H2HTab> {
         BettingParticipationCard(
           controller: widget.bettingController,
           barColors: barColors,
+          isLive: widget.fixture.status == FixtureStatus.live,
         ),
       ],
     );
