@@ -18,7 +18,8 @@ def inputs(competition_id=2):
             fixtures.append({'fixture_id': len(fixtures)+1, 'home_team_id': home,
                 'away_team_id': (home+offset) % 36, 'state_id': 1, 'home_score': None, 'away_score': None,
                 'competition_id': competition_id, 'season_id': 100, 'season_name': '2026/2027',
-                'stage_type_id': 223, 'starting_at': '2026-10-01 20:00:00'})
+                'stage_type_id': 223, 'stage_name': 'League Stage', 'round_name': str(offset),
+                'leg': None, 'aggregate_id': None, 'starting_at': '2026-10-01 20:00:00'})
     coefficients = {str(t): {'coefficient': 30+t, 'season_coefficients': [0, 0, 0, 0, 30+t],
         'association_floor': 0, 'domestic_position': None} for t in range(36)}
     return dict(competition_id=competition_id, team_ids=list(range(36)), fixtures=fixtures,
@@ -227,6 +228,15 @@ class EuropeanProbabilityTests(unittest.TestCase):
             self.assertEqual(runs[0]['teams']['2']['resolution'], 'impossible')
             self.assertEqual(runs[0]['teams']['1']['played'], 9)
             self.assertEqual(runs[0]['teams']['1']['previous_fixture_at'], '2027-04-01T20:00:00+00:00')
+            with patch.object(loader, 'simulate_bracket_title', wraps=core.simulate_bracket_title) as simulate:
+                options = dict(observed_at=observed_at, brackets=[bracket], simulations=100,
+                               previous_by_season={100: runs[0]})
+                self.assertEqual(loader.prepare_runs(args['fixtures'], histories, report, [], **options)[0], [])
+                simulate.assert_not_called()
+                runs[0]['refresh_input_version'] = 2
+                updated, _ = loader.prepare_runs(args['fixtures'], histories, report, [], **options)
+                self.assertEqual(updated[0]['refresh_input_version'], 3)
+                simulate.assert_called_once()
             bracket['fetched_at'] = '2027-04-03T00:00:00Z'
             with self.assertRaisesRegex(ValueError, 'predate'):
                 loader.prepare_runs(args['fixtures'], histories, report, [],
@@ -265,6 +275,141 @@ class EuropeanProbabilityTests(unittest.TestCase):
         self.assertEqual(data['scores'][0]['difference'],100)
         self.assertEqual(data['cards'],[])
         self.assertEqual(len(data['excluded_cards']),1)
+
+    def test_stage_probabilities_conserve_places_and_do_not_invent_certainty(self):
+        for competition in core.LEAGUE_GAMES:
+            with self.subTest(competition=competition):
+                estimates = core.simulate_title(**inputs(competition))
+                for stage, places in (('winner', 1), ('final', 2), ('semifinal', 4),
+                                      ('quarterfinal', 8), ('round16', 16), ('playoff', 24)):
+                    self.assertAlmostEqual(sum(next(s['probability'] for s in e['stage_probabilities']
+                                                   if s['stage_key'] == stage) for e in estimates.values()), places)
+                for estimate in estimates.values():
+                    stages = estimate['stage_probabilities']
+                    self.assertEqual(len(stages), 6)
+                    self.assertEqual([s['probability'] for s in stages], sorted(s['probability'] for s in stages))
+                    self.assertTrue(all(s['resolution'] == 'unresolved' for s in stages))
+
+    def test_final_league_table_confirms_direct_last16_and_playoff_milestones(self):
+        args = inputs()
+        for f in args['fixtures']:
+            f.update(state_id=5, home_score=0, away_score=0)
+            args['discipline'][f['fixture_id']] = {f['home_team_id']: 0, f['away_team_id']: 0}
+        estimates = core.simulate_title(**args)
+        for team, expected in ((35, ('certain', 'certain')), (20, ('certain', 'unresolved')),
+                               (0, ('impossible', 'impossible'))):
+            stages = {s['stage_key']: s for s in estimates[team]['stage_probabilities']}
+            self.assertEqual((stages['playoff']['resolution'], stages['round16']['resolution']), expected)
+        self.assertTrue(all(e['current_stage'] == 'league' for e in estimates.values()))
+
+    def test_league_what_if_conditions_on_the_same_tournament_samples(self):
+        args = inputs()
+        args['simulations'] = 20000
+        fixtures = [{**f, 'stage_key': 'league'} for f in args['fixtures']]
+        args['next_fixtures'] = loader.next_matches(fixtures, args['team_ids'],
+            {f['fixture_id'] for f in fixtures}, datetime(2026, 9, 20, tzinfo=timezone.utc))
+        estimates = core.simulate_title(**args)
+        for team, estimate in estimates.items():
+            what_if = estimate['what_if']
+            self.assertIsNotNone(what_if)
+            self.assertEqual([s['outcome'] for s in what_if['scenarios']], ['win', 'draw', 'loss'])
+            self.assertEqual(sum(s['simulations'] for s in what_if['scenarios']), args['simulations'])
+            self.assertAlmostEqual(sum(s['probability'] * s['simulations'] / args['simulations']
+                                      for s in what_if['scenarios']), estimate['probability'])
+            for s in what_if['scenarios']:
+                self.assertAlmostEqual(s['change_pp'], 100 * (s['probability'] - estimate['probability']))
+
+    def test_final_what_if_has_only_win_and_loss_with_certain_title_results(self):
+        from diagnostics.test_tournament_bracket import build, fixture
+        bracket = build([fixture(1001, 1, 2)])
+        final = dict(fixture_id=1001, home_team_id=1, away_team_id=2, starting_at='2027-04-01T20:00:00Z',
+                     stage_key='final', leg='1/1', round_name='Final', draw_allowed=False,
+                     result_basis='single_match_final_v1')
+        args = dict(bracket=bracket, team_ids=[1, 2], elos={1: 1700, 2: 1700},
+                    model=core.ScoreModel((.3, .2, .8)), penalty_coefficient=0, simulations=2000, seed=7,
+                    next_fixtures={1: final, 2: final})
+        estimates = core.simulate_bracket_title(**args)
+        for estimate in estimates.values():
+            self.assertEqual(estimate['current_stage'], 'final')
+            self.assertEqual(estimate['what_if']['fixture']['probabilities'][1], 0)
+            self.assertEqual([(s['outcome'], s['probability']) for s in estimate['what_if']['scenarios']],
+                             [('win', 1), ('loss', 0)])
+            stage = next(s for s in estimate['stage_probabilities'] if s['stage_key'] == 'final')
+            self.assertEqual((stage['probability'], stage['resolution']), (1, 'certain'))
+        args['simulations'] = 1
+        sparse = core.simulate_bracket_title(**args)
+        for estimate in sparse.values():
+            missing = next(s for s in estimate['what_if']['scenarios'] if s['simulations'] == 0)
+            self.assertIsNone(missing['probability'])
+            self.assertIsNone(missing['change_pp'])
+
+    def test_match_samples_keep_first_leg_orientation_and_aggregate_winner_separate(self):
+        rng = Mock()
+        rng.poisson.side_effect = [np.array([v]) for v in (1, 0, 0, 1, 0, 0)]
+        rng.random.return_value = np.array([.99])
+        results = []
+        winner = core.tie_winners(np.array([0]), np.array([1]), np.array([1700, 1700]),
+            core.ScoreModel((.3, .2, .8)), 0, rng, match_results=results)
+        self.assertEqual(winner.tolist(), [1])
+        self.assertEqual([r.tolist() for r in results], [[0], [0]])
+
+    def test_drawn_second_leg_what_if_keeps_the_first_leg_and_verified_final_path(self):
+        from diagnostics.test_tournament_bracket import build, fixture
+        rows = [fixture(1, 1, 2, 'Semi-finals', leg='1/2', score=(2, 0)),
+                fixture(2, 2, 1, 'Semi-finals', leg='2/2'),
+                fixture(3, 3, 4, 'Semi-finals', leg='1/2', score=(0, 0)),
+                fixture(4, 4, 3, 'Semi-finals', leg='2/2'), fixture(5, None, None)]
+        edges = [{'parent_fixture_id': p, 'parent_outcome': 'winner', 'child_fixture_id': 5, 'child_slot': slot}
+                 for p, slot in ((2, 'home'), (4, 'away'))]
+        next_fixtures = {team: {'fixture_id': fid, 'home_team_id': home, 'away_team_id': away,
+                              'draw_allowed': fid == 2} for fid, home, away in ((2, 2, 1), (4, 4, 3))
+                         for team in (home, away)}
+        estimates = core.simulate_bracket_title(bracket=build(rows, provider_edges=edges), team_ids=[1, 2, 3, 4],
+            elos=dict.fromkeys(range(1, 5), 1700), model=core.ScoreModel((.3, .2, .8)), penalty_coefficient=0,
+            simulations=20000, seed=19, next_fixtures=next_fixtures)
+        for estimate in estimates.values():
+            self.assertEqual(estimate['current_stage'], 'semifinal')
+            scenarios = estimate['what_if']['scenarios']
+            self.assertEqual(sum(s['simulations'] for s in scenarios), 20000)
+            self.assertAlmostEqual(sum(s['probability'] * s['simulations'] / 20000 for s in scenarios),
+                                   estimate['probability'])
+        self.assertEqual([s['outcome'] for s in estimates[3]['what_if']['scenarios']], ['win', 'loss'])
+        # 1차전에서 앞선 팀은 2차전에서 져도 합산 점수로 진출하고 우승할 수 있어요.
+        self.assertGreater(estimates[1]['what_if']['scenarios'][2]['probability'], 0)
+        self.assertLess(estimates[2]['what_if']['scenarios'][0]['probability'], 1)
+
+    def test_completed_real_bracket_preserves_reached_and_eliminated_stages(self):
+        from diagnostics.test_tournament_bracket import actual_bracket
+        bracket = actual_bracket(25580)
+        teams = sorted(int(t) for t in bracket['teams'])
+        estimates = core.simulate_bracket_title(bracket=bracket, team_ids=teams, elos=dict.fromkeys(teams, 1700),
+            model=core.ScoreModel((.3, .2, .8)), penalty_coefficient=0, simulations=1, seed=19)
+        entrants = {s['key']: {slot['team_id'] for t in s['ties'] for slot in t['slots']}
+                    for s in bracket['stages']}
+        for team, estimate in estimates.items():
+            stages = {s['stage_key']: s for s in estimate['stage_probabilities']}
+            for key, participants in entrants.items():
+                expected = (1, 'certain') if team in participants else (0, 'impossible')
+                self.assertEqual((stages[key]['probability'], stages[key]['resolution']), expected)
+            self.assertEqual(estimate['current_stage'],
+                             next(key for key in reversed(core.EUROPE_STAGES) if team in entrants[key]))
+
+    def test_next_match_uses_shared_second_leg_draw_rule_and_confirmed_schedule(self):
+        first = {**inputs()['fixtures'][0], 'fixture_id': 1, 'home_team_id': 1, 'away_team_id': 2,
+                 'stage_type_id': 224, 'stage_name': '8th Finals', 'stage_key': 'round16', 'leg': '1/2',
+                 'aggregate_id': 'tie:1', 'starting_at': '2027-02-01', 'state_id': 5,
+                 'home_score': 1, 'away_score': 1}
+        second = {**first, 'fixture_id': 2, 'home_team_id': 2, 'away_team_id': 1, 'leg': '2/2',
+                  'starting_at': '2027-02-08', 'state_id': 1, 'home_score': None, 'away_score': None}
+        observed = datetime(2027, 2, 2, tzinfo=timezone.utc)
+        for score, draw_allowed in ((1, False), (2, True)):
+            first['home_score'] = score
+            result = loader.next_matches([first, second], [1, 2], {1, 2}, observed)
+            self.assertEqual(result[1]['fixture_id'], 2)
+            self.assertEqual(result[1]['draw_allowed'], draw_allowed)
+        for state in (2, 10, 13):
+            second['state_id'] = state
+            self.assertEqual(loader.next_matches([first, second], [1, 2], {1, 2}, observed), {})
 
 
 if __name__=='__main__':

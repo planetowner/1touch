@@ -25,8 +25,9 @@ def read_fixtures(*, current_only=False):
     seasons = "('2026/2027')" if current_only else "('2023/2024','2024/2025','2025/2026','2026/2027')"
     return _fetch(f'''SELECT f.fixture_id,f.home_team_id,f.away_team_id,f.starting_at,f.state_id,
         f.home_score,f.away_score,f.home_penalty_score,f.away_penalty_score,f.leg,f.aggregate_id,
-        st.stage_type_id,st.name AS stage_name,s.competition_id,s.season_id,s.name AS season_name
+        st.stage_type_id,st.name AS stage_name,r.name AS round_name,s.competition_id,s.season_id,s.name AS season_name
         FROM fixtures f JOIN stages st ON st.stage_id=f.stage_id JOIN seasons s ON s.season_id=st.season_id
+        LEFT JOIN rounds r ON r.round_id=f.round_id
         WHERE s.competition_id IN ({marks}) AND s.name IN {seasons}
         ORDER BY f.starting_at,f.fixture_id''', CUP_COMPETITION_IDS)
 

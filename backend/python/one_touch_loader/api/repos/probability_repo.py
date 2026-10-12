@@ -11,9 +11,10 @@ from ...core.probability_storage import load_run
 from ...core.db_json import decoded
 from ...core.european_probability import OUTCOME_KIND, bracket_title_resolutions
 from ...core.cup_betting import utc_datetime
+from ...core.tournament_bracket import EUROPE_STAGES
 
 
-def _pre_match_comparison(team_id, run, basis):
+def _pre_match_comparison(team_id, run, basis, *, all_teams=False):
     team = run['teams'][str(team_id)]
     previous, fixture_at = None, team.get('previous_fixture_at')
     if fixture_at is not None:
@@ -33,9 +34,43 @@ def _pre_match_comparison(team_id, run, basis):
             (team_id, run['season_id'], run['model_id'], kickoff.replace(tzinfo=None), kickoff.timestamp(),
              team['played'] - 1, run.get('outcome_kind', ''), OUTCOME_KIND))
         if selected:
-            previous = load_run(fetch_all_dict, selected['run_id'], team_id)
+            previous = load_run(fetch_all_dict, selected['run_id'], None if all_teams else team_id)
     return previous, {'basis': basis, 'available': previous is not None,
                       'as_of': previous['as_of'] if previous else None, 'fixture_at': fixture_at}
+
+
+def _european_history(team_id, run):
+    rows = fetch_all_dict("""SELECT r.as_of,
+        JSON_EXTRACT(tr.payload,'$.probability') AS probability,
+        JSON_UNQUOTE(JSON_EXTRACT(tr.payload,'$.current_stage')) AS stage_key,
+        JSON_UNQUOTE(JSON_EXTRACT(r.payload,'$.bracket_input_sha256')) AS bracket_hash
+        FROM probability_runs r JOIN probability_team_results tr ON tr.run_id=r.run_id AND tr.team_id=%s
+        WHERE r.season_id=%s AND r.model_id=%s AND r.as_of<=%s
+          AND JSON_UNQUOTE(JSON_EXTRACT(r.payload,'$.outcome_kind'))=%s
+        ORDER BY r.as_of,r.created_at,r.run_id""",
+        (team_id, run['season_id'], run['model_id'], utc_datetime(run['as_of']).replace(tzinfo=None), OUTCOME_KIND))
+    latest = {}
+    for row in rows:
+        key = row['stage_key']
+        # 기존 추첨 전 기록에는 단계 필드가 없어요. 확정 대진 기록의 단계를 추측하지 않아요.
+        if key is None and row['bracket_hash'] in (None, 'null'):
+            key = 'league'
+        if key in ('league', *EUROPE_STAGES):
+            latest[key] = {'stage_key': key, 'as_of': utc_datetime(row['as_of']), 'probability': float(row['probability'])}
+    return [latest[key] for key in ('league', *EUROPE_STAGES) if key in latest]
+
+
+def _title_contenders(team_id, run, previous):
+    def standings(snapshot):
+        ordered = sorted(snapshot['teams'].values(), key=lambda t: (-t['probability'], t['team_id']))
+        return [{key: team[key] for key in ('team_id', 'team_name', 'probability')}
+                | {'rank': 1 + sum(other['probability'] > team['probability'] for other in ordered)} for team in ordered]
+    teams = standings(run)
+    current_rank = next(t['rank'] for t in teams if t['team_id'] == team_id)
+    previous_rank = (next(t['rank'] for t in standings(previous) if t['team_id'] == team_id)
+                     if previous and previous['teams'].keys() == run['teams'].keys() else None)
+    return {'rank': current_rank, 'rank_change': previous_rank - current_rank if previous_rank is not None else None,
+            'teams': teams}
 
 
 def get_european_title(team_id, season_name):
@@ -52,9 +87,9 @@ def get_european_title(team_id, season_name):
         ORDER BY r.as_of DESC,r.created_at DESC,r.run_id DESC LIMIT 1""", (team_id, season_name, OUTCOME_KIND))
     if selected is None:
         return None
-    run = load_run(fetch_all_dict, selected['run_id'], team_id)
+    run = load_run(fetch_all_dict, selected['run_id'])
     team = run['teams'][str(team_id)]
-    previous, comparison = _pre_match_comparison(team_id, run, 'previous_european_fixture_pre_match_snapshot')
+    previous, comparison = _pre_match_comparison(team_id, run, 'previous_european_fixture_pre_match_snapshot', all_teams=True)
     event = {key: team[key] for key in ('event', 'probability')} | {'competition_id': run['competition_id']}
     previous_events = ([{key: previous['teams'][str(team_id)][key] for key in ('event', 'probability')}
                         | {'competition_id': previous['competition_id']}] if previous else [])
@@ -68,7 +103,10 @@ def get_european_title(team_id, season_name):
         'simulations', 'probability_method', 'strength_source_url', 'coefficient_source_url',
         'validation', 'limitations')} | {'event': team['event'], 'probability': team['probability'],
         'sampling_standard_error_pp': team['sampling_standard_error_pp'], 'change_pp': change,
-        'comparison': comparison, 'resolution': resolution}
+        'comparison': comparison, 'resolution': resolution,
+        'history': _european_history(team_id, run),
+        'stage_probabilities': team.get('stage_probabilities', []),
+        'title_contenders': _title_contenders(team_id, run, previous), 'what_if': team.get('what_if')}
 
 
 def _history_point(snapshot, entry):

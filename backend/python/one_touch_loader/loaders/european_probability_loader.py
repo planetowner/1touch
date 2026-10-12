@@ -10,9 +10,10 @@ import numpy as np
 from scipy.special import expit
 
 from ..core.clubelo import rating_before
-from ..core.cup_betting import EUROPE_COMPETITION_IDS, utc_datetime
+from ..core.cup_betting import EUROPE_COMPETITION_IDS, aggregate_index, match_format, utc_datetime
 from ..core.european_probability import (MODEL_METHOD, OUTCOME_KIND, TITLE_EVENTS, ScoreModel,
     disciplinary_points, fit_penalties, fit_scores, score_loss, simulate_title, simulate_bracket_title)
+from ..core.betting import OPEN_STATE_IDS, SETTLEMENT_RULE
 from ..core.fixture_states import COMPLETED_STATE_IDS
 from ..core.sportmonks import SportmonksClient, correct_event_metadata
 from . import cup_betting_loader, probability_loader as common
@@ -122,6 +123,26 @@ def train_and_validate(dataset):
     return report
 
 
+def next_matches(fixtures, team_ids, available_ids, observed_at):
+    first_legs, result = aggregate_index(fixtures), {}
+    for fixture in sorted(fixtures, key=lambda f: (str(f['starting_at']), f['fixture_id'])):
+        if (fixture['fixture_id'] not in available_ids or fixture['state_id'] not in OPEN_STATE_IDS
+                or fixture['starting_at'] is None or utc_datetime(fixture['starting_at']) < observed_at
+                or None in (fixture['home_team_id'], fixture['away_team_id'])):
+            continue
+        context = match_format(fixture, first_legs, as_of=observed_at)
+        if context is None:
+            continue
+        value = {key: fixture[key] for key in ('fixture_id', 'home_team_id', 'away_team_id', 'stage_key', 'leg')}
+        value.update(starting_at=utc_datetime(fixture['starting_at']).isoformat(),
+                     round_name=fixture.get('round_name'), draw_allowed=context['draw_allowed'],
+                     result_basis=SETTLEMENT_RULE)
+        for team in (fixture['home_team_id'], fixture['away_team_id']):
+            if team in team_ids:
+                result.setdefault(team, value)
+    return result
+
+
 def prepare_runs(fixtures, histories, report, card_fixtures, *, observed_at, simulations=100000,
                  seed=20260917, brackets=(), previous_by_season=None):
     coefficient_data = common._read(Path(__file__).parents[1] / 'core/uefa_coefficients_2026.json')
@@ -162,8 +183,15 @@ def prepare_runs(fixtures, histories, report, card_fixtures, *, observed_at, sim
                    for st in bracket['stages'] for tie in st['ties'] for f in tie['fixtures']):
                 raise ValueError('A completed knockout fixture is dated after the forecast')
         # 예선·국내 리그를 섞지 않고 이번 계산에 반영한 본선 경기만 비교 기준으로 남겨요.
-        title_fixtures = league + ([f for stage in bracket['stages'] for tie in stage['ties']
-                                   for f in tie['fixtures']] if drawn else [])
+        title_fixtures = [{**f, 'stage_key': 'league'} for f in league]
+        if drawn:
+            # 공급사의 aggregate ID가 없어도 이미 검증한 대진 묶음으로 같은 경기 형식 규칙을 써요.
+            title_fixtures += [{**f, 'stage_key': stage['key'], 'stage_type_id': 224,
+                'stage_name': stage['name'], 'round_name': stage['name'], 'aggregate_id': tie['tie_id'],
+                'competition_id': competition_id, 'season_id': season_id, 'season_name': bracket['season_name']}
+                for stage in bracket['stages'] for tie in stage['ties'] for f in tie['fixtures']]
+        model_args['next_fixtures'] = next_matches(title_fixtures, teams,
+                                                  {f['fixture_id'] for f in season}, observed_at)
         played_at = {t: [] for t in teams}
         for fixture in title_fixtures:
             if fixture['state_id'] in COMPLETED_STATE_IDS:
@@ -175,10 +203,11 @@ def prepare_runs(fixtures, histories, report, card_fixtures, *, observed_at, sim
         fingerprint = common.input_fingerprint(league, {'elos': elos, 'discipline': discipline,
             'coefficients': {str(t): coefficient_data['teams'][str(t)] for t in teams},
             'bracket_input_sha256': bracket['input_sha256'] if drawn else None,
+            'next_fixtures': model_args['next_fixtures'],
             'model': report['forecast_model']})
         previous = (previous_by_season or {}).get(season_id)
         if common.calculation_unchanged(previous, model_id=report['model_id'], input_sha256=fingerprint,
-                outcome_kind=OUTCOME_KIND, simulations=simulations, seed=seed, refresh_input_version=2):
+                outcome_kind=OUTCOME_KIND, simulations=simulations, seed=seed, refresh_input_version=3):
             statuses.append({'season_id': season_id, 'status': 'unchanged', 'teams': len(teams)})
             continue
         if drawn:
@@ -197,7 +226,7 @@ def prepare_runs(fixtures, histories, report, card_fixtures, *, observed_at, sim
                 'elo': elos[t], 'event': TITLE_EVENTS[competition_id], **estimates[t],
                 'played': len(played_at[t]),
                 'previous_fixture_at': max(played_at[t]).isoformat() if played_at[t] else None} for t in teams}}
-        run.update(input_sha256=fingerprint, refresh_input_version=2)
+        run.update(input_sha256=fingerprint, refresh_input_version=3)
         runs.append(run)
         statuses.append({'season_id': season_id, 'status': 'updated', 'teams': len(teams)})
     return runs, statuses

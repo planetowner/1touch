@@ -16,6 +16,10 @@ def split_run(run):
             fixture = team['what_if'].pop('fixture')
             next_id = fixture['fixture_id']
             team['what_if']['probabilities'] = fixture['probabilities']
+            # 대회 단계·차전·무승부 조건은 예측 당시 문맥으로 보존해요.
+            context = {key: fixture[key] for key in ('stage_key', 'leg', 'draw_allowed', 'result_basis') if key in fixture}
+            if context:
+                team['what_if']['fixture'] = context
         rows.append((int(key), next_id, team))
     return metadata, rows
 
@@ -32,6 +36,7 @@ def restore_team(row):
     team.update(team_id=row['team_id'], team_name=row['team_name'])
     if team.get('what_if'):
         team['what_if']['fixture'] = {
+            **team['what_if'].get('fixture', {}),
             'fixture_id': row['next_fixture_id'], 'home_team_id': row['home_team_id'],
             'away_team_id': row['away_team_id'], 'starting_at': str(row['starting_at']),
             'round_name': row['round_name'], 'probabilities': team['what_if'].pop('probabilities'),

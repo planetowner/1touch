@@ -9,6 +9,7 @@ from scipy.special import expit, gammaln
 from .cup_betting import EUROPE_COMPETITION_IDS
 from .fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS, UPCOMING_STATE_IDS
 from .probability import position_bounds
+from .tournament_bracket import EUROPE_STAGES
 
 
 MODEL_METHOD = 'european_title_poisson_elo_v1'
@@ -126,52 +127,82 @@ def league_order(points, goals_for, goals_against, away_goals, wins, away_wins,
                        -away_wins, -wins, -away_goals, -goals_for, -gd, -points), axis=1)
 
 
-def tie_winners(second_home, other, elos, model, penalty_coefficient, rng, *, final=False, played_margin=None):
+def tie_winners(second_home, other, elos, model, penalty_coefficient, rng, *, final=False,
+                played_margin=None, match_results=None):
     """진출팀은 합산 점수로 정해요. 개별 경기 베팅의 승자 규칙과 별개예요."""
     difference = elos[second_home] - elos[other]
     home_rate, away_rate = model.rates(difference, neutral=final)
-    margin = rng.poisson(home_rate) - rng.poisson(away_rate)
+    match_margin = rng.poisson(home_rate) - rng.poisson(away_rate)
+    margin = match_margin.copy()
+    first_margin = None
     if played_margin is not None:
         margin += played_margin
     elif not final:
         # 1차전은 반대 팀의 홈이에요. 원정 다득점 규칙은 적용하지 않아요.
         first_home, first_away = model.rates(-difference)
-        margin += rng.poisson(first_away) - rng.poisson(first_home)
+        first_margin = rng.poisson(first_away) - rng.poisson(first_home)
+        margin += first_margin
     tied = margin == 0
     if tied.any():
         # 같은 포아송 득점 과정에서 연장 30분의 노출 시간을 사용해요.
         extra_home, extra_away = model.rates(difference[tied], neutral=final, minutes=30)
-        margin[tied] = rng.poisson(extra_home) - rng.poisson(extra_away)
+        extra_margin = rng.poisson(extra_home) - rng.poisson(extra_away)
+        margin[tied] = extra_margin
+        match_margin[tied] += extra_margin
     tied = margin == 0
     if tied.any():
         probability = expit(penalty_coefficient * difference[tied] / 400)
         margin[tied] = np.where(rng.random(tied.sum()) < probability, 1, -1)
+        # 합산 승자와 개별 경기 승자는 달라요. 경기 점수도 동점일 때만 승부차기를 반영해요.
+        match_tied = tied & (match_margin == 0)
+        match_margin[match_tied] = margin[match_tied]
+    if match_results is not None:
+        if first_margin is not None:
+            match_results.append((1 + np.sign(first_margin)).astype(np.int8))
+        match_results.append((1 - np.sign(match_margin)).astype(np.int8))
     return np.where(margin > 0, second_home, other)
 
 
 def bracket_title_resolutions(bracket, team_ids):
     """추첨된 경로와 확인된 승자만으로 우승·탈락을 판정해요."""
+    return bracket_stage_resolutions(bracket, team_ids)['winner']
+
+
+def bracket_stage_resolutions(bracket, team_ids):
     possible = {}
-    finalists = None
+    candidates, confirmed = {}, {}
     for stage in bracket['stages']:
+        key = stage['key']
+        candidates[key], confirmed[key] = set(), set()
         for tie in stage['ties']:
+            entrants = set()
+            for slot in tie['slots']:
+                teams = (possible[slot['source_tie_id']] if slot['source_tie_id'] else {slot['team_id']})
+                entrants.update(teams)
+                candidates[key].update(teams)
+                if len(teams) == 1:
+                    confirmed[key].update(teams)
             if tie['winner_team_id'] is not None:
                 entrants = {tie['winner_team_id']}
-            else:
-                entrants = set()
-                for slot in tie['slots']:
-                    entrants.update(possible[slot['source_tie_id']] if slot['source_tie_id']
-                                    else {slot['team_id']})
             possible[tie['tie_id']] = entrants
-            if stage['key'] == 'final':
-                finalists = entrants
-    if finalists is None:
+            if key == 'final':
+                candidates['winner'] = entrants
+                confirmed['winner'] = entrants if len(entrants) == 1 else set()
+    if 'winner' not in candidates:
         raise ValueError('The verified final is required')
-    return {team: ('impossible' if team not in finalists else
-                   'certain' if len(finalists) == 1 else 'unresolved') for team in team_ids}
+    result, later_possible, later_certain = {}, set(), set()
+    for key in reversed((*EUROPE_STAGES, 'winner')):
+        if key not in candidates:
+            continue
+        later_possible |= candidates[key]
+        later_certain |= confirmed[key]
+        result[key] = {team: ('certain' if team in later_certain else
+                              'impossible' if team not in later_possible else 'unresolved') for team in team_ids}
+    return result
 
 
-def simulate_bracket_title(*, bracket, team_ids, elos, model, penalty_coefficient, simulations, seed):
+def simulate_bracket_title(*, bracket, team_ids, elos, model, penalty_coefficient, simulations, seed,
+                           next_fixtures=None):
     """확정된 경로와 종료 경기 결과를 유지하며 남은 UEFA 대진만 계산해요."""
     if bracket['competition_id'] not in EUROPE_COMPETITION_IDS or bracket['path_status'] != 'complete':
         raise ValueError('The verified knockout path through the final is required')
@@ -182,25 +213,29 @@ def simulate_bracket_title(*, bracket, team_ids, elos, model, penalty_coefficien
     index = {team: i for i, team in enumerate(team_ids)}
     strengths = np.array([elos[t] for t in team_ids])
     rng, winners = np.random.default_rng(seed), {}
+    entries, match_results = {}, {}
+    next_ids = {f['fixture_id'] for f in (next_fixtures or {}).values()}
     champion = None
     for stage in bracket['stages']:
+        stage_entries = []
         for tie in stage['ties']:
+            participants = []
+            for slot in tie['slots']:
+                if slot['source_tie_id']:
+                    values = winners[slot['source_tie_id']]
+                    if slot['team_id'] is not None and not np.all(values == index[slot['team_id']]):
+                        raise ValueError('An unresolved parent conflicts with a confirmed entrant')
+                elif slot['team_id'] is not None:
+                    values = np.full(simulations, index[slot['team_id']])
+                else:
+                    raise ValueError('An unresolved bracket slot has no verified parent')
+                participants.append(values)
+            stage_entries.extend(participants)
             if tie['winner_team_id'] is not None:
                 winner = np.full(simulations, index[tie['winner_team_id']])
             else:
                 if not tie['legs_complete']:
                     raise ValueError('The complete tie schedule is required')
-                participants = []
-                for slot in tie['slots']:
-                    if slot['source_tie_id']:
-                        values = winners[slot['source_tie_id']]
-                        if slot['team_id'] is not None and not np.all(values == index[slot['team_id']]):
-                            raise ValueError('An unresolved parent conflicts with a confirmed entrant')
-                    elif slot['team_id'] is not None:
-                        values = np.full(simulations, index[slot['team_id']])
-                    else:
-                        raise ValueError('An unresolved bracket slot has no verified parent')
-                    participants.append(values)
                 legs = tie['fixtures']
                 if any(f['state_id'] not in (*COMPLETED_STATE_IDS, *UPCOMING_STATE_IDS, *LIVE_STATE_IDS) for f in legs):
                     raise ValueError('The knockout phase has a live or unresolved fixture')
@@ -217,16 +252,20 @@ def simulate_bracket_title(*, bracket, team_ids, elos, model, penalty_coefficien
                     played_margin = first['away_score'] - first['home_score']
                 # 슬롯은 1차전 기준이므로 두 경기 대진의 2차전 홈은 두 번째 슬롯이에요.
                 home, away = participants if final else participants[::-1]
+                results = []
                 winner = tie_winners(home, away, strengths, model, penalty_coefficient, rng,
-                                     final=final, played_margin=played_margin)
+                                     final=final, played_margin=played_margin, match_results=results)
+                pending = [f for f in legs if f['state_id'] not in COMPLETED_STATE_IDS]
+                match_results.update((f['fixture_id'], outcome) for f, outcome in zip(pending, results)
+                                     if f['fixture_id'] in next_ids)
             winners[tie['tie_id']] = winner
             if stage['key'] == 'final':
                 champion = winner
+        entries[stage['key']] = np.column_stack(stage_entries)
     if champion is None:
         raise ValueError('The final is missing')
-    resolutions = bracket_title_resolutions(bracket, team_ids)
-    return {team: {**estimate, 'resolution': resolutions[team]}
-            for team, estimate in title_estimates(team_ids, champion, simulations).items()}
+    return simulation_estimates(team_ids, champion, simulations, entries,
+                                bracket_stage_resolutions(bracket, team_ids), next_fixtures, match_results)
 
 
 def title_estimates(team_ids, winner, simulations):
@@ -236,7 +275,46 @@ def title_estimates(team_ids, winner, simulations):
             for i, team in enumerate(team_ids)}
 
 
-def simulate_knockout(order, elos, model, penalty_coefficient, rng):
+def simulation_estimates(team_ids, champion, simulations, entries, resolutions, next_fixtures, match_results):
+    estimates = title_estimates(team_ids, champion, simulations)
+    reached = np.zeros((simulations, len(team_ids)), dtype=bool)
+    counts = {}
+    for key in reversed(EUROPE_STAGES):
+        if key in entries:
+            # 16강 직행도 PO 단계 통과에 포함해 진출 확률이 단계 순서를 거스르지 않게 해요.
+            reached[np.arange(simulations)[:, None], entries[key]] = True
+            counts[key] = reached.sum(axis=0)
+    for i, team in enumerate(team_ids):
+        estimate = estimates[team]
+        estimate['resolution'] = resolutions['winner'][team]
+        estimate['current_stage'] = next((key for key in reversed(EUROPE_STAGES)
+            if key in resolutions and resolutions[key][team] == 'certain'), 'league')
+        estimate['stage_probabilities'] = [
+            {'stage_key': 'winner', 'probability': estimate['probability'], 'resolution': estimate['resolution']},
+            *({'stage_key': key, 'probability': float(counts[key][i] / simulations),
+               'resolution': resolutions[key][team]} for key in reversed(EUROPE_STAGES) if key in counts)]
+        estimate['what_if'] = None
+        fixture = (next_fixtures or {}).get(team)
+        if fixture is None:
+            continue
+        outcomes = match_results[fixture['fixture_id']]
+        probabilities = np.bincount(outcomes, minlength=3) / simulations
+        scenarios = []
+        for outcome, value in zip(('win', 'draw', 'loss'),
+                                  (0, 1, 2) if fixture['home_team_id'] == team else (2, 1, 0)):
+            if outcome == 'draw' and not fixture['draw_allowed']:
+                continue
+            selected = outcomes == value
+            samples = int(selected.sum())
+            # 같은 모의 대회에서 조건에 맞는 표본만 세어 점수 차와 합산 결과를 함께 반영해요.
+            probability = float(np.mean(champion[selected] == i)) if samples else None
+            scenarios.append({'outcome': outcome, 'probability': probability, 'simulations': samples,
+                'change_pp': 100 * (probability - estimate['probability']) if probability is not None else None})
+        estimate['what_if'] = {'fixture': {**fixture, 'probabilities': probabilities.tolist()}, 'scenarios': scenarios}
+    return estimates
+
+
+def simulate_knockout(order, elos, model, penalty_coefficient, rng, entries=None):
     n = len(order)
     sides = np.empty((n, 2, 24), dtype=int)
     # 각 순위 쌍의 두 팀은 추첨으로 서로 다른 브래킷 면에 배치돼요.
@@ -245,21 +323,28 @@ def simulate_knockout(order, elos, model, penalty_coefficient, rng):
         sides[:, 0, rank] = order[np.arange(n), rank + flip]
         sides[:, 1, rank] = order[np.arange(n), rank + 1 - flip]
     finalists = []
+    stages = {key: [] for key in ('round16', 'quarterfinal', 'semifinal')}
     for side in (0, 1):
         # Annex B: 5/6-3/4와 7/8-1/2가 각각 8강에서 만나요.
         direct = sides[:, side, [4, 2, 6, 0]]
         seeded = sides[:, side, [10, 12, 8, 14]]
         unseeded = sides[:, side, [20, 18, 22, 16]]
         playoff = tie_winners(seeded, unseeded, elos, model, penalty_coefficient, rng)
+        stages['round16'].extend((direct, playoff))
         last16 = tie_winners(direct, playoff, elos, model, penalty_coefficient, rng)
+        stages['quarterfinal'].append(last16)
         # 상위 시드 팀이 탈락해도 이 경로의 2차전 홈 권한은 승리 팀이 이어받아요.
         quarters = tie_winners(last16[:, [1, 3]], last16[:, [0, 2]], elos, model, penalty_coefficient, rng)
+        stages['semifinal'].append(quarters)
         finalists.append(tie_winners(quarters[:, 1], quarters[:, 0], elos, model, penalty_coefficient, rng))
+    if entries is not None:
+        entries.update({key: np.column_stack(values) for key, values in stages.items()},
+                       playoff=order[:, :24], final=np.column_stack(finalists))
     return tie_winners(finalists[0], finalists[1], elos, model, penalty_coefficient, rng, final=True)
 
 
 def simulate_title(*, competition_id, team_ids, fixtures, elos, coefficients, discipline,
-                   model, penalty_coefficient, card_samples, simulations, seed):
+                   model, penalty_coefficient, card_samples, simulations, seed, next_fixtures=None):
     if competition_id not in EUROPE_COMPETITION_IDS or len(team_ids) != 36 or len(set(team_ids)) != 36:
         raise ValueError('The complete UEFA league-phase membership is required')
     if simulations < 1:
@@ -289,6 +374,8 @@ def simulate_title(*, competition_id, team_ids, fixtures, elos, coefficients, di
     dp = np.zeros((simulations, 36), dtype=int)
     strengths = np.array([elos[t] for t in team_ids])
     observed_points, games_left = dict.fromkeys(team_ids, 0), dict.fromkeys(team_ids, 0)
+    match_results = {}
+    next_ids = {f['fixture_id'] for f in (next_fixtures or {}).values()}
     for fixture in fixtures:
         h, a = index[fixture['home_team_id']], index[fixture['away_team_id']]
         if fixture['state_id'] == 5:
@@ -311,6 +398,8 @@ def simulate_title(*, competition_id, team_ids, fixtures, elos, coefficients, di
         else:
             raise ValueError('The league phase has a live or unresolved fixture')
         wh, wa, draw = home > away, home < away, home == away
+        if fixture['fixture_id'] in next_ids:
+            match_results[fixture['fixture_id']] = (1 - np.sign(home - away)).astype(np.int8)
         points[:, h] += wh * 3 + draw
         points[:, a] += wa * 3 + draw
         gf[:, h] += home
@@ -324,10 +413,21 @@ def simulate_title(*, competition_id, team_ids, fixtures, elos, coefficients, di
         dp[:, h] += hp
         dp[:, a] += ap
     order = league_order(points, gf, ga, ag, wins, aw, dp, opponents, priority)
-    winner = simulate_knockout(order, strengths, model, penalty_coefficient, rng)
+    entries = {}
+    winner = simulate_knockout(order, strengths, model, penalty_coefficient, rng, entries)
     bounds = position_bounds(observed_points, {t: observed_points[t] + 3 * games_left[t] for t in team_ids})
     # 리그페이즈가 끝났으면 기존 Article 18 판정의 실제 순위로 탈락을 확인해요.
     eliminated = ({team_ids[i] for i in order[0, 24:]} if not any(games_left.values()) else
                   {t for t in team_ids if bounds[t][0] > 24})
-    return {team: {**estimate, 'resolution': 'impossible' if team in eliminated else 'unresolved'}
-            for team, estimate in title_estimates(team_ids, winner, simulations).items()}
+    if not any(games_left.values()):
+        bounds = {team_ids[i]: (rank, rank) for rank, i in enumerate(order[0], 1)}
+    resolutions = {key: {team: ('impossible' if team in eliminated else 'unresolved') for team in team_ids}
+                   for key in (*EUROPE_STAGES, 'winner')}
+    for key, cutoff in (('playoff', 24), ('round16', 8)):
+        for team in team_ids:
+            if bounds[team][1] <= cutoff:
+                resolutions[key][team] = 'certain'
+    estimates = simulation_estimates(team_ids, winner, simulations, entries, resolutions, next_fixtures, match_results)
+    for estimate in estimates.values():
+        estimate['current_stage'] = 'league'
+    return estimates

@@ -271,7 +271,7 @@ class ProbabilityApiTests(unittest.TestCase):
 
     def add_european_run(self, competition_id=5, event='uel_winner', *, run_id='europe',
                          model_id='europe-model', as_of='2026-09-21 12:00:00',
-                         probability=.13, played=None, previous_fixture_at=None):
+                         probability=.13, played=None, previous_fixture_at=None, details=None):
         self.db.execute("INSERT OR IGNORE INTO seasons VALUES (2,?,'2026/2027',1)", (competition_id,))
         payload = {'outcome_kind': 'european_title_v1', 'simulations': 100000,
             'probability_method': 'european_title_poisson_elo_v1',
@@ -283,6 +283,7 @@ class ProbabilityApiTests(unittest.TestCase):
         team = {'event': event, 'probability': probability, 'sampling_standard_error_pp': .1}
         if played is not None:
             team.update(played=played, previous_fixture_at=previous_fixture_at)
+        team.update(details or {})
         self.db.execute('INSERT INTO probability_team_results VALUES (?,?,NULL,?)', (
             run_id, 1, json.dumps(team)))
 
@@ -400,6 +401,69 @@ class ProbabilityApiTests(unittest.TestCase):
         # 전체 대진에 새 추첨이 있고 기존 fixtures에는 아직 없어도 예전 추첨 전 확률을 숨겨요.
         self.db.execute('DELETE FROM fixtures WHERE fixture_id=999')
         self.assertIsNone(self.client.get('/v1/teams/1/probability').json()['european_title'])
+
+    def test_european_detail_shares_values_and_updates_one_history_point_per_stage(self):
+        snapshots = [('before', '2026-09-19 18:00:00', .18, 0, 'league', (.42, .40)),
+                     ('first-leg', '2026-09-20 12:00:00', .22, 1, 'round16', (.40, .38)),
+                     ('current', '2026-09-21 12:00:00', .50, 1, 'round16', (.25, .25))]
+        stages = [dict(stage_key=key, probability=p, resolution=resolution) for key, p, resolution in (
+            ('winner', .5, 'unresolved'), ('final', .6, 'unresolved'), ('semifinal', .7, 'unresolved'),
+            ('quarterfinal', .8, 'unresolved'), ('round16', 1, 'certain'), ('playoff', 1, 'certain'))]
+        for run_id, stamp, probability, played, stage, others in snapshots:
+            self.add_european_run(2, 'ucl_winner', run_id=run_id, as_of=stamp,
+                probability=probability, played=played,
+                previous_fixture_at='2026-09-19T19:00:00Z' if played else None,
+                details={'current_stage': stage, 'stage_probabilities': stages} if run_id == 'current'
+                        else {'current_stage': stage})
+            self.db.executemany('INSERT INTO probability_team_results VALUES (?,?,NULL,?)',
+                [(run_id, team, json.dumps({'event': 'ucl_winner', 'probability': p}))
+                 for team, p in zip((2, 3), others)])
+        body = self.client.get('/v1/teams/1/probability').json()
+        euro = body['european_title']
+        self.assertEqual([(p['stage_key'], p['probability']) for p in euro['history']],
+                         [('league', .18), ('round16', .5)])
+        contenders = euro['title_contenders']
+        self.assertEqual((contenders['rank'], contenders['rank_change']), (1, 2))
+        self.assertEqual([(t['team_id'], t['rank']) for t in contenders['teams']], [(1, 1), (2, 2), (3, 2)])
+        self.assertEqual(contenders['teams'][0]['probability'], euro['probability'])
+        self.assertEqual(euro['stage_probabilities'][0]['probability'], euro['probability'])
+        self.assertEqual(next(e['probability'] for e in body['events'] if e['event'] == 'ucl_winner'), euro['probability'])
+        self.assertNotIn('league', [s['stage_key'] for s in euro['stage_probabilities']])
+        self.assertEqual(len(body['history']), 2)
+
+    def test_european_what_if_survives_shared_storage_and_openapi(self):
+        from one_touch_loader.core.european_probability import ScoreModel, simulate_bracket_title
+        from diagnostics.test_tournament_bracket import build, fixture
+        self.db.execute("INSERT INTO fixtures VALUES (900,1,2,'2027-04-01 20:00:00',NULL,NULL)")
+        match = dict(fixture_id=900, home_team_id=1, away_team_id=2, starting_at='2027-04-01 20:00:00',
+                     stage_key='final', leg='1/1', round_name=None, draw_allowed=False,
+                     result_basis='single_match_final_v1')
+        estimates = simulate_bracket_title(bracket=build([fixture(900, 1, 2)]), team_ids=[1, 2],
+            elos={1: 1700, 2: 1700}, model=ScoreModel((.3, .2, .8)), penalty_coefficient=0,
+            simulations=1000, seed=7, next_fixtures={1: match, 2: match})
+        self.add_european_run(2, 'ucl_winner', details=estimates[1])
+        _, rows = split_run({'teams': {'1': {'event': 'ucl_winner', **estimates[1]}}})
+        team_id, next_id, payload = rows[0]
+        self.db.execute("UPDATE probability_team_results SET next_fixture_id=?,payload=? WHERE run_id='europe' AND team_id=?",
+                        (next_id, json.dumps(payload), team_id))
+        response = self.client.get('/v1/teams/1/probability')
+        self.assertEqual(response.status_code, 200, response.text)
+        result = response.json()['european_title']['what_if']
+        self.assertEqual(result['fixture'], estimates[1]['what_if']['fixture'])
+        self.assertEqual([(s['outcome'], s['probability']) for s in result['scenarios']], [('win', 1), ('loss', 0)])
+        schema = self.client.get('/openapi.json').json()['components']['schemas']
+        self.assertIn('EuropeanStageProbability', schema)
+        self.assertIn('EuropeanWhatIf', schema)
+
+    def test_european_history_keeps_legacy_league_but_skips_unknown_drawn_stage(self):
+        self.add_european_run(run_id='old', as_of='2026-09-18 12:00:00', probability=.2)
+        self.add_european_run(run_id='unknown-stage', as_of='2026-09-19 12:00:00', probability=.3)
+        self.db.execute("UPDATE probability_runs SET payload=json_set(payload,'$.bracket_input_sha256','old-path') WHERE run_id='unknown-stage'")
+        self.add_european_run(details={'current_stage': 'round16'})
+        result = self.client.get('/v1/teams/1/probability').json()['european_title']
+        self.assertEqual([(p['stage_key'], p['probability']) for p in result['history']], [('league', .2), ('round16', .13)])
+        self.assertEqual(result['stage_probabilities'], [])
+        self.assertIsNone(result['what_if'])
 
 
 if __name__ == "__main__":

@@ -72,6 +72,53 @@ class ProbabilityComparison(BaseModel):
     fixture_at: datetime | None = Field(description='이번 예측에 반영된 직전 해당 대회 경기의 킥오프예요.')
 
 
+EuropeanStage = Literal['playoff', 'round16', 'quarterfinal', 'semifinal', 'final', 'winner']
+
+
+class EuropeanStageProbability(BaseModel):
+    stage_key: EuropeanStage
+    probability: float = Field(ge=0, le=1)
+    resolution: Literal['unresolved', 'impossible', 'certain']
+
+
+class EuropeanProbabilityHistoryPoint(BaseModel):
+    stage_key: Literal['league', 'playoff', 'round16', 'quarterfinal', 'semifinal', 'final']
+    as_of: datetime
+    probability: float = Field(ge=0, le=1)
+
+
+class TitleContender(BaseModel):
+    team_id: int
+    team_name: str
+    rank: int
+    probability: float = Field(ge=0, le=1)
+
+
+class TitleContenders(BaseModel):
+    rank: int
+    rank_change: int | None = Field(description='같은 비교 시점의 순위에서 오른 칸 수예요. 동률은 공동 순위예요.')
+    teams: list[TitleContender]
+
+
+class EuropeanWhatIfFixture(WhatIfFixture):
+    stage_key: Literal['league', 'playoff', 'round16', 'quarterfinal', 'semifinal', 'final']
+    leg: str | None
+    draw_allowed: bool
+    result_basis: Literal['single_match_final_v1']
+
+
+class EuropeanWhatIfScenario(BaseModel):
+    outcome: Literal['win', 'draw', 'loss']
+    probability: float | None = Field(ge=0, le=1, description='조건에 맞는 모의 경기 표본이 없으면 null이에요.')
+    change_pp: float | None
+    simulations: int = Field(ge=0, description='이 경기 결과에 해당하는 표본 수예요.')
+
+
+class EuropeanWhatIf(BaseModel):
+    fixture: EuropeanWhatIfFixture
+    scenarios: list[EuropeanWhatIfScenario]
+
+
 class EuropeanTitleProbability(BaseModel):
     event: Literal['ucl_winner', 'uel_winner', 'uecl_winner']
     competition_id: int
@@ -90,6 +137,10 @@ class EuropeanTitleProbability(BaseModel):
     comparison: ProbabilityComparison
     validation: dict
     limitations: list[str]
+    history: list[EuropeanProbabilityHistoryPoint]
+    stage_probabilities: list[EuropeanStageProbability]
+    title_contenders: TitleContenders
+    what_if: EuropeanWhatIf | None
 
 
 class TeamProbabilityResponse(BaseModel):
