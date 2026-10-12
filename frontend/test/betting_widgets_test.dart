@@ -355,7 +355,22 @@ void main() {
     await tester.pumpAndSettle();
     final amountField = find.byKey(const ValueKey('bet-amount-text-field'));
     expect(tester.widget<TextField>(amountField).controller!.text, '75');
-    expect(find.text('You can use up to 75 pts!'), findsOneWidget);
+    final amountHint = find.byKey(const ValueKey('bet-amount-hint'));
+    expect(tester.widget<Text>(amountHint).textSpan!.toPlainText(),
+        'You’ve got 75 pts!');
+    await tester.enterText(amountField, '26');
+    await tester.pump();
+    expect(tester.widget<Text>(amountHint).textSpan!.toPlainText(),
+        'Bet in increments of 25 points. You’ve got 75 pts!');
+    final continueButton = find.ancestor(
+      of: find.text('CONTINUE'),
+      matching: find.byType(ElevatedButton),
+    );
+    expect(tester.widget<ElevatedButton>(continueButton).onPressed, isNull);
+    await tester.enterText(amountField, '75');
+    await tester.pump();
+    expect(tester.widget<Text>(amountHint).textSpan!.toPlainText(),
+        'You’ve got 75 pts!');
     expect(
       tester
           .widget<IconButton>(find.byKey(const ValueKey('bet-decrease')))
@@ -430,9 +445,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('사용할 포인트'), findsOneWidget);
-    expect(find.text('최대 1,200 pts를 쓸 수 있어요'), findsOneWidget);
+    final amountHint = find.byKey(const ValueKey('bet-amount-hint'));
+    expect(tester.widget<Text>(amountHint).textSpan!.toPlainText(),
+        '1,200 pts를 가지고 있어요');
     final amountField = find.byKey(const ValueKey('bet-amount-text-field'));
     expect(tester.widget<TextField>(amountField).controller!.text, '100');
+    await tester.enterText(amountField, '15');
+    await tester.pump();
+    expect(tester.widget<Text>(amountHint).textSpan!.toPlainText(),
+        '10 단위로 입력해 주세요. 1,200 pts를 가지고 있어요');
+    await tester.enterText(amountField, '100');
+    await tester.pump();
+    expect(tester.widget<Text>(amountHint).textSpan!.toPlainText(),
+        '1,200 pts를 가지고 있어요');
     await tester.ensureVisible(find.byKey(const ValueKey('bet-decrease')));
     await tester.tap(find.byKey(const ValueKey('bet-decrease')));
     await tester.pump();
@@ -456,7 +481,11 @@ void main() {
     controller.dispose();
   });
 
-  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+  for (final size in [
+    const Size(320, 568),
+    const Size(393, 852),
+    const Size(430, 932),
+  ]) {
     testWidgets(
         'amount editing uses the keyboard and dismisses outside at $size',
         (tester) async {
@@ -564,6 +593,13 @@ void main() {
       await tester.enterText(field, '15');
       await tester.pump();
       expect(tester.widget<TextField>(field).controller!.text, '15');
+      final amountHint = find.byKey(const ValueKey('bet-amount-hint'));
+      expect(tester.widget<Text>(amountHint).textSpan!.toPlainText(),
+          'Bet in increments of 10 points. You’ve got 1,200 pts!');
+      expect(tester.getRect(amountHint).right, lessThanOrEqualTo(size.width));
+      if (size.width == 320) {
+        expect(tester.getSize(amountHint).height, greaterThan(20));
+      }
       expect(find.text('Your estimated win'), findsOneWidget);
       expect(find.text('Total you’re getting back'), findsOneWidget);
       expect(find.byKey(const ValueKey('bet-value-Your estimated win')),
@@ -572,6 +608,8 @@ void main() {
           findsOneWidget);
       await tester.enterText(field, '');
       await tester.pump();
+      expect(tester.widget<Text>(amountHint).textSpan!.toPlainText(),
+          'You’ve got 1,200 pts!');
       expect(find.text('0 pts', findRichText: true), findsNWidgets(2));
       await tester.enterText(field, '15');
       await tester.pump();
@@ -583,6 +621,8 @@ void main() {
       await tester.tap(field);
       await tester.enterText(field, '120');
       await tester.pump();
+      expect(tester.widget<Text>(amountHint).textSpan!.toPlainText(),
+          'You’ve got 1,200 pts!');
       await tester.tap(find.byKey(const ValueKey('bet-increase')));
       await tester.pump();
       expect(tester.widget<TextField>(field).controller!.text, '130');
@@ -947,7 +987,8 @@ void main() {
         );
         expect(tester.getRect(find.text('You’re betting')).left,
             closeTo(amountInput.left, .1));
-        expect(tester.getRect(find.text('You can use up to 1,000 pts!')).left,
+        expect(
+            tester.getRect(find.byKey(const ValueKey('bet-amount-hint'))).left,
             closeTo(amountInput.left, .1));
         await tester.ensureVisible(find.text('CONTINUE'));
         await tester.tap(find.text('CONTINUE'));

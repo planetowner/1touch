@@ -2054,6 +2054,11 @@ const appMessages = <String, MessageTranslations>{
     zh: "你有{points} $pointUnit"
   ),
   "You’re betting": (ko: "사용할 포인트", ja: "使用するポイント", zh: "使用的积分"),
+  "Bet in increments of {points} points.": (
+    ko: "{points} 단위로 입력해 주세요.",
+    ja: "{points}ポイント単位で入力してください。",
+    zh: "请按{points}积分为单位输入。"
+  ),
   "You can use up to {points} pts!": (
     ko: "최대 {points} $pointUnit를 쓸 수 있어요",
     ja: "最大{points} $pointUnit使えます",

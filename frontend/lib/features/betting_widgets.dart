@@ -470,16 +470,39 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                             const SizedBox(height: 12),
                             Align(
                               alignment: Alignment.centerLeft,
-                              child: Opacity(
-                                opacity: .7,
-                                child: Text(
-                                  tr(context,
-                                      'You can use up to {points} pts!', {
-                                    'points': NumberFormat.decimalPattern()
-                                        .format(controller.spendingLimit),
-                                  }),
-                                  style: Body2.style,
-                                ),
+                              child: Text.rich(
+                                TextSpan(children: [
+                                  if (_amount > 0 &&
+                                      _amount % market.stakeUnit != 0)
+                                    TextSpan(
+                                      text:
+                                          '${tr(context, 'Bet in increments of {points} points.', {
+                                            'points': market.stakeUnit,
+                                          })} ',
+                                      style: Body2.style.copyWith(
+                                        color: const Color(0xFFFF5B5B),
+                                        height: 1.30,
+                                      ),
+                                    ),
+                                  TextSpan(
+                                    text: tr(
+                                        context, 'You’ve got {points} pts!', {
+                                      'points': NumberFormat.decimalPattern()
+                                          .format(controller.spendingLimit),
+                                    }),
+                                    style: Body2.style.copyWith(
+                                      color: (DefaultTextStyle.of(context)
+                                                  .style
+                                                  .color ??
+                                              Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface)
+                                          .withValues(alpha: .7),
+                                    ),
+                                  ),
+                                ]),
+                                key: const ValueKey('bet-amount-hint'),
+                                style: Body2.style,
                               ),
                             ),
                             const SizedBox(height: 24),
