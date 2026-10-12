@@ -402,6 +402,58 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final size in [const Size(320, 568), const Size(393, 852)]) {
+    testWidgets('past match keeps each selected tab fully visible at $size',
+        (tester) async {
+      await pumpMatch(
+        tester,
+        theme: app_style.whitetheme,
+        size: size,
+        matchId: '19200001',
+        matchStatus: 'past',
+      );
+
+      await tester.scrollUntilVisible(
+        find.text('ANALYSIS'),
+        120,
+        scrollable: find.descendant(
+          of: find.byKey(const ValueKey('match-tab-scroll')),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.tap(find.text('ANALYSIS'));
+      await tester.pumpAndSettle();
+      final analysis =
+          tester.getRect(find.byKey(const ValueKey('match-tab-2')));
+      expect(analysis.right, lessThanOrEqualTo(size.width - 24));
+      if (size.width == 320) {
+        expect(analysis.right, closeTo(size.width - 24, 0.01));
+      }
+
+      await tester.tap(find.text('HEAD TO HEAD'));
+      await tester.pumpAndSettle();
+      final headToHead =
+          tester.getRect(find.byKey(const ValueKey('match-tab-1')));
+      expect(headToHead.left, greaterThanOrEqualTo(24));
+      expect(headToHead.right, lessThanOrEqualTo(size.width - 24));
+
+      await tester.scrollUntilVisible(
+        find.text('MATCH INFO'),
+        -120,
+        scrollable: find.descendant(
+          of: find.byKey(const ValueKey('match-tab-scroll')),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.tap(find.text('MATCH INFO'));
+      await tester.pumpAndSettle();
+      final matchInfo =
+          tester.getRect(find.byKey(const ValueKey('match-tab-0')));
+      expect(matchInfo.left, closeTo(24, 0.01));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('live chat keeps its selected tab visible and pinned',
       (tester) async {
     await pumpMatch(

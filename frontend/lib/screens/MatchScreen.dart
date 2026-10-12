@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
@@ -51,6 +52,7 @@ class MatchScreen extends StatefulWidget {
 
 class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
   final ScrollController _tabScrollController = ScrollController();
+  final List<GlobalKey> _tabKeys = List.generate(3, (_) => GlobalKey());
   int selectedIndex = 0;
   late List<String> tabs;
   Fixture? fixture;
@@ -98,20 +100,50 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
       _isLoading = false;
       _hasLoadError = false;
     });
-    _ensureLiveChatTabVisible();
+    _ensureSelectedTabVisible();
   }
 
   void _selectTab(int index) {
     setState(() => selectedIndex = index);
-    _ensureLiveChatTabVisible();
+    _ensureSelectedTabVisible();
   }
 
-  void _ensureLiveChatTabVisible() {
-    if (!_isLiveChatSelected) return;
+  void _ensureSelectedTabVisible() {
+    final index = selectedIndex;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_tabScrollController.hasClients) return;
+      if (!mounted ||
+          index != selectedIndex ||
+          !_tabScrollController.hasClients) {
+        return;
+      }
+      final position = _tabScrollController.position;
+      var target = position.pixels;
+      if (index == 0) {
+        target = position.minScrollExtent;
+      } else if (index == tabs.length - 1) {
+        target = position.maxScrollExtent;
+      } else {
+        final tab = _tabKeys[index].currentContext?.findRenderObject();
+        if (tab == null) return;
+        final viewport = RenderAbstractViewport.of(tab);
+        const edgePadding = 24.0;
+        final leftLimit =
+            viewport.getOffsetToReveal(tab, 0, axis: Axis.horizontal).offset -
+                edgePadding;
+        final rightLimit =
+            viewport.getOffsetToReveal(tab, 1, axis: Axis.horizontal).offset +
+                edgePadding;
+        if (target > leftLimit) {
+          target = leftLimit;
+        } else if (target < rightLimit) {
+          target = rightLimit;
+        }
+        target =
+            target.clamp(position.minScrollExtent, position.maxScrollExtent);
+      }
+      if ((target - position.pixels).abs() < 0.5) return;
       _tabScrollController.animateTo(
-        _tabScrollController.position.maxScrollExtent,
+        target,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
       );
@@ -303,6 +335,7 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
                       for (var index = 0; index < tabs.length; index++) ...[
                         if (index > 0) const SizedBox(width: 8),
                         _MatchPillTab(
+                          key: _tabKeys[index],
                           surfaceKey: ValueKey('match-tab-$index'),
                           label: trUpper(context, tabs[index]),
                           selected: selectedIndex == index,
@@ -449,6 +482,7 @@ class _MatchTabsHeaderDelegate extends SliverPersistentHeaderDelegate {
 
 class _MatchPillTab extends StatelessWidget {
   const _MatchPillTab({
+    super.key,
     required this.surfaceKey,
     required this.label,
     required this.selected,
