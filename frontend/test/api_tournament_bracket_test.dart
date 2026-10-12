@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +11,203 @@ import 'package:onetouch/data/competitions/tournament_bracket_repository.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
 
 void main() {
+  // 2025/26 운영 응답의 경기 순서는 실제 진출 경로 순서와 달라요.
+  final uclJson = jsonDecode(
+          File('test/fixtures/api_bracket_ucl_2025.json').readAsStringSync())
+      as Map<String, dynamic>;
+  final nextTieIds = <String, String?>{
+    for (final stage in uclJson['stages'])
+      for (final tie in stage['ties']) tie['tie_id']: tie['next_tie_id'],
+  };
+
+  test('orders each round by its confirmed next ties', () {
+    final bracket = TournamentBracket.fromJson(uclJson);
+    for (var index = 0; index < bracket.stages.length - 1; index++) {
+      final source = bracket.stages[index].ties;
+      final target = bracket.stages[index + 1].ties;
+      final destinations = [
+        for (final tie in source)
+          target.indexWhere((child) => child.id == nextTieIds[tie.id]),
+      ];
+      expect(destinations, orderedEquals([...destinations]..sort()),
+          reason: bracket.stages[index].name);
+    }
+  });
+
+  testWidgets('connects the actual UCL winners through every round',
+      (tester) async {
+    final bracket = TournamentBracket.fromJson(uclJson);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: ApiKnockoutBracket(
+            competitionId: 2,
+            seasonId: 25580,
+            repository: _StaticBracketRepository(bracket),
+          ),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    Rect card(String id) =>
+        tester.getRect(find.byKey(ValueKey('bracket-match-card-$id')));
+    for (var index = 0; index < bracket.stages.length - 1; index++) {
+      final source = bracket.stages[index];
+      final target = bracket.stages[index + 1];
+      final connector =
+          find.byKey(ValueKey('bracket-connectors-${source.name}'));
+      final origin = tester.getTopLeft(connector);
+      final canvas = TestRecordingCanvas();
+      tester
+          .widget<CustomPaint>(connector)
+          .painter!
+          .paint(canvas, tester.getSize(connector));
+      final lines = canvas.invocations
+          .where((call) => call.invocation.memberName == #drawLine)
+          .map((call) => call.invocation.positionalArguments)
+          .toList();
+      expect(lines, hasLength(source.ties.length * 3));
+      for (var i = 0; i < source.ties.length; i++) {
+        final parent = source.ties[i];
+        final child = nextTieIds[parent.id]!;
+        expect(lines[i * 3][0], card(parent.id).centerRight - origin);
+        expect(lines[i * 3 + 2][1], card(child).centerLeft - origin);
+      }
+      for (final child in target.ties) {
+        final parents =
+            source.ties.where((tie) => nextTieIds[tie.id] == child.id).toList();
+        expect(parents, isNotEmpty);
+        for (final parent in parents) {
+          expect(child.slots.map((slot) => slot.teamId),
+              contains(parent.winnerTeamId));
+        }
+        final midpoint = parents
+                .map((tie) => card(tie.id).center.dy)
+                .reduce((a, b) => a + b) /
+            parents.length;
+        expect(card(child.id).center.dy, closeTo(midpoint, 0.01),
+            reason: '${source.name} → ${child.id}');
+      }
+    }
+    // 아스날은 위쪽 대진에서 올라왔지만 8강 1차전에서는 원정팀이었어요.
+    expect(_cardTexts(tester, 'fixture:19683230'), ['ARS', '1', 'SC', '0']);
+    expect(_cardTexts(tester, 'fixture:19683237'), ['ARS', '2', 'ADM', '1']);
+    expect(_cardTexts(tester, 'fixture:19683241'), ['ARS', '1', 'PSG', '1']);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final hasSources in [true, false]) {
+    testWidgets('pairs single-match scores with teams (sources: $hasSources)',
+        (tester) async {
+      final json =
+          jsonDecode(File('test/fixtures/api_bracket.json').readAsStringSync())
+              as Map<String, dynamic>;
+      final finalTie = json['stages'][1]['ties'][0];
+      finalTie['slots'] = (finalTie['slots'] as List).reversed.toList();
+      finalTie['fixtures'][0].addAll({
+        'home_team_id': 3,
+        'away_team_id': 1,
+        'home_score': 2,
+        'away_score': 3,
+        'state': 'FT',
+      });
+      if (!hasSources) {
+        for (final tie in json['stages'][0]['ties']) {
+          tie['next_tie_id'] = null;
+        }
+        for (final slot in finalTie['slots']) {
+          slot['source_tie_id'] = null;
+        }
+      }
+      final bracket = TournamentBracket.fromJson(json);
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: ApiKnockoutBracket(
+            competitionId: 24,
+            seasonId: 100,
+            currentTeamId: 1,
+            repository: _StaticBracketRepository(bracket),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(_cardTexts(tester, 'fixture:5'),
+          hasSources ? ['T1', '3', 'T3', '2'] : ['T3', '2', 'T1', '3']);
+      final texts = tester
+          .widgetList<Text>(find.descendant(
+            of: find.byKey(const ValueKey('bracket-match-card-fixture:5')),
+            matching: find.byType(Text),
+          ))
+          .toList();
+      final teamIndex = hasSources ? 0 : 2;
+      expect(texts[teamIndex].style?.fontWeight, FontWeight.w700);
+      expect(texts[teamIndex + 1].style?.fontWeight, FontWeight.w700);
+      // 화면 배치만 바꾸고 원래 경기의 홈·원정 정보는 유지해요.
+      expect(bracket.stages.last.ties.single.slots.first.teamId, 3);
+      expect(bracket.stages.last.ties.single.matches.single.homeScore, 2);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('orders undecided teams by their source ties', (tester) async {
+    final json =
+        jsonDecode(File('test/fixtures/api_bracket.json').readAsStringSync())
+            as Map<String, dynamic>;
+    final finalTie = json['stages'][1]['ties'][0];
+    finalTie['slots'] = [
+      {'team_id': null, 'label': 'Lower winner', 'source_tie_id': 'fixture:3'},
+      {'team_id': null, 'label': 'Upper winner', 'source_tie_id': 'fixture:1'},
+    ];
+    for (final tie in json['stages'][0]['ties']) {
+      tie['winner_team_id'] = null;
+    }
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: ApiKnockoutBracket(
+          competitionId: 390,
+          seasonId: 100,
+          repository:
+              _StaticBracketRepository(TournamentBracket.fromJson(json)),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(_cardTexts(tester, 'fixture:5'), ['UW', '—', 'LW', '—']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('leaves unconfirmed progression unconnected', (tester) async {
+    final json =
+        jsonDecode(File('test/fixtures/api_bracket.json').readAsStringSync())
+            as Map<String, dynamic>;
+    for (final tie in json['stages'][0]['ties']) {
+      tie['next_tie_id'] = null;
+    }
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: ApiKnockoutBracket(
+          competitionId: 2,
+          seasonId: 100,
+          repository:
+              _StaticBracketRepository(TournamentBracket.fromJson(json)),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final connector =
+        find.byKey(const ValueKey('bracket-connectors-Semi-finals'));
+    final canvas = TestRecordingCanvas();
+    tester
+        .widget<CustomPaint>(connector)
+        .painter!
+        .paint(canvas, tester.getSize(connector));
+    expect(canvas.invocations, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
   TournamentBracketRepository repository() => TournamentBracketRepository(
       api: ApiClient(
           client: MockClient((request) async {
@@ -159,9 +357,10 @@ void main() {
             tieCount,
             (index) => (
               id: '$name:$index',
+              nextTieId: null,
               slots: <BracketSlot>[
-                (teamId: null, label: 'TBD'),
-                (teamId: null, label: 'TBD'),
+                (teamId: null, label: 'TBD', sourceTieId: null),
+                (teamId: null, label: 'TBD', sourceTieId: null),
               ],
               aggregateScore: null,
               winnerTeamId: null,
@@ -331,6 +530,14 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 }
+
+List<String?> _cardTexts(WidgetTester tester, String tieId) => tester
+    .widgetList<Text>(find.descendant(
+      of: find.byKey(ValueKey('bracket-match-card-$tieId')),
+      matching: find.byType(Text),
+    ))
+    .map((text) => text.data)
+    .toList();
 
 class _StaticBracketRepository extends TournamentBracketRepository {
   _StaticBracketRepository(this.bracket)

@@ -1,0 +1,874 @@
+{
+  "competition_id": 2,
+  "season_id": 25580,
+  "season_name": "2025/2026",
+  "status": "completed",
+  "stages": [
+    {
+      "name": "Knockout Round Play-offs",
+      "ties": [
+        {
+          "tie_id": "fixture:19662539",
+          "slots": [
+            {
+              "team_id": 68,
+              "label": "Borussia Dortmund",
+              "source_tie_id": null
+            },
+            {
+              "team_id": 708,
+              "label": "Atalanta",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            3,
+            4
+          ],
+          "winner_team_id": 708,
+          "fixtures": [
+            {
+              "fixture_id": 19662547,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 2,
+              "away_score": 0
+            },
+            {
+              "fixture_id": 19662539,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 4,
+              "away_score": 1
+            }
+          ],
+          "next_tie_id": "fixture:19662556"
+        },
+        {
+          "tie_id": "fixture:19662540",
+          "slots": [
+            {
+              "team_id": 1668,
+              "label": "Bodø / Glimt",
+              "source_tie_id": null
+            },
+            {
+              "team_id": 2930,
+              "label": "Inter",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            5,
+            2
+          ],
+          "winner_team_id": 1668,
+          "fixtures": [
+            {
+              "fixture_id": 19662548,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 3,
+              "away_score": 1
+            },
+            {
+              "fixture_id": 19662540,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 2
+            }
+          ],
+          "next_tie_id": "fixture:19662559"
+        },
+        {
+          "tie_id": "fixture:19662541",
+          "slots": [
+            {
+              "team_id": 605,
+              "label": "Benfica",
+              "source_tie_id": null
+            },
+            {
+              "team_id": 3468,
+              "label": "Real Madrid",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            1,
+            3
+          ],
+          "winner_team_id": 3468,
+          "fixtures": [
+            {
+              "fixture_id": 19662549,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 0,
+              "away_score": 1
+            },
+            {
+              "fixture_id": 19662541,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 2,
+              "away_score": 1
+            }
+          ],
+          "next_tie_id": "fixture:19662558"
+        },
+        {
+          "tie_id": "fixture:19662542",
+          "slots": [
+            {
+              "team_id": 5317,
+              "label": "Qarabağ",
+              "source_tie_id": null
+            },
+            {
+              "team_id": 20,
+              "label": "Newcastle United",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            3,
+            9
+          ],
+          "winner_team_id": 20,
+          "fixtures": [
+            {
+              "fixture_id": 19662550,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 6
+            },
+            {
+              "fixture_id": 19662542,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 3,
+              "away_score": 2
+            }
+          ],
+          "next_tie_id": "fixture:19662555"
+        },
+        {
+          "tie_id": "fixture:19662543",
+          "slots": [
+            {
+              "team_id": 6789,
+              "label": "Monaco",
+              "source_tie_id": null
+            },
+            {
+              "team_id": 591,
+              "label": "Paris Saint Germain",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            4,
+            5
+          ],
+          "winner_team_id": 591,
+          "fixtures": [
+            {
+              "fixture_id": 19662551,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 2,
+              "away_score": 3
+            },
+            {
+              "fixture_id": 19662543,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 2,
+              "away_score": 2
+            }
+          ],
+          "next_tie_id": "fixture:19662561"
+        },
+        {
+          "tie_id": "fixture:19662544",
+          "slots": [
+            {
+              "team_id": 340,
+              "label": "Club Brugge",
+              "source_tie_id": null
+            },
+            {
+              "team_id": 7980,
+              "label": "Atlético de Madrid",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            4,
+            7
+          ],
+          "winner_team_id": 7980,
+          "fixtures": [
+            {
+              "fixture_id": 19662552,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 3,
+              "away_score": 3
+            },
+            {
+              "fixture_id": 19662544,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 4,
+              "away_score": 1
+            }
+          ],
+          "next_tie_id": "fixture:19662562"
+        },
+        {
+          "tie_id": "fixture:19662545",
+          "slots": [
+            {
+              "team_id": 34,
+              "label": "Galatasaray",
+              "source_tie_id": null
+            },
+            {
+              "team_id": 625,
+              "label": "Juventus",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            7,
+            5
+          ],
+          "winner_team_id": 34,
+          "fixtures": [
+            {
+              "fixture_id": 19662553,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 5,
+              "away_score": 2
+            },
+            {
+              "fixture_id": 19662545,
+              "detail_available": true,
+              "state": "AET",
+              "home_score": 3,
+              "away_score": 2
+            }
+          ],
+          "next_tie_id": "fixture:19662560"
+        },
+        {
+          "tie_id": "fixture:19662546",
+          "slots": [
+            {
+              "team_id": 602,
+              "label": "Olympiacos F.C.",
+              "source_tie_id": null
+            },
+            {
+              "team_id": 3321,
+              "label": "Bayer 04 Leverkusen",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            0,
+            2
+          ],
+          "winner_team_id": 3321,
+          "fixtures": [
+            {
+              "fixture_id": 19662554,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 0,
+              "away_score": 2
+            },
+            {
+              "fixture_id": 19662546,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 0,
+              "away_score": 0
+            }
+          ],
+          "next_tie_id": "fixture:19662557"
+        }
+      ]
+    },
+    {
+      "name": "8th Finals",
+      "ties": [
+        {
+          "tie_id": "fixture:19662555",
+          "slots": [
+            {
+              "team_id": 20,
+              "label": "Newcastle United",
+              "source_tie_id": "fixture:19662542"
+            },
+            {
+              "team_id": 83,
+              "label": "FC Barcelona",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            3,
+            8
+          ],
+          "winner_team_id": 83,
+          "fixtures": [
+            {
+              "fixture_id": 19662563,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 1
+            },
+            {
+              "fixture_id": 19662555,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 7,
+              "away_score": 2
+            }
+          ],
+          "next_tie_id": "fixture:19683231"
+        },
+        {
+          "tie_id": "fixture:19662556",
+          "slots": [
+            {
+              "team_id": 708,
+              "label": "Atalanta",
+              "source_tie_id": "fixture:19662539"
+            },
+            {
+              "team_id": 503,
+              "label": "FC Bayern München",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            2,
+            10
+          ],
+          "winner_team_id": 503,
+          "fixtures": [
+            {
+              "fixture_id": 19662564,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 6
+            },
+            {
+              "fixture_id": 19662556,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 4,
+              "away_score": 1
+            }
+          ],
+          "next_tie_id": "fixture:19683232"
+        },
+        {
+          "tie_id": "fixture:19662557",
+          "slots": [
+            {
+              "team_id": 3321,
+              "label": "Bayer 04 Leverkusen",
+              "source_tie_id": "fixture:19662546"
+            },
+            {
+              "team_id": 19,
+              "label": "Arsenal",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            1,
+            3
+          ],
+          "winner_team_id": 19,
+          "fixtures": [
+            {
+              "fixture_id": 19662565,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 1
+            },
+            {
+              "fixture_id": 19662557,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 2,
+              "away_score": 0
+            }
+          ],
+          "next_tie_id": "fixture:19683230"
+        },
+        {
+          "tie_id": "fixture:19662558",
+          "slots": [
+            {
+              "team_id": 3468,
+              "label": "Real Madrid",
+              "source_tie_id": "fixture:19662541"
+            },
+            {
+              "team_id": 9,
+              "label": "Manchester City",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            5,
+            1
+          ],
+          "winner_team_id": 3468,
+          "fixtures": [
+            {
+              "fixture_id": 19662566,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 3,
+              "away_score": 0
+            },
+            {
+              "fixture_id": 19662558,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 2
+            }
+          ],
+          "next_tie_id": "fixture:19683232"
+        },
+        {
+          "tie_id": "fixture:19662559",
+          "slots": [
+            {
+              "team_id": 1668,
+              "label": "Bodø / Glimt",
+              "source_tie_id": "fixture:19662540"
+            },
+            {
+              "team_id": 58,
+              "label": "Sporting CP",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            3,
+            5
+          ],
+          "winner_team_id": 58,
+          "fixtures": [
+            {
+              "fixture_id": 19662567,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 3,
+              "away_score": 0
+            },
+            {
+              "fixture_id": 19662559,
+              "detail_available": true,
+              "state": "AET",
+              "home_score": 5,
+              "away_score": 0
+            }
+          ],
+          "next_tie_id": "fixture:19683230"
+        },
+        {
+          "tie_id": "fixture:19662560",
+          "slots": [
+            {
+              "team_id": 34,
+              "label": "Galatasaray",
+              "source_tie_id": "fixture:19662545"
+            },
+            {
+              "team_id": 8,
+              "label": "Liverpool",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            1,
+            4
+          ],
+          "winner_team_id": 8,
+          "fixtures": [
+            {
+              "fixture_id": 19662568,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 0
+            },
+            {
+              "fixture_id": 19662560,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 4,
+              "away_score": 0
+            }
+          ],
+          "next_tie_id": "fixture:19683229"
+        },
+        {
+          "tie_id": "fixture:19662561",
+          "slots": [
+            {
+              "team_id": 591,
+              "label": "Paris Saint Germain",
+              "source_tie_id": "fixture:19662543"
+            },
+            {
+              "team_id": 18,
+              "label": "Chelsea",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            8,
+            2
+          ],
+          "winner_team_id": 591,
+          "fixtures": [
+            {
+              "fixture_id": 19662569,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 5,
+              "away_score": 2
+            },
+            {
+              "fixture_id": 19662561,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 0,
+              "away_score": 3
+            }
+          ],
+          "next_tie_id": "fixture:19683229"
+        },
+        {
+          "tie_id": "fixture:19662562",
+          "slots": [
+            {
+              "team_id": 7980,
+              "label": "Atlético de Madrid",
+              "source_tie_id": "fixture:19662544"
+            },
+            {
+              "team_id": 6,
+              "label": "Tottenham Hotspur",
+              "source_tie_id": null
+            }
+          ],
+          "aggregate_score": [
+            7,
+            5
+          ],
+          "winner_team_id": 7980,
+          "fixtures": [
+            {
+              "fixture_id": 19662570,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 5,
+              "away_score": 2
+            },
+            {
+              "fixture_id": 19662562,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 3,
+              "away_score": 2
+            }
+          ],
+          "next_tie_id": "fixture:19683231"
+        }
+      ]
+    },
+    {
+      "name": "Quarter-finals",
+      "ties": [
+        {
+          "tie_id": "fixture:19683229",
+          "slots": [
+            {
+              "team_id": 591,
+              "label": "Paris Saint Germain",
+              "source_tie_id": "fixture:19662561"
+            },
+            {
+              "team_id": 8,
+              "label": "Liverpool",
+              "source_tie_id": "fixture:19662560"
+            }
+          ],
+          "aggregate_score": [
+            4,
+            0
+          ],
+          "winner_team_id": 591,
+          "fixtures": [
+            {
+              "fixture_id": 19683236,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 2,
+              "away_score": 0
+            },
+            {
+              "fixture_id": 19683229,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 0,
+              "away_score": 2
+            }
+          ],
+          "next_tie_id": "fixture:19683238"
+        },
+        {
+          "tie_id": "fixture:19683230",
+          "slots": [
+            {
+              "team_id": 58,
+              "label": "Sporting CP",
+              "source_tie_id": "fixture:19662559"
+            },
+            {
+              "team_id": 19,
+              "label": "Arsenal",
+              "source_tie_id": "fixture:19662557"
+            }
+          ],
+          "aggregate_score": [
+            0,
+            1
+          ],
+          "winner_team_id": 19,
+          "fixtures": [
+            {
+              "fixture_id": 19683233,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 0,
+              "away_score": 1
+            },
+            {
+              "fixture_id": 19683230,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 0,
+              "away_score": 0
+            }
+          ],
+          "next_tie_id": "fixture:19683237"
+        },
+        {
+          "tie_id": "fixture:19683231",
+          "slots": [
+            {
+              "team_id": 83,
+              "label": "FC Barcelona",
+              "source_tie_id": "fixture:19662555"
+            },
+            {
+              "team_id": 7980,
+              "label": "Atlético de Madrid",
+              "source_tie_id": "fixture:19662562"
+            }
+          ],
+          "aggregate_score": [
+            2,
+            3
+          ],
+          "winner_team_id": 7980,
+          "fixtures": [
+            {
+              "fixture_id": 19683234,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 0,
+              "away_score": 2
+            },
+            {
+              "fixture_id": 19683231,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 2
+            }
+          ],
+          "next_tie_id": "fixture:19683237"
+        },
+        {
+          "tie_id": "fixture:19683232",
+          "slots": [
+            {
+              "team_id": 3468,
+              "label": "Real Madrid",
+              "source_tie_id": "fixture:19662558"
+            },
+            {
+              "team_id": 503,
+              "label": "FC Bayern München",
+              "source_tie_id": "fixture:19662556"
+            }
+          ],
+          "aggregate_score": [
+            4,
+            6
+          ],
+          "winner_team_id": 503,
+          "fixtures": [
+            {
+              "fixture_id": 19683235,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 2
+            },
+            {
+              "fixture_id": 19683232,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 4,
+              "away_score": 3
+            }
+          ],
+          "next_tie_id": "fixture:19683238"
+        }
+      ]
+    },
+    {
+      "name": "Semi-finals",
+      "ties": [
+        {
+          "tie_id": "fixture:19683237",
+          "slots": [
+            {
+              "team_id": 7980,
+              "label": "Atlético de Madrid",
+              "source_tie_id": "fixture:19683231"
+            },
+            {
+              "team_id": 19,
+              "label": "Arsenal",
+              "source_tie_id": "fixture:19683230"
+            }
+          ],
+          "aggregate_score": [
+            1,
+            2
+          ],
+          "winner_team_id": 19,
+          "fixtures": [
+            {
+              "fixture_id": 19683239,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 1
+            },
+            {
+              "fixture_id": 19683237,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 0
+            }
+          ],
+          "next_tie_id": "fixture:19683241"
+        },
+        {
+          "tie_id": "fixture:19683238",
+          "slots": [
+            {
+              "team_id": 591,
+              "label": "Paris Saint Germain",
+              "source_tie_id": "fixture:19683229"
+            },
+            {
+              "team_id": 503,
+              "label": "FC Bayern München",
+              "source_tie_id": "fixture:19683232"
+            }
+          ],
+          "aggregate_score": [
+            6,
+            5
+          ],
+          "winner_team_id": 591,
+          "fixtures": [
+            {
+              "fixture_id": 19683240,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 5,
+              "away_score": 4
+            },
+            {
+              "fixture_id": 19683238,
+              "detail_available": true,
+              "state": "FT",
+              "home_score": 1,
+              "away_score": 1
+            }
+          ],
+          "next_tie_id": "fixture:19683241"
+        }
+      ]
+    },
+    {
+      "name": "Final",
+      "ties": [
+        {
+          "tie_id": "fixture:19683241",
+          "slots": [
+            {
+              "team_id": 591,
+              "label": "Paris Saint Germain",
+              "source_tie_id": "fixture:19683238"
+            },
+            {
+              "team_id": 19,
+              "label": "Arsenal",
+              "source_tie_id": "fixture:19683237"
+            }
+          ],
+          "aggregate_score": null,
+          "winner_team_id": 591,
+          "fixtures": [
+            {
+              "fixture_id": 19683241,
+              "detail_available": true,
+              "state": "FT_PEN",
+              "home_score": 1,
+              "away_score": 1
+            }
+          ],
+          "next_tie_id": null
+        }
+      ]
+    }
+  ]
+}

@@ -199,7 +199,7 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
                                   cardWidth,
                                   roundWidth,
                                   verticalOffset,
-                                  layoutStageIndex: index - page,
+                                  page: page,
                                   hasNextStage:
                                       index < widget.stages.length - 1,
                                 ),
@@ -245,10 +245,20 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
     double cardWidth,
     double roundWidth,
     double verticalOffset, {
-    required double layoutStageIndex,
+    required double page,
     required bool hasNextStage,
   }) {
     final stage = widget.stages[stageIndex];
+    final previousTiePositions = {
+      if (stageIndex > 0)
+        for (var i = 0; i < widget.stages[stageIndex - 1].ties.length; i++)
+          widget.stages[stageIndex - 1].ties[i].id: i,
+    };
+    final destinations = {
+      if (hasNextStage)
+        for (var i = 0; i < widget.stages[stageIndex + 1].ties.length; i++)
+          widget.stages[stageIndex + 1].ties[i].id: i,
+    };
 
     return SizedBox(
       key: ValueKey('bracket-stage-${stage.name}'),
@@ -264,22 +274,32 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
                   color: Theme.of(context).brightness == Brightness.dark
                       ? AppPalette.lightModeDarkGrey
                       : AppColors.of(context).mutedForeground,
-                  sourceCount: stage.ties.length,
-                  destinationCount: widget.stages[stageIndex + 1].ties.length,
-                  stageIndex: layoutStageIndex,
+                  // 추첨 전처럼 연결 정보가 없는 경기는 임의로 짝짓지 않아요.
+                  connections: [
+                    for (var i = 0; i < stage.ties.length; i++)
+                      if (destinations[stage.ties[i].nextTieId]
+                          case final int target)
+                        (
+                          sourceY: _cardTop(stageIndex, i, page) +
+                              _cardHeight / 2 -
+                              verticalOffset,
+                          destinationY: _cardTop(stageIndex + 1, target, page) +
+                              _cardHeight / 2 -
+                              verticalOffset,
+                        ),
+                  ],
                   cardWidth: cardWidth,
                   roundWidth: roundWidth,
-                  baseStep: _baseStep,
-                  verticalOffset: verticalOffset,
                 ),
               ),
             ),
           for (var tieIndex = 0; tieIndex < stage.ties.length; tieIndex++)
             Positioned(
               left: 0,
-              top: _cardTop(layoutStageIndex, tieIndex) - verticalOffset,
+              top: _cardTop(stageIndex, tieIndex, page) - verticalOffset,
               child: _TournamentMatchCard(
                 tie: stage.ties[tieIndex],
+                previousTiePositions: previousTiePositions,
                 currentTeamId: widget.currentTeamId,
                 width: cardWidth,
               ),
@@ -289,10 +309,14 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
     );
   }
 
-  double _cardTop(double stageIndex, int tieIndex) {
-    // 다음 라운드의 한 카드는 이전 라운드 두 카드의 중심 사이에 놓여요.
-    // 단계마다 중심 간격을 두 배로 늘려 연결선 끝과 카드 중심을 맞춰요.
-    final multiplier = math.pow(2, stageIndex).toDouble();
+  double _cardTop(int stageIndex, int tieIndex, double page) {
+    // 유럽대항전 플레이오프와 16강은 모두 8대진이에요. 실제 대진 수로 간격을 정해요.
+    final first = page.floor();
+    final count = widget.stages[first].ties.length;
+    final nextCount = widget
+        .stages[math.min(first + 1, widget.stages.length - 1)].ties.length;
+    final visibleCount = count * math.pow(nextCount / count, page - first);
+    final multiplier = visibleCount / widget.stages[stageIndex].ties.length;
     final center = _baseStep * (multiplier * tieIndex + multiplier / 2);
     return center - _cardHeight / 2;
   }
@@ -313,11 +337,11 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
     if (populatedIndexes.isEmpty) return (0, _cardHeight);
 
     final verticalOffset = populatedIndexes
-        .map((index) => _cardTop(index - page, 0))
+        .map((index) => _cardTop(index, 0, page))
         .reduce(math.min);
     final contentBottom = populatedIndexes.map((index) {
       final ties = widget.stages[index].ties;
-      return _cardTop(index - page, ties.length - 1) + _cardHeight;
+      return _cardTop(index, ties.length - 1, page) + _cardHeight;
     }).reduce(math.max);
     return (
       verticalOffset,
@@ -368,11 +392,13 @@ class _BracketGestureGuardState extends State<_BracketGestureGuard> {
 class _TournamentMatchCard extends StatelessWidget {
   const _TournamentMatchCard({
     required this.tie,
+    required this.previousTiePositions,
     required this.currentTeamId,
     required this.width,
   });
 
   final BracketTie tie;
+  final Map<String, int> previousTiePositions;
   final int? currentTeamId;
   final double width;
 
@@ -383,6 +409,18 @@ class _TournamentMatchCard extends StatelessWidget {
           orElse: () => null,
         );
     final scores = _scoresFor(tie);
+    // 1차전 홈·원정 순서와 진출 경로는 다를 수 있어요. 팀과 점수를 함께 옮겨요.
+    final rows = List.generate(
+      2,
+      (index) => (
+        slot: index < tie.slots.length ? tie.slots[index] : null,
+        score: index == 0 ? scores.$1 : scores.$2,
+      ),
+    )..sort((a, b) {
+        final first = previousTiePositions[a.slot?.sourceTieId];
+        final second = previousTiePositions[b.slot?.sourceTieId];
+        return first != null && second != null ? first.compareTo(second) : 0;
+      });
 
     return Semantics(
       button: detailMatch != null,
@@ -411,19 +449,15 @@ class _TournamentMatchCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _TournamentTeamRow(
-                slot: tie.slots.isNotEmpty ? tie.slots[0] : null,
-                score: scores.$1,
-                highlighted: tie.slots.isNotEmpty &&
-                    tie.slots[0].teamId == currentTeamId,
-              ),
-              const SizedBox(height: 12),
-              _TournamentTeamRow(
-                slot: tie.slots.length > 1 ? tie.slots[1] : null,
-                score: scores.$2,
-                highlighted: tie.slots.length > 1 &&
-                    tie.slots[1].teamId == currentTeamId,
-              ),
+              for (var index = 0; index < rows.length; index++) ...[
+                if (index > 0) const SizedBox(height: 12),
+                _TournamentTeamRow(
+                  slot: rows[index].slot,
+                  score: rows[index].score,
+                  highlighted: rows[index].slot != null &&
+                      rows[index].slot!.teamId == currentTeamId,
+                ),
+              ],
             ],
           ),
         ),
@@ -551,23 +585,15 @@ class _TournamentTeamRow extends StatelessWidget {
 class _TournamentConnectorPainter extends CustomPainter {
   const _TournamentConnectorPainter({
     required this.color,
-    required this.sourceCount,
-    required this.destinationCount,
-    required this.stageIndex,
+    required this.connections,
     required this.cardWidth,
     required this.roundWidth,
-    required this.baseStep,
-    required this.verticalOffset,
   });
 
   final Color color;
-  final int sourceCount;
-  final int destinationCount;
-  final double stageIndex;
+  final List<({double sourceY, double destinationY})> connections;
   final double cardWidth;
   final double roundWidth;
-  final double baseStep;
-  final double verticalOffset;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -576,53 +602,31 @@ class _TournamentConnectorPainter extends CustomPainter {
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
     final middleX = cardWidth + (roundWidth - cardWidth) / 2;
-    final pairCount = math.min(destinationCount, sourceCount ~/ 2);
-
-    for (var pairIndex = 0; pairIndex < pairCount; pairIndex++) {
-      final firstCenter =
-          _centerFor(stageIndex, pairIndex * 2) - verticalOffset;
-      final secondCenter =
-          _centerFor(stageIndex, pairIndex * 2 + 1) - verticalOffset;
-      final destinationCenter = (firstCenter + secondCenter) / 2;
-
+    for (final connection in connections) {
       canvas
         ..drawLine(
-          Offset(cardWidth, firstCenter),
-          Offset(middleX, firstCenter),
+          Offset(cardWidth, connection.sourceY),
+          Offset(middleX, connection.sourceY),
           paint,
         )
         ..drawLine(
-          Offset(cardWidth, secondCenter),
-          Offset(middleX, secondCenter),
+          Offset(middleX, connection.sourceY),
+          Offset(middleX, connection.destinationY),
           paint,
         )
         ..drawLine(
-          Offset(middleX, firstCenter),
-          Offset(middleX, secondCenter),
-          paint,
-        )
-        ..drawLine(
-          Offset(middleX, destinationCenter),
-          Offset(roundWidth, destinationCenter),
+          Offset(middleX, connection.destinationY),
+          Offset(roundWidth, connection.destinationY),
           paint,
         );
     }
   }
 
-  double _centerFor(double index, int tieIndex) {
-    final multiplier = math.pow(2, index).toDouble();
-    return baseStep * (multiplier * tieIndex + multiplier / 2);
-  }
-
   @override
   bool shouldRepaint(covariant _TournamentConnectorPainter oldDelegate) {
     return oldDelegate.color != color ||
-        oldDelegate.sourceCount != sourceCount ||
-        oldDelegate.destinationCount != destinationCount ||
-        oldDelegate.stageIndex != stageIndex ||
+        oldDelegate.connections != connections ||
         oldDelegate.cardWidth != cardWidth ||
-        oldDelegate.roundWidth != roundWidth ||
-        oldDelegate.baseStep != baseStep ||
-        oldDelegate.verticalOffset != verticalOffset;
+        oldDelegate.roundWidth != roundWidth;
   }
 }
