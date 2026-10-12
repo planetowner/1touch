@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -447,13 +448,9 @@ class _TeamNotificationDetailPageState
                       onPressed: () async {
                         await _save(applyToAll: true);
                         if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                tr(context, 'Applied to all following teams')),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
+                        showAppSnackBar(context,
+                            tr(context, 'Applied to all following teams'),
+                            duration: const Duration(seconds: 2));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
@@ -705,13 +702,9 @@ class _PlayerNotificationDetailPageState
                       onPressed: () async {
                         await _save(applyToAll: true);
                         if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(tr(
-                                context, 'Applied to all following players')),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
+                        showAppSnackBar(context,
+                            tr(context, 'Applied to all following players'),
+                            duration: const Duration(seconds: 2));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor:

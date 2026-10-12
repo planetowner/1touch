@@ -1,5 +1,6 @@
 import 'package:onetouch/core/app_system_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/welcome_loading_screen.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -50,9 +51,8 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
           MaterialPageRoute(builder: (_) => const WelcomeLoadingScreen()));
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content:
-                Text(tr(context, 'Unable to save teams. Please try again.'))));
+        showAppSnackBar(
+            context, tr(context, 'Unable to save teams. Please try again.'));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

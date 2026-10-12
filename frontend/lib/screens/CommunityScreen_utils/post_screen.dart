@@ -3,6 +3,7 @@ import 'package:onetouch/features/community/community_ui.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/api_client_provider.dart';
@@ -177,9 +178,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       Navigator.of(context).pop(true);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(tr(context, 'Unable to delete post. Please try again.')),
-      ));
+      showAppSnackBar(
+          context, tr(context, 'Unable to delete post. Please try again.'));
     } finally {
       if (mounted) setState(() => _isDeletingPost = false);
     }
@@ -268,10 +268,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _postRefreshFailed = true);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text(tr(context, 'Unable to load updated post. Please try again.')),
-      ));
+      showAppSnackBar(context,
+          tr(context, 'Unable to load updated post. Please try again.'));
     } finally {
       if (mounted) setState(() => _isRefreshingPost = false);
     }
@@ -285,9 +283,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       if (mounted) await _loadComments(showLoading: false);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content:
-                Text(tr(context, 'Unable to update like. Please try again.'))));
+        showAppSnackBar(
+            context, tr(context, 'Unable to update like. Please try again.'));
       }
     } finally {
       _likingCommentIds.remove(comment.commentId);
@@ -318,10 +315,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       await _loadComments(showLoading: false);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text(tr(context, 'Unable to delete comment. Please try again.')),
-      ));
+      showAppSnackBar(
+          context, tr(context, 'Unable to delete comment. Please try again.'));
     } finally {
       if (mounted) {
         setState(() => _deletingCommentIds.remove(comment.commentId));
@@ -415,12 +410,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       }
     });
     if (failed) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text(tr(context, 'Unable to update like. Please try again.')),
-        ),
-      );
+      showAppSnackBar(
+          context, tr(context, 'Unable to update like. Please try again.'));
     }
   }
 

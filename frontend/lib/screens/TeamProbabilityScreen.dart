@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
@@ -134,11 +135,7 @@ class _TeamProbabilityScreenState extends State<TeamProbabilityScreen> {
   ) {
     final whatIf = snapshot.whatIf;
     if (whatIf == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(tr(context, 'What-if data is unavailable.')),
-        ),
-      );
+      showAppSnackBar(context, tr(context, 'What-if data is unavailable.'));
       return;
     }
     Navigator.of(context).push(

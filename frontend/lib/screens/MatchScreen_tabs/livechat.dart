@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -366,9 +367,7 @@ class _LiveChatTabState extends State<LiveChatTab> with WidgetsBindingObserver {
       _controller.clear();
     } on Object catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_friendlyError(error))),
-      );
+      showAppSnackBar(context, _friendlyError(error));
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:onetouch/models/profile_change_limit_exception.dart';
 
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -207,12 +208,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } on Object {
       if (!mounted) return;
       setState(() => _isAvatarSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              tr(context, 'Unable to update profile photo. Please try again.')),
-        ),
-      );
+      showAppSnackBar(context,
+          tr(context, 'Unable to update profile photo. Please try again.'));
     }
   }
 
@@ -227,12 +224,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } on Object {
       if (!mounted) return;
       setState(() => _isAvatarSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              tr(context, 'Unable to remove profile photo. Please try again.')),
-        ),
-      );
+      showAppSnackBar(context,
+          tr(context, 'Unable to remove profile photo. Please try again.'));
     }
   }
 
@@ -318,13 +311,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   void _showSocialConnectionError(LoginProvider provider) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(tr(
+    showAppSnackBar(
         context,
-        'Unable to connect {provider}. It may already be linked to another account.',
-        {'provider': provider.displayName},
-      )),
-    ));
+        tr(
+          context,
+          'Unable to connect {provider}. It may already be linked to another account.',
+          {'provider': provider.displayName},
+        ));
   }
 
   Future<void> _confirmDeleteAccount() async {
@@ -352,11 +345,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } on Object {
       if (!mounted) return;
       setState(() => _isDeletingAccount = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-          tr(context, 'Unable to delete account. Please try again.'),
-        ),
-      ));
+      showAppSnackBar(
+          context, tr(context, 'Unable to delete account. Please try again.'));
       return;
     }
 

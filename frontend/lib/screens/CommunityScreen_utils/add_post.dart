@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/favorite_team.dart';
@@ -285,8 +286,7 @@ class _AddPostState extends State<AddPost> {
     }
   }
 
-  void _showMessage(String message) => ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text(message)));
+  void _showMessage(String message) => showAppSnackBar(context, message);
   @override
   Widget build(BuildContext context) {
     final untouched = _draft == null &&

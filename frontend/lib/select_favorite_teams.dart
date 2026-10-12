@@ -2,6 +2,7 @@ import 'package:onetouch/core/app_system_ui.dart';
 import 'dart:math' as math;
 import 'dart:ui' show ImageFilter, lerpDouble;
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -100,9 +101,8 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
       );
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(tr(context, 'Unable to save teams. Please try again.')),
-        ));
+        showAppSnackBar(
+            context, tr(context, 'Unable to save teams. Please try again.'));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

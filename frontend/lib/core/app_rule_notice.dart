@@ -10,17 +10,25 @@ class AppRuleNotice extends StatelessWidget {
   final String message;
   final VoidCallback onClose;
 
+  static Color backgroundColorOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppPalette.white
+          : AppPalette.black;
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = isDark ? const Color(0xFF090A0A) : AppPalette.white;
     return ColoredBox(
-      color: isDark ? AppPalette.white : AppPalette.black,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 14, 8),
-        child: Row(
-          children: [
-            Expanded(
+      color: backgroundColorOf(context),
+      child: Stack(
+        alignment: Alignment.centerRight,
+        children: [
+          // 기존 두 줄 높이 56에서 글 높이 31.2를 뺀 여백을 한 줄에도 적용해요.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12.4, 54, 12.4),
+            child: SizedBox(
+              width: double.infinity,
               child: Text(
                 message,
                 style: Eyebrow.style.copyWith(
@@ -29,7 +37,11 @@ class AppRuleNotice extends StatelessWidget {
                 ),
               ),
             ),
-            Semantics(
+          ),
+          // 40×40 터치 영역이 안내 높이를 늘리지 않도록 중앙에 겹쳐 놓아요.
+          Positioned(
+            right: 14,
+            child: Semantics(
               button: true,
               label: tr(context, 'Close'),
               child: GestureDetector(
@@ -46,8 +58,8 @@ class AppRuleNotice extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

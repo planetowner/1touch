@@ -2,6 +2,7 @@ import 'package:onetouch/features/community/community_ui.dart';
 import 'package:onetouch/features/community/community_media.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -97,13 +98,8 @@ class PostDetailContent extends StatelessWidget {
       debugPrint('Community post share failed: $error');
       debugPrintStack(stackTrace: stackTrace);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            tr(context, 'Unable to share post. Please try again.'),
-          ),
-        ),
-      );
+      showAppSnackBar(
+          context, tr(context, 'Unable to share post. Please try again.'));
     }
   }
 
@@ -354,15 +350,13 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
       _controller.clear();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(tr(
+      showAppSnackBar(
+          context,
+          tr(
               context,
               editing
                   ? 'Unable to update comment. Please try again.'
-                  : 'Unable to post comment. Please try again.')),
-        ),
-      );
+                  : 'Unable to post comment. Please try again.'));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

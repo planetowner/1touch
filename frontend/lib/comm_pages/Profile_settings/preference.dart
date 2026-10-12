@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:onetouch/core/app_snack_bar.dart';
 // import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/locale_controller.dart';
@@ -58,10 +59,8 @@ class _PreferencePageState extends State<PreferencePage> {
       if (mounted) Navigator.pop(context);
     } on Object {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text(tr(context, 'Unable to save preferences. Please try again.')),
-      ));
+      showAppSnackBar(context,
+          tr(context, 'Unable to save preferences. Please try again.'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

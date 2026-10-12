@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:go_router/go_router.dart';
@@ -100,9 +101,8 @@ class _SearchContentState extends State<SearchContent> {
       await widget.preferences.toggleFollowedTeam(id);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(tr(context,
-                'Unable to update followed teams. Please try again.'))));
+        showAppSnackBar(context,
+            tr(context, 'Unable to update followed teams. Please try again.'));
       }
     }
   }

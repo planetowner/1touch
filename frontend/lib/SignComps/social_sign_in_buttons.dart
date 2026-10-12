@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
@@ -59,14 +60,14 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
   }
 
   void _showSignInError(LoginProvider provider) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-          content: Text(tr(
+    showAppSnackBar(
         context,
-        'Unable to sign in with {provider}. Please try again.',
-        {'provider': provider.displayName},
-      ))));
+        tr(
+          context,
+          'Unable to sign in with {provider}. Please try again.',
+          {'provider': provider.displayName},
+        ),
+        replaceCurrent: true);
   }
 
   Widget _providerButton(LoginProvider provider) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -56,9 +57,7 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
       await widget.controller.save(players.map((player) => player.playerId));
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr(context, 'Could not save favorites'))),
-        );
+        showAppSnackBar(context, tr(context, 'Could not save favorites'));
       }
     }
   }

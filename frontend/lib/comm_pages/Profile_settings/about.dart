@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/comm_pages/Profile_settings/about_detail_page.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -33,10 +34,8 @@ class _AboutPageState extends State<AboutPage> {
     if (!mounted) return;
     setState(() => _showingPrivacyOptions = false);
     if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(tr(
-            context, 'Unable to open ad privacy choices. Please try again.')),
-      ));
+      showAppSnackBar(context,
+          tr(context, 'Unable to open ad privacy choices. Please try again.'));
     }
   }
 

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:insta_assets_crop/insta_assets_crop.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -54,11 +55,8 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
     } on Object {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(tr(
-                context, 'Unable to update profile photo. Please try again.'))),
-      );
+      showAppSnackBar(context,
+          tr(context, 'Unable to update profile photo. Please try again.'));
     }
   }
 

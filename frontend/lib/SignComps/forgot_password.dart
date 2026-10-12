@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/core/style.dart';
@@ -76,9 +77,7 @@ class _ResetCodeSheetState extends State<_ResetCodeSheet> {
   }
 
   void _message(String value) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(tr(context, value))));
+    showAppSnackBar(context, tr(context, value), replaceCurrent: true);
   }
 
   void _startTimer() {
@@ -325,9 +324,7 @@ class _NewPasswordScreenState extends State<_NewPasswordScreen> {
   }
 
   void _message(String value) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(tr(context, value))));
+    showAppSnackBar(context, tr(context, value), replaceCurrent: true);
   }
 
   @override

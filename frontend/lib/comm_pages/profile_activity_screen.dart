@@ -7,6 +7,7 @@ import 'package:onetouch/models/community_profile.dart';
 import 'package:onetouch/features/community/community_ui.dart';
 import 'package:onetouch/features/community/community_header_slivers.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/features/media/profile_avatar.dart';
 import 'package:go_router/go_router.dart';
@@ -77,9 +78,8 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
       if (mounted) setState(() => _following = next);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-                tr(context, 'Unable to update follow. Please try again.'))));
+        showAppSnackBar(
+            context, tr(context, 'Unable to update follow. Please try again.'));
       }
     } finally {
       if (mounted) setState(() => _updatingFollow = false);

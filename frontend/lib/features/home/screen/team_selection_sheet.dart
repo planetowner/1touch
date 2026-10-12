@@ -87,11 +87,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
     } on Object {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(tr(context, 'Unable to load Home.')),
-        ),
-      );
+      showAppSnackBar(context, tr(context, 'Unable to load Home.'));
     }
   }
 

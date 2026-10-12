@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/SignComps/signup_availability_field.dart';
 import 'package:onetouch/core/identity_name_rules.dart';
@@ -40,10 +41,8 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
       return;
     }
     if (!_nicknameAvailable) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-            tr(context, 'Complete the availability check before continuing.')),
-      ));
+      showAppSnackBar(context,
+          tr(context, 'Complete the availability check before continuing.'));
       return;
     }
     setState(() => _saving = true);
@@ -53,10 +52,8 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
       );
     } on Object {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text(tr(context, 'Unable to save your profile. Please try again.')),
-      ));
+      showAppSnackBar(context,
+          tr(context, 'Unable to save your profile. Please try again.'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

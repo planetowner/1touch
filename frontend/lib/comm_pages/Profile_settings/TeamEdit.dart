@@ -4,6 +4,7 @@ import 'package:onetouch/models/profile_change_limit_exception.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/core/app_rule_notice.dart';
 import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/style.dart';
@@ -237,11 +238,8 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
 
   void _removeTeam(int index) {
     if (_followedTeams.length == 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text(tr(context, 'At least one team must stay followed.'))),
-      );
+      showAppSnackBar(
+          context, tr(context, 'At least one team must stay followed.'));
       return;
     }
     setState(() {
@@ -267,11 +265,8 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
     }
 
     if (candidateTeams.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text(tr(context, 'At least one team must stay followed.'))),
-      );
+      showAppSnackBar(
+          context, tr(context, 'At least one team must stay followed.'));
       return;
     }
 
@@ -305,20 +300,15 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
     } on ProfileChangeLimitException catch (error) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(profileChangeLimitMessage(context,
-                item: tr(context, 'Primary team'), limit: error))),
-      );
+      showAppSnackBar(
+          context,
+          profileChangeLimitMessage(context,
+              item: tr(context, 'Primary team'), limit: error));
     } on Object {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(tr(
-              context, 'Unable to update followed teams. Please try again.')),
-        ),
-      );
+      showAppSnackBar(context,
+          tr(context, 'Unable to update followed teams. Please try again.'));
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:onetouch/core/page_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/core/app_section_tab_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
@@ -406,9 +407,8 @@ class _PlayerFollowButtonState extends State<PlayerFollowButton> {
                     await controller.toggle(widget.playerId);
                   } catch (_) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content:
-                              Text(tr(context, 'Could not save favorites'))));
+                      showAppSnackBar(
+                          context, tr(context, 'Could not save favorites'));
                     }
                   }
                 },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/SignComps/forgot_password.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
@@ -76,9 +77,7 @@ class _PasswordSignInFormState extends State<PasswordSignInForm> {
   }
 
   void _message(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(tr(context, message))));
+    showAppSnackBar(context, tr(context, message), replaceCurrent: true);
   }
 
   @override

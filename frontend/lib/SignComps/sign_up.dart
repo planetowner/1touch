@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -134,9 +135,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   }
 
   void _showCodeRequestError(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(tr(context, message))));
+    showAppSnackBar(context, tr(context, message), replaceCurrent: true);
   }
 
   @override
