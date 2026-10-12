@@ -267,7 +267,15 @@ class PostComposerSubmitBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 72),
       child: Column(children: [
+        AppActionButton(
+          buttonKey: const ValueKey('community-post-submit'),
+          label: tr(context, 'POST'),
+          onPressed: onSubmit,
+          loading: isSubmitting,
+          progressKey: const ValueKey('community-post-submitting'),
+        ),
         if (onSaveDraft != null) ...[
+          const SizedBox(height: 16),
           AppActionButton(
             buttonKey: const ValueKey('community-draft-save'),
             label: trUpper(context, 'Save as draft'),
@@ -277,15 +285,7 @@ class PostComposerSubmitBar extends StatelessWidget {
                 : AppPalette.white,
             foregroundColor: colors.onSurface,
           ),
-          const SizedBox(height: 16),
         ],
-        AppActionButton(
-          buttonKey: const ValueKey('community-post-submit'),
-          label: tr(context, 'POST'),
-          onPressed: onSubmit,
-          loading: isSubmitting,
-          progressKey: const ValueKey('community-post-submitting'),
-        ),
       ]),
     );
   }
