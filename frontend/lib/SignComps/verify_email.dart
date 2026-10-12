@@ -184,18 +184,20 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
         );
         if (mounted) context.go('/session');
       }
-    } on AuthRequestException catch (error) {
+    } on Object catch (error) {
       if (!mounted) return;
-      if (!_isReset && error.statusCode == 409 && context.canPop()) {
+      if (!_isReset &&
+          error is AuthRequestException &&
+          error.statusCode == 409 &&
+          context.canPop()) {
         context.pop('duplicate');
         return;
       }
-      _showMessage('${tr(context, error.message)} (${error.statusCode})');
-    } on Object {
-      if (!mounted) return;
       _showMessage(
-        tr(context,
-            'Unable to verify the code. Check your connection and try again.'),
+        tr(
+            context,
+            authRequestErrorMessage(error,
+                fallback: 'Unable to verify the code. Please try again.')),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -228,14 +230,14 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
       });
       _startCountdown();
       _showMessage(tr(context, 'A new verification code was sent.'));
-    } on AuthRequestException catch (error) {
-      if (!mounted) return;
-      _showMessage('${tr(context, error.message)} (${error.statusCode})');
-    } on Object {
+    } on Object catch (error) {
       if (!mounted) return;
       _showMessage(
-        tr(context,
-            'Unable to resend the code. Check your connection and try again.'),
+        tr(
+            context,
+            authRequestErrorMessage(error,
+                fallback:
+                    'Unable to send a verification code. Please try again.')),
       );
     } finally {
       if (mounted) setState(() => _resending = false);
@@ -371,9 +373,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                             if (_canSubmit) _continue();
                           }),
                       const SizedBox(height: 8),
-                      Text(
-                          tr(context,
-                              'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
+                      Text(tr(context, passwordGuideMessage),
                           style: Body2.style),
                       const SizedBox(height: 24),
                     ],

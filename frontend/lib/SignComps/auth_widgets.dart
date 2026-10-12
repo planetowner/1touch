@@ -88,6 +88,85 @@ abstract final class AuthStyles {
   }
 }
 
+/// 제출 전 빈칸은 오류를 숨기고, 입력한 값은 입력칸을 떠날 때 확인해요.
+class AuthForm extends StatefulWidget {
+  const AuthForm({super.key, required this.child});
+
+  final Widget child;
+
+  static AuthFormState of(BuildContext context) =>
+      context.findAncestorStateOfType<AuthFormState>()!;
+
+  @override
+  AuthFormState createState() => AuthFormState();
+}
+
+class AuthFormState extends State<AuthForm> {
+  final _formKey = GlobalKey<FormState>();
+  bool _submitted = false;
+
+  bool validate() {
+    // 같은 검증 함수를 쓰되, 제출할 때부터 빈칸도 빠짐없이 확인해요.
+    _submitted = true;
+    return _formKey.currentState!.validate();
+  }
+
+  String? validationMessage(
+      String? value, FormFieldValidator<String> validator) {
+    if (!_submitted && (value == null || value.isEmpty)) return null;
+    return validator(value);
+  }
+
+  @override
+  Widget build(BuildContext context) => Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUnfocus,
+        onChanged: () {
+          // 이미 표시한 오류는 수정 중에도 확인해서 해결되면 바로 지워요.
+          for (final field in _formKey.currentState!.fields) {
+            if (field.hasError) field.validate();
+          }
+        },
+        child: widget.child,
+      );
+}
+
+/// InputDecoration의 안내·오류 자리에 넣어 한 번에 한 문구만 보여줘요.
+class AuthFieldMessage extends StatelessWidget {
+  const AuthFieldMessage({
+    super.key,
+    required this.text,
+    required this.decoration,
+    this.error = false,
+  });
+
+  final String text;
+  final InputDecoration decoration;
+  final bool error;
+
+  @override
+  Widget build(BuildContext context) {
+    final border = decoration.border;
+    final inset =
+        (decoration.contentPadding?.resolve(Directionality.of(context)).left ??
+                0) +
+            (Theme.of(context).useMaterial3 && border is OutlineInputBorder
+                ? border.gapPadding
+                : 0);
+    final colors = Theme.of(context).colorScheme;
+    return Transform.translate(
+      offset: Offset(-inset, 0),
+      child: Padding(
+        // Material 3의 기본 간격 4에 더해 입력칸 아래 여백 8을 맞춰요.
+        padding: EdgeInsets.only(top: Theme.of(context).useMaterial3 ? 4 : 0),
+        child: Text(text,
+            style: AuthStyles.signupTextStyle(Eyebrow.style)
+                .copyWith(color: error ? colors.error : colors.onSurface)),
+      ),
+    );
+  }
+}
+
 /// 가입 화면의 라벨은 포커스나 입력값에 따라 움직이지 않아요.
 class AuthInsetLabel extends StatelessWidget {
   const AuthInsetLabel({
@@ -95,33 +174,38 @@ class AuthInsetLabel extends StatelessWidget {
     required this.label,
     required this.child,
     this.password = false,
+    this.keepAboveKeyboard = false,
   });
 
   final String label;
   final Widget child;
   final bool password;
+  final bool keepAboveKeyboard;
 
   @override
-  Widget build(BuildContext context) => _AuthFieldScrollPadding(
-          child: Stack(children: [
-        Semantics(label: label, child: child),
-        Positioned(
-          left: 12,
-          right: 12,
-          top: AuthStyles.signupLabelInset(password),
-          child: IgnorePointer(
-            child: ExcludeSemantics(
-              child: Text(label,
-                  style: AuthStyles.signupTextStyle(Eyebrow.style).copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: .5),
-                  )),
-            ),
+  Widget build(BuildContext context) {
+    final field = Stack(children: [
+      Semantics(label: label, child: child),
+      Positioned(
+        left: 12,
+        right: 12,
+        top: AuthStyles.signupLabelInset(password),
+        child: IgnorePointer(
+          child: ExcludeSemantics(
+            child: Text(label,
+                style: AuthStyles.signupTextStyle(Eyebrow.style).copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: .5),
+                )),
           ),
         ),
-      ]));
+      ),
+    ]);
+    // 다시 입력 칸에만 보정을 적용해 다른 필드의 안내가 화면을 밀어 올리지 않게 해요.
+    return keepAboveKeyboard ? _AuthFieldScrollPadding(child: field) : field;
+  }
 }
 
 class _AuthFieldScrollPadding extends SingleChildRenderObjectWidget {

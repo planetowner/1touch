@@ -91,23 +91,29 @@ def registration_value_available(field: str, value: str) -> bool:
     ) is None
 
 
-def _verify_code(cur, challenge: str, code: str, purpose: str) -> str | None:
+def _verify_code(cur, challenge: str, code: str, purpose: str) -> tuple[str | None, str | None]:
     key = token_hash(challenge)
     cur.execute("SELECT * FROM email_verification_codes WHERE challenge_hash=%s FOR UPDATE", (key,))
     row = cur.fetchone()
-    if row is None or row["purpose"] != purpose or row["expires_at"] <= utc_now() or row["attempts"] >= CODE_ATTEMPTS:
-        return None
+    if row is None or row["purpose"] != purpose:
+        return None, "This code is no longer valid. Send a new code."
+    if row["expires_at"] <= utc_now():
+        return None, "This code has expired. Send a new code."
+    if row["attempts"] >= CODE_ATTEMPTS:
+        return None, "Too many incorrect attempts. Send a new code."
     cur.execute("UPDATE email_verification_codes SET attempts=attempts+1 WHERE challenge_hash=%s", (key,))
     if not hmac.compare_digest(bytes(row["code_hash"]), code_hash(challenge, code)):
-        return None
-    return row["email"]
+        if row["attempts"] + 1 >= CODE_ATTEMPTS:
+            return None, "Too many incorrect attempts. Send a new code."
+        return None, "Invalid verification code. Try again."
+    return row["email"], None
 
 
-def _consume_code(cur, challenge: str, code: str, purpose: str) -> str | None:
-    email = _verify_code(cur, challenge, code, purpose)
+def _consume_code(cur, challenge: str, code: str, purpose: str) -> tuple[str | None, str | None]:
+    email, error = _verify_code(cur, challenge, code, purpose)
     if email is not None:
         cur.execute("DELETE FROM email_verification_codes WHERE challenge_hash=%s", (token_hash(challenge),))
-    return email
+    return email, error
 
 
 def register_email(challenge: str, code: str, password: str, profile: dict) -> dict:
@@ -115,7 +121,7 @@ def register_email(challenge: str, code: str, password: str, profile: dict) -> d
     result = None
     try:
         with transaction() as conn, conn.cursor(dictionary=True) as cur:
-            email = _consume_code(cur, challenge, code, "signup")
+            email, error = _consume_code(cur, challenge, code, "signup")
             if email is not None:
                 cur.execute("""INSERT INTO users (username,display_name,created_at)
                     VALUES (%s,%s,%s)""",
@@ -128,7 +134,8 @@ def register_email(challenge: str, code: str, password: str, profile: dict) -> d
             raise
         raise HTTPException(409, "Email, username, or nickname is already registered") from exc
     if result is None:
-        raise HTTPException(400, "Invalid, expired, or exhausted verification code")
+        # 시도 횟수를 저장한 뒤 오류를 반환해야, 오타를 반복해도 한도가 유지돼요.
+        raise HTTPException(400, error)
     return result
 
 
@@ -152,7 +159,7 @@ def reset_password(challenge: str, code: str, password: str) -> None:
     hashed = PASSWORDS.hash(password)
     verified = False
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
-        email = _consume_code(cur, challenge, code, "password_reset")
+        email, error = _consume_code(cur, challenge, code, "password_reset")
         if email is not None:
             verified = True
             cur.execute("SELECT user_id FROM user_email_credentials WHERE email=%s FOR UPDATE", (email,))
@@ -162,12 +169,12 @@ def reset_password(challenge: str, code: str, password: str) -> None:
                 # 비밀번호 재설정 뒤 기존 기기의 인증은 다시 받아요.
                 cur.execute("DELETE FROM user_sessions WHERE user_id=%s", (row["user_id"],))
     if not verified:
-        raise HTTPException(400, "Invalid, expired, or exhausted verification code")
+        raise HTTPException(400, error)
 
 
 def find_username(challenge: str, code: str) -> str:
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
-        email = _consume_code(cur, challenge, code, "username_recovery")
+        email, error = _consume_code(cur, challenge, code, "username_recovery")
         account = None
         if email is not None:
             cur.execute("""SELECT u.username FROM user_email_credentials c
@@ -175,7 +182,7 @@ def find_username(challenge: str, code: str) -> str:
             account = cur.fetchone()
     # 주소 소유를 확인한 뒤에만 계정 유무·유저네임을 알려요. 새 로그인 세션은 만들지 않아요.
     if email is None:
-        raise HTTPException(400, "Invalid, expired, or exhausted verification code")
+        raise HTTPException(400, error)
     if account is None:
         raise HTTPException(404, "No email account found. Use the social provider used at signup")
     return account["username"]
@@ -219,8 +226,8 @@ def change_email(user_id: int, password: str, current_email: dict, new_email: di
     try:
         with transaction() as conn, conn.cursor(dictionary=True) as cur:
             account = _lock_email_account(cur, user_id, password)
-            current = _verify_code(cur, current_email["challenge_id"], current_email["code"], "email_change")
-            new = _verify_code(cur, new_email["challenge_id"], new_email["code"], "email_change")
+            current, _ = _verify_code(cur, current_email["challenge_id"], current_email["code"], "email_change")
+            new, _ = _verify_code(cur, new_email["challenge_id"], new_email["code"], "email_change")
             if (current is not None and new is not None and current.casefold() == account["email"].casefold()
                     and current.casefold() != new.casefold()):
                 cur.execute("UPDATE user_email_credentials SET email=%s WHERE user_id=%s", (new, user_id))

@@ -49,7 +49,7 @@ class NicknameOnlyTests(unittest.TestCase):
         self.user_id = self.raw.execute('SELECT user_id FROM user_social_identities').fetchone()[0]
 
     def email_signup(self):
-        with patch.object(auth_repo, '_consume_code', return_value='member@example.com'):
+        with patch.object(auth_repo, '_consume_code', return_value=('member@example.com', None)):
             response = self.client.post('/v1/auth/email/register', json={
                 'challenge_id': 'c' * 43, 'code': '123456', 'password': 'Password123',
                 'username': 'member', 'display_name': 'Member'})

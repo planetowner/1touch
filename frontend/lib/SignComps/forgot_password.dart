@@ -96,7 +96,7 @@ class _ResetCodeSheetState extends State<_ResetCodeSheet> {
   Future<void> _sendCode({bool resend = false}) async {
     if (_busy || (resend && _resendIn > 0)) return;
     final email = _email.text.trim();
-    if (email.isEmpty) return _message('Enter email');
+    if (email.isEmpty) return _message('Enter your email address.');
     setState(() => _busy = true);
     try {
       final challenge = await widget.authService.requestEmailCode(
@@ -294,13 +294,9 @@ class _NewPasswordScreenState extends State<_NewPasswordScreen> {
 
   Future<void> _submit() async {
     if (_busy) return;
-    if (!isValidNewPassword(_password.text)) {
-      return _message(
-          'Use 8–128 characters with uppercase and lowercase English letters and a number.');
-    }
-    if (_password.text != _confirm.text) {
-      return _message('Passwords do not match.');
-    }
+    final error = newPasswordValidationMessage(_password.text) ??
+        passwordConfirmationValidationMessage(_confirm.text, _password.text);
+    if (error != null) return _message(error);
     setState(() => _busy = true);
     try {
       await widget.authService.resetPassword(
@@ -391,8 +387,7 @@ class _NewPasswordScreenState extends State<_NewPasswordScreen> {
                             setState(() => _hidePassword = !_hidePassword)),
                     const SizedBox(height: 8),
                     Text(
-                      tr(context,
-                          'Choose a password that is 8 or more characters long.'),
+                      tr(context, passwordGuideMessage),
                       style: Eyebrow.style,
                     ),
                     const SizedBox(height: 24),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/SignComps/signup_availability_field.dart';
+import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/core/identity_name_rules.dart';
 
 void main() {
@@ -26,9 +27,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1));
     await tester.pump();
     expect(requests, ['second']);
-    expect(find.text('Available.'), findsOneWidget);
+    expect(find.text("It's available."), findsOneWidget);
     expect(
-      tester.getTopLeft(find.text('Available.')).dx,
+      tester.getTopLeft(find.text("It's available.")).dx,
       closeTo(tester.getTopLeft(find.byKey(const ValueKey('field-header'))).dx,
           0.1),
     );
@@ -47,7 +48,14 @@ void main() {
         tester.widget<TextField>(find.byType(TextField)).decoration?.helperText,
         isNull);
     await tester.pumpAndSettle();
-    expect(find.text('Available.'), findsNothing);
+    expect(find.text("It's available."), findsNothing);
+    expect(
+        tester
+            .state<FormFieldState<String>>(find.byType(TextFormField))
+            .hasError,
+        isFalse);
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
     expect(
         tester
             .state<FormFieldState<String>>(find.byType(TextFormField))
@@ -55,6 +63,15 @@ void main() {
         isTrue);
     expect(tester.widget<EditableText>(find.byType(EditableText)).cursorColor,
         normalCursorColor);
+
+    await tester.enterText(find.byType(TextFormField), 'corrected');
+    await tester.pump();
+    expect(
+        tester
+            .state<FormFieldState<String>>(find.byType(TextFormField))
+            .hasError,
+        isFalse);
+    await tester.pump(const Duration(milliseconds: 250));
   });
 
   testWidgets('ignores an available response for an input that has changed',
@@ -74,12 +91,14 @@ void main() {
     oldResult.complete(true);
     await tester.pump();
     expect(available, isFalse);
-    expect(find.text('Available.'), findsNothing);
+    expect(find.text("It's available."), findsNothing);
 
     await tester.pump(const Duration(milliseconds: 250));
     newResult.complete(false);
     await tester.pump();
     expect(available, isFalse);
+    expect(find.text('Already in use.'), findsNothing);
+    FocusManager.instance.primaryFocus?.unfocus();
     await tester.pumpAndSettle();
     expect(
         tester
@@ -92,6 +111,30 @@ void main() {
       closeTo(tester.getTopLeft(find.byKey(const ValueKey('field-header'))).dx,
           0.1),
     );
+  });
+
+  testWidgets('shows a duplicate response arriving after the field loses focus',
+      (tester) async {
+    final controller = TextEditingController();
+    addTearDown(controller.dispose);
+    final result = Completer<bool>();
+    await _pumpField(tester, controller, (_) => result.future);
+    await tester.enterText(find.byType(TextFormField), 'member');
+    await tester.pump(const Duration(milliseconds: 250));
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump();
+    result.complete(false);
+    await tester.pumpAndSettle();
+    expect(find.text('Already in use.'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField), 'another');
+    await tester.pump();
+    expect(
+        tester
+            .state<FormFieldState<String>>(find.byType(TextFormField))
+            .hasError,
+        isFalse);
+    await tester.pump(const Duration(milliseconds: 250));
   });
 
   testWidgets('a response after leaving the screen does not update the field',
@@ -114,7 +157,7 @@ Future<void> _pumpField(WidgetTester tester, TextEditingController controller,
         {ValueChanged<bool>? onChanged}) =>
     tester.pumpWidget(MaterialApp(
       home: Scaffold(
-        body: Form(
+        body: AuthForm(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(

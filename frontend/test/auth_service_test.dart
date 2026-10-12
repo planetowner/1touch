@@ -10,6 +10,48 @@ import 'package:onetouch/data/auth/google_identity_service.dart';
 import 'support/fake_auth_token_store.dart';
 
 void main() {
+  test('new password reports one error and preserves rune length and raw input',
+      () {
+    for (final entry in <String, String?>{
+      '': 'Enter your password.',
+      'a': 'Use 8–128 characters.',
+      'Ab12345': 'Use 8–128 characters.',
+      'Ab123456': null,
+      'Ab1'.padRight(128, 'x'): null,
+      'Ab1'.padRight(129, 'x'): 'Use 8–128 characters.',
+      'password123':
+          'Include at least one uppercase letter, one lowercase letter, and one number.',
+      'PASSWORD123':
+          'Include at least one uppercase letter, one lowercase letter, and one number.',
+      'PasswordOnly':
+          'Include at least one uppercase letter, one lowercase letter, and one number.',
+      '12345678':
+          'Include at least one uppercase letter, one lowercase letter, and one number.',
+      'Password123!': null,
+      ' Aa1234 ': null,
+      'Aa1😀😀😀😀': 'Use 8–128 characters.',
+      'Aa1😀😀😀😀😀': null,
+      'Aa1'.padRight(128, '😀'): null,
+    }.entries) {
+      expect(newPasswordValidationMessage(entry.key), entry.value,
+          reason: entry.key);
+      expect(isValidNewPassword(entry.key), entry.value == null,
+          reason: entry.key);
+    }
+  });
+
+  test('password confirmation distinguishes empty and mismatching input', () {
+    expect(passwordConfirmationValidationMessage('', 'Password123'),
+        'Enter your password again.');
+    expect(passwordConfirmationValidationMessage('Different123', 'Password123'),
+        "The passwords don't match. Please check again.");
+    expect(
+        passwordConfirmationValidationMessage(' Password123 ', 'Password123'),
+        "The passwords don't match. Please check again.");
+    expect(passwordConfirmationValidationMessage('Password123', 'Password123'),
+        isNull);
+  });
+
   test('exchanges a Google ID token and stores only the backend token',
       () async {
     final identityService = _FakeGoogleIdentityService(

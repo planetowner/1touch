@@ -276,11 +276,15 @@ const appMessages = <String, MessageTranslations>{
     ja: "新しいパスワードを入力してください。",
     zh: "请输入新密码。"
   ),
-  "Enter it again.": (ko: "다시 입력해 주세요.", ja: "もう一度入力してください。", zh: "请再次输入。"),
-  "Passwords do not match.": (
-    ko: "비밀번호가 일치하지 않아요.",
-    ja: "パスワードが一致しません。",
-    zh: "两次输入的密码不一致。"
+  "Enter your password again.": (
+    ko: "비밀번호를 한 번 더 입력해 주세요.",
+    ja: "パスワードをもう一度入力してください。",
+    zh: "请再输入一次密码。"
+  ),
+  "The passwords don't match. Please check again.": (
+    ko: "비밀번호가 서로 달라요. 다시 확인해 주세요.",
+    ja: "パスワードが一致しません。もう一度確認してください。",
+    zh: "两次输入的密码不一样，请再确认一下。"
   ),
   "Please check the highlighted fields.": (
     ko: "표시된 입력 내용을 확인해 주세요.",
@@ -293,15 +297,40 @@ const appMessages = <String, MessageTranslations>{
     zh: "请同意条款和隐私政策。"
   ),
   "Retype Password": (ko: "비밀번호 다시 입력", ja: "パスワードを再入力", zh: "再次输入密码"),
-  "Choose a password that is 8 or more characters long.": (
-    ko: "비밀번호는 8자 이상으로 설정해 주세요.",
-    ja: "パスワードは8文字以上で設定してください。",
-    zh: "密码长度至少为8个字符。"
-  ),
   "Invalid verification code. Try again.": (
     ko: "인증번호가 올바르지 않아요. 다시 입력해 주세요.",
     ja: "認証コードが正しくありません。もう一度お試しください。",
     zh: "验证码无效，请重试。"
+  ),
+  "This code is no longer valid. Send a new code.": (
+    ko: "사용할 수 없는 인증번호예요. 새 인증번호를 받아 주세요.",
+    ja: "この認証コードは使用できません。新しいコードを取得してください。",
+    zh: "此验证码已无法使用，请获取新验证码。"
+  ),
+  "Too many incorrect attempts. Send a new code.": (
+    ko: "인증번호 입력 횟수를 초과했어요. 새 인증번호를 받아 주세요.",
+    ja: "認証コードの入力回数を超えました。新しいコードを取得してください。",
+    zh: "验证码输入次数已超限，请获取新验证码。"
+  ),
+  "The service is temporarily unavailable. Please try again later.": (
+    ko: "지금은 요청을 처리하지 못해요. 잠시 후 다시 시도해 주세요.",
+    ja: "現在リクエストを処理できません。しばらくしてからお試しください。",
+    zh: "暂时无法处理请求，请稍后重试。"
+  ),
+  "Unable to send a verification code. Please try again.": (
+    ko: "인증번호를 보내지 못했어요. 다시 시도해 주세요.",
+    ja: "認証コードを送信できませんでした。もう一度お試しください。",
+    zh: "无法发送验证码，请重试。"
+  ),
+  "Unable to verify the code. Please try again.": (
+    ko: "인증번호를 확인하지 못했어요. 다시 시도해 주세요.",
+    ja: "認証コードを確認できませんでした。もう一度お試しください。",
+    zh: "无法验证验证码，请重试。"
+  ),
+  "Complete the availability check before continuing.": (
+    ko: "사용 가능 여부를 확인한 뒤 다시 눌러 주세요.",
+    ja: "使用できるか確認してから、もう一度押してください。",
+    zh: "请确认是否可用后再试。"
   ),
   "New password": (ko: "새 비밀번호", ja: "新しいパスワード", zh: "新密码"),
   "Enter the email address you used to sign up.": (
@@ -310,11 +339,27 @@ const appMessages = <String, MessageTranslations>{
     zh: "请输入注册时使用的邮箱。"
   ),
   "Send verification code": (ko: "인증번호 보내기", ja: "認証コードを送信", zh: "发送验证码"),
-  "Use 8–128 characters with uppercase and lowercase English letters and a number.":
+  "Use 8–128 characters with at least one uppercase letter, one lowercase letter, and one number.":
       (
-    ko: "영문 대문자·소문자와 숫자를 포함해 8~128자로 입력해 주세요.",
-    ja: "英大文字・小文字と数字を含む8〜128文字で入力してください。",
-    zh: "请输入8至128个字符，包含英文大写字母、小写字母和数字。"
+    ko: "영문 대문자·소문자·숫자를 모두 포함해 8~128자로 입력해 주세요.",
+    ja: "英大文字・英小文字・数字をそれぞれ1文字以上含めて、8～128文字で入力してください。",
+    zh: "请输入8～128个字符，至少包含一个英文大写字母、一个小写字母和一个数字。"
+  ),
+  "Use 8–128 characters.": (
+    ko: "8~128자로 입력해 주세요.",
+    ja: "8～128文字で入力してください。",
+    zh: "请输入8～128个字符。"
+  ),
+  "Include at least one uppercase letter, one lowercase letter, and one number.":
+      (
+    ko: "영문 대문자·소문자·숫자를 모두 포함해 주세요.",
+    ja: "英大文字・英小文字・数字をそれぞれ1文字以上入れてください。",
+    zh: "请至少包含一个英文大写字母、一个小写字母和一个数字。"
+  ),
+  "Enter your password.": (
+    ko: "비밀번호를 입력해 주세요.",
+    ja: "パスワードを入力してください。",
+    zh: "请输入密码。"
   ),
   "Password reset. Sign in with your new password.": (
     ko: "비밀번호를 바꿨어요. 새 비밀번호로 로그인해 주세요.",
@@ -364,11 +409,6 @@ const appMessages = <String, MessageTranslations>{
   "LOGIN": (ko: "로그인", ja: "ログイン", zh: "登录"),
   "Username": (ko: "아이디", ja: "ユーザー名", zh: "用户名"),
   "ID": (ko: "아이디", ja: "ID", zh: "ID"),
-  "This username is available!": (
-    ko: "사용할 수 있는 아이디예요!",
-    ja: "このユーザー名は使用できます！",
-    zh: "此用户名可以使用！"
-  ),
   "Nickname": (ko: "닉네임", ja: "ニックネーム", zh: "昵称"),
   "Pick a nickname": (ko: "닉네임 정하기", ja: "ニックネームを決める", zh: "选择昵称"),
   "Unable to save your profile. Please try again.": (
@@ -379,32 +419,80 @@ const appMessages = <String, MessageTranslations>{
   "Checking availability...": (
     ko: "사용할 수 있는지 확인하고 있어요.",
     ja: "使用できるか確認しています。",
-    zh: "正在检查是否可用。"
+    zh: "正在确认是否可以使用。"
   ),
-  "Available.": (ko: "사용할 수 있어요.", ja: "使用できます。", zh: "可以使用。"),
+  "It's available.": (ko: "사용할 수 있어요.", ja: "使用できます。", zh: "可以使用。"),
   "Already in use.": (
     ko: "이미 사용 중이에요. 다른 값을 입력해 주세요.",
     ja: "既に使用されています。別の値を入力してください。",
     zh: "已被使用，请输入其他内容。"
   ),
-  "Unable to check availability. Try again.": (
-    ko: "중복 여부를 확인하지 못했어요. 다시 시도해 주세요.",
+  "That email address is already in use. Try another one.": (
+    ko: "이미 사용 중인 이메일이에요. 다른 이메일을 입력해 주세요.",
+    ja: "このメールアドレスはすでに使われています。別のメールアドレスを試してください。",
+    zh: "这个邮箱地址已经有人用了，换一个试试吧。"
+  ),
+  "We couldn't check if it's available. Please try again.": (
+    ko: "사용 가능 여부를 확인하지 못했어요. 다시 시도해 주세요.",
     ja: "使用できるか確認できませんでした。もう一度お試しください。",
-    zh: "无法检查是否可用，请重试。"
+    zh: "无法确认是否可用，请重试。"
   ),
   "Primary team": (ko: "최애팀", ja: "お気に入りのチーム", zh: "最喜欢的球队"),
-  "Enter nickname": (ko: "닉네임을 입력해 주세요", ja: "ニックネームを入力してください", zh: "请输入昵称"),
-  "Use 1–30 English letters, numbers, underscores, or dots. Dots cannot be first, last, or consecutive.":
-      (
-    ko: "아이디는 영문, 숫자, 밑줄(_), 마침표(.)로 1~30자 입력해 주세요. 마침표는 맨 앞·뒤나 연속으로 쓸 수 없어요.",
-    ja: "ユーザー名は英数字、アンダースコア、ピリオドで1～30文字にしてください。ピリオドは先頭・末尾・連続で使えません。",
-    zh: "用户名须为1～30位英文字母、数字、下划线或句点。句点不能在开头、结尾或连续使用。"
+  "Enter your nickname.": (
+    ko: "닉네임을 입력해 주세요.",
+    ja: "ニックネームを入力してください。",
+    zh: "请输入昵称。"
   ),
-  "Use Korean syllables, English letters, or numbers only (4–12 units; Korean counts as 2).":
+  "Use 1–30 characters with English letters, numbers, _ or .": (
+    ko: "영문, 숫자, _, .으로 1~30자를 입력해 주세요.",
+    ja: "英字・数字・「_」「.」で1～30文字入力してください。",
+    zh: "请使用英文字母、数字、_ 或 .，输入1～30个字符。"
+  ),
+  "Use 4–12 characters with Korean syllables, English letters, or numbers. Korean syllables count as 2.":
       (
-    ko: "닉네임은 완성형 한글, 영문, 숫자만 쓸 수 있어요. 한글은 2단위, 영문·숫자는 1단위로 세어 총 4~12단위로 입력해 주세요.",
-    ja: "ニックネームはハングル音節、英数字のみ使用できます。ハングルを2、英数字を1として4～12単位にしてください。",
-    zh: "昵称只能使用完整韩文字、英文字母和数字。韩文字计2，英文字母和数字计1，总计须为4～12。"
+    ko: "한글, 영문, 숫자로 4~12자를 입력해 주세요. 한글은 2자로 세요.",
+    ja: "ハングル・英字・数字で4～12文字入力してください。ハングル1文字は2文字分です。",
+    zh: "请输入4～12个字符，可使用韩文、英文字母或数字。每个韩文字算2个字符。"
+  ),
+  "Use only English letters, numbers, _ or .": (
+    ko: "영문, 숫자, _, .만 사용할 수 있어요.",
+    ja: "英字・数字・「_」「.」のみ使えます。",
+    zh: "只能使用英文字母、数字、_ 或 .。"
+  ),
+  "Use 1–30 characters.": (
+    ko: "1~30자로 입력해 주세요.",
+    ja: "1～30文字で入力してください。",
+    zh: "请输入1～30个字符。"
+  ),
+  "Periods can't be first, last, or consecutive.": (
+    ko: "점(.)은 맨 앞·뒤나 연속해서 쓸 수 없어요.",
+    ja: "ピリオド（.）は先頭・末尾や連続して使えません。",
+    zh: "点号（.）不能放在开头、结尾或连续使用。"
+  ),
+  "Use only Korean syllables, English letters, and numbers.": (
+    ko: "한글, 영문, 숫자만 사용할 수 있어요.",
+    ja: "ハングル・英字・数字のみ使えます。",
+    zh: "只能使用韩文、英文字母和数字。"
+  ),
+  "Use 4–12 characters. Korean syllables count as 2 each.": (
+    ko: "4~12자로 입력해 주세요. 한글은 2자로 세요.",
+    ja: "4～12文字で入力してください。ハングル1文字は2文字分です。",
+    zh: "请输入4～12个字符。每个韩文字算2个字符。"
+  ),
+  "Use complete Korean syllables, like 가.": (
+    ko: "한글은 '가'처럼 완성된 글자로 입력해 주세요.",
+    ja: "ハングルは「가」のように完成した文字で入力してください。",
+    zh: "韩文请使用“가”这样的完整音节。"
+  ),
+  "That ID is already taken. Try another one.": (
+    ko: "이미 사용 중인 아이디예요. 다른 아이디를 입력해 주세요.",
+    ja: "このIDはすでに使われています。別のIDを試してください。",
+    zh: "这个用户名已经有人用了，换一个试试吧。"
+  ),
+  "That nickname is already taken. Try another one.": (
+    ko: "이미 사용 중인 닉네임이에요. 다른 닉네임을 입력해 주세요.",
+    ja: "このニックネームはすでに使われています。別のニックネームを試してください。",
+    zh: "这个昵称已经有人用了，换一个试试吧。"
   ),
   "Username or nickname is already in use": (
     ko: "이미 사용 중인 아이디 또는 닉네임이에요.",
@@ -429,12 +517,16 @@ const appMessages = <String, MessageTranslations>{
   "Last name": (ko: "성", ja: "姓", zh: "姓氏"),
   "Enter first name": (ko: "이름을 입력해 주세요", ja: "名を入力してください", zh: "请输入名字"),
   "Enter last name": (ko: "성을 입력해 주세요", ja: "姓を入力してください", zh: "请输入姓氏"),
-  "Enter username": (ko: "아이디를 입력해 주세요", ja: "ユーザー名を入力してください", zh: "请输入用户名"),
-  "Enter email": (ko: "이메일을 입력해 주세요", ja: "メールアドレスを入力してください", zh: "请输入邮箱"),
-  "Enter a valid email": (
-    ko: "올바른 이메일을 입력해 주세요",
-    ja: "有効なメールアドレスを入力してください",
-    zh: "请输入有效的邮箱"
+  "Enter your ID.": (ko: "아이디를 입력해 주세요.", ja: "IDを入力してください。", zh: "请输入用户名。"),
+  "Enter your email address.": (
+    ko: "이메일을 입력해 주세요.",
+    ja: "メールアドレスを入力してください。",
+    zh: "请输入邮箱地址。"
+  ),
+  "Enter a valid email address.": (
+    ko: "올바른 이메일 주소를 입력해 주세요.",
+    ja: "有効なメールアドレスを入力してください。",
+    zh: "请输入有效的邮箱地址。"
   ),
   "At least 8 characters": (
     ko: "8자 이상 입력해 주세요",

@@ -323,6 +323,43 @@ void main() {
     }
   });
 
+  test('signup guides and errors use the requested copy with all translations',
+      () {
+    const messages = {
+      'Use 1–30 characters with English letters, numbers, _ or .':
+          '영문, 숫자, _, .으로 1~30자를 입력해 주세요.',
+      'Use 4–12 characters with Korean syllables, English letters, or numbers. Korean syllables count as 2.':
+          '한글, 영문, 숫자로 4~12자를 입력해 주세요. 한글은 2자로 세요.',
+      'Use 8–128 characters with at least one uppercase letter, one lowercase letter, and one number.':
+          '영문 대문자·소문자·숫자를 모두 포함해 8~128자로 입력해 주세요.',
+      'Use only English letters, numbers, _ or .': '영문, 숫자, _, .만 사용할 수 있어요.',
+      'Use 1–30 characters.': '1~30자로 입력해 주세요.',
+      "Periods can't be first, last, or consecutive.":
+          '점(.)은 맨 앞·뒤나 연속해서 쓸 수 없어요.',
+      'Use only Korean syllables, English letters, and numbers.':
+          '한글, 영문, 숫자만 사용할 수 있어요.',
+      'Use 4–12 characters. Korean syllables count as 2 each.':
+          '4~12자로 입력해 주세요. 한글은 2자로 세요.',
+      'Use complete Korean syllables, like 가.': "한글은 '가'처럼 완성된 글자로 입력해 주세요.",
+      'Use 8–128 characters.': '8~128자로 입력해 주세요.',
+      'Include at least one uppercase letter, one lowercase letter, and one number.':
+          '영문 대문자·소문자·숫자를 모두 포함해 주세요.',
+      'That ID is already taken. Try another one.':
+          '이미 사용 중인 아이디예요. 다른 아이디를 입력해 주세요.',
+      'That nickname is already taken. Try another one.':
+          '이미 사용 중인 닉네임이에요. 다른 닉네임을 입력해 주세요.',
+      "The passwords don't match. Please check again.":
+          '비밀번호가 서로 달라요. 다시 확인해 주세요.',
+    };
+    for (final entry in messages.entries) {
+      expect(translateMessage(const Locale('ko'), entry.key), entry.value);
+      expect(translateMessage(const Locale('en'), entry.key), entry.key);
+      for (final language in ['ja', 'zh']) {
+        expect(translateMessage(Locale(language), entry.key), isNot(entry.key));
+      }
+    }
+  });
+
   test(
       'relative times and deleted identities use UI language while usernames stay intact',
       () {

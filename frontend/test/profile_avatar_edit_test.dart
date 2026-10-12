@@ -73,14 +73,17 @@ void main() {
     await tester.ensureVisible(update);
     await tester.tap(update);
     await tester.pump();
-    expect(find.textContaining('Dots cannot be first'), findsOneWidget);
+    expect(find.text("Periods can't be first, last, or consecutive."),
+        findsOneWidget);
 
     await tester.enterText(username, 'june.kim');
     await tester.enterText(nickname, 'June_Kim');
     await tester.ensureVisible(update);
     await tester.tap(update);
     await tester.pump();
-    expect(find.textContaining('Korean counts as 2'), findsOneWidget);
+    expect(
+        find.text('Use only Korean syllables, English letters, and numbers.'),
+        findsOneWidget);
     expect(find.text('RESULT true'), findsNothing);
   });
 

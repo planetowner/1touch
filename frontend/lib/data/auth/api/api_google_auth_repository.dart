@@ -31,7 +31,7 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
       throw AuthRequestException(
         statusCode: response.statusCode,
         message: _responseDetail(response.body,
-            fallback: 'Unable to check availability. Try again.'),
+            fallback: "We couldn't check if it's available. Please try again."),
       );
     }
     final decoded =

@@ -24,7 +24,7 @@ class SocialProfileSetup extends StatefulWidget {
 }
 
 class _SocialProfileSetupState extends State<SocialProfileSetup> {
-  final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<AuthFormState>();
   late final _nickname = TextEditingController(text: widget.initialNickname);
   bool _nicknameAvailable = false;
   bool _saving = false;
@@ -36,7 +36,14 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
   }
 
   Future<void> _submit() async {
-    if (_saving || !_nicknameAvailable || !_formKey.currentState!.validate()) {
+    if (_saving || !_formKey.currentState!.validate()) {
+      return;
+    }
+    if (!_nicknameAvailable) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            tr(context, 'Complete the availability check before continuing.')),
+      ));
       return;
     }
     setState(() => _saving = true);
@@ -72,7 +79,7 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
       body: SafeArea(
         child: Column(children: [
           Expanded(
-            child: Form(
+            child: AuthForm(
               key: _formKey,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -93,6 +100,8 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
                                   AuthStyles.signupTextStyle(Body1.style))
                           .copyWith(counterText: ''),
                       validator: displayNameValidationMessage,
+                      guideMessage: displayNameGuideMessage,
+                      unavailableMessage: displayNameTakenMessage,
                       checkAvailability: widget.checkNicknameAvailability,
                       onAvailabilityChanged: (available) {
                         if (_nicknameAvailable != available) {
@@ -110,7 +119,7 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
             child: AuthPrimaryButton(
               label: trUpper(context, 'Continue'),
               loading: _saving,
-              onPressed: _saving || !_nicknameAvailable ? null : _submit,
+              onPressed: _saving ? null : _submit,
             ),
           ),
         ]),

@@ -174,6 +174,25 @@ void main() {
     await pump(tester);
     expect(find.text('Ready Home'), findsNothing);
     expect(find.text('Pick a nickname'), findsOneWidget);
+    final nickname = find.byKey(const ValueKey('social-nickname-field'));
+    await tester.enterText(nickname, 'Supporter');
+    await tester.enterText(nickname, '');
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    expect(find.text('Enter your nickname.'), findsNothing);
+    await tester.tap(find.text('CONTINUE'));
+    await tester.pumpAndSettle();
+    expect(find.text('Enter your nickname.'), findsOneWidget);
+    expect(requests.where((request) => request.method == 'PUT'), isEmpty);
+    await tester.enterText(nickname, 'Supporter');
+    await tester.pump();
+    expect(
+        tester
+            .state<FormFieldState<String>>(find.byType(TextFormField))
+            .hasError,
+        isFalse);
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pumpAndSettle();
   });
 
   testWidgets('opens a queued notification after session bootstrap',

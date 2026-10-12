@@ -17,10 +17,10 @@ import 'package:onetouch/l10n/app_localizations.dart';
 
 String? _emailValidationMessage(String value) {
   final email = value.trim();
-  if (email.isEmpty) return 'Enter email';
+  if (email.isEmpty) return 'Enter your email address.';
   return RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)
       ? null
-      : 'Enter a valid email';
+      : 'Enter a valid email address.';
 }
 
 class EmailSignUpScreen extends StatefulWidget {
@@ -33,8 +33,7 @@ class EmailSignUpScreen extends StatefulWidget {
 }
 
 class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _confirmPasswordFieldKey = GlobalKey<FormFieldState<String>>();
+  final _formKey = GlobalKey<AuthFormState>();
 
   final _username = TextEditingController();
   final _displayName = TextEditingController();
@@ -69,24 +68,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   AuthService get _authService =>
       widget.authService ?? auth_provider.authService;
 
-  bool get _validInputs =>
-      _agreed &&
-      usernameValidationMessage(_username.text) == null &&
-      displayNameValidationMessage(_displayName.text) == null &&
-      _emailValidationMessage(_email.text) == null &&
-      isValidNewPassword(_password.text) &&
-      _confirmPassword.text == _password.text;
-
-  void _onInputsChanged() {
-    final confirmation = _confirmPasswordFieldKey.currentState;
-    // 입력 중에는 새 오류를 띄우지 않고, 두 값이 같아지면 기존 오류만 지워요.
-    if (confirmation?.hasError == true &&
-        _confirmPassword.text == _password.text) {
-      confirmation!.validate();
-    }
-    setState(() {});
-  }
-
   Future<void> _submit() async {
     if (_submitting) return;
     if (!_formKey.currentState!.validate()) {
@@ -99,7 +80,11 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
           tr(context, 'Please agree to the Terms and Privacy Policy.'));
       return;
     }
-    if (_availableFields.length != RegistrationField.values.length) return;
+    if (_availableFields.length != RegistrationField.values.length) {
+      _showCodeRequestError(
+          tr(context, 'Complete the availability check before continuing.'));
+      return;
+    }
 
     setState(() => _submitting = true);
 
@@ -123,17 +108,14 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         _showCodeRequestError(
             tr(context, 'Email, username, or nickname is already registered'));
       }
-    } on AuthRequestException catch (error) {
-      if (!mounted) return;
-      _showCodeRequestError(
-          '${tr(context, error.message)} (${error.statusCode})');
-    } on Object {
+    } on Object catch (error) {
       if (!mounted) return;
       _showCodeRequestError(
         tr(
             context,
-            'Unable to send a verification code. Check your connection and try '
-            'again.'),
+            authRequestErrorMessage(error,
+                fallback:
+                    'Unable to send a verification code. Please try again.')),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -176,7 +158,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final bodyStyle = AuthStyles.signupTextStyle(Body1.style);
-    final labelStyle = AuthStyles.signupTextStyle(Eyebrow.style);
+    final passwordDecoration =
+        AuthStyles.signupInputDecoration(context, password: true);
     // Figma의 하단 여백 72 안에 기기의 안전 영역을 포함해요.
     final bottomSpacing =
         MediaQuery.viewPaddingOf(context).bottom.clamp(72.0, double.infinity);
@@ -226,9 +209,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       ),
       body: SafeArea(
         bottom: false,
-        child: Form(
+        child: AuthForm(
           key: _formKey,
-          onChanged: _onInputsChanged,
           child: LayoutBuilder(
             builder: (context, constraints) => Padding(
               // 키보드 높이는 스크롤 영역에서 빼고, 기존 콘텐츠 배치는 유지해요.
@@ -255,6 +237,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             maxLength: 30,
                             keyboardType: null,
                             validator: usernameValidationMessage,
+                            hint: usernameGuideMessage,
+                            takenMessage: usernameTakenMessage,
                           ),
                           (
                             field: RegistrationField.displayName,
@@ -263,6 +247,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             maxLength: 12,
                             keyboardType: null,
                             validator: displayNameValidationMessage,
+                            hint: displayNameGuideMessage,
+                            takenMessage: displayNameTakenMessage,
                           ),
                           (
                             field: RegistrationField.email,
@@ -271,6 +257,9 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             maxLength: null,
                             keyboardType: TextInputType.emailAddress,
                             validator: _emailValidationMessage,
+                            hint: null,
+                            takenMessage:
+                                'That email address is already in use. Try another one.',
                           ),
                         ].indexed) ...[
                           SignupAvailabilityField(
@@ -283,13 +272,11 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             nextFocusNode: _fieldFocusNodes[index + 1],
                             enabled: !_submitting,
                             insetLabel: tr(context, field.label),
-                            availableMessage:
-                                field.field == RegistrationField.username
-                                    ? 'This username is available!'
-                                    : 'Available.',
                             decoration:
                                 AuthStyles.signupInputDecoration(context),
                             validator: field.validator,
+                            guideMessage: field.hint,
+                            unavailableMessage: field.takenMessage,
                             checkAvailability: (value) =>
                                 _authService.isRegistrationValueAvailable(
                                     field: field.field, value: value),
@@ -305,11 +292,9 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             controller: _password,
                             obscure: _obscure,
                             toggle: () => setState(() => _obscure = !_obscure),
-                            validator: (String? value) => isValidNewPassword(
-                                    value ?? '')
-                                ? null
-                                : tr(context,
-                                    'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
+                            validator: (String? value) =>
+                                newPasswordValidationMessage(value ?? ''),
+                            guide: passwordGuideMessage,
                             confirm: false,
                           ),
                           (
@@ -320,9 +305,9 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             toggle: () => setState(
                                 () => _obscureConfirm = !_obscureConfirm),
                             validator: (String? value) =>
-                                value == _password.text
-                                    ? null
-                                    : tr(context, 'Passwords do not match.'),
+                                passwordConfirmationValidationMessage(
+                                    value ?? '', _password.text),
+                            guide: null,
                             confirm: true,
                           ),
                         ]) ...[
@@ -330,10 +315,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             key: ValueKey(field.key),
                             label: tr(context, field.label),
                             password: true,
+                            keepAboveKeyboard: field.confirm,
                             child: TextFormField(
-                              key: field.confirm
-                                  ? _confirmPasswordFieldKey
-                                  : null,
                               controller: field.controller,
                               focusNode:
                                   _fieldFocusNodes[field.confirm ? 4 : 3],
@@ -352,31 +335,35 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                               enableSuggestions: false,
                               // Outline의 위쪽 정렬은 큰 상단 여백을 무시하므로 아래 여백에 맞춰요.
                               textAlignVertical: TextAlignVertical.bottom,
-                              autovalidateMode: field.confirm
-                                  ? AutovalidateMode.onUnfocus
-                                  : AutovalidateMode.disabled,
-                              decoration: AuthStyles.signupInputDecoration(
-                                      context,
-                                      password: true)
-                                  .copyWith(
+                              decoration: passwordDecoration.copyWith(
+                                helper: field.guide == null
+                                    ? null
+                                    : AuthFieldMessage(
+                                        text: tr(context, field.guide!),
+                                        decoration: passwordDecoration,
+                                      ),
                                 suffixIcon: AuthPasswordVisibilityButton(
                                   obscureText: field.obscure,
                                   onPressed: field.toggle,
                                 ),
                               ),
-                              validator: field.validator,
+                              validator: (value) {
+                                final message = _formKey.currentState!
+                                    .validationMessage(value, field.validator);
+                                return message == null
+                                    ? null
+                                    : tr(context, message);
+                              },
+                              errorBuilder: (context, message) =>
+                                  AuthFieldMessage(
+                                text: message,
+                                decoration: passwordDecoration,
+                                error: true,
+                              ),
                               style: bodyStyle,
                             ),
                           ),
-                          if (!field.confirm) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              tr(context,
-                                  'Choose a password that is 8 or more characters long.'),
-                              style: labelStyle,
-                            ),
-                            const SizedBox(height: 24),
-                          ],
+                          if (!field.confirm) const SizedBox(height: 24),
                         ],
                         const SizedBox(height: 24),
                         const Spacer(),
@@ -449,12 +436,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                                 textStyle:
                                     AuthStyles.signupTextStyle(Body2_b.style),
                                 loading: _submitting,
-                                onPressed: _submitting ||
-                                        (_validInputs &&
-                                            _availableFields.length !=
-                                                RegistrationField.values.length)
-                                    ? null
-                                    : _submit,
+                                // 입력 오류는 버튼을 눌렀을 때 안내하고, 요청 중에만 중복 제출을 막아요.
+                                onPressed: _submitting ? null : _submit,
                               ),
                             ],
                           ),

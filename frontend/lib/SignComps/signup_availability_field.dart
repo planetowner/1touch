@@ -18,7 +18,9 @@ class SignupAvailabilityField extends StatefulWidget {
     this.nextFocusNode,
     this.enabled = true,
     this.insetLabel,
-    this.availableMessage = 'Available.',
+    this.availableMessage = "It's available.",
+    this.guideMessage,
+    this.unavailableMessage = 'Already in use.',
   });
 
   final TextEditingController controller;
@@ -33,6 +35,8 @@ class SignupAvailabilityField extends StatefulWidget {
   final bool enabled;
   final String? insetLabel;
   final String availableMessage;
+  final String? guideMessage;
+  final String unavailableMessage;
 
   @override
   State<SignupAvailabilityField> createState() =>
@@ -41,6 +45,8 @@ class SignupAvailabilityField extends StatefulWidget {
 
 class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
   late final DebouncedSearchController<bool> _availability;
+  final _fieldKey = GlobalKey<FormFieldState<String>>();
+  late final _focusNode = widget.focusNode ?? FocusNode();
 
   @override
   void initState() {
@@ -58,6 +64,12 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
 
   void _availabilityChanged() {
     setState(() {});
+    // 입력칸을 떠난 뒤 도착한 중복 결과도 표시해요. 입력 중에는 새 오류를 띄우지 않아요.
+    if (!_availability.loading &&
+        _availability.result != null &&
+        (!_focusNode.hasFocus || _fieldKey.currentState?.hasError == true)) {
+      _fieldKey.currentState?.validate();
+    }
     widget.onAvailabilityChanged(_availability.result == true &&
         !_availability.loading &&
         _availability.error == null);
@@ -67,6 +79,7 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
   void dispose() {
     widget.controller.removeListener(_inputChanged);
     _availability.dispose();
+    if (widget.focusNode == null) _focusNode.dispose();
     super.dispose();
   }
 
@@ -75,52 +88,31 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
     final helper = _availability.loading
         ? 'Checking availability...'
         : _availability.error != null
-            ? 'Unable to check availability. Try again.'
+            ? "We couldn't check if it's available. Please try again."
             : _availability.result == true
                 ? widget.availableMessage
-                : null;
-    final border = widget.decoration.border;
-    final statusInset = (widget.decoration.contentPadding
-                ?.resolve(Directionality.of(context))
-                .left ??
-            0) +
-        (Theme.of(context).useMaterial3 && border is OutlineInputBorder
-            ? border.gapPadding
-            : 0);
-    Widget alignStatus(String message, {TextStyle? style}) =>
-        Transform.translate(
-          offset: Offset(-statusInset, 0),
-          // Material 3의 기본 간격 4에 더해 Figma의 안내문 간격 8을 맞춰요.
-          child: Padding(
-            padding:
-                EdgeInsets.only(top: Theme.of(context).useMaterial3 ? 4 : 0),
-            child: Text(message,
-                style: style ?? AuthStyles.signupTextStyle(Eyebrow.style)),
-          ),
-        );
+                : widget.guideMessage;
     final input = TextFormField(
+      key: _fieldKey,
       controller: widget.controller,
       // 오류는 안내 문구로 표시하고 커서는 앱의 기본 색상을 유지해요.
       cursorErrorColor: Theme.of(context).colorScheme.primary,
       enabled: widget.enabled,
       maxLength: widget.maxLength,
       keyboardType: widget.keyboardType,
-      focusNode: widget.focusNode,
+      focusNode: _focusNode,
       textInputAction: widget.nextFocusNode == null
           ? TextInputAction.done
           : TextInputAction.next,
       onEditingComplete: widget.nextFocusNode?.requestFocus,
       textAlignVertical:
           widget.insetLabel == null ? null : TextAlignVertical.bottom,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: widget.decoration.copyWith(
         helper: helper == null
             ? null
-            : alignStatus(
-                tr(context, helper),
-                style: AuthStyles.signupTextStyle(Eyebrow.style).copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+            : AuthFieldMessage(
+                text: tr(context, helper),
+                decoration: widget.decoration,
               ),
         helperMaxLines: 2,
         suffixIcon: _availability.error == null
@@ -131,12 +123,14 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
                 icon: const Icon(Icons.refresh),
               ),
       ),
-      validator: (value) {
+      validator: (value) =>
+          AuthForm.of(context).validationMessage(value, (value) {
         final message = widget.validator(value ?? '') ??
-            (_availability.result == false ? 'Already in use.' : null);
+            (_availability.result == false ? widget.unavailableMessage : null);
         return message == null ? null : tr(context, message);
-      },
-      errorBuilder: (context, message) => alignStatus(message),
+      }),
+      errorBuilder: (context, message) => AuthFieldMessage(
+          text: message, decoration: widget.decoration, error: true),
       style: AuthStyles.signupTextStyle(Body1.style),
     );
     return widget.insetLabel == null

@@ -7,13 +7,31 @@ import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/data/auth/registration_field.dart';
 import 'package:onetouch/data/auth/social_identity_service.dart';
 
-// 가입·재설정은 서버와 같은 조건을 사용하고 비밀번호 원문은 바꾸지 않아요.
+const passwordGuideMessage =
+    'Use 8–128 characters with at least one uppercase letter, one lowercase letter, and one number.';
+
 bool isValidNewPassword(String value) =>
-    value.runes.length >= 8 &&
-    value.runes.length <= 128 &&
-    RegExp(r'[A-Z]').hasMatch(value) &&
-    RegExp(r'[a-z]').hasMatch(value) &&
-    RegExp(r'[0-9]').hasMatch(value);
+    newPasswordValidationMessage(value) == null;
+
+String? newPasswordValidationMessage(String value) {
+  if (value.isEmpty) return 'Enter your password.';
+  // 가입·재설정 모두 원문을 그대로 세고, 기존처럼 길이를 먼저 확인해요.
+  final length = value.runes.length;
+  if (length < 8 || length > 128) return 'Use 8–128 characters.';
+  if (!RegExp(r'[A-Z]').hasMatch(value) ||
+      !RegExp(r'[a-z]').hasMatch(value) ||
+      !RegExp(r'[0-9]').hasMatch(value)) {
+    return 'Include at least one uppercase letter, one lowercase letter, and one number.';
+  }
+  return null;
+}
+
+String? passwordConfirmationValidationMessage(String value, String password) {
+  if (value.isEmpty) return 'Enter your password again.';
+  return value == password
+      ? null
+      : "The passwords don't match. Please check again.";
+}
 
 class AuthService {
   const AuthService({

@@ -22,7 +22,9 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(const MaterialApp(home: EmailSignUpScreen()));
-    expect(find.text('Choose a password that is 8 or more characters long.'),
+    expect(
+        find.text(
+            'Use 8–128 characters with at least one uppercase letter, one lowercase letter, and one number.'),
         findsOneWidget);
     await _fillSignup(tester, password: 'password123');
     await tester.ensureVisible(find.byType(Checkbox));
@@ -35,7 +37,7 @@ void main() {
     expect(find.text('Please check the highlighted fields.'), findsOneWidget);
     expect(
         find.text(
-            'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
+            'Include at least one uppercase letter, one lowercase letter, and one number.'),
         findsOneWidget);
     await tester.enterText(
         find.byKey(const ValueKey('signup-password-field')), 'Password123');
@@ -47,13 +49,14 @@ void main() {
     await tester.pump();
     await tester.tap(submit);
     await tester.pump();
-    expect(find.text('Passwords do not match.'), findsOneWidget);
+    expect(find.text("The passwords don't match. Please check again."),
+        findsOneWidget);
     await tester.enterText(
         find.byKey(const ValueKey('signup-confirm-password-field')),
         'Password123');
     await tester.pump();
-    // 입력이 유효해져도 중복 확인이 끝나기 전에는 가입을 기다려요.
-    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    // 중복 확인이 끝나지 않아도 버튼을 눌러 필요한 안내를 받을 수 있어요.
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
     expect(tester.takeException(), isNull);
   });
 
@@ -190,8 +193,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('continue-reset-password')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('reset-new-password')), findsOneWidget);
-    expect(find.text('Choose a password that is 8 or more characters long.'),
-        findsOneWidget);
+    expect(find.text(passwordGuideMessage), findsOneWidget);
     await tester.enterText(
         find.byKey(const ValueKey('reset-new-password')), 'weak');
     await tester.tap(find.byKey(const ValueKey('verify-email-button')));
@@ -202,8 +204,13 @@ void main() {
     await tester.enterText(find.byKey(const ValueKey('reset-confirm-password')),
         'OtherPassword123');
     await tester.tap(find.byKey(const ValueKey('verify-email-button')));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(requests.length, 2);
+    expect(find.text("The passwords don't match. Please check again."),
+        findsOneWidget);
+    // 하단 버튼을 덮는 오류 안내가 닫힌 뒤 다시 제출해요.
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
     await tester.enterText(
         find.byKey(const ValueKey('reset-confirm-password')), 'NewPassword123');
     await tester.pump();

@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/SignComps/verify_email.dart';
 import 'package:onetouch/SignComps/sign_up.dart';
+import 'package:onetouch/core/identity_name_rules.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -37,7 +38,7 @@ void main() {
 
   for (final locale in [const Locale('en'), const Locale('ko')]) {
     for (final brightness in Brightness.values) {
-      testWidgets('signup geometry matches Figma with $locale $brightness',
+      testWidgets('signup field and hint geometry with $locale $brightness',
           (tester) async {
         tester.view.physicalSize = const Size(393, 852);
         tester.view.devicePixelRatio = 1;
@@ -123,9 +124,12 @@ void main() {
             of: find.byType(AppBar), matching: find.byType(Text));
         expect(tester.getRect(headerTitle).center, const Offset(196.5, 71));
         expect(textRect('ID').top, 139);
-        expect(
-            tester.getRect(find.byKey(const ValueKey('email-sign-up-button'))),
-            const Rect.fromLTWH(24, 724, 345, 56));
+        final buttonRect =
+            tester.getRect(find.byKey(const ValueKey('email-sign-up-button')));
+        expect(buttonRect.size, const Size(345, 56));
+        expect(buttonRect.left, 24);
+        // 안내가 늘어나면 버튼은 콘텐츠를 따라 아래로 이동해요.
+        expect(buttonRect.top, greaterThanOrEqualTo(724));
         final backIcon = find.byWidgetPredicate((widget) =>
             widget is SvgPicture &&
             (widget.bytesLoader as SvgAssetLoader).assetName ==
@@ -147,17 +151,26 @@ void main() {
           expect(editable.style.letterSpacing, 0);
           expect(
               editable.style.height, locale.languageCode == 'ko' ? 1.6 : 1.3);
-          if (i < 3) {
+          if (i == 2) {
             expect(
                 inputRect(fields.at(i + 1)).top -
                     inputRect(fields.at(i)).bottom,
                 24);
           }
         }
-        final help =
-            textRect('Choose a password that is 8 or more characters long.');
-        expect(help.top - inputRect(fields.at(3)).bottom, 8);
-        expect(inputRect(fields.at(4)).top - help.bottom, 24);
+        for (final (index, message) in [
+          (0, usernameGuideMessage),
+          (1, displayNameGuideMessage),
+          (
+            3,
+            'Use 8–128 characters with at least one uppercase letter, one lowercase letter, and one number.'
+          ),
+        ]) {
+          final help = textRect(message);
+          expect(help.left, 24);
+          expect(help.top - inputRect(fields.at(index)).bottom, 8);
+          expect(inputRect(fields.at(index + 1)).top - help.bottom, 24);
+        }
         expect(find.text('••••••••'), findsNothing);
         for (final field
             in tester.widgetList<EditableText>(find.byType(EditableText))) {
@@ -212,16 +225,12 @@ void main() {
         failLookup = false;
         await tester.tap(find.byTooltip(translateMessage(locale, 'Try again')));
         await tester.pumpAndSettle();
-        expect(
-            find.text(translateMessage(locale, 'This username is available!')),
+        expect(find.text(translateMessage(locale, "It's available.")),
             findsOneWidget);
-        expect(
-            textRect('This username is available!').top -
-                inputRect(username).bottom,
-            8);
-        expect(
-            inputRect(fields.at(1)).top -
-                textRect('This username is available!').bottom,
+        expect(textRect("It's available.").top - inputRect(username).bottom, 8);
+        expect(find.text(translateMessage(locale, usernameGuideMessage)),
+            findsNothing);
+        expect(inputRect(fields.at(1)).top - textRect("It's available.").bottom,
             24);
         expectInputGeometry();
 
@@ -253,6 +262,7 @@ void main() {
           final visibility =
               find.descendant(of: field, matching: find.byType(IconButton));
           for (final obscure in [false, true]) {
+            await tester.ensureVisible(visibility);
             await tester.tap(visibility);
             await tester.pumpAndSettle();
             expect(tester.widget<EditableText>(editable).obscureText, obscure);
@@ -268,8 +278,10 @@ void main() {
         expectInputGeometry();
 
         final password = find.byKey(const ValueKey('signup-password-field'));
-        await tester.tap(
-            find.descendant(of: password, matching: find.byType(IconButton)));
+        final passwordVisibility =
+            find.descendant(of: password, matching: find.byType(IconButton));
+        await tester.ensureVisible(passwordVisibility);
+        await tester.tap(passwordVisibility);
         await tester.pumpAndSettle();
         expect(
             tester
@@ -281,8 +293,8 @@ void main() {
             find.byKey(const ValueKey('signup-confirm-password-field'));
         await tester.enterText(confirm, 'different');
         await tester.pumpAndSettle();
-        final error =
-            find.text(translateMessage(locale, 'Passwords do not match.'));
+        final error = find.text(translateMessage(
+            locale, "The passwords don't match. Please check again."));
         expect(error, findsNothing);
         FocusManager.instance.primaryFocus?.unfocus();
         await tester.pumpAndSettle();
@@ -302,13 +314,333 @@ void main() {
     }
   }
 
+  for (final (name, invalid, valid) in [
+    ('username', '.member', 'member'),
+    ('display-name', 'a', 'Supporter'),
+    ('email', 'a', 'member@example.com'),
+    ('password', 'password', 'Password123'),
+    ('confirm-password', 'Different123', 'Password123'),
+  ]) {
+    testWidgets(
+        '$name hides empty errors until submit and clears corrected errors',
+        (tester) async {
+      final repository = _FakeAuthRepository();
+      await _pumpSignup(tester, repository);
+      final field = find.byKey(ValueKey('signup-$name-field'));
+      final otherField = find.byKey(ValueKey(
+          name == 'password' || name == 'confirm-password'
+              ? 'signup-email-field'
+              : 'signup-password-field'));
+      if (name == 'confirm-password') {
+        await tester.enterText(
+            find.byKey(const ValueKey('signup-password-field')), 'Password123');
+      }
+      FormFieldState<String> state() => tester.state(
+          find.descendant(of: field, matching: find.byType(TextFormField)));
+
+      await tester.tap(field);
+      await tester.tap(otherField);
+      await tester.pumpAndSettle();
+      expect(state().hasError, isFalse);
+      await tester.enterText(field, valid);
+      await tester.enterText(field, '');
+      await tester.tap(otherField);
+      await tester.pumpAndSettle();
+      expect(state().hasError, isFalse);
+
+      await tester.enterText(field, invalid);
+      await tester.pumpAndSettle();
+      expect(state().hasError, isFalse);
+      await tester.tap(otherField);
+      await tester.pumpAndSettle();
+      expect(state().hasError, isTrue);
+      await tester.enterText(field, '');
+      await tester.pump();
+      expect(state().hasError, isFalse);
+      await tester.tap(otherField);
+      await tester.pumpAndSettle();
+      expect(state().hasError, isFalse);
+
+      final submit = find.byKey(const ValueKey('email-sign-up-button'));
+      await tester.ensureVisible(submit);
+      await tester.tap(submit);
+      await tester.pumpAndSettle();
+      expect(state().hasError, isTrue);
+      expect(repository.requestedEmails, isEmpty);
+      await tester.enterText(field, valid);
+      await tester.pump();
+      expect(state().hasError, isFalse);
+      await tester.enterText(field, '');
+      await tester.tap(otherField);
+      await tester.pumpAndSettle();
+      expect(state().hasError, isTrue);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('submit shows empty and format errors across the signup form',
+      (tester) async {
+    final repository = _FakeAuthRepository();
+    await _pumpSignup(tester, repository);
+    await tester.enterText(
+        find.byKey(const ValueKey('signup-username-field')), '.member');
+    await tester.enterText(
+        find.byKey(const ValueKey('signup-email-field')), 'invalid');
+    await tester.enterText(
+        find.byKey(const ValueKey('signup-password-field')), 'short');
+    final submit = find.byKey(const ValueKey('email-sign-up-button'));
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+    for (final field in tester
+        .stateList<FormFieldState<String>>(find.byType(TextFormField))) {
+      expect(field.hasError, isTrue);
+    }
+    expect(repository.requestedEmails, isEmpty);
+  });
+
+  for (final locale in appSupportedLocales) {
+    testWidgets('signup email status messages follow each result in $locale',
+        (tester) async {
+      var result = Completer<bool>();
+      final repository =
+          _FakeAuthRepository(availability: (_, __) => result.future);
+      await _pumpSignup(tester, repository, locale: locale);
+      final email = find.byKey(const ValueKey('signup-email-field'));
+      Finder message(String key) => find.text(translateMessage(locale, key));
+
+      await tester.enterText(email, 'invalid');
+      await tester.pumpAndSettle();
+      expect(message('Enter a valid email address.'), findsNothing);
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+      expect(message('Enter a valid email address.'), findsOneWidget);
+      expect(repository.availabilityRequests, isEmpty);
+
+      await tester.enterText(email, 'member@example.com');
+      await tester.pump();
+      expect(
+          tester
+              .state<FormFieldState<String>>(find.descendant(
+                  of: email, matching: find.byType(TextFormField)))
+              .hasError,
+          isFalse);
+      // 오류 상태는 바로 해제되고, 문구는 기본 전환 애니메이션 뒤 사라져요.
+      await tester.pumpAndSettle();
+      expect(message('Enter a valid email address.'), findsNothing);
+      expect(message('Checking availability...'), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 250));
+      result.completeError(StateError('Connection failed'));
+      await tester.pumpAndSettle();
+      expect(message("We couldn't check if it's available. Please try again."),
+          findsOneWidget);
+
+      result = Completer<bool>();
+      final retry = find.byTooltip(translateMessage(locale, 'Try again'));
+      await tester.ensureVisible(retry);
+      await tester.tap(retry);
+      await tester.pump();
+      expect(message('Checking availability...'), findsOneWidget);
+      FocusManager.instance.primaryFocus?.unfocus();
+      result.complete(false);
+      await tester.pumpAndSettle();
+      expect(message('That email address is already in use. Try another one.'),
+          findsOneWidget);
+
+      result = Completer<bool>();
+      await tester.enterText(email, 'new@example.com');
+      await tester.pumpAndSettle();
+      expect(message('That email address is already in use. Try another one.'),
+          findsNothing);
+      await tester.pump(const Duration(milliseconds: 250));
+      result.complete(true);
+      await tester.pumpAndSettle();
+      expect(message("It's available."), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('signup replaces each guide with one specific error in $locale',
+        (tester) async {
+      await _pumpSignup(tester, _FakeAuthRepository(), locale: locale);
+      for (final (name, guide, invalid, message, valid) in [
+        (
+          'username',
+          usernameGuideMessage,
+          'bad!',
+          'Use only English letters, numbers, _ or .',
+          'member'
+        ),
+        (
+          'username',
+          usernameGuideMessage,
+          '.member',
+          "Periods can't be first, last, or consecutive.",
+          'member'
+        ),
+        (
+          'display-name',
+          displayNameGuideMessage,
+          'bad!',
+          'Use only Korean syllables, English letters, and numbers.',
+          '메이플123'
+        ),
+        (
+          'display-name',
+          displayNameGuideMessage,
+          '가가가가가가a',
+          'Use 4–12 characters. Korean syllables count as 2 each.',
+          '가가가가가가'
+        ),
+        (
+          'display-name',
+          displayNameGuideMessage,
+          'ㅋㅋ',
+          'Use complete Korean syllables, like 가.',
+          '가a1'
+        ),
+        (
+          'password',
+          passwordGuideMessage,
+          'short',
+          'Use 8–128 characters.',
+          'Password123'
+        ),
+        (
+          'password',
+          passwordGuideMessage,
+          'password123',
+          'Include at least one uppercase letter, one lowercase letter, and one number.',
+          'Password123'
+        ),
+      ]) {
+        final field = find.byKey(ValueKey('signup-$name-field'));
+        final hint = find.text(translateMessage(locale, guide));
+        final error = find.text(translateMessage(locale, message));
+        await tester.enterText(field, invalid);
+        await tester.pumpAndSettle();
+        expect(hint, findsOneWidget);
+        expect(error, findsNothing);
+        FocusManager.instance.primaryFocus?.unfocus();
+        await tester.pumpAndSettle();
+        expect(hint, findsNothing);
+        expect(error, findsOneWidget);
+        await tester.enterText(field, valid);
+        await tester.pumpAndSettle();
+        expect(error, findsNothing);
+        expect(
+            tester
+                .state<FormFieldState<String>>(find.descendant(
+                    of: field, matching: find.byType(TextFormField)))
+                .hasError,
+            isFalse);
+        await tester.enterText(field, '');
+        await tester.pumpAndSettle();
+        expect(hint, findsOneWidget);
+      }
+      final submit = find.byKey(const ValueKey('email-sign-up-button'));
+      await tester.ensureVisible(submit);
+      await tester.tap(submit);
+      await tester.pumpAndSettle();
+      for (final guide in [
+        usernameGuideMessage,
+        displayNameGuideMessage,
+        passwordGuideMessage
+      ]) {
+        expect(find.text(translateMessage(locale, guide)), findsNothing);
+      }
+      for (final required in [
+        'Enter your ID.',
+        'Enter your nickname.',
+        'Enter your email address.',
+        'Enter your password.',
+        'Enter your password again.'
+      ]) {
+        expect(find.text(translateMessage(locale, required)), findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('password requirements are visible and corrected errors clear',
+      (tester) async {
+    await _pumpSignup(tester, _FakeAuthRepository());
+    expect(
+        find.text(
+            'Use 8–128 characters with at least one uppercase letter, one lowercase letter, and one number.'),
+        findsOneWidget);
+    final password = find.byKey(const ValueKey('signup-password-field'));
+    FormFieldState<String> state() => tester.state(
+        find.descendant(of: password, matching: find.byType(TextFormField)));
+    await tester.enterText(password, 'password');
+    await tester.pumpAndSettle();
+    expect(state().hasError, isFalse);
+    await tester.tap(find.byKey(const ValueKey('email-sign-up-button')));
+    await tester.pumpAndSettle();
+    expect(state().hasError, isTrue);
+    await tester.enterText(password, 'Password123');
+    await tester.pump();
+    expect(state().hasError, isFalse);
+  });
+
+  testWidgets('signup stays enabled for invalid input and either consent state',
+      (tester) async {
+    final repository = _FakeAuthRepository();
+    await _pumpSignup(tester, repository);
+    final submit = find.byKey(const ValueKey('email-sign-up-button'));
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+    expect(find.text('Enter your ID.'), findsOneWidget);
+    expect(repository.requestedEmails, isEmpty);
+    await _fillSignup(tester);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byType(Checkbox));
+    await tester.tap(find.byType(Checkbox));
+    await tester.pump();
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+    expect(find.text('Please agree to the Terms and Privacy Policy.'),
+        findsOneWidget);
+    expect(repository.requestedEmails, isEmpty);
+  });
+
+  testWidgets(
+      'signup only disables while sending and prevents duplicate requests',
+      (tester) async {
+    final request = Completer<EmailCodeChallenge>();
+    final repository = _FakeAuthRepository(emailRequest: () => request.future);
+    await _pumpSignup(tester, repository);
+    await _fillSignup(tester);
+    await tester.pumpAndSettle();
+    final submit = find.byKey(const ValueKey('email-sign-up-button'));
+    await tester.ensureVisible(submit);
+    final onPressed = tester.widget<FilledButton>(submit).onPressed!;
+    onPressed();
+    onPressed();
+    await tester.pump();
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    expect(repository.requestedEmails, hasLength(1));
+    request.completeError(const AuthRequestException(
+        statusCode: 503,
+        message: 'Service configuration missing: AUTH_CODE_SECRET'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    expect(
+        find.text(
+            'The service is temporarily unavailable. Please try again later.'),
+        findsOneWidget);
+    expect(find.textContaining('AUTH_CODE_SECRET'), findsNothing);
+  });
+
   testWidgets(
       'signup shows a password mismatch only after confirmation loses focus',
       (tester) async {
     await _pumpSignup(tester, _FakeAuthRepository());
     final password = find.byKey(const ValueKey('signup-password-field'));
     final confirm = find.byKey(const ValueKey('signup-confirm-password-field'));
-    final error = find.text('Passwords do not match.');
+    final error = find.text("The passwords don't match. Please check again.");
     final confirmEditable =
         find.descendant(of: confirm, matching: find.byType(EditableText));
 
@@ -355,7 +687,7 @@ void main() {
     await _pumpSignup(tester, _FakeAuthRepository());
     final password = find.byKey(const ValueKey('signup-password-field'));
     final confirm = find.byKey(const ValueKey('signup-confirm-password-field'));
-    final error = find.text('Passwords do not match.');
+    final error = find.text("The passwords don't match. Please check again.");
 
     await tester.enterText(password, 'Password123');
     await tester.enterText(confirm, 'Different123');
@@ -385,7 +717,9 @@ void main() {
       final password = find.byKey(const ValueKey('signup-password-field'));
       final confirm =
           find.byKey(const ValueKey('signup-confirm-password-field'));
-      final error = find.text('Passwords do not match.');
+      final error = find.text(confirmation.isEmpty
+          ? 'Enter your password again.'
+          : "The passwords don't match. Please check again.");
 
       await tester.enterText(password, 'Password123');
       await tester.enterText(confirm, confirmation);
@@ -461,6 +795,40 @@ void main() {
       expect(tester.takeException(), isNull);
     }, variant: TargetPlatformVariant.mobile());
   }
+
+  testWidgets('signup password does not lift its guide above the keyboard',
+      (tester) async {
+    final previousLocale = appLocaleController.value;
+    appLocaleController.value = const Locale('ko');
+    addTearDown(() => appLocaleController.value = previousLocale);
+    tester.view.padding = const FakeViewPadding(top: 59, bottom: 34);
+    tester.view.viewPadding = const FakeViewPadding(top: 59, bottom: 34);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewPadding);
+    addTearDown(tester.view.resetViewInsets);
+    await _pumpSignup(tester, _FakeAuthRepository(),
+        locale: const Locale('ko'));
+    await tester.pumpAndSettle();
+
+    final password = find.byKey(const ValueKey('signup-password-field'));
+    final editable =
+        find.descendant(of: password, matching: find.byType(EditableText));
+    final container = InputDecorator.containerOf(tester.element(editable))!;
+    final before = container.localToGlobal(Offset.zero) & container.size;
+    // 플랫폼별 선택 핸들까지 보이는 높이에서 안내 문구로 인한 추가 이동만 확인해요.
+    const keyboardHeight = 330.0;
+    expect(before.bottom, lessThan(852 - keyboardHeight));
+    await tester.tap(password);
+    await tester.pumpAndSettle();
+    tester.view.viewInsets = const FakeViewPadding(bottom: keyboardHeight);
+    await tester.pumpAndSettle();
+    expect(container.localToGlobal(Offset.zero) & container.size, before);
+
+    tester.testTextInput.enterText('Password123');
+    await tester.pumpAndSettle();
+    expect(container.localToGlobal(Offset.zero) & container.size, before);
+    expect(tester.takeException(), isNull);
+  }, variant: TargetPlatformVariant.mobile());
 
   for (final size in [const Size(320, 568), const Size(393, 852)]) {
     testWidgets('signup confirmation stays 24px above keyboard at $size',
@@ -616,19 +984,31 @@ void main() {
             (RegistrationField.displayName, 'Supporter'),
             (RegistrationField.email, 'member@example.com'),
           ]));
-      expect(find.text('Already in use.'), findsOneWidget);
+      final takenMessage = switch (field) {
+        RegistrationField.username => usernameTakenMessage,
+        RegistrationField.displayName => displayNameTakenMessage,
+        RegistrationField.email =>
+          'That email address is already in use. Try another one.',
+      };
+      expect(find.text(takenMessage), findsOneWidget);
       expect(
           tester.widget<EditableText>(editable).cursorColor, normalCursorColor);
       final submit = find.byKey(const ValueKey('email-sign-up-button'));
-      expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+      expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
       expect(repository.requestedEmails, isEmpty);
+
+      await tester.ensureVisible(submit);
+      await tester.tap(submit);
+      await tester.pump();
+      expect(repository.requestedEmails, isEmpty);
+      expect(find.text('Please check the highlighted fields.'), findsOneWidget);
 
       await tester.enterText(
           find.byKey(
               ValueKey('signup-${field.apiValue.replaceAll('_', '-')}-field')),
           replacement);
       await tester.pump();
-      expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+      expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
       await tester.pump(const Duration(milliseconds: 250));
       await tester.pump();
       expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
@@ -656,11 +1036,23 @@ void main() {
     await tester.pump(const Duration(milliseconds: 250));
     final submit = find.byKey(const ValueKey('email-sign-up-button'));
     expect(find.text('Checking availability...'), findsNWidgets(3));
-    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pump();
+    expect(find.text('Complete the availability check before continuing.'),
+        findsOneWidget);
+    expect(repository.requestedEmails, isEmpty);
     results[RegistrationField.username]!.complete(true);
     results[RegistrationField.displayName]!.complete(true);
     await tester.pump();
-    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    expect(repository.requestedEmails, isEmpty);
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pump();
+    expect(find.text('Complete the availability check before continuing.'),
+        findsOneWidget);
     expect(repository.requestedEmails, isEmpty);
     results[RegistrationField.email]!.complete(true);
     await tester.pump();
@@ -668,7 +1060,7 @@ void main() {
     await tester.enterText(
         find.byKey(const ValueKey('signup-username-field')), 'changed');
     await tester.pump();
-    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -686,9 +1078,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pump();
     final submit = find.byKey(const ValueKey('email-sign-up-button'));
-    expect(
-        find.text('Unable to check availability. Try again.'), findsOneWidget);
-    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    expect(find.text("We couldn't check if it's available. Please try again."),
+        findsOneWidget);
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
     expect(repository.requestedEmails, isEmpty);
     final retry = find.byTooltip('Try again');
     await tester.ensureVisible(retry);
@@ -742,8 +1134,8 @@ void main() {
       await tester.tap(find.byType(Checkbox));
       await tester.pump(const Duration(milliseconds: 250));
       await tester.pump();
-      expect(
-          find.text(translateMessage(locale, 'Available.')), findsNWidgets(2));
+      expect(find.text(translateMessage(locale, "It's available.")),
+          findsNWidgets(3));
       final submit = find.byKey(const ValueKey('email-sign-up-button'));
       await tester.ensureVisible(submit);
       await tester.tap(submit);
@@ -783,6 +1175,7 @@ void main() {
     await tester.enterText(fields.at(2), 'john@example.com');
     await tester.enterText(fields.at(3), 'Password123');
     await tester.enterText(fields.at(4), 'Password123');
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.byType(Checkbox));
     await tester.tap(find.byType(Checkbox));
     await tester.pump();
@@ -792,8 +1185,10 @@ void main() {
     await tester.pump();
 
     expect(repository.requestedEmails, isEmpty);
-    expect(find.textContaining('Dots cannot be first'), findsOneWidget);
-    expect(find.textContaining('Korean counts as 2'), findsOneWidget);
+    expect(tester.state<FormFieldState<String>>(fields.at(0)).errorText,
+        "Periods can't be first, last, or consecutive.");
+    expect(tester.state<FormFieldState<String>>(fields.at(1)).errorText,
+        'Use only Korean syllables, English letters, and numbers.');
     ScaffoldMessenger.of(tester.element(submit)).removeCurrentSnackBar();
     await tester.pumpAndSettle();
 
@@ -899,6 +1294,33 @@ void main() {
     expect(find.text('Welcome destination'), findsOneWidget);
   });
 
+  testWidgets('a mistyped code can be retried without requesting another code',
+      (tester) async {
+    final repository = _FakeAuthRepository()
+      ..registrationError = const AuthRequestException(
+          statusCode: 400, message: 'Invalid verification code. Try again.');
+    final router = _router(_service(repository, AuthSession()));
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.enterText(
+        find.byKey(const ValueKey('email-verification-code')), '000000');
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('verify-email-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('Invalid verification code. Try again.'), findsOneWidget);
+    expect(find.textContaining('(400)'), findsNothing);
+    expect(repository.requestedEmails, isEmpty);
+    repository.registrationError = null;
+    await tester.enterText(
+        find.byKey(const ValueKey('email-verification-code')), '123456');
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('verify-email-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('Welcome destination'), findsOneWidget);
+    expect(repository.registrationChallengeId, 'initial-challenge');
+    expect(repository.requestedEmails, isEmpty);
+  });
+
   testWidgets('resend replaces the challenge after the cooldown',
       (tester) async {
     final repository = _FakeAuthRepository();
@@ -919,8 +1341,8 @@ void main() {
   });
 }
 
-Future<void> _pumpSignup(
-    WidgetTester tester, _FakeAuthRepository repository) async {
+Future<void> _pumpSignup(WidgetTester tester, _FakeAuthRepository repository,
+    {Locale? locale}) async {
   tester.view.physicalSize = const Size(393, 852);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -939,7 +1361,12 @@ Future<void> _pumpSignup(
     ),
   ]);
   addTearDown(router.dispose);
-  await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+  await tester.pumpWidget(MaterialApp.router(
+    routerConfig: router,
+    locale: locale,
+    supportedLocales: appSupportedLocales,
+    localizationsDelegates: appLocalizationDelegates,
+  ));
 }
 
 Future<void> _fillSignup(WidgetTester tester) async {
@@ -996,9 +1423,10 @@ class _UnusedGoogleIdentityService implements GoogleIdentityService {
 }
 
 class _FakeAuthRepository implements AuthRepository {
-  _FakeAuthRepository({this.availability});
+  _FakeAuthRepository({this.availability, this.emailRequest});
 
   final Future<bool> Function(RegistrationField, String)? availability;
+  final Future<EmailCodeChallenge> Function()? emailRequest;
   final availabilityRequests = <(RegistrationField, String)>[];
 
   @override
@@ -1027,6 +1455,7 @@ class _FakeAuthRepository implements AuthRepository {
   String? registrationChallengeId;
   String? registrationCode;
   bool duplicateRegistration = false;
+  Object? registrationError;
 
   @override
   Future<EmailCodeChallenge> requestEmailCode({
@@ -1034,6 +1463,7 @@ class _FakeAuthRepository implements AuthRepository {
     EmailCodePurpose purpose = EmailCodePurpose.signup,
   }) async {
     requestedEmails.add(email);
+    if (emailRequest != null) return emailRequest!();
     return const EmailCodeChallenge(
       challengeId: 'replacement-challenge',
       expiresInSeconds: 600,
@@ -1050,6 +1480,7 @@ class _FakeAuthRepository implements AuthRepository {
   }) async {
     registrationChallengeId = challengeId;
     registrationCode = code;
+    if (registrationError != null) throw registrationError!;
     if (duplicateRegistration) {
       throw const AuthRequestException(
           statusCode: 409,
