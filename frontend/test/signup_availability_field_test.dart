@@ -80,23 +80,23 @@ void main() {
     addTearDown(controller.dispose);
     final oldResult = Completer<bool>();
     final newResult = Completer<bool>();
-    var available = false;
+    var status = SignupAvailability.idle;
     await _pumpField(tester, controller,
         (value) => value == 'old' ? oldResult.future : newResult.future,
-        onChanged: (value) => available = value);
+        onChanged: (value) => status = value);
 
     await tester.enterText(find.byType(TextFormField), 'old');
     await tester.pump(const Duration(milliseconds: 250));
     await tester.enterText(find.byType(TextFormField), 'new');
     oldResult.complete(true);
     await tester.pump();
-    expect(available, isFalse);
+    expect(status, SignupAvailability.checking);
     expect(find.text("It's available."), findsNothing);
 
     await tester.pump(const Duration(milliseconds: 250));
     newResult.complete(false);
     await tester.pump();
-    expect(available, isFalse);
+    expect(status, SignupAvailability.unavailable);
     expect(find.text('Already in use.'), findsNothing);
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pumpAndSettle();
@@ -154,7 +154,7 @@ void main() {
 
 Future<void> _pumpField(WidgetTester tester, TextEditingController controller,
         Future<bool> Function(String) check,
-        {ValueChanged<bool>? onChanged}) =>
+        {ValueChanged<SignupAvailability>? onChanged}) =>
     tester.pumpWidget(MaterialApp(
       home: Scaffold(
         body: AuthForm(

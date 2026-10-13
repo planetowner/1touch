@@ -5,8 +5,6 @@ import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/SignComps/auth_widgets.dart';
-import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
@@ -49,15 +47,13 @@ class EmailVerifyScreen extends StatefulWidget {
   final String email;
   final EmailRegistrationDraft? registrationDraft;
   final AuthService? authService;
-  final EmailCodeChallenge? passwordResetChallenge;
 
   const EmailVerifyScreen({
     super.key,
     required this.email,
     this.registrationDraft,
     this.authService,
-    this.passwordResetChallenge,
-  }) : assert(registrationDraft == null || passwordResetChallenge == null);
+  });
 
   @override
   State<EmailVerifyScreen> createState() => _EmailVerifyScreenState();
@@ -67,12 +63,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
   static const _resendCooldownSeconds = 60;
 
   final _code = TextEditingController();
-  final _newPassword = TextEditingController();
-  EmailCodeChallenge? _resetChallenge;
-  bool get _isReset => widget.passwordResetChallenge != null;
-  String? get _challengeId =>
-      _resetChallenge?.challengeId ?? _draft?.challengeId;
-  bool get _validNewPassword => isValidNewPassword(_newPassword.text);
+  String? get _challengeId => _draft?.challengeId;
 
   bool _submitting = false;
   bool _resending = false;
@@ -89,8 +80,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
       !_resending &&
       _challengeId != null &&
       _expiresInSeconds > 0 &&
-      _code.text.length == 6 &&
-      (!_isReset || _validNewPassword);
+      _code.text.length == 6;
 
   bool get _canResend => !_submitting && !_resending && _resendInSeconds == 0;
 
@@ -98,15 +88,9 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
   void initState() {
     super.initState();
     _draft = widget.registrationDraft;
-    _resetChallenge = widget.passwordResetChallenge;
-    _expiresInSeconds = _resetChallenge?.expiresInSeconds ??
-        widget.registrationDraft?.expiresInSeconds ??
-        0;
-    _newPassword.addListener(_passwordChanged);
+    _expiresInSeconds = _draft?.expiresInSeconds ?? 0;
     _startCountdown();
   }
-
-  void _passwordChanged() => setState(() {});
 
   void _startCountdown() {
     _countdown?.cancel();
@@ -164,31 +148,18 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
     setState(() => _submitting = true);
 
     try {
-      if (_isReset) {
-        await _authService.resetPassword(
-            challengeId: _challengeId!,
-            code: _code.text,
-            password: _newPassword.text);
-        if (!mounted) return;
-        _showMessage(
-            tr(context, 'Password reset. Sign in with your new password.'));
-        // 재설정은 로그인 세션을 만들지 않으므로 입력 화면으로 돌아가요.
-        Navigator.of(context).pop();
-      } else {
-        final draft = _draft!;
-        await _authService.registerWithEmail(
-          challengeId: draft.challengeId,
-          code: _code.text,
-          password: draft.password,
-          username: draft.username,
-          displayName: draft.displayName,
-        );
-        if (mounted) context.go('/session');
-      }
+      final draft = _draft!;
+      await _authService.registerWithEmail(
+        challengeId: draft.challengeId,
+        code: _code.text,
+        password: draft.password,
+        username: draft.username,
+        displayName: draft.displayName,
+      );
+      if (mounted) context.go('/session');
     } on Object catch (error) {
       if (!mounted) return;
-      if (!_isReset &&
-          error is AuthRequestException &&
+      if (error is AuthRequestException &&
           error.statusCode == 409 &&
           context.canPop()) {
         context.pop('duplicate');
@@ -211,20 +182,13 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
     setState(() => _resending = true);
 
     try {
-      final challenge = await _authService.requestEmailCode(
-          email: widget.email,
-          purpose: _isReset
-              ? EmailCodePurpose.passwordReset
-              : EmailCodePurpose.signup);
+      final challenge =
+          await _authService.requestEmailCode(email: widget.email);
       if (!mounted) return;
       setState(() {
-        if (_isReset) {
-          _resetChallenge = challenge;
-        } else {
-          _draft = draft!.withChallenge(
-              challengeId: challenge.challengeId,
-              expiresInSeconds: challenge.expiresInSeconds);
-        }
+        _draft = draft!.withChallenge(
+            challengeId: challenge.challengeId,
+            expiresInSeconds: challenge.expiresInSeconds);
         _expiresInSeconds = challenge.expiresInSeconds;
         _resendInSeconds = _resendCooldownSeconds;
         _code.clear();
@@ -261,7 +225,6 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
   void dispose() {
     _countdown?.cancel();
     _code.dispose();
-    _newPassword.dispose();
     super.dispose();
   }
 
@@ -278,8 +241,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
           onPressed: _goBack,
         ),
         centerTitle: true,
-        title: Text(
-            tr(context, _isReset ? 'Reset password' : 'Verify your email'),
+        title: Text(tr(context, 'Verify your email'),
             style: Body1.style),
       ),
       body: SafeArea(
@@ -358,24 +320,6 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                         ),
                       ],
                     ),
-                    if (_isReset) ...[
-                      const SizedBox(height: 24),
-                      AuthInput(
-                          label: tr(context, 'New password'),
-                          controller: _newPassword,
-                          fieldKey: const ValueKey('reset-new-password'),
-                          enabled: !_submitting && !_resending,
-                          obscureText: true,
-                          textInputAction: TextInputAction.done,
-                          autofillHints: const [AutofillHints.newPassword],
-                          onSubmitted: (_) {
-                            if (_canSubmit) _continue();
-                          }),
-                      const SizedBox(height: 8),
-                      Text(tr(context, passwordGuideMessage),
-                          style: Body2.style),
-                      const SizedBox(height: 24),
-                    ],
                     const Spacer(),
                     SizedBox(
                       height: 56,
@@ -396,10 +340,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                                 width: 22,
                                 child:
                                     CircularProgressIndicator(strokeWidth: 2))
-                            : Text(
-                                _isReset
-                                    ? tr(context, 'Reset password')
-                                    : trUpper(context, 'Continue'),
+                            : Text(trUpper(context, 'Continue'),
                                 style: Body1_b.style
                                     .copyWith(color: colors.surface)),
                       ),

@@ -55,7 +55,7 @@ class VerificationCodeErrorsTests(unittest.TestCase):
 
     def test_missing_or_wrong_purpose_code_requires_resending(self):
         self.row["purpose"] = "password_reset"
-        expected = (None, "This code is no longer valid. Send a new code.")
+        expected = (None, "This code can't be used. Request a new code.")
         self.assertEqual(self.verify("123456"), expected)
         self.assertEqual(self.row["attempts"], 0)
         self.row = None

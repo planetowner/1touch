@@ -256,15 +256,20 @@ const appMessages = <String, MessageTranslations>{
     ja: "メールアドレスまたはユーザー名とパスワードを入力してください。",
     zh: "请输入邮箱或用户名及密码。"
   ),
-  "Unable to sign in. Check your email or username and password.": (
-    ko: "로그인하지 못했어요. 이메일 또는 아이디와 비밀번호를 확인해 주세요.",
-    ja: "ログインできませんでした。メールアドレスまたはユーザー名とパスワードを確認してください。",
-    zh: "登录失败，请检查邮箱或用户名及密码。"
+  "Your email, username, or password is incorrect.": (
+    ko: "이메일·아이디 또는 비밀번호가 올바르지 않아요.",
+    ja: "メールアドレス、ユーザー名、またはパスワードが正しくありません。",
+    zh: "邮箱、用户名或密码不正确。"
+  ),
+  "Unable to sign in. Please try again.": (
+    ko: "로그인하지 못했어요. 다시 시도해 주세요.",
+    ja: "ログインできませんでした。もう一度お試しください。",
+    zh: "登录失败，请重试。"
   ),
   "Reset password": (ko: "비밀번호 재설정", ja: "パスワードの再設定", zh: "重置密码"),
   "Enter the email linked to your account. We will send you a verification code to reset your password.":
       (
-    ko: "이 계정과 연결된 이메일을 입력해 주세요. 비밀번호 재설정을 위한 인증번호를 보내드릴게요.",
+    ko: "계정에 등록된 이메일을 입력해 주세요. 비밀번호를 재설정할 수 있도록 인증번호를 보내드릴게요.",
     ja: "アカウントに登録したメールアドレスを入力してください。パスワード再設定用の認証コードを送信します。",
     zh: "请输入此账户关联的邮箱。我们将发送密码重置验证码。"
   ),
@@ -274,7 +279,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "请输入发送到邮箱的验证码。"
   ),
   "Enter a new password.": (
-    ko: "새로운 비밀번호를 입력해 주세요.",
+    ko: "새 비밀번호를 입력해 주세요.",
     ja: "新しいパスワードを入力してください。",
     zh: "请输入新密码。"
   ),
@@ -288,26 +293,26 @@ const appMessages = <String, MessageTranslations>{
     ja: "パスワードが一致しません。もう一度確認してください。",
     zh: "两次输入的密码不一样，请再确认一下。"
   ),
-  "Please check the highlighted fields.": (
-    ko: "표시된 입력 내용을 확인해 주세요.",
-    ja: "表示された入力項目を確認してください。",
-    zh: "请检查标记的输入项。"
-  ),
   "Please agree to the Terms and Privacy Policy.": (
     ko: "이용약관과 개인정보 처리방침에 동의해 주세요.",
     ja: "利用規約とプライバシーポリシーに同意してください。",
     zh: "请同意条款和隐私政策。"
   ),
   "Retype Password": (ko: "비밀번호 다시 입력", ja: "パスワードを再入力", zh: "再次输入密码"),
+  "Enter your new password again.": (
+    ko: "새 비밀번호를 한 번 더 입력해 주세요.",
+    ja: "新しいパスワードをもう一度入力してください。",
+    zh: "请再次输入新密码。"
+  ),
   "Invalid verification code. Try again.": (
     ko: "인증번호가 올바르지 않아요. 다시 입력해 주세요.",
     ja: "認証コードが正しくありません。もう一度お試しください。",
     zh: "验证码无效，请重试。"
   ),
-  "This code is no longer valid. Send a new code.": (
-    ko: "사용할 수 없는 인증번호예요. 새 인증번호를 받아 주세요.",
-    ja: "この認証コードは使用できません。新しいコードを取得してください。",
-    zh: "此验证码已无法使用，请获取新验证码。"
+  "This code can't be used. Request a new code.": (
+    ko: "이 인증번호는 사용할 수 없어요. 새 인증번호를 받아 주세요.",
+    ja: "この認証コードは使用できません。新しい認証コードを取得してください。",
+    zh: "此验证码无法使用，请获取新的验证码。"
   ),
   "Too many incorrect attempts. Send a new code.": (
     ko: "인증번호 입력 횟수를 초과했어요. 새 인증번호를 받아 주세요.",
@@ -315,9 +320,9 @@ const appMessages = <String, MessageTranslations>{
     zh: "验证码输入次数已超限，请获取新验证码。"
   ),
   "The service is temporarily unavailable. Please try again later.": (
-    ko: "지금은 요청을 처리하지 못해요. 잠시 후 다시 시도해 주세요.",
-    ja: "現在リクエストを処理できません。しばらくしてからお試しください。",
-    zh: "暂时无法处理请求，请稍后重试。"
+    ko: "일시적인 문제가 생겼어요. 잠시 후 다시 시도해 주세요.",
+    ja: "一時的な問題が発生しました。しばらくしてからもう一度お試しください。",
+    zh: "出现了临时问题，请稍后重试。"
   ),
   "Unable to send a verification code. Please try again.": (
     ko: "인증번호를 보내지 못했어요. 다시 시도해 주세요.",
@@ -329,16 +334,20 @@ const appMessages = <String, MessageTranslations>{
     ja: "認証コードを確認できませんでした。もう一度お試しください。",
     zh: "无法验证验证码，请重试。"
   ),
-  "Complete the availability check before continuing.": (
-    ko: "사용 가능 여부를 확인한 뒤 다시 눌러 주세요.",
-    ja: "使用できるか確認してから、もう一度押してください。",
-    zh: "请确认是否可用后再试。"
-  ),
-  "New password": (ko: "새 비밀번호", ja: "新しいパスワード", zh: "新密码"),
   "Enter the email address you used to sign up.": (
     ko: "가입할 때 사용한 이메일을 입력해 주세요.",
     ja: "登録時に使用したメールアドレスを入力してください。",
     zh: "请输入注册时使用的邮箱。"
+  ),
+  "Checking availability. Please wait.": (
+    ko: "사용할 수 있는지 확인하고 있어요. 잠시만 기다려 주세요.",
+    ja: "使用できるか確認しています。しばらくお待ちください。",
+    zh: "正在确认是否可用，请稍候。"
+  ),
+  "Unable to check availability. Please try again.": (
+    ko: "사용할 수 있는지 확인하지 못했어요. 다시 시도해 주세요.",
+    ja: "使用できるか確認できませんでした。もう一度お試しください。",
+    zh: "无法确认是否可用，请重试。"
   ),
   "Send verification code": (ko: "인증번호 보내기", ja: "認証コードを送信", zh: "发送验证码"),
   "Use 8–128 characters with at least one uppercase letter, one lowercase letter, and one number.":
@@ -418,11 +427,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "プロフィールを保存できませんでした。もう一度お試しください。",
     zh: "无法保存个人资料，请重试。"
   ),
-  "Checking availability...": (
-    ko: "사용할 수 있는지 확인하고 있어요.",
-    ja: "使用できるか確認しています。",
-    zh: "正在确认是否可以使用。"
-  ),
   "It's available.": (ko: "사용할 수 있어요.", ja: "使用できます。", zh: "可以使用。"),
   "Already in use.": (
     ko: "이미 사용 중이에요. 다른 값을 입력해 주세요.",
@@ -433,11 +437,6 @@ const appMessages = <String, MessageTranslations>{
     ko: "이미 사용 중인 이메일이에요. 다른 이메일을 입력해 주세요.",
     ja: "このメールアドレスはすでに使われています。別のメールアドレスを試してください。",
     zh: "这个邮箱地址已经有人用了，换一个试试吧。"
-  ),
-  "We couldn't check if it's available. Please try again.": (
-    ko: "사용 가능 여부를 확인하지 못했어요. 다시 시도해 주세요.",
-    ja: "使用できるか確認できませんでした。もう一度お試しください。",
-    zh: "无法确认是否可用，请重试。"
   ),
   "Primary team": (ko: "최애팀", ja: "お気に入りのチーム", zh: "最喜欢的球队"),
   "Enter your nickname.": (

@@ -96,7 +96,7 @@ def _verify_code(cur, challenge: str, code: str, purpose: str) -> tuple[str | No
     cur.execute("SELECT * FROM email_verification_codes WHERE challenge_hash=%s FOR UPDATE", (key,))
     row = cur.fetchone()
     if row is None or row["purpose"] != purpose:
-        return None, "This code is no longer valid. Send a new code."
+        return None, "This code can't be used. Request a new code."
     if row["expires_at"] <= utc_now():
         return None, "This code has expired. Send a new code."
     if row["attempts"] >= CODE_ATTEMPTS:

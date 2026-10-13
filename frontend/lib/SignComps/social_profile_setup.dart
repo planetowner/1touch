@@ -27,7 +27,7 @@ class SocialProfileSetup extends StatefulWidget {
 class _SocialProfileSetupState extends State<SocialProfileSetup> {
   final _formKey = GlobalKey<AuthFormState>();
   late final _nickname = TextEditingController(text: widget.initialNickname);
-  bool _nicknameAvailable = false;
+  SignupAvailability _nicknameAvailability = SignupAvailability.idle;
   bool _saving = false;
 
   @override
@@ -40,9 +40,7 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
     if (_saving || !_formKey.currentState!.validate()) {
       return;
     }
-    if (!_nicknameAvailable) {
-      showAppSnackBar(context,
-          tr(context, 'Complete the availability check before continuing.'));
+    if (_nicknameAvailability != SignupAvailability.available) {
       return;
     }
     setState(() => _saving = true);
@@ -100,9 +98,9 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
                       guideMessage: displayNameGuideMessage,
                       unavailableMessage: displayNameTakenMessage,
                       checkAvailability: widget.checkNicknameAvailability,
-                      onAvailabilityChanged: (available) {
-                        if (_nicknameAvailable != available) {
-                          setState(() => _nicknameAvailable = available);
+                      onAvailabilityChanged: (status) {
+                        if (_nicknameAvailability != status) {
+                          setState(() => _nicknameAvailability = status);
                         }
                       },
                     ),
@@ -116,7 +114,9 @@ class _SocialProfileSetupState extends State<SocialProfileSetup> {
             child: AuthPrimaryButton(
               label: trUpper(context, 'Continue'),
               loading: _saving,
-              onPressed: _saving ? null : _submit,
+              onPressed: _saving || _nicknameAvailability.blocksSubmission
+                  ? null
+                  : _submit,
             ),
           ),
         ]),

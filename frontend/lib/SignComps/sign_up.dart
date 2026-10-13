@@ -40,7 +40,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _displayName = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
-  final _availableFields = <RegistrationField>{};
+  final _availability = <RegistrationField, SignupAvailability>{};
   final _confirmPassword = TextEditingController();
   final _fieldFocusNodes = List.generate(5, (_) => FocusNode());
 
@@ -71,19 +71,14 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
   Future<void> _submit() async {
     if (_submitting) return;
-    if (!_formKey.currentState!.validate()) {
-      _showCodeRequestError(
-          tr(context, 'Please check the highlighted fields.'));
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
     if (!_agreed) {
       _showCodeRequestError(
           tr(context, 'Please agree to the Terms and Privacy Policy.'));
       return;
     }
-    if (_availableFields.length != RegistrationField.values.length) {
-      _showCodeRequestError(
-          tr(context, 'Complete the availability check before continuing.'));
+    if (!RegistrationField.values.every(
+        (field) => _availability[field] == SignupAvailability.available)) {
       return;
     }
 
@@ -123,15 +118,9 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     }
   }
 
-  void _setAvailable(RegistrationField field, bool available) {
-    if (_availableFields.contains(field) == available) return;
-    setState(() {
-      if (available) {
-        _availableFields.add(field);
-      } else {
-        _availableFields.remove(field);
-      }
-    });
+  void _setAvailability(RegistrationField field, SignupAvailability status) {
+    if (_availability[field] == status) return;
+    setState(() => _availability[field] = status);
   }
 
   void _showCodeRequestError(String message) {
@@ -279,8 +268,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             checkAvailability: (value) =>
                                 _authService.isRegistrationValueAvailable(
                                     field: field.field, value: value),
-                            onAvailabilityChanged: (available) =>
-                                _setAvailable(field.field, available),
+                            onAvailabilityChanged: (status) =>
+                                _setAvailability(field.field, status),
                           ),
                           const SizedBox(height: 24),
                         ],
@@ -435,8 +424,11 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                                 textStyle:
                                     AuthStyles.signupTextStyle(Body2_b.style),
                                 loading: _submitting,
-                                // 입력 오류는 버튼을 눌렀을 때 안내하고, 요청 중에만 중복 제출을 막아요.
-                                onPressed: _submitting ? null : _submit,
+                                onPressed: _submitting ||
+                                        _availability.values.any(
+                                            (status) => status.blocksSubmission)
+                                    ? null
+                                    : _submit,
                               ),
                             ],
                           ),

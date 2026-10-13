@@ -2,6 +2,10 @@ import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
+import 'package:onetouch/data/auth/api/api_google_auth_repository.dart';
 import 'package:onetouch/onboarding.dart';
 import 'package:onetouch/SignComps/sign_in.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
@@ -11,8 +15,91 @@ import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 void main() {
+  for (final entry in {
+    'en': [
+      'Your email, username, or password is incorrect.',
+      'Please check your connection and try again.',
+      'The service is temporarily unavailable. Please try again later.',
+    ],
+    'ko': [
+      '이메일·아이디 또는 비밀번호가 올바르지 않아요.',
+      '연결 상태를 확인하고 다시 시도해 주세요.',
+      '일시적인 문제가 생겼어요. 잠시 후 다시 시도해 주세요.',
+    ],
+    'ja': [
+      'メールアドレス、ユーザー名、またはパスワードが正しくありません。',
+      '接続を確認して再度お試しください。',
+      '一時的な問題が発生しました。しばらくしてからもう一度お試しください。',
+    ],
+    'zh': [
+      '邮箱、用户名或密码不正确。',
+      '请检查网络连接后重试。',
+      '出现了临时问题，请稍后重试。',
+    ],
+  }.entries) {
+    for (var failure = 0; failure < entry.value.length; failure++) {
+      testWidgets(
+          'password login distinguishes failure $failure in ${entry.key}',
+          (tester) async {
+        await _setScreenSize(tester, const Size(393, 852));
+        var requests = 0;
+        final api = ApiClient(
+          client: MockClient((request) async {
+            requests++;
+            expect(request.url.path, '/v1/auth/login');
+            if (failure == 1) throw http.ClientException('Connection refused');
+            // 서버가 HTML 오류 페이지를 보내도 연결 오류로 분류하지 않아요.
+            return failure == 0
+                ? http.Response(
+                    '{"detail":"Invalid email, username, or password"}', 401)
+                : http.Response('<html>Service unavailable</html>', 503);
+          }),
+          baseUri: Uri.parse('https://example.test/v1/'),
+          requestHeaders: () => {},
+        );
+        addTearDown(api.close);
+        final session = AuthSession();
+        final router = _router(
+          _service(session, ApiGoogleAuthRepository(api: api)),
+          initialLocation: '/onboarding',
+        );
+        addTearDown(router.dispose);
+        await tester.pumpWidget(MaterialApp.router(
+          routerConfig: router,
+          locale: Locale(entry.key),
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
+        ));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+            find.byKey(const ValueKey('sign-in-username')), 'member');
+        await tester.enterText(
+            find.byKey(const ValueKey('sign-in-password')), 'Password123');
+        final button = find.byKey(const ValueKey('email-sign-in-button'));
+        await tester.ensureVisible(button);
+        await tester.tap(button);
+        await tester.pumpAndSettle();
+
+        expect(requests, 1);
+        expect(find.text(entry.value[failure]), findsOneWidget);
+        for (var other = 0; other < entry.value.length; other++) {
+          if (other != failure) {
+            expect(find.text(entry.value[other]), findsNothing);
+          }
+        }
+        expect(session.isAuthenticated, isFalse);
+        expect(find.text('Home destination'), findsNothing);
+        expect(tester.widget<AuthPrimaryButton>(button).onPressed, isNotNull);
+        expect(
+            find.byKey(const ValueKey('email-sign-in-progress')), findsNothing);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
   testWidgets('onboarding includes password fields and opens signup',
       (tester) async {
     await _setScreenSize(tester, const Size(393, 852));

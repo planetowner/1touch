@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -11,6 +12,16 @@ void main() {
     for (final (error, expected) in [
       (
         const AuthRequestException(
+            statusCode: 401, message: 'Invalid email, username, or password'),
+        '이메일·아이디 또는 비밀번호가 올바르지 않아요.'
+      ),
+      (http.ClientException('Connection refused'), '연결 상태를 확인하고 다시 시도해 주세요.'),
+      (
+        const AuthRequestException(statusCode: 401, message: 'Expired token'),
+        '인증번호를 확인하지 못했어요. 다시 시도해 주세요.'
+      ),
+      (
+        const AuthRequestException(
             statusCode: 429, message: 'Too many authentication requests'),
         '요청이 너무 많아요. 잠시 후 다시 시도해주세요.'
       ),
@@ -18,7 +29,7 @@ void main() {
         const AuthRequestException(
             statusCode: 503,
             message: 'Service configuration missing: SES_SMTP_PASSWORD'),
-        '지금은 요청을 처리하지 못해요. 잠시 후 다시 시도해 주세요.'
+        '일시적인 문제가 생겼어요. 잠시 후 다시 시도해 주세요.'
       ),
       (
         const AuthRequestException(
@@ -46,8 +57,8 @@ void main() {
       (
         const AuthRequestException(
             statusCode: 400,
-            message: 'This code is no longer valid. Send a new code.'),
-        '사용할 수 없는 인증번호예요. 새 인증번호를 받아 주세요.'
+            message: "This code can't be used. Request a new code."),
+        '이 인증번호는 사용할 수 없어요. 새 인증번호를 받아 주세요.'
       ),
       (StateError('Socket failed'), '인증번호를 확인하지 못했어요. 다시 시도해 주세요.'),
     ]) {

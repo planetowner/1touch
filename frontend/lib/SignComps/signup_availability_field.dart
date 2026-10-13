@@ -4,6 +4,17 @@ import 'package:onetouch/core/debounced_search_controller.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
+enum SignupAvailability {
+  idle,
+  checking,
+  available,
+  unavailable,
+  failed;
+
+  // 조회 중이거나 실패하면 입력칸에서 해결하고, 입력 형식 오류는 제출할 때 안내해요.
+  bool get blocksSubmission => this == checking || this == failed;
+}
+
 class SignupAvailabilityField extends StatefulWidget {
   const SignupAvailabilityField({
     super.key,
@@ -27,7 +38,7 @@ class SignupAvailabilityField extends StatefulWidget {
   final InputDecoration decoration;
   final String? Function(String) validator;
   final Future<bool> Function(String) checkAvailability;
-  final ValueChanged<bool> onAvailabilityChanged;
+  final ValueChanged<SignupAvailability> onAvailabilityChanged;
   final int? maxLength;
   final TextInputType? keyboardType;
   final FocusNode? focusNode;
@@ -54,6 +65,22 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
     _availability = DebouncedSearchController(search: widget.checkAvailability)
       ..addListener(_availabilityChanged);
     widget.controller.addListener(_inputChanged);
+    // 소셜 가입에서 미리 채워진 닉네임도 같은 규칙으로 확인해요.
+    if (widget.controller.text.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _inputChanged();
+      });
+    }
+  }
+
+  SignupAvailability get _status {
+    if (_availability.loading) return SignupAvailability.checking;
+    if (_availability.error != null) return SignupAvailability.failed;
+    return switch (_availability.result) {
+      true => SignupAvailability.available,
+      false => SignupAvailability.unavailable,
+      null => SignupAvailability.idle,
+    };
   }
 
   void _inputChanged() {
@@ -70,9 +97,7 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
         (!_focusNode.hasFocus || _fieldKey.currentState?.hasError == true)) {
       _fieldKey.currentState?.validate();
     }
-    widget.onAvailabilityChanged(_availability.result == true &&
-        !_availability.loading &&
-        _availability.error == null);
+    widget.onAvailabilityChanged(_status);
   }
 
   @override
@@ -85,13 +110,14 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
 
   @override
   Widget build(BuildContext context) {
-    final helper = _availability.loading
-        ? 'Checking availability...'
-        : _availability.error != null
-            ? "We couldn't check if it's available. Please try again."
-            : _availability.result == true
-                ? widget.availableMessage
-                : widget.guideMessage;
+    final status = _status;
+    final helper = switch (status) {
+      SignupAvailability.checking => 'Checking availability. Please wait.',
+      SignupAvailability.failed =>
+        'Unable to check availability. Please try again.',
+      SignupAvailability.available => widget.availableMessage,
+      _ => widget.guideMessage,
+    };
     final input = TextFormField(
       key: _fieldKey,
       controller: widget.controller,
@@ -113,15 +139,25 @@ class _SignupAvailabilityFieldState extends State<SignupAvailabilityField> {
             : AuthFieldMessage(
                 text: tr(context, helper),
                 decoration: widget.decoration,
+                error: status == SignupAvailability.failed,
               ),
         helperMaxLines: 2,
-        suffixIcon: _availability.error == null
-            ? null
-            : IconButton(
-                tooltip: tr(context, 'Try again'),
-                onPressed: widget.enabled ? _availability.search : null,
-                icon: const Icon(Icons.refresh),
+        suffixIcon: switch (status) {
+          SignupAvailability.checking => const Center(
+              widthFactor: 1,
+              heightFactor: 1,
+              child: SizedBox.square(
+                dimension: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
               ),
+            ),
+          SignupAvailability.failed => IconButton(
+              tooltip: tr(context, 'Try again'),
+              onPressed: widget.enabled ? _availability.search : null,
+              icon: const Icon(Icons.refresh),
+            ),
+          _ => null,
+        },
       ),
       validator: (value) =>
           AuthForm.of(context).validationMessage(value, (value) {

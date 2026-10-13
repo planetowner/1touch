@@ -5,6 +5,7 @@ import 'package:onetouch/SignComps/forgot_password.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
+import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -63,10 +64,10 @@ class _PasswordSignInFormState extends State<PasswordSignInForm> {
       await _service.signInWithPassword(
           username: _identifier.text.trim(), password: _password.text);
       if (mounted) context.go('/session');
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
-        _message(
-            'Unable to sign in. Check your email or username and password.');
+        _message(authRequestErrorMessage(error,
+            fallback: 'Unable to sign in. Please try again.'));
       }
     } finally {
       if (mounted) {

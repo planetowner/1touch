@@ -425,14 +425,14 @@ void main() {
                   of: email, matching: find.byType(TextFormField)))
               .hasError,
           isFalse);
-      // 오류 상태는 바로 해제되고, 문구는 기본 전환 애니메이션 뒤 사라져요.
-      await tester.pumpAndSettle();
+      // 로딩 애니메이션은 계속되므로 오류 문구의 전환 시간만 기다려요.
+      await tester.pump(const Duration(milliseconds: 300));
       expect(message('Enter a valid email address.'), findsNothing);
-      expect(message('Checking availability...'), findsOneWidget);
+      expect(message('Checking availability. Please wait.'), findsOneWidget);
       await tester.pump(const Duration(milliseconds: 250));
       result.completeError(StateError('Connection failed'));
       await tester.pumpAndSettle();
-      expect(message("We couldn't check if it's available. Please try again."),
+      expect(message("Unable to check availability. Please try again."),
           findsOneWidget);
 
       result = Completer<bool>();
@@ -440,7 +440,7 @@ void main() {
       await tester.ensureVisible(retry);
       await tester.tap(retry);
       await tester.pump();
-      expect(message('Checking availability...'), findsOneWidget);
+      expect(message('Checking availability. Please wait.'), findsOneWidget);
       FocusManager.instance.primaryFocus?.unfocus();
       result.complete(false);
       await tester.pumpAndSettle();
@@ -449,7 +449,8 @@ void main() {
 
       result = Completer<bool>();
       await tester.enterText(email, 'new@example.com');
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(message('That email address is already in use. Try another one.'),
           findsNothing);
       await tester.pump(const Duration(milliseconds: 250));
@@ -1001,14 +1002,15 @@ void main() {
       await tester.tap(submit);
       await tester.pump();
       expect(repository.requestedEmails, isEmpty);
-      expect(find.text('Please check the highlighted fields.'), findsOneWidget);
+      expect(find.text(takenMessage), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
 
       await tester.enterText(
           find.byKey(
               ValueKey('signup-${field.apiValue.replaceAll('_', '-')}-field')),
           replacement);
       await tester.pump();
-      expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+      expect(tester.widget<FilledButton>(submit).onPressed, isNull);
       await tester.pump(const Duration(milliseconds: 250));
       await tester.pump();
       expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
@@ -1035,24 +1037,16 @@ void main() {
     await _fillSignup(tester);
     await tester.pump(const Duration(milliseconds: 250));
     final submit = find.byKey(const ValueKey('email-sign-up-button'));
-    expect(find.text('Checking availability...'), findsNWidgets(3));
-    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
-    await tester.ensureVisible(submit);
-    await tester.tap(submit);
-    await tester.pump();
-    expect(find.text('Complete the availability check before continuing.'),
-        findsOneWidget);
+    expect(find.text('Checking availability. Please wait.'), findsNWidgets(3));
+    expect(find.byType(CircularProgressIndicator), findsNWidgets(3));
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    expect(find.byType(SnackBar), findsNothing);
     expect(repository.requestedEmails, isEmpty);
     results[RegistrationField.username]!.complete(true);
     results[RegistrationField.displayName]!.complete(true);
     await tester.pump();
-    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
-    expect(repository.requestedEmails, isEmpty);
-    await tester.ensureVisible(submit);
-    await tester.tap(submit);
-    await tester.pump();
-    expect(find.text('Complete the availability check before continuing.'),
-        findsOneWidget);
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(repository.requestedEmails, isEmpty);
     results[RegistrationField.email]!.complete(true);
     await tester.pump();
@@ -1060,16 +1054,18 @@ void main() {
     await tester.enterText(
         find.byKey(const ValueKey('signup-username-field')), 'changed');
     await tester.pump();
-    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
     await tester.pumpWidget(const SizedBox());
   });
 
   testWidgets('keeps signup blocked after lookup failure until retry succeeds',
       (tester) async {
     var emailChecks = 0;
+    final retryResult = Completer<bool>();
     final repository = _FakeAuthRepository(availability: (field, _) async {
-      if (field == RegistrationField.email && emailChecks++ == 0) {
-        throw StateError('Connection failed');
+      if (field == RegistrationField.email) {
+        if (emailChecks++ == 0) throw StateError('Connection failed');
+        return retryResult.future;
       }
       return true;
     });
@@ -1078,15 +1074,19 @@ void main() {
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pump();
     final submit = find.byKey(const ValueKey('email-sign-up-button'));
-    expect(find.text("We couldn't check if it's available. Please try again."),
+    expect(find.text("Unable to check availability. Please try again."),
         findsOneWidget);
-    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
     expect(repository.requestedEmails, isEmpty);
     final retry = find.byTooltip('Try again');
     await tester.ensureVisible(retry);
     await tester.tap(retry);
     await tester.pump();
     expect(emailChecks, 2);
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    retryResult.complete(true);
+    await tester.pumpAndSettle();
     expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
   });
 

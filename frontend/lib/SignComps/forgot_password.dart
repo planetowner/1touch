@@ -388,7 +388,8 @@ class _NewPasswordScreenState extends State<_NewPasswordScreen> {
                       style: Eyebrow.style,
                     ),
                     const SizedBox(height: 24),
-                    Text(tr(context, 'Retype Password'), style: Body1.style),
+                    Text(tr(context, 'Enter your new password again.'),
+                        style: Body1.style),
                     const SizedBox(height: 12),
                     _passwordField(
                         key: const ValueKey('reset-confirm-password'),

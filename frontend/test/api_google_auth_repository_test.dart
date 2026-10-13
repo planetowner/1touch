@@ -274,7 +274,7 @@ void main() {
           client: MockClient(
             (_) async => http.Response(
               jsonEncode({
-                'detail': 'Invalid, expired, or exhausted verification code',
+                'detail': 'Invalid verification code. Try again.',
               }),
               400,
             ),
@@ -295,7 +295,7 @@ void main() {
         isA<AuthRequestException>().having(
           (error) => error.displayMessage,
           'displayMessage',
-          'Invalid, expired, or exhausted verification code (400)',
+          'Invalid verification code. Try again. (400)',
         ),
       ),
     );
@@ -370,7 +370,10 @@ void main() {
 
     await expectLater(
       repository.signInWithGoogle(idToken: 'id-token'),
-      throwsA(isA<http.ClientException>()),
+      throwsA(isA<AuthRequestException>()
+          .having((error) => error.statusCode, 'statusCode', 401)
+          .having((error) => error.message, 'message',
+              'Unable to sign in. Please try again.')),
     );
   });
 

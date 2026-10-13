@@ -21,7 +21,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(const MaterialApp(home: EmailSignUpScreen()));
+    await _pumpSignup(tester);
     expect(
         find.text(
             'Use 8–128 characters with at least one uppercase letter, one lowercase letter, and one number.'),
@@ -34,7 +34,7 @@ void main() {
     expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
     await tester.tap(submit);
     await tester.pump();
-    expect(find.text('Please check the highlighted fields.'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
     expect(
         find.text(
             'Include at least one uppercase letter, one lowercase letter, and one number.'),
@@ -55,7 +55,7 @@ void main() {
         find.byKey(const ValueKey('signup-confirm-password-field')),
         'Password123');
     await tester.pump();
-    // 중복 확인이 끝나지 않아도 버튼을 눌러 필요한 안내를 받을 수 있어요.
+    // 중복 확인이 끝난 뒤 비밀번호 검증을 통과하면 제출할 수 있어요.
     expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
     expect(tester.takeException(), isNull);
   });
@@ -65,7 +65,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(const MaterialApp(home: EmailSignUpScreen()));
+    await _pumpSignup(tester);
     await _fillSignup(tester, password: 'Password123', confirm: 'Password123');
     await tester.tap(find.byKey(const ValueKey('email-sign-up-button')));
     await tester.pump();
@@ -163,8 +163,7 @@ void main() {
       return data['code'] == '123456'
           ? http.Response('{"ok":true}', 200)
           : http.Response(
-              '{"detail":"Invalid, expired, or exhausted verification code"}',
-              400);
+              '{"detail":"Invalid verification code. Try again."}', 400);
     });
     addTearDown(router.dispose);
     await tester.pumpWidget(_app(router));
@@ -186,19 +185,23 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('resend-email-code')));
     await tester.pumpAndSettle();
     expect(codeCount, 2);
-    await tester.pump(const Duration(seconds: 5));
-    await tester.pumpAndSettle();
     await tester.enterText(
         find.byKey(const ValueKey('email-verification-code')), '000000');
     await tester.tap(find.byKey(const ValueKey('continue-reset-password')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('reset-new-password')), findsOneWidget);
     expect(find.text(passwordGuideMessage), findsOneWidget);
+    // 기본 배너는 직접 닫아야 하므로 재전송 안내부터 닫고 입력을 검증해요.
+    await tester.tap(find.byKey(const ValueKey('app-rule-notice-close')));
+    await tester.pumpAndSettle();
     await tester.enterText(
         find.byKey(const ValueKey('reset-new-password')), 'weak');
     await tester.tap(find.byKey(const ValueKey('verify-email-button')));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(requests.length, 2);
+    expect(find.text('Use 8–128 characters.'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('app-rule-notice-close')));
+    await tester.pumpAndSettle();
     await tester.enterText(
         find.byKey(const ValueKey('reset-new-password')), 'NewPassword123');
     await tester.enterText(find.byKey(const ValueKey('reset-confirm-password')),
@@ -209,7 +212,7 @@ void main() {
     expect(find.text("The passwords don't match. Please check again."),
         findsOneWidget);
     // 하단 버튼을 덮는 오류 안내가 닫힌 뒤 다시 제출해요.
-    await tester.pump(const Duration(seconds: 5));
+    await tester.tap(find.byKey(const ValueKey('app-rule-notice-close')));
     await tester.pumpAndSettle();
     await tester.enterText(
         find.byKey(const ValueKey('reset-confirm-password')), 'NewPassword123');
@@ -242,6 +245,15 @@ void main() {
   });
 }
 
+Future<void> _pumpSignup(WidgetTester tester) async {
+  final service = _service(AuthSession(), (request) async {
+    expect(request.url.path, '/v1/auth/registration/availability');
+    return http.Response('{"available":true}', 200);
+  });
+  await tester
+      .pumpWidget(MaterialApp(home: EmailSignUpScreen(authService: service)));
+}
+
 Future<void> _fillSignup(WidgetTester tester,
     {required String password, String? confirm}) async {
   for (final (key, value) in [
@@ -253,6 +265,9 @@ Future<void> _fillSignup(WidgetTester tester,
   ]) {
     await tester.enterText(find.byKey(ValueKey(key)), value);
   }
+  // 비밀번호 검증은 외부 요청 없이 중복 확인이 완료된 상태에서 확인해요.
+  await tester.pump(const Duration(milliseconds: 250));
+  await tester.pumpAndSettle();
 }
 
 MaterialApp _app(GoRouter router) => MaterialApp.router(
@@ -260,16 +275,20 @@ MaterialApp _app(GoRouter router) => MaterialApp.router(
     supportedLocales: appSupportedLocales,
     localizationsDelegates: appLocalizationDelegates);
 
+AuthService _service(AuthSession session,
+        Future<http.Response> Function(http.Request) handler) =>
+    AuthService(
+        googleIdentityService: _UnusedGoogle(),
+        session: session,
+        repository: ApiGoogleAuthRepository(
+            api: ApiClient(
+                baseUri: Uri.parse('https://api.example.test/v1/'),
+                requestHeaders: () => {},
+                client: MockClient(handler))));
+
 GoRouter _router(
     AuthSession session, Future<http.Response> Function(http.Request) handler) {
-  final service = AuthService(
-      googleIdentityService: _UnusedGoogle(),
-      session: session,
-      repository: ApiGoogleAuthRepository(
-          api: ApiClient(
-              baseUri: Uri.parse('https://api.example.test/v1/'),
-              requestHeaders: () => {},
-              client: MockClient(handler))));
+  final service = _service(session, handler);
   return GoRouter(initialLocation: '/onboarding', routes: [
     GoRoute(
         path: '/onboarding',

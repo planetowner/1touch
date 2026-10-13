@@ -31,7 +31,7 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
       throw AuthRequestException(
         statusCode: response.statusCode,
         message: _responseDetail(response.body,
-            fallback: "We couldn't check if it's available. Please try again."),
+            fallback: 'Unable to check availability. Please try again.'),
       );
     }
     final decoded =
@@ -205,6 +205,14 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
       body: jsonEncode(body),
     );
 
+    // HTTP 오류와 연결 오류를 구분할 수 있도록 응답 상태를 보존해요.
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw AuthRequestException(
+        statusCode: response.statusCode,
+        message: _responseDetail(response.body,
+            fallback: 'Unable to sign in. Please try again.'),
+      );
+    }
     final decoded =
         _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
     return ApiGoogleAuthResponse.fromJson(decoded).accessToken;
