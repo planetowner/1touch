@@ -92,6 +92,53 @@ void main() {
     }
   }
 
+  for (final safeBottom in [0.0, 34.0]) {
+    testWidgets(
+        'photo saved notice keeps 8 top padding and safe bottom $safeBottom',
+        (tester) async {
+      tester.view.physicalSize = const Size(393, 640);
+      tester.view.devicePixelRatio = 1;
+      tester.view.padding = FakeViewPadding(bottom: safeBottom);
+      tester.view.viewPadding = FakeViewPadding(bottom: safeBottom);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPadding);
+      addTearDown(tester.view.resetViewPadding);
+
+      late BuildContext context;
+      await tester.pumpWidget(MaterialApp(
+        home: Builder(builder: (value) {
+          context = value;
+          return const Scaffold();
+        }),
+      ));
+      showAppSnackBar(context, 'Saved to photos.',
+          contentPadding: const EdgeInsets.fromLTRB(24, 8, 54, 8),
+          alignCloseIconWithText: true);
+      await tester.pumpAndSettle();
+
+      final notice = find.byType(AppRuleNotice);
+      final noticeRect = tester.getRect(notice);
+      final snackBarRect = tester.getRect(find.byType(SnackBar));
+      final textRect = tester.getRect(find.text('Saved to photos.'));
+      final closeRect =
+          tester.getRect(find.byKey(const ValueKey('app-rule-notice-close')));
+      final iconRect = tester.getRect(
+          find.descendant(of: notice, matching: find.byIcon(Icons.close)));
+      final textStyle =
+          tester.widget<Text>(find.text('Saved to photos.')).style!;
+      expect(textRect.top - noticeRect.top, closeTo(8, .01));
+      expect(
+          iconRect.center.dy,
+          closeTo(
+              textRect.top + textStyle.fontSize! * textStyle.height! / 2, .01));
+      expect(closeRect.center.dy, closeTo(noticeRect.center.dy, .01));
+      expect(snackBarRect.height - noticeRect.height, closeTo(safeBottom, .01));
+      expect(closeRect.size, const Size(40, 40));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   for (final scenario in [
     (name: 'screen edge', safeBottom: 0.0, keyboard: 0.0, navigation: false),
     (

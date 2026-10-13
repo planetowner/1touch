@@ -56,6 +56,8 @@
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose photos and videos for your profile and community posts in 1touch.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save community photos and videos to your photo library.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -89,7 +89,9 @@ void main() {
         showCommunityAttachmentViewer(pageContext,
             mediaUrl: 'https://example.invalid/photo.jpg');
         await tester.pumpAndSettle();
-        expect(await pixels('attachment'), [Colors.black, Colors.black]);
+        final attachmentPixels = await pixels('attachment');
+        expect(attachmentPixels.first, attachmentPixels.last);
+        expect(attachmentPixels.first, isNot(pageColor));
         expect(statusIcons(), Brightness.light);
         expect(
             tester

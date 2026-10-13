@@ -1593,6 +1593,13 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Copy Text": (ko: "텍스트 복사", ja: "テキストをコピー", zh: "复制文本"),
   "Share": (ko: "공유", ja: "共有", zh: "分享"),
+  "Save to photos": (ko: "사진에 저장", ja: "写真に保存", zh: "保存到相册"),
+  "Saved to photos.": (ko: "사진에 저장했어요.", ja: "写真に保存しました。", zh: "已保存到相册。"),
+  "Unable to save or share attachment.": (
+    ko: "첨부파일을 저장하거나 공유하지 못했어요.",
+    ja: "添付ファイルを保存または共有できませんでした。",
+    zh: "无法保存或分享附件。"
+  ),
   "Report": (ko: "신고", ja: "報告", zh: "举报"),
   "Inappropriate Content": (ko: "부적절한 콘텐츠", ja: "不適切なコンテンツ", zh: "不当内容"),
   "Harassment & Bullying": (ko: "괴롭힘 및 따돌림", ja: "嫌がらせ・いじめ", zh: "骚扰与霸凌"),

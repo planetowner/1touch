@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/api_image_headers.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
+import 'package:onetouch/features/community/community_attachment_actions.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/features/community/community_ui.dart';
@@ -14,6 +16,66 @@ import 'package:share_plus/share_plus.dart';
 import 'support/stub_community_repository.dart';
 
 void main() {
+  testWidgets('attachment action opens the native save and share choice',
+      (tester) async {
+    final calls = <MethodCall>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(communityAttachmentChannel, (call) async {
+      calls.add(call);
+      return null;
+    });
+    addTearDown(() => TestDefaultBinaryMessengerBinding
+        .instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(communityAttachmentChannel, null));
+    await tester.pumpWidget(const MaterialApp(
+      home: CommunityAttachmentViewer(
+        mediaUrl: 'https://example.com/photo.jpg',
+      ),
+    ));
+    await tester.pump();
+    expect(find.text('1/1'), findsOneWidget);
+    await tester
+        .tap(find.byKey(const ValueKey('community-attachment-actions')));
+    await tester.pump();
+    expect(calls.single.method, 'choose');
+    expect(calls.single.arguments, containsPair('share', 'Share'));
+    expect((calls.single.arguments as Map).containsKey('cancel'), isFalse);
+  });
+
+  testWidgets('attachment error banner stays on the viewer only',
+      (tester) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(communityAttachmentChannel, (call) async {
+      throw PlatformException(code: 'test_error');
+    });
+    addTearDown(() => TestDefaultBinaryMessengerBinding
+        .instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(communityAttachmentChannel, null));
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Builder(builder: (context) {
+          return TextButton(
+            onPressed: () => showCommunityAttachmentViewer(
+              context,
+              mediaUrl: 'https://example.com/photo.jpg',
+            ),
+            child: const Text('Open photo'),
+          );
+        }),
+      ),
+    ));
+    await tester.tap(find.text('Open photo'));
+    await tester.pumpAndSettle();
+    await tester
+        .tap(find.byKey(const ValueKey('community-attachment-actions')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Unable to save or share attachment.'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('community-attachment-close')));
+    await tester.pumpAndSettle();
+    expect(find.text('Unable to save or share attachment.'), findsNothing);
+  });
+
   for (final width in [320.0, 430.0]) {
     testWidgets('post blank space opens the post at width $width',
         (tester) async {
@@ -164,6 +226,38 @@ void main() {
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('tapping outside the photo closes the viewer at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Builder(builder: (context) {
+            return TextButton(
+              onPressed: () => showCommunityAttachmentViewer(
+                context,
+                mediaUrl: 'https://example.com/photo.jpg',
+              ),
+              child: const Text('Open photo'),
+            );
+          }),
+        ),
+      ));
+
+      await tester.tap(find.text('Open photo'));
+      await tester.pumpAndSettle();
+      await tester
+          .tap(find.byKey(const ValueKey('community-attachment-full-image')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('community-attachment-viewer')),
+          findsOneWidget);
+
+      await tester.tapAt(Offset(8, size.height / 2));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('community-attachment-viewer')),
+          findsNothing);
+    });
+
     testWidgets('photo swipes do not close the viewer at $size',
         (tester) async {
       await tester.binding.setSurfaceSize(size);
@@ -197,14 +291,18 @@ void main() {
 
       await tester.tap(find.text('Open photos'));
       await tester.pumpAndSettle();
-      expect(find.text('2 / 2'), findsOneWidget);
+      expect(find.text('2/2'), findsOneWidget);
+      final index = find.byKey(const ValueKey('community-attachment-index'));
+      expect(tester.getSize(index).height, 34);
+      expect(tester.getSize(index).width,
+          closeTo(tester.getSize(find.text('2/2')).width + 32, 0.01));
 
       await tester.dragFrom(
         Offset(40, size.height / 2),
         Offset(size.width * 0.7, 0),
       );
       await tester.pumpAndSettle();
-      expect(find.text('1 / 2'), findsOneWidget);
+      expect(find.text('1/2'), findsOneWidget);
       expect(find.byKey(const ValueKey('community-attachment-viewer')),
           findsOneWidget);
 
@@ -240,12 +338,20 @@ void main() {
       final transform =
           find.byKey(const ValueKey('community-attachment-image-transform'));
       final imageWidget = tester.widget<Image>(image);
-      expect(imageWidget.fit, BoxFit.contain);
-      expect(tester.getSize(image), size);
+      expect(imageWidget.fit, BoxFit.cover);
+      expect(tester.getSize(image).width, lessThan(size.width));
+      expect(
+        tester
+                .getRect(
+                    find.byKey(const ValueKey('community-attachment-index')))
+                .top -
+            tester.getRect(image).bottom,
+        closeTo(16, 0.01),
+      );
       expect(
           tester.widget<Transform>(transform).transform.getMaxScaleOnAxis(), 1);
 
-      final center = size.center(Offset.zero);
+      final center = tester.getCenter(image);
       final left =
           await tester.startGesture(center + const Offset(-40, 0), pointer: 1);
       final right =

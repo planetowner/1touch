@@ -110,7 +110,7 @@ void main() {
         if (count == 6) {
           await tester.tap(overflow);
           await tester.pumpAndSettle();
-          expect(find.text('5 / 6'), findsOneWidget);
+          expect(find.text('5/6'), findsOneWidget);
           await tester
               .tap(find.byKey(const ValueKey('community-attachment-close')));
           await tester.pumpAndSettle();

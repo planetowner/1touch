@@ -6,6 +6,8 @@ void showAppSnackBar(
   String message, {
   Duration duration = const Duration(seconds: 4),
   bool replaceCurrent = false,
+  EdgeInsets? contentPadding,
+  bool alignCloseIconWithText = false,
 }) {
   final messenger = ScaffoldMessenger.of(context);
   if (replaceCurrent) messenger.hideCurrentSnackBar();
@@ -21,6 +23,8 @@ void showAppSnackBar(
       duration: duration,
       content: AppRuleNotice(
         message: message,
+        contentPadding: contentPadding,
+        alignCloseIconWithText: alignCloseIconWithText,
         onClose: () =>
             messenger.hideCurrentSnackBar(reason: SnackBarClosedReason.dismiss),
       ),
