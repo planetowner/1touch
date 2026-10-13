@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:http/http.dart' as http;
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/post_attachments/api/api_post_attachment_response.dart';
@@ -22,11 +20,13 @@ class ApiPostAttachmentRepository implements PostAttachmentRepository {
 
   @override
   Future<UploadedPostAttachment> upload({
-    required Uint8List bytes,
+    required Stream<List<int>> content,
+    required int byteLength,
     required String filename,
+    void Function(int sentBytes, int totalBytes)? onProgress,
   }) async {
-    if (bytes.isEmpty) {
-      throw ArgumentError.value(bytes, 'bytes', 'must not be empty');
+    if (byteLength <= 0) {
+      throw ArgumentError.value(byteLength, 'byteLength', 'must be positive');
     }
     final normalizedFilename = filename.trim();
     if (normalizedFilename.isEmpty) {
@@ -34,11 +34,22 @@ class ApiPostAttachmentRepository implements PostAttachmentRepository {
     }
 
     final uri = _api.baseUri.resolve('attachments/upload');
+    var sentBytes = 0;
+    final trackedContent = content.map((chunk) {
+      sentBytes += chunk.length;
+      if (sentBytes > byteLength) {
+        throw const FormatException('Attachment exceeded its declared size.');
+      }
+      // 네트워크 스트림에 넘긴 파일 바이트만 세고 multipart 헤더는 제외해요.
+      onProgress?.call(sentBytes, byteLength);
+      return chunk;
+    });
     final request = http.MultipartRequest('POST', uri)
       ..files.add(
-        http.MultipartFile.fromBytes(
+        http.MultipartFile(
           'file',
-          bytes,
+          trackedContent,
+          byteLength,
           filename: normalizedFilename,
         ),
       );
@@ -51,7 +62,7 @@ class ApiPostAttachmentRepository implements PostAttachmentRepository {
     final apiResponse = ApiPostAttachmentUploadResponse.fromJson(decoded);
     final contentType = apiResponse.contentType.trim().toLowerCase();
     if (apiResponse.attachmentId < 1 ||
-        apiResponse.byteSize != bytes.length ||
+        apiResponse.byteSize != byteLength ||
         !_allowedContentTypes.contains(contentType)) {
       throw const FormatException(
         'Invalid attachment-upload response metadata.',

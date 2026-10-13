@@ -6,6 +6,7 @@ import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/features/community/community_media.dart';
 import 'package:onetouch/features/community/community_ui.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 import 'support/fake_video_platform.dart';
@@ -18,6 +19,86 @@ void main() {
     VideoPlayerPlatform.instance = video;
     addTearDown(() => VideoPlayerPlatform.instance = original);
   });
+
+  testWidgets('video shows the football while preparing or buffering',
+      (tester) async {
+    video = FakeVideoPlatform(autoInitialize: false);
+    VideoPlayerPlatform.instance = video;
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: SizedBox(
+                width: 100,
+                height: 100,
+                child: CommunityVideo(url: _attachment(1).mediaUrl!)))));
+    await tester.pump();
+    expect(find.byType(FootballLoadingIndicator), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+
+    video.streams[0]!.add(VideoEvent(
+        eventType: VideoEventType.initialized,
+        size: const Size(292, 292),
+        duration: const Duration(seconds: 8)));
+    await tester.pumpAndSettle();
+    expect(find.byType(FootballLoadingIndicator), findsNothing);
+
+    video.streams[0]!.add(VideoEvent(eventType: VideoEventType.bufferingStart));
+    await tester.pump();
+    await tester.pump();
+    expect(find.byType(FootballLoadingIndicator), findsOneWidget);
+
+    video.streams[0]!.add(VideoEvent(eventType: VideoEventType.bufferingEnd));
+    await tester.pumpAndSettle();
+    expect(find.byType(FootballLoadingIndicator), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final size in [const Size(320, 640), const Size(430, 932)]) {
+    testWidgets('viewer overlays playback and progress on video at $size',
+        (tester) async {
+      video = FakeVideoPlatform(autoInitialize: false);
+      VideoPlayerPlatform.instance = video;
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final attachment = _attachment(1);
+      await tester.pumpWidget(MaterialApp(
+          home: CommunityAttachmentViewer(
+              mediaUrl: attachment.mediaUrl!, attachments: [attachment])));
+      await tester.pump();
+      video.streams[0]!.add(VideoEvent(
+          eventType: VideoEventType.initialized,
+          size: const Size(900, 1600),
+          duration: const Duration(seconds: 8)));
+      await tester.pumpAndSettle();
+
+      final videoFinder = find.byType(CommunityVideo);
+      final progressFinder =
+          find.byKey(const ValueKey('community-video-progress'));
+      final videoSize = tester.getSize(videoFinder);
+      expect(videoSize.width / videoSize.height, closeTo(9 / 16, 0.001));
+      expect(videoSize.width, lessThanOrEqualTo(size.width - 48));
+      expect(videoSize.height, lessThanOrEqualTo(size.height - 50));
+      expect(find.byKey(const ValueKey('community-video-play-overlay')),
+          findsOneWidget);
+      expect(progressFinder, findsOneWidget);
+      expect(tester.getRect(progressFinder).bottom,
+          closeTo(tester.getRect(videoFinder).bottom, 0.01));
+      expect(tester.getSize(progressFinder).height, lessThanOrEqualTo(20));
+      expect(find.byType(IconButton), findsNothing);
+
+      await tester.tapAt(tester.getCenter(videoFinder));
+      await tester.pump();
+      expect(video.playing, contains(0));
+      expect(find.byKey(const ValueKey('community-video-play-overlay')),
+          findsNothing);
+
+      await tester.tapAt(tester.getCenter(videoFinder));
+      await tester.pump();
+      expect(video.playing, isEmpty);
+      expect(find.byKey(const ValueKey('community-video-play-overlay')),
+          findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   for (final fullScreen in [false, true]) {
     testWidgets(
@@ -124,14 +205,14 @@ void main() {
     expect(video.playing, isEmpty);
     expect(video.sources.first.httpHeaders['Authorization'],
         'Bearer community-video-token');
-    await tester.tap(find.byIcon(Icons.play_arrow));
+    await tester.tapAt(tester.getCenter(find.byType(PageView)));
     await tester.pump();
     expect(video.playing, {0});
     await tester.drag(find.byType(PageView), const Offset(-700, 0));
     await tester.pumpAndSettle();
     expect(find.text('2/2'), findsOneWidget);
     expect(video.playing, isEmpty);
-    await tester.tap(find.byIcon(Icons.play_arrow));
+    await tester.tapAt(tester.getCenter(find.byType(PageView)));
     await tester.pump();
     expect(video.playing, {1});
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);

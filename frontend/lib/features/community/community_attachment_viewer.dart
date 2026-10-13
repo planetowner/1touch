@@ -78,6 +78,7 @@ class _CommunityAttachmentViewerState extends State<CommunityAttachmentViewer> {
   double _scale = 1;
   double _gestureStartScale = 1;
   bool _busy = false;
+  final Map<int, double> _videoAspectRatios = {};
 
   Future<void> _chooseAction() async {
     if (_busy) return;
@@ -118,8 +119,11 @@ class _CommunityAttachmentViewerState extends State<CommunityAttachmentViewer> {
         body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
+              final aspectRatio = _attachments[_index].isVideo
+                  ? (_videoAspectRatios[_index] ?? 3 / 4)
+                  : 3 / 4;
               final width = (constraints.maxWidth - 48)
-                  .clamp(0.0, (constraints.maxHeight - 50) * 0.75);
+                  .clamp(0.0, (constraints.maxHeight - 50) * aspectRatio);
               return Stack(
                 children: [
                   Positioned.fill(
@@ -133,7 +137,7 @@ class _CommunityAttachmentViewerState extends State<CommunityAttachmentViewer> {
                       SizedBox(
                         width: width,
                         child: AspectRatio(
-                          aspectRatio: 3 / 4,
+                          aspectRatio: aspectRatio,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: DecoratedBox(
@@ -162,7 +166,16 @@ class _CommunityAttachmentViewerState extends State<CommunityAttachmentViewer> {
                                               key:
                                                   ValueKey(attachment.mediaUrl),
                                               url: attachment.mediaUrl!,
-                                              controls: index == _index)
+                                              controls: index == _index,
+                                              onAspectRatioKnown: (ratio) {
+                                                if (mounted &&
+                                                    _videoAspectRatios[index] !=
+                                                        ratio) {
+                                                  setState(() =>
+                                                      _videoAspectRatios[
+                                                          index] = ratio);
+                                                }
+                                              })
                                           : GestureDetector(
                                               behavior: HitTestBehavior.opaque,
                                               onScaleStart: (_) =>

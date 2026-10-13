@@ -6,6 +6,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/features/community/community_post_image.dart';
 import 'package:onetouch/features/community/community_ui.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/post.dart';
 
@@ -166,10 +167,12 @@ class CommunityVideo extends StatefulWidget {
     required this.url,
     this.controls = false,
     this.onOpen,
+    this.onAspectRatioKnown,
   });
   final String url;
   final bool controls;
   final VoidCallback? onOpen;
+  final ValueChanged<double>? onAspectRatioKnown;
   @override
   State<CommunityVideo> createState() => _CommunityVideoState();
 }
@@ -191,7 +194,13 @@ class _CommunityVideoState extends State<CommunityVideo>
   Future<void> _initialize() async {
     try {
       await _controller.initialize();
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+        final aspectRatio = _controller.value.aspectRatio;
+        if (aspectRatio.isFinite && aspectRatio > 0) {
+          widget.onAspectRatioKnown?.call(aspectRatio);
+        }
+      }
     } catch (_) {
       if (mounted) setState(() => _failed = true);
     }
@@ -243,10 +252,15 @@ class _CommunityVideoState extends State<CommunityVideo>
     return _content();
   }
 
+  Widget _loadingBall() => Theme(
+        data: ThemeData.dark(),
+        child: const Center(child: FootballLoadingIndicator()),
+      );
+
   Widget _content() {
     if (_failed) return const SizedBox.expand();
     if (!_controller.value.isInitialized) {
-      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+      return _loadingBall();
     }
     final video = FittedBox(
         fit: widget.controls ? BoxFit.contain : BoxFit.cover,
@@ -254,18 +268,50 @@ class _CommunityVideoState extends State<CommunityVideo>
             width: _controller.value.size.width,
             height: _controller.value.size.height,
             child: VideoPlayer(_controller)));
-    if (!widget.controls) return video;
-    return Column(children: [
-      Expanded(child: video),
+    final videoWithLoading = ValueListenableBuilder<VideoPlayerValue>(
+      valueListenable: _controller,
+      builder: (context, value, _) => Stack(
+        fit: StackFit.expand,
+        children: [
+          video,
+          if (value.isBuffering) _loadingBall(),
+        ],
+      ),
+    );
+    if (!widget.controls) return videoWithLoading;
+    return Stack(fit: StackFit.expand, children: [
+      videoWithLoading,
+      GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => _controller.value.isPlaying
+            ? _controller.pause()
+            : _controller.play(),
+      ),
       ValueListenableBuilder<VideoPlayerValue>(
           valueListenable: _controller,
-          builder: (context, value, _) => IconButton(
-              onPressed: () =>
-                  value.isPlaying ? _controller.pause() : _controller.play(),
-              icon: Icon(value.isPlaying ? Icons.pause : Icons.play_arrow,
-                  color: Colors.white, size: 40))),
-      VideoProgressIndicator(_controller,
-          allowScrubbing: true, padding: const EdgeInsets.all(16)),
+          builder: (context, value, _) => value.isPlaying
+              ? const SizedBox.shrink()
+              : const IgnorePointer(
+                  key: ValueKey('community-video-play-overlay'),
+                  child: Center(
+                      child: CommunityIcon('play',
+                          size: 40, color: Colors.white)))),
+      Positioned(
+        left: 0,
+        right: 0,
+        bottom: 0,
+        child: VideoProgressIndicator(
+          _controller,
+          key: const ValueKey('community-video-progress'),
+          allowScrubbing: true,
+          padding: const EdgeInsets.only(top: 12),
+          colors: const VideoProgressColors(
+            playedColor: Colors.white,
+            bufferedColor: Colors.white38,
+            backgroundColor: Colors.white24,
+          ),
+        ),
+      ),
     ]);
   }
 }

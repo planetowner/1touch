@@ -10,6 +10,7 @@ import 'package:onetouch/data/post_attachments/api/api_post_attachment_repositor
 void main() {
   test('uploads an authenticated multipart attachment', () async {
     final bytes = Uint8List.fromList(utf8.encode('post-image-bytes'));
+    final progress = <(int, int)>[];
     final repository = ApiPostAttachmentRepository(
       api: ApiClient(
           client: MockClient((request) async {
@@ -41,13 +42,47 @@ void main() {
     );
 
     final uploaded = await repository.upload(
-      bytes: bytes,
+      content: Stream.value(bytes),
+      byteLength: bytes.length,
       filename: 'match.png',
+      onProgress: (sent, total) => progress.add((sent, total)),
     );
 
     expect(uploaded.attachmentId, 41);
     expect(uploaded.contentType, 'image/png');
     expect(uploaded.byteSize, bytes.length);
+    expect(progress.last, (bytes.length, bytes.length));
+  });
+
+  test('upload progress counts file bytes, not multipart framing', () async {
+    final progress = <(int, int)>[];
+    final repository = ApiPostAttachmentRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.bodyBytes.length, greaterThan(5));
+          return http.Response(
+              jsonEncode({
+                'attachment_id': 41,
+                'content_type': 'image/jpeg',
+                'byte_size': 5,
+              }),
+              201);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+    );
+
+    await repository.upload(
+      content: Stream.fromIterable([
+        <int>[1, 2],
+        <int>[3, 4, 5]
+      ]),
+      byteLength: 5,
+      filename: 'photo.jpg',
+      onProgress: (sent, total) => progress.add((sent, total)),
+    );
+    expect(progress, [(2, 5), (5, 5)]);
   });
 
   test('deletes an unpublished attachment', () async {
@@ -80,11 +115,17 @@ void main() {
     );
 
     await expectLater(
-      repository.upload(bytes: Uint8List(0), filename: 'empty.png'),
+      repository.upload(
+          content: Stream.value(Uint8List(0)),
+          byteLength: 0,
+          filename: 'empty.png'),
       throwsArgumentError,
     );
     await expectLater(
-      repository.upload(bytes: Uint8List.fromList([1]), filename: ' '),
+      repository.upload(
+          content: Stream.value(Uint8List.fromList([1])),
+          byteLength: 1,
+          filename: ' '),
       throwsArgumentError,
     );
     await expectLater(repository.delete(0), throwsRangeError);
@@ -122,12 +163,18 @@ void main() {
     );
 
     await expectLater(
-      repository.upload(bytes: bytes, filename: 'match.png'),
+      repository.upload(
+          content: Stream.value(bytes),
+          byteLength: bytes.length,
+          filename: 'match.png'),
       throwsA(isA<http.ClientException>()),
     );
     for (var i = 1; i < responses.length; i++) {
       await expectLater(
-        repository.upload(bytes: bytes, filename: 'match.png'),
+        repository.upload(
+            content: Stream.value(bytes),
+            byteLength: bytes.length,
+            filename: 'match.png'),
         throwsFormatException,
       );
     }

@@ -8,6 +8,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/post_attachments/post_attachment_repository.dart';
 import 'package:onetouch/data/post_attachments/post_attachment_repository_provider.dart'
     as attachment_providers;
+import 'package:onetouch/data/post_attachments/platform_video_encoder.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
@@ -18,6 +19,8 @@ import 'package:onetouch/features/community/community_ui.dart';
 import 'package:onetouch/features/community/post_attachment_publisher.dart';
 import 'package:onetouch/features/community/post_composer_widgets.dart';
 import 'package:onetouch/features/media/asset_media_picker.dart';
+import 'package:onetouch/features/media/attachment_transfer_progress.dart';
+import 'package:onetouch/features/media/video_encoder.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_draft.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -31,12 +34,14 @@ class AddPost extends StatefulWidget {
       this.editingPost,
       this.postRepository,
       this.attachmentRepository,
+      this.videoEncoder,
       this.pickMedia,
       this.draftRepository});
   final int? teamId;
   final Post? editingPost;
   final PostRepository? postRepository;
   final PostAttachmentRepository? attachmentRepository;
+  final VideoEncoder? videoEncoder;
   final PostMediaPicker? pickMedia;
   final PostDraftRepository? draftRepository;
   @override
@@ -55,6 +60,7 @@ class _AddPostState extends State<AddPost> {
   final _titleController = TextEditingController();
   final _bodyController = TextEditingController();
   final List<XFile> _mediaFiles = [];
+  AttachmentTransferProgress? _transferProgress;
   final List<PostAttachment> _existingAttachments = [];
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
@@ -65,7 +71,53 @@ class _AddPostState extends State<AddPost> {
       widget.draftRepository ?? ApiPostDraftRepository(api: apiClient);
   PostAttachmentPublisher get _publisher => PostAttachmentPublisher(
       postRepository: _postRepository,
-      attachmentRepository: _attachmentRepository);
+      attachmentRepository: _attachmentRepository,
+      videoEncoder: widget.videoEncoder ?? PlatformVideoEncoder());
+
+  void _onEncodingProgress(double fraction, int fileIndex) {
+    _setTransferProgress(AttachmentTransferProgress(
+      phase: AttachmentTransferPhase.encoding,
+      fileIndex: fileIndex,
+      fileCount: _mediaFiles.length,
+      fraction: fraction,
+    ));
+  }
+
+  void _onVerificationProgress(double fraction, int fileIndex) {
+    _setTransferProgress(AttachmentTransferProgress(
+      phase: AttachmentTransferPhase.verifying,
+      fileIndex: fileIndex,
+      fileCount: _mediaFiles.length,
+      fraction: fraction,
+    ));
+  }
+
+  void _setTransferProgress(AttachmentTransferProgress progress) {
+    if (!mounted) return;
+    if (_transferProgress?.phase == progress.phase &&
+        _transferProgress?.fileIndex == progress.fileIndex &&
+        _transferProgress?.percent == progress.percent) {
+      return;
+    }
+    setState(() => _transferProgress = progress);
+  }
+
+  void _onUploadProgress(int sent, int total, int fileIndex) {
+    _setTransferProgress(AttachmentTransferProgress(
+      phase: AttachmentTransferPhase.uploading,
+      fileIndex: fileIndex,
+      fileCount: _mediaFiles.length,
+      fraction: total == 0 ? null : sent / total,
+    ));
+  }
+
+  void _onSaving() {
+    _setTransferProgress(AttachmentTransferProgress(
+      phase: AttachmentTransferPhase.saving,
+      fileIndex: _mediaFiles.isEmpty ? 0 : _mediaFiles.length - 1,
+      fileCount: _mediaFiles.length,
+    ));
+  }
 
   @override
   void initState() {
@@ -385,9 +437,20 @@ class _AddPostState extends State<AddPost> {
       attachmentIds: ids);
 
   Future<void> _saveDraftContent() async {
+    if (_mediaFiles.isNotEmpty) {
+      _setTransferProgress(AttachmentTransferProgress(
+        phase: AttachmentTransferPhase.preparing,
+        fileIndex: 0,
+        fileCount: _mediaFiles.length,
+      ));
+    }
     final draft = await _publisher.withUploadedAttachments<PostDraft>(
         mediaFiles: List.unmodifiable(_mediaFiles),
         existingIds: _existingAttachments.map((a) => a.attachmentId).toList(),
+        onUploadProgress: _onUploadProgress,
+        onEncodingProgress: _onEncodingProgress,
+        onVerificationProgress: _onVerificationProgress,
+        onSaving: _onSaving,
         save: (ids) =>
             _draftRepository.saveDraft(_input(ids), postId: _draft?.postId));
     if (!mounted) return;
@@ -407,12 +470,21 @@ class _AddPostState extends State<AddPost> {
     try {
       await _saveDraftContent();
       if (mounted) await _finish(false);
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
-        _showMessage(tr(context, 'Unable to save draft. Please try again.'));
+        _showMessage(tr(
+            context,
+            error is VideoUploadException
+                ? 'Unable to upload video.'
+                : 'Unable to save draft. Please try again.'));
       }
     } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _transferProgress = null;
+        });
+      }
     }
   }
 
@@ -430,13 +502,22 @@ class _AddPostState extends State<AddPost> {
         await _loadDrafts();
         // 불러오기 오류 안내는 _loadDrafts에서 재시도 동작과 함께 보여줘요.
         if (_draftLoadFailed) return;
-      } catch (_) {
+      } catch (error) {
         if (mounted) {
-          _showMessage(tr(context, 'Unable to save draft. Please try again.'));
+          _showMessage(tr(
+              context,
+              error is VideoUploadException
+                  ? 'Unable to upload video.'
+                  : 'Unable to save draft. Please try again.'));
         }
         return;
       } finally {
-        if (mounted) setState(() => _isSubmitting = false);
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+            _transferProgress = null;
+          });
+        }
       }
     }
     if (mounted) await _resumeDraft();
@@ -474,7 +555,16 @@ class _AddPostState extends State<AddPost> {
       _showMessage(tr(context, 'Title and body are required.'));
       return;
     }
-    setState(() => _isSubmitting = true);
+    setState(() {
+      _isSubmitting = true;
+      if (_mediaFiles.isNotEmpty) {
+        _transferProgress = AttachmentTransferProgress(
+          phase: AttachmentTransferPhase.preparing,
+          fileIndex: 0,
+          fileCount: _mediaFiles.length,
+        );
+      }
+    });
     // 수정으로 제거될 첨부의 미리보기를 서버 삭제 전에 분리해요.
     await WidgetsBinding.instance.endOfFrame;
     if (!mounted) return;
@@ -488,13 +578,22 @@ class _AddPostState extends State<AddPost> {
         }
       } else if (post == null) {
         await _publisher.publish(
-            post: _input([]), mediaFiles: List.unmodifiable(_mediaFiles));
+            post: _input([]),
+            mediaFiles: List.unmodifiable(_mediaFiles),
+            onUploadProgress: _onUploadProgress,
+            onEncodingProgress: _onEncodingProgress,
+            onVerificationProgress: _onVerificationProgress,
+            onSaving: _onSaving);
       } else {
         final update =
             await _publisher.withUploadedAttachments<UpdatePostInput>(
                 mediaFiles: List.unmodifiable(_mediaFiles),
                 existingIds:
                     _existingAttachments.map((a) => a.attachmentId).toList(),
+                onUploadProgress: _onUploadProgress,
+                onEncodingProgress: _onEncodingProgress,
+                onVerificationProgress: _onVerificationProgress,
+                onSaving: _onSaving,
                 save: (ids) async {
                   final update = UpdatePostInput(
                       postId: post.postId,
@@ -509,16 +608,23 @@ class _AddPostState extends State<AddPost> {
         return;
       }
       if (mounted) Navigator.pop(context, true);
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         _showMessage(tr(
             context,
-            widget.editingPost == null
-                ? 'Unable to publish post. Please try again.'
-                : 'Unable to update post. Please try again.'));
+            error is VideoUploadException
+                ? 'Unable to upload video.'
+                : widget.editingPost == null
+                    ? 'Unable to publish post. Please try again.'
+                    : 'Unable to update post. Please try again.'));
       }
     } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _transferProgress = null;
+        });
+      }
     }
   }
 
@@ -574,6 +680,7 @@ class _AddPostState extends State<AddPost> {
                             titleController: _titleController,
                             bodyController: _bodyController,
                             mediaFiles: _mediaFiles,
+                            transferProgress: _transferProgress,
                             existingAttachments:
                                 _isSubmitting && widget.editingPost != null
                                     ? const []

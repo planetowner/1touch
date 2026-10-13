@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 class FakeVideoPlatform extends VideoPlayerPlatform {
-  FakeVideoPlatform({this.initializationError});
+  FakeVideoPlatform({this.initializationError, this.autoInitialize = true});
 
   final Object? initializationError;
+  final bool autoInitialize;
   final streams = <int, StreamController<VideoEvent>>{};
   final playing = <int>{};
   final sources = <DataSource>[];
@@ -22,7 +23,7 @@ class FakeVideoPlatform extends VideoPlayerPlatform {
     streams[id] = stream;
     if (initializationError != null) {
       stream.addError(initializationError!);
-    } else {
+    } else if (autoInitialize) {
       stream.add(VideoEvent(
         eventType: VideoEventType.initialized,
         size: const Size(292, 292),

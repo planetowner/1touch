@@ -10,6 +10,9 @@ import 'package:onetouch/core/api_image_headers.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/post.dart';
+import 'package:onetouch/features/media/attachment_transfer_progress.dart';
+import 'package:onetouch/features/community/post_attachment_progress_card.dart';
+import 'package:onetouch/features/community/local_video_thumbnail.dart';
 
 class PostComposerFields extends StatelessWidget {
   const PostComposerFields({
@@ -19,6 +22,7 @@ class PostComposerFields extends StatelessWidget {
     required this.bodyController,
     required this.mediaFiles,
     this.existingAttachments = const [],
+    this.transferProgress,
     required this.onCategoryChanged,
     required this.onPickMedia,
     required this.onRemoveMedia,
@@ -30,6 +34,7 @@ class PostComposerFields extends StatelessWidget {
   final TextEditingController bodyController;
   final List<XFile> mediaFiles;
   final List<PostAttachment> existingAttachments;
+  final AttachmentTransferProgress? transferProgress;
   final ValueChanged<PostCategory> onCategoryChanged;
   final VoidCallback? onPickMedia;
   final ValueChanged<int> onRemoveMedia;
@@ -118,6 +123,16 @@ class PostComposerFields extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 28),
+        if (transferProgress case final progress?) ...[
+          if (mediaFiles.isNotEmpty) ...[
+            PostAttachmentProgressCard(
+              file: mediaFiles[
+                  progress.fileIndex.clamp(0, mediaFiles.length - 1)],
+              progress: progress,
+            ),
+            const SizedBox(height: 16),
+          ],
+        ],
         if (existingAttachments.isNotEmpty || mediaFiles.isNotEmpty) ...[
           SizedBox(
             height: 100,
@@ -162,11 +177,19 @@ class PostComposerFields extends StatelessWidget {
                                   )),
                                 )
                           : file!.mimeType?.startsWith('video/') == true
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 100,
                                   height: 100,
-                                  child: Center(
-                                      child: CommunityIcon('play', size: 40)))
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      LocalVideoThumbnail(path: file.path),
+                                      const Center(
+                                          child: CommunityIcon('play',
+                                              size: 40, color: Colors.white)),
+                                    ],
+                                  ),
+                                )
                               : Image.file(File(file.path),
                                   width: 100,
                                   height: 100,

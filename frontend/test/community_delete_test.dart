@@ -509,7 +509,12 @@ class _EditingAttachmentsRepository implements PostAttachmentRepository {
 
   @override
   Future<UploadedPostAttachment> upload(
-      {required Uint8List bytes, required String filename}) async {
+      {required Stream<List<int>> content,
+      required int byteLength,
+      required String filename,
+      void Function(int sentBytes, int totalBytes)? onProgress}) async {
+    await content.drain<void>();
+    onProgress?.call(byteLength, byteLength);
     uploadedNames.add(filename);
     return const UploadedPostAttachment(
         attachmentId: 8, contentType: 'image/jpeg', byteSize: 3);
