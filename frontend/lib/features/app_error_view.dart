@@ -110,7 +110,8 @@ class _PhotoErrorView extends StatelessWidget {
             _FadedErrorPhoto(
               asset: config.imageAsset!,
               background: background,
-              height: constraints.maxHeight * 0.65,
+              height: (constraints.maxHeight * 0.72).roundToDouble(),
+              photoScale: statusCode == 404 ? 1.25 : 1.0,
             ),
             SafeArea(
               child: Padding(
@@ -140,7 +141,7 @@ class _PhotoErrorView extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const Spacer(flex: 3),
+                    const Spacer(),
                     Text(
                       tr(context, config.title),
                       key: ValueKey('app-error-$statusCode-title'),
@@ -154,7 +155,12 @@ class _PhotoErrorView extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: Body2.style.copyWith(color: foreground),
                     ),
-                    const Spacer(),
+                    if (config.action != null && onAction != null)
+                      SizedBox(
+                        height: (constraints.maxHeight * 0.25)
+                            .clamp(24.0, 140.0)
+                            .toDouble(),
+                      ),
                     if (config.action != null && onAction != null)
                       SizedBox(
                         width: double.infinity,
@@ -163,9 +169,8 @@ class _PhotoErrorView extends StatelessWidget {
                           key: ValueKey('app-error-$statusCode-action'),
                           onPressed: onAction,
                           style: FilledButton.styleFrom(
-                            backgroundColor: isDark
-                                ? AppPalette.white.withValues(alpha: 0.5)
-                                : AppPalette.black.withValues(alpha: 0.5),
+                            backgroundColor:
+                                isDark ? AppPalette.white : AppPalette.black,
                             foregroundColor:
                                 isDark ? AppPalette.black : AppPalette.white,
                             shape: RoundedRectangleBorder(
@@ -178,6 +183,8 @@ class _PhotoErrorView extends StatelessWidget {
                           ),
                         ),
                       ),
+                    if (config.action == null || onAction == null)
+                      const Spacer(),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -195,42 +202,61 @@ class _FadedErrorPhoto extends StatelessWidget {
     required this.asset,
     required this.background,
     required this.height,
+    required this.photoScale,
   });
 
   final String asset;
   final Color background;
   final double height;
+  final double photoScale;
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    // 제목과 버튼 영역 앞에서 사진이 완전히 사라지도록 화면 높이에 맞춰 반경을 조절해요.
+    final fadeEnd = (size.height - bottomInset - 300).clamp(0.0, size.height);
+    final radius = fadeEnd / (size.width * 0.85);
+
     return Positioned(
       top: 0,
       left: 0,
       right: 0,
       height: height,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(asset, fit: BoxFit.cover, alignment: Alignment.topCenter),
-          IgnorePointer(
-            child: DecoratedBox(
-              key: const ValueKey('app-error-photo-fade'),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.transparent,
-                    background.withValues(alpha: 0.8),
-                    background,
-                  ],
-                  stops: const [0.0, 0.45, 0.82, 1.0],
+      child: ClipRect(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Transform.scale(
+              key: const ValueKey('app-error-photo-scale'),
+              scale: photoScale,
+              alignment: Alignment.topCenter,
+              child: Image.asset(
+                asset,
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+              ),
+            ),
+            IgnorePointer(
+              child: DecoratedBox(
+                key: const ValueKey('app-error-photo-fade'),
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.topCenter,
+                    radius: radius,
+                    colors: [
+                      Colors.transparent,
+                      Colors.transparent,
+                      background.withValues(alpha: 0.8),
+                      background,
+                    ],
+                    stops: const [0.0, 0.58, 0.78, 0.85],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -267,14 +293,14 @@ class AppErrorScreen extends StatelessWidget {
   VoidCallback? _actionFor(BuildContext context) {
     return switch (statusCode) {
       401 => () => context.go('/onboarding'),
-      403 => () {
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
+      403 || 502 || 503 => () {
+          if (context.canPop()) {
+            context.pop();
           } else {
             context.go('/home');
           }
         },
-      404 => () => context.go('/home'),
+      404 || 429 || 504 => () => context.go('/home'),
       500 => onRetry,
       _ => null,
     };

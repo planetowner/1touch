@@ -26,36 +26,43 @@ const Map<int, AppErrorConfig> appErrorConfigs = {
     title: "Please join again",
     message: "Your session expired. Please sign in again.",
     action: "Sign in again",
+    imageAsset: 'assets/error_session_expired.png',
   ),
   403: AppErrorConfig(
     title: "Red card!",
     message: "You don't have permission to access this page.",
     action: "Go back",
+    imageAsset: 'assets/error_forbidden.png',
   ),
   429: AppErrorConfig(
     title: "You're on the bench for a moment",
     message: "Too many requests. Please try again later.",
-    action: null,
+    action: "Go home",
+    imageAsset: 'assets/error_rate_limit.png',
   ),
   500: AppErrorConfig(
     title: "VAR check",
     message: "There is a server problem. Please try again later.",
     action: "Retry",
+    imageAsset: 'assets/error_server.png',
   ),
   502: AppErrorConfig(
     title: "Pass incomplete",
     message: "Servers could not connect. Please try again later.",
-    action: null,
+    action: "Go back",
+    imageAsset: 'assets/error_gateway.png',
   ),
   503: AppErrorConfig(
     title: "Match interrupted",
     message: "The service is currently unavailable. Please try again later.",
-    action: null,
+    action: "Go back",
+    imageAsset: 'assets/error_unavailable.png',
   ),
   504: AppErrorConfig(
     title: "Beyond added time",
     message: "The server is taking too long to respond. Please try again.",
-    action: null,
+    action: "Go home",
+    imageAsset: 'assets/error_timeout.png',
   ),
 };
 
