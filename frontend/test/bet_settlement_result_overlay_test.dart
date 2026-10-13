@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/bottom_navigation.dart';
+import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -9,6 +11,7 @@ import 'package:onetouch/models/betting.dart';
 import 'package:onetouch/models/fixture.dart';
 
 import 'support/app_fonts.dart';
+import 'support/screen_pixels.dart';
 
 void main() {
   setUpAll(loadAppFonts);
@@ -98,36 +101,65 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
-      MaterialApp(
-        theme: brightness == Brightness.dark ? darktheme : whitetheme,
-        locale: Locale(language),
-        supportedLocales: appSupportedLocales,
-        localizationsDelegates: appLocalizationDelegates,
-        builder: (context, child) => FootballNamesScope(
-          names: namesByLanguage[language]!,
-          child: child!,
-        ),
-        home: Scaffold(
-          body: Stack(
-            fit: StackFit.expand,
-            children: [
-              Scaffold(
-                body: const ColoredBox(color: Colors.black),
-                bottomNavigationBar: OneTouchBottomNavigationBar(
-                  currentIndex: 0,
-                  onTap: (_) {},
+      RepaintBoundary(
+        key: const ValueKey('refund-preview-capture'),
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: brightness == Brightness.dark ? darktheme : whitetheme,
+          locale: Locale(language),
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
+          builder: (context, child) => FootballNamesScope(
+            names: namesByLanguage[language]!,
+            child: child!,
+          ),
+          home: Scaffold(
+            body: Stack(
+              fit: StackFit.expand,
+              children: [
+                Scaffold(
+                  body: const ColoredBox(color: Colors.black),
+                  bottomNavigationBar: OneTouchBottomNavigationBar(
+                    currentIndex: 0,
+                    onTap: (_) {},
+                  ),
                 ),
-              ),
-              BetSettlementResultOverlay(
-                notice: settlementNotice,
-                onDismiss: onDismiss,
-                onSeeResults: onSeeResults ?? () {},
-              ),
-            ],
+                BetSettlementResultOverlay(
+                  notice: settlementNotice,
+                  onDismiss: onDismiss,
+                  onSeeResults: onSeeResults ?? () {},
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  for (final preview in [
+    (language: 'en', brightness: Brightness.dark),
+    (language: 'ko', brightness: Brightness.light),
+  ]) {
+    testWidgets('refund preview ${preview.language} ${preview.brightness}',
+        (tester) async {
+      final previousLocale = appLocaleController.value;
+      appLocaleController.value = Locale(preview.language);
+      addTearDown(() => appLocaleController.value = previousLocale);
+      await pumpOverlay(tester,
+          onDismiss: () {},
+          language: preview.language,
+          brightness: preview.brightness,
+          settlementNotice: resultNotice('refunded', reason: 'CANCELLED'));
+      await tester.pumpAndSettle();
+      await screenPixels(
+        tester,
+        find.byKey(const ValueKey('refund-preview-capture')),
+        [const Offset(0, 0)],
+        screenshotName: 'refund-${preview.language}-${preview.brightness.name}',
+      );
+      expect(tester.takeException(), isNull);
+    });
   }
 
   testWidgets('shows the settled result above the main navigation area',
@@ -360,6 +392,33 @@ void main() {
         expect(tester.takeException(), isNull);
       });
     }
+  }
+
+  for (final entry in {'en': 285.0, 'ko': 273.0}.entries) {
+    testWidgets('refund sheet follows the ${entry.key} design height',
+        (tester) async {
+      final previousLocale = appLocaleController.value;
+      appLocaleController.value = Locale(entry.key);
+      addTearDown(() => appLocaleController.value = previousLocale);
+      await pumpOverlay(tester,
+          onDismiss: () {},
+          language: entry.key,
+          settlementNotice: resultNotice('refunded', reason: 'CANCELLED'));
+      expect(
+        tester
+            .getSize(find.byKey(const ValueKey('bet-settlement-sheet')))
+            .height,
+        closeTo(entry.value, 4),
+      );
+      final sheet =
+          tester.getRect(find.byKey(const ValueKey('bet-settlement-sheet')));
+      final icon = find.byKey(const ValueKey('bet-settlement-refund-icon'));
+      expect(icon, findsOneWidget);
+      expect(tester.widget<SvgPicture>(icon).bytesLoader, isNotNull);
+      expect(tester.getRect(icon).top - sheet.top, 48);
+      expect(tester.getSize(icon), const Size(56, 56));
+      expect(tester.takeException(), isNull);
+    });
   }
 
   for (final brightness in [Brightness.light, Brightness.dark]) {

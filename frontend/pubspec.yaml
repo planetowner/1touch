@@ -125,6 +125,7 @@ flutter:
     - assets/animations/onetouch_logo_dark.json
     - assets/animations/onetouch_logo_light.json
     - assets/match_info/
+    - assets/betting/
     - assets/standings/
     - assets/live_chat/
 

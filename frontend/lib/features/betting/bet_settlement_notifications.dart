@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/bottom_navigation.dart';
 import 'package:onetouch/core/style.dart';
@@ -328,15 +329,26 @@ class BetSettlementResultOverlay extends StatelessWidget {
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           children: [
-                            Icon(
-                              notice.won
-                                  ? Icons.celebration_outlined
-                                  : notice.refunded
-                                      ? Icons.undo
-                                      : Icons.sports_soccer_outlined,
-                              size: 56,
-                              color: foreground,
-                            ),
+                            // 환불 팝업은 피그마의 아이콘 위 여백을 유지해요.
+                            if (notice.refunded) const SizedBox(height: 24),
+                            if (notice.refunded)
+                              SvgPicture.asset(
+                                'assets/betting/undo.svg',
+                                key: const ValueKey(
+                                    'bet-settlement-refund-icon'),
+                                colorFilter: ColorFilter.mode(
+                                  foreground,
+                                  BlendMode.srcIn,
+                                ),
+                              )
+                            else
+                              Icon(
+                                notice.won
+                                    ? Icons.celebration_outlined
+                                    : Icons.sports_soccer_outlined,
+                                size: 56,
+                                color: foreground,
+                              ),
                             const SizedBox(height: 16),
                             Text(
                               _title(context),
