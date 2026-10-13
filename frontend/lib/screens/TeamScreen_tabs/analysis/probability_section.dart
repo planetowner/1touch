@@ -153,6 +153,26 @@ class _ProbabilitySectionState extends State<ProbabilitySection>
               builder: (context, constraints) {
                 const gap = 16.0;
                 final cardWidth = (constraints.maxWidth - gap) / 2;
+                final titleWidth = math.max(1.0, cardWidth - 68);
+                final titleStyle = Body1.style.copyWith(height: 1.3);
+                // 가장 긴 번역을 기준으로 같은 줄의 카드 높이를 맞춰요.
+                final titleHeight =
+                    snapshot.cards.fold<double>(60, (maxHeight, card) {
+                  final painter = TextPainter(
+                    text: TextSpan(
+                      text: tr(context, probabilityEventTitle(card.event))
+                          .replaceAll('\n', ' '),
+                      style: titleStyle,
+                    ),
+                    textDirection: Directionality.of(context),
+                    textScaler: MediaQuery.textScalerOf(context),
+                    locale: Localizations.localeOf(context),
+                  )..layout(maxWidth: titleWidth);
+                  final height = painter.height.ceilToDouble();
+                  painter.dispose();
+                  return math.max(maxHeight, height);
+                });
+                final cardHeight = math.max(165.0, titleHeight + 105);
                 return Wrap(
                   key: const ValueKey('team-probability-cards'),
                   spacing: gap,
@@ -161,8 +181,13 @@ class _ProbabilitySectionState extends State<ProbabilitySection>
                     for (final card in snapshot.cards)
                       SizedBox(
                         width: cardWidth,
-                        height: 165,
-                        child: _probabilityBox(context, snapshot, card),
+                        height: cardHeight,
+                        child: _probabilityBox(
+                          context,
+                          snapshot,
+                          card,
+                          titleHeight: titleHeight,
+                        ),
                       ),
                   ],
                 );
@@ -176,8 +201,11 @@ class _ProbabilitySectionState extends State<ProbabilitySection>
   Widget _probabilityBox(
     BuildContext context,
     TeamProbabilitySnapshot snapshot,
-    TeamProbabilityCard card,
-  ) {
+    TeamProbabilityCard card, {
+    required double titleHeight,
+  }) {
+    final title =
+        tr(context, probabilityEventTitle(card.event)).replaceAll('\n', ' ');
     return Container(
       key: ValueKey('team-probability-surface-${card.event}'),
       decoration: BoxDecoration(
@@ -211,20 +239,33 @@ class _ProbabilitySectionState extends State<ProbabilitySection>
                 SizedBox(
                   key: ValueKey('team-probability-title-slot-${card.event}'),
                   width: double.infinity,
-                  height: 39,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.topLeft,
-                    // 좁은 화면에서도 두 번째 줄의 대회·목표 이름이 사라지지 않게 해요.
-                    child: Text(
-                      tr(context, probabilityEventTitle(card.event)),
-                      maxLines:
-                          Localizations.localeOf(context).languageCode == 'ko'
-                              ? 1
-                              : 2,
-                      softWrap: false,
-                      style: Body1.style.copyWith(height: 1.3),
-                    ),
+                  height: titleHeight,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: titleHeight,
+                          child: Text(
+                            title,
+                            softWrap: true,
+                            style: Body1.style.copyWith(height: 1.3),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      SvgPicture.asset(
+                        'assets/expand_circle_right.svg',
+                        key: ValueKey('team-probability-expand-${card.event}'),
+                        width: 32,
+                        height: 32,
+                        colorFilter:
+                            Theme.of(context).brightness == Brightness.light
+                                ? const ColorFilter.mode(
+                                    Color(0xFF0A0A0A), BlendMode.srcIn)
+                                : null,
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(

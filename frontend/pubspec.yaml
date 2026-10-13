@@ -102,6 +102,7 @@ flutter:
     - assets/addpost_icon.svg
     - assets/flag_video.mp4
     - assets/error_offside.png
+    - assets/expand_circle_right.svg
     - assets/error_session_expired.png
     - assets/error_forbidden.png
     - assets/error_rate_limit.png

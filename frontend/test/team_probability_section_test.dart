@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/team_probability/team_probability_repository.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
@@ -166,10 +167,10 @@ void main() {
           .padding,
       const EdgeInsets.fromLTRB(24, 32, 24, 0),
     );
-    expect(find.text('Chances to Win\nLeague Trophy'), findsOneWidget);
-    expect(find.text('Chances to Finish\nTop 4'), findsOneWidget);
-    expect(find.text('Chances to Finish\nTop 6'), findsOneWidget);
-    expect(find.text('Chances of\nRelegation'), findsOneWidget);
+    expect(find.text('Chances to Win League Trophy'), findsOneWidget);
+    expect(find.text('Chances to Finish Top 4'), findsOneWidget);
+    expect(find.text('Chances to Finish Top 6'), findsOneWidget);
+    expect(find.text('Chances of Relegation'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('team-probability-value-league_winner')),
       findsOneWidget,
@@ -228,6 +229,22 @@ void main() {
       'top_6',
       'direct_relegation',
     ]) {
+      final surface = tester.getRect(
+        find.byKey(ValueKey('team-probability-surface-$event')),
+      );
+      final expand = tester.getRect(
+        find.byKey(ValueKey('team-probability-expand-$event')),
+      );
+      final icon = tester.widget<SvgPicture>(
+        find.byKey(ValueKey('team-probability-expand-$event')),
+      );
+      expect(expand.size, const Size(32, 32));
+      expect(expand.top, closeTo(surface.top + 16, 0.1));
+      expect(expand.right, closeTo(surface.right - 16, 0.1));
+      expect(
+        icon.colorFilter,
+        const ColorFilter.mode(Color(0xFF0A0A0A), BlendMode.srcIn),
+      );
       expect(find.byKey(ValueKey('team-probability-delta-row-$event')),
           findsNothing);
       final footer = find.byKey(ValueKey('team-probability-footer-$event'));
@@ -238,6 +255,22 @@ void main() {
       expect(tester.getBottomLeft(number).dy,
           closeTo(tester.getBottomLeft(footer).dy, 0.1));
     }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps the original probability icon color in dark mode',
+      (tester) async {
+    final repository = _StubProbabilityRepository(initial: {
+      83: _snapshot(cards: [_card('ucl_winner')]),
+    });
+
+    await tester.pumpWidget(_app(repository: repository));
+    await tester.pump();
+
+    final icon = tester.widget<SvgPicture>(
+      find.byKey(const ValueKey('team-probability-expand-ucl_winner')),
+    );
+    expect(icon.colorFilter, isNull);
     expect(tester.takeException(), isNull);
   });
 
@@ -260,15 +293,15 @@ void main() {
     await tester.pumpWidget(_app(repository: repository));
     await tester.pump();
 
-    expect(find.text('Chances to Win\nUCL Trophy'), findsOneWidget);
+    expect(find.text('Chances to Win UCL Trophy'), findsOneWidget);
     final oneLineTitle = find.byKey(
       const ValueKey('team-probability-title-slot-custom'),
     );
     final twoLineTitle = find.byKey(
       const ValueKey('team-probability-title-slot-league_winner'),
     );
-    expect(tester.getSize(oneLineTitle).height, 39);
-    expect(tester.getSize(twoLineTitle).height, 39);
+    expect(tester.getSize(oneLineTitle).height, 60);
+    expect(tester.getSize(twoLineTitle).height, 60);
 
     final oneLineFooter = tester.getTopLeft(
       find.byKey(const ValueKey('team-probability-footer-custom')),
@@ -280,43 +313,64 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('keeps every Korean probability card title on one line',
-      (tester) async {
-    tester.view.physicalSize = const Size(320, 852);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final repository = _StubProbabilityRepository(
-      initial: {
-        83: _snapshot(cards: [
-          _card('ucl_winner'),
-          _card('top_4'),
-          _card('relegation_playoff'),
-        ]),
-      },
-    );
+  for (final size in [
+    const Size(320, 852),
+    const Size(393, 852),
+    const Size(430, 932)
+  ]) {
+    for (final locale in appSupportedLocales) {
+      testWidgets('wraps $locale probability titles without shrinking at $size',
+          (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final repository = _StubProbabilityRepository(initial: {
+          83: _snapshot(cards: [
+            _card('ucl_winner'),
+            _card('top_4'),
+            _card('relegation_playoff'),
+          ]),
+        });
 
-    await tester.pumpWidget(
-      _app(repository: repository, locale: const Locale('ko')),
-    );
-    await tester.pump();
+        await tester.pumpWidget(_app(repository: repository, locale: locale));
+        await tester.pump();
 
-    for (final event in ['ucl_winner', 'top_4', 'relegation_playoff']) {
-      final title = tester.widget<Text>(
-        find.descendant(
-          of: find.byKey(ValueKey('team-probability-title-slot-$event')),
-          matching: find.byType(Text),
-        ),
-      );
-      expect(title.maxLines, 1);
-      expect(title.softWrap, isFalse);
-      expect(title.data, isNot(contains('\n')));
-      if (event == 'relegation_playoff') {
-        expect(title.data, '강등 플레이오프 확률');
-      }
+        for (final event in ['ucl_winner', 'top_4', 'relegation_playoff']) {
+          final slot =
+              find.byKey(ValueKey('team-probability-title-slot-$event'));
+          final titleFinder = find.descendant(
+            of: slot,
+            matching: find.byType(Text),
+          );
+          final title = tester.widget<Text>(titleFinder);
+          expect(title.style?.fontSize, 15);
+          expect(title.softWrap, isTrue);
+          expect(title.maxLines, isNull);
+          expect(title.data, isNot(contains('\n')));
+          expect(
+              find.ancestor(of: titleFinder, matching: find.byType(FittedBox)),
+              findsNothing);
+          expect(tester.getRect(titleFinder).bottom,
+              lessThanOrEqualTo(tester.getRect(slot).bottom + 1));
+          if (locale.languageCode == 'ko' && event == 'relegation_playoff') {
+            expect(title.data, '강등 플레이오프 확률');
+          }
+        }
+        final cardHeight = tester
+            .getSize(find.byKey(
+              const ValueKey('team-probability-surface-ucl_winner'),
+            ))
+            .height;
+        expect(cardHeight, greaterThanOrEqualTo(165));
+        if (size.width >= 393) expect(cardHeight, 165);
+        if (size.width == 320 && locale.languageCode == 'en') {
+          expect(cardHeight, greaterThan(165));
+        }
+        expect(tester.takeException(), isNull);
+      });
     }
-    expect(tester.takeException(), isNull);
-  });
+  }
 
   testWidgets('hides probability when the backend marks it unavailable',
       (tester) async {
@@ -473,7 +527,7 @@ Widget _app({
   return MaterialApp(
     debugShowCheckedModeBanner: false,
     locale: locale,
-    supportedLocales: const [Locale('en'), Locale('ko')],
+    supportedLocales: appSupportedLocales,
     localizationsDelegates: appLocalizationDelegates,
     theme: theme ?? app_style.darktheme,
     home: Scaffold(
