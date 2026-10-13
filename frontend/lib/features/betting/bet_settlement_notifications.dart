@@ -314,22 +314,6 @@ class BetSettlementResultOverlay extends StatelessWidget {
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           children: [
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: IconButton(
-                                key: const ValueKey(
-                                    'bet-settlement-close-button'),
-                                onPressed: onDismiss,
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: 24,
-                                  height: 24,
-                                ),
-                                icon: Icon(Icons.close,
-                                    size: 24, color: foreground),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
                             Icon(
                               notice.won
                                   ? Icons.celebration_outlined

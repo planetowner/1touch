@@ -117,19 +117,17 @@ void main() {
     }
   }
 
-  testWidgets('dismisses from the empty area, close, and maybe later',
-      (tester) async {
+  testWidgets('dismisses from the empty area and maybe later', (tester) async {
     var dismissCount = 0;
     await pumpOverlay(tester, onDismiss: () => dismissCount++);
+    expect(find.byKey(const ValueKey('bet-settlement-close-button')),
+        findsNothing);
 
     await tester.tapAt(const Offset(12, 12));
     expect(dismissCount, 1);
 
-    await tester.tap(find.byKey(const ValueKey('bet-settlement-close-button')));
-    expect(dismissCount, 2);
-
     await tester.tap(find.byKey(const ValueKey('bet-settlement-maybe-later')));
-    expect(dismissCount, 3);
+    expect(dismissCount, 2);
   });
 
   testWidgets('keeps taps inside the sheet from dismissing it', (tester) async {
@@ -141,6 +139,18 @@ void main() {
     );
     await tester.tapAt(Offset(12, sheet.top + 12));
     expect(dismissCount, 0);
+  });
+
+  testWidgets('see results still opens the result', (tester) async {
+    var resultCount = 0;
+    await pumpOverlay(
+      tester,
+      onDismiss: () {},
+      onSeeResults: () => resultCount++,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('bet-settlement-see-results')));
+    expect(resultCount, 1);
   });
 
   for (final status in ['lost', 'refunded']) {
@@ -218,14 +228,13 @@ void main() {
       expect(tester.widget<Material>(secondary).color,
           dark ? const Color(0xFF3D3D3D) : const Color(0xFFEBEBEB));
 
-      final close = find.byKey(const ValueKey('bet-settlement-close-button'));
       final icon = find.byIcon(Icons.celebration_outlined);
       final title = find.text('You won 500 points!');
       final description = find.textContaining(
         'Your bet on Barcelona was correct.',
         findRichText: true,
       );
-      expect(tester.getRect(icon).top - tester.getRect(close).bottom, 24);
+      expect(tester.getRect(icon).top - tester.getRect(sheet).top, 24);
       expect(tester.getRect(title).top - tester.getRect(icon).bottom, 16);
       expect(tester.getRect(description).top - tester.getRect(title).bottom, 8);
       expect(
