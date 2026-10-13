@@ -167,6 +167,7 @@ class DeviceNotificationService {
     required int fixtureId,
     required DateTime kickoff,
     required String teamName,
+    required String opponentName,
     required Locale locale,
     String? payload,
   }) async {
@@ -179,6 +180,7 @@ class DeviceNotificationService {
       locale: locale,
       data: NotificationTemplateData(
         team: teamName,
+        opponent: opponentName,
         minutesUntilKickoff: matchReminderLeadTime.inMinutes,
       ),
       payload: payload,

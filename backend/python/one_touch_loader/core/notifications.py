@@ -50,6 +50,7 @@ def fixture_events(fixture: dict, now: datetime) -> list[NotificationEvent]:
     teams = {p['meta']['location']: p for p in fixture['participants']}
     names = {p['id']: p['name'] for p in fixture['participants']}
     base = {'home_team': teams['home']['name'], 'away_team': teams['away']['name'],
+            'home_team_id': teams['home']['id'], 'away_team_id': teams['away']['id'],
             'fixture_id': fid, 'destination': f'/match/{fid}'}
     result = []
 
@@ -57,6 +58,8 @@ def fixture_events(fixture: dict, now: datetime) -> list[NotificationEvent]:
         subjects = tuple(subject for subject in subjects if subject is not None)
         if kind.startswith('player_'):
             subjects = tuple(canonical_sportmonks_player_id(subject) for subject in subjects)
+            if subjects:
+                data = {**data, 'player_id': subjects[0]}
         if subjects:
             result.append(NotificationEvent(f'fixture:{fid}:{key}', kind, subjects,
                                             {**base, **data}, now + timedelta(minutes=5), fid))
@@ -68,7 +71,8 @@ def fixture_events(fixture: dict, now: datetime) -> list[NotificationEvent]:
         for lineup in fixture['lineups']:
             if lineup['type_id'] == 11 and lineup['player_id'] is not None:
                 add('player_starting_xi', f"starting:{lineup['player_id']}", [lineup['player_id']],
-                    {'player': lineup['player_name'], 'team': names[lineup['team_id']]})
+                    {'player': lineup['player_name'], 'team': names[lineup['team_id']],
+                     'team_id': lineup['team_id']})
 
     for event in fixture['events']:
         if event.get('rescinded') is True:
@@ -76,10 +80,12 @@ def fixture_events(fixture: dict, now: datetime) -> list[NotificationEvent]:
         key = f"event:{event['id']}"
         code = event['type']['code']
         data = {'team': names.get(event['participant_id'], ''), 'player': event['player_name'] or '',
+                'team_id': event['participant_id'], 'player_id': canonical_sportmonks_player_id(event['player_id']),
                 'minute': str(event['minute']) + (f"+{event['extra_minute']}" if event['extra_minute'] else ''),
                 'score': event.get('result') or ''}
         if code in ('goal', 'owngoal', 'penalty'):
-            add('team_goal', key + ':team_goal', [event['participant_id']], data)
+            # 자책골도 participant_id는 점수를 얻는 팀이에요. 양 팀에 같은 이벤트를 보내고 수신자 기준으로 득점·실점을 나눠요.
+            add('team_goal', key + ':team_goal', [teams['home']['id'], teams['away']['id']], data)
             # 자책골·승부차기는 선수의 일반 득점·도움으로 알리지 않아요.
             if code != 'owngoal':
                 add('player_goal', key + ':goal', [event['player_id']], data)
@@ -89,7 +95,9 @@ def fixture_events(fixture: dict, now: datetime) -> list[NotificationEvent]:
         elif code == 'substitution':
             # Sportmonks와 기존 경기 화면에서 player는 투입, related_player는 교체 아웃이에요.
             add('team_substitution', key + ':team_sub', [event['participant_id']],
-                {**data, 'in_player': event['player_name'] or '', 'out_player': event['related_player_name'] or ''})
+                {**data, 'in_player': event['player_name'] or '', 'out_player': event['related_player_name'] or '',
+                 'in_player_id': canonical_sportmonks_player_id(event['player_id']),
+                 'out_player_id': canonical_sportmonks_player_id(event['related_player_id'])})
             add('player_substitute', key + ':sub', [event['player_id']], data)
             if event.get('injured') is True:
                 add('player_injury', key + ':injury', [event['related_player_id']],
@@ -114,6 +122,7 @@ def state_event(fixture: dict, previous_state: int, now: datetime) -> Notificati
     fid = fixture['id']
     return NotificationEvent(f'fixture:{fid}:state:{kind}', 'team_' + kind, (home['id'], away['id']),
                              {'fixture_id': fid, 'home_team': home['name'], 'away_team': away['name'],
+                              'home_team_id': home['id'], 'away_team_id': away['id'],
                               'score': score, 'destination': f'/match/{fid}'}, now + timedelta(minutes=5), fid)
 
 
@@ -122,13 +131,17 @@ _MESSAGE_TEMPLATES = json.loads(Path(__file__).with_name('notification_messages.
 MATCH_REMINDER_LEAD_TIME = timedelta(hours=1)
 
 
-def message(kind: str, data: dict, locale: str) -> dict:
+def notification_language(locale: str) -> str:
     language = locale.replace('_', '-').split('-')[0].lower()
-    if language not in ('ko', 'ja', 'zh'):
-        language = 'en'
+    return language if language in ('ko', 'ja', 'zh') else 'en'
+
+
+def message(kind: str, data: dict, locale: str) -> dict:
+    language = notification_language(locale)
     arguments = {key: data.get(key, '') for key in ('home_team', 'away_team', 'team', 'player', 'minute',
-                                                   'score', 'in_player', 'out_player', 'comment_preview')}
-    arguments['author_name'] = data.get('display_name') or data.get('username', '')
-    arguments['match'] = f"{arguments['home_team']} vs {arguments['away_team']}"
+                                                   'score', 'in_player', 'out_player', 'comment_preview', 'opponent')}
+    arguments['display_name'] = data.get('display_name') or ''
+    arguments['score_line'] = f"{arguments['home_team']} {arguments['score']} {arguments['away_team']}"
     arguments['minutes_until_kickoff'] = data.get('minutes_until_kickoff', int(MATCH_REMINDER_LEAD_TIME.total_seconds() // 60))
-    return {part: template.format_map(arguments) for part, template in _MESSAGE_TEMPLATES[kind][language].items()}
+    template_kind = 'team_goal_against' if kind == 'team_goal' and data.get('goal_against') else kind
+    return {part: template.format_map(arguments) for part, template in _MESSAGE_TEMPLATES[template_kind][language].items()}

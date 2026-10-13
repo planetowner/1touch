@@ -21,7 +21,7 @@ void main() {
     final templates = (jsonDecode(generated)
         as Map<String, dynamic>)['messages'] as Map<String, dynamic>;
     expect(NotificationEventType.values.map((type) => type.kind).toSet(),
-        notificationMessageKeys.keys.toSet());
+        notificationMessageKeys.keys.toSet()..remove('team_goal_against'));
     for (final type in NotificationEventType.values) {
       for (final language in ['en', 'ko', 'ja', 'zh']) {
         final message = NotificationMessageTemplates.build(
@@ -34,7 +34,11 @@ void main() {
               team: 'Team',
               displayName: 'User'),
         );
-        expect(message.title, templates[type.kind][language]['title']);
+        expect(
+            message.title,
+            (templates[type.kind][language]['title'] as String)
+                .replaceAll('{team}', 'Team')
+                .replaceAll('{player}', 'Player'));
         expect(message.body, isNot(contains(RegExp(r'\{\w+\}'))));
         expect(message.body, isNotEmpty);
       }
@@ -43,11 +47,11 @@ void main() {
 
   test('Japanese and Chinese push copy is localized', () {
     for (final entry
-        in {'ja': 'Sonのスタメン出場が決まりました。', 'zh': 'Son确认首发出场。'}.entries) {
+        in {'ja': 'Away戦にスタメン出場します。', 'zh': '对阵Away首发出场。'}.entries) {
       final message = NotificationMessageTemplates.build(
         type: NotificationEventType.playerStartingXi,
         locale: Locale(entry.key),
-        data: const NotificationTemplateData(player: 'Son'),
+        data: const NotificationTemplateData(player: 'Son', opponent: 'Away'),
       );
       expect(message.body, entry.value);
     }
@@ -78,12 +82,14 @@ void main() {
     final message = NotificationMessageTemplates.build(
       type: NotificationEventType.teamMatchReminder,
       locale: const Locale('en'),
-      data: const NotificationTemplateData(team: 'FC Barcelona'),
+      data: const NotificationTemplateData(
+          team: 'FC Barcelona', opponent: 'Real Madrid'),
     );
 
     expect(DeviceNotificationService.matchReminderLeadTime,
         const Duration(minutes: 30));
-    expect(message.body, 'FC Barcelona starts in 30 minutes.');
+    expect(message.title, 'FC Barcelona');
+    expect(message.body, 'Kickoff vs Real Madrid in 30 min.');
   });
 
   test('Korean and English event messages use their respective templates', () {
@@ -91,6 +97,9 @@ void main() {
       player: 'Heungmin Son',
       team: 'Tottenham',
       minute: '72',
+      homeTeam: 'Tottenham',
+      awayTeam: 'Arsenal',
+      score: '1-0',
     );
 
     final korean = NotificationMessageTemplates.build(
@@ -104,8 +113,32 @@ void main() {
       data: data,
     );
 
-    expect(korean.body, "⚽ Heungmin Son 골 · 72'");
-    expect(english.body, "⚽ Heungmin Son scores · 72'");
+    expect(korean.title, 'Heungmin Son');
+    expect(korean.body, '⚽ 골! 72’ · Tottenham 1-0 Arsenal');
+    expect(english.title, 'Heungmin Son');
+    expect(english.body, '⚽ Goal! 72’ · Tottenham 1-0 Arsenal');
+  });
+
+  test('conceded copy uses the same goal event in all four languages', () {
+    for (final entry
+        in {'en': 'Conceded', 'ko': '실점', 'ja': '失点', 'zh': '失球'}.entries) {
+      final message = NotificationMessageTemplates.build(
+        type: NotificationEventType.teamGoal,
+        locale: Locale(entry.key),
+        data: const NotificationTemplateData(
+          team: 'Away',
+          homeTeam: 'Home',
+          awayTeam: 'Away',
+          player: 'Player',
+          minute: '45+2',
+          score: '1-0',
+          goalAgainst: true,
+        ),
+      );
+      expect(message.type, NotificationEventType.teamGoal);
+      expect(message.title, 'Away');
+      expect(message.body, '${entry.value} · Player 45+2’ · Home 1-0 Away');
+    }
   });
 
   test('notification arguments preserve braces in user content', () {

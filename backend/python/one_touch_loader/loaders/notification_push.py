@@ -28,7 +28,7 @@ def dispatch(*, apply=False, limit=100, sender=None):
                 row = fetch_one_from_cursor(cur, 'SELECT * FROM user_notifications WHERE notification_id=%s', (delivery['notification_id'],))
                 device = fetch_one_from_cursor(cur, '''SELECT d.*,s.expires_at AS session_expires_at FROM user_push_devices d
                     JOIN user_sessions s ON s.token_hash=d.session_token_hash WHERE d.device_id=%s FOR UPDATE''', (delivery['device_id'],))
-                data = push_data(cur, row, now) if row and device and device['user_id'] == row['user_id'] and device['session_expires_at'] > now else None
+                data = push_data(cur, row, now, device['locale']) if row and device and device['user_id'] == row['user_id'] and device['session_expires_at'] > now else None
                 status, code, next_try = 'skipped', None, now
                 if data is not None:
                     if row['kind'] == 'team_match_reminder':

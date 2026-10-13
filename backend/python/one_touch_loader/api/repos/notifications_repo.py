@@ -10,7 +10,8 @@ from ..services.auth_security import token_hash
 from ..services.community_periods import public_row, utc_now
 from .users_repo import get_user, lock_user, require_profile
 from ...core.db_json import decoded
-from ...core.notifications import DEFAULTS, KINDS, NotificationEvent, fixture_events, state_event
+from ...core.football_names import LOCALE_COLUMNS
+from ...core.notifications import DEFAULTS, KINDS, NotificationEvent, fixture_events, state_event, notification_language
 
 
 def following(cur, user_id, scope):
@@ -192,10 +193,55 @@ def capture_fixture(connection, fixture, sampled_at):
         return True
 
 
-def push_data(cur, row, now):
+def football_push_data(cur, row, data, subjects, locale):
+    if 'home_team_id' not in data:
+        # 기존 발송 대기는 팀 이름만 저장했어요. 경기 ID와 당시 알림 대상으로 새 문구에 필요한 ID를 보완해요.
+        fixture = fetch_one_from_cursor(cur, 'SELECT home_team_id,away_team_id FROM fixtures WHERE fixture_id=%s', (row['fixture_id'],))
+        data.update(fixture)
+        if row['scope'] == 'player':
+            data['player_id'] = subjects[0]
+            data['team_id'] = data['home_team_id'] if data['team'] == data['home_team'] else data['away_team_id']
+        elif row['kind'] in ('team_goal', 'team_substitution'):
+            data['team_id'] = subjects[0]
+    home_id, away_id = data['home_team_id'], data['away_team_id']
+    if row['scope'] == 'team':
+        team_id = subjects[0]
+        if len(subjects) > 1:
+            user = fetch_one_from_cursor(cur, 'SELECT favorite_team_id FROM users WHERE user_id=%s', (row['user_id'],))
+            # 양 팀의 알림을 켰어도 한 번만 보내요. 최애팀이 없으면 홈팀을 기준으로 안내해요.
+            team_id = user['favorite_team_id'] if user['favorite_team_id'] in subjects else home_id
+        if row['kind'] == 'team_goal':
+            data['goal_against'] = team_id != data['team_id']
+    else:
+        team_id = data['team_id']
+    data['team_id'] = team_id
+    data['opponent_id'] = away_id if team_id == home_id else home_id
+    data['team'] = data['home_team'] if team_id == home_id else data['away_team']
+    data['opponent'] = data['away_team'] if team_id == home_id else data['home_team']
+
+    team_column, player_column, *_ = LOCALE_COLUMNS[notification_language(locale)]
+    # 앱과 같은 이름 컬럼을 쓰고, 번역이 비어 있으면 DB의 원문 이름을 써요.
+    for table, identifier, column, original, fields in (
+        ('teams', 'team_id', team_column, 'name', ('home_team', 'away_team', 'team', 'opponent')),
+        ('players', 'player_id', player_column, 'display_name', ('player', 'in_player', 'out_player')),
+    ):
+        ids = sorted({data[field + '_id'] for field in fields if data.get(field + '_id') is not None})
+        if not ids:
+            continue
+        marks = ','.join('%s' for _ in ids)
+        cur.execute(f"SELECT {identifier},COALESCE(NULLIF({column},''),{original}) AS name FROM {table} WHERE {identifier} IN ({marks})", tuple(ids))
+        names = {item[identifier]: item['name'] for item in cur.fetchall() if item['name']}
+        for field in fields:
+            if data.get(field + '_id') in names:
+                data[field] = names[data[field + '_id']]
+    return data
+
+
+def push_data(cur, row, now, locale):
     if row['cancelled_at'] is not None or row['expires_at'] <= now:
         return None
-    if not eligible_subjects(cur, row['user_id'], row['kind'], decoded(row['subject_ids'])):
+    subjects = eligible_subjects(cur, row['user_id'], row['kind'], decoded(row['subject_ids']))
+    if not subjects:
         return None
     data = decoded(row['payload'])
     if row['scope'] == 'community':
@@ -207,11 +253,11 @@ def push_data(cur, row, now):
                              (row['notification_id'],))
         if community is None:
             return None
-        return {**data, 'username': community['username'], 'display_name': community['display_name'],
+        return {**data, 'display_name': community['display_name'],
                 'comment_preview': community['comment_preview'] or ''}
     if row['kind'] in ('team_new_bets', 'team_match_reminder'):
         fixture = fetch_one_from_cursor(cur, 'SELECT starting_at,state_id FROM fixtures WHERE fixture_id=%s', (row['fixture_id'],))
         if (fixture is None or fixture['state_id'] not in (1, 16) or fixture['starting_at'] is None
                 or fixture['starting_at'] <= now or fixture['starting_at'].isoformat() != data['starting_at']):
             return None
-    return data
+    return football_push_data(cur, row, data, subjects, locale)

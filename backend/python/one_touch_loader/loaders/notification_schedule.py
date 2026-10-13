@@ -1,7 +1,7 @@
 """팀별 베팅 개방·한 시간 전 알림과 경기 전 확정 선발을 수집해요."""
 from datetime import timedelta
 
-from ..api.db import fetch_all_dict, transaction
+from ..api.db import fetch_all_dict, fetch_one_from_cursor, transaction
 from ..api.repos import betting_repo as betting, notifications_repo as notifications
 from ..api.services.community_periods import utc_now
 from ..core.notifications import MATCH_REMINDER_LEAD_TIME, NotificationEvent
@@ -15,6 +15,7 @@ def scheduled_events(fixture, now, prediction):
         return []
     fid = fixture['fixture_id']
     payload = {'fixture_id': fid, 'starting_at': start.isoformat(), 'destination': f'/match/{fid}',
+               'home_team_id': fixture['home_team_id'], 'away_team_id': fixture['away_team_id'],
                'home_team': fixture['home_team_name'], 'away_team': fixture['away_team_name']}
     subjects = (fixture['home_team_id'], fixture['away_team_id'])
     events = []
@@ -37,11 +38,11 @@ def run_schedule(*, apply=False):
     pregame = {}
     for item in rows:
         with transaction() as conn, conn.cursor(dictionary=True) as cur:
-            fixture = notifications.read_one(cur, betting.FIXTURE_SQL + (' FOR UPDATE' if apply else ''), (item['fixture_id'],))
+            fixture = fetch_one_from_cursor(cur, betting.FIXTURE_SQL + (' FOR UPDATE' if apply else ''), (item['fixture_id'],))
             cur.execute('SELECT team_id,name FROM teams WHERE team_id IN (%s,%s)', (fixture['home_team_id'], fixture['away_team_id']))
             names = {r['team_id']: r['name'] for r in cur.fetchall()}
             fixture.update(home_team_name=names[fixture['home_team_id']], away_team_name=names[fixture['away_team_id']])
-            prediction = betting._prediction(lambda sql, params: notifications.read_one(cur, sql, params), fixture, now)
+            prediction = betting._prediction(lambda sql, params: fetch_one_from_cursor(cur, sql, params), fixture, now)
             events = scheduled_events(fixture, now, prediction)
             event_count += len(events)
             if apply:

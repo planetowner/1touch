@@ -354,7 +354,7 @@ void main() {
           expect(tester.getRect(titleFinder).bottom,
               lessThanOrEqualTo(tester.getRect(slot).bottom + 1));
           if (locale.languageCode == 'ko' && event == 'relegation_playoff') {
-            expect(title.data, '강등 플레이오프 확률');
+            expect(title.data, '강등 PO 확률');
           }
         }
         final cardHeight = tester

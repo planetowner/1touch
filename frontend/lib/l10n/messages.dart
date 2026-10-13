@@ -3,17 +3,21 @@ import 'package:onetouch/core/number_display.dart';
 // 화면 문구는 네 언어에서 같은 키로 관리해요.
 typedef MessageTranslations = ({String ko, String ja, String zh});
 
-// 다른 화면과 키가 같아도 팀 화면에서는 이 한국어 문구를 써요.
-const teamScreenKoreanMessages = <String, String>{
-  'Overview': '팀 정보',
-  'Matches': '일정',
-  'ATTRIBUTES': '팀 특성',
-  'Draw': '무승부',
+// 선수 화면과 키를 공유해도 팀 화면에 맞는 언어별 문구를 유지해요.
+const teamScreenMessages = <String, Map<String, String>>{
+  'ko': {
+    'Overview': '팀 정보',
+    'Matches': '일정',
+    'ATTRIBUTES': '팀 특성',
+    'Draw': '무승부',
+  },
+  'ja': {'Overview': '概要'},
+  'zh': {'Overview': '概览'},
 };
 
 // 선수 정보의 섹션 제목은 '경기 기록', 상단 탭 이름은 '경기'로 구분해요.
-const playerTabKoreanMessages = <String, String>{
-  'Matches': '경기',
+const playerTabMessages = <String, Map<String, String>>{
+  'ko': {'Matches': '경기'},
 };
 
 const appMessages = <String, MessageTranslations>{
@@ -110,87 +114,110 @@ const appMessages = <String, MessageTranslations>{
     ja: "新しい予想の受付と結果のお知らせです。",
     zh: "新竞猜及结算结果动态。"
   ),
-  "Team update": (ko: "팀 소식", ja: "チーム情報", zh: "球队动态"),
-  "Player update": (ko: "선수 소식", ja: "選手情報", zh: "球员动态"),
-  "{author_name} liked your post.": (
-    ko: "{author_name}님이 내 게시물에 좋아요를 눌렀어요.",
-    ja: "{author_name}さんがあなたの投稿にいいねしました。",
-    zh: "{author_name}赞了你的帖子。"
+  "{team}": (
+    ko: "{team}",
+    ja: "{team}",
+    zh: "{team}"
   ),
-  "{author_name}: {comment_preview}": (
-    ko: "{author_name}: {comment_preview}",
-    ja: "{author_name}: {comment_preview}",
-    zh: "{author_name}: {comment_preview}"
+  "{player}": (
+    ko: "{player}",
+    ja: "{player}",
+    zh: "{player}"
   ),
-  "Betting is open for {match}.": (
-    ko: "{match} 베팅이 열렸어요.",
-    ja: "{match}の予想受付が始まりました。",
-    zh: "{match}的竞猜已开放。"
+  "Your post": (
+    ko: "내 게시물",
+    ja: "あなたの投稿",
+    zh: "你的帖子"
   ),
-  "{match} starts in {minutes_until_kickoff} minutes.": (
-    ko: "{match} 경기가 {minutes_until_kickoff}분 후 시작해요.",
-    ja: "{match}は{minutes_until_kickoff}分後にキックオフです。",
-    zh: "{match}将在{minutes_until_kickoff}分钟后开始。"
+  "New comment on your post": (
+    ko: "내 게시물에 새 댓글",
+    ja: "あなたの投稿に新しいコメント",
+    zh: "你的帖子有新评论"
   ),
-  "{match} — Kickoff!": (
-    ko: "{match} 경기가 시작했어요.",
-    ja: "{match} — キックオフ！",
-    zh: "{match} — 比赛开始！"
+  "{display_name} liked your post.": (
+    ko: "{display_name}님이 좋아요를 눌렀어요.",
+    ja: "{display_name}さんがあなたの投稿にいいねしました。",
+    zh: "{display_name}赞了你的帖子。"
   ),
-  "Half time · {match} {score}": (
-    ko: "전반 종료 · {match} {score}",
-    ja: "前半終了 · {match} {score}",
-    zh: "上半场结束 · {match} {score}"
+  "{display_name}: {comment_preview}": (
+    ko: "{display_name}: {comment_preview}",
+    ja: "{display_name}: {comment_preview}",
+    zh: "{display_name}: {comment_preview}"
   ),
-  "Full time · {match} {score}": (
-    ko: "경기 종료 · {match} {score}",
-    ja: "試合終了 · {match} {score}",
-    zh: "全场结束 · {match} {score}"
+  "Betting is open vs {opponent}.": (
+    ko: "{opponent}전 베팅이 열렸어요.",
+    ja: "{opponent}戦の予想受付が始まりました。",
+    zh: "对阵{opponent}的竞猜已开放。"
   ),
-  "⚽ {player} ({team}) {minute}' · {score}": (
-    ko: "⚽ {player} ({team}) {minute}' · {score}",
-    ja: "⚽ {player} ({team}) {minute}' · {score}",
-    zh: "⚽ {player} ({team}) {minute}' · {score}"
+  "Kickoff vs {opponent} in {minutes_until_kickoff} min.": (
+    ko: "{opponent}전이 {minutes_until_kickoff}분 후 시작해요.",
+    ja: "{opponent}戦は{minutes_until_kickoff}分後にキックオフです。",
+    zh: "对阵{opponent}的比赛将在{minutes_until_kickoff}分钟后开始。"
   ),
-  "{team} sub: {out_player} → {in_player} {minute}'": (
-    ko: "{team} 교체: {out_player} → {in_player} {minute}'",
-    ja: "{team} 交代: {out_player} → {in_player} {minute}'",
-    zh: "{team}换人: {out_player} → {in_player} {minute}'"
+  "Kickoff vs {opponent}.": (
+    ko: "{opponent}전 경기가 시작했어요.",
+    ja: "{opponent}戦が始まりました。",
+    zh: "对阵{opponent}的比赛开始了。"
   ),
-  "{player} is in the starting lineup.": (
-    ko: "{player} 선발 출전이 확정됐어요.",
-    ja: "{player}のスタメン出場が決まりました。",
-    zh: "{player}确认首发出场。"
+  "Half time · {score_line}": (
+    ko: "전반 종료 · {score_line}",
+    ja: "前半終了 · {score_line}",
+    zh: "上半场结束 · {score_line}"
   ),
-  "{player} comes on · {minute}'": (
-    ko: "{player} 교체 투입 · {minute}'",
-    ja: "{player}が途中出場 · {minute}'",
-    zh: "{player}替补登场 · {minute}'"
+  "Full time · {score_line}": (
+    ko: "경기 종료 · {score_line}",
+    ja: "試合終了 · {score_line}",
+    zh: "全场结束 · {score_line}"
   ),
-  "⚽ {player} scores · {minute}'": (
-    ko: "⚽ {player} 골 · {minute}'",
-    ja: "⚽ {player}がゴール · {minute}'",
-    zh: "⚽ {player}进球 · {minute}'"
+  "⚽ Goal! {player} {minute}’ · {score_line}": (
+    ko: "⚽ 골! {player} {minute}’ · {score_line}",
+    ja: "⚽ ゴール！{player} {minute}’ · {score_line}",
+    zh: "⚽ 进球！{player} {minute}’ · {score_line}"
   ),
-  "{player} assists · {minute}'": (
-    ko: "{player} 도움 · {minute}'",
-    ja: "{player}がアシスト · {minute}'",
-    zh: "{player}助攻 · {minute}'"
+  "Conceded · {player} {minute}’ · {score_line}": (
+    ko: "실점 · {player} {minute}’ · {score_line}",
+    ja: "失点 · {player} {minute}’ · {score_line}",
+    zh: "失球 · {player} {minute}’ · {score_line}"
   ),
-  "{player} yellow card · {minute}'": (
-    ko: "{player} 경고 · {minute}'",
-    ja: "{player}にイエローカード · {minute}'",
-    zh: "{player}领到黄牌 · {minute}'"
+  "Sub {minute}’ · {out_player} → {in_player}": (
+    ko: "교체 {minute}’ · {out_player} → {in_player}",
+    ja: "交代 {minute}’ · {out_player} → {in_player}",
+    zh: "换人 {minute}’ · {out_player} → {in_player}"
   ),
-  "{player} red card · {minute}'": (
-    ko: "{player} 퇴장 · {minute}'",
-    ja: "{player}にレッドカード · {minute}'",
-    zh: "{player}领到红牌 · {minute}'"
+  "Starting vs {opponent}.": (
+    ko: "{opponent}전 선발 출전해요.",
+    ja: "{opponent}戦にスタメン出場します。",
+    zh: "对阵{opponent}首发出场。"
   ),
-  "{player} substituted due to injury · {minute}'": (
-    ko: "{player} 부상으로 교체 · {minute}'",
-    ja: "{player}が負傷交代 · {minute}'",
-    zh: "{player}因伤被换下 · {minute}'"
+  "On at {minute}’ vs {opponent}": (
+    ko: "{minute}’ 교체 투입됐어요 · vs {opponent}",
+    ja: "{minute}’に途中出場 · vs {opponent}",
+    zh: "{minute}’替补登场 · vs {opponent}"
+  ),
+  "⚽ Goal! {minute}’ · {score_line}": (
+    ko: "⚽ 골! {minute}’ · {score_line}",
+    ja: "⚽ ゴール！{minute}’ · {score_line}",
+    zh: "⚽ 进球！{minute}’ · {score_line}"
+  ),
+  "🅰️ Assist {minute}’ · {score_line}": (
+    ko: "🅰️ 도움 {minute}’ · {score_line}",
+    ja: "🅰️ アシスト {minute}’ · {score_line}",
+    zh: "🅰️ 助攻 {minute}’ · {score_line}"
+  ),
+  "🟨 Yellow card {minute}’ vs {opponent}": (
+    ko: "🟨 경고 {minute}’ · vs {opponent}",
+    ja: "🟨 イエローカード {minute}’ · vs {opponent}",
+    zh: "🟨 黄牌 {minute}’ · vs {opponent}"
+  ),
+  "🟥 Red card {minute}’ vs {opponent}": (
+    ko: "🟥 퇴장 {minute}’ · vs {opponent}",
+    ja: "🟥 レッドカード {minute}’ · vs {opponent}",
+    zh: "🟥 红牌 {minute}’ · vs {opponent}"
+  ),
+  "Off injured {minute}’ vs {opponent}": (
+    ko: "부상으로 교체됐어요 {minute}’ · vs {opponent}",
+    ja: "負傷で交代しました {minute}’ · vs {opponent}",
+    zh: "因伤被换下 {minute}’ · vs {opponent}"
   ),
   "You won {points} points!": (
     ko: "{points} pts를 받았어요!",
@@ -885,7 +912,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "No players found": (ko: "선수를 찾지 못했어요", ja: "選手が見つかりません", zh: "未找到球员"),
   "No teams found": (ko: "팀을 찾지 못했어요", ja: "チームが見つかりません", zh: "未找到球队"),
-  "Overview": (ko: "선수 정보", ja: "概要", zh: "概览"),
+  "Overview": (ko: "선수 정보", ja: "選手情報", zh: "球员信息"),
   "Matches": (ko: "경기 기록", ja: "試合", zh: "比赛"),
   "Squad": (ko: "스쿼드", ja: "選手一覧", zh: "阵容"),
   "Standing": (ko: "순위", ja: "順位表", zh: "积分榜"),
@@ -1095,13 +1122,13 @@ const appMessages = <String, MessageTranslations>{
     ja: "チームの大会優勝確率が時間とともにどう変わるかを示します。第1戦に勝つと確率が上がり、対戦の決着後はその確率が次のラウンドに引き継がれます。",
     zh: "展示球队的赛事夺冠概率如何随时间变化。首回合获胜会提高概率，两回合胜负确定后，该概率会延续到下一轮。"
   ),
-  "HOW FAR WILL THEY GO": (ko: "어디까지 진출할까", ja: "どこまで進むか", zh: "能走多远"),
+  "HOW FAR WILL THEY GO": (ko: "예상 최종 성적", ja: "予想最終成績", zh: "预计最终成绩"),
   "WINNER": (ko: "우승", ja: "優勝", zh: "冠军"),
   "FINAL": (ko: "결승", ja: "決勝", zh: "决赛"),
   "PO": (ko: "PO", ja: "PO", zh: "附加赛"),
   "PROJECTED FINAL POSITION": (ko: "예상 최종 순위", ja: "予想最終順位", zh: "预计最终排名"),
   "PROJECTED POINTS": (ko: "예상 승점", ja: "予想勝点", zh: "预计积分"),
-  "TITLE CONTENDERS": (ko: "우승 경쟁 팀", ja: "優勝候補", zh: "夺冠热门"),
+  "TITLE CONTENDERS": (ko: "우승 후보", ja: "優勝候補", zh: "夺冠热门"),
   "in odds to win title": (ko: "우승 확률 순위", ja: "優勝確率の順位", zh: "夺冠概率排名"),
   "Likely range of {range} pts": (
     ko: "예상 승점은 {range}점이에요",
@@ -1143,7 +1170,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "title probability": (ko: "우승 확률", ja: "優勝確率", zh: "夺冠概率"),
   "relegation playoff probability": (
-    ko: "강등 플레이오프 확률",
+    ko: "강등 PO 확률",
     ja: "降格プレーオフ確率",
     zh: "降级附加赛概率"
   ),
@@ -1179,7 +1206,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "UECL\n夺冠概率"
   ),
   "Chances to Finish\nTop 4": (
-    ko: "4위 이내 진입 확률",
+    ko: "TOP 4 확률",
     ja: "4位以内の\n確率",
     zh: "进入前四的\n概率"
   ),
@@ -1190,7 +1217,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Chances of\nRelegation": (ko: "강등 확률", ja: "降格の\n確率", zh: "降级的\n概率"),
   "Chances to\nRelegation Playoff": (
-    ko: "강등 플레이오프 확률",
+    ko: "강등 PO 확률",
     ja: "降格プレーオフの\n確率",
     zh: "参加保级附加赛的\n概率"
   ),
@@ -1256,7 +1283,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "No ratings available": (ko: "평점이 없어요", ja: "評価がありません", zh: "暂无评分"),
   "Rating": (ko: "평점", ja: "評価", zh: "评分"),
-  "Form": (ko: "최근 경기력", ja: "調子", zh: "状态"),
+  "Form": (ko: "최근 경기력", ja: "最近の調子", zh: "近期表现"),
   "PERFORMANCE": (ko: "라운드별 경기력", ja: "パフォーマンス", zh: "表现"),
   "INFLUENCE": (ko: "출전 & 활약", ja: "影響力", zh: "影响力"),
   "Cost-Effectiveness": (ko: "급여 대비 효율", ja: "給与対効果", zh: "薪资性价比"),

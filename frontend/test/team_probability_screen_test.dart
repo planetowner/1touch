@@ -309,7 +309,7 @@ void main() {
         expect(
             titleWidget.data,
             locale.languageCode == 'ko'
-                ? '강등 플레이오프 확률'
+                ? '강등 PO 확률'
                 : 'Chances to\nRelegation Playoff');
         expect(titleWidget.style?.fontSize, Body1.style.fontSize);
         expect(find.ancestor(of: title, matching: find.byType(FittedBox)),
@@ -1818,7 +1818,7 @@ void main() {
       event: 'relegation_playoff',
       teamId: 83,
       unchanged: false,
-      expected: '바르셀로나가 이기면 강등 플레이오프 확률이 4.0%p 내려가요. 지면 5.0%p 올라요.'
+      expected: '바르셀로나가 이기면 강등 PO 확률이 4.0%p 내려가요. 지면 5.0%p 올라요.'
     ),
     (
       event: 'league_winner',
@@ -1906,7 +1906,7 @@ void main() {
       await tester.scrollUntilVisible(find.text(testCase.expected), 200);
       expect(find.text(testCase.expected), findsOneWidget);
       if (testCase.event == 'relegation_playoff') {
-        expect(find.text('강등 플레이오프 확률'), findsOneWidget);
+        expect(find.text('강등 PO 확률'), findsOneWidget);
       }
       for (final label in ['이기면', '비기면', '지면']) {
         expect(find.text(label), findsOneWidget);

@@ -65,6 +65,7 @@ enum NotificationEventType {
 class NotificationTemplateData {
   const NotificationTemplateData({
     this.team = '',
+    this.opponent = '',
     this.homeTeam = '',
     this.awayTeam = '',
     this.player = '',
@@ -74,10 +75,12 @@ class NotificationTemplateData {
     this.commentPreview = '',
     this.minute = '',
     this.score = '',
+    this.goalAgainst = false,
     this.minutesUntilKickoff = 30,
   });
 
   final String team;
+  final String opponent;
   final String homeTeam;
   final String awayTeam;
   final String player;
@@ -87,6 +90,7 @@ class NotificationTemplateData {
   final String commentPreview;
   final String minute;
   final String score;
+  final bool goalAgainst;
   final int minutesUntilKickoff;
 }
 
@@ -113,24 +117,25 @@ class NotificationMessageTemplates {
     required NotificationTemplateData data,
     String? payload,
   }) {
-    final keys = notificationMessageKeys[type.kind]!;
+    final template = type == NotificationEventType.teamGoal && data.goalAgainst
+        ? 'team_goal_against'
+        : type.kind;
+    final keys = notificationMessageKeys[template]!;
     final arguments = <String, Object>{
-      'match': data.homeTeam.isEmpty && data.awayTeam.isEmpty
-          ? data.team
-          : '${data.homeTeam} vs ${data.awayTeam}',
       'team': data.team,
+      'opponent': data.opponent,
       'player': data.player,
       'out_player': data.outPlayer,
       'in_player': data.inPlayer,
-      'author_name': data.displayName,
+      'display_name': data.displayName,
       'comment_preview': _preview(data.commentPreview),
       'minute': data.minute,
-      'score': data.score,
+      'score_line': '${data.homeTeam} ${data.score} ${data.awayTeam}',
       'minutes_until_kickoff': data.minutesUntilKickoff,
     };
     return DeviceNotificationMessage(
       type: type,
-      title: translateMessage(locale, keys.title),
+      title: translateMessage(locale, keys.title, arguments),
       body: translateMessage(locale, keys.body, arguments),
       payload: payload,
     );

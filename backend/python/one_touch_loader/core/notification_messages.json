@@ -4,290 +4,308 @@
   "messages": {
     "post_reaction": {
       "en": {
-        "title": "Community",
-        "body": "{author_name} liked your post."
+        "title": "Your post",
+        "body": "{display_name} liked your post."
       },
       "ko": {
-        "title": "커뮤니티",
-        "body": "{author_name}님이 내 게시물에 좋아요를 눌렀어요."
+        "title": "내 게시물",
+        "body": "{display_name}님이 좋아요를 눌렀어요."
       },
       "ja": {
-        "title": "コミュニティ",
-        "body": "{author_name}さんがあなたの投稿にいいねしました。"
+        "title": "あなたの投稿",
+        "body": "{display_name}さんがあなたの投稿にいいねしました。"
       },
       "zh": {
-        "title": "社区",
-        "body": "{author_name}赞了你的帖子。"
+        "title": "你的帖子",
+        "body": "{display_name}赞了你的帖子。"
       }
     },
     "post_comment": {
       "en": {
-        "title": "Community",
-        "body": "{author_name}: {comment_preview}"
+        "title": "New comment on your post",
+        "body": "{display_name}: {comment_preview}"
       },
       "ko": {
-        "title": "커뮤니티",
-        "body": "{author_name}: {comment_preview}"
+        "title": "내 게시물에 새 댓글",
+        "body": "{display_name}: {comment_preview}"
       },
       "ja": {
-        "title": "コミュニティ",
-        "body": "{author_name}: {comment_preview}"
+        "title": "あなたの投稿に新しいコメント",
+        "body": "{display_name}: {comment_preview}"
       },
       "zh": {
-        "title": "社区",
-        "body": "{author_name}: {comment_preview}"
+        "title": "你的帖子有新评论",
+        "body": "{display_name}: {comment_preview}"
       }
     },
     "team_new_bets": {
       "en": {
-        "title": "Team update",
-        "body": "Betting is open for {match}."
+        "title": "{team}",
+        "body": "Betting is open vs {opponent}."
       },
       "ko": {
-        "title": "팀 소식",
-        "body": "{match} 베팅이 열렸어요."
+        "title": "{team}",
+        "body": "{opponent}전 베팅이 열렸어요."
       },
       "ja": {
-        "title": "チーム情報",
-        "body": "{match}の予想受付が始まりました。"
+        "title": "{team}",
+        "body": "{opponent}戦の予想受付が始まりました。"
       },
       "zh": {
-        "title": "球队动态",
-        "body": "{match}的竞猜已开放。"
+        "title": "{team}",
+        "body": "对阵{opponent}的竞猜已开放。"
       }
     },
     "team_match_reminder": {
       "en": {
-        "title": "Team update",
-        "body": "{match} starts in {minutes_until_kickoff} minutes."
+        "title": "{team}",
+        "body": "Kickoff vs {opponent} in {minutes_until_kickoff} min."
       },
       "ko": {
-        "title": "팀 소식",
-        "body": "{match} 경기가 {minutes_until_kickoff}분 후 시작해요."
+        "title": "{team}",
+        "body": "{opponent}전이 {minutes_until_kickoff}분 후 시작해요."
       },
       "ja": {
-        "title": "チーム情報",
-        "body": "{match}は{minutes_until_kickoff}分後にキックオフです。"
+        "title": "{team}",
+        "body": "{opponent}戦は{minutes_until_kickoff}分後にキックオフです。"
       },
       "zh": {
-        "title": "球队动态",
-        "body": "{match}将在{minutes_until_kickoff}分钟后开始。"
+        "title": "{team}",
+        "body": "对阵{opponent}的比赛将在{minutes_until_kickoff}分钟后开始。"
       }
     },
     "team_kickoff": {
       "en": {
-        "title": "Team update",
-        "body": "{match} — Kickoff!"
+        "title": "{team}",
+        "body": "Kickoff vs {opponent}."
       },
       "ko": {
-        "title": "팀 소식",
-        "body": "{match} 경기가 시작했어요."
+        "title": "{team}",
+        "body": "{opponent}전 경기가 시작했어요."
       },
       "ja": {
-        "title": "チーム情報",
-        "body": "{match} — キックオフ！"
+        "title": "{team}",
+        "body": "{opponent}戦が始まりました。"
       },
       "zh": {
-        "title": "球队动态",
-        "body": "{match} — 比赛开始！"
+        "title": "{team}",
+        "body": "对阵{opponent}的比赛开始了。"
       }
     },
     "team_half_time": {
       "en": {
-        "title": "Team update",
-        "body": "Half time · {match} {score}"
+        "title": "{team}",
+        "body": "Half time · {score_line}"
       },
       "ko": {
-        "title": "팀 소식",
-        "body": "전반 종료 · {match} {score}"
+        "title": "{team}",
+        "body": "전반 종료 · {score_line}"
       },
       "ja": {
-        "title": "チーム情報",
-        "body": "前半終了 · {match} {score}"
+        "title": "{team}",
+        "body": "前半終了 · {score_line}"
       },
       "zh": {
-        "title": "球队动态",
-        "body": "上半场结束 · {match} {score}"
+        "title": "{team}",
+        "body": "上半场结束 · {score_line}"
       }
     },
     "team_full_time": {
       "en": {
-        "title": "Team update",
-        "body": "Full time · {match} {score}"
+        "title": "{team}",
+        "body": "Full time · {score_line}"
       },
       "ko": {
-        "title": "팀 소식",
-        "body": "경기 종료 · {match} {score}"
+        "title": "{team}",
+        "body": "경기 종료 · {score_line}"
       },
       "ja": {
-        "title": "チーム情報",
-        "body": "試合終了 · {match} {score}"
+        "title": "{team}",
+        "body": "試合終了 · {score_line}"
       },
       "zh": {
-        "title": "球队动态",
-        "body": "全场结束 · {match} {score}"
+        "title": "{team}",
+        "body": "全场结束 · {score_line}"
       }
     },
     "team_goal": {
       "en": {
-        "title": "Team update",
-        "body": "⚽ {player} ({team}) {minute}' · {score}"
+        "title": "{team}",
+        "body": "⚽ Goal! {player} {minute}’ · {score_line}"
       },
       "ko": {
-        "title": "팀 소식",
-        "body": "⚽ {player} ({team}) {minute}' · {score}"
+        "title": "{team}",
+        "body": "⚽ 골! {player} {minute}’ · {score_line}"
       },
       "ja": {
-        "title": "チーム情報",
-        "body": "⚽ {player} ({team}) {minute}' · {score}"
+        "title": "{team}",
+        "body": "⚽ ゴール！{player} {minute}’ · {score_line}"
       },
       "zh": {
-        "title": "球队动态",
-        "body": "⚽ {player} ({team}) {minute}' · {score}"
+        "title": "{team}",
+        "body": "⚽ 进球！{player} {minute}’ · {score_line}"
+      }
+    },
+    "team_goal_against": {
+      "en": {
+        "title": "{team}",
+        "body": "Conceded · {player} {minute}’ · {score_line}"
+      },
+      "ko": {
+        "title": "{team}",
+        "body": "실점 · {player} {minute}’ · {score_line}"
+      },
+      "ja": {
+        "title": "{team}",
+        "body": "失点 · {player} {minute}’ · {score_line}"
+      },
+      "zh": {
+        "title": "{team}",
+        "body": "失球 · {player} {minute}’ · {score_line}"
       }
     },
     "team_substitution": {
       "en": {
-        "title": "Team update",
-        "body": "{team} sub: {out_player} → {in_player} {minute}'"
+        "title": "{team}",
+        "body": "Sub {minute}’ · {out_player} → {in_player}"
       },
       "ko": {
-        "title": "팀 소식",
-        "body": "{team} 교체: {out_player} → {in_player} {minute}'"
+        "title": "{team}",
+        "body": "교체 {minute}’ · {out_player} → {in_player}"
       },
       "ja": {
-        "title": "チーム情報",
-        "body": "{team} 交代: {out_player} → {in_player} {minute}'"
+        "title": "{team}",
+        "body": "交代 {minute}’ · {out_player} → {in_player}"
       },
       "zh": {
-        "title": "球队动态",
-        "body": "{team}换人: {out_player} → {in_player} {minute}'"
+        "title": "{team}",
+        "body": "换人 {minute}’ · {out_player} → {in_player}"
       }
     },
     "player_starting_xi": {
       "en": {
-        "title": "Player update",
-        "body": "{player} is in the starting lineup."
+        "title": "{player}",
+        "body": "Starting vs {opponent}."
       },
       "ko": {
-        "title": "선수 소식",
-        "body": "{player} 선발 출전이 확정됐어요."
+        "title": "{player}",
+        "body": "{opponent}전 선발 출전해요."
       },
       "ja": {
-        "title": "選手情報",
-        "body": "{player}のスタメン出場が決まりました。"
+        "title": "{player}",
+        "body": "{opponent}戦にスタメン出場します。"
       },
       "zh": {
-        "title": "球员动态",
-        "body": "{player}确认首发出场。"
+        "title": "{player}",
+        "body": "对阵{opponent}首发出场。"
       }
     },
     "player_substitute": {
       "en": {
-        "title": "Player update",
-        "body": "{player} comes on · {minute}'"
+        "title": "{player}",
+        "body": "On at {minute}’ vs {opponent}"
       },
       "ko": {
-        "title": "선수 소식",
-        "body": "{player} 교체 투입 · {minute}'"
+        "title": "{player}",
+        "body": "{minute}’ 교체 투입됐어요 · vs {opponent}"
       },
       "ja": {
-        "title": "選手情報",
-        "body": "{player}が途中出場 · {minute}'"
+        "title": "{player}",
+        "body": "{minute}’に途中出場 · vs {opponent}"
       },
       "zh": {
-        "title": "球员动态",
-        "body": "{player}替补登场 · {minute}'"
+        "title": "{player}",
+        "body": "{minute}’替补登场 · vs {opponent}"
       }
     },
     "player_goal": {
       "en": {
-        "title": "Player update",
-        "body": "⚽ {player} scores · {minute}'"
+        "title": "{player}",
+        "body": "⚽ Goal! {minute}’ · {score_line}"
       },
       "ko": {
-        "title": "선수 소식",
-        "body": "⚽ {player} 골 · {minute}'"
+        "title": "{player}",
+        "body": "⚽ 골! {minute}’ · {score_line}"
       },
       "ja": {
-        "title": "選手情報",
-        "body": "⚽ {player}がゴール · {minute}'"
+        "title": "{player}",
+        "body": "⚽ ゴール！{minute}’ · {score_line}"
       },
       "zh": {
-        "title": "球员动态",
-        "body": "⚽ {player}进球 · {minute}'"
+        "title": "{player}",
+        "body": "⚽ 进球！{minute}’ · {score_line}"
       }
     },
     "player_assist": {
       "en": {
-        "title": "Player update",
-        "body": "{player} assists · {minute}'"
+        "title": "{player}",
+        "body": "🅰️ Assist {minute}’ · {score_line}"
       },
       "ko": {
-        "title": "선수 소식",
-        "body": "{player} 도움 · {minute}'"
+        "title": "{player}",
+        "body": "🅰️ 도움 {minute}’ · {score_line}"
       },
       "ja": {
-        "title": "選手情報",
-        "body": "{player}がアシスト · {minute}'"
+        "title": "{player}",
+        "body": "🅰️ アシスト {minute}’ · {score_line}"
       },
       "zh": {
-        "title": "球员动态",
-        "body": "{player}助攻 · {minute}'"
+        "title": "{player}",
+        "body": "🅰️ 助攻 {minute}’ · {score_line}"
       }
     },
     "player_yellow_card": {
       "en": {
-        "title": "Player update",
-        "body": "{player} yellow card · {minute}'"
+        "title": "{player}",
+        "body": "🟨 Yellow card {minute}’ vs {opponent}"
       },
       "ko": {
-        "title": "선수 소식",
-        "body": "{player} 경고 · {minute}'"
+        "title": "{player}",
+        "body": "🟨 경고 {minute}’ · vs {opponent}"
       },
       "ja": {
-        "title": "選手情報",
-        "body": "{player}にイエローカード · {minute}'"
+        "title": "{player}",
+        "body": "🟨 イエローカード {minute}’ · vs {opponent}"
       },
       "zh": {
-        "title": "球员动态",
-        "body": "{player}领到黄牌 · {minute}'"
+        "title": "{player}",
+        "body": "🟨 黄牌 {minute}’ · vs {opponent}"
       }
     },
     "player_red_card": {
       "en": {
-        "title": "Player update",
-        "body": "{player} red card · {minute}'"
+        "title": "{player}",
+        "body": "🟥 Red card {minute}’ vs {opponent}"
       },
       "ko": {
-        "title": "선수 소식",
-        "body": "{player} 퇴장 · {minute}'"
+        "title": "{player}",
+        "body": "🟥 퇴장 {minute}’ · vs {opponent}"
       },
       "ja": {
-        "title": "選手情報",
-        "body": "{player}にレッドカード · {minute}'"
+        "title": "{player}",
+        "body": "🟥 レッドカード {minute}’ · vs {opponent}"
       },
       "zh": {
-        "title": "球员动态",
-        "body": "{player}领到红牌 · {minute}'"
+        "title": "{player}",
+        "body": "🟥 红牌 {minute}’ · vs {opponent}"
       }
     },
     "player_injury": {
       "en": {
-        "title": "Player update",
-        "body": "{player} substituted due to injury · {minute}'"
+        "title": "{player}",
+        "body": "Off injured {minute}’ vs {opponent}"
       },
       "ko": {
-        "title": "선수 소식",
-        "body": "{player} 부상으로 교체 · {minute}'"
+        "title": "{player}",
+        "body": "부상으로 교체됐어요 {minute}’ · vs {opponent}"
       },
       "ja": {
-        "title": "選手情報",
-        "body": "{player}が負傷交代 · {minute}'"
+        "title": "{player}",
+        "body": "負傷で交代しました {minute}’ · vs {opponent}"
       },
       "zh": {
-        "title": "球员动态",
-        "body": "{player}因伤被换下 · {minute}'"
+        "title": "{player}",
+        "body": "因伤被换下 {minute}’ · vs {opponent}"
       }
     }
   }

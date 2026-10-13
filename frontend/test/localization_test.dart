@@ -187,20 +187,51 @@ void main() {
       'Chances to Win\nUCL Trophy': 'UCL 우승 확률',
       'Chances to Win\nUEL Trophy': 'UEL 우승 확률',
       'Chances to Win\nUECL Trophy': 'UECL 우승 확률',
-      'Chances to Finish\nTop 4': '4위 이내 진입 확률',
+      'Chances to Finish\nTop 4': 'TOP 4 확률',
       'Chances to Finish\nTop 6': '6위 이내 진입 확률',
       'Chances of\nRelegation': '강등 확률',
-      'Chances to\nRelegation Playoff': '강등 플레이오프 확률',
+      'Chances to\nRelegation Playoff': '강등 PO 확률',
     };
     expect(probabilityEventTitle('relegation_playoff'),
         'Chances to\nRelegation Playoff');
     expect(
         translateMessage(const Locale('ko'), 'relegation playoff probability'),
-        '강등 플레이오프 확률');
+        '강등 PO 확률');
     for (final entry in expected.entries) {
       final translated = translateMessage(const Locale('ko'), entry.key);
       expect(translated, entry.value);
       expect(translated, isNot(contains('\n')));
+    }
+  });
+
+  testWidgets('team and player tabs keep their own wording in every language',
+      (tester) async {
+    for (final (
+          language,
+          teamOverview,
+          playerOverview,
+          teamMatches,
+          playerMatches
+        ) in [
+      ('en', 'Overview', 'Overview', 'Matches', 'Matches'),
+      ('ko', '팀 정보', '선수 정보', '일정', '경기'),
+      ('ja', '概要', '選手情報', '試合', '試合'),
+      ('zh', '概览', '球员信息', '比赛', '比赛'),
+    ]) {
+      await tester.pumpWidget(MaterialApp(
+        locale: Locale(language),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        home: Builder(builder: (context) {
+          expect(teamScreenLabel(context, 'Overview'), teamOverview);
+          expect(tr(context, 'Overview'), playerOverview);
+          expect(teamScreenLabel(context, 'Matches'), teamMatches);
+          expect(playerTabLabel(context, 'Matches'), playerMatches);
+          expect(teamScreenLabel(context, 'Analysis'), tr(context, 'Analysis'));
+          return const SizedBox.shrink();
+        }),
+      ));
+      await tester.pumpAndSettle();
     }
   });
 

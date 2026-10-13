@@ -10,7 +10,7 @@ import sqlite3
 from pathlib import Path
 from types import SimpleNamespace
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
@@ -117,12 +117,12 @@ class EventTests(unittest.TestCase):
 
     def test_push_provider_receives_localized_copy_for_each_language(self):
         row = {'notification_id': 5, 'kind': 'player_starting_xi', 'expires_at': NOW + timedelta(minutes=5)}
-        data = {'destination': '/match/500', 'player': 'Son'}
+        data = {'destination': '/match/500', 'player': 'Son', 'opponent': 'Away'}
         expected = {
-            'en-US': ('Player update', 'Son is in the starting lineup.'),
-            'ko-KR': ('선수 소식', 'Son 선발 출전이 확정됐어요.'),
-            'ja-JP': ('選手情報', 'Sonのスタメン出場が決まりました。'),
-            'zh-Hans': ('球员动态', 'Son确认首发出场。'),
+            'en-US': ('Son', 'Starting vs Away.'),
+            'ko-KR': ('Son', 'Away전 선발 출전해요.'),
+            'ja-JP': ('Son', 'Away戦にスタメン出場します。'),
+            'zh-Hans': ('Son', '对阵Away首发出场。'),
         }
         for locale, (title, body) in expected.items():
             with self.subTest(locale=locale):
@@ -135,8 +135,8 @@ class EventTests(unittest.TestCase):
     def test_template_arguments_preserve_user_text_and_use_reminder_minutes(self):
         data = {'display_name': '{player}', 'comment_preview': 'Keep {score} as text', 'player': 'Son'}
         self.assertEqual(message('post_comment', data, 'ja')['body'], '{player}: Keep {score} as text')
-        self.assertEqual(message('team_match_reminder', {'home_team': 'Home', 'away_team': 'Away',
-                         'minutes_until_kickoff': 15}, 'en')['body'], 'Home vs Away starts in 15 minutes.')
+        self.assertEqual(message('team_match_reminder', {'team': 'Home', 'opponent': 'Away',
+                         'minutes_until_kickoff': 15}, 'en')['body'], 'Kickoff vs Away in 15 min.')
 
     def test_community_notifications_show_display_name(self):
         data = {'username': 'john_doe', 'display_name': '불광동호날두', 'comment_preview': '좋아요'}
@@ -144,6 +144,32 @@ class EventTests(unittest.TestCase):
             body = message(kind, data, 'ko-KR')['body']
             self.assertIn('불광동호날두', body)
             self.assertNotIn('john_doe', body)
+
+    def test_goal_for_and_against_keep_one_kind_in_all_languages(self):
+        data = {'team': 'Home', 'home_team': 'Home', 'away_team': 'Away',
+                'player': 'Player', 'minute': '45+2', 'score': '1-0'}
+        for locale, (scored, conceded) in {
+            'en': ('⚽ Goal!', 'Conceded'), 'ko': ('⚽ 골!', '실점'),
+            'ja': ('⚽ ゴール！', '失点'), 'zh': ('⚽ 进球！', '失球'),
+        }.items():
+            for against, prefix in ((False, scored), (True, conceded)):
+                rendered = message('team_goal', {**data, 'goal_against': against}, locale)
+                self.assertEqual(rendered['title'], 'Home')
+                self.assertTrue(rendered['body'].startswith(prefix))
+                self.assertIn('45+2’ · Home 1-0 Away', rendered['body'])
+
+    def test_real_own_goal_keeps_beneficiary_team_and_sends_both_sides(self):
+        path = Path(__file__).parent / 'fixtures/sportmonks_2024_sliema_own_goal_error.json'
+        original = next(e for c in json.loads(path.read_text())['cases']
+                        for e in c['expected_events'] if e['type']['code'] == 'owngoal')
+        f = payload(2)
+        f['participants'][0]['id'] = original['participant_id']
+        f['events'] = [original]
+        goal, = fixture_events(f, NOW)
+        self.assertEqual(goal.kind, 'team_goal')
+        self.assertEqual(goal.subjects, (original['participant_id'], 20))
+        self.assertEqual(goal.payload['team_id'], original['participant_id'])
+        self.assertEqual(goal.payload['score'], '6-0')
 
     def test_betting_boundary_is_shared_by_market_and_notification(self):
         f = fixture()
@@ -162,6 +188,22 @@ class EventTests(unittest.TestCase):
         self.assertEqual(schedule.scheduled_events(f, NOW + timedelta(minutes=5), None), [])
         shifted = {**f, 'starting_at': f['starting_at'] + timedelta(hours=2)}
         self.assertNotEqual(events[0].key, schedule.scheduled_events(shifted, NOW + timedelta(hours=2), None)[0].key)
+
+    def test_schedule_reads_fixture_and_prediction_through_existing_cursor(self):
+        connection = MagicMock()
+        cursor = connection.cursor.return_value.__enter__.return_value
+        cursor.fetchone.side_effect = [fixture(), {'available': True}]
+        cursor.fetchall.return_value = [{'team_id': 10, 'name': 'Home'}, {'team_id': 20, 'name': 'Away'}]
+        with patch.object(schedule, 'utc_now', return_value=NOW), \
+             patch.object(schedule, 'fetch_all_dict', return_value=[{'fixture_id': 500}]), \
+             patch.object(schedule, 'transaction') as transaction, \
+             patch.object(schedule.betting, '_prediction', side_effect=lambda read, *_: read('SELECT prediction', ())), \
+             patch.object(schedule, 'read_live_fixture_batches', return_value=[]), \
+             patch.object(schedule.notifications, 'enqueue') as enqueue:
+            transaction.return_value.__enter__.return_value = connection
+            self.assertEqual(schedule.run_schedule(),
+                             {'apply': False, 'fixtures': 1, 'scheduled_candidates': 1, 'lineups': 0})
+            enqueue.assert_not_called()
 
 
 class SqliteCursor:
@@ -235,10 +277,10 @@ class RepositoryTests(unittest.TestCase):
         self.db.execute('PRAGMA foreign_keys=ON')
         self.db.executescript('''
             CREATE TABLE users(user_id INTEGER PRIMARY KEY,username TEXT,display_name TEXT,favorite_team_id INTEGER,first_name TEXT DEFAULT 'First',last_name TEXT DEFAULT 'Last',suspended_until TEXT);
-            CREATE TABLE teams(team_id INTEGER PRIMARY KEY,name TEXT);
-            CREATE TABLE players(player_id INTEGER PRIMARY KEY);
+            CREATE TABLE teams(team_id INTEGER PRIMARY KEY,name TEXT,name_ko TEXT,name_ja TEXT,name_zh TEXT);
+            CREATE TABLE players(player_id INTEGER PRIMARY KEY,display_name TEXT,display_name_ko TEXT,display_name_ja TEXT,display_name_zh TEXT);
             CREATE TABLE user_sessions(token_hash BLOB PRIMARY KEY,user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,expires_at TEXT);
-            CREATE TABLE fixtures(fixture_id INTEGER PRIMARY KEY,starting_at TEXT,state_id INTEGER);
+            CREATE TABLE fixtures(fixture_id INTEGER PRIMARY KEY,starting_at TEXT,state_id INTEGER,home_team_id INTEGER,away_team_id INTEGER);
             CREATE TABLE user_following_teams(user_id INTEGER,team_id INTEGER);
             CREATE TABLE user_following_players(user_id INTEGER,player_id INTEGER);
             CREATE TABLE user_blocks(user_id INTEGER,blocked_user_id INTEGER);
@@ -246,9 +288,9 @@ class RepositoryTests(unittest.TestCase):
             CREATE TABLE post_comments(comment_id INTEGER PRIMARY KEY,post_id INTEGER,user_id INTEGER,reply_to_id INTEGER,body TEXT,created_at TEXT,state TEXT DEFAULT 'active');
             CREATE TABLE post_likes(post_id INTEGER,user_id INTEGER,PRIMARY KEY(post_id,user_id));
             INSERT INTO users(user_id,username,display_name,favorite_team_id) VALUES (1,'Owner','Owner',10),(2,'Actor','Actor',10),(3,'Other','Other',20);
-            INSERT INTO teams VALUES (10,'Home'),(20,'Away');
-            INSERT INTO players VALUES (100),(200);
-            INSERT INTO fixtures VALUES (500,'2026-09-30 12:00:00',1);
+            INSERT INTO teams VALUES (10,'Home','홈팀','ホーム','主队'),(20,'Away','원정팀','アウェイ','客队');
+            INSERT INTO players VALUES (100,'Starter','선발 선수','先発選手','首发球员'),(200,'Bench','교체 선수','交代選手','替补球员');
+            INSERT INTO fixtures VALUES (500,'2026-09-30 12:00:00',1,10,20);
             INSERT INTO user_following_teams VALUES (1,10),(1,20),(2,10);
             INSERT INTO user_following_players VALUES (1,100),(1,200);
             INSERT INTO posts VALUES (1,1,10,'active');
@@ -281,7 +323,8 @@ class RepositoryTests(unittest.TestCase):
 
     def emit(self, kind='team_kickoff', subjects=(10, 20), key='source:1'):
         with db.transaction() as conn, conn.cursor(dictionary=True) as cur:
-            repo.enqueue(cur, NotificationEvent(key, kind, subjects, {'destination': '/match/500', 'home_team': 'Home', 'away_team': 'Away'},
+            repo.enqueue(cur, NotificationEvent(key, kind, subjects, {'destination': '/match/500', 'home_team': 'Home', 'away_team': 'Away',
+                                                                        'home_team_id': 10, 'away_team_id': 20},
                                                NOW + timedelta(minutes=5), 500), NOW)
 
     def test_preferences_partial_bulk_updates_validate_all_subjects_before_writing(self):
@@ -308,6 +351,114 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(push.dispatch(apply=True, sender=sender)['sent'], 0)
         self.assertEqual(sender.send.call_count, 1)
         self.assertEqual(repo.list_community(1)['items'], [])
+
+    def test_goal_uses_favorite_then_home_and_delivers_once_for_both_teams(self):
+        self.register()
+        f = payload(2)
+        for index, (favorite, title, prefix) in enumerate([
+            (10, '홈팀', '⚽ 골!'), (20, '원정팀', '실점'), (None, '홈팀', '⚽ 골!'),
+            (999, '홈팀', '⚽ 골!'),
+        ]):
+            with self.subTest(favorite=favorite):
+                self.db.execute('UPDATE users SET favorite_team_id=? WHERE user_id=1', (favorite,))
+                self.db.commit()
+                f['events'] = [event(id=900 + index, extra_minute=2)]
+                goal = next(e for e in fixture_events(f, NOW) if e.kind == 'team_goal')
+                self.assertEqual(goal.subjects, (10, 20))
+                with db.transaction() as conn, conn.cursor(dictionary=True) as cur:
+                    repo.enqueue(cur, goal, NOW)
+                    repo.enqueue(cur, goal, NOW)
+                sender = Mock()
+                self.assertEqual(push.dispatch(apply=True, sender=sender)['sent'], 1)
+                args = sender.send.call_args.args
+                rendered = message(args[0]['kind'], args[3], args[2])
+                self.assertEqual(rendered['title'], title)
+                self.assertTrue(rendered['body'].startswith(prefix))
+                self.assertIn('선발 선수 42+2’ · 홈팀 1-0 원정팀', rendered['body'])
+
+    def test_only_eligible_team_sets_title_and_goal_perspective(self):
+        self.register()
+        repo.update_preferences(1, 'team', {'goal': False}, [10])
+        f = payload(2)
+        f['events'] = [event()]
+        goal = next(e for e in fixture_events(f, NOW) if e.kind == 'team_goal')
+        with db.transaction() as conn, conn.cursor(dictionary=True) as cur:
+            repo.enqueue(cur, goal, NOW)
+        sender = Mock()
+        self.assertEqual(push.dispatch(apply=True, sender=sender)['sent'], 1)
+        data = sender.send.call_args.args[3]
+        self.assertEqual(data['team'], '원정팀')
+        self.assertEqual(data['opponent'], '홈팀')
+        self.assertTrue(data['goal_against'])
+
+    def test_each_device_gets_its_language_and_opponent_for_away_favorite(self):
+        expected = {'en-US': ('Away', 'Kickoff vs Home.'),
+                    'ko-KR': ('원정팀', '홈팀전 경기가 시작했어요.'),
+                    'ja-JP': ('アウェイ', 'ホーム戦が始まりました。'),
+                    'zh-Hans': ('客队', '对阵主队的比赛开始了。')}
+        self.db.execute('UPDATE users SET favorite_team_id=20 WHERE user_id=1')
+        self.db.commit()
+        for i, locale in enumerate(expected):
+            repo.register_device(1, 'session1', f'device-{i}',
+                                 {'token': f'token-{i}', 'platform': 'ios', 'locale': locale})
+        self.emit()
+        sender = Mock()
+        self.assertEqual(push.dispatch(apply=True, sender=sender)['sent'], 4)
+        for call in sender.send.call_args_list:
+            row, _, locale, data, now = call.args
+            result = push_sender.fcm_message(row, 'test-token', locale, data, now)
+            title, body = expected[locale]
+            self.assertEqual(result['notification'], {'title': title, 'body': body})
+            self.assertEqual(result['apns']['payload']['aps']['alert'], result['notification'])
+
+    def test_player_names_opponent_and_substitution_roles_are_localized(self):
+        self.register()
+        repo.update_preferences(1, 'team', {'substitution': True}, [10])
+        repo.update_preferences(1, 'player', {'injury': True}, [200])
+        f = payload(2)
+        f['events'] = [event('substitution', injured=True)]
+        with db.transaction() as conn, conn.cursor(dictionary=True) as cur:
+            for item in fixture_events(f, NOW):
+                repo.enqueue(cur, item, NOW)
+        sender = Mock()
+        self.assertEqual(push.dispatch(apply=True, sender=sender)['sent'], 3)
+        rendered = {call.args[0]['kind']: message(call.args[0]['kind'], call.args[3], call.args[2])
+                    for call in sender.send.call_args_list}
+        self.assertEqual(rendered['team_substitution'],
+                         {'title': '홈팀', 'body': '교체 42’ · 교체 선수 → 선발 선수'})
+        self.assertEqual(rendered['player_substitute'],
+                         {'title': '선발 선수', 'body': '42’ 교체 투입됐어요 · vs 원정팀'})
+        self.assertEqual(rendered['player_injury'],
+                         {'title': '교체 선수', 'body': '부상으로 교체됐어요 42’ · vs 원정팀'})
+
+    def test_missing_translation_keeps_original_name(self):
+        self.register()
+        self.db.execute("UPDATE teams SET name_ko='' WHERE team_id=20")
+        self.db.commit()
+        self.emit()
+        sender = Mock()
+        push.dispatch(apply=True, sender=sender)
+        self.assertEqual(sender.send.call_args.args[3]['opponent'], 'Away')
+
+    def test_existing_saved_payload_without_ids_still_dispatches(self):
+        self.register()
+        for kind, subjects in [('team_goal', (10,)), ('team_kickoff', (10, 20)), ('player_starting_xi', (100,))]:
+            with self.subTest(kind=kind):
+                old = NotificationEvent('old-' + kind, kind, subjects,
+                                        {'home_team': 'Home', 'away_team': 'Away', 'team': 'Home',
+                                         'player': 'Primary', 'minute': '42', 'score': '1-0',
+                                         'destination': '/match/500'}, NOW + timedelta(minutes=5), 500)
+                with db.transaction() as conn, conn.cursor(dictionary=True) as cur:
+                    repo.enqueue(cur, old, NOW)
+                sender = Mock()
+                self.assertEqual(push.dispatch(apply=True, sender=sender)['sent'], 1)
+                data = sender.send.call_args.args[3]
+                self.assertEqual(data['team'], '홈팀')
+                self.assertEqual(data['opponent'], '원정팀')
+                if kind == 'team_goal':
+                    self.assertFalse(data['goal_against'])
+                elif kind == 'player_starting_xi':
+                    self.assertEqual(message(kind, data, 'ko')['title'], '선발 선수')
 
     def test_unfollowing_or_disabling_before_dispatch_suppresses_push(self):
         self.register()
@@ -436,9 +587,18 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(repo.list_community(1)['unread_count'], 2)
         repo.mark_read(1, 999)
         self.assertEqual(repo.list_community(1)['unread_count'], 0)
+        self.db.execute("UPDATE users SET display_name='축구팬' WHERE user_id=2")
+        self.db.commit()
         sender = Mock()
         self.assertEqual(push.dispatch(apply=True, sender=sender)['sent'], 2)
         self.assertEqual(sender.send.call_args.args[3]['comment_preview'], 'Hello')
+        for call in sender.send.call_args_list:
+            row, _, locale, data, _ = call.args
+            self.assertNotIn('username', data)
+            copy = message(row['kind'], data, locale)
+            self.assertIn('축구팬', copy['body'])
+            self.assertNotIn('Actor', copy['body'])
+            self.assertEqual(copy['title'], '내 게시물에 새 댓글' if row['kind'] == 'post_comment' else '내 게시물')
 
     def test_self_reactions_blocked_actors_unlikes_and_deleted_comments(self):
         self.register()
