@@ -184,7 +184,7 @@ class _ResetCodeSheetState extends State<_ResetCodeSheet> {
                 textInputAction: TextInputAction.done,
                 autofillHints: const [AutofillHints.email],
                 onSubmitted: (_) => _sendCode(),
-                decoration: _inputDecoration(context, 'johndoe@gmail.com'),
+                decoration: _inputDecoration(context, null),
               ),
               const SizedBox(height: 12),
               Text(
@@ -258,7 +258,7 @@ class _ResetCodeSheetState extends State<_ResetCodeSheet> {
   }
 }
 
-InputDecoration _inputDecoration(BuildContext context, String hint) {
+InputDecoration _inputDecoration(BuildContext context, String? hint) {
   const border = OutlineInputBorder(
       borderRadius: BorderRadius.all(Radius.circular(8)),
       borderSide: BorderSide.none);
