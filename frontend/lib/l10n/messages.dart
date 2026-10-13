@@ -18,7 +18,6 @@ const playerTabKoreanMessages = <String, String>{
 
 const appMessages = <String, MessageTranslations>{
   "News & Info": (ko: "뉴스·정보", ja: "ニュース・情報", zh: "新闻与资讯"),
-  "Copy": (ko: "복사", ja: "コピー", zh: "复制"),
   "comment": (ko: "댓글", ja: "コメント", zh: "评论"),
   "This post was deleted.": (
     ko: "삭제된 게시글이에요.",
@@ -55,9 +54,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "動画を読み込めませんでした。",
     zh: "无法加载视频。"
   ),
-  "Play": (ko: "재생", ja: "再生", zh: "播放"),
-  "Pause": (ko: "일시정지", ja: "一時停止", zh: "暂停"),
-  "My activity": (ko: "내 활동", ja: "自分のアクティビティ", zh: "我的动态"),
   // 인증 메일도 이 문구를 원본으로 삼고 서버용 JSON을 생성해요.
   "Email Verification Code": (ko: "이메일 인증번호", ja: "メール認証コード", zh: "邮箱验证码"),
   "Your 1touch code is": (
@@ -196,7 +192,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "{player}が負傷交代 · {minute}'",
     zh: "{player}因伤被换下 · {minute}'"
   ),
-  "Open live match": (ko: "라이브 경기 보기", ja: "ライブ試合を見る", zh: "查看直播比赛"),
   "You won {points} points!": (
     ko: "{points} pts를 받았어요!",
     ja: "{points}ポイントを獲得しました！",
@@ -257,6 +252,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "{home_team} vs {away_team}の試合記録が削除または変更されました。",
     zh: "{home_team} vs {away_team}的比赛记录已被删除或更改。"
   ),
+  // 다음 단계로 진행하는 Continue와 달리 환불 안내를 닫는 버튼이에요.
   "CONTINUE": (ko: "확인", ja: "確認", zh: "确定"),
   "SEE RESULTS": (ko: "결과 보기", ja: "結果を見る", zh: "查看结果"),
   "MAYBE LATER": (ko: "나중에 보기", ja: "あとで見る", zh: "稍后查看"),
@@ -350,11 +346,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "認証コードを確認できませんでした。もう一度お試しください。",
     zh: "无法验证验证码，请重试。"
   ),
-  "Enter the email address you used to sign up.": (
-    ko: "가입할 때 사용한 이메일을 입력해 주세요.",
-    ja: "登録時に使用したメールアドレスを入力してください。",
-    zh: "请输入注册时使用的邮箱。"
-  ),
   "Checking availability. Please wait.": (
     ko: "사용할 수 있는지 확인하고 있어요. 잠시만 기다려 주세요.",
     ja: "使用できるか確認しています。しばらくお待ちください。",
@@ -410,7 +401,6 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Continue with Kakao": (ko: "카카오로 계속하기", ja: "Kakaoで続ける", zh: "使用 Kakao 继续"),
   "Continue with LINE": (ko: "LINE으로 계속하기", ja: "LINEで続ける", zh: "使用 LINE 继续"),
-  "Continue with email": (ko: "이메일로 계속하기", ja: "メールで続ける", zh: "使用邮箱继续"),
   "Other ways to sign in": (
     ko: "다른 방식으로 로그인하기",
     ja: "その他の方法でログイン",
@@ -425,11 +415,6 @@ const appMessages = <String, MessageTranslations>{
     ko: "{provider} 로그인에 실패했어요. 다시 시도해 주세요.",
     ja: "{provider}でログインできませんでした。もう一度お試しください。",
     zh: "无法使用{provider}登录，请重试。"
-  ),
-  "Unable to sign in with Google. Please try again.": (
-    ko: "Google 로그인에 실패했어요. 다시 시도해 주세요.",
-    ja: "Googleでログインできませんでした。もう一度お試しください。",
-    zh: "无法使用 Google 登录，请重试。"
   ),
   "Sign in": (ko: "로그인", ja: "ログイン", zh: "登录"),
   "Sign up": (ko: "회원가입", ja: "新規登録", zh: "注册"),
@@ -530,10 +515,6 @@ const appMessages = <String, MessageTranslations>{
   "Password": (ko: "비밀번호", ja: "パスワード", zh: "密码"),
   "Email": (ko: "이메일", ja: "メールアドレス", zh: "邮箱"),
   "EMAIL": (ko: "이메일", ja: "メール", zh: "邮箱"),
-  "First name": (ko: "이름", ja: "名", zh: "名字"),
-  "Last name": (ko: "성", ja: "姓", zh: "姓氏"),
-  "Enter first name": (ko: "이름을 입력해 주세요", ja: "名を入力してください", zh: "请输入名字"),
-  "Enter last name": (ko: "성을 입력해 주세요", ja: "姓を入力してください", zh: "请输入姓氏"),
   "Enter your ID.": (ko: "아이디를 입력해 주세요.", ja: "IDを入力してください。", zh: "请输入用户名。"),
   "Enter your email address.": (
     ko: "이메일을 입력해 주세요.",
@@ -544,18 +525,6 @@ const appMessages = <String, MessageTranslations>{
     ko: "올바른 이메일 주소를 입력해 주세요.",
     ja: "有効なメールアドレスを入力してください。",
     zh: "请输入有效的邮箱地址。"
-  ),
-  "At least 8 characters": (
-    ko: "8자 이상 입력해 주세요",
-    ja: "8文字以上で入力してください",
-    zh: "请输入至少8个字符"
-  ),
-  "Remember me": (ko: "로그인 정보 기억하기", ja: "ログイン情報を保存", zh: "记住我"),
-  "Need sign up?": (ko: "아직 회원이 아니신가요?", ja: "アカウントをお持ちでない方", zh: "还没有账号？"),
-  "Unable to sign in. Check your username and password.": (
-    ko: "로그인하지 못했어요. 유저네임과 비밀번호를 확인해 주세요.",
-    ja: "ログインできませんでした。ユーザー名とパスワードを確認してください。",
-    zh: "登录失败，请检查用户名和密码。"
   ),
   "Verify your email": (ko: "이메일 인증", ja: "メールアドレスの確認", zh: "验证邮箱"),
   "Verification code": (ko: "인증번호", ja: "認証コード", zh: "验证码"),
@@ -607,16 +576,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "認証コードを送信できませんでした。接続を確認して再度お試しください。",
     zh: "无法发送验证码，请检查网络连接后重试。"
   ),
-  "Unable to resend the code. Check your connection and try again.": (
-    ko: "인증번호를 다시 보내지 못했어요. 연결 상태를 확인해 주세요.",
-    ja: "コードを再送信できませんでした。接続を確認してください。",
-    zh: "无法重新发送验证码，请检查网络连接。"
-  ),
-  "Unable to verify the code. Check your connection and try again.": (
-    ko: "인증번호를 확인하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.",
-    ja: "コードを確認できませんでした。接続を確認して再度お試しください。",
-    zh: "无法验证验证码，请检查网络连接后重试。"
-  ),
   "Saving…": (ko: "저장 중…", ja: "保存中…", zh: "保存中…"),
   "Unable to save profile. Check your username and try again.": (
     ko: "프로필을 저장하지 못했어요. 유저네임을 확인하고 다시 시도해 주세요.",
@@ -666,7 +625,6 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Back to team selection": (ko: "팀 선택으로 돌아가기", ja: "チーム選択に戻る", zh: "返回球队选择"),
   "Continue": (ko: "계속하기", ja: "続ける", zh: "继续"),
-  "FINISH": (ko: "완료", ja: "完了", zh: "完成"),
   "Home": (ko: "홈", ja: "ホーム", zh: "首页"),
   "Players": (ko: "선수", ja: "選手", zh: "球员"),
   "Community": (ko: "커뮤니티", ja: "コミュニティ", zh: "社区"),
@@ -690,12 +648,6 @@ const appMessages = <String, MessageTranslations>{
   "Notifications": (ko: "알림", ja: "通知", zh: "通知"),
   "All Notifications": (ko: "모든 알림", ja: "すべての通知", zh: "所有通知"),
   "Language": (ko: "언어", ja: "言語", zh: "语言"),
-  "Device language": (ko: "기기 언어", ja: "端末の言語", zh: "设备语言"),
-  "Follows your device language": (
-    ko: "기기의 언어 설정을 따라요",
-    ja: "端末の言語設定に従います",
-    zh: "跟随设备语言设置"
-  ),
   "Unit": (ko: "단위", ja: "単位", zh: "单位"),
   "Currency": (ko: "통화", ja: "通貨", zh: "货币"),
   "Unable to load exchange rates. Tap to retry.": (
@@ -727,8 +679,6 @@ const appMessages = <String, MessageTranslations>{
   "UPDATE NOTIFICATIONS": (ko: "알림 설정 저장하기", ja: "通知設定を保存", zh: "保存通知设置"),
   "UPDATE INFO": (ko: "저장하기", ja: "UPDATE INFO", zh: "UPDATE INFO"),
   "Dark Theme": (ko: "다크 모드", ja: "ダークモード", zh: "深色模式"),
-  "Use dark theme": (ko: "다크 모드 사용", ja: "ダークモードにする", zh: "使用深色模式"),
-  "Use light theme": (ko: "라이트 모드 사용", ja: "ライトモードにする", zh: "使用浅色模式"),
   "SOCIAL ACCOUNTS": (ko: "소셜 계정", ja: "ソーシャルアカウント", zh: "社交账号"),
   "Connected": (ko: "연결됨", ja: "連携済み", zh: "已关联"),
   "Not Connected": (ko: "연결 안 됨", ja: "未連携", zh: "未关联"),
@@ -740,7 +690,6 @@ const appMessages = <String, MessageTranslations>{
   ),
   "DELETE ACCOUNT": (ko: "계정 삭제하기", ja: "アカウントを削除", zh: "删除账号"),
   "Delete account": (ko: "계정 삭제", ja: "アカウントを削除", zh: "删除账号"),
-  "Delete account?": (ko: "계정을 삭제할까요?", ja: "アカウントを削除しますか？", zh: "确定删除账号吗？"),
   "Leaving the pitch already?": (
     ko: "벌써 그라운드를 떠나시나요?",
     ja: "もうピッチを離れますか？",
@@ -760,7 +709,6 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Privacy Policy": (ko: "개인정보 처리방침", ja: "プライバシーポリシー", zh: "隐私政策"),
   "Terms of Service": (ko: "이용약관", ja: "利用規約", zh: "服务条款"),
-  "Name": (ko: "이름", ja: "名前", zh: "姓名"),
   "Choose from Photos": (ko: "사진에서 선택", ja: "写真から選択", zh: "从照片中选择"),
   "Choose from Gallery": (ko: "갤러리에서 선택", ja: "ギャラリーから選択", zh: "从相册中选择"),
   "Remove Photo": (ko: "사진 삭제", ja: "写真を削除", zh: "删除照片"),
@@ -828,7 +776,6 @@ const appMessages = <String, MessageTranslations>{
     zh: "搜索球员、球队和比赛"
   ),
   "Search...": (ko: "검색…", ja: "検索…", zh: "搜索…"),
-  "Search players": (ko: "선수 검색", ja: "選手を検索", zh: "搜索球员"),
   "Search players...": (ko: "선수 검색…", ja: "選手を検索…", zh: "搜索球员…"),
   "Look for players": (ko: "선수를 찾아보세요", ja: "選手を探す", zh: "查找球员"),
   "Search a team!": (ko: "팀 검색", ja: "チームを検索", zh: "搜索球队"),
@@ -851,7 +798,6 @@ const appMessages = <String, MessageTranslations>{
   "Follow team": (ko: "팀 팔로우", ja: "チームをフォロー", zh: "关注球队"),
   "Unfollow team": (ko: "팀 팔로우 취소", ja: "チームのフォローを解除", zh: "取消关注球队"),
   "Edit favorites": (ko: "즐겨찾기 수정", ja: "お気に入りを編集", zh: "编辑收藏"),
-  "Add favorite players": (ko: "좋아하는 선수 추가", ja: "お気に入りの選手を追加", zh: "添加喜欢的球员"),
   "You aren't following any players yet.\nAdd some now.": (
     ko: "팔로우 하는 선수가 아직 없어요.\n지금 추가해보세요.",
     ja: "フォローしている選手はまだいません。\n今すぐ追加しましょう。",
@@ -892,11 +838,6 @@ const appMessages = <String, MessageTranslations>{
     ko: "최애팀은 14일 동안 최대 2번 변경할 수 있어요.",
     ja: "お気に入りのチームは14日間で最大2回変更できます。",
     zh: "14天内最多可更改两次最喜欢的球队。"
-  ),
-  "Unable to change favorite team. Please try again.": (
-    ko: "가장 좋아하는 팀을 변경하지 못했어요. 다시 시도해 주세요.",
-    ja: "お気に入りのチームを変更できませんでした。もう一度お試しください。",
-    zh: "无法更改最喜欢的球队，请重试。"
   ),
   "Could not load favorites": (
     ko: "즐겨찾기를 불러오지 못했어요",
@@ -941,7 +882,6 @@ const appMessages = <String, MessageTranslations>{
   "Standing": (ko: "순위", ja: "順位表", zh: "积分榜"),
   "Analysis": (ko: "분석", ja: "分析", zh: "分析"),
   "News": (ko: "뉴스", ja: "ニュース", zh: "新闻"),
-  "News & Insights": (ko: "뉴스·정보", ja: "ニュースとインサイト", zh: "新闻与洞察"),
   "Fan Art": (ko: "팬아트", ja: "ファンアート", zh: "同人创作"),
   "HIGHLIGHTS": (ko: "하이라이트", ja: "ハイライト", zh: "集锦"),
   "HIGHLIGHTS UNAVAILABLE": (
@@ -994,7 +934,6 @@ const appMessages = <String, MessageTranslations>{
   "FIXTURE": (ko: "경기 일정", ja: "試合日程", zh: "赛程"),
   "CALENDAR": (ko: "캘린더", ja: "カレンダー", zh: "日历"),
   "RECENT MATCHES": (ko: "최근 경기", ja: "最近の試合", zh: "近期比赛"),
-  "PAST MATCHES": (ko: "지난 경기", ja: "過去の試合", zh: "过往比赛"),
   "PAST": (ko: "지난 경기", ja: "過去の試合", zh: "已结束"),
   "UPCOMING": (ko: "다가오는 경기", ja: "今後の試合", zh: "即将开始"),
   "Date TBD": (ko: "날짜 미정", ja: "日程未定", zh: "日期待定"),
@@ -1003,11 +942,6 @@ const appMessages = <String, MessageTranslations>{
   "TBD": (ko: "미정", ja: "未定", zh: "待定"),
   "Season": (ko: "시즌", ja: "シーズン", zh: "赛季"),
   "Current season": (ko: "현재 시즌", ja: "今シーズン", zh: "当前赛季"),
-  "Current season only.": (
-    ko: "현재 시즌만 제공해요.",
-    ja: "今シーズンのみです。",
-    zh: "仅提供当前赛季。"
-  ),
   "SELECT A SEASON": (ko: "시즌 선택", ja: "シーズンを選択", zh: "选择赛季"),
   "Select a season with league appearances": (
     ko: "리그 출전 기록이 있는 시즌을 선택해 주세요",
@@ -1016,7 +950,6 @@ const appMessages = <String, MessageTranslations>{
   ),
   "League": (ko: "리그", ja: "リーグ", zh: "联赛"),
   "Appearances": (ko: "출전", ja: "出場", zh: "出场"),
-  "Cup": (ko: "컵 대회", ja: "カップ戦", zh: "杯赛"),
   "COMPETITION": (ko: "대회", ja: "大会", zh: "赛事"),
   "BRACKET": (ko: "대진표", ja: "トーナメント表", zh: "对阵图"),
   "XG TABLE": (ko: "xG 순위", ja: "xG順位表", zh: "xG积分榜"),
@@ -1048,10 +981,6 @@ const appMessages = <String, MessageTranslations>{
     zh: "对阵图尚未公布。"
   ),
   "Final": (ko: "결승", ja: "決勝", zh: "决赛"),
-  "SEMIFINAL": (ko: "준결승", ja: "準決勝", zh: "半决赛"),
-  "SEMIFINALS": (ko: "준결승", ja: "準決勝", zh: "半决赛"),
-  "QUARTERFINAL": (ko: "8강", ja: "準々決勝", zh: "四分之一决赛"),
-  "QUARTERFINALS": (ko: "8강", ja: "準々決勝", zh: "四分之一决赛"),
   "R16": (ko: "16강", ja: "ベスト16", zh: "十六强"),
   "Round of 16": (ko: "16강 직행", ja: "ベスト16進出", zh: "直通十六强"),
   "Play-offs": (ko: "플레이오프", ja: "プレーオフ", zh: "附加赛"),
@@ -1098,11 +1027,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "契約期間の詳細情報はありません。",
     zh: "暂无完整的合同期限信息。"
   ),
-  "Wage data is unavailable.": (
-    ko: "급여 정보가 없어요.",
-    ja: "給与情報がありません。",
-    zh: "暂无薪资信息。"
-  ),
   "Unable to load squad": (
     ko: "선수단을 불러오지 못했어요",
     ja: "選手一覧を読み込めませんでした",
@@ -1138,9 +1062,6 @@ const appMessages = <String, MessageTranslations>{
   "Shooting & Finishing": (ko: "슈팅·마무리", ja: "シュート・フィニッシュ", zh: "射门与终结"),
   "Possession": (ko: "점유", ja: "ポゼッション", zh: "控球"),
   "PROGRESSION": (ko: "전진", ja: "前進", zh: "推进"),
-  "LINK-UP": (ko: "연계", ja: "連携", zh: "串联"),
-  "DRIBBLE": (ko: "드리블", ja: "ドリブル", zh: "盘带"),
-  "PLAY-MAKING": (ko: "플레이메이킹", ja: "チャンスメイク", zh: "组织进攻"),
   "No attribute data available": (
     ko: "팀 특성 정보가 없어요",
     ja: "能力データがありません",
@@ -1324,37 +1245,12 @@ const appMessages = <String, MessageTranslations>{
     ja: "このシーズンの出場記録はありません",
     zh: "本赛季暂无出场记录"
   ),
-  "No rated appearances are available.": (
-    ko: "평점이 있는 출전 기록이 없어요.",
-    ja: "評価のある出場記録はありません。",
-    zh: "暂无有评分的出场记录。"
-  ),
   "No ratings available": (ko: "평점이 없어요", ja: "評価がありません", zh: "暂无评分"),
   "Rating": (ko: "평점", ja: "評価", zh: "评分"),
   "Form": (ko: "최근 경기력", ja: "調子", zh: "状态"),
   "PERFORMANCE": (ko: "라운드별 경기력", ja: "パフォーマンス", zh: "表现"),
   "INFLUENCE": (ko: "출전 & 활약", ja: "影響力", zh: "影响力"),
   "Cost-Effectiveness": (ko: "급여 대비 효율", ja: "給与対効果", zh: "薪资性价比"),
-  "An indicator is shown when enough data is available.": (
-    ko: "데이터가 충분히 모이면 지표를 보여드려요.",
-    ja: "十分なデータが集まると指標が表示されます。",
-    zh: "数据充足时将显示指标。"
-  ),
-  "Could not load the indicators. Tap retry to try again.": (
-    ko: "지표를 불러오지 못했어요. 다시 시도해 주세요.",
-    ja: "指標を読み込めませんでした。再試行してください。",
-    zh: "无法加载指标，请重试。"
-  ),
-  "Compared with all positions across the five leagues.": (
-    ko: "5대 리그의 모든 포지션과 비교해요.",
-    ja: "5大リーグの全ポジションと比較します。",
-    zh: "与五大联赛所有位置的球员比较。"
-  ),
-  "Grades are based on prediction error, not equal-sized groups.": (
-    ko: "등급은 같은 인원수로 나누지 않고 예측 오차를 기준으로 정해요.",
-    ja: "等級は人数の均等割りではなく、予測誤差に基づきます。",
-    zh: "等级根据预测误差划分，而非按人数等分。"
-  ),
   "Player data unavailable": (ko: "선수 정보가 없어요", ja: "選手情報がありません", zh: "暂无球员信息"),
   "Player": (ko: "선수", ja: "選手", zh: "球员"),
   "1touch Ranking": (ko: "1TOUCH 랭킹", ja: "1TOUCHランキング", zh: "1TOUCH排名"),
@@ -1385,7 +1281,6 @@ const appMessages = <String, MessageTranslations>{
   "Goals": (ko: "골", ja: "ゴール", zh: "进球"),
   "Assist": (ko: "도움", ja: "アシスト", zh: "助攻"),
   "Assists": (ko: "도움", ja: "アシスト", zh: "助攻"),
-  "Shot": (ko: "슈팅", ja: "シュート", zh: "射门"),
   "Win Rate": (ko: "승률", ja: "勝率", zh: "胜率"),
   "Starting Rate": (ko: "선발 비율", ja: "先発率", zh: "首发率"),
   "Starting / Substitute": (ko: "선발 / 교체", ja: "先発 / 途中出場", zh: "首发 / 替补"),
@@ -1410,12 +1305,9 @@ const appMessages = <String, MessageTranslations>{
     zh: "无法加载最近交锋。"
   ),
   "Last 5": (ko: "최근 5경기", ja: "直近5試合", zh: "最近5场"),
-  "Last {count}": (ko: "최근 {count}경기", ja: "直近{count}試合", zh: "最近{count}场"),
   "Win": (ko: "승", ja: "勝ち", zh: "胜"),
   "Draw": (ko: "무승부", ja: "引き分け", zh: "平局"),
   "Lose": (ko: "패", ja: "負け", zh: "负"),
-  "Home Win": (ko: "홈 승", ja: "ホーム勝利", zh: "主胜"),
-  "Away Win": (ko: "원정 승", ja: "アウェイ勝利", zh: "客胜"),
   "AGAINST": (ko: "상대로", ja: "対戦相手", zh: "对手"),
   "LINEUP": (ko: "라인업", ja: "スターティングメンバー", zh: "首发阵容"),
   "COACH": (ko: "감독", ja: "監督", zh: "主教练"),
@@ -1429,18 +1321,12 @@ const appMessages = <String, MessageTranslations>{
   "Passes": (ko: "패스", ja: "パス", zh: "传球"),
   "Completed Passes": (ko: "패스 성공", ja: "パス成功", zh: "成功传球"),
   "Pass Accuracy": (ko: "패스 성공률", ja: "パス成功率", zh: "传球成功率"),
-  "Passes (Succ. / Attempts)": (
-    ko: "패스 (성공 / 시도)",
-    ja: "パス (成功 / 試行)",
-    zh: "传球 (成功 / 尝试)"
-  ),
   "Progressive Passes": (ko: "전진 패스", ja: "前進パス", zh: "推进传球"),
   "Passes into Final Third": (
     ko: "공격 지역 진입 패스",
     ja: "ファイナルサードへのパス",
     zh: "传入进攻三区"
   ),
-  "Passes into Pen. Area": (ko: "페널티 지역 진입 패스", ja: "ペナルティエリアへのパス", zh: "传入禁区"),
   "Recoveries": (ko: "리커버리", ja: "ボール回収", zh: "球权夺回"),
   "Tackles Won": (ko: "태클 성공", ja: "タックル成功", zh: "成功抢断"),
   "Interceptions": (ko: "인터셉트", ja: "インターセプト", zh: "拦截"),
@@ -1448,7 +1334,6 @@ const appMessages = <String, MessageTranslations>{
   "Blocks": (ko: "블록", ja: "ブロック", zh: "封堵"),
   "Saves": (ko: "선방", ja: "セーブ", zh: "扑救"),
   "Touches": (ko: "볼 터치", ja: "ボールタッチ", zh: "触球"),
-  "Attempts": (ko: "시도", ja: "試行", zh: "尝试"),
   "Corners": (ko: "코너킥", ja: "コーナーキック", zh: "角球"),
   "Offsides": (ko: "오프사이드", ja: "オフサイド", zh: "越位"),
   "Fouls": (ko: "파울", ja: "ファウル", zh: "犯规"),
@@ -1457,8 +1342,6 @@ const appMessages = <String, MessageTranslations>{
   "Red Cards": (ko: "퇴장", ja: "レッドカード", zh: "红牌"),
   "Red Card": (ko: "퇴장", ja: "レッドカード", zh: "红牌"),
   "Substitution": (ko: "선수 교체", ja: "選手交代", zh: "换人"),
-  "Distance Covered": (ko: "이동 거리", ja: "走行距離", zh: "跑动距离"),
-  "Succ. Rate (Take-Ons)": (ko: "드리블 성공률", ja: "ドリブル成功率", zh: "过人成功率"),
   "success rate": (ko: "성공률", ja: "成功率", zh: "成功率"),
   "per 90": (ko: "90분당", ja: "90分あたり", zh: "每90分钟"),
   "Per 90 min": (ko: "90분당", ja: "90分あたり", zh: "每90分钟"),
@@ -1472,11 +1355,6 @@ const appMessages = <String, MessageTranslations>{
     ko: "이 경기의 전술 분석이 없어요.",
     ja: "この試合の戦術分析はありません。",
     zh: "暂无本场比赛的战术分析。"
-  ),
-  "Pitch values compare each team’s share of recoveries by third.": (
-    ko: "경기장을 세 구역으로 나눠 팀별 볼 회수 비율을 비교해요.",
-    ja: "ピッチを3分割し、各チームのボール回収率を比較します。",
-    zh: "将球场分为三区，比较各队的球权夺回占比。"
   ),
   "Comment": (ko: "댓글", ja: "コメント", zh: "评论"),
   "Comments": (ko: "댓글", ja: "コメント", zh: "评论"),
@@ -1551,7 +1429,6 @@ const appMessages = <String, MessageTranslations>{
   "More options": (ko: "더 보기", ja: "その他", zh: "更多选项"),
   "Load more": (ko: "더 보기", ja: "もっと見る", zh: "加载更多"),
   "Edit": (ko: "수정", ja: "編集", zh: "编辑"),
-  "Edit post": (ko: "게시물 수정", ja: "投稿を編集", zh: "编辑帖子"),
   "Edit comment": (ko: "댓글 수정", ja: "コメントを編集", zh: "编辑评论"),
   "Edited": (ko: "수정됨", ja: "編集済み", zh: "已编辑"),
   "Unable to load updated post. Please try again.": (
@@ -1589,7 +1466,6 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Deleted user": (ko: "탈퇴한 사용자", ja: "退会したユーザー", zh: "已注销用户"),
   "Blocked user": (ko: "차단한 사용자", ja: "ブロックしたユーザー", zh: "已屏蔽用户"),
-  "Deleted comment": (ko: "삭제된 댓글", ja: "削除されたコメント", zh: "已删除评论"),
   "Hidden comment": (ko: "숨겨진 댓글", ja: "非表示のコメント", zh: "已隐藏评论"),
   "This comment was deleted.": (
     ko: "삭제된 댓글이에요.",
@@ -1800,11 +1676,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "チャットに接続できませんでした",
     zh: "无法连接聊天"
   ),
-  "Chat disconnected. Please try again.": (
-    ko: "채팅 연결이 끊겼어요. 다시 시도해 주세요.",
-    ja: "チャットが切断されました。もう一度お試しください。",
-    zh: "聊天已断开，请重试。"
-  ),
   "Reconnecting to chat…": (
     ko: "채팅에 다시 연결하는 중…",
     ja: "チャットに再接続中…",
@@ -1844,8 +1715,6 @@ const appMessages = <String, MessageTranslations>{
     zh: "开球、半场、全场"
   ),
   "New bets": (ko: "새 베팅", ja: "新しい予想", zh: "新竞猜"),
-  "New Bet Available": (ko: "새 베팅이 열렸어요", ja: "新しい予想が可能です", zh: "新的竞猜已开放"),
-  "Post-match Result": (ko: "경기 결과", ja: "試合結果", zh: "赛后结果"),
   "APPLY TO ALL PLAYERS": (ko: "모든 선수에 적용하기", ja: "すべての選手に適用", zh: "应用到所有球员"),
   "APPLY TO ALL TEAMS": (ko: "모든 팀에 적용하기", ja: "すべてのチームに適用", zh: "应用到所有球队"),
   "Applied to all following players": (
@@ -1970,32 +1839,20 @@ const appMessages = <String, MessageTranslations>{
     ja: "カレンダーと同期しますか？",
     zh: "要同步到日历吗？"
   ),
-  "We’ll add your favorite team’s upcoming matches straight to your calendar, so you never miss a kickoff. You’ll get notified before each game — no spam, no surprises.":
-      (
-    ko: "좋아하는 팀의 경기 일정을 캘린더에 추가해 드려요. 경기를 놓치지 않도록 시작 전에 알려드릴게요.",
-    ja: "お気に入りチームの試合をカレンダーに追加します。キックオフを見逃さないよう、試合前にお知らせします。",
-    zh: "将你喜欢的球队赛程添加到日历，并在赛前提醒你，不错过每一次开球。"
-  ),
   "YES, SYNC IT!": (ko: "네, 동기화할게요", ja: "同期する", zh: "立即同步"),
   "PLACE A BET": (ko: "예측하기", ja: "予想する", zh: "预测"),
   "{team} Win": (ko: "{team} 승", ja: "{team} 勝利", zh: "{team} 胜"),
-  "EDIT BET": (ko: "베팅 수정", ja: "予想を編集", zh: "修改竞猜"),
   "EDIT MY BET": (ko: "예측 바꾸기", ja: "予想を変える", zh: "修改预测"),
   "You’ve already placed a bet.": (
     ko: "이미 예측했어요",
     ja: "すでに予想しました",
     zh: "已经预测了"
   ),
-  "CANCEL BET": (ko: "베팅 취소", ja: "予想をキャンセル", zh: "取消竞猜"),
-  "KEEP BET": (ko: "베팅 유지", ja: "予想を維持", zh: "保留竞猜"),
-  "CHANGE PICK": (ko: "선택 변경", ja: "選択を変更", zh: "更改选择"),
-  "Cancel your bet?": (ko: "베팅을 취소할까요?", ja: "予想をキャンセルしますか？", zh: "要取消竞猜吗？"),
   "Bet Submitted!": (ko: "예측했어요!", ja: "予想しました！", zh: "预测好了！"),
   "SUBMIT": (ko: "제출", ja: "送信", zh: "提交"),
   "SUBMITTING…": (ko: "제출 중…", ja: "送信中…", zh: "提交中…"),
   "HISTORY": (ko: "내역", ja: "履歴", zh: "记录"),
   "REFRESH RESULT": (ko: "결과 새로고침", ja: "結果を更新", zh: "刷新结果"),
-  "Waiting for the result": (ko: "결과를 기다리고 있어요", ja: "結果を待っています", zh: "等待结果"),
   "Check back after the final whistle…": (
     ko: "경기가 끝나면 결과를 확인해보세요",
     ja: "試合が終わったら結果を確認してみてください",
@@ -2053,11 +1910,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "予想内容が変わりました。確認して再度お試しください。",
     zh: "竞猜内容已更改，请确认后重试。"
   ),
-  "Not correct · 0 pts returned": (
-    ko: "적중 실패 · 반환 0 $pointUnit",
-    ja: "不的中 · 0 $pointUnit返還",
-    zh: "未猜中 · 返还0 $pointUnit"
-  ),
   "You're on the bench for a moment": (
     ko: "잠시 벤치에서 쉬어가요",
     ja: "少しベンチでひと休み",
@@ -2111,7 +1963,6 @@ const appMessages = <String, MessageTranslations>{
   "Coming soon": (ko: "아직 준비 중이에요", ja: "準備中です", zh: "敬请期待"),
   "Not ready yet": (ko: "아직 준비가 안됐어요", ja: "まだ準備できていません", zh: "尚未准备好"),
   "SWITCH": (ko: "선택한 팀으로 바꾸기", ja: "切り替え", zh: "切换"),
-  "Ad": (ko: "광고", ja: "広告", zh: "广告"),
   "Ad privacy choices": (ko: "광고 개인정보 설정", ja: "広告のプライバシー設定", zh: "广告隐私设置"),
   "Unable to open ad privacy choices. Please try again.": (
     ko: "광고 개인정보 설정을 열지 못했어요. 다시 시도해주세요.",
@@ -2131,12 +1982,6 @@ const appMessages = <String, MessageTranslations>{
   "October": (ko: "10월", ja: "10月", zh: "10月"),
   "November": (ko: "11월", ja: "11月", zh: "11月"),
   "December": (ko: "12월", ja: "12月", zh: "12月"),
-  "By clicking sign up, I hereby agree and consent to\n1touch’s Terms & Conditions; I confirm that I have\nread 1touch’s Privacy Policy.":
-      (
-    ko: "회원가입을 누르면 1touch 이용약관에 동의하고\n개인정보 처리방침을 확인한 것으로 간주해요.",
-    ja: "新規登録を押すと、1touchの利用規約に同意し、\nプライバシーポリシーを確認したものとみなします。",
-    zh: "点击注册即表示同意1touch服务条款，\n并确认已阅读隐私政策。"
-  ),
   "By clicking sign up, I hereby agree and consent to 1touch’s {terms}; I confirm that I have read 1touch’s {privacy}.":
       (
     ko: "회원가입을 누르면 1touch {terms}에 동의하고 {privacy}을 확인한 것으로 간주해요.",
@@ -2166,21 +2011,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "このベットで{points}獲得しました！🎉",
     zh: "你从这次投注中赢得了{points}！🎉"
   ),
-  "You used {stake} pts · {return} pts if correct": (
-    ko: "{stake} $pointUnit 사용 · 적중 시 {return} $pointUnit",
-    ja: "{stake} $pointUnit使用 · 的中時{return} $pointUnit",
-    zh: "使用{stake} $pointUnit · 猜中可得{return} $pointUnit"
-  ),
-  "You earned no points from this bet.": (
-    ko: "이 베팅에서 획득한 포인트가 없어요.",
-    ja: "このベットで獲得したポイントはありません。",
-    zh: "这次投注没有赢得积分。"
-  ),
-  "{points} were refunded from this bet.": (
-    ko: "이 베팅에서 {points}를 환불받았어요.",
-    ja: "このベットから{points}払い戻されました。",
-    zh: "这次投注已退还{points}。"
-  ),
   "You’ve got {points} pts!": (
     ko: "{points} $pointUnit를 가지고 있어요",
     ja: "{points} $pointUnitあります",
@@ -2191,11 +2021,6 @@ const appMessages = <String, MessageTranslations>{
     ko: "{points} 단위로 입력해 주세요.",
     ja: "{points}ポイント単位で入力してください。",
     zh: "请按{points}积分为单位输入。"
-  ),
-  "You can use up to {points} pts!": (
-    ko: "최대 {points} $pointUnit를 쓸 수 있어요",
-    ja: "最大{points} $pointUnit使えます",
-    zh: "最多可使用{points} $pointUnit"
   ),
   "Your estimated win": (
     ko: "맞히면 더 받는 포인트",
@@ -2217,47 +2042,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "このまま予想しますか？",
     zh: "就这样预测吗？"
   ),
-  "{points} pts will be returned.": (
-    ko: "{points} $pointUnit가 반환돼요.",
-    ja: "{points} $pointUnitが返還されます。",
-    zh: "将返还{points} $pointUnit。"
-  ),
-  "Available: {points} pts": (
-    ko: "사용 가능: {points} $pointUnit",
-    ja: "利用可能：{points} $pointUnit",
-    zh: "可用：{points} $pointUnit"
-  ),
-  "If correct: +{points} pts": (
-    ko: "적중 시: +{points} $pointUnit",
-    ja: "的中時：+{points} $pointUnit",
-    zh: "猜中后：+{points} $pointUnit"
-  ),
-  "Total return: {points} pts, including your stake.": (
-    ko: "베팅 포인트를 포함해 총 {points} $pointUnit를 돌려받아요.",
-    ja: "賭けたポイントを含め、合計{points} $pointUnitが返還されます。",
-    zh: "包含投入积分在内，共返还{points} $pointUnit。"
-  ),
   "{count} participants": (
     ko: "{count}명 참여",
     ja: "{count}人参加",
     zh: "{count}人参与"
   ),
-  "Return if correct: {points} pts (includes stake)": (
-    ko: "적중 시 반환: {points} $pointUnit (베팅 포인트 포함)",
-    ja: "的中時の返還：{points} $pointUnit（賭け分を含む）",
-    zh: "猜中后返还：{points} $pointUnit（包含投入积分）"
-  ),
-  "Won · {points} pts returned": (
-    ko: "적중 · {points} $pointUnit 반환",
-    ja: "的中 · {points} $pointUnit返還",
-    zh: "猜中 · 返还{points} $pointUnit"
-  ),
-  "Refunded · {points} pts returned": (
-    ko: "환불 · {points} $pointUnit 반환",
-    ja: "払い戻し · {points} $pointUnit返還",
-    zh: "已退款 · 返还{points} $pointUnit"
-  ),
-  "Match {number}": (ko: "{number}차전", ja: "第{number}戦", zh: "第{number}场"),
   "Replying to {name}": (
     ko: "{name}님에게 답글 남기는 중",
     ja: "{name}さんに返信中",
@@ -2270,7 +2059,6 @@ const appMessages = <String, MessageTranslations>{
   ),
   "PLAYER {slot}": (ko: "선수 {slot}", ja: "選手{slot}", zh: "球员{slot}"),
   "{age} yrs": (ko: "{age}세", ja: "{age}歳", zh: "{age}岁"),
-  "{count} matches": (ko: "{count}경기", ja: "{count}試合", zh: "{count}场比赛"),
   "Tell us why you would like to report this {target}!": (
     ko: "이 {target}을 신고하는 이유를 알려주세요.",
     ja: "この{target}を報告する理由を教えてください。",
@@ -2375,35 +2163,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "選択したリーグ・シーズンで、同じポジションの選手と比べて順位が最も高い3つのスタッツです。",
     zh: "展示该球员在所选联赛和赛季中，与同位置球员相比排名最高的3项数据。"
   ),
-  "Current season: {season}.": (
-    ko: "현재 시즌: {season}.",
-    ja: "現在のシーズン：{season}。",
-    zh: "当前赛季：{season}。"
-  ),
-  "{matches} rated appearances. {players} players across the five leagues.": (
-    ko: "평점이 있는 {matches}경기 출전. 5대 리그 선수 {players}명 기준.",
-    ja: "評価のある出場{matches}試合。5大リーグの{players}選手が対象。",
-    zh: "有评分的{matches}次出场。参考五大联赛的{players}名球员。"
-  ),
-  "Compares season rating and share of playing time with expectations for the player's estimated gross wage, club wage level, league and position. The two differences carry equal weight. Fair means within the usual prediction error; higher grades mean more return for the wage. Transfer fees are not included.":
-      (
-    ko: "시즌 평점과 출전 시간 비중을 선수의 추정 세전 급여, 구단 급여 수준, 리그, 포지션에 따른 예상치와 비교해요. 두 차이는 같은 비중으로 반영해요. '보통'은 일반적인 예측 오차 범위 안이라는 뜻이며, 등급이 높을수록 급여 대비 성과가 좋아요. 이적료는 포함하지 않아요.",
-    ja: "シーズン評価と出場時間の割合を、推定税引前給与、クラブの給与水準、リーグ、ポジションに基づく予測値と比較します。2つの差を同じ比重で反映します。「標準」は通常の予測誤差の範囲内を表し、等級が高いほど給与に対する成果が優れています。移籍金は含みません。",
-    zh: "将赛季评分和出场时间占比与根据球员预估税前薪资、俱乐部薪资水平、联赛及位置得出的预期值进行比较。两项差异权重相同。“一般”表示在通常的预测误差范围内，等级越高表示薪资回报越好。不包含转会费。"
-  ),
-  "Recent performance over the latest 5 league appearances this season, weighted by playing time and calibrated recency. Compared with all positions across the five leagues.":
-      (
-    ko: "이번 시즌 최근 리그 5경기의 활약을 출전 시간과 보정된 최신성에 따라 가중해요. 5대 리그의 모든 포지션 선수와 비교해요.",
-    ja: "今シーズン直近5回のリーグ出場を、出場時間と調整済みの新しさで重み付けした指標です。5大リーグの全ポジションと比較します。",
-    zh: "对本赛季最近5次联赛出场表现，按出场时间和经校准的时间权重进行计算。与五大联赛所有位置的球员比较。"
-  ),
-  "Based on league playing time while available at this club, excluding recorded injuries and suspensions. Prospect means low usage and age 21 or younger on the date the role is calculated. A role is shown after it has been calculated from verified data.":
-      (
-    ko: "기록된 부상과 징계 기간을 제외하고, 이 구단에서 출전 가능했던 리그 시간 중 실제 출전 시간을 기준으로 정해요. 유망주는 계산일 기준 21세 이하이면서 출전 비중이 낮은 선수를 뜻해요. 검증된 데이터로 계산한 뒤 역할을 표시해요.",
-    ja: "記録された負傷・出場停止を除き、このクラブで出場可能だったリーグ時間に占める実際の出場時間で判定します。有望な若手は、計算日時点で21歳以下かつ出場割合が低い選手です。検証済みデータで算出後に表示します。",
-    zh: "根据在该俱乐部可出场的联赛时间中的实际出场占比判定，排除已记录的伤病和停赛。潜力新星指计算当天21岁及以下且出场比例较低的球员。角色根据已核实数据计算后显示。"
-  ),
-  "Europe": (ko: "유럽", ja: "ヨーロッパ", zh: "欧洲"),
   "Too many authentication requests": (
     ko: "로그인 요청이 많아요. 잠시 후 다시 시도해 주세요.",
     ja: "ログイン要求が多すぎます。しばらくしてからお試しください。",
@@ -2413,21 +2172,6 @@ const appMessages = <String, MessageTranslations>{
     ko: "로그인 정보가 만료됐어요. 다시 로그인해 주세요.",
     ja: "ログインの有効期限が切れました。再度ログインしてください。",
     zh: "登录已过期，请重新登录。"
-  ),
-  "Email or username is already registered": (
-    ko: "이미 사용 중인 이메일 또는 사용자 이름이에요.",
-    ja: "このメールアドレスまたはユーザー名は登録済みです。",
-    zh: "该邮箱或用户名已被注册。"
-  ),
-  "Invalid, expired, or exhausted verification code": (
-    ko: "인증 코드가 틀렸거나 만료됐어요. 새 코드를 받아 주세요.",
-    ja: "認証コードが無効または期限切れです。新しいコードを取得してください。",
-    zh: "验证码无效或已过期，请获取新验证码。"
-  ),
-  "Invalid username or password": (
-    ko: "사용자 이름이나 비밀번호를 확인해 주세요.",
-    ja: "ユーザー名またはパスワードを確認してください。",
-    zh: "请检查用户名或密码。"
   ),
   "No email account found. Use the social provider used at signup": (
     ko: "이메일 계정이 없어요. 가입할 때 쓴 소셜 로그인으로 계속해 주세요.",
@@ -2464,11 +2208,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "メール認証コードを確認するか、新しいコードを取得してください。",
     zh: "请检查邮箱验证码或获取新验证码。"
   ),
-  "{user} and {count} more users liked your post.": (
-    ko: "{user}님 외 {count}명이 내 게시글을 좋아해요.",
-    ja: "{user}さんと他{count}人があなたの投稿にいいねしました。",
-    zh: "{user}和其他{count}位用户赞了你的帖子。"
-  ),
   "{user} liked your post.": (
     ko: "{user}님이 내 게시글을 좋아해요.",
     ja: "{user}さんがあなたの投稿にいいねしました。",
@@ -2478,16 +2217,6 @@ const appMessages = <String, MessageTranslations>{
     ko: "{user}님이 내 게시글에 댓글을 남겼어요: ",
     ja: "{user}さんがあなたの投稿にコメントしました：",
     zh: "{user}评论了你的帖子："
-  ),
-  "{user} liked your comment.": (
-    ko: "{user}님이 내 댓글을 좋아해요.",
-    ja: "{user}さんがあなたのコメントにいいねしました。",
-    zh: "{user}赞了你的评论。"
-  ),
-  "{user} replied to your comment: ": (
-    ko: "{user}님이 내 댓글에 답글을 남겼어요: ",
-    ja: "{user}さんがあなたのコメントに返信しました：",
-    zh: "{user}回复了你的评论："
   ),
   "Last {count} matches": (
     ko: "최근 {count}경기",
@@ -2501,7 +2230,6 @@ const appMessages = <String, MessageTranslations>{
     zh: "每个联赛只能关注一支球队。关注此球队将替换{team}。是否继续？"
   ),
   "Shot stopping": (ko: "선방", ja: "シュートストップ", zh: "扑救"),
-  "Expected Goals": (ko: "기대 득점", ja: "期待得点", zh: "预期进球"),
   "Expected back today": (ko: "오늘 복귀할 예정이에요", ja: "今日復帰する予定です", zh: "预计今天复出"),
   "Expected back in 1 day": (
     ko: "1일 뒤 복귀할 예정이에요",
@@ -2539,7 +2267,6 @@ const appMessages = <String, MessageTranslations>{
   "European Golden Shoe": (ko: "유러피언 골든슈", ja: "ヨーロッパ・ゴールデンシュー", zh: "欧洲金靴奖"),
   "Golden Boy": (ko: "골든보이", ja: "ゴールデンボーイ", zh: "金童奖"),
   "Ballon d'Or": (ko: "발롱도르", ja: "バロンドール", zh: "金球奖"),
-  " Min.": (ko: "분", ja: "分", zh: "分钟"),
   "Explanation": (ko: "설명", ja: "説明", zh: "说明"),
   "Calculated using proprietary performance metrics and predictive analytics model":
       (

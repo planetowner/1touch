@@ -83,21 +83,11 @@ void main() {
       expect(
           translateMessage(locale, '{points} pts', {'points': 120}), '120 pts');
       expect(
-          translateMessage(
-              locale,
-              'You used {stake} pts · {return} pts if correct',
-              {'stake': 100, 'return': 400}),
-          allOf(contains('100 pts'), contains('400 pts')));
-      expect(
-        translateMessage(locale, '{points} points returned.', {'points': 100}),
+        translateMessage(locale, 'Your {points} points\nhave been returned',
+            {'points': 100}),
         contains('100'),
       );
     }
-    expect(
-      translateMessage(const Locale('ko'), 'You can use up to {points} pts!',
-          {'points': '1,200'}),
-      '최대 1,200 pts를 쓸 수 있어요',
-    );
     for (final key in ['PTS', 'Pts']) {
       expect(
         appSupportedLocales.map((locale) => translateMessage(locale, key)),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/features/loading/rolling_football_motion.dart';
-import 'package:onetouch/l10n/app_localizations.dart';
 
 /// The fixed Home shortcut to the currently viewed team's live fixture.
 class LiveMatchBallButton extends StatelessWidget {
@@ -26,7 +25,6 @@ class LiveMatchBallButton extends StatelessWidget {
           onTap: onPressed,
           child: Semantics(
             button: true,
-            label: tr(context, 'Open live match'),
             child: Center(
               child: RollingFootballMotion(
                 transformKey: const ValueKey('home-live-match-ball-motion'),

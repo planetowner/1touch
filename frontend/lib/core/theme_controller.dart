@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:onetouch/l10n/app_localizations.dart';
 
 class AppThemeController extends ValueNotifier<ThemeMode> {
   AppThemeController() : super(ThemeMode.dark);
@@ -90,27 +89,6 @@ class AppThemeSwitch extends StatelessWidget {
       inactiveTrackColor: foregroundColor?.withValues(alpha: 0.2),
       onChanged: (value) => appThemeController.setMode(
         value ? ThemeMode.dark : ThemeMode.light,
-      ),
-    );
-  }
-}
-
-class AppThemeIconButton extends StatelessWidget {
-  const AppThemeIconButton({super.key, this.color});
-
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return IconButton(
-      tooltip: isDark
-          ? tr(context, 'Use light theme')
-          : tr(context, 'Use dark theme'),
-      onPressed: appThemeController.toggle,
-      icon: Icon(
-        isDark ? Icons.light_mode : Icons.dark_mode,
-        color: color,
       ),
     );
   }

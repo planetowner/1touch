@@ -277,12 +277,8 @@ class CommunityHeaderActions extends StatelessWidget {
       AppHeaderIconButton(
           key: ValueKey('community-$name-button'),
           onPressed: onTap,
-          tooltip: tr(
-              context,
-              name == 'activity'
-                  ? 'My activity'
-                  : name == 'search'
-                      ? 'Search'
-                      : 'Notifications'),
+          tooltip: name == 'activity'
+              ? null
+              : tr(context, name == 'search' ? 'Search' : 'Notifications'),
           icon: icon);
 }

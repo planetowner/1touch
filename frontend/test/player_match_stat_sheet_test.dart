@@ -36,7 +36,27 @@ void main() {
       MaterialApp(
         theme: app_style.whitetheme,
         home: Scaffold(
-          body: PlayerMatchStatSheet(player: mockRashfordStats),
+          body: const PlayerMatchStatSheet(
+            player: PlayerMatchStatData(
+              teamPrimaryColor: 0xFFA50044,
+              name: 'M. Rashford',
+              jerseyNumber: 14,
+              positions: ['ST', 'LW', 'LM'],
+              club: 'FC Barcelona',
+              nationalityId: 462,
+              nationality: 'England',
+              playerImageAsset: 'assets/playerAvatar.png',
+              sections: [
+                PlayerMatchStatSection(
+                  category: 'Finish',
+                  rows: [
+                    PlayerMatchStatRow(label: 'Goals', value: '1'),
+                    PlayerMatchStatRow(label: 'xG', value: '0.7'),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
