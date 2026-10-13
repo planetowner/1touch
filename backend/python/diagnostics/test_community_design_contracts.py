@@ -1,5 +1,6 @@
 """디자인 변경으로 생긴 공개 범위와 팔로우 계약을 DB 연결 없이 확인해요."""
 import unittest
+from datetime import datetime
 from unittest.mock import patch
 from fastapi import HTTPException
 
@@ -73,8 +74,10 @@ class CommunityDesignContracts(unittest.TestCase):
             self.assertEqual(cur.execute.call_count, 1)
 
     def test_follow_and_unfollow_share_sorted_member_locks(self):
+        now = datetime(2026, 10, 13, 12)
         for following in (True, False):
             with patch.object(profiles, 'transaction') as transaction, \
+                 patch.object(profiles, 'utc_now', return_value=now), \
                  patch.object(profiles, 'lock_user', return_value={'display_name': 'Member', 'suspended_until': None}) as lock:
                 cur = transaction.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
                 cur.fetchone.return_value = None
@@ -82,7 +85,7 @@ class CommunityDesignContracts(unittest.TestCase):
                 self.assertEqual([call.args[1] for call in lock.call_args_list], [1, 8])
                 sql, args = cur.execute.call_args.args
                 self.assertIn('ON DUPLICATE KEY' if following else 'DELETE FROM', sql)
-                self.assertEqual(args, (8, 1))
+                self.assertEqual(args, (8, 1, now) if following else (8, 1))
 
 if __name__ == '__main__':
     unittest.main()
