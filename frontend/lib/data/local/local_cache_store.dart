@@ -57,6 +57,9 @@ abstract final class LocalCacheKeys {
   static String xgStandings(int competitionId, int? seasonId) =>
       'xg-standings:$competitionId:${seasonId ?? 'current'}';
 
+  static String tournamentBracket(int competitionId, int seasonId) =>
+      'tournament-bracket:$competitionId:$seasonId';
+
   static String teamMatches(
     int teamId,
     String status,
@@ -148,6 +151,8 @@ abstract final class LocalCacheKeys {
       '${Uri.encodeComponent(formation ?? 'default')}';
 
   static String teamInjuries(int teamId) => 'team-injuries:$teamId';
+
+  static String linkPreview(Uri uri) => 'link-preview:$uri';
 }
 
 /// Deterministic in-memory implementation used by repository unit tests.

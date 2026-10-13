@@ -2,6 +2,7 @@
 from functools import lru_cache
 from contextlib import contextmanager
 from io import BytesIO
+import hashlib
 import re
 import warnings
 import boto3
@@ -126,7 +127,7 @@ def private_content(item: dict, range_header: str | None = None):
 
 
 @lru_cache(maxsize=64)
-def _post_preview_bytes(object_key: str) -> bytes:
+def _image_preview_bytes(object_key: str, max_size: int) -> bytes:
     # 첨부 원본은 바뀌지 않아요. 축소 결과만 재사용하고, 접근 권한은 요청마다 확인해요.
     source = object_operation("get_object", Key=object_key)["Body"]
     try:
@@ -134,9 +135,9 @@ def _post_preview_bytes(object_key: str) -> bytes:
     finally:
         source.close()
     with Image.open(BytesIO(data)) as original:
-        # 목록과 상세가 같은 사진을 재사용하도록 상세 화면 크기로 한 번만 줄여요.
+        # 원본과 표시 크기가 같으면 게시물·프로필 모두 축소 결과를 재사용해요.
         # 회전도 축소 후에 적용해 원본 전체 픽셀을 복사하지 않아요.
-        original.thumbnail((1280, 1280), Image.Resampling.LANCZOS)
+        original.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
         preview = ImageOps.exif_transpose(original)
         output = BytesIO()
         preview.save(output, format="WEBP", quality=85)
@@ -146,6 +147,18 @@ def _post_preview_bytes(object_key: str) -> bytes:
 def private_post_preview(item: dict):
     if not (item["content_type"] or "").startswith("image/"):
         raise HTTPException(415, "A preview requires an image attachment")
-    return Response(_post_preview_bytes(item["object_key"]), media_type="image/webp", headers={
+    return Response(_image_preview_bytes(item["object_key"], 1280), media_type="image/webp", headers={
         "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff",
     })
+
+
+def private_avatar_thumbnail(item: dict, if_none_match: str | None = None):
+    # 사진을 바꾸면 저장소 키도 바뀌므로 원본을 읽지 않고 변경 여부를 확인해요.
+    digest = hashlib.sha256(f"avatar-384-webp-v1:{item['object_key']}".encode()).hexdigest()
+    etag = f'"{digest}"'
+    headers = {"Cache-Control": "private, no-cache", "ETag": etag,
+               "Vary": "Authorization", "X-Content-Type-Options": "nosniff"}
+    if if_none_match == etag:
+        return Response(status_code=304, headers=headers)
+    # 108px 프로필 화면에서도 선명하게 보이도록 목록과 같은 384px 썸네일을 써요.
+    return Response(_image_preview_bytes(item["object_key"], 384), media_type="image/webp", headers=headers)

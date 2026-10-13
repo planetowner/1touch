@@ -198,7 +198,7 @@ void main() {
     await tester.pumpWidget(_app(repository));
 
     expect(find.byKey(const ValueKey('standing-loading')), findsOneWidget);
-    expect(repository.requests, [(competitionId: 8, seasonId: 28083)]);
+    expect(repository.requests.first, (competitionId: 8, seasonId: 28083));
 
     final seasonDropdown = tester.widget<AppDropdown<int>>(
       find.byKey(const ValueKey('standing-season-filter-shell')),
@@ -283,18 +283,18 @@ void main() {
     _leagueFilter(tester).onChanged(24);
     await tester.pump();
     expect(_seasonFilter(tester).value, 25024);
-    expect(repository.requests.last, (competitionId: 24, seasonId: 25024));
+    expect(repository.requests, contains((competitionId: 24, seasonId: 25024)));
 
     _seasonFilter(tester).onChanged(23614);
     await tester.pump();
     expect(_leagueFilter(tester).options.map((option) => option.value), [8, 5]);
     expect(_leagueFilter(tester).value, 8);
-    expect(repository.requests.last, (competitionId: 8, seasonId: 23614));
+    expect(repository.requests, contains((competitionId: 8, seasonId: 23614)));
 
     _leagueFilter(tester).onChanged(5);
     await tester.pump();
     expect(_seasonFilter(tester).value, 24005);
-    expect(repository.requests.last, (competitionId: 5, seasonId: 24005));
+    expect(repository.requests, contains((competitionId: 5, seasonId: 24005)));
     expect(tester.takeException(), isNull);
   });
 
@@ -316,7 +316,7 @@ void main() {
     expect(_leagueFilter(tester).value, 8);
     expect(
         _leagueFilter(tester).options.map((option) => option.value), [8, 24]);
-    expect(repository.requests.last, (competitionId: 8, seasonId: 28083));
+    expect(repository.requests, contains((competitionId: 8, seasonId: 28083)));
     expect(find.byType(ApiKnockoutBracket), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -331,7 +331,7 @@ void main() {
     await tester.pumpWidget(_app(repository));
     await tester.pump();
 
-    expect(repository.requests, [(competitionId: 8, seasonId: 25583)]);
+    expect(repository.requests.first, (competitionId: 8, seasonId: 25583));
     expect(_seasonFilter(tester).options.map((option) => option.label),
         ['25/26', '24/25']);
     expect(_leagueFilter(tester).options.map((option) => option.value),
@@ -375,13 +375,15 @@ void main() {
     await tester
         .pumpWidget(_app(repository, refreshController: refreshController));
     await tester.pump();
-    expect(repository.requests, hasLength(1));
+    expect(repository.requests.where((query) => query.seasonId == 28083),
+        hasLength(1));
 
     await refreshController.refresh();
     await tester.pump();
 
-    expect(repository.requests, hasLength(2));
-    expect(repository.requests.last, (competitionId: 8, seasonId: 28083));
+    expect(repository.requests.where((query) => query.seasonId == 28083),
+        hasLength(2));
+    expect(repository.requests, contains((competitionId: 8, seasonId: 28083)));
   });
 
   testWidgets('manual refresh bypasses the visible xG cache', (tester) async {
@@ -400,12 +402,14 @@ void main() {
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
     await tester.pump();
-    expect(xgRepository.requests, hasLength(1));
+    expect(xgRepository.requests.where((query) => query.seasonId == 28083),
+        hasLength(2));
 
     await refreshController.refresh();
     await tester.pump();
 
-    expect(xgRepository.requests, hasLength(2));
+    expect(xgRepository.requests.where((query) => query.seasonId == 28083),
+        hasLength(3));
     expect(xgRepository.requests.last, (competitionId: 8, seasonId: 28083));
   });
 
@@ -681,7 +685,8 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const ValueKey('standing-empty')), findsOneWidget);
-    expect(repository.requests, hasLength(2));
+    expect(repository.requests.where((query) => query.seasonId == 28083),
+        hasLength(2));
     expect(tester.takeException(), isNull);
   });
 
@@ -718,14 +723,16 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('standing-club-name-9')));
     await tester.pumpAndSettle();
     expect(find.text('Current United'), findsOneWidget);
-    expect(repository.requests, [
-      (competitionId: 8, seasonId: 28083),
-      (competitionId: 8, seasonId: 23614),
-    ]);
+    expect(
+        repository.requests,
+        containsAll([
+          (competitionId: 8, seasonId: 28083),
+          (competitionId: 8, seasonId: 23614),
+        ]));
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('loads xG standings only after the xG table is selected',
+  testWidgets('prepares xG standings before the xG table is selected',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -740,12 +747,13 @@ void main() {
     ));
     await tester.pump();
 
-    expect(xgRepository.requests, isEmpty);
+    expect(
+        xgRepository.requests, contains((competitionId: 8, seasonId: 28083)));
 
     await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
     await tester.pump();
 
-    expect(xgRepository.requests, [(competitionId: 8, seasonId: 28083)]);
+    expect(xgRepository.requests.first, (competitionId: 8, seasonId: 28083));
     expect(find.text('MCI'), findsOneWidget);
     expect(find.text('API Expected United'), findsNothing);
     final xgCard = tester.widget<Container>(
@@ -888,7 +896,8 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const ValueKey('xg-standing-empty')), findsOneWidget);
-    expect(xgRepository.requests, hasLength(2));
+    expect(xgRepository.requests.where((query) => query.seasonId == 28083),
+        hasLength(3));
     expect(tester.takeException(), isNull);
   });
 
@@ -934,10 +943,12 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('standing-club-name-9')));
     await tester.pumpAndSettle();
     expect(find.text('Current Expected United'), findsOneWidget);
-    expect(xgRepository.requests, [
-      (competitionId: 8, seasonId: 28083),
-      (competitionId: 8, seasonId: 23614),
-    ]);
+    expect(
+        xgRepository.requests,
+        containsAll([
+          (competitionId: 8, seasonId: 28083),
+          (competitionId: 8, seasonId: 23614),
+        ]));
     expect(tester.takeException(), isNull);
   });
 

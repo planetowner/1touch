@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -9,6 +10,10 @@ import 'package:http/testing.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/link_previews/link_preview_repository.dart';
 import 'package:onetouch/features/community/community_link_preview.dart';
+import 'package:onetouch/features/community/community_feed_widgets.dart';
+import 'package:onetouch/features/community/community_post_rich_body.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
+import 'package:onetouch/features/community/community_social_embed_cache.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -21,6 +26,8 @@ const _title =
     "'노이어가 이런 실수를 한다고?' 경기 시작 단 '8.4초' 만에 역대급 대형 사고!...분데스리가 최단 시간 실점 '불명예 신기록'→콤파니 감독은 감쌌다";
 
 void main() {
+  setUp(communitySocialEmbedCache.clear);
+  tearDown(communitySocialEmbedCache.clear);
   Future<void> fonts() async {
     await (FontLoader('Archivo')
           ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
@@ -41,6 +48,133 @@ void main() {
                 child:
                     Padding(padding: const EdgeInsets.all(24), child: child))),
       );
+
+  testWidgets(
+      'feed prepares the social view and detail uses its height on the first frame and on reopening',
+      (tester) async {
+    final platform = FakeWebViewPlatform();
+    final previous = WebViewPlatform.instance;
+    WebViewPlatform.instance = platform;
+    addTearDown(
+        () => WebViewPlatform.instance = previous ?? FakeWebViewPlatform());
+    const post = Post(
+        postId: 1,
+        teamId: 83,
+        language: 'ko',
+        userId: 1,
+        category: PostCategory.general,
+        title: 'Post',
+        createdAt: '',
+        body:
+            'https://www.instagram.com/p/Ready123/\n\nBody below the preview');
+    await tester.pumpWidget(app(CommunityPostCard(post: post, onTap: () {})));
+    await tester.pump();
+    final controller = platform.controllers.single;
+    expect(controller.html, contains('const width = 752.0;'));
+    expect(find.byType(WebViewWidget), findsNothing);
+    controller.message('{"height":300}');
+    for (var opening = 0; opening < 2; opening++) {
+      await tester.pumpWidget(
+          app(CommunityPostRichBody(parts: communityPostParts(post))));
+      expect(find.byType(FootballLoadingIndicator), findsNothing);
+      expect(tester.getSize(find.byType(WebViewWidget)).height, 300);
+      expect(
+          tester.getTopLeft(find.byType(CommunityLinkedText)).dy -
+              tester.getBottomLeft(find.byType(WebViewWidget)).dy,
+          24);
+      final firstPosition = tester.getTopLeft(find.byType(CommunityLinkedText));
+      await tester.pumpAndSettle();
+      expect(
+          tester.getTopLeft(find.byType(CommunityLinkedText)), firstPosition);
+      expect(platform.controllers, [controller]);
+      await tester.pumpWidget(app(const SizedBox()));
+    }
+  });
+
+  testWidgets(
+      'an uncached website reveals following text in place, and a cached website has no loading frame',
+      (tester) async {
+    final response = Completer<http.Response>();
+    var requests = 0;
+    final repository = LinkPreviewRepository(client: MockClient((_) {
+      requests++;
+      return response.future;
+    }));
+    final parts = [
+      (text: '', uri: Uri.parse('https://example.com/first')),
+      (text: 'Body below article', uri: null)
+    ];
+    await tester.pumpWidget(
+        app(CommunityPostRichBody(parts: parts, repository: repository)));
+    await tester.pump();
+    expect(find.byType(CommunityLinkedText), findsNothing);
+    response.complete(http.Response('<title>Article</title>', 200,
+        headers: {'content-type': 'text/html'}));
+    await tester.pumpAndSettle();
+    final firstPosition = tester.getTopLeft(find.byType(CommunityLinkedText));
+    expect(
+        firstPosition.dy -
+            tester.getBottomLeft(find.byType(CommunityWebsiteCard)).dy,
+        24);
+    await tester.pumpWidget(app(const SizedBox()));
+    await tester.pumpWidget(
+        app(CommunityPostRichBody(parts: parts, repository: repository)));
+    expect(find.byType(FootballLoadingIndicator), findsNothing);
+    expect(tester.getTopLeft(find.byType(CommunityLinkedText)), firstPosition);
+    expect(requests, 1);
+  });
+
+  testWidgets(
+      'an uncached social link keeps following text hidden until its measured height arrives',
+      (tester) async {
+    final platform = FakeWebViewPlatform();
+    final previous = WebViewPlatform.instance;
+    WebViewPlatform.instance = platform;
+    addTearDown(
+        () => WebViewPlatform.instance = previous ?? FakeWebViewPlatform());
+    await tester.pumpWidget(app(CommunityPostRichBody(parts: [
+      (text: '', uri: Uri.parse('https://x.com/a/status/456')),
+      (text: 'Body below the post', uri: null),
+    ])));
+    await tester.pump();
+    expect(find.byType(CommunityLinkedText), findsNothing);
+    platform.controllers.single.message('{"height":250}');
+    await tester.pumpAndSettle();
+    expect(
+        tester.getTopLeft(find.byType(CommunityLinkedText)).dy -
+            tester.getBottomLeft(find.byType(WebViewWidget)).dy,
+        24);
+  });
+
+  testWidgets(
+      'the same social link in two positions uses separate native views',
+      (tester) async {
+    final platform = FakeWebViewPlatform();
+    final previous = WebViewPlatform.instance;
+    WebViewPlatform.instance = platform;
+    addTearDown(
+        () => WebViewPlatform.instance = previous ?? FakeWebViewPlatform());
+    final uri = Uri.parse('https://x.com/a/status/789');
+    await tester.pumpWidget(app(Column(children: [
+      CommunityLinkPreview(uri: uri),
+      CommunityLinkPreview(uri: uri),
+    ])));
+    await tester.pump();
+    expect(platform.controllers.length, 2);
+    for (final controller in platform.controllers) {
+      controller.message('{"height":100}');
+    }
+    await tester.pumpAndSettle();
+    final views =
+        tester.widgetList<WebViewWidget>(find.byType(WebViewWidget)).toList();
+    expect(views[0].platform.params.controller,
+        isNot(same(views[1].platform.params.controller)));
+    await tester.pumpWidget(app(const SizedBox()));
+    await tester.pumpWidget(app(CommunityLinkPreview(uri: uri)));
+    await tester.pumpAndSettle();
+    expect(platform.controllers.length, 2);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
       'website card matches Figma dimensions and opens its original URL',
@@ -175,6 +309,7 @@ void main() {
     addTearDown(
         () => WebViewPlatform.instance = previous ?? FakeWebViewPlatform());
     final uri = Uri.parse('https://x.com/a/status/123');
+    final loaded = <Brightness, FakeWebViewController>{};
     for (final initialTheme in [whitetheme, darktheme]) {
       await tester.pumpWidget(const SizedBox());
       for (final theme in [
@@ -182,12 +317,20 @@ void main() {
         initialTheme.brightness == Brightness.light ? darktheme : whitetheme,
         initialTheme,
       ]) {
-        final count = platform.controllers.length;
         await tester
             .pumpWidget(app(CommunityLinkPreview(uri: uri), theme: theme));
         await tester.pump(kThemeAnimationDuration);
-        expect(platform.controllers.length, count + 1);
-        final controller = platform.controllers.last;
+        final controller = tester
+            .widget<WebViewWidget>(find.byType(WebViewWidget))
+            .platform
+            .params
+            .controller as FakeWebViewController;
+        if (loaded.containsKey(theme.brightness)) {
+          expect(controller, same(loaded[theme.brightness]));
+        } else {
+          loaded[theme.brightness] = controller;
+        }
+        expect(platform.controllers.length, loaded.length);
         expect(controller.html, contains("theme: '${theme.brightness.name}'"));
         controller.message('{"height":654}');
         await tester.pumpAndSettle();
@@ -196,7 +339,7 @@ void main() {
         await tester
             .pumpWidget(app(CommunityLinkPreview(uri: uri), theme: theme));
         await tester.pump();
-        expect(platform.controllers.length, count + 1);
+        expect(platform.controllers.length, loaded.length);
       }
     }
     expect(tester.takeException(), isNull);

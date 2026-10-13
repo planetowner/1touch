@@ -18,8 +18,8 @@ with patch("mysql.connector.pooling.MySQLConnectionPool"):
 
 class PostImagePreviewTests(unittest.TestCase):
     def setUp(self):
-        media_storage._post_preview_bytes.cache_clear()
-        self.addCleanup(media_storage._post_preview_bytes.cache_clear)
+        media_storage._image_preview_bytes.cache_clear()
+        self.addCleanup(media_storage._image_preview_bytes.cache_clear)
         app = FastAPI()
         app.include_router(attachments.router, prefix="/v1")
         app.dependency_overrides[get_user_id] = lambda: 1
@@ -92,7 +92,7 @@ class PostImagePreviewTests(unittest.TestCase):
     def test_preview_preserves_orientation_and_transparency_without_upscaling(self):
         for mode, orientation, expected in (("RGB", 6, (30, 40)), ("RGBA", None, (40, 30))):
             with self.subTest(mode=mode):
-                media_storage._post_preview_bytes.cache_clear()
+                media_storage._image_preview_bytes.cache_clear()
                 self.image_source(mode, (40, 30), orientation)
                 response = self.client.get("/v1/attachments/9/preview")
                 self.assertEqual(response.status_code, 200)

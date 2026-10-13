@@ -22,6 +22,7 @@ import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/features/media/asset_media_picker.dart';
 import 'package:onetouch/features/media/profile_avatar.dart';
+import 'package:onetouch/features/media/avatar_image_cache.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/data/auth/social_identity_service.dart';
@@ -229,10 +230,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  Future<void> _evictAvatar(Uri uri) => NetworkImage(
+  Future<void> _evictAvatar(Uri uri) => AvatarImageCache.evict(
         uri.toString(),
         headers: _avatarRequestHeaders,
-      ).evict();
+      );
 
   Future<void> _saveProfile() async {
     if (_isProfileSaving) return;
@@ -405,9 +406,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 height: 108,
                                 fit: BoxFit.cover,
                               )
-                            : Image.network(
-                                widget.profile!.avatarUri.toString(),
-                                headers: _avatarRequestHeaders,
+                            : Image(
+                                image: AvatarImageCache.provider(
+                                  widget.profile!.avatarUri.toString(),
+                                  headers: _avatarRequestHeaders,
+                                ),
                                 width: 108,
                                 height: 108,
                                 fit: BoxFit.cover,

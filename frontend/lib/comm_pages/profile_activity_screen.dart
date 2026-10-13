@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/features/media/profile_avatar.dart';
+import 'package:onetouch/features/media/avatar_image_cache.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/core/style.dart';
@@ -150,8 +151,11 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
                                     : appColors.subtleBackground,
                             child: profile.avatarUri == null
                                 ? placeholder
-                                : Image.network(profile.avatarUri.toString(),
-                                    headers: currentUserMediaRequestHeaders,
+                                : Image(
+                                    image: AvatarImageCache.provider(
+                                      profile.avatarUri.toString(),
+                                      headers: currentUserMediaRequestHeaders,
+                                    ),
                                     width: 108,
                                     height: 108,
                                     fit: BoxFit.cover,

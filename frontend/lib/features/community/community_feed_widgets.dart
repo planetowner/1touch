@@ -3,6 +3,8 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
+import 'package:onetouch/features/community/community_link_preloader.dart';
+import 'package:onetouch/features/community/community_post_rich_body.dart';
 import 'package:onetouch/features/community/community_media.dart';
 import 'package:onetouch/features/community/community_ui.dart';
 import 'package:onetouch/models/post.dart';
@@ -93,7 +95,8 @@ class CommunityPostList extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListView.separated(
         physics: physics,
-        padding: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding),
+        padding: EdgeInsets.fromLTRB(communityPostHorizontalPadding, 0,
+            communityPostHorizontalPadding, bottomPadding),
         itemCount: posts.length + (header == null ? 0 : 1),
         itemBuilder: (context, index) {
           if (header != null && index == 0) return header!;
@@ -119,7 +122,7 @@ class CommunityPostSeparator extends StatelessWidget {
       );
 }
 
-class CommunityPostCard extends StatelessWidget {
+class CommunityPostCard extends StatefulWidget {
   const CommunityPostCard(
       {super.key,
       required this.post,
@@ -131,7 +134,39 @@ class CommunityPostCard extends StatelessWidget {
   final int bodyMaxLines;
   final bool showEngagement;
   @override
+  State<CommunityPostCard> createState() => _CommunityPostCardState();
+}
+
+class _CommunityPostCardState extends State<CommunityPostCard> {
+  (String, double, String, Brightness)? _preparedLinks;
+
+  void _prepareLinks(BuildContext context, double width) {
+    final links = widget.post.isDeleted
+        ? <Uri>[]
+        : communityPostParts(widget.post)
+            .map((part) => part.uri)
+            .whereType<Uri>()
+            .toList();
+    final settings = (
+      links.join('\n'),
+      width,
+      Localizations.localeOf(context).languageCode,
+      Theme.of(context).brightness
+    );
+    if (_preparedLinks == settings) return;
+    _preparedLinks = settings;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _preparedLinks != settings) return;
+      prepareCommunityLinks(context, links, width: width);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final post = widget.post;
+    final onTap = widget.onTap;
+    final bodyMaxLines = widget.bodyMaxLines;
+    final showEngagement = widget.showEngagement;
     final media = post.isDeleted ? <PostAttachment>[] : post.mediaAttachments;
     // 목록의 제한된 줄 수를 빈 줄이 차지하지 않게 해요. 상세·수정 화면은 원문을 써요.
     final bodyPreview = post.body
@@ -142,6 +177,7 @@ class CommunityPostCard extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: LayoutBuilder(builder: (context, constraints) {
+          _prepareLinks(context, constraints.maxWidth);
           final mediaWidth = constraints.maxWidth * 119 / 345;
           return Stack(children: [
             Padding(

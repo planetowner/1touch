@@ -38,6 +38,7 @@ import 'package:onetouch/data/notifications/notification_unread_controller_provi
 import 'package:onetouch/features/notifications/unread_notification_bell_icon.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/features/competition/competition_label.dart';
+import 'package:onetouch/features/media/avatar_image_cache.dart';
 import 'package:onetouch/comm_pages/profile_follows_sheet.dart';
 import 'package:onetouch/data/profile/profile_follow_repository.dart';
 import 'package:onetouch/data/profile/profile_follow_repository_provider.dart'
@@ -530,10 +531,12 @@ class _ProfileState extends State<Profile> {
                             height: 108,
                             fit: BoxFit.cover,
                           )
-                        : Image.network(
-                            profile.avatarUri.toString(),
+                        : Image(
+                            image: AvatarImageCache.provider(
+                              profile.avatarUri.toString(),
+                              headers: _avatarRequestHeaders,
+                            ),
                             key: const ValueKey('profile-avatar-network'),
-                            headers: _avatarRequestHeaders,
                             width: 108,
                             height: 108,
                             fit: BoxFit.cover,

@@ -1,13 +1,69 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/web_links.dart';
 import 'package:onetouch/data/link_previews/link_preview_repository.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
 import 'package:onetouch/features/community/community_post_rich_body.dart';
 import 'package:onetouch/models/post.dart';
 
 void main() {
+  test(
+      'concurrent loads share a request and reuse persisted metadata after restart',
+      () async {
+    final response = Completer<http.Response>();
+    var requests = 0;
+    final store = MemoryLocalCacheStore();
+    final repository = LinkPreviewRepository(
+        cacheStore: store,
+        client: MockClient((_) {
+          requests++;
+          return response.future;
+        }));
+    final uri = Uri.parse('https://example.com/cached');
+    final first = repository.load(uri);
+    final second = repository.load(uri);
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, 1);
+    response.complete(http.Response(
+        '<title>Saved</title><meta property="og:image" content="/photo.jpg">',
+        200,
+        headers: {'content-type': 'text/html'}));
+    expect((await first).title, 'Saved');
+    expect(await second, same(repository.cached(uri)));
+    final restarted = LinkPreviewRepository(
+        cacheStore: store,
+        client: MockClient((_) async {
+          fail('Fresh disk cache must not request the network');
+        }));
+    final restored = await restarted.load(uri);
+    expect(restored.title, 'Saved');
+    expect(restored.imageUri.toString(), 'https://example.com/photo.jpg');
+  });
+
+  test(
+      'stale metadata returns before refresh and a failed refresh keeps it usable',
+      () async {
+    final uri = Uri.parse('https://example.com/stale');
+    final store = MemoryLocalCacheStore();
+    await store.write(LocalCacheKeys.linkPreview(uri),
+        const LinkPreviewData(title: 'Saved').toJson());
+    final refresh = Completer<http.Response>();
+    final repository = LinkPreviewRepository(
+        cacheStore: store, client: MockClient((_) => refresh.future));
+    await withClock(Clock.fixed(DateTime.now().add(const Duration(hours: 1))),
+        () async {
+      expect((await repository.load(uri)).title, 'Saved');
+      expect(refresh.isCompleted, isFalse);
+      refresh.complete(http.Response('offline', 503));
+      await Future<void>.delayed(Duration.zero);
+      expect(repository.cached(uri)!.title, 'Saved');
+    });
+  });
+
   test('only actual social post hosts and paths use official embeds', () {
     for (final url in [
       'https://x.com/a/status/123?s=20',

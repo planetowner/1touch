@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/page_refresh.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/tournament_bracket_repository.dart';
@@ -30,8 +31,25 @@ class ApiKnockoutBracket extends StatefulWidget {
   State<ApiKnockoutBracket> createState() => _ApiKnockoutBracketState();
 }
 
-class _ApiKnockoutBracketState extends State<ApiKnockoutBracket> {
+class _ApiKnockoutBracketState extends State<ApiKnockoutBracket>
+    with PageRefreshParticipant<ApiKnockoutBracket> {
   late Future<TournamentBracket> _bracket;
+
+  TournamentBracketRepository get _repository =>
+      widget.repository ?? tournamentBracketRepository;
+
+  @override
+  Future<void> refreshPage() async {
+    final request = _repository.refresh(widget.competitionId, widget.seasonId);
+    setState(() {
+      _bracket = request;
+    });
+    try {
+      await request;
+    } on Object {
+      // 실패는 본문의 재시도로 안내하고, 기존 대진표는 유지해요.
+    }
+  }
 
   @override
   void initState() {
@@ -49,42 +67,50 @@ class _ApiKnockoutBracketState extends State<ApiKnockoutBracket> {
     }
   }
 
-  void _load() => _bracket = (widget.repository ?? tournamentBracketRepository)
-      .load(widget.competitionId, widget.seasonId);
+  void _load() {
+    _bracket = _repository.load(widget.competitionId, widget.seasonId);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<TournamentBracket>(
-      future: _bracket,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: FootballLoadingIndicator());
-        }
-        if (snapshot.hasError) {
-          return Column(
-            children: [
-              Text(tr(context, 'Unable to load bracket.')),
-              TextButton(
-                onPressed: () => setState(_load),
-                child: Text(tr(context, 'Retry')),
-              ),
-            ],
-          );
-        }
+    return AnimatedBuilder(
+      animation: _repository,
+      builder: (context, _) => FutureBuilder<TournamentBracket>(
+        // FutureBuilder가 이전 시즌의 데이터를 새 시즌에 남기지 않게 해요.
+        key: ValueKey((_repository, widget.competitionId, widget.seasonId)),
+        future: _bracket,
+        builder: (context, snapshot) {
+          final bracket =
+              _repository.cached(widget.competitionId, widget.seasonId) ??
+                  snapshot.data;
+          if (bracket == null && !snapshot.hasError) {
+            return const Center(child: FootballLoadingIndicator());
+          }
+          if (bracket == null) {
+            return Column(
+              children: [
+                Text(tr(context, 'Unable to load bracket.')),
+                TextButton(
+                  onPressed: () => setState(_load),
+                  child: Text(tr(context, 'Retry')),
+                ),
+              ],
+            );
+          }
 
-        final bracket = snapshot.requireData;
-        if (bracket.status == 'not_published' || bracket.stages.isEmpty) {
-          return Center(
-            child: Text(tr(context, 'Bracket has not been published yet.')),
-          );
-        }
+          if (bracket.status == 'not_published' || bracket.stages.isEmpty) {
+            return Center(
+              child: Text(tr(context, 'Bracket has not been published yet.')),
+            );
+          }
 
-        return _TournamentBracketView(
-          stages: bracket.stages,
-          currentTeamId: widget.currentTeamId,
-          onInteractionChanged: widget.onInteractionChanged,
-        );
-      },
+          return _TournamentBracketView(
+            stages: bracket.stages,
+            currentTeamId: widget.currentTeamId,
+            onInteractionChanged: widget.onInteractionChanged,
+          );
+        },
+      ),
     );
   }
 }

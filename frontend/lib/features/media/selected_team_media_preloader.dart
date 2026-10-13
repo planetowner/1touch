@@ -5,6 +5,10 @@ import 'package:onetouch/data/injuries/team_injury_repository.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/features/community/community_post_image.dart';
+import 'package:onetouch/features/community/community_link_preloader.dart';
+import 'package:onetouch/features/community/community_post_rich_body.dart';
+import 'package:onetouch/features/community/community_ui.dart';
+import 'package:onetouch/features/media/avatar_image_cache.dart';
 import 'package:onetouch/features/player/player_image_cache.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/team_injury_report.dart';
@@ -99,7 +103,8 @@ class _SelectedTeamMediaPreloaderState
           () => widget.postRepository
               .loadPosts(teamId: teamId, language: _language!),
           _postImages,
-          generation));
+          generation,
+          prepare: _prepareLinks));
       unawaited(_load(() => widget.injuryRepository.loadForTeam(teamId),
           _injuryImages, generation));
       unawaited(_load(() => widget.transferRepository.loadForTeam(teamId),
@@ -108,10 +113,12 @@ class _SelectedTeamMediaPreloaderState
   }
 
   Future<void> _load<T>(Future<T> Function() load,
-      Iterable<ImageProvider> Function(T) images, int generation) async {
+      Iterable<ImageProvider> Function(T) images, int generation,
+      {void Function(T)? prepare}) async {
     try {
       final data = await load();
       if (!mounted || generation != _generation) return;
+      prepare?.call(data);
       await _prepare(images(data), generation);
     } on Object {
       // 선로딩 실패는 화면 이동을 막지 않고 해당 화면에서 다시 조회해요.
@@ -124,6 +131,7 @@ class _SelectedTeamMediaPreloaderState
         repository.cachedFeed(teamId: widget.teamId, language: _language!),
       _ => null,
     };
+    if (posts != null) _prepareLinks(posts);
     final injuries = widget.injuryRepository.cachedForTeam(widget.teamId);
     final transfers = widget.transferRepository.cachedForTeam(widget.teamId);
     unawaited(_prepare([
@@ -133,9 +141,25 @@ class _SelectedTeamMediaPreloaderState
     ], _generation));
   }
 
+  void _prepareLinks(List<Post> posts) {
+    final width =
+        MediaQuery.sizeOf(context).width - 2 * communityPostHorizontalPadding;
+    prepareCommunityLinks(
+        context,
+        posts
+            .take(6)
+            .where((post) => !post.isDeleted)
+            .expand(communityPostParts)
+            .map((part) => part.uri)
+            .whereType<Uri>(),
+        width: width);
+  }
+
   Iterable<ImageProvider> _postImages(List<Post> posts) sync* {
     // 커뮤니티는 첫 화면 주변의 미리보기만 준비해 원본 다운로드를 줄여요.
     for (final post in posts.take(6)) {
+      final avatar = post.avatarUrl;
+      if (avatar != null) yield AvatarImageCache.provider(avatar);
       final contentType = post.mediaAttachment?.contentType;
       if (contentType != null && !contentType.startsWith('image/')) continue;
       final url = post.mediaPreviewUrl ?? post.mediaUrl;

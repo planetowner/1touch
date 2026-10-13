@@ -11,6 +11,7 @@ import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/data/highlights/fixture_highlight_repository.dart';
 import 'package:onetouch/data/highlights/fixture_highlight_repository_provider.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/models/fixture_highlight.dart';
 import 'package:onetouch/models/match_data.dart';

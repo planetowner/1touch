@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/highlights/fixture_highlight_repository.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
+import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/models/fixture_highlight.dart';
 
 void main() {
@@ -13,6 +14,8 @@ void main() {
       (tester) async {
     final repository = _ControlledRepository();
     await tester.pumpWidget(_screen(1, repository));
+    expect(find.text('HIGHLIGHTS UNAVAILABLE'), findsNothing);
+    expect(find.byType(FootballLoadingIndicator), findsOneWidget);
     repository.requests.single.complete(_highlight(1, 'old-country'));
     await tester.pump();
     expect(find.byIcon(Icons.play_circle_outline), findsOneWidget);
@@ -21,6 +24,8 @@ void main() {
     await tester.pump();
     expect(repository.requests, hasLength(2));
     expect(find.byIcon(Icons.play_circle_outline), findsNothing);
+    expect(find.text('HIGHLIGHTS UNAVAILABLE'), findsNothing);
+    expect(find.byType(FootballLoadingIndicator), findsOneWidget);
     repository.requests.last.complete(null);
     await tester.pump();
     expect(find.text('HIGHLIGHTS UNAVAILABLE'), findsOneWidget);

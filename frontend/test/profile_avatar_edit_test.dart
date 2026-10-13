@@ -3,12 +3,21 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:onetouch/comm_pages/Profile_settings/InfoEdit.dart';
 import 'package:onetouch/data/profile/profile_avatar_repository.dart';
 import 'package:onetouch/models/current_user_profile.dart';
+import 'package:onetouch/features/media/avatar_image_cache.dart';
 
 void main() {
+  late _AvatarCacheManager cache;
+  setUp(() {
+    cache = _AvatarCacheManager();
+    AvatarImageCache.manager = cache;
+  });
+  tearDown(AvatarImageCache.clear);
+
   testWidgets('uses the compact profile editor layout', (tester) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1;
@@ -156,6 +165,7 @@ void main() {
 
     expect(repository.uploadedBytes, [1, 2, 3]);
     expect(repository.uploadedFilename, 'profile-avatar');
+    expect(cache.removedKeys, hasLength(1));
     expect(find.text('RESULT true'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -184,6 +194,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.deleteCalls, 1);
+    expect(cache.removedKeys, hasLength(1));
     expect(find.text('RESULT true'), findsOneWidget);
   });
 
@@ -211,6 +222,23 @@ void main() {
     expect(repository.uploadedBytes, isNull);
     expect(find.byType(EditProfileScreen), findsOneWidget);
   });
+}
+
+class _AvatarCacheManager extends Fake implements BaseCacheManager {
+  final removedKeys = <String>[];
+
+  @override
+  Stream<FileResponse> getFileStream(String url,
+          {String? key,
+          Map<String, String>? headers,
+          bool withProgress = false}) =>
+      Stream.error(StateError('No cached test avatar'));
+
+  @override
+  Future<void> removeFile(String key) async => removedKeys.add(key);
+
+  @override
+  Future<void> emptyCache() async {}
 }
 
 class _EditProfileHost extends StatefulWidget {

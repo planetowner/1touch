@@ -1,12 +1,12 @@
 """프로필 사진도 게시물 첨부와 같은 비공개 업로드·전송 경로를 사용해요."""
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
 from ..db import fetch_one_dict, transaction
 from ..deps import get_user_id
 from ..repos.auth_repo import rate_limit
 from ..repos.media_repo import queue_deletion
 from ..repos.users_repo import get_user, lock_user, require_profile
 from ..services.content_visibility import require_visible_author
-from ..services.media_storage import private_content, stored_upload
+from ..services.media_storage import private_avatar_thumbnail, private_content, stored_upload
 
 router = APIRouter()
 
@@ -41,7 +41,8 @@ def delete_avatar(user_id: int = Depends(get_user_id)):
 
 
 @router.get("/users/{author_id}/avatar")
-def avatar(author_id: int, user_id: int = Depends(get_user_id)):
+def avatar(author_id: int, user_id: int = Depends(get_user_id), thumbnail: bool = False,
+           if_none_match: str | None = Header(default=None)):
     if author_id != user_id:
         viewer = get_user(user_id)
         require_profile(viewer)
@@ -57,4 +58,6 @@ def avatar(author_id: int, user_id: int = Depends(get_user_id)):
     item = fetch_one_dict("SELECT * FROM user_avatars WHERE user_id=%s", (author_id,))
     if item is None:
         raise HTTPException(404, "Profile photo not found")
+    if thumbnail:
+        return private_avatar_thumbnail(item, if_none_match)
     return private_content(item)

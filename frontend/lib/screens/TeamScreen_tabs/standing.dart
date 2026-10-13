@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:onetouch/core/page_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
@@ -26,6 +28,7 @@ class StandingTab extends StatefulWidget {
   final TeamOverview? team;
   final StandingRepository? regularStandingRepository;
   final XgStandingRepository? xgStandingRepository;
+  final TournamentBracketRepository? bracketRepository;
   final int? requestedCompetitionId;
   final int selectionRequestId;
   final ValueChanged<bool>? onBracketInteractionChanged;
@@ -35,6 +38,7 @@ class StandingTab extends StatefulWidget {
     required this.team,
     this.regularStandingRepository,
     this.xgStandingRepository,
+    this.bracketRepository,
     this.requestedCompetitionId,
     this.selectionRequestId = 0,
     this.onBracketInteractionChanged,
@@ -83,6 +87,7 @@ class _StandingTabState extends State<StandingTab>
   bool _isXgLoading = false;
   Object? _xgLoadError;
   int _xgRequestId = 0;
+  int _preparationId = 0;
 
   int? currentTeamId;
   List<Season> _teamSeasons = [];
@@ -101,17 +106,23 @@ class _StandingTabState extends State<StandingTab>
   XgStandingRepository get _xgStandingRepository =>
       widget.xgStandingRepository ?? apiXgStandingRepository;
 
+  TournamentBracketRepository get _bracketRepository =>
+      widget.bracketRepository ?? tournamentBracketRepository;
+
   XgStandingRepository _xgRepositoryFor(StandingTab configuration) =>
       configuration.xgStandingRepository ?? apiXgStandingRepository;
 
   // 챔스는 과거 원정 다득점까지 검증한 2017/18 시즌부터 열어요.
-  bool get _knockoutBracketAvailable =>
+  bool _bracketAvailableFor(Season? season) =>
       TournamentBracketRepository.supportedCompetitions
-          .contains(selectedLeagueId) &&
-      (seasonRepository.findById(selectedSeasonId)?.name.compareTo(
-                  selectedLeagueId == 2 ? '2017/2018' : '2024/2025') ??
+          .contains(season?.competitionId) &&
+      (season?.name.compareTo(
+                  season.competitionId == 2 ? '2017/2018' : '2024/2025') ??
               -1) >=
           0;
+
+  bool get _knockoutBracketAvailable =>
+      _bracketAvailableFor(seasonRepository.findById(selectedSeasonId));
 
   StandingView get _defaultView => StandingView.standing;
 
@@ -160,7 +171,8 @@ class _StandingTabState extends State<StandingTab>
     // instead of only doing it once in initState.
     final dependenciesChanged = widget.team?.id != oldWidget.team?.id ||
         regularRepositoryChanged ||
-        xgRepositoryChanged;
+        xgRepositoryChanged ||
+        widget.bracketRepository != oldWidget.bracketRepository;
     if (dependenciesChanged) {
       _setDefaultLeagueAndSeason();
       if (_selectedView == StandingView.xgTable && _xgAvailable) {
@@ -400,6 +412,7 @@ class _StandingTabState extends State<StandingTab>
     bool updateState = true,
     bool forceRefresh = false,
   }) {
+    final preparationId = ++_preparationId;
     if (!_hasStandingContext) {
       final requestId = ++_standingRequestId;
 
@@ -444,6 +457,37 @@ class _StandingTabState extends State<StandingTab>
       requestId: requestId,
       forceRefresh: forceRefresh,
     );
+    // 선택 뒤에 요청하면 표가 사라져요. 같은 화면의 선택지를 먼저 준비해요.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || preparationId != _preparationId) return;
+      unawaited(_prepareOptions(preparationId));
+    });
+  }
+
+  Future<void> _prepareOptions(int preparationId) async {
+    final seasons = {
+      _teamSeasons.firstWhere((season) => season.seasonId == selectedSeasonId),
+      ..._selectedYearSeasons,
+      ..._seasonOptions,
+    };
+    for (final season in seasons) {
+      if (!mounted || preparationId != _preparationId) return;
+      // 한 시즌씩 준비해 현재 보고 있는 화면의 요청과 경합을 줄여요.
+      await Future.wait([
+        if (season.seasonId != selectedSeasonId)
+          _regularStandingRepository.loadForCompetition(season.competitionId,
+              seasonId: season.seasonId),
+        if (_big5LeagueIds.contains(season.competitionId) &&
+            !(season.seasonId == selectedSeasonId &&
+                _selectedView == StandingView.xgTable))
+          _xgStandingRepository.loadForCompetition(season.competitionId,
+              seasonId: season.seasonId),
+        if (_bracketAvailableFor(season))
+          _bracketRepository.load(season.competitionId, season.seasonId),
+      ].map((request) => request.then<void>((_) {}, onError: (Object _) {
+            // 미리 읽지 못한 선택지는 사용자가 열 때 기존 재시도로 처리해요.
+          })));
+    }
   }
 
   Future<void> _loadStandings({
@@ -654,6 +698,7 @@ class _StandingTabState extends State<StandingTab>
         return ApiKnockoutBracket(
           competitionId: selectedLeagueId,
           seasonId: selectedSeasonId,
+          repository: _bracketRepository,
           currentTeamId: currentTeamId,
           onInteractionChanged: _handleBracketInteractionChanged,
         );

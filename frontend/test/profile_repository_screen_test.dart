@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -500,8 +501,8 @@ void main() {
     final image = tester.widget<Image>(
       find.byKey(const ValueKey('profile-avatar-network')),
     );
-    final provider = image.image as NetworkImage;
-    expect(provider.url, 'https://api.example/users/1/avatar');
+    final provider = image.image as CachedNetworkImageProvider;
+    expect(provider.url, 'https://api.example/users/1/avatar?thumbnail=true');
     expect(
       provider.headers,
       containsPair('Authorization', 'Bearer test-session'),

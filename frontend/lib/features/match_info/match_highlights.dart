@@ -17,6 +17,7 @@ class MatchHighlights extends StatefulWidget {
 class _MatchHighlightsState extends State<MatchHighlights>
     with WidgetsBindingObserver {
   FixtureHighlight? _highlight;
+  bool _isLoading = true;
   bool _networkImageFailed = false;
   int _requestId = 0;
 
@@ -57,6 +58,7 @@ class _MatchHighlightsState extends State<MatchHighlights>
     // 앱 밖에서 접속 국가가 바뀔 수 있어 이전 영상은 새 응답 전까지 숨겨요.
     setState(() {
       _highlight = null;
+      _isLoading = true;
       _networkImageFailed = false;
     });
     try {
@@ -64,12 +66,14 @@ class _MatchHighlightsState extends State<MatchHighlights>
       if (!mounted || requestId != _requestId) return;
       setState(() {
         _highlight = highlight;
+        _isLoading = false;
         _networkImageFailed = false;
       });
     } on Object {
       if (!mounted || requestId != _requestId) return;
       setState(() {
         _highlight = null;
+        _isLoading = false;
         _networkImageFailed = false;
       });
     }
@@ -135,14 +139,17 @@ class _MatchHighlightsState extends State<MatchHighlights>
       height: 194,
       alignment: Alignment.center,
       color: AppColors.of(context).cardBackground,
-      child: _highlight != null
-          ? const Icon(Icons.play_circle_outline, size: 48)
-          : Text(
-              tr(context, 'HIGHLIGHTS UNAVAILABLE'),
-              style: Body2_b.style.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
+      // 조회가 끝나기 전에는 영상이 없다는 문구를 표시하지 않아요.
+      child: _isLoading
+          ? const FootballLoadingIndicator()
+          : _highlight != null
+              ? const Icon(Icons.play_circle_outline, size: 48)
+              : Text(
+                  tr(context, 'HIGHLIGHTS UNAVAILABLE'),
+                  style: Body2_b.style.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
     );
   }
 }

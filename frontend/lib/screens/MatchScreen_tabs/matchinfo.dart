@@ -3,6 +3,7 @@ import 'package:onetouch/core/formation_layout.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
+import 'package:onetouch/data/highlights/fixture_highlight_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/kane_rest.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
@@ -18,11 +19,13 @@ import 'package:onetouch/l10n/fixture_labels.dart';
 class MatchInfoTab extends StatelessWidget {
   final Fixture fixture;
   final FixtureDetail? detail;
+  final FixtureHighlightRepository? highlightRepository;
 
   MatchInfoTab({
     super.key,
     required this.fixture,
     this.detail,
+    this.highlightRepository,
   });
 
   bool get isLive => fixture.status == FixtureStatus.live;
@@ -387,6 +390,7 @@ class MatchInfoTab extends StatelessWidget {
             const SizedBox(height: 24),
             MatchHighlights(
               fixtureId: fixture.fixtureId,
+              repository: highlightRepository,
             ),
             // TODO(match-info): Restore Player of the Match when the backend
             // exposes an explicit award instead of inferring one from rating.

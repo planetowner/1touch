@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/community/community_identity.dart';
-import 'package:onetouch/features/community/community_post_image.dart';
+import 'package:onetouch/features/media/avatar_image_cache.dart';
 import 'package:onetouch/l10n/date_labels.dart';
+
+const communityPostHorizontalPadding = 24.0;
 
 Color communityPageBackground(BuildContext context) =>
     mainPageBackground(context);
@@ -120,8 +122,9 @@ class CommunityAuthorHeader extends StatelessWidget {
             key: avatarKey,
             radius: 16,
             backgroundColor: AppPalette.lightGrey,
-            backgroundImage:
-                avatarUrl == null ? null : communityImageProvider(avatarUrl!),
+            backgroundImage: avatarUrl == null
+                ? null
+                : AvatarImageCache.provider(avatarUrl!),
             onBackgroundImageError: avatarUrl == null ? null : (_, __) {},
           ),
           const SizedBox(width: 8),

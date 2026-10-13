@@ -14,6 +14,7 @@ import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_provider;
 import 'package:onetouch/data/match_analysis/match_analysis_repository.dart';
+import 'package:onetouch/data/highlights/fixture_highlight_repository.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
@@ -30,6 +31,7 @@ class MatchScreen extends StatefulWidget {
   final FixtureRepository? repository;
   final BettingRepository? bettingRepository;
   final MatchAnalysisRepository? analysisRepository;
+  final FixtureHighlightRepository? highlightRepository;
   final StandingRepository? standingRepository;
   final ChatRepository? chatRepository;
   final ChatSocket? chatSocket;
@@ -42,6 +44,7 @@ class MatchScreen extends StatefulWidget {
     this.repository,
     this.bettingRepository,
     this.analysisRepository,
+    this.highlightRepository,
     this.standingRepository,
     this.chatRepository,
     this.chatSocket,
@@ -391,12 +394,28 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
       );
     }
 
-    final selectedTab = tabs[selectedIndex];
-    switch (selectedTab) {
+    // 일반 탭은 함께 준비하고 상태를 유지해, 탭을 바꿀 때마다 다시 조회하지 않아요.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final tab in tabs.where((tab) => tab != 'LIVE CHAT'))
+          Visibility(
+            key: ValueKey((fixture!.fixtureId, tab)),
+            visible: tab == tabs[selectedIndex],
+            maintainState: true,
+            child: _buildMatchTab(tab),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildMatchTab(String tab) {
+    switch (tab) {
       case 'MATCH INFO':
         return MatchInfoTab(
           fixture: fixture!,
           detail: _fixtureDetail,
+          highlightRepository: widget.highlightRepository,
         );
       case 'MATCH PREVIEW':
         return MatchPreviewTab(

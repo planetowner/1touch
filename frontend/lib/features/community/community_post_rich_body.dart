@@ -40,21 +40,29 @@ class CommunityPostRichBody extends StatelessWidget {
   final LinkPreviewRepository? repository;
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (var i = 0; i < parts.length; i++) ...[
-            if (i > 0) const SizedBox(height: 24),
-            if (parts[i].uri != null)
-              CommunityLinkPreview(
-                  key: ValueKey((i, parts[i].uri)),
-                  uri: parts[i].uri!,
-                  repository: repository)
-            else
-              CommunityLinkedText(
-                  text: parts[i].text, style: CommunityText.body(context)),
+  Widget build(BuildContext context) {
+    Widget? following;
+    for (var i = parts.length - 1; i >= 0; i--) {
+      final part = parts[i];
+      if (part.uri != null) {
+        // 높이를 모르는 링크 아래 본문은 카드가 준비된 뒤 제자리에서 함께 보여요.
+        following = CommunityLinkPreview(
+            key: ValueKey((i, part.uri)),
+            uri: part.uri!,
+            repository: repository,
+            followingContent: following);
+      } else {
+        following = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CommunityLinkedText(
+                text: part.text, style: CommunityText.body(context)),
+            if (following != null) ...[const SizedBox(height: 24), following],
           ],
-        ],
-      );
+        );
+      }
+    }
+    return following ?? const SizedBox.shrink();
+  }
 }

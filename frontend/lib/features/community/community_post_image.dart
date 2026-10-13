@@ -11,6 +11,7 @@ class CommunityPostImage extends StatefulWidget {
   const CommunityPostImage({
     super.key,
     required this.mediaUrl,
+    this.imageProvider,
     this.previewUrl,
     this.imageKey,
     this.fit = BoxFit.cover,
@@ -21,6 +22,7 @@ class CommunityPostImage extends StatefulWidget {
   });
 
   final String mediaUrl;
+  final ImageProvider? imageProvider;
   final String? previewUrl;
   final Key? imageKey;
   final BoxFit fit;
@@ -74,7 +76,8 @@ class _CommunityPostImageState extends State<CommunityPostImage> {
         key: widget.showOriginal && widget.previewUrl != null
             ? null
             : widget.imageKey,
-        image: communityImageProvider(widget.previewUrl ?? widget.mediaUrl),
+        image: widget.imageProvider ??
+            communityImageProvider(widget.previewUrl ?? widget.mediaUrl),
         width: widget.width,
         height: widget.height,
         fit: widget.fit,

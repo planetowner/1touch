@@ -133,7 +133,8 @@ class PostDetailContent extends StatelessWidget {
       delegate: SliverChildListDelegate(
         [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(
+                horizontal: communityPostHorizontalPadding),
             child: CommunityGroundRulesCard(
               cardKey: const ValueKey('community-detail-ground-rules-card'),
               onTap: () => showGroundRulesModal(context,
@@ -142,7 +143,8 @@ class PostDetailContent extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(
+                horizontal: communityPostHorizontalPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -686,7 +688,8 @@ class _PostComments extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(
+          horizontal: communityPostHorizontalPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

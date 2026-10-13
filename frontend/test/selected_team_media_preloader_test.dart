@@ -14,14 +14,127 @@ import 'package:onetouch/data/posts/api/api_post_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/data/transfers/api/api_transfer_repository.dart';
 import 'package:onetouch/features/media/selected_team_media_preloader.dart';
+import 'package:onetouch/features/media/avatar_image_cache.dart';
+import 'package:onetouch/features/community/community_ui.dart';
+import 'package:onetouch/features/community/community_link_preview.dart';
+import 'package:onetouch/features/community/community_social_embed_cache.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'support/fake_webview_platform.dart';
 import 'package:onetouch/features/player/player_image_cache.dart';
 import 'package:onetouch/features/team_screen_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_overview.dart';
+import 'package:onetouch/models/post.dart';
 
 void main() {
   final cache = _PhotoTestBinding().imageCache as _DecodedPhotoCache;
   tearDown(cache.reset);
+  tearDown(communitySocialEmbedCache.clear);
+
+  testWidgets(
+      'prepares social links from another tab and reuses the ready view on entry',
+      (tester) async {
+    final platform = FakeWebViewPlatform();
+    final previous = WebViewPlatform.instance;
+    WebViewPlatform.instance = platform;
+    addTearDown(
+        () => WebViewPlatform.instance = previous ?? FakeWebViewPlatform());
+    const url = 'https://www.instagram.com/p/Ready123/';
+    const post = Post(
+        postId: 1,
+        teamId: 83,
+        userId: 1,
+        language: 'en',
+        category: PostCategory.general,
+        title: 'Post',
+        body: url,
+        createdAt: '');
+    final api = _api((_) async => http.Response('Unavailable', 503));
+    final showLink = ValueNotifier(false);
+    addTearDown(showLink.dispose);
+    await tester.pumpWidget(_app(SelectedTeamMediaPreloader(
+      teamId: 83,
+      postRepository: MockPostRepository(posts: [post]),
+      injuryRepository: ApiTeamInjuryRepository(api: api),
+      transferRepository: ApiTransferRepository(api: api),
+      child: Scaffold(
+          body: ValueListenableBuilder(
+              valueListenable: showLink,
+              builder: (_, visible, __) => visible
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: communityPostHorizontalPadding),
+                      child: CommunityLinkPreview(uri: Uri.parse(url)))
+                  : const Text('Another tab'))),
+    )));
+    await tester.pumpAndSettle();
+    expect(platform.controllers.length, 1);
+    platform.controllers.single.message('{"height":300}');
+    showLink.value = true;
+    await tester.pump();
+    expect(tester.getSize(find.byType(WebViewWidget)).height, 300);
+    expect(platform.controllers.length, 1);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('prepares each author once and reuses it on the first feed frame',
+      (tester) async {
+    const avatar = 'https://api.example.test/v1/users/1/avatar';
+    final key =
+        await _registerPhoto(tester, cache, AvatarImageCache.provider(avatar));
+    final posts = [
+      for (var id = 1; id <= 2; id++)
+        Post(
+            postId: id,
+            teamId: 83,
+            language: 'en',
+            userId: 1,
+            category: PostCategory.general,
+            title: 'Post $id',
+            body: 'Text',
+            createdAt: '2026-10-13T00:00:00Z',
+            avatarUrl: avatar),
+    ];
+    final api = _api((_) async => http.Response('Unavailable', 503));
+    final showFeed = ValueNotifier(false);
+    addTearDown(showFeed.dispose);
+    await tester.pumpWidget(_app(SelectedTeamMediaPreloader(
+      teamId: 83,
+      postRepository: MockPostRepository(posts: posts),
+      injuryRepository: ApiTeamInjuryRepository(api: api),
+      transferRepository: ApiTransferRepository(api: api),
+      child: Scaffold(
+          body: ValueListenableBuilder(
+        valueListenable: showFeed,
+        builder: (_, value, __) => value
+            ? Column(children: [
+                for (final post in posts)
+                  CommunityAuthorHeader(
+                      userId: post.userId,
+                      username: 'member',
+                      displayName: 'Member',
+                      avatarUrl: avatar,
+                      authorDeleted: false,
+                      createdAt: post.createdAt)
+              ])
+            : const Text('Another tab'),
+      )),
+    )));
+    await tester.pumpAndSettle();
+    expect(cache.loads, {key: 1});
+    showFeed.value = true;
+    await tester.pump();
+    for (final circle
+        in tester.widgetList<CircleAvatar>(find.byType(CircleAvatar))) {
+      expect(circle.backgroundImage, key);
+      expect(PaintingBinding.instance.imageCache.statusForKey(key).keepAlive,
+          isTrue);
+    }
+    expect(find.byType(CircleAvatar), findsNWidgets(2));
+    expect(cache.loads, {key: 1});
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
 
   testWidgets(
       'prepares both player lists from another tab and displays cached photos on entry',
@@ -145,7 +258,7 @@ Widget _app(Widget child) => MaterialApp(
       supportedLocales: appSupportedLocales,
       localizationsDelegates: appLocalizationDelegates,
       home: MediaQuery(
-        data: const MediaQueryData(devicePixelRatio: 2),
+        data: const MediaQueryData(size: Size(800, 600), devicePixelRatio: 2),
         child: child,
       ),
     );
@@ -203,6 +316,18 @@ http.Response _transfers(int teamId) => http.Response(
 
 Future<List<Object>> _registerPhotos(
     WidgetTester tester, _DecodedPhotoCache cache, int teamId) async {
+  return [
+    for (final kind in ['injury', 'in', 'out'])
+      await _registerPhoto(
+          tester,
+          cache,
+          PlayerImageCache.portraitProvider(_url(teamId, kind),
+              devicePixelRatio: 2)),
+  ];
+}
+
+Future<Object> _registerPhoto(WidgetTester tester, _DecodedPhotoCache cache,
+    ImageProvider provider) async {
   final decoded = (await tester.runAsync(() async {
     final recorder = ui.PictureRecorder();
     Canvas(recorder)
@@ -212,16 +337,9 @@ Future<List<Object>> _registerPhotos(
     picture.dispose();
     return image;
   }))!;
-  final keys = <Object>[];
-  for (final kind in ['injury', 'in', 'out']) {
-    final key = await PlayerImageCache.portraitProvider(_url(teamId, kind),
-            devicePixelRatio: 2)
-        .obtainKey(ImageConfiguration.empty);
-    cache.photos[key] = decoded.clone();
-    keys.add(key);
-  }
-  decoded.dispose();
-  return keys;
+  final key = await provider.obtainKey(ImageConfiguration.empty);
+  cache.photos[key] = decoded;
+  return key;
 }
 
 void _expectNoMessi() {

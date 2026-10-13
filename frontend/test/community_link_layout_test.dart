@@ -10,6 +10,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/features/community/community_link_preview.dart';
+import 'package:onetouch/features/community/community_social_embed_cache.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'support/fake_webview_platform.dart';
 import 'package:onetouch/features/community/community_ui.dart';
@@ -25,6 +26,8 @@ const _paragraph = '어제는 제 마지막 경기였습니다. 벌써 하늘색
 const _paragraphBody = '$_shortLink\n\n$_paragraph';
 
 void main() {
+  setUp(communitySocialEmbedCache.clear);
+  tearDown(communitySocialEmbedCache.clear);
   for (final language in ['en', 'ko']) {
     testWidgets('$language link previews hug their text and keep the 12px gap',
         (tester) async {
@@ -190,7 +193,7 @@ void main() {
     expect(find.byType(CommunityLinkPreview), findsOneWidget);
     expect(
         tester.getTopLeft(find.byType(CommunityLinkedText)).dy -
-            tester.getBottomLeft(find.byType(CommunityLinkPreview)).dy,
+            tester.getBottomLeft(find.byType(WebViewWidget)).dy,
         24);
     expect(tester.takeException(), isNull);
   });

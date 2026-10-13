@@ -189,7 +189,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
               _buildUnavailableNotice(),
             ],
           ],
-          if (tacticalAvailable || _defenseRows().isNotEmpty) ...[
+          // 위쪽 그래프가 준비되기 전에 수비만 먼저 보이면 로딩 후 위치가 밀려요.
+          if (!_isLoading &&
+              (tacticalAvailable || _defenseRows().isNotEmpty)) ...[
             const SizedBox(height: 48),
             _buildDefenseBlock(),
           ],

@@ -1,13 +1,11 @@
-import 'dart:async';
-import 'dart:convert';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/web_links.dart';
 import 'package:onetouch/data/link_previews/link_preview_repository.dart';
 import 'package:onetouch/features/community/community_linked_text.dart';
 import 'package:onetouch/features/community/community_post_image.dart';
-import 'package:onetouch/features/community/community_social_embed_html.dart';
+import 'package:onetouch/features/community/community_social_embed_cache.dart';
 import 'package:onetouch/features/community/community_ui.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -15,14 +13,25 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class CommunityLinkPreview extends StatelessWidget {
-  const CommunityLinkPreview({super.key, required this.uri, this.repository});
+  const CommunityLinkPreview(
+      {super.key, required this.uri, this.repository, this.followingContent});
   final Uri uri;
   final LinkPreviewRepository? repository;
+  final Widget? followingContent;
 
   @override
   Widget build(BuildContext context) => webLinkKind(uri) == WebLinkKind.website
-      ? _WebsitePreview(key: ValueKey(uri), uri: uri, repository: repository)
-      : _SocialPreview(key: ValueKey(uri), uri: uri);
+      ? _WebsitePreview(
+          key: ValueKey(uri),
+          uri: uri,
+          repository: repository,
+          followingContent: followingContent)
+      : LayoutBuilder(
+          builder: (context, constraints) => _SocialPreview(
+              key: ValueKey(uri),
+              uri: uri,
+              width: constraints.maxWidth,
+              followingContent: followingContent));
 }
 
 class CommunityWebsiteCard extends StatelessWidget {
@@ -49,8 +58,11 @@ class CommunityWebsiteCard extends StatelessWidget {
                 if (data.imageUri != null)
                   AspectRatio(
                     aspectRatio: 345 / 173,
-                    child:
-                        CommunityPostImage(mediaUrl: data.imageUri.toString()),
+                    child: CommunityPostImage(
+                      mediaUrl: data.imageUri.toString(),
+                      imageProvider:
+                          CachedNetworkImageProvider(data.imageUri.toString()),
+                    ),
                   ),
                 Padding(
                   padding: const EdgeInsets.all(16),
@@ -82,9 +94,11 @@ class CommunityWebsiteCard extends StatelessWidget {
 }
 
 class _WebsitePreview extends StatefulWidget {
-  const _WebsitePreview({super.key, required this.uri, this.repository});
+  const _WebsitePreview(
+      {super.key, required this.uri, this.repository, this.followingContent});
   final Uri uri;
   final LinkPreviewRepository? repository;
+  final Widget? followingContent;
 
   @override
   State<_WebsitePreview> createState() => _WebsitePreviewState();
@@ -92,6 +106,7 @@ class _WebsitePreview extends StatefulWidget {
 
 class _WebsitePreviewState extends State<_WebsitePreview> {
   late Future<LinkPreviewData> _preview;
+  LinkPreviewData? _initialData;
 
   @override
   void initState() {
@@ -100,141 +115,117 @@ class _WebsitePreviewState extends State<_WebsitePreview> {
   }
 
   void _load() {
-    _preview = (widget.repository ?? LinkPreviewRepository()).load(widget.uri);
+    final repository = widget.repository ?? linkPreviewRepository;
+    _initialData = repository.cached(widget.uri);
+    _preview = repository.load(widget.uri);
   }
 
   @override
   Widget build(BuildContext context) => FutureBuilder<LinkPreviewData>(
         future: _preview,
+        initialData: _initialData,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return _UnavailableLink(
-                uri: widget.uri, onRetry: () => setState(_load));
+            return _withFollowing(
+                _UnavailableLink(
+                    uri: widget.uri, onRetry: () => setState(_load)),
+                widget.followingContent);
           }
           if (!snapshot.hasData) return const _LinkLoading();
-          return CommunityWebsiteCard(uri: widget.uri, data: snapshot.data!);
+          return _withFollowing(
+              CommunityWebsiteCard(uri: widget.uri, data: snapshot.data!),
+              widget.followingContent);
         },
       );
 }
 
 class _SocialPreview extends StatefulWidget {
-  const _SocialPreview({super.key, required this.uri});
+  const _SocialPreview(
+      {super.key,
+      required this.uri,
+      required this.width,
+      this.followingContent});
   final Uri uri;
+  final double width;
+  final Widget? followingContent;
 
   @override
   State<_SocialPreview> createState() => _SocialPreviewState();
 }
 
 class _SocialPreviewState extends State<_SocialPreview> {
-  WebViewController? _controller;
-  Timer? _timeout;
-  String? _language;
-  bool? _isDark;
-  double _height = 1;
-  bool _ready = false;
-  bool _failed = false;
+  CommunitySocialEmbed? _embed;
+  (String, bool, double)? _configuration;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final language = Localizations.localeOf(context).languageCode;
-    final isDark = webLinkKind(widget.uri) == WebLinkKind.x &&
-        Theme.of(context).brightness == Brightness.dark;
-    if (_language == language && _isDark == isDark) return;
-    _language = language;
-    _isDark = isDark;
-    // X 공식 임베드는 생성할 때 테마가 정해져, 앱 테마가 바뀌면 다시 불러와요.
-    _load();
-  }
-
-  void _fail() {
-    _timeout?.cancel();
-    if (mounted) setState(() => _failed = true);
-  }
-
-  Future<void> _load() async {
-    _timeout?.cancel();
-    _ready = false;
-    _failed = false;
-    // WebView를 지원하지 않는 플랫폼에서도 원문 링크는 열 수 있어요.
-    if (WebViewPlatform.instance == null) {
-      _failed = true;
-      return;
-    }
-    final controller = WebViewController();
-    _controller = controller;
-    try {
-      await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-      await controller.setBackgroundColor(Colors.transparent);
-      await controller.enableZoom(false);
-      await controller.addJavaScriptChannel('LinkEmbed',
-          onMessageReceived: (message) {
-        if (!mounted || controller != _controller) return;
-        final payload = jsonDecode(message.message) as Map<String, dynamic>;
-        if (payload['error'] == true) {
-          _fail();
-          return;
-        }
-        final height = payload['height'];
-        if (height is num && height.isFinite && height > 0) {
-          _timeout?.cancel();
-          // 공식 위젯이 계산한 높이를 따라가야 긴 캡션과 영상도 잘리지 않아요.
-          setState(() {
-            _height = height.toDouble();
-            _ready = true;
-          });
-        }
-      });
-      await controller.setNavigationDelegate(NavigationDelegate(
-        onNavigationRequest: (request) {
-          if (!request.isMainFrame || request.url == 'about:blank') {
-            return NavigationDecision.navigate;
-          }
-          final uri = webUri(request.url);
-          if (uri != null) {
-            unawaited(launchUrl(uri, mode: LaunchMode.externalApplication));
-          }
-          return NavigationDecision.prevent;
-        },
-        onWebResourceError: (error) {
-          if (controller == _controller && error.isForMainFrame == true) _fail();
-        },
-      ));
-      if (!mounted || controller != _controller) return;
-      _timeout = Timer(const Duration(seconds: 20), _fail);
-      await controller.loadHtmlString(communitySocialEmbedHtml(widget.uri,
-          language: _language!, isDark: _isDark!));
-    } catch (_) {
-      if (mounted && controller == _controller) _fail();
-    }
+    _prepare();
   }
 
   @override
+  void didUpdateWidget(_SocialPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _prepare();
+  }
+
+  void _prepare() {
+    final language = Localizations.localeOf(context).languageCode;
+    final isDark = webLinkKind(widget.uri) == WebLinkKind.x &&
+        Theme.of(context).brightness == Brightness.dark;
+    final configuration = (language, isDark, widget.width);
+    if (_configuration == configuration) return;
+    _configuration = configuration;
+    _release();
+    final embed = communitySocialEmbedCache.acquire(widget.uri,
+        language: language, isDark: isDark, width: widget.width);
+    _embed = embed..addListener(_changed);
+  }
+
+  void _release() {
+    final embed = _embed;
+    if (embed == null) return;
+    embed.removeListener(_changed);
+    communitySocialEmbedCache.release(embed);
+  }
+
+  void _changed() => setState(() {});
+
+  @override
   void dispose() {
-    _timeout?.cancel();
+    _release();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_failed) {
-      return _UnavailableLink(
-          uri: widget.uri,
-          onRetry: () => setState(() {
-                _load();
-              }));
+    final embed = _embed!;
+    if (embed.failed) {
+      return _withFollowing(
+          _UnavailableLink(uri: widget.uri, onRetry: embed.load),
+          widget.followingContent);
     }
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      if (!_ready) const _LinkLoading(),
-      // 내부 색상과 모서리는 공식 위젯이 소유해요. 앱에서 잘라내거나 다시 그리지 않아요.
-      if (_controller != null)
+    final preview = Column(mainAxisSize: MainAxisSize.min, children: [
+      if (!embed.ready) const _LinkLoading(),
+      // 목록에서 준비한 WebView와 높이를 그대로 써서 진입 때 본문이 밀리지 않아요.
+      if (embed.controller != null)
         SizedBox(
-          height: _height,
-          child: WebViewWidget(controller: _controller!),
+          height: embed.height,
+          child: WebViewWidget(controller: embed.controller!),
         ),
     ]);
+    return _withFollowing(
+        preview, embed.ready ? widget.followingContent : null);
   }
 }
+
+Widget _withFollowing(Widget preview, Widget? following) => following == null
+    ? preview
+    : Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [preview, const SizedBox(height: 24), following],
+      );
 
 class _LinkLoading extends StatelessWidget {
   const _LinkLoading();
