@@ -145,6 +145,30 @@ void main() {
     expect(drafts.publishedId, 41);
   });
 
+  testWidgets('draft loading errors use a tappable snack bar to retry',
+      (tester) async {
+    final drafts = _Drafts(loadFailures: 1);
+    await tester.pumpWidget(
+        MaterialApp(home: AddPost(teamId: 6, draftRepository: drafts)));
+    await tester.pumpAndSettle();
+    const message = 'Unable to load drafts. Tap to retry.';
+    expect(
+        find.descendant(
+            of: find.byType(SnackBar), matching: find.text(message)),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('community-resume-draft')), findsNothing);
+    expect(drafts.loadCalls, 1);
+
+    await tester.tap(find.text(message));
+    await tester.pumpAndSettle();
+    expect(drafts.loadCalls, 2);
+    expect(find.byType(SnackBar), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('community-resume-draft')));
+    await tester.pumpAndSettle();
+    expect(find.text('Saved title'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final systemBack in [false, true]) {
     testWidgets(
         'leaving a nonempty composer with ${systemBack ? 'system back' : 'back button'} saves before popping',
@@ -392,6 +416,9 @@ PostComment _comment(PostCommentState state, int id) => PostComment(
     liked: false);
 
 class _Drafts implements PostDraftRepository {
+  _Drafts({this.loadFailures = 0});
+  int loadFailures;
+  int loadCalls = 0;
   CreatePostInput? saved;
   int? savedId, publishedId, deletedId;
   final Map<int, PostDraft> _savedDrafts = {};
@@ -411,11 +438,18 @@ class _Drafts implements PostDraftRepository {
             contentType: 'image/png')
       ]);
   @override
-  Future<List<PostDraft>> loadDrafts({int limit = 50, int offset = 0}) async =>
-      [
-        if (deletedId != 41) _savedDrafts[41] ?? draft,
-        if (_savedDrafts[42] != null) _savedDrafts[42]!
-      ];
+  Future<List<PostDraft>> loadDrafts({int limit = 50, int offset = 0}) async {
+    loadCalls++;
+    if (loadFailures > 0) {
+      loadFailures--;
+      throw StateError('Draft load failed');
+    }
+    return [
+      if (deletedId != 41) _savedDrafts[41] ?? draft,
+      if (_savedDrafts[42] != null) _savedDrafts[42]!
+    ];
+  }
+
   @override
   Future<PostDraft> saveDraft(CreatePostInput input, {int? postId}) async {
     saved = input;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:onetouch/core/api_image_headers.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/features/community/community_post_image.dart';
@@ -10,45 +11,52 @@ import 'package:onetouch/models/post.dart';
 
 class CommunityMediaPreview extends StatelessWidget {
   const CommunityMediaPreview(
-      {super.key, required this.attachment, this.imageKey, this.remaining = 0});
+      {super.key,
+      required this.attachment,
+      this.imageKey,
+      this.remaining = 0,
+      this.onOpen});
   final PostAttachment attachment;
   final Key? imageKey;
   final int remaining;
+  final VoidCallback? onOpen;
   @override
   Widget build(BuildContext context) => ClipRRect(
         borderRadius: BorderRadius.circular(8),
         // 목록은 정해진 썸네일 크기를 쓰고, 상세 사진은 원본 비율로 높이를 정해요.
-        child: Stack(fit: StackFit.passthrough, children: [
-          ColoredBox(
-              color: AppPalette.darkGrey,
-              child: attachment.isVideo
-                  ? CommunityVideo(
-                      key: ValueKey(attachment.mediaUrl),
-                      url: attachment.mediaUrl!)
-                  : CommunityPostImage(
-                      mediaUrl: attachment.mediaUrl!,
-                      previewUrl: attachment.previewUrl,
-                      imageKey: imageKey,
-                      width: double.infinity,
-                      fit: BoxFit.cover)),
-          if (attachment.isVideo)
-            const Center(
-                child: CommunityIcon('play', size: 40, color: Colors.white)),
-          if (remaining > 0)
-            Positioned(
-                right: 8,
-                bottom: 8,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                      color: const Color(0xFF0A0A0A),
-                      borderRadius: BorderRadius.circular(4)),
-                  child: Text('+$remaining',
-                      style: CommunityText.body(context, text: '+$remaining')
-                          .copyWith(color: Colors.white, fontSize: 12)),
-                )),
-        ]),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: attachment.isVideo ? null : onOpen,
+          child: Stack(fit: StackFit.passthrough, children: [
+            ColoredBox(
+                color: AppPalette.darkGrey,
+                child: attachment.isVideo
+                    ? CommunityVideo(
+                        key: ValueKey(attachment.mediaUrl),
+                        url: attachment.mediaUrl!,
+                        onOpen: onOpen)
+                    : CommunityPostImage(
+                        mediaUrl: attachment.mediaUrl!,
+                        previewUrl: attachment.previewUrl,
+                        imageKey: imageKey,
+                        width: double.infinity,
+                        fit: BoxFit.cover)),
+            if (remaining > 0)
+              Positioned(
+                  right: 8,
+                  bottom: 8,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                        color: const Color(0xFF0A0A0A),
+                        borderRadius: BorderRadius.circular(4)),
+                    child: Text('+$remaining',
+                        style: CommunityText.body(context, text: '+$remaining')
+                            .copyWith(color: Colors.white, fontSize: 12)),
+                  )),
+          ]),
+        ),
       );
 }
 
@@ -57,52 +65,56 @@ class CommunityMediaGrid extends StatelessWidget {
   final List<PostAttachment> attachments;
   @override
   Widget build(BuildContext context) {
-    void openMedia(int index) => showCommunityAttachmentViewer(context,
-        mediaUrl: attachments[index].mediaUrl!,
-        attachments: attachments,
-        initialIndex: index);
+    void openMedia(int index) {
+      // 상세의 오류 안내가 전체 화면으로 따라가지 않게 닫아요.
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      showCommunityAttachmentViewer(context,
+          mediaUrl: attachments[index].mediaUrl!,
+          attachments: attachments,
+          initialIndex: index);
+    }
 
     Widget media(int index, double aspectRatio) {
       final preview = CommunityMediaPreview(
+          key: ValueKey(index == 0
+              ? 'community-detail-media-open'
+              : 'community-detail-media-open-$index'),
           attachment: attachments[index],
+          onOpen: () => openMedia(index),
           imageKey: ValueKey(index == 0
               ? 'community-detail-media'
               : 'community-detail-media-$index'));
       return AspectRatio(
         aspectRatio: aspectRatio,
-        child: GestureDetector(
-          key: ValueKey(index == 0
-              ? 'community-detail-media-open'
-              : 'community-detail-media-open-$index'),
-          onTap: () => openMedia(index),
-          child: preview,
-        ),
+        child: preview,
       );
     }
 
     Widget overflowTile() {
       return AspectRatio(
         aspectRatio: 3 / 4,
-        child: GestureDetector(
-          key: const ValueKey('community-detail-media-open-4'),
-          onTap: () => openMedia(4),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Stack(fit: StackFit.expand, children: [
-              CommunityMediaPreview(
-                attachment: attachments[4],
-                imageKey: const ValueKey('community-detail-media-4'),
-              ),
-              ColoredBox(color: AppPalette.black.withValues(alpha: 0.72)),
-              Center(
-                child: Text(
-                  '+${attachments.length - 5}',
-                  style: CommunityText.bold(context)
-                      .copyWith(color: AppPalette.white),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Stack(fit: StackFit.expand, children: [
+            CommunityMediaPreview(
+              key: const ValueKey('community-detail-media-open-4'),
+              attachment: attachments[4],
+              onOpen: () => openMedia(4),
+              imageKey: const ValueKey('community-detail-media-4'),
+            ),
+            IgnorePointer(
+              child: ColoredBox(
+                color: AppPalette.black.withValues(alpha: 0.72),
+                child: Center(
+                  child: Text(
+                    '+${attachments.length - 5}',
+                    style: CommunityText.bold(context)
+                        .copyWith(color: AppPalette.white),
+                  ),
                 ),
               ),
-            ]),
-          ),
+            ),
+          ]),
         ),
       );
     }
@@ -149,9 +161,15 @@ class CommunityMediaGrid extends StatelessWidget {
 }
 
 class CommunityVideo extends StatefulWidget {
-  const CommunityVideo({super.key, required this.url, this.controls = false});
+  const CommunityVideo({
+    super.key,
+    required this.url,
+    this.controls = false,
+    this.onOpen,
+  });
   final String url;
   final bool controls;
+  final VoidCallback? onOpen;
   @override
   State<CommunityVideo> createState() => _CommunityVideoState();
 }
@@ -159,6 +177,7 @@ class CommunityVideo extends StatefulWidget {
 class _CommunityVideoState extends State<CommunityVideo>
     with WidgetsBindingObserver {
   late final VideoPlayerController _controller;
+  late final Future<void> _initialization;
   bool _failed = false;
   @override
   void initState() {
@@ -166,7 +185,7 @@ class _CommunityVideoState extends State<CommunityVideo>
     WidgetsBinding.instance.addObserver(this);
     _controller = VideoPlayerController.networkUrl(Uri.parse(widget.url),
         httpHeaders: apiImageHeaders(widget.url) ?? {});
-    _initialize();
+    _initialization = _initialize();
   }
 
   Future<void> _initialize() async {
@@ -176,6 +195,18 @@ class _CommunityVideoState extends State<CommunityVideo>
     } catch (_) {
       if (mounted) setState(() => _failed = true);
     }
+  }
+
+  Future<void> _open() async {
+    await _initialization;
+    if (!mounted) return;
+    // 상세에서 영상을 눌렀을 때만 실패를 알리고, 열 수 없는 영상은 전체 화면으로 넘기지 않아요.
+    if (_failed || _controller.value.hasError) {
+      showAppSnackBar(context, tr(context, 'Unable to load video.'),
+          replaceCurrent: true);
+      return;
+    }
+    widget.onOpen!();
   }
 
   @override
@@ -198,11 +229,22 @@ class _CommunityVideoState extends State<CommunityVideo>
 
   @override
   Widget build(BuildContext context) {
-    if (_failed) {
-      return Center(
-          child: Text(tr(context, 'Unable to load video.'),
-              textAlign: TextAlign.center));
+    if (!widget.controls) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onOpen == null ? null : _open,
+        child: Stack(fit: StackFit.expand, children: [
+          IgnorePointer(child: _content()),
+          const Center(
+              child: CommunityIcon('play', size: 40, color: Colors.white)),
+        ]),
+      );
     }
+    return _content();
+  }
+
+  Widget _content() {
+    if (_failed) return const SizedBox.expand();
     if (!_controller.value.isInitialized) {
       return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     }
@@ -212,13 +254,12 @@ class _CommunityVideoState extends State<CommunityVideo>
             width: _controller.value.size.width,
             height: _controller.value.size.height,
             child: VideoPlayer(_controller)));
-    if (!widget.controls) return IgnorePointer(child: video);
+    if (!widget.controls) return video;
     return Column(children: [
       Expanded(child: video),
       ValueListenableBuilder<VideoPlayerValue>(
           valueListenable: _controller,
           builder: (context, value, _) => IconButton(
-              tooltip: tr(context, value.isPlaying ? 'Pause' : 'Play'),
               onPressed: () =>
                   value.isPlaying ? _controller.pause() : _controller.play(),
               icon: Icon(value.isPlaying ? Icons.pause : Icons.play_arrow,

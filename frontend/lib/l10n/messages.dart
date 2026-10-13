@@ -25,23 +25,23 @@ const appMessages = <String, MessageTranslations>{
     ja: "削除された投稿です。",
     zh: "此帖子已删除。"
   ),
-  "Drafts": (ko: "임시저장한 글", ja: "下書き", zh: "草稿"),
+  "Drafts": (ko: "임시 저장한 글", ja: "下書き", zh: "草稿"),
   "Untitled post": (ko: "제목 없는 글", ja: "無題の投稿", zh: "无标题帖子"),
   "Pick up where you left off?": (
-    ko: "이어서 작성할까요?",
+    ko: "작성 중이던 글이 있어요",
     ja: "続きから書きますか？",
     zh: "继续上次的编辑？"
   ),
-  "Save as draft": (ko: "임시저장", ja: "下書き保存", zh: "保存草稿"),
+  "Save as draft": (ko: "임시 저장하기", ja: "下書き保存", zh: "保存草稿"),
   "Saved as draft.": (ko: "임시저장했어요.", ja: "下書きに保存しました。", zh: "已保存为草稿。"),
   "Deleted draft.": (ko: "임시저장한 글을 삭제했어요.", ja: "下書きを削除しました。", zh: "已删除草稿。"),
   "Unable to load drafts. Tap to retry.": (
-    ko: "임시저장한 글을 불러오지 못했어요. 눌러서 다시 시도해 주세요.",
+    ko: "임시 저장한 글을 불러오지 못했어요. 눌러서 다시 시도해 주세요.",
     ja: "下書きを読み込めませんでした。タップして再試行してください。",
     zh: "无法加载草稿。点按重试。"
   ),
   "Unable to save draft. Please try again.": (
-    ko: "글을 임시저장하지 못했어요. 다시 시도해 주세요.",
+    ko: "임시 저장하지 못했어요. 다시 시도해 주세요.",
     ja: "下書きを保存できませんでした。もう一度お試しください。",
     zh: "无法保存草稿，请重试。"
   ),
@@ -58,21 +58,6 @@ const appMessages = <String, MessageTranslations>{
   "Play": (ko: "재생", ja: "再生", zh: "播放"),
   "Pause": (ko: "일시정지", ja: "一時停止", zh: "暂停"),
   "My activity": (ko: "내 활동", ja: "自分のアクティビティ", zh: "我的动态"),
-  "Sorry, you cannot use the community": (
-    ko: "죄송합니다. 커뮤니티를",
-    ja: "申し訳ありません。コミュニティを利用できません",
-    zh: "抱歉，你暂时无法使用社区"
-  ),
-  "Sorry, {name}, you cannot use the community": (
-    ko: "죄송합니다, {name}님은 커뮤니티를",
-    ja: "{name}さん、申し訳ありません。コミュニティを利用できません",
-    zh: "抱歉，{name}，你暂时无法使用社区"
-  ),
-  "for {reason}.": (
-    ko: "동안 {reason} 이용할 수 없습니다.",
-    ja: "理由：{reason}。",
-    zh: "原因：{reason}。"
-  ),
   // 인증 메일도 이 문구를 원본으로 삼고 서버용 JSON을 생성해요.
   "Email Verification Code": (ko: "이메일 인증번호", ja: "メール認証コード", zh: "邮箱验证码"),
   "Your 1touch code is": (
@@ -1793,7 +1778,6 @@ const appMessages = <String, MessageTranslations>{
     ja: "利用停止後に戻った方は、10秒間ルールをお読みください。",
     zh: "限制结束后，请阅读社区规则10秒再继续。",
   ),
-  "I understand": (ko: "이해했습니다", ja: "理解しました", zh: "我明白了"),
   "Unable to load community rules.": (
     ko: "커뮤니티 이용 규칙을 불러오지 못했어요.",
     ja: "コミュニティルールを読み込めませんでした。",

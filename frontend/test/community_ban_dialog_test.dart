@@ -62,7 +62,7 @@ void main() {
       expect(confirmation().onPressed, isNotNull);
       expect(countdown(), '00h 00m 02s');
       expect(
-          find.text('for '
+          find.text('Your access to the community has been restricted for '
               'harassing or insulting other users.'),
           findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -291,7 +291,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('커뮤니티 이용이 제한됐어요.'), findsOneWidget);
     expect(find.textContaining('이용규칙을 위반해'), findsNothing);
-    await tester.tap(find.text('이해했습니다'));
+    await tester.tap(find.text('닫기'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
@@ -365,29 +365,30 @@ final _copy = <String,
   String close
 })>{
   'en': (
-    title: 'Sorry, you cannot use the community',
-    body: (reason) => 'for $reason.',
+    title: 'TEMPORARILY SUSPENDED',
+    body: (reason) =>
+        'Your access to the community has been restricted for $reason.',
     notice:
         'You’ll be able to use the community again when the time above runs out.',
-    close: 'I understand',
+    close: 'Close',
   ),
   'ko': (
-    title: '죄송합니다. 커뮤니티를',
-    body: (reason) => '동안 $reason 이용할 수 없습니다.',
+    title: '지금은 커뮤니티를 이용할 수 없어요',
+    body: (reason) => '$reason 커뮤니티 이용이 제한됐어요.',
     notice: '남은 시간이 지나면 다시 이용할 수 있어요.',
-    close: '이해했습니다',
+    close: '닫기',
   ),
   'ja': (
-    title: '申し訳ありません。コミュニティを利用できません',
-    body: (reason) => '理由：$reason。',
+    title: '現在、コミュニティを利用できません',
+    body: (reason) => '$reasonため、コミュニティの利用が制限されています。',
     notice: '残り時間がなくなると、また利用できます。',
-    close: '理解しました',
+    close: '閉じる',
   ),
   'zh': (
-    title: '抱歉，你暂时无法使用社区',
-    body: (reason) => '原因：$reason。',
+    title: '目前无法使用社区',
+    body: (reason) => '因$reason，你的社区使用权限已被限制。',
     notice: '剩余时间结束后，就可以再次使用社区。',
-    close: '我明白了',
+    close: '关闭',
   ),
 };
 

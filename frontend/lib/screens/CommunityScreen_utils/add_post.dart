@@ -121,7 +121,14 @@ class _AddPostState extends State<AddPost> {
         });
       }
     } catch (_) {
-      if (mounted) setState(() => _draftLoadFailed = true);
+      if (mounted) {
+        _draftLoadFailed = true;
+        showAppSnackBar(
+          context,
+          tr(context, 'Unable to load drafts. Tap to retry.'),
+          onTap: _loadDrafts,
+        );
+      }
     }
   }
 
@@ -421,12 +428,8 @@ class _AddPostState extends State<AddPost> {
       try {
         await _saveDraftContent();
         await _loadDrafts();
-        if (_draftLoadFailed) {
-          if (mounted) {
-            _showMessage(tr(context, 'Unable to load drafts. Tap to retry.'));
-          }
-          return;
-        }
+        // 불러오기 오류 안내는 _loadDrafts에서 재시도 동작과 함께 보여줘요.
+        if (_draftLoadFailed) return;
       } catch (_) {
         if (mounted) {
           _showMessage(tr(context, 'Unable to save draft. Please try again.'));
@@ -541,14 +544,12 @@ class _AddPostState extends State<AddPost> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (_drafts.isNotEmpty || _draftLoadFailed)
+                    if (_drafts.isNotEmpty)
                       GestureDetector(
                           key: const ValueKey('community-resume-draft'),
                           onTap: _isSubmitting || _isPickingMedia
                               ? null
-                              : _draftLoadFailed && _drafts.isEmpty
-                                  ? _loadDrafts
-                                  : _openDraftList,
+                              : _openDraftList,
                           child: Container(
                               padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
                               decoration: BoxDecoration(
@@ -560,11 +561,8 @@ class _AddPostState extends State<AddPost> {
                               child: Row(children: [
                                 Expanded(
                                     child: Text(
-                                        tr(
-                                            context,
-                                            _draftLoadFailed && _drafts.isEmpty
-                                                ? 'Unable to load drafts. Tap to retry.'
-                                                : 'Pick up where you left off?'),
+                                        tr(context,
+                                            'Pick up where you left off?'),
                                         style: CommunityText.body(context))),
                                 const CommunityIcon('chevron_right')
                               ]))),
