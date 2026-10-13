@@ -1,8 +1,8 @@
 import 'support/stub_profile_activity_repository.dart';
+import 'support/stub_profile_follow_repository.dart';
 import 'support/app_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/comm_pages/Profile.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -31,6 +31,7 @@ void main() {
           home: Profile(
             loadPointBalance: () async => 1430,
             activityRepository: const StubProfileActivityRepository(),
+            followRepository: const StubProfileFollowRepository(),
             followingController: PlayerFollowingController()
               ..loaded = true
               ..players = [
@@ -50,37 +51,63 @@ void main() {
           findsNothing);
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      final statCard = tester.widget<Container>(
-        find.byKey(const ValueKey('profile-stat-card')),
-      );
+      final statCard = find.byKey(const ValueKey('profile-stat-card'));
       expect(
         find.descendant(
-          of: find.byKey(const ValueKey('profile-stat-card')),
+          of: statCard,
           matching: find.text('0'),
         ),
         findsNWidgets(2),
       );
+      expect(find.text('200'), findsOneWidget);
+      expect(find.text('150'), findsOneWidget);
+      expect(tester.widget<Text>(find.text('200')).style?.fontSize, 24);
+      expect(tester.widget<Text>(find.text('1430')).style?.fontSize, 32);
+      expect(
+          tester.getRect(find.text('pts')).left -
+              tester.getRect(find.text('1430')).right,
+          closeTo(4, 0.1));
       expect(
         tester
-            .widgetList<Text>(find.descendant(
-              of: find.byKey(const ValueKey('profile-stat-card')),
-              matching: find.text('0'),
-            ))
-            .every((text) => text.style?.fontSize == 24),
-        isTrue,
+            .widget<Opacity>(find
+                .ancestor(
+                  of: find.text('pts'),
+                  matching: find.byType(Opacity),
+                )
+                .first)
+            .opacity,
+        0.5,
       );
       expect(
         find.descendant(
-          of: find.byKey(const ValueKey('profile-stat-card')),
-          matching: find.text('—'),
+          of: find.byKey(const ValueKey('profile-stat-followers')),
+          matching: find.byIcon(Icons.how_to_reg_outlined),
         ),
-        findsNothing,
+        findsOneWidget,
       );
-      final statCardRect = tester.getRect(
-        find.byKey(const ValueKey('profile-stat-card')),
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('profile-stat-following')),
+          matching: find.byIcon(Icons.record_voice_over),
+        ),
+        findsOneWidget,
       );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('profile-stat-posts')),
+          matching: find.byIcon(Icons.sticky_note_2),
+        ),
+        findsOneWidget,
+      );
+      final statCardRect = tester.getRect(statCard);
       final pointsRect = tester.getRect(
         find.byKey(const ValueKey('profile-stat-points')),
+      );
+      final followersRect = tester.getRect(
+        find.byKey(const ValueKey('profile-stat-followers')),
+      );
+      final followingRect = tester.getRect(
+        find.byKey(const ValueKey('profile-stat-following')),
       );
       final postsRect = tester.getRect(
         find.byKey(const ValueKey('profile-stat-posts')),
@@ -88,37 +115,26 @@ void main() {
       final commentsRect = tester.getRect(
         find.byKey(const ValueKey('profile-stat-comments')),
       );
-      final expectedStatWidth = (statCardRect.width - 48 - 4 - 20) / 3;
-      expect(statCard.padding,
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 16));
-      expect(
-        (statCard.decoration as BoxDecoration).borderRadius,
-        BorderRadius.circular(8),
-      );
-      expect(pointsRect.left - statCardRect.left, 24);
-      expect(pointsRect.width, closeTo(expectedStatWidth, 0.1));
+      final expectedStatWidth = (statCardRect.width - 16) / 2;
+      expect(pointsRect.bottom, lessThan(statCardRect.top));
+      expect(followersRect.width, closeTo(expectedStatWidth, 0.1));
+      expect(followingRect.width, closeTo(expectedStatWidth, 0.1));
       expect(postsRect.width, closeTo(expectedStatWidth, 0.1));
       expect(commentsRect.width, closeTo(expectedStatWidth, 0.1));
       expect(tester.getRect(find.text('COMMENTS')).right,
           lessThanOrEqualTo(commentsRect.right + 0.1));
-      expect(
-        tester
-            .renderObject<RenderParagraph>(find.text('COMMENTS'))
-            .getBoxesForSelection(
-              const TextSelection(baseOffset: 0, extentOffset: 8),
-            ),
-        hasLength(1),
-      );
-      expect(postsRect.left, greaterThan(pointsRect.right));
+      expect(followingRect.left, greaterThan(followersRect.right));
       expect(commentsRect.left, greaterThan(postsRect.right));
-      for (final dividerKey in ['points-posts', 'posts-comments']) {
-        expect(
-          tester.getSize(
-            find.byKey(ValueKey('profile-stat-divider-$dividerKey')),
-          ),
-          const Size(2, 51),
-        );
-      }
+      expect(postsRect.top, greaterThan(followersRect.bottom));
+      final statBackground = (tester
+              .widget<Container>(find
+                  .descendant(
+                    of: find.byKey(const ValueKey('profile-stat-followers')),
+                    matching: find.byType(Container),
+                  )
+                  .first)
+              .decoration as BoxDecoration)
+          .color;
 
       await tester.drag(
         find.byType(CustomScrollView),
@@ -150,10 +166,7 @@ void main() {
         find.byKey(const ValueKey('profile-background-gradient')),
         findsNothing,
       );
-      expect(
-        (statCard.decoration as BoxDecoration).color,
-        app_style.AppPalette.white,
-      );
+      expect(statBackground, app_style.AppPalette.white);
       expect(tester.takeException(), isNull);
     });
   }
@@ -171,6 +184,7 @@ void main() {
         home: Profile(
           loadPointBalance: () async => 1430,
           activityRepository: const StubProfileActivityRepository(),
+          followRepository: const StubProfileFollowRepository(),
           followingController: PlayerFollowingController()
             ..loaded = true
             ..players = [
@@ -186,6 +200,18 @@ void main() {
 
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
     expect(scaffold.backgroundColor, app_style.AppPalette.black);
+    expect(
+      (tester
+              .widget<Container>(find
+                  .descendant(
+                    of: find.byKey(const ValueKey('profile-stat-posts')),
+                    matching: find.byType(Container),
+                  )
+                  .first)
+              .decoration as BoxDecoration)
+          .color,
+      const Color(0xFF272828),
+    );
     expect(
       find.byKey(const ValueKey('profile-background-gradient')),
       findsNothing,

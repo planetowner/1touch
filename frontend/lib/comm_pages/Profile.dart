@@ -38,12 +38,18 @@ import 'package:onetouch/data/notifications/notification_unread_controller_provi
 import 'package:onetouch/features/notifications/unread_notification_bell_icon.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/features/competition/competition_label.dart';
+import 'package:onetouch/comm_pages/profile_follows_sheet.dart';
+import 'package:onetouch/data/profile/profile_follow_repository.dart';
+import 'package:onetouch/data/profile/profile_follow_repository_provider.dart'
+    as follow_provider;
+import 'package:onetouch/models/profile_follow.dart';
 
 class Profile extends StatefulWidget {
   const Profile({
     super.key,
     this.repository,
     this.activityRepository,
+    this.followRepository,
     this.followingController,
     this.followingTeamsRepository,
     this.avatarRequestHeaders,
@@ -52,6 +58,7 @@ class Profile extends StatefulWidget {
 
   final CurrentUserRepository? repository;
   final ProfileActivityRepository? activityRepository;
+  final ProfileFollowRepository? followRepository;
   final PlayerFollowingController? followingController;
   final FollowingTeamsRepository? followingTeamsRepository;
   final Map<String, String>? avatarRequestHeaders;
@@ -72,6 +79,9 @@ class _ProfileState extends State<Profile> {
   ProfileActivityCounts? _activityCounts;
   bool _isLoadingCounts = true;
   int _activityRequest = 0;
+  ProfileFollowCounts? _followCounts;
+  bool _isLoadingFollows = true;
+  int _followRequest = 0;
   int? _pointBalance;
   bool _isLoadingPoints = true;
   int _pointRequest = 0;
@@ -81,6 +91,9 @@ class _ProfileState extends State<Profile> {
 
   ProfileActivityRepository get _activityRepository =>
       widget.activityRepository ?? activity_provider.profileActivityRepository;
+
+  ProfileFollowRepository get _followRepository =>
+      widget.followRepository ?? follow_provider.profileFollowRepository;
 
   FollowingTeamsRepository get _followingTeamsRepository =>
       widget.followingTeamsRepository ??
@@ -110,6 +123,7 @@ class _ProfileState extends State<Profile> {
 
   Future<void> _loadProfile() async {
     _loadActivityCounts();
+    _loadFollowCounts();
     _loadPoints();
     if (!_isLoading) {
       setState(() {
@@ -173,6 +187,37 @@ class _ProfileState extends State<Profile> {
       _activityCounts = counts;
       _isLoadingCounts = false;
     });
+  }
+
+  Future<void> _loadFollowCounts() async {
+    final request = ++_followRequest;
+    setState(() => _isLoadingFollows = true);
+    ProfileFollowCounts? counts;
+    try {
+      counts = await _followRepository.loadCounts();
+    } on Object {
+      // 집계 실패를 실제 0명과 구분해요.
+    }
+    if (!mounted || request != _followRequest) return;
+    setState(() {
+      _followCounts = counts;
+      _isLoadingFollows = false;
+    });
+  }
+
+  Future<void> _openFollows(ProfileFollowTab tab) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ProfileFollowsSheet(
+        repository: _followRepository,
+        initialTab: tab,
+        avatarRequestHeaders: _avatarRequestHeaders,
+        onChanged: _loadFollowCounts,
+      ),
+    );
+    if (mounted) _loadFollowCounts();
   }
 
   Future<void> _openActivity(String tab) async {
@@ -470,114 +515,133 @@ class _ProfileState extends State<Profile> {
         children: [
           GestureDetector(
             onTap: () => _openProfileEditor(profile),
-            child: CircleAvatar(
-              radius: 54,
-              backgroundColor: appColors.subtleBackground,
-              child: ClipOval(
-                child: profile.avatarUri == null
-                    ? Image.asset(
-                        'assets/profileAvatar.png',
-                        key: const ValueKey('profile-avatar-fallback'),
-                        width: 108,
-                        height: 108,
-                        fit: BoxFit.cover,
-                      )
-                    : Image.network(
-                        profile.avatarUri.toString(),
-                        key: const ValueKey('profile-avatar-network'),
-                        headers: _avatarRequestHeaders,
-                        width: 108,
-                        height: 108,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          'assets/profileAvatar.png',
-                          key: const ValueKey('profile-avatar-fallback'),
-                          width: 108,
-                          height: 108,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-              ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                CircleAvatar(
+                  radius: 54,
+                  backgroundColor: appColors.subtleBackground,
+                  child: ClipOval(
+                    child: profile.avatarUri == null
+                        ? Image.asset(
+                            'assets/profileAvatar.png',
+                            key: const ValueKey('profile-avatar-fallback'),
+                            width: 108,
+                            height: 108,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.network(
+                            profile.avatarUri.toString(),
+                            key: const ValueKey('profile-avatar-network'),
+                            headers: _avatarRequestHeaders,
+                            width: 108,
+                            height: 108,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Image.asset(
+                              'assets/profileAvatar.png',
+                              key: const ValueKey('profile-avatar-fallback'),
+                              width: 108,
+                              height: 108,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                  ),
+                ),
+                Positioned(
+                  right: -4,
+                  bottom: -4,
+                  child: CircleAvatar(
+                    radius: 23,
+                    backgroundColor: appColors.subtleBackground,
+                    child: Icon(Icons.camera_alt_outlined,
+                        color: Theme.of(context).colorScheme.onSurface),
+                  ),
+                )
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            profile.profileHeading,
-            style: Heading5.style,
-          ),
-          if (profile.email != null)
-            Opacity(
-              opacity: 0.5,
-              child: Text(
-                profile.email!,
-                style: Body2.style,
+          const SizedBox(height: 24),
+          Row(
+            key: const ValueKey('profile-stat-points'),
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (_isLoadingPoints)
+                const FootballLoadingIndicator(
+                    key: ValueKey('profile-stat-points-loading'))
+              else
+                Text(_pointBalance?.toString() ?? '—', style: Heading2.style),
+              const SizedBox(width: 4),
+              Opacity(
+                opacity: 0.5,
+                child: Text(pointUnit, style: Heading3.style),
               ),
-            ),
+            ],
+          ),
         ],
       ),
     );
   }
 
   Widget _buildStatRow() {
-    final appColors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Container(
+      child: Column(
         key: const ValueKey('profile-stat-card'),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        decoration: BoxDecoration(
-          color: appColors.cardBackground,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                const dividerWidth = 2.0;
-                const dividerGap = 10.0;
-                final statWidth =
-                    (constraints.maxWidth - dividerWidth * 2 - dividerGap * 2) /
-                        3;
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _buildStat(_pointBalance?.toString(), pointUnit,
-                        statKey: 'points',
-                        width: statWidth,
-                        tab: 'posts',
-                        loading: _isLoadingPoints),
-                    _verticalDivider('points-posts'),
-                    const SizedBox(width: dividerGap),
-                    _buildStat(_activityCounts?.postCount.toString(),
-                        tr(context, "POSTS"),
-                        statKey: 'posts',
-                        width: statWidth,
-                        tab: 'posts',
-                        loading: _isLoadingCounts),
-                    _verticalDivider('posts-comments'),
-                    const SizedBox(width: dividerGap),
-                    _buildStat(_activityCounts?.commentCount.toString(),
-                        trUpper(context, "Comments"),
-                        statKey: 'comments',
-                        width: statWidth,
-                        tab: 'comments',
-                        loading: _isLoadingCounts),
-                  ],
-                );
-              },
+        children: [
+          Row(children: [
+            Expanded(
+                child: _buildStat(
+              _followCounts?.followers.toString(),
+              trUpper(context, 'Followers'),
+              statKey: 'followers',
+              icon: Icons.how_to_reg_outlined,
+              loading: _isLoadingFollows,
+              onTap: () => _openFollows(ProfileFollowTab.followers),
+            )),
+            const SizedBox(width: 16),
+            Expanded(
+                child: _buildStat(
+              _followCounts?.following.toString(),
+              trUpper(context, 'Following'),
+              statKey: 'following',
+              icon: Icons.record_voice_over,
+              loading: _isLoadingFollows,
+              onTap: () => _openFollows(ProfileFollowTab.following),
+            )),
+          ]),
+          const SizedBox(height: 16),
+          Row(children: [
+            Expanded(
+                child: _buildStat(
+              _activityCounts?.postCount.toString(),
+              trUpper(context, 'Posts'),
+              statKey: 'posts',
+              icon: Icons.sticky_note_2,
+              loading: _isLoadingCounts,
+              onTap: () => _openActivity('posts'),
+            )),
+            const SizedBox(width: 16),
+            Expanded(
+                child: _buildStat(
+              _activityCounts?.commentCount.toString(),
+              trUpper(context, 'Comments'),
+              statKey: 'comments',
+              icon: Icons.chat_bubble_outline,
+              loading: _isLoadingCounts,
+              onTap: () => _openActivity('comments'),
+            )),
+          ]),
+          if (!_isLoadingCounts && _activityCounts == null) ...[
+            const SizedBox(height: 12),
+            Text(tr(context, 'Unable to load activity counts.')),
+            TextButton(
+              key: const ValueKey('profile-activity-counts-retry'),
+              onPressed: _loadActivityCounts,
+              child: Text(tr(context, 'Retry')),
             ),
-            if (!_isLoadingCounts && _activityCounts == null) ...[
-              const SizedBox(height: 12),
-              Text(tr(context, 'Unable to load activity counts.')),
-              TextButton(
-                key: const ValueKey('profile-activity-counts-retry'),
-                onPressed: _loadActivityCounts,
-                child: Text(tr(context, 'Retry')),
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }
@@ -586,59 +650,54 @@ class _ProfileState extends State<Profile> {
     String? value,
     String label, {
     required String statKey,
-    required double width,
-    required String tab,
+    required IconData icon,
     required bool loading,
+    required VoidCallback onTap,
   }) {
     return GestureDetector(
       key: ValueKey('profile-stat-$statKey'),
       behavior: HitTestBehavior.opaque,
-      onTap: () => _openActivity(tab),
-      child: SizedBox(
-        width: width,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF272828)
+              : AppColors.of(context).cardBackground,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: width,
-              height: MediaQuery.textScalerOf(context)
-                      .scale(Heading3.style.fontSize!) *
-                  Heading3.style.height!,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: value == null && loading
-                    ? FootballLoadingIndicator(
-                        key: ValueKey('profile-stat-$statKey-loading'),
-                      )
-                    : Text(value ?? '—',
-                        textAlign: TextAlign.left, style: Heading3.style),
-              ),
-            ),
+            Row(children: [
+              Icon(icon, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                  child: SizedBox(
+                height: MediaQuery.textScalerOf(context)
+                        .scale(Heading3.style.fontSize!) *
+                    Heading3.style.height!,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: value == null && loading
+                      ? FootballLoadingIndicator(
+                          key: ValueKey('profile-stat-$statKey-loading'))
+                      : Text(value ?? '—', style: Heading3.style),
+                ),
+              )),
+            ]),
             const SizedBox(height: 4),
-            SizedBox(
-              width: width,
-              height: Body2_b.style.fontSize! * Body2_b.style.height!,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(tr(context, label),
-                    maxLines: 1, softWrap: false, style: Body2_b.style),
-              ),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(label,
+                  maxLines: 1, style: Body2.style.copyWith(height: 1.30)),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _verticalDivider(String dividerKey) {
-    return Container(
-      key: ValueKey('profile-stat-divider-$dividerKey'),
-      width: 2,
-      height: 51,
-      color: AppColors.of(context).divider,
     );
   }
 

@@ -793,6 +793,15 @@ const appMessages = <String, MessageTranslations>{
   "FAVORITE PLAYERS": (ko: "좋아하는 선수", ja: "お気に入りの選手", zh: "喜欢的球员"),
   "Following": (ko: "팔로잉", ja: "フォロー中", zh: "已关注"),
   "Followers": (ko: "팔로워", ja: "フォロワー", zh: "粉丝"),
+  "Sort By": (ko: "정렬", ja: "並び替え", zh: "排序"),
+  "Oldest": (ko: "오래된순", ja: "古い順", zh: "最早"),
+  "No users yet.": (ko: "아직 사용자가 없어요.", ja: "まだユーザーはいません。", zh: "暂无用户。"),
+  "Unable to update following.": (
+    ko: "팔로우 상태를 변경하지 못했어요.",
+    ja: "フォロー状態を変更できませんでした。",
+    zh: "无法更新关注状态。"
+  ),
+  "Remove": (ko: "삭제", ja: "削除", zh: "移除"),
   "Follow player": (ko: "선수 팔로우", ja: "選手をフォロー", zh: "关注球员"),
   "Unfollow player": (ko: "선수 팔로우 취소", ja: "選手のフォローを解除", zh: "取消关注球员"),
   "Follow team": (ko: "팀 팔로우", ja: "チームをフォロー", zh: "关注球队"),

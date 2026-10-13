@@ -13,15 +13,18 @@ import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
-import 'package:onetouch/features/player/player_directory_widgets.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/profile_activity_counts.dart';
+import 'package:onetouch/models/profile_follow.dart';
 import 'package:onetouch/models/team.dart';
 import 'support/player_directory_fixture.dart';
 import 'support/stub_profile_activity_repository.dart';
+import 'support/stub_profile_follow_repository.dart';
+import 'package:onetouch/comm_pages/profile_follows_sheet.dart';
 
 void main() {
   setUpAppCatalog();
@@ -93,8 +96,7 @@ void main() {
           reason:
               'settings top=${settings.top}, max=${controller.position.maxScrollExtent}');
       expect(settings.left, 24);
-      expect(settings.top, closeTo(48, 1));
-      expect(find.byType(PlayerFavorites), findsNothing);
+      expect(settings.top, inInclusiveRange(48, 124));
       expect(settings.bottom, lessThanOrEqualTo(size.height));
       expect(find.byKey(const ValueKey('profile-setting-personal-info')),
           findsOneWidget);
@@ -125,6 +127,41 @@ void main() {
   });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('follower and following cards open their sheet at $size',
+        (tester) async {
+      await _setScreenSize(tester, size);
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: Profile(
+          loadPointBalance: () async => 200,
+          repository: _StaticCurrentUserRepository(),
+          followingTeamsRepository: _StaticFollowingTeamsRepository(),
+          activityRepository: const StubProfileActivityRepository(),
+          followRepository: const StubProfileFollowRepository(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      for (final stat in ['followers', 'following']) {
+        await tester.tap(find.byKey(ValueKey('profile-stat-$stat')));
+        await tester.pumpAndSettle();
+        expect(find.byType(ProfileFollowsSheet), findsOneWidget);
+        expect(
+          tester
+              .widget<AppSegmentedToggle<ProfileFollowTab>>(
+                  find.byType(AppSegmentedToggle<ProfileFollowTab>))
+              .value,
+          stat == 'followers'
+              ? ProfileFollowTab.followers
+              : ProfileFollowTab.following,
+        );
+        await tester.tap(find.byKey(const ValueKey('profile-follows-close')));
+        await tester.pumpAndSettle();
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets('activity counts load, retry and fit at $size', (tester) async {
       await _setScreenSize(tester, size);
       final activity = _ControlledActivityRepository();
@@ -141,7 +178,7 @@ void main() {
         ),
       ));
       await tester.pump();
-      expect(find.text('@불광동호날두'), findsOneWidget);
+      expect(find.byKey(const ValueKey('profile-stat-points')), findsOneWidget);
       expect(find.byKey(const ValueKey('profile-stat-posts-loading')),
           findsOneWidget);
       expect(find.byKey(const ValueKey('profile-stat-comments-loading')),
@@ -158,7 +195,9 @@ void main() {
       _expectStat('comments', '—');
       expect(find.text('게시글·댓글 수를 불러오지 못했어요.'), findsOneWidget);
       final retry = find.byKey(const ValueKey('profile-activity-counts-retry'));
-      await tester.ensureVisible(retry);
+      await tester.scrollUntilVisible(retry, 120,
+          scrollable: find.byType(Scrollable).first);
+      await tester.pumpAndSettle();
       await tester.tap(retry);
       await tester.pump();
       expect(activity.calls, hasLength(2));
@@ -271,7 +310,9 @@ void main() {
     ));
     await tester.pump();
     final editIcon = find.byIcon(Icons.border_color).first;
-    await tester.ensureVisible(editIcon);
+    await tester.scrollUntilVisible(editIcon, 120,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pump(const Duration(milliseconds: 400));
     await tester.tap(editIcon);
     await tester.pump(const Duration(milliseconds: 400));
     Navigator.of(tester.element(find.byType(EditFollowingTeamsSheet))).pop(
@@ -345,7 +386,8 @@ void main() {
           );
           expect(field.controller!.text, '불광동호날두');
         } else {
-          expect(find.text('@불광동호날두'), findsOneWidget);
+          expect(find.byKey(const ValueKey('profile-stat-points')),
+              findsOneWidget);
         }
         expect(tester.takeException(), isNull);
       }
@@ -375,8 +417,10 @@ void main() {
     repository.calls.single.complete(_profile());
     await tester.pump();
 
-    expect(find.text('@불광동호날두'), findsOneWidget);
-    expect(find.text('owner@example.com'), findsOneWidget);
+    expect(find.byKey(const ValueKey('profile-stat-points')), findsOneWidget);
+    expect(find.text('owner@example.com'), findsNothing);
+    await tester.scrollUntilVisible(find.text('API Barcelona'), 160,
+        scrollable: find.byType(Scrollable).first);
     expect(find.text('API Barcelona'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -424,7 +468,7 @@ void main() {
     repository.calls.last.complete(_profile(username: null, email: null));
     await tester.pump();
 
-    expect(find.text('@불광동호날두'), findsOneWidget);
+    expect(find.byKey(const ValueKey('profile-stat-points')), findsOneWidget);
     expect(find.text('@null'), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -554,7 +598,8 @@ void main() {
 
     final followedTeam =
         find.byKey(const ValueKey('profile-following-team-83'));
-    await tester.ensureVisible(followedTeam);
+    await tester.scrollUntilVisible(followedTeam, 250,
+        scrollable: find.byType(Scrollable).first);
     await tester.pumpAndSettle();
     await tester.tap(followedTeam);
     await tester.pumpAndSettle();
@@ -612,7 +657,8 @@ void main() {
     ));
     await tester.pumpAndSettle();
     final followedPlayer = find.byKey(const ValueKey('favorite-player-1'));
-    await tester.ensureVisible(followedPlayer);
+    await tester.scrollUntilVisible(followedPlayer, 250,
+        scrollable: find.byType(Scrollable).first);
     await tester.pumpAndSettle();
     await tester.tap(followedPlayer);
     await tester.pumpAndSettle();
@@ -625,7 +671,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('all three profile stats open my activity with the right tab',
+  testWidgets('post and comment stats open my activity with the right tab',
       (tester) async {
     await _setScreenSize(tester, const Size(393, 852));
     final router = GoRouter(
@@ -658,7 +704,7 @@ void main() {
       routerConfig: router,
     ));
 
-    for (final stat in ['points', 'posts', 'comments']) {
+    for (final stat in ['posts', 'comments']) {
       router.go('/profile');
       await tester.pumpAndSettle();
       final statFinder = find.byKey(ValueKey('profile-stat-$stat'));

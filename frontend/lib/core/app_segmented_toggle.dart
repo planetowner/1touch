@@ -37,6 +37,7 @@ class AppSegmentedToggle<T> extends StatelessWidget {
     this.indicatorSurfaceKey,
     this.verticalPadding = 8,
     this.lightTrackColor,
+    this.lightSelectedColor,
   }) : assert(options.length > 0);
 
   final T value;
@@ -47,6 +48,7 @@ class AppSegmentedToggle<T> extends StatelessWidget {
   final Key? indicatorSurfaceKey;
   final double verticalPadding;
   final Color? lightTrackColor;
+  final Color? lightSelectedColor;
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +61,9 @@ class AppSegmentedToggle<T> extends StatelessWidget {
         : Alignment(-1 + (2 * resolvedIndex / (segmentCount - 1)), 0);
     final trackBackground =
         isDark ? AppPalette.lightGrey : lightTrackColor ?? AppPalette.white;
-    final selectedBackground =
-        isDark ? AppPalette.black : AppPalette.lightModeDarkGrey;
+    final selectedBackground = isDark
+        ? AppPalette.black
+        : lightSelectedColor ?? AppPalette.lightModeDarkGrey;
     final selectedForeground = isDark ? AppPalette.white : AppPalette.black;
 
     return Container(
