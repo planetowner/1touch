@@ -8,6 +8,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/number_display.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
+import 'package:onetouch/data/teams/team_color_palette_2627.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
@@ -20,6 +21,7 @@ List<Color> resolveBettingBarColors({
   required Team homeTeam,
   required Team awayTeam,
   required Color background,
+  required Brightness brightness,
   int? anchorTeamId,
 }) {
   final anchorIsAway = anchorTeamId == awayTeam.teamId;
@@ -36,7 +38,19 @@ List<Color> resolveBettingBarColors({
       anchorIsAway ? comparisonColors.opponent : comparisonColors.anchor;
   final awayColor =
       anchorIsAway ? comparisonColors.anchor : comparisonColors.opponent;
-  return [homeColor, Color.lerp(homeColor, awayColor, 0.5)!, awayColor];
+  // 팔레트가 없는 팀은 베팅 바에서 테마별 공통 색을 사용해요.
+  final missingColor = brightness == Brightness.dark
+      ? AppPalette.white
+      : AppPalette.lightModeDarkGrey;
+  final resolvedHomeColor =
+      teamColorPaletteForName(homeTeam.name) == null ? missingColor : homeColor;
+  final resolvedAwayColor =
+      teamColorPaletteForName(awayTeam.name) == null ? missingColor : awayColor;
+  return [
+    resolvedHomeColor,
+    Color.lerp(resolvedHomeColor, resolvedAwayColor, 0.5)!,
+    resolvedAwayColor,
+  ];
 }
 
 class MatchBettingSection extends StatelessWidget {
@@ -951,13 +965,17 @@ class MatchStatsHeader extends StatelessWidget {
       homeTeam: homeTeam,
       awayTeam: awayTeam,
       background: _surface(context),
+      brightness: Theme.of(context).brightness,
       anchorTeamId: anchorTeamId,
     );
     final oddsLabels = [
       for (final option in options)
         '${formatDisplayNumber(option.decimalOdds)}×',
     ];
-    final oddsTextStyle = Heading4.style.copyWith(color: AppPalette.white);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final oddsTextStyle = Heading4.style.copyWith(
+      color: isDark ? AppPalette.white : AppPalette.black,
+    );
 
     return Column(
       children: [
@@ -1020,7 +1038,9 @@ class MatchStatsHeader extends StatelessWidget {
                                 ),
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: AppPalette.black,
+                                  color: isDark
+                                      ? AppPalette.black
+                                      : AppPalette.lightModeDarkGrey,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(

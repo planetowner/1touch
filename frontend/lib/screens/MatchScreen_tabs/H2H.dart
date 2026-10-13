@@ -385,6 +385,7 @@ class _H2HTabState extends State<H2HTab> {
       // Use the same comparison surface as Match Preview so a team does not
       // change palette colors when the user switches tabs.
       background: isDark ? AppPalette.darkGrey : AppPalette.white,
+      brightness: Theme.of(context).brightness,
       anchorTeamId: _perspectiveTeamId,
     );
 

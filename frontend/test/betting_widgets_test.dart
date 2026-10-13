@@ -17,6 +17,40 @@ import 'package:onetouch/models/team.dart';
 import 'support/fake_betting_repository.dart';
 
 void main() {
+  test('betting bar uses theme colors for teams without a palette', () {
+    const galatasaray = Team(teamId: 1, name: 'Galatasaray');
+    const barcelona = Team(teamId: 2, name: 'FC Barcelona');
+
+    for (final brightness in Brightness.values) {
+      final missingColor = brightness == Brightness.dark
+          ? AppPalette.white
+          : AppPalette.lightModeDarkGrey;
+      final background = brightness == Brightness.dark
+          ? AppPalette.darkGrey
+          : AppPalette.white;
+      final homeColors = resolveBettingBarColors(
+        homeTeam: galatasaray,
+        awayTeam: barcelona,
+        background: background,
+        brightness: brightness,
+      );
+      final awayColors = resolveBettingBarColors(
+        homeTeam: barcelona,
+        awayTeam: galatasaray,
+        background: background,
+        brightness: brightness,
+        anchorTeamId: galatasaray.teamId,
+      );
+
+      expect(homeColors.first, missingColor);
+      expect(awayColors.last, missingColor);
+      expect(homeColors.last, isNot(missingColor));
+      expect(awayColors.first, isNot(missingColor));
+      expect(homeColors[1], Color.lerp(homeColors.first, homeColors.last, 0.5));
+      expect(awayColors[1], Color.lerp(awayColors.first, awayColors.last, 0.5));
+    }
+  });
+
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets('betting uses code then short name at $size', (tester) async {
       await tester.binding.setSurfaceSize(size);
@@ -830,10 +864,17 @@ void main() {
             const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           );
           expect(container.alignment, Alignment.center);
-          expect(decoration.color, AppPalette.black);
+          expect(
+            decoration.color,
+            size.width == 320 ? AppPalette.lightModeDarkGrey : AppPalette.black,
+          );
           expect(decoration.borderRadius, BorderRadius.circular(4));
           oddsFontSizes.add(oddsText.style!.fontSize!);
           expect(oddsText.style?.fontWeight, FontWeight.w700);
+          expect(
+            oddsText.style?.color,
+            size.width == 320 ? AppPalette.black : AppPalette.white,
+          );
           expect(oddsText.textAlign, TextAlign.center);
         }
         expect(oddsFontSizes.toSet().length, 1);
