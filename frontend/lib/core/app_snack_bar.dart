@@ -7,11 +7,20 @@ void showAppSnackBar(
   // SnackBar는 무기한 표시를 지원하지 않으므로 기본 배너에 충분히 긴 시간을 사용해요.
   Duration duration = const Duration(days: 3650),
   bool replaceCurrent = false,
+  VoidCallback? onTap,
   EdgeInsets? contentPadding,
   bool alignCloseIconWithText = false,
 }) {
   final messenger = ScaffoldMessenger.of(context);
-  if (replaceCurrent) messenger.hideCurrentSnackBar();
+  // 같은 오류를 여러 번 눌러도 이전 안내가 대기열에 남아 반복되지 않게 해요.
+  if (replaceCurrent) messenger.clearSnackBars();
+  final notice = AppRuleNotice(
+    message: message,
+    contentPadding: contentPadding,
+    alignCloseIconWithText: alignCloseIconWithText,
+    onClose: () =>
+        messenger.hideCurrentSnackBar(reason: SnackBarClosedReason.dismiss),
+  );
   messenger.showSnackBar(
     SnackBar(
       // 기본 여백을 없애고 고정 안내와 같은 컴포넌트로 높이와 정렬을 맞춰요.
@@ -23,13 +32,16 @@ void showAppSnackBar(
       // 기기에서 전달한 하단 안전 여백은 기본 SnackBar가 자동으로 적용해요.
       backgroundColor: AppRuleNotice.backgroundColorOf(context),
       duration: duration,
-      content: AppRuleNotice(
-        message: message,
-        contentPadding: contentPadding,
-        alignCloseIconWithText: alignCloseIconWithText,
-        onClose: () =>
-            messenger.hideCurrentSnackBar(reason: SnackBarClosedReason.dismiss),
-      ),
+      content: onTap == null
+          ? notice
+          : GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                messenger.hideCurrentSnackBar();
+                onTap();
+              },
+              child: notice,
+            ),
     ),
   );
 }

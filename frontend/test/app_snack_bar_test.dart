@@ -246,6 +246,31 @@ void main() {
     expect(find.text('Second message.'), findsOneWidget);
   });
 
+  testWidgets('rapid replacements do not leave stale messages in the queue',
+      (tester) async {
+    final context = await _pumpHost(tester);
+    for (final message in ['First', 'Second', 'Third']) {
+      showAppSnackBar(context, message, replaceCurrent: true);
+    }
+    await tester.pumpAndSettle();
+    expect(find.text('Third'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('app-rule-notice-close')));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('close dismisses a tappable notice without running its action',
+      (tester) async {
+    final context = await _pumpHost(tester);
+    var taps = 0;
+    showAppSnackBar(context, 'Tap to retry.', onTap: () => taps++);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('app-rule-notice-close')));
+    await tester.pumpAndSettle();
+    expect(taps, 0);
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
   testWidgets('swiping down keeps the snack bar visible', (tester) async {
     final context = await _pumpHost(tester);
     showAppSnackBar(context, 'Saved.');
