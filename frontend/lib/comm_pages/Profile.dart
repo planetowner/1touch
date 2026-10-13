@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import "package:flutter/material.dart";
+import 'package:flutter/rendering.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/api_client_provider.dart';
@@ -62,6 +63,7 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   late ScrollController _scrollController;
+  final GlobalKey _settingsSectionKey = GlobalKey();
   double _scrollOffset = 0.0;
   CurrentUserProfile? _profile;
   List<Team> _followingTeams = const [];
@@ -210,6 +212,44 @@ class _ProfileState extends State<Profile> {
     await _loadProfile();
   }
 
+  double? _settingsScrollOffset() {
+    if (!_scrollController.hasClients) return null;
+    final section = _settingsSectionKey.currentContext?.findRenderObject();
+    if (section == null) return null;
+    final viewport = RenderAbstractViewport.maybeOf(section);
+    if (viewport == null) return null;
+    final offset = viewport.getOffsetToReveal(section, 0).offset;
+    final position = _scrollController.position;
+    // 선수 목록은 화면 밖으로 보내고 두 섹션 사이 48px 간격만 남겨요.
+    final headerTop = MediaQuery.paddingOf(context).top + 48;
+    return (offset - headerTop).clamp(0.0, position.maxScrollExtent);
+  }
+
+  void _jumpToSettings() {
+    final target = _settingsScrollOffset();
+    if (target == null) return;
+    final position = _scrollController.position;
+    final distance = target - position.pixels;
+    if (distance.abs() > position.viewportDimension) {
+      // 먼 구간은 건너뛰고 마지막 한 화면만 스크롤해요.
+      final approach = target -
+          (distance.isNegative
+              ? -position.viewportDimension
+              : position.viewportDimension);
+      _scrollController.jumpTo(approach.clamp(0.0, position.maxScrollExtent));
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      final correctedTarget = _settingsScrollOffset();
+      if (correctedTarget == null) return;
+      unawaited(_scrollController.animateTo(
+        correctedTarget,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      ));
+    });
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -314,6 +354,13 @@ class _ProfileState extends State<Profile> {
                           ),
                         ),
                         IconButton(
+                          key: const ValueKey('profile-settings-button'),
+                          tooltip: tr(context, 'SETTINGS'),
+                          onPressed: _jumpToSettings,
+                          icon: Icon(Icons.settings_outlined,
+                              size: 32, color: appBarForeground),
+                        ),
+                        IconButton(
                           onPressed: () => context.push('/search'),
                           icon: Icon(Icons.search,
                               size: 32, color: appBarForeground),
@@ -382,14 +429,29 @@ class _ProfileState extends State<Profile> {
                     searchRepository: null,
                   ),
                   const SizedBox(height: 48),
-
-                  _buildSectionLabel(tr(context, "SETTINGS")),
-                  const SizedBox(height: 16),
-                  SettingsList(
-                    onPersonalInfo: () => _openProfileEditor(profile),
-                  ),
-                  const SizedBox(height: 48),
                 ]),
+              ),
+              SliverToBoxAdapter(
+                child: ConstrainedBox(
+                  // 설정 제목이 화면 하단 경계에 걸리지 않게 이동 공간을 확보해요.
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.sizeOf(context).height + 96,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      KeyedSubtree(
+                        key: _settingsSectionKey,
+                        child: _buildSectionLabel(tr(context, "SETTINGS")),
+                      ),
+                      const SizedBox(height: 16),
+                      SettingsList(
+                        onPersonalInfo: () => _openProfileEditor(profile),
+                      ),
+                      const SizedBox(height: 48),
+                    ],
+                  ),
+                ),
               ),
             ],
           )

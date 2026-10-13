@@ -16,6 +16,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
+import 'package:onetouch/features/player/player_directory_widgets.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/profile_activity_counts.dart';
 import 'package:onetouch/models/team.dart';
@@ -55,6 +56,51 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Open profile'), findsOneWidget);
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets(
+        'profile settings button jumps then scrolls to options at $size',
+        (tester) async {
+      await _setScreenSize(tester, size);
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.whitetheme.copyWith(platform: TargetPlatform.iOS),
+        home: Profile(
+          loadPointBalance: () async => 1430,
+          repository: _StaticCurrentUserRepository(),
+          followingTeamsRepository: _StaticFollowingTeamsRepository(),
+          activityRepository: const StubProfileActivityRepository(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final controller = tester
+          .widget<CustomScrollView>(
+            find.byType(CustomScrollView),
+          )
+          .controller!;
+      expect(controller.offset, 0);
+      await tester.tap(find.byKey(const ValueKey('profile-settings-button')));
+      final jumpedOffset = controller.offset;
+      expect(jumpedOffset, greaterThan(0));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      expect(controller.offset, greaterThan(jumpedOffset));
+      await tester.pumpAndSettle();
+
+      final settings = tester.getRect(find.text('SETTINGS'));
+      expect(controller.offset, lessThan(controller.position.maxScrollExtent),
+          reason:
+              'settings top=${settings.top}, max=${controller.position.maxScrollExtent}');
+      expect(settings.left, 24);
+      expect(settings.top, closeTo(48, 1));
+      expect(find.byType(PlayerFavorites), findsNothing);
+      expect(settings.bottom, lessThanOrEqualTo(size.height));
+      expect(find.byKey(const ValueKey('profile-setting-personal-info')),
+          findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('point balance loads independently and failure is not zero',
       (tester) async {
