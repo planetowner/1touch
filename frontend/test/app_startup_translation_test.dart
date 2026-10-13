@@ -8,7 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:lottie/lottie.dart';
 import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/features/betting/bet_settlement_notifications.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
+import 'package:onetouch/l10n/football_name_labels.dart';
 import 'package:onetouch/main.dart';
 import 'package:onetouch/onboarding.dart';
 import 'package:onetouch/session_screen.dart';
@@ -61,8 +63,8 @@ void main() {
 
     pending.complete(http.Response(
         jsonEncode({
-          'teams': {},
-          'team_short_names': {},
+          'teams': {'83': 'FC Barcelona'},
+          'team_short_names': {'83': 'Barcelona'},
           'players': {},
           'player_short_names': {},
           'competitions': {},
@@ -72,6 +74,13 @@ void main() {
         200));
     await tester.pump();
     await tester.pump();
+
+    expect(
+      FootballNamesScope.of(
+              tester.element(find.byType(BetSettlementNotificationHost)))
+          .team(83, 'Untranslated team', short: true),
+      'Barcelona',
+    );
 
     expect(find.byType(SplashScreen), findsOneWidget);
     expect(find.byType(Lottie).hitTestable(), findsOneWidget);

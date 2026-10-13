@@ -9,6 +9,29 @@ import 'package:onetouch/data/betting/betting_repository.dart';
 import 'package:onetouch/models/betting.dart';
 
 void main() {
+  test('preserves the server settlement reason for refunded bets', () async {
+    for (final reason in [
+      null,
+      'POSTPONED',
+      'CANCELLED',
+      'WO',
+      'ABANDONED',
+      'AWARDED',
+      'DELETED',
+    ]) {
+      final market = await _repository({
+        ..._market(),
+        'bet': {
+          ..._bet,
+          'status': reason == null ? 'open' : 'refunded',
+          'payout': reason == null ? 0 : 100,
+          'settlement_reason': reason,
+        },
+      }).loadMarket(42);
+      expect(market.bet!.settlementReason, reason);
+    }
+  });
+
   test('wallet lets the server determine country without a device value',
       () async {
     final repository = ApiBettingRepository(

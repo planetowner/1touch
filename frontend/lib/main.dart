@@ -766,22 +766,23 @@ class MyApp extends StatelessWidget {
                 child: AnimatedBuilder(
                   animation: _router.routeInformationProvider,
                   builder: (context, _) => AppKeyboardDismissBoundary(
-                    child: BetSettlementNotificationHost(
-                      reserveBottomNavigation: _usesMainBottomNavigation(
-                        _router.routeInformationProvider.value.uri.path,
-                      ),
-                      onSeeResults: (fixtureId) => _router.push(
-                        '/match/$fixtureId?status=past',
-                      ),
-                      child: ListenableBuilder(
-                        listenable: authSession,
-                        builder: (context, _) => FootballNamesLoader(
-                          repository: _footballNames,
-                          enabled: authSession.isAuthenticated,
-                          // 번역은 미리 불러오되 이름 표기가 없는 시작 로고는 가리지 않아요.
-                          blockContent: _startupCompleted &&
-                              _router.routeInformationProvider.value.uri.path !=
-                                  '/',
+                    child: ListenableBuilder(
+                      listenable: authSession,
+                      builder: (context, _) => FootballNamesLoader(
+                        repository: _footballNames,
+                        enabled: authSession.isAuthenticated,
+                        // 번역은 미리 불러오되 이름 표기가 없는 시작 로고는 가리지 않아요.
+                        blockContent: _startupCompleted &&
+                            _router.routeInformationProvider.value.uri.path !=
+                                '/',
+                        // 결과 팝업도 본문과 같은 팀 이름 번역을 받아야 해요.
+                        child: BetSettlementNotificationHost(
+                          reserveBottomNavigation: _usesMainBottomNavigation(
+                            _router.routeInformationProvider.value.uri.path,
+                          ),
+                          onSeeResults: (fixtureId) => _router.push(
+                            '/match/$fixtureId?status=past',
+                          ),
                           child: FullScreenBackGesture(
                             child: child!,
                           ),

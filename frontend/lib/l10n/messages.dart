@@ -213,27 +213,27 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Open live match": (ko: "라이브 경기 보기", ja: "ライブ試合を見る", zh: "查看直播比赛"),
   "You won {points} points!": (
-    ko: "{points} 포인트를 획득했어요!",
+    ko: "{points} pts를 받았어요!",
     ja: "{points}ポイントを獲得しました！",
     zh: "你赢得了{points}积分！"
   ),
   "No points this time.": (
-    ko: "이번엔 포인트를 얻지 못했어요.",
+    ko: "이번엔 포인트를 받지 못했어요.",
     ja: "今回はポイントを獲得できませんでした。",
     zh: "这次没有获得积分。"
   ),
-  "{points} points returned.": (
-    ko: "{points} 포인트가 반환됐어요.",
+  "Your {points} points\nhave been returned": (
+    ko: "{points} pts를 돌려받았어요.",
     ja: "{points}ポイントが返還されました。",
     zh: "已返还{points}积分。"
   ),
   "Your bet on {team} was correct.": (
-    ko: "{team}에 대한 베팅이 적중했어요.",
+    ko: "{team}에 대한 예측이 맞았어요.",
     ja: "{team}への予想が的中しました。",
     zh: "你对{team}的预测正确。"
   ),
   "Your bet on {team} was not correct.": (
-    ko: "{team}에 대한 베팅이 적중하지 않았어요.",
+    ko: "{team}에 대한 예측이 빗나갔어요.",
     ja: "{team}への予想は的中しませんでした。",
     zh: "你对{team}的预测未命中。"
   ),
@@ -242,6 +242,37 @@ const appMessages = <String, MessageTranslations>{
     ja: "{team}への予想ポイントが返還されました。",
     zh: "你对{team}的投注积分已返还。"
   ),
+  "{home_team} vs {away_team} was cancelled.": (
+    ko: "{home_team} vs {away_team} 경기가 취소됐어요.",
+    ja: "{home_team} vs {away_team}の試合が中止になりました。",
+    zh: "{home_team} vs {away_team}的比赛已取消。"
+  ),
+  "{home_team} vs {away_team} was postponed.": (
+    ko: "{home_team} vs {away_team} 경기가 연기됐어요.",
+    ja: "{home_team} vs {away_team}の試合が延期されました。",
+    zh: "{home_team} vs {away_team}的比赛已延期。"
+  ),
+  "{home_team} vs {away_team} was decided by walkover.": (
+    ko: "{home_team} vs {away_team} 경기가 부전승으로 처리됐어요.",
+    ja: "{home_team} vs {away_team}の試合は不戦勝扱いになりました。",
+    zh: "{home_team} vs {away_team}的比赛按一方不战而胜处理。"
+  ),
+  "{home_team} vs {away_team} was abandoned.": (
+    ko: "{home_team} vs {away_team} 경기가 도중에 중단됐어요.",
+    ja: "{home_team} vs {away_team}の試合が途中で中断されました。",
+    zh: "{home_team} vs {away_team}的比赛中途终止。"
+  ),
+  "{home_team} vs {away_team}: the result was decided by the organizer.": (
+    ko: "{home_team} vs {away_team} 경기 결과를 주최 측이 결정했어요.",
+    ja: "{home_team} vs {away_team}の試合結果は主催者が決定しました。",
+    zh: "{home_team} vs {away_team}的比赛结果由主办方决定。"
+  ),
+  "{home_team} vs {away_team}: the match record was deleted or changed.": (
+    ko: "{home_team} vs {away_team} 경기 기록이 삭제되거나 바뀌었어요.",
+    ja: "{home_team} vs {away_team}の試合記録が削除または変更されました。",
+    zh: "{home_team} vs {away_team}的比赛记录已被删除或更改。"
+  ),
+  "CONTINUE": (ko: "확인", ja: "確認", zh: "确定"),
   "SEE RESULTS": (ko: "결과 보기", ja: "結果を見る", zh: "查看结果"),
   "MAYBE LATER": (ko: "나중에 보기", ja: "あとで見る", zh: "稍后查看"),
   "Email or username": (ko: "이메일 또는 아이디", ja: "メールアドレスまたはユーザー名", zh: "邮箱或用户名"),

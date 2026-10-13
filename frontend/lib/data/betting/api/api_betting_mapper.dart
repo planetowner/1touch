@@ -16,6 +16,7 @@ FixtureBet betFromJson(Map<String, dynamic> json) => FixtureBet(
       status: json['status'] as String,
       revision: json['revision'] as int,
       payout: json['payout'] as int,
+      settlementReason: json['settlement_reason'] as String?,
     );
 
 BetMutation mutationFromJson(Map<String, dynamic> json) => BetMutation(

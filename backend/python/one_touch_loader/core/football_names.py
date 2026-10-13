@@ -8,6 +8,7 @@ NAME_COLUMNS = {
 LOCALE_COLUMNS = {
     'en': ('name', 'display_name', 'short_name', 'short_name', 'name', 'name'),
     'ko': ('name_ko', 'display_name_ko', 'short_name_ko', 'short_name_ko', 'name_ko', 'name_ko'),
+    # 팀은 현재 name_ja·name_zh를 써요. short_name_ja·short_name_zh가 생기면 팀의 짧은 이름(None)을 교체해요.
     'ja': ('name_ja', 'display_name_ja', None, 'short_name_ja', 'name_ja', 'name_ja'),
     'zh': ('name_zh', 'display_name_zh', None, 'short_name_zh', 'name_zh', 'name_zh'),
 }

@@ -61,6 +61,7 @@ class FixtureBet {
     required this.status,
     required this.revision,
     required this.payout,
+    this.settlementReason,
   });
 
   final int betId;
@@ -73,6 +74,7 @@ class FixtureBet {
   final String status;
   final int revision;
   final int payout;
+  final String? settlementReason;
   bool get isOpen => status == 'open';
 }
 

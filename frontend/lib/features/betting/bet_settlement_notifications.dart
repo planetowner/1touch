@@ -21,11 +21,15 @@ import 'package:onetouch/models/fixture.dart';
 class BetSettlementNotice {
   const BetSettlementNotice({
     required this.bet,
+    required this.selectionTeamId,
     required this.selectionName,
+    this.fixture,
   });
 
   final FixtureBet bet;
+  final int? selectionTeamId;
   final String selectionName;
+  final Fixture? fixture;
 
   bool get won => bet.status == 'won';
   bool get refunded => bet.status == 'refunded';
@@ -106,12 +110,14 @@ class BetSettlementNotificationController extends ChangeNotifier {
           } on Object {
             // Cached fixture names still let the result remain useful offline.
           }
-          final selectionName = _selectionName(bet.outcome, fixture);
+          final selection = _settlementSelection(bet.outcome, fixture);
           await _registry.remove(fixtureId);
           if (!_started || _disposed) break;
           notice = BetSettlementNotice(
             bet: bet,
-            selectionName: selectionName,
+            selectionTeamId: selection.teamId,
+            selectionName: selection.name,
+            fixture: fixture,
           );
           notifyListeners();
         } on Object {
@@ -121,23 +127,6 @@ class BetSettlementNotificationController extends ChangeNotifier {
     } finally {
       _checking = false;
     }
-  }
-
-  String _selectionName(BetOutcome outcome, Fixture? fixture) {
-    if (outcome == BetOutcome.draw) return 'Draw';
-    if (fixture == null) return 'Your prediction';
-    final teamId =
-        outcome == BetOutcome.homeWin ? fixture.homeTeamId : fixture.awayTeamId;
-    final configured = teamRepository.findById(teamId)?.displayName.trim();
-    if (configured?.isNotEmpty == true) return configured!;
-    final shortName = outcome == BetOutcome.homeWin
-        ? fixture.homeTeamShortName
-        : fixture.awayTeamShortName;
-    if (shortName?.trim().isNotEmpty == true) return shortName!.trim();
-    final fullName = outcome == BetOutcome.homeWin
-        ? fixture.homeTeamName
-        : fixture.awayTeamName;
-    return _conciseTeamName(fullName ?? 'Your prediction');
   }
 
   void dismiss() {
@@ -153,6 +142,31 @@ class BetSettlementNotificationController extends ChangeNotifier {
     stop(clearNotice: false);
     super.dispose();
   }
+}
+
+({int? teamId, String name}) _settlementSelection(
+    BetOutcome outcome, Fixture? fixture) {
+  if (outcome == BetOutcome.draw) return (teamId: null, name: 'Draw');
+  if (fixture == null) return (teamId: null, name: 'Your prediction');
+  final teamId =
+      outcome == BetOutcome.homeWin ? fixture.homeTeamId : fixture.awayTeamId;
+  final configured = teamRepository.findById(teamId)?.displayName.trim();
+  if (configured?.isNotEmpty == true) {
+    return (teamId: teamId, name: configured!);
+  }
+  final shortName = outcome == BetOutcome.homeWin
+      ? fixture.homeTeamShortName
+      : fixture.awayTeamShortName;
+  if (shortName?.trim().isNotEmpty == true) {
+    return (teamId: teamId, name: shortName!.trim());
+  }
+  final fullName = outcome == BetOutcome.homeWin
+      ? fixture.homeTeamName
+      : fixture.awayTeamName;
+  return (
+    teamId: teamId,
+    name: _conciseTeamName(fullName ?? 'Your prediction'),
+  );
 }
 
 String _conciseTeamName(String value) {
@@ -318,7 +332,7 @@ class BetSettlementResultOverlay extends StatelessWidget {
                               notice.won
                                   ? Icons.celebration_outlined
                                   : notice.refunded
-                                      ? Icons.replay_circle_filled_outlined
+                                      ? Icons.undo
                                       : Icons.sports_soccer_outlined,
                               size: 56,
                               color: foreground,
@@ -342,26 +356,32 @@ class BetSettlementResultOverlay extends StatelessWidget {
                         child: Column(
                           children: [
                             _ResultButton(
-                              key: const ValueKey('bet-settlement-see-results'),
-                              label: tr(context, 'SEE RESULTS'),
+                              key: ValueKey(notice.refunded
+                                  ? 'bet-settlement-continue'
+                                  : 'bet-settlement-see-results'),
+                              label: tr(context,
+                                  notice.refunded ? 'CONTINUE' : 'SEE RESULTS'),
                               background: isDark
                                   ? AppPalette.white
                                   : const Color(0xFF090A0A),
                               foreground: isDark
                                   ? const Color(0xFF090A0A)
                                   : AppPalette.white,
-                              onTap: onSeeResults,
+                              onTap: notice.refunded ? onDismiss : onSeeResults,
                             ),
-                            const SizedBox(height: 16),
-                            _ResultButton(
-                              key: const ValueKey('bet-settlement-maybe-later'),
-                              label: tr(context, 'MAYBE LATER'),
-                              background: isDark
-                                  ? AppPalette.lightGrey
-                                  : AppPalette.lightModeDarkGrey,
-                              foreground: foreground,
-                              onTap: onDismiss,
-                            ),
+                            if (!notice.refunded) ...[
+                              const SizedBox(height: 16),
+                              _ResultButton(
+                                key: const ValueKey(
+                                    'bet-settlement-maybe-later'),
+                                label: tr(context, 'MAYBE LATER'),
+                                background: isDark
+                                    ? AppPalette.lightGrey
+                                    : AppPalette.lightModeDarkGrey,
+                                foreground: foreground,
+                                onTap: onDismiss,
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -378,7 +398,7 @@ class BetSettlementResultOverlay extends StatelessWidget {
 
   String _title(BuildContext context) {
     if (notice.refunded) {
-      return tr(context, '{points} points returned.', {
+      return tr(context, 'Your {points} points\nhave been returned', {
         'points': notice.bet.payout,
       });
     }
@@ -402,46 +422,68 @@ class _ResultDescription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final template = notice.refunded
-        ? tr(context, 'Your bet on {team} was refunded.', {
-            'team': notice.selectionName,
-          })
+    final selectionName = notice.bet.outcome == BetOutcome.draw
+        ? tr(context, 'Draw')
+        : teamNameLabel(context, notice.selectionTeamId, notice.selectionName,
+            short: true);
+    var message = notice.refunded
+        ? 'Your bet on {team} was refunded.'
         : notice.won
-            ? tr(context, 'Your bet on {team} was correct.', {
-                'team': notice.selectionName,
-              })
-            : tr(context, 'Your bet on {team} was not correct.', {
-                'team': notice.selectionName,
-              });
-    final teamStart = template.indexOf(notice.selectionName);
+            ? 'Your bet on {team} was correct.'
+            : 'Your bet on {team} was not correct.';
+    var teams = {'team': selectionName};
+    final fixture = notice.fixture;
+    // 경기의 현재 상태가 바뀌어도 환불 당시 서버가 기록한 사유를 안내해요.
+    final refundMessage = switch (notice.bet.settlementReason) {
+      'CANCELLED' => '{home_team} vs {away_team} was cancelled.',
+      'POSTPONED' => '{home_team} vs {away_team} was postponed.',
+      'WO' => '{home_team} vs {away_team} was decided by walkover.',
+      'ABANDONED' => '{home_team} vs {away_team} was abandoned.',
+      'AWARDED' =>
+        '{home_team} vs {away_team}: the result was decided by the organizer.',
+      'DELETED' =>
+        '{home_team} vs {away_team}: the match record was deleted or changed.',
+      _ => null,
+    };
+    if (notice.refunded && fixture != null && refundMessage != null) {
+      message = refundMessage;
+      teams = {
+        for (final entry in {
+          'home_team': BetOutcome.homeWin,
+          'away_team': BetOutcome.awayWin,
+        }.entries)
+          entry.key: _teamLabel(context, entry.value, fixture),
+      };
+    }
+    final template = tr(context, message);
     final lineHeight =
         Localizations.localeOf(context).languageCode == 'ko' ? 1.60 : 1.30;
     final regular = Body1.style.copyWith(
       color: foreground,
       height: lineHeight,
     );
-    if (teamStart < 0) {
-      return Text(template, textAlign: TextAlign.center, style: regular);
+    final bold = Body1_b.style.copyWith(
+      color: foreground,
+      height: lineHeight,
+    );
+    final spans = <TextSpan>[];
+    var offset = 0;
+    // 이름 자체를 검색하지 않아 두 팀의 이름이 겹쳐도 각각 강조해요.
+    for (final match in RegExp(r'\{(\w+)\}').allMatches(template)) {
+      spans.add(TextSpan(text: template.substring(offset, match.start)));
+      spans.add(TextSpan(text: teams[match[1]], style: bold));
+      offset = match.end;
     }
+    spans.add(TextSpan(text: template.substring(offset)));
     return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(text: template.substring(0, teamStart), style: regular),
-          TextSpan(
-            text: notice.selectionName,
-            style: Body1_b.style.copyWith(
-              color: foreground,
-              height: lineHeight,
-            ),
-          ),
-          TextSpan(
-            text: template.substring(teamStart + notice.selectionName.length),
-            style: regular,
-          ),
-        ],
-      ),
+      TextSpan(style: regular, children: spans),
       textAlign: TextAlign.center,
     );
+  }
+
+  String _teamLabel(BuildContext context, BetOutcome side, Fixture fixture) {
+    final team = _settlementSelection(side, fixture);
+    return teamNameLabel(context, team.teamId, team.name, short: true);
   }
 }
 
