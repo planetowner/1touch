@@ -2,12 +2,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'round_chart_window.dart';
+import 'style.dart';
 
 class RoundChartVisuals {
   static const double cardHeight = 346;
   static const double cardRadius = 20;
   static const double axisLineInset = 34;
   static const int horizontalLineCount = 12;
+
+  static Color selectionGuideColor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppPalette.white
+          : AppPalette.black;
 }
 
 double roundChartTooltipLeft({

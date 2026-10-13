@@ -893,6 +893,12 @@ void main() {
           of: viewport,
           matching: find.byKey(const ValueKey('round-chart-selection-handle')),
         );
+        final dynamic guidePainter = tester
+            .widget<CustomPaint>(find
+                .byKey(const ValueKey('analysis-current-form-selection-guide')))
+            .painter;
+        expect(guidePainter.guideColor,
+            isDark ? AppPalette.white : AppPalette.black);
         expect(
             tester.getRect(formHandle).left +
                 RoundChartSelectionHandle.tipInset,

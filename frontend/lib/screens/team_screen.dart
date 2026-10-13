@@ -507,6 +507,7 @@ class _TeamScreenState extends State<TeamScreen>
                             child: appSectionTabBar(
                               context,
                               controller: _tabController,
+                              endPadding: 10,
                               labels: [
                                 teamScreenLabel(context, 'Overview'),
                                 teamScreenLabel(context, 'Matches'),

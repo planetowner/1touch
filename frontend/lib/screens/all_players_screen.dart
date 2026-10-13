@@ -257,6 +257,7 @@ class _PlayerCardState extends State<PlayerCard>
                         appSectionTabBar(
                           context,
                           controller: _tabController,
+                          endPadding: 10,
                           foreground: gradientForeground,
                           unselectedForeground: gradientForeground,
                           labels: [

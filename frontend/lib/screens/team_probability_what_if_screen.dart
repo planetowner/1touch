@@ -3,11 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/probability_display.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/features/competition/competition_label.dart';
+import 'package:onetouch/features/team/draw_team_logos.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team_probability.dart';
 
 class TeamProbabilityWhatIfScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class TeamProbabilityWhatIfScreen extends StatefulWidget {
     required this.snapshot,
     required this.event,
     required this.teamPrimaryColor,
+    this.europeanFixture,
     this.homeTeam,
     this.awayTeam,
   });
@@ -23,6 +25,7 @@ class TeamProbabilityWhatIfScreen extends StatefulWidget {
   final TeamProbabilitySnapshot snapshot;
   final String event;
   final Color teamPrimaryColor;
+  final Fixture? europeanFixture;
   final Team? homeTeam;
   final Team? awayTeam;
 
@@ -38,9 +41,13 @@ class _TeamProbabilityWhatIfScreenState
   @override
   Widget build(BuildContext context) {
     final whatIf = widget.snapshot.whatIf;
+    final europeanFixture = widget.europeanFixture;
+    final fixture = europeanFixture == null
+        ? (whatIf == null ? null : _DisplayedFixture.fromWhatIf(whatIf.fixture))
+        : _DisplayedFixture.fromFixture(europeanFixture);
     final colors = AppColors.of(context);
     final contentTop = appBarContentTop(context);
-    if (whatIf == null) {
+    if (fixture == null) {
       return Scaffold(
         backgroundColor: mainPageBackground(context),
         body: SafeArea(
@@ -52,7 +59,7 @@ class _TeamProbabilityWhatIfScreenState
     }
 
     final currentEvent = _findEvent(widget.snapshot.cards, widget.event);
-    final focusTeam = whatIf.fixture.homeTeamId == widget.snapshot.teamId
+    final focusTeam = fixture.homeTeamId == widget.snapshot.teamId
         ? widget.homeTeam
         : widget.awayTeam;
     final focusTeamName = teamNameLabel(context, widget.snapshot.teamId,
@@ -60,7 +67,8 @@ class _TeamProbabilityWhatIfScreenState
         short: true);
     final scenarios = <_ScenarioViewData>[
       for (final outcome in const ['win', 'draw', 'loss'])
-        if (_findScenario(whatIf.scenarios, outcome) case final scenario?)
+        if (_findScenario(whatIf?.scenarios ?? const [], outcome)
+            case final scenario?)
           if (_findEvent(scenario.events, widget.event) case final event?)
             _ScenarioViewData(
               outcome: outcome,
@@ -68,6 +76,28 @@ class _TeamProbabilityWhatIfScreenState
               delta: event.probability - (currentEvent?.probability ?? 0),
             ),
     ];
+    final europeanWhatIf = widget.snapshot.europeanTitle?.whatIf;
+    // 다른 경기를 예측한 확률을 현재 경기의 결과로 보여주지 않아요.
+    final europeanScenarios = europeanFixture != null &&
+            europeanWhatIf?.fixtureId == europeanFixture.fixtureId
+        ? [
+            for (final outcome in const ['win', 'draw', 'loss'])
+              for (final scenario in europeanWhatIf!.scenarios)
+                if (scenario.outcome == outcome)
+                  _ScenarioViewData(
+                    outcome: scenario.outcome,
+                    probability: scenario.probability,
+                    delta: scenario.changePercentagePoints == null
+                        ? null
+                        : scenario.changePercentagePoints! / 100,
+                  ),
+          ]
+        : <_ScenarioViewData>[];
+    // 승리와 패배의 변화량이 모두 있을 때만 결과 안내를 보여줘요.
+    final hasEuropeanChangeExplanation = europeanScenarios
+            .any((item) => item.outcome == 'win' && item.delta != null) &&
+        europeanScenarios
+            .any((item) => item.outcome == 'loss' && item.delta != null);
 
     return Scaffold(
       key: const ValueKey('team-probability-what-if-screen'),
@@ -91,9 +121,8 @@ class _TeamProbabilityWhatIfScreenState
           ),
           const SizedBox(height: 24),
           _OutcomeCard(
-            whatIf: whatIf,
+            fixture: fixture,
             teamId: widget.snapshot.teamId,
-            competitionId: widget.snapshot.competitionId,
             homeTeam: widget.homeTeam,
             awayTeam: widget.awayTeam,
             selectedOutcome: _selectedOutcome,
@@ -101,8 +130,22 @@ class _TeamProbabilityWhatIfScreenState
           ),
           const SizedBox(height: 48),
           Text(_eventSectionTitle(context, widget.event), style: Body2_b.style),
-          const SizedBox(height: 24),
-          if (scenarios.length == 3) ...[
+          const SizedBox(height: 16),
+          if (europeanFixture != null && europeanScenarios.isNotEmpty) ...[
+            _ScenarioChart(
+              scenarios: europeanScenarios,
+              color: widget.teamPrimaryColor,
+              selectedOutcome: _selectedOutcome,
+            ),
+            if (hasEuropeanChangeExplanation) ...[
+              const SizedBox(height: 16),
+              _ScenarioExplanation(
+                teamName: focusTeamName,
+                event: widget.event,
+                scenarios: europeanScenarios,
+              ),
+            ],
+          ] else if (europeanFixture == null && scenarios.length == 3) ...[
             _ScenarioChart(
               scenarios: scenarios,
               color: widget.teamPrimaryColor,
@@ -123,7 +166,11 @@ class _TeamProbabilityWhatIfScreenState
                 boxShadow: appCardShadows(context),
               ),
               child: Text(
-                tr(context, 'What-if data is unavailable for this outcome.'),
+                tr(
+                    context,
+                    europeanFixture == null
+                        ? 'What-if data is unavailable for this outcome.'
+                        : 'Not ready yet'),
                 style: Body1.style,
               ),
             ),
@@ -131,6 +178,60 @@ class _TeamProbabilityWhatIfScreenState
       ),
     );
   }
+}
+
+class _DisplayedFixture {
+  const _DisplayedFixture({
+    required this.homeTeamId,
+    required this.awayTeamId,
+    required this.startingAt,
+    required this.roundName,
+    this.leg,
+    this.isEuropeanFinal = false,
+    this.homeName,
+    this.awayName,
+    this.homeShortName,
+    this.awayShortName,
+    this.homeLogo,
+    this.awayLogo,
+  });
+
+  factory _DisplayedFixture.fromWhatIf(TeamProbabilityWhatIfFixture fixture) =>
+      _DisplayedFixture(
+        homeTeamId: fixture.homeTeamId,
+        awayTeamId: fixture.awayTeamId,
+        startingAt: fixture.startingAt,
+        roundName: fixture.roundName,
+      );
+
+  factory _DisplayedFixture.fromFixture(Fixture fixture) => _DisplayedFixture(
+        homeTeamId: fixture.homeTeamId,
+        awayTeamId: fixture.awayTeamId,
+        startingAt: fixture.kickoff!,
+        roundName: fixture.roundOrStageName,
+        leg: fixture.leg,
+        isEuropeanFinal: fixture.competitionType == CompetitionType.europe &&
+            fixture.roundOrStageName?.trim().toLowerCase() == 'final',
+        homeName: fixture.homeTeamName,
+        awayName: fixture.awayTeamName,
+        homeShortName: fixture.homeTeamShortName,
+        awayShortName: fixture.awayTeamShortName,
+        homeLogo: fixture.homeTeamLogo,
+        awayLogo: fixture.awayTeamLogo,
+      );
+
+  final int homeTeamId;
+  final int awayTeamId;
+  final DateTime startingAt;
+  final String? roundName;
+  final String? leg;
+  final bool isEuropeanFinal;
+  final String? homeName;
+  final String? awayName;
+  final String? homeShortName;
+  final String? awayShortName;
+  final String? homeLogo;
+  final String? awayLogo;
 }
 
 class _WhatIfAppBar extends StatelessWidget {
@@ -149,8 +250,12 @@ class _WhatIfAppBar extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: IconButton(
               key: const ValueKey('what-if-back-button'),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+              style: IconButton.styleFrom(
+                padding: EdgeInsets.zero,
+                fixedSize: const Size(32, 32),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                alignment: Alignment.centerLeft,
+              ),
               onPressed: onBack,
               icon: const Icon(Icons.arrow_back_ios_new, size: 24),
             ),
@@ -178,18 +283,16 @@ class _WhatIfAppBar extends StatelessWidget {
 
 class _OutcomeCard extends StatelessWidget {
   const _OutcomeCard({
-    required this.whatIf,
+    required this.fixture,
     required this.teamId,
-    required this.competitionId,
     required this.homeTeam,
     required this.awayTeam,
     required this.selectedOutcome,
     required this.onSelected,
   });
 
-  final TeamProbabilityWhatIf whatIf;
+  final _DisplayedFixture fixture;
   final int teamId;
-  final int competitionId;
   final Team? homeTeam;
   final Team? awayTeam;
   final String? selectedOutcome;
@@ -197,8 +300,10 @@ class _OutcomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fixture = whatIf.fixture;
     final colors = AppColors.of(context);
+    final outcomes = fixture.isEuropeanFinal
+        ? const ['win', 'loss']
+        : const ['win', 'draw', 'loss'];
     return Container(
       key: const ValueKey('what-if-outcome-card'),
       padding: const EdgeInsets.all(16),
@@ -213,19 +318,27 @@ class _OutcomeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                  child: _TeamIdentity(team: homeTeam, id: fixture.homeTeamId)),
+                  child: _TeamIdentity(
+                      team: homeTeam,
+                      id: fixture.homeTeamId,
+                      fallbackName: fixture.homeName,
+                      fallbackLogo: fixture.homeLogo)),
               const SizedBox(width: 12),
               SizedBox(
                 width: 112,
                 child: _FixtureTime(
-                  competitionId: competitionId,
                   roundName: fixture.roundName,
+                  leg: fixture.leg,
                   startingAt: fixture.startingAt,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                  child: _TeamIdentity(team: awayTeam, id: fixture.awayTeamId)),
+                  child: _TeamIdentity(
+                      team: awayTeam,
+                      id: fixture.awayTeamId,
+                      fallbackName: fixture.awayName,
+                      fallbackLogo: fixture.awayLogo)),
             ],
           ),
           const SizedBox(height: 24),
@@ -242,16 +355,17 @@ class _OutcomeCard extends StatelessWidget {
               },
               child: Column(
                 children: [
-                  for (var index = 0; index < 3; index++) ...[
+                  for (var index = 0; index < outcomes.length; index++) ...[
                     _OutcomeOption(
-                      outcome: const ['win', 'draw', 'loss'][index],
+                      outcome: outcomes[index],
                       teamId: teamId,
                       fixture: fixture,
                       homeTeam: homeTeam,
                       awayTeam: awayTeam,
                       onTap: onSelected,
                     ),
-                    if (index < 2) Divider(height: 1, color: colors.divider),
+                    if (index < outcomes.length - 1)
+                      Divider(height: 1, color: colors.divider),
                   ],
                 ],
               ),
@@ -264,24 +378,37 @@ class _OutcomeCard extends StatelessWidget {
 }
 
 class _TeamIdentity extends StatelessWidget {
-  const _TeamIdentity({required this.team, required this.id});
+  const _TeamIdentity({
+    required this.team,
+    required this.id,
+    this.fallbackName,
+    this.fallbackLogo,
+  });
 
   final Team? team;
   final int id;
+  final String? fallbackName;
+  final String? fallbackLogo;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _TeamLogo(url: team?.imagePath, size: 72),
+        _TeamLogo(url: team?.imagePath ?? fallbackLogo, size: 72),
         const SizedBox(height: 8),
-        Text(
-          teamNameLabel(context, id, team?.displayName ?? 'Team $id',
-              short: true),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: Body1.style,
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 82),
+          child: Text(
+            key: ValueKey('what-if-team-name-$id'),
+            teamNameLabel(
+                context, id, team?.displayName ?? fallbackName ?? 'Team $id',
+                short: true),
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: Body1.style,
+          ),
         ),
       ],
     );
@@ -290,28 +417,35 @@ class _TeamIdentity extends StatelessWidget {
 
 class _FixtureTime extends StatelessWidget {
   const _FixtureTime(
-      {required this.competitionId,
-      required this.roundName,
-      required this.startingAt});
+      {required this.roundName, required this.leg, required this.startingAt});
 
-  final int competitionId;
   final String? roundName;
+  final String? leg;
   final DateTime startingAt;
 
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context);
+    final roundLabel = formatRoundLabel(roundName: roundName, locale: locale);
+    final parts = leg?.trim().split('/');
+    final legNumber = parts?.length == 2 ? int.tryParse(parts![0]) : null;
+    final totalLegs = parts?.length == 2 ? int.tryParse(parts![1]) : null;
+    // 단판 경기는 차전을 숨기고, 두 경기로 나뉘면 단계 아래에 따로 표시해요.
+    final legLabel = legNumber != null && totalLegs != null
+        ? totalLegs <= 1
+            ? null
+            : locale.languageCode == 'en'
+                ? '${legNumber == 1 ? '1st' : legNumber == 2 ? '2nd' : '${legNumber}th'} Leg'
+                : tr(context, '{leg} Leg', {'leg': legNumber})
+        : leg?.trim().isNotEmpty == true
+            ? leg!.trim()
+            : null;
     return Column(
       children: [
-        CompetitionLabel(
-          competitionId: competitionId,
-          label: competitionRoundLabel(context,
-              competitionId: competitionId,
-              roundName: roundName,
-              abbreviateEuropeanCompetitions: true),
-          textAlign: TextAlign.center,
-          style: Body1.style,
-        ),
+        if (roundLabel != null)
+          Text(roundLabel, textAlign: TextAlign.center, style: Body1.style),
+        if (legLabel != null)
+          Text(legLabel, textAlign: TextAlign.center, style: Body1.style),
         const SizedBox(height: 8),
         SizedBox(
             width: 48, child: Divider(color: AppColors.of(context).divider)),
@@ -338,7 +472,7 @@ class _OutcomeOption extends StatelessWidget {
 
   final String outcome;
   final int teamId;
-  final TeamProbabilityWhatIfFixture fixture;
+  final _DisplayedFixture fixture;
   final Team? homeTeam;
   final Team? awayTeam;
   final ValueChanged<String> onTap;
@@ -354,12 +488,21 @@ class _OutcomeOption extends StatelessWidget {
     final selectedTeamId = (outcome == 'win') == isHomeTeam
         ? fixture.homeTeamId
         : fixture.awayTeamId;
+    final selectedIsHome = selectedTeamId == fixture.homeTeamId;
+    final selectedName = selectedIsHome
+        ? (fixture.homeShortName ?? fixture.homeName)
+        : (fixture.awayShortName ?? fixture.awayName);
+    final selectedLogo = selectedIsHome ? fixture.homeLogo : fixture.awayLogo;
     final label = outcome == 'draw'
         ? teamScreenLabel(context, 'Draw')
         : tr(context, '{team} Win', {
             'team': selectedTeam?.shortCode ??
-                teamNameLabel(context, selectedTeamId,
-                    selectedTeam?.displayName ?? tr(context, 'Team'),
+                teamNameLabel(
+                    context,
+                    selectedTeamId,
+                    selectedTeam?.displayName ??
+                        selectedName ??
+                        tr(context, 'Team'),
                     short: true),
           });
     return InkWell(
@@ -375,6 +518,9 @@ class _OutcomeOption extends StatelessWidget {
               homeTeam: homeTeam,
               awayTeam: awayTeam,
               selectedTeam: selectedTeam,
+              selectedLogo: selectedLogo,
+              homeLogo: fixture.homeLogo,
+              awayLogo: fixture.awayLogo,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -398,30 +544,31 @@ class _OutcomeLogo extends StatelessWidget {
     required this.homeTeam,
     required this.awayTeam,
     required this.selectedTeam,
+    this.selectedLogo,
+    this.homeLogo,
+    this.awayLogo,
   });
 
   final String outcome;
   final Team? homeTeam;
   final Team? awayTeam;
   final Team? selectedTeam;
+  final String? selectedLogo;
+  final String? homeLogo;
+  final String? awayLogo;
 
   @override
   Widget build(BuildContext context) {
     if (outcome != 'draw') {
-      return _TeamLogo(url: selectedTeam?.imagePath, size: 48);
+      return _TeamLogo(url: selectedTeam?.imagePath ?? selectedLogo, size: 48);
     }
     return SizedBox(
       width: 48,
       height: 48,
-      child: Stack(
-        children: [
-          Align(
-              alignment: Alignment.topLeft,
-              child: _TeamLogo(url: homeTeam?.imagePath, size: 32)),
-          Align(
-              alignment: Alignment.bottomRight,
-              child: _TeamLogo(url: awayTeam?.imagePath, size: 32)),
-        ],
+      child: DrawTeamLogos(
+        keyPrefix: 'what-if-draw',
+        homeLogo: _TeamLogo(url: homeTeam?.imagePath ?? homeLogo, size: 36),
+        awayLogo: _TeamLogo(url: awayTeam?.imagePath ?? awayLogo, size: 36),
       ),
     );
   }
@@ -461,8 +608,8 @@ class _ScenarioViewData {
   });
 
   final String outcome;
-  final double probability;
-  final double delta;
+  final double? probability;
+  final double? delta;
 }
 
 class _ScenarioChart extends StatelessWidget {
@@ -478,9 +625,9 @@ class _ScenarioChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 세 시나리오 중 가장 높은 확률을 막대 높이 100%로 삼아 상대 높이를 비교해요.
+    // 유효한 시나리오 중 가장 높은 확률을 막대 높이 100%로 삼아요.
     final maxProbability = scenarios
-        .map((item) => item.probability)
+        .map((item) => item.probability ?? 0)
         .fold<double>(
             0, (previous, value) => value > previous ? value : previous);
     final colors = AppColors.of(context);
@@ -501,9 +648,10 @@ class _ScenarioChart extends StatelessWidget {
             Expanded(
               child: _ScenarioBar(
                 data: scenarios[index],
-                heightFactor: maxProbability == 0
-                    ? 0
-                    : scenarios[index].probability / maxProbability,
+                heightFactor:
+                    maxProbability == 0 || scenarios[index].probability == null
+                        ? 0
+                        : scenarios[index].probability! / maxProbability,
                 color: color.withValues(
                   alpha: selectedOutcome == null
                       ? 1 - index * .25
@@ -533,50 +681,84 @@ class _ScenarioBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final positive = data.delta >= 0;
+    final positive = (data.delta ?? 0) >= 0;
+    final value = data.probability == null
+        ? '–'
+        : '${(data.probability! * 100).round()}%';
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text('${(data.probability * 100).round()}%', style: Body1.style),
-        const SizedBox(height: 8),
         Expanded(
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: FractionallySizedBox(
-              // 0%도 막대 위치가 보이도록 최소 높이를 4%로 둬요.
-              heightFactor: heightFactor.clamp(.04, 1),
-              widthFactor: 1,
-              child: DecoratedBox(
-                key: ValueKey('what-if-scenario-bar-${data.outcome}'),
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(4)),
-                ),
-              ),
-            ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              if (data.probability == null) {
+                return Align(
+                  alignment: Alignment.topCenter,
+                  child: Text(value, style: Body1.style),
+                );
+              }
+              final valueHeight = (TextPainter(
+                text: TextSpan(text: value, style: Body1.style),
+                textDirection: Directionality.of(context),
+                textScaler: MediaQuery.textScalerOf(context),
+                maxLines: 1,
+              )..layout(maxWidth: constraints.maxWidth))
+                  .height;
+              final availableBarHeight = constraints.maxHeight > valueHeight + 8
+                  ? constraints.maxHeight - valueHeight - 8
+                  : 0.0;
+              // 숫자는 막대 높이와 함께 움직이고, 둘 사이는 항상 8px로 둬요.
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    value,
+                    key: ValueKey('what-if-scenario-value-${data.outcome}'),
+                    style: Body1.style,
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    // 0%도 막대 위치가 보이도록 최소 높이를 4%로 둬요.
+                    height: availableBarHeight * heightFactor.clamp(.04, 1),
+                    width: double.infinity,
+                    child: DecoratedBox(
+                      key: ValueKey('what-if-scenario-bar-${data.outcome}'),
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(4)),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
         const SizedBox(height: 12),
         Text(tr(context, _outcomeLabelKey(data.outcome)),
             textAlign: TextAlign.center, style: Body2_b.style),
         const SizedBox(height: 4),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                positive ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                size: 24,
-                color: positive
-                    ? const Color(0xFF3DDC97)
-                    : const Color(0xFFFF5964),
-              ),
-              Text('${(data.delta.abs() * 100).round()}%', style: Body2.style),
-            ],
+        if (data.delta == null)
+          Text('–', style: Body2.style)
+        else
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  positive ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                  size: 24,
+                  color: positive
+                      ? const Color(0xFF3DDC97)
+                      : const Color(0xFFFF5964),
+                ),
+                Text('${(data.delta!.abs() * 100).round()}%',
+                    style: Body2.style),
+              ],
+            ),
           ),
-        ),
       ],
     );
   }
@@ -605,6 +787,7 @@ class _ScenarioExplanation extends StatelessWidget {
     }
     final probabilityKey = switch (event) {
       'league_winner' => 'title probability',
+      'ucl_winner' || 'uel_winner' || 'uecl_winner' => 'title probability',
       'top_4' || 'top_four' => 'TOP 4 PROBABILITY',
       'direct_relegation' => 'RELEGATION PROBABILITY',
       'relegation_playoff' => 'relegation playoff probability',
@@ -613,6 +796,7 @@ class _ScenarioExplanation extends StatelessWidget {
     var probability = tr(context, probabilityKey).replaceAll('\n', ' ');
     if (locale.languageCode == 'en') probability = probability.toLowerCase();
     return Row(
+      key: const ValueKey('what-if-scenario-explanation'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(Icons.info_outline,
@@ -626,8 +810,8 @@ class _ScenarioExplanation extends StatelessWidget {
               {
                 'team': subject,
                 'probability': probability,
-                'winChange': _probabilityChangeLabel(context, win.delta),
-                'lossChange': _probabilityChangeLabel(context, loss.delta),
+                'winChange': _probabilityChangeLabel(context, win.delta!),
+                'lossChange': _probabilityChangeLabel(context, loss.delta!),
               },
             ),
             style: Body1.style
@@ -680,6 +864,9 @@ String _outcomeLabelKey(String outcome) => switch (outcome) {
 String _eventSectionTitle(BuildContext context, String event) =>
     switch (event) {
       'league_winner' => tr(context, 'LEAGUE WINNER PROBABILITY'),
+      'ucl_winner' => tr(context, 'UCL WINNER PROBABILITY'),
+      'uel_winner' => tr(context, 'UEL WINNER PROBABILITY'),
+      'uecl_winner' => tr(context, 'UECL WINNER PROBABILITY'),
       'top_four' || 'top_4' => tr(context, 'TOP 4 PROBABILITY'),
       'direct_relegation' => tr(context, 'RELEGATION PROBABILITY'),
       'relegation_playoff' =>

@@ -47,6 +47,55 @@ TeamProbabilitySnapshot teamProbabilityFromApiResponse(
     ],
     pendingOutcomes: response.pendingOutcomes,
     whatIf: _whatIfFromResponse(response.whatIf),
+    europeanTitle: response.europeanTitle == null
+        ? null
+        : EuropeanTitleProbability(
+            history: [
+              for (final point in response.europeanTitle!.history)
+                EuropeanStageHistoryPoint(
+                  stageKey: point.stageKey,
+                  probability: point.probability,
+                ),
+            ],
+            stageProbabilities: [
+              for (final stage in response.europeanTitle!.stageProbabilities)
+                EuropeanStageProbability(
+                  stageKey: stage.stageKey,
+                  probability: stage.probability,
+                  resolution: ProbabilityResolution.values.byName(
+                    stage.resolution,
+                  ),
+                ),
+            ],
+            titleContenders: TitleContenders(
+              rank: response.europeanTitle!.titleContenders.rank,
+              rankChange: response.europeanTitle!.titleContenders.rankChange,
+              teams: [
+                for (final team
+                    in response.europeanTitle!.titleContenders.teams)
+                  TitleContender(
+                    teamId: team.teamId,
+                    teamName: team.teamName,
+                    rank: team.rank,
+                    probability: team.probability,
+                  ),
+              ],
+            ),
+            whatIf: response.europeanTitle!.whatIf == null
+                ? null
+                : EuropeanWhatIf(
+                    fixtureId: response.europeanTitle!.whatIf!.fixtureId,
+                    scenarios: [
+                      for (final scenario
+                          in response.europeanTitle!.whatIf!.scenarios)
+                        EuropeanWhatIfScenario(
+                          outcome: scenario.outcome,
+                          probability: scenario.probability,
+                          changePercentagePoints: scenario.changePp,
+                        ),
+                    ],
+                  ),
+          ),
   );
 }
 

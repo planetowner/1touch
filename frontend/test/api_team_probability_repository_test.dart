@@ -10,6 +10,100 @@ import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/models/team_probability.dart';
 
 void main() {
+  test('maps European stage history, progression, and title contenders',
+      () async {
+    final body = _probabilityJson();
+    body['european_title'] = {
+      'history': [
+        {
+          'stage_key': 'league',
+          'as_of': '2026-09-18T00:00:00Z',
+          'probability': 0.18,
+        },
+        {
+          'stage_key': 'round16',
+          'as_of': '2026-10-18T00:00:00Z',
+          'probability': 0.32,
+        },
+      ],
+      'stage_probabilities': [
+        {
+          'stage_key': 'winner',
+          'probability': 0.32,
+          'resolution': 'unresolved',
+        },
+        {
+          'stage_key': 'playoff',
+          'probability': 1.0,
+          'resolution': 'certain',
+        },
+      ],
+      'title_contenders': {
+        'rank': 2,
+        'rank_change': 1,
+        'teams': [
+          {
+            'team_id': 90,
+            'team_name': 'Real Madrid',
+            'rank': 1,
+            'probability': 0.5,
+          },
+          {
+            'team_id': 83,
+            'team_name': 'FC Barcelona',
+            'rank': 2,
+            'probability': 0.32,
+          },
+        ],
+      },
+      'what_if': {
+        'fixture': {'fixture_id': 91},
+        'scenarios': [
+          {
+            'outcome': 'win',
+            'probability': 0.62,
+            'change_pp': 30.0,
+            'simulations': 100
+          },
+          {
+            'outcome': 'draw',
+            'probability': null,
+            'change_pp': null,
+            'simulations': 0
+          },
+          {
+            'outcome': 'loss',
+            'probability': 0.12,
+            'change_pp': -20.0,
+            'simulations': 100
+          },
+        ],
+      },
+    };
+    final repository = ApiTeamProbabilityRepository(
+      api: ApiClient(
+        client: MockClient((_) async => http.Response(jsonEncode(body), 200)),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {},
+      ),
+    );
+
+    final european = (await repository.loadForTeam(83)).europeanTitle!;
+    expect(
+        european.history.map((point) => point.stageKey), ['league', 'round16']);
+    expect(european.history.last.probability, 0.32);
+    expect(european.stageProbabilities.last.resolution,
+        ProbabilityResolution.certain);
+    expect(european.titleContenders.rank, 2);
+    expect(european.titleContenders.rankChange, 1);
+    expect(european.titleContenders.teams.last.teamId, 83);
+    expect(european.titleContenders.teams.last.probability, 0.32);
+    expect(european.whatIf?.fixtureId, 91);
+    expect(european.whatIf?.scenarios.first.probability, 0.62);
+    expect(european.whatIf?.scenarios.first.changePercentagePoints, 30);
+    expect(european.whatIf?.scenarios[1].probability, isNull);
+  });
+
   test('maps resolution metadata and treats old sample endpoints as unresolved',
       () async {
     for (final resolution in ProbabilityResolution.values) {

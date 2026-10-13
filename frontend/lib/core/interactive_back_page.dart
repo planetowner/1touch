@@ -42,6 +42,37 @@ class InteractiveBackTransition extends StatefulWidget {
       _InteractiveBackTransitionState();
 }
 
+/// 차트처럼 가로로 조작하는 영역에서 시작한 포인터는 페이지 뒤로가기에 쓰지 않아요.
+class InteractiveBackGestureExclusion extends StatelessWidget {
+  const InteractiveBackGestureExclusion({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final excludePointer = context
+        .dependOnInheritedWidgetOfExactType<_InteractiveBackExclusionScope>()
+        ?.excludePointer;
+    return Listener(
+      behavior: HitTestBehavior.opaque,
+      onPointerDown: (event) => excludePointer?.call(event.pointer),
+      child: child,
+    );
+  }
+}
+
+class _InteractiveBackExclusionScope extends InheritedWidget {
+  const _InteractiveBackExclusionScope({
+    required this.excludePointer,
+    required super.child,
+  });
+
+  final void Function(int) excludePointer;
+
+  @override
+  bool updateShouldNotify(_InteractiveBackExclusionScope oldWidget) => false;
+}
+
 class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
   static const _returnDuration = Duration(milliseconds: 190);
   static const _closeDuration = Duration(milliseconds: 170);
@@ -49,6 +80,7 @@ class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
   static const _flingVelocity = 700.0;
   final ValueNotifier<bool> _dragActive = ValueNotifier(false);
   final Set<ScrollHoldController> _scrollHolds = {};
+  final Set<int> _excludedPointers = {};
   int? _pointer;
   Offset? _pointerStart;
   Offset? _pointerLast;
@@ -58,7 +90,8 @@ class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
   bool _settling = false;
 
   void _onPointerDown(PointerDownEvent event) {
-    if (_pointer != null ||
+    if (_excludedPointers.contains(event.pointer) ||
+        _pointer != null ||
         _dragging ||
         _settling ||
         !widget.route.isCurrent ||
@@ -133,6 +166,7 @@ class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
   }
 
   void _onPointerEnd(int pointer, {bool cancelled = false}) {
+    _excludedPointers.remove(pointer);
     if (_pointer != pointer) return;
     final velocity = _velocityTracker?.getVelocity().pixelsPerSecond.dx ?? 0;
     _pointer = null;
@@ -199,7 +233,10 @@ class _InteractiveBackTransitionState extends State<InteractiveBackTransition> {
             _onPointerEnd(event.pointer, cancelled: true),
         child: ValueListenableBuilder<bool>(
           valueListenable: _dragActive,
-          child: widget.child,
+          child: _InteractiveBackExclusionScope(
+            excludePointer: (pointer) => _excludedPointers.add(pointer),
+            child: widget.child,
+          ),
           builder: (context, locked, child) {
             final behavior = ScrollConfiguration.of(context);
             return ScrollConfiguration(

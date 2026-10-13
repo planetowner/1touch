@@ -8,6 +8,8 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/round_chart_visuals.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/team_comparison_colors.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
@@ -15,6 +17,8 @@ import 'package:onetouch/models/player.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
+
+const _fallbackPerformanceColor = Color(0xFF5C92FF);
 
 class AnalysisTab extends StatefulWidget {
   const AnalysisTab({super.key, this.player, this.playerId});
@@ -71,9 +75,25 @@ class _AnalysisTabState extends State<AnalysisTab> {
         const SizedBox(height: 48),
         PlayerSection(
           title: tr(context, 'PERFORMANCE'),
-          child: PlayerPerformanceChart(points: analysis.performance),
+          child: PlayerPerformanceChart(
+            points: analysis.performance,
+            color: _performanceColor(detail),
+          ),
         ),
       ];
+
+  Color _performanceColor(PlayerDetail detail) {
+    final teamId = detail.profile.teamId;
+    final repositoryColor =
+        teamId == null ? null : teamRepository.findById(teamId)?.primaryColor;
+    // 상세 팀 팔레트가 없으면 저장된 팀 색, 선수 색, 기존 그래프 색 순서로 사용해요.
+    return TeamComparisonColorResolver.paletteFor(
+      teamName: detail.profile.teamName,
+      primaryFallback: repositoryColor == null
+          ? (widget.player?.teamColor.first ?? _fallbackPerformanceColor)
+          : Color(repositoryColor),
+    ).primary;
+  }
 
   Widget _topStats(PlayerAnalysis analysis) {
     final showPer90 = analysis.topStats
@@ -341,16 +361,20 @@ class _AnalysisTabState extends State<AnalysisTab> {
 }
 
 class PlayerPerformanceChart extends StatefulWidget {
-  const PlayerPerformanceChart({super.key, required this.points});
+  const PlayerPerformanceChart({
+    super.key,
+    required this.points,
+    this.color = _fallbackPerformanceColor,
+  });
 
   final List<PlayerPerformancePoint> points;
+  final Color color;
 
   @override
   State<PlayerPerformanceChart> createState() => _PlayerPerformanceChartState();
 }
 
 class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
-  static const _lineColor = Color(0xFF5C92FF);
   static const _gridLineCount = 11;
   static const _minRating = 0.0;
   static const _maxRating = 10.0;
@@ -510,7 +534,7 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                                                             point.rating!,
                                                           ),
                                                 ],
-                                                color: _lineColor,
+                                                color: widget.color,
                                                 barWidth: 2,
                                                 isCurved: false,
                                                 dotData: const FlDotData(
@@ -534,7 +558,9 @@ class _PlayerPerformanceChartState extends State<PlayerPerformanceChart> {
                                               rating: selectedPoint.rating!,
                                               minRating: _minRating,
                                               maxRating: _maxRating,
-                                              color: _lineColor,
+                                              color: widget.color,
+                                              guideColor: RoundChartVisuals
+                                                  .selectionGuideColor(context),
                                             ),
                                           ),
                                         ),
@@ -734,6 +760,7 @@ class _PlayerPerformanceSelectionPainter extends CustomPainter {
     required this.minRating,
     required this.maxRating,
     required this.color,
+    required this.guideColor,
   });
 
   final int round;
@@ -742,12 +769,13 @@ class _PlayerPerformanceSelectionPainter extends CustomPainter {
   final double minRating;
   final double maxRating;
   final Color color;
+  final Color guideColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     final x = size.width * roundWindow.fractionOf(round);
     final guidePaint = Paint()
-      ..color = color.withValues(alpha: 0.9)
+      ..color = guideColor
       ..strokeWidth = 1;
     const dashHeight = 8.0;
     const dashGap = 7.0;
@@ -771,5 +799,6 @@ class _PlayerPerformanceSelectionPainter extends CustomPainter {
       oldDelegate.rating != rating ||
       oldDelegate.minRating != minRating ||
       oldDelegate.maxRating != maxRating ||
+      oldDelegate.guideColor != guideColor ||
       oldDelegate.color != color;
 }

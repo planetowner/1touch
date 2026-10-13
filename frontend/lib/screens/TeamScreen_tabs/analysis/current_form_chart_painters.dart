@@ -10,6 +10,7 @@ class _CurrentFormSelectionPainter extends CustomPainter {
     required this.comparisonPoints,
     required this.currentColor,
     required this.comparisonColor,
+    required this.guideColor,
   });
 
   final int round;
@@ -20,12 +21,13 @@ class _CurrentFormSelectionPainter extends CustomPainter {
   final double? comparisonPoints;
   final Color currentColor;
   final Color comparisonColor;
+  final Color guideColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     final x = size.width * roundWindow.fractionOf(round);
     final guidePaint = Paint()
-      ..color = comparisonColor.withValues(alpha: 0.9)
+      ..color = guideColor
       ..strokeWidth = 1;
 
     const dashHeight = 8.0;
@@ -66,5 +68,6 @@ class _CurrentFormSelectionPainter extends CustomPainter {
       oldDelegate.currentPoints != currentPoints ||
       oldDelegate.comparisonPoints != comparisonPoints ||
       oldDelegate.currentColor != currentColor ||
-      oldDelegate.comparisonColor != comparisonColor;
+      oldDelegate.comparisonColor != comparisonColor ||
+      oldDelegate.guideColor != guideColor;
 }

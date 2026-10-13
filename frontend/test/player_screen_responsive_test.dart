@@ -796,6 +796,7 @@ void main() {
       expect(tabBar.labelColor, testCase.foreground);
       expect(tabBar.unselectedLabelColor, testCase.foreground);
       expect(indicator.borderSide.color, testCase.foreground);
+      expect(tabBar.padding, const EdgeInsets.only(left: 18, right: 10));
       expect(
         tester
             .getSize(
@@ -1671,6 +1672,7 @@ void main() {
     expect(lineChart.data.minY, 0);
     expect(lineChart.data.maxY, 10);
     expect(lineChart.data.lineBarsData.single.dotData.show, isFalse);
+    expect(lineChart.data.lineBarsData.single.color, const Color(0xFFE7151D));
     expect(
       find.byKey(const ValueKey('player-performance-grid')),
       findsOneWidget,
@@ -1731,6 +1733,8 @@ void main() {
         )
         .painter;
     expect(selectionPainter.round, 6);
+    expect(selectionPainter.color, const Color(0xFFE7151D));
+    expect(selectionPainter.guideColor, app_style.AppPalette.white);
     final tooltipRect = tester.getRect(
       find.byKey(const ValueKey('player-performance-tooltip')),
     );
@@ -1809,6 +1813,15 @@ void main() {
       await tester.pumpAndSettle();
 
       final tooltip = find.byKey(const ValueKey('player-performance-tooltip'));
+      final lineChart = tester.widget<LineChart>(find.byType(LineChart));
+      final dynamic guidePainter = tester
+          .widget<CustomPaint>(
+            find.byKey(const ValueKey('player-performance-selector-line')),
+          )
+          .painter;
+      expect(lineChart.data.lineBarsData.single.color, const Color(0xFF5C92FF));
+      expect(guidePainter.color, const Color(0xFF5C92FF));
+      expect(guidePainter.guideColor, app_style.AppPalette.black);
       final rating = find.descendant(
         of: tooltip,
         matching: find.text('Rating 9.9'),

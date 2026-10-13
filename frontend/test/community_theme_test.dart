@@ -139,7 +139,7 @@ void main() {
         (tabBar.indicator! as UnderlineTabIndicator).borderSide.width,
         1,
       );
-      expect(tabBar.padding, const EdgeInsets.only(left: 18));
+      expect(tabBar.padding, const EdgeInsets.only(left: 18, right: 10));
       final teamHeaderPadding = tester.widget<Padding>(
         find.byKey(const ValueKey('community-team-header-padding')),
       );

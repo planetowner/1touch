@@ -247,6 +247,175 @@ class ApiTeamProbabilityWhatIfResponse {
   }
 }
 
+class ApiEuropeanStageHistoryPointResponse {
+  const ApiEuropeanStageHistoryPointResponse({
+    required this.stageKey,
+    required this.probability,
+  });
+
+  final String stageKey;
+  final double probability;
+
+  factory ApiEuropeanStageHistoryPointResponse.fromJson(
+      Map<String, dynamic> json) {
+    return ApiEuropeanStageHistoryPointResponse(
+      stageKey: api_json.requiredString(json, 'stage_key'),
+      probability: _requiredProbability(json),
+    );
+  }
+}
+
+class ApiEuropeanStageProbabilityResponse {
+  const ApiEuropeanStageProbabilityResponse({
+    required this.stageKey,
+    required this.probability,
+    required this.resolution,
+  });
+
+  final String stageKey;
+  final double probability;
+  final String resolution;
+
+  factory ApiEuropeanStageProbabilityResponse.fromJson(
+      Map<String, dynamic> json) {
+    return ApiEuropeanStageProbabilityResponse(
+      stageKey: api_json.requiredString(json, 'stage_key'),
+      probability: _requiredProbability(json),
+      resolution: api_json.requiredString(json, 'resolution'),
+    );
+  }
+}
+
+class ApiTitleContenderResponse {
+  const ApiTitleContenderResponse({
+    required this.teamId,
+    required this.teamName,
+    required this.rank,
+    required this.probability,
+  });
+
+  final int teamId;
+  final String teamName;
+  final int rank;
+  final double probability;
+
+  factory ApiTitleContenderResponse.fromJson(Map<String, dynamic> json) {
+    return ApiTitleContenderResponse(
+      teamId: api_json.requiredInt(json, 'team_id'),
+      teamName: api_json.requiredString(json, 'team_name'),
+      rank: api_json.requiredInt(json, 'rank'),
+      probability: _requiredProbability(json),
+    );
+  }
+}
+
+class ApiTitleContendersResponse {
+  ApiTitleContendersResponse({
+    required this.rank,
+    required this.rankChange,
+    required List<ApiTitleContenderResponse> teams,
+  }) : teams = List.unmodifiable(teams);
+
+  final int rank;
+  final int? rankChange;
+  final List<ApiTitleContenderResponse> teams;
+
+  factory ApiTitleContendersResponse.fromJson(Map<String, dynamic> json) {
+    final change = json['rank_change'];
+    if (change != null && change is! int) {
+      throw const FormatException(
+          'Expected nullable integer field "rank_change".');
+    }
+    return ApiTitleContendersResponse(
+      rank: api_json.requiredInt(json, 'rank'),
+      rankChange: change as int?,
+      teams: _requiredObjectList(json, 'teams')
+          .map(ApiTitleContenderResponse.fromJson)
+          .toList(growable: false),
+    );
+  }
+}
+
+class ApiEuropeanWhatIfScenarioResponse {
+  const ApiEuropeanWhatIfScenarioResponse({
+    required this.outcome,
+    required this.probability,
+    required this.changePp,
+  });
+
+  final String outcome;
+  final double? probability;
+  final double? changePp;
+
+  factory ApiEuropeanWhatIfScenarioResponse.fromJson(
+      Map<String, dynamic> json) {
+    final outcome = api_json.requiredString(json, 'outcome');
+    if (!const {'win', 'draw', 'loss'}.contains(outcome)) {
+      throw const FormatException('Expected a win, draw, or loss outcome.');
+    }
+    final probability = _requiredNullableDouble(json, 'probability');
+    if (probability != null && (probability < 0 || probability > 1)) {
+      throw const FormatException('Expected probability between 0 and 1.');
+    }
+    return ApiEuropeanWhatIfScenarioResponse(
+      outcome: outcome,
+      probability: probability,
+      changePp: _requiredNullableDouble(json, 'change_pp'),
+    );
+  }
+}
+
+class ApiEuropeanWhatIfResponse {
+  ApiEuropeanWhatIfResponse({
+    required this.fixtureId,
+    required List<ApiEuropeanWhatIfScenarioResponse> scenarios,
+  }) : scenarios = List.unmodifiable(scenarios);
+
+  final int fixtureId;
+  final List<ApiEuropeanWhatIfScenarioResponse> scenarios;
+
+  factory ApiEuropeanWhatIfResponse.fromJson(Map<String, dynamic> json) =>
+      ApiEuropeanWhatIfResponse(
+        fixtureId: api_json.requiredInt(
+            _requiredObject(json, 'fixture'), 'fixture_id'),
+        scenarios: _requiredObjectList(json, 'scenarios')
+            .map(ApiEuropeanWhatIfScenarioResponse.fromJson)
+            .toList(growable: false),
+      );
+}
+
+class ApiEuropeanTitleResponse {
+  ApiEuropeanTitleResponse({
+    required List<ApiEuropeanStageHistoryPointResponse> history,
+    required List<ApiEuropeanStageProbabilityResponse> stageProbabilities,
+    required this.titleContenders,
+    required this.whatIf,
+  })  : history = List.unmodifiable(history),
+        stageProbabilities = List.unmodifiable(stageProbabilities);
+
+  final List<ApiEuropeanStageHistoryPointResponse> history;
+  final List<ApiEuropeanStageProbabilityResponse> stageProbabilities;
+  final ApiTitleContendersResponse titleContenders;
+  final ApiEuropeanWhatIfResponse? whatIf;
+
+  factory ApiEuropeanTitleResponse.fromJson(Map<String, dynamic> json) {
+    return ApiEuropeanTitleResponse(
+      history: _requiredObjectList(json, 'history')
+          .map(ApiEuropeanStageHistoryPointResponse.fromJson)
+          .toList(growable: false),
+      stageProbabilities: _requiredObjectList(json, 'stage_probabilities')
+          .map(ApiEuropeanStageProbabilityResponse.fromJson)
+          .toList(growable: false),
+      titleContenders: ApiTitleContendersResponse.fromJson(
+          _requiredObject(json, 'title_contenders')),
+      whatIf: _optionalObject(json, 'what_if') == null
+          ? null
+          : ApiEuropeanWhatIfResponse.fromJson(
+              _optionalObject(json, 'what_if')!),
+    );
+  }
+}
+
 class ApiTeamProbabilityResponse {
   ApiTeamProbabilityResponse({
     required this.teamId,
@@ -263,6 +432,7 @@ class ApiTeamProbabilityResponse {
     required List<ApiTeamProbabilityHistoryPointResponse> history,
     required List<String> pendingOutcomes,
     required this.whatIf,
+    required this.europeanTitle,
   })  : positions = List.unmodifiable(positions),
         cards = List.unmodifiable(cards),
         history = List.unmodifiable(history),
@@ -282,6 +452,7 @@ class ApiTeamProbabilityResponse {
   final List<ApiTeamProbabilityHistoryPointResponse> history;
   final List<String> pendingOutcomes;
   final ApiTeamProbabilityWhatIfResponse? whatIf;
+  final ApiEuropeanTitleResponse? europeanTitle;
 
   factory ApiTeamProbabilityResponse.fromJson(Map<String, dynamic> json) {
     return ApiTeamProbabilityResponse(
@@ -313,8 +484,22 @@ class ApiTeamProbabilityResponse {
           : ApiTeamProbabilityWhatIfResponse.fromJson(
               _optionalObject(json, 'what_if')!,
             ),
+      europeanTitle: _optionalObject(json, 'european_title') == null
+          ? null
+          : ApiEuropeanTitleResponse.fromJson(
+              _optionalObject(json, 'european_title')!,
+            ),
     );
   }
+}
+
+double _requiredProbability(Map<String, dynamic> json) {
+  final value = api_json.requiredDouble(json, 'probability');
+  if (value < 0 || value > 1) {
+    throw const FormatException(
+        'Expected "probability" to be between 0 and 1.');
+  }
+  return value;
 }
 
 Map<String, dynamic>? _optionalObject(

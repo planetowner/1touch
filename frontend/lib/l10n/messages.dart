@@ -1142,8 +1142,20 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Probability": (ko: "예상 확률", ja: "予測確率", zh: "预测概率"),
   "PROBABILITY HISTORY": (ko: "예상 확률 변화", ja: "予測確率の推移", zh: "预测概率走势"),
+  "Tracks how your team's chance of winning the competition changes over time. Winning a first leg raises it, and once the tie is decided, that probability carries into the next round":
+      (
+    ko: "시간에 따라 팀의 대회 우승 확률이 어떻게 변하는지 보여줘요. 1차전에서 승리하면 확률이 올라가고, 승부가 결정되면 그 확률이 다음 라운드로 이어져요.",
+    ja: "チームの大会優勝確率が時間とともにどう変わるかを示します。第1戦に勝つと確率が上がり、対戦の決着後はその確率が次のラウンドに引き継がれます。",
+    zh: "展示球队的赛事夺冠概率如何随时间变化。首回合获胜会提高概率，两回合胜负确定后，该概率会延续到下一轮。"
+  ),
+  "HOW FAR WILL THEY GO": (ko: "어디까지 진출할까", ja: "どこまで進むか", zh: "能走多远"),
+  "WINNER": (ko: "우승", ja: "優勝", zh: "冠军"),
+  "FINAL": (ko: "결승", ja: "決勝", zh: "决赛"),
+  "PO": (ko: "PO", ja: "PO", zh: "附加赛"),
   "PROJECTED FINAL POSITION": (ko: "예상 최종 순위", ja: "予想最終順位", zh: "预计最终排名"),
   "PROJECTED POINTS": (ko: "예상 승점", ja: "予想勝点", zh: "预计积分"),
+  "TITLE CONTENDERS": (ko: "우승 경쟁 팀", ja: "優勝候補", zh: "夺冠热门"),
+  "in odds to win title": (ko: "우승 확률 순위", ja: "優勝確率の順位", zh: "夺冠概率排名"),
   "Likely range of {range} pts": (
     ko: "예상 승점은 {range}점이에요",
     ja: "予想勝点は{range}点です",
@@ -1159,6 +1171,9 @@ const appMessages = <String, MessageTranslations>{
   "Round": (ko: "라운드", ja: "ラウンド", zh: "轮次"),
   "Next match": (ko: "다음 경기", ja: "次の試合", zh: "下一场比赛"),
   "LEAGUE WINNER PROBABILITY": (ko: "리그 우승 확률", ja: "リーグ優勝確率", zh: "联赛夺冠概率"),
+  "UCL WINNER PROBABILITY": (ko: "UCL 우승 확률", ja: "UCL優勝確率", zh: "UCL夺冠概率"),
+  "UEL WINNER PROBABILITY": (ko: "UEL 우승 확률", ja: "UEL優勝確率", zh: "UEL夺冠概率"),
+  "UECL WINNER PROBABILITY": (ko: "UECL 우승 확률", ja: "UECL優勝確率", zh: "UECL夺冠概率"),
   "TOP 4 PROBABILITY": (ko: "TOP 4 확률", ja: "トップ4確率", zh: "前四概率"),
   "RELEGATION PROBABILITY": (ko: "강등 확률", ja: "降格確率", zh: "降级概率"),
   "If win": (ko: "이기면", ja: "勝利時", zh: "获胜时"),
@@ -2071,6 +2086,7 @@ const appMessages = <String, MessageTranslations>{
   "Match interrupted": (ko: "잠시 경기 중단", ja: "試合が一時中断しています", zh: "比赛暂时中断"),
   "VAR check": (ko: "VAR 확인 중", ja: "VAR確認中", zh: "VAR检查中"),
   "Coming soon": (ko: "아직 준비 중이에요", ja: "準備中です", zh: "敬请期待"),
+  "Not ready yet": (ko: "아직 준비가 안됐어요", ja: "まだ準備できていません", zh: "尚未准备好"),
   "SWITCH": (ko: "선택한 팀으로 바꾸기", ja: "切り替え", zh: "切换"),
   "Ad": (ko: "광고", ja: "広告", zh: "广告"),
   "Ad privacy choices": (ko: "광고 개인정보 설정", ja: "広告のプライバシー設定", zh: "广告隐私设置"),

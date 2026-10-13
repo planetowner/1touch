@@ -427,6 +427,41 @@ void main() {
     expect(find.text('32.0'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('relegation playoff card does not open detail at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final repository = _StubProbabilityRepository(initial: {
+        83: _snapshot(cards: [
+          _card('league_winner'),
+          _card('relegation_playoff'),
+        ]),
+      });
+      await tester.pumpWidget(_app(repository: repository));
+      await tester.pump();
+
+      final playoff = find
+          .byKey(const ValueKey('team-probability-card-relegation_playoff'));
+      expect(tester.widget<InkWell>(playoff).onTap, isNull);
+      await tester.tap(playoff);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('team-probability-detail-screen')),
+          findsNothing);
+
+      final league =
+          find.byKey(const ValueKey('team-probability-card-league_winner'));
+      expect(tester.widget<InkWell>(league).onTap, isNotNull);
+      await tester.tap(league);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('team-probability-detail-screen')),
+          findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
 
 Widget _app({

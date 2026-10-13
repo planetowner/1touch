@@ -611,6 +611,9 @@ class _CurrentFormSectionState extends State<CurrentFormSection>
                                         .toDouble(),
                                     currentColor: teamPrimaryColor,
                                     comparisonColor: comparisonColor,
+                                    guideColor:
+                                        RoundChartVisuals.selectionGuideColor(
+                                            context),
                                   ),
                                 ),
                               ),

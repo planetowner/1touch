@@ -152,6 +152,98 @@ class TeamProbabilityWhatIf {
 }
 
 @immutable
+class EuropeanStageHistoryPoint {
+  const EuropeanStageHistoryPoint({
+    required this.stageKey,
+    required this.probability,
+  });
+
+  final String stageKey;
+  final double probability;
+}
+
+@immutable
+class EuropeanStageProbability {
+  const EuropeanStageProbability({
+    required this.stageKey,
+    required this.probability,
+    required this.resolution,
+  });
+
+  final String stageKey;
+  final double probability;
+  final ProbabilityResolution resolution;
+}
+
+@immutable
+class TitleContender {
+  const TitleContender({
+    required this.teamId,
+    required this.teamName,
+    required this.rank,
+    required this.probability,
+  });
+
+  final int teamId;
+  final String teamName;
+  final int rank;
+  final double probability;
+}
+
+@immutable
+class TitleContenders {
+  TitleContenders({
+    required this.rank,
+    required this.rankChange,
+    required List<TitleContender> teams,
+  }) : teams = List.unmodifiable(teams);
+
+  final int rank;
+  final int? rankChange;
+  final List<TitleContender> teams;
+}
+
+@immutable
+class EuropeanWhatIfScenario {
+  const EuropeanWhatIfScenario({
+    required this.outcome,
+    required this.probability,
+    required this.changePercentagePoints,
+  });
+
+  final String outcome;
+  final double? probability;
+  final double? changePercentagePoints;
+}
+
+@immutable
+class EuropeanWhatIf {
+  EuropeanWhatIf({
+    required this.fixtureId,
+    required List<EuropeanWhatIfScenario> scenarios,
+  }) : scenarios = List.unmodifiable(scenarios);
+
+  final int fixtureId;
+  final List<EuropeanWhatIfScenario> scenarios;
+}
+
+@immutable
+class EuropeanTitleProbability {
+  EuropeanTitleProbability({
+    required List<EuropeanStageHistoryPoint> history,
+    required List<EuropeanStageProbability> stageProbabilities,
+    required this.titleContenders,
+    this.whatIf,
+  })  : history = List.unmodifiable(history),
+        stageProbabilities = List.unmodifiable(stageProbabilities);
+
+  final List<EuropeanStageHistoryPoint> history;
+  final List<EuropeanStageProbability> stageProbabilities;
+  final TitleContenders titleContenders;
+  final EuropeanWhatIf? whatIf;
+}
+
+@immutable
 class TeamProbabilitySnapshot {
   TeamProbabilitySnapshot({
     required this.teamId,
@@ -168,6 +260,7 @@ class TeamProbabilitySnapshot {
     required List<TeamProbabilityHistoryPoint> history,
     required List<String> pendingOutcomes,
     this.whatIf,
+    this.europeanTitle,
   })  : positions = List.unmodifiable(positions),
         cards = List.unmodifiable(cards),
         history = List.unmodifiable(history),
@@ -187,4 +280,5 @@ class TeamProbabilitySnapshot {
   final List<TeamProbabilityHistoryPoint> history;
   final List<String> pendingOutcomes;
   final TeamProbabilityWhatIf? whatIf;
+  final EuropeanTitleProbability? europeanTitle;
 }

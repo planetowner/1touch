@@ -185,6 +185,7 @@ class CommunityPostTabHeader extends StatelessWidget {
         appSectionTabBar(
           context,
           controller: controller,
+          endPadding: 10,
           onTap: onTap,
           labels: [
             for (final category in categories)

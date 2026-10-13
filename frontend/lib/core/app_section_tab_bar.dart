@@ -12,6 +12,7 @@ PreferredSize appSectionTabBar(
   ValueChanged<int>? onTap,
   Color? foreground,
   Color? unselectedForeground,
+  double endPadding = 0,
 }) {
   final color = foreground ?? Theme.of(context).colorScheme.onSurface;
   final labelStyle = Localizations.localeOf(context).languageCode == 'en'
@@ -38,7 +39,7 @@ PreferredSize appSectionTabBar(
         dividerColor: Colors.transparent,
         // 탭 안쪽 8과 바깥쪽 6을 합쳐 글자 사이 28을 유지해요.
         // 첫 글자는 화면 여백 24 + 탭 안쪽 여백 8에서 시작해요.
-        padding: const EdgeInsets.only(left: 18),
+        padding: EdgeInsets.only(left: 18, right: endPadding),
         labelPadding: const EdgeInsets.symmetric(horizontal: 6),
         indicator: UnderlineTabIndicator(
           borderSide: BorderSide(color: color, width: 1),

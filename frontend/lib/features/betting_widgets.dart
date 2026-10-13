@@ -11,6 +11,7 @@ import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
+import 'package:onetouch/features/team/draw_team_logos.dart';
 import 'package:onetouch/models/betting.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -393,9 +394,16 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                                       leading: SizedBox.square(
                                         dimension: 48,
                                         child: option.outcome == BetOutcome.draw
-                                            ? _DrawTeamLogos(
-                                                homeTeam: widget.homeTeam,
-                                                awayTeam: widget.awayTeam,
+                                            ? DrawTeamLogos(
+                                                keyPrefix: 'match-betting-draw',
+                                                homeLogo: _TeamLogo(
+                                                  team: widget.homeTeam,
+                                                  size: 36,
+                                                ),
+                                                awayLogo: _TeamLogo(
+                                                  team: widget.awayTeam,
+                                                  size: 36,
+                                                ),
                                               )
                                             : Center(
                                                 child: _TeamLogo(
@@ -1421,101 +1429,6 @@ class _TeamLogo extends StatelessWidget {
                 teamLogoFallback(team.teamId, size: size),
           );
   }
-}
-
-class _DrawTeamLogos extends StatelessWidget {
-  const _DrawTeamLogos({required this.homeTeam, required this.awayTeam});
-
-  final Team homeTeam;
-  final Team awayTeam;
-
-  @override
-  Widget build(BuildContext context) => Stack(
-        children: [
-          Positioned.fill(
-            child: ClipPath(
-              key: const ValueKey('match-betting-draw-home-clip'),
-              clipper: const _DrawLogoHalfClipper(keepTopLeft: true),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: SizedBox.square(
-                  key: const ValueKey('match-betting-draw-home-logo'),
-                  dimension: 36,
-                  child: _TeamLogo(team: homeTeam, size: 36),
-                ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: ClipPath(
-              key: const ValueKey('match-betting-draw-away-clip'),
-              clipper: const _DrawLogoHalfClipper(keepTopLeft: false),
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: SizedBox.square(
-                  key: const ValueKey('match-betting-draw-away-logo'),
-                  dimension: 36,
-                  child: _TeamLogo(team: awayTeam, size: 36),
-                ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: IgnorePointer(
-              child: CustomPaint(
-                painter: _DrawLogoDividerPainter(
-                  Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-}
-
-class _DrawLogoHalfClipper extends CustomClipper<Path> {
-  const _DrawLogoHalfClipper({required this.keepTopLeft});
-
-  final bool keepTopLeft;
-
-  @override
-  Path getClip(Size size) => keepTopLeft
-      ? (Path()
-        ..moveTo(0, 0)
-        ..lineTo(size.width, 0)
-        ..lineTo(0, size.height)
-        ..close())
-      : (Path()
-        ..moveTo(size.width, 0)
-        ..lineTo(size.width, size.height)
-        ..lineTo(0, size.height)
-        ..close());
-
-  @override
-  bool shouldReclip(_DrawLogoHalfClipper oldClipper) =>
-      keepTopLeft != oldClipper.keepTopLeft;
-}
-
-class _DrawLogoDividerPainter extends CustomPainter {
-  const _DrawLogoDividerPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawLine(
-      Offset(0, size.height),
-      Offset(size.width, 0),
-      Paint()
-        ..color = color
-        ..strokeWidth = 1.5
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_DrawLogoDividerPainter oldDelegate) =>
-      color != oldDelegate.color;
 }
 
 class _LabeledTeam extends StatelessWidget {

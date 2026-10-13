@@ -190,16 +190,18 @@ class _ProbabilitySectionState extends State<ProbabilitySection>
         child: InkWell(
           key: ValueKey('team-probability-card-${card.event}'),
           borderRadius: BorderRadius.circular(24),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => TeamProbabilityScreen(
-                teamId: snapshot.teamId,
-                event: card.event,
-                initialSnapshot: snapshot,
-                repository: widget.repository,
-              ),
-            ),
-          ),
+          onTap: card.event == 'relegation_playoff'
+              ? null
+              : () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => TeamProbabilityScreen(
+                        teamId: snapshot.teamId,
+                        event: card.event,
+                        initialSnapshot: snapshot,
+                        repository: widget.repository,
+                      ),
+                    ),
+                  ),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
