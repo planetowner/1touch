@@ -19,14 +19,16 @@ def my_follow_counts(user_id: int = Depends(get_user_id)):
 
 @router.get("/users/me/followers")
 def my_followers(limit: int = Query(default=50, ge=1, le=100), offset: int = Query(default=0, ge=0),
+                 sort: community_profiles_repo.FollowSort = community_profiles_repo.FollowSort.newest,
                  user_id: int = Depends(get_user_id)):
-    return community_profiles_repo.list_follows(user_id, user_id, 'followers', limit, offset)
+    return community_profiles_repo.list_follows(user_id, user_id, 'followers', limit, offset, sort)
 
 
 @router.get("/users/me/following")
 def my_following(limit: int = Query(default=50, ge=1, le=100), offset: int = Query(default=0, ge=0),
+                 sort: community_profiles_repo.FollowSort = community_profiles_repo.FollowSort.newest,
                  user_id: int = Depends(get_user_id)):
-    return community_profiles_repo.list_follows(user_id, user_id, 'following', limit, offset)
+    return community_profiles_repo.list_follows(user_id, user_id, 'following', limit, offset, sort)
 
 
 @router.get("/users/me/activity/counts")
@@ -129,14 +131,18 @@ def community_follow_counts(author_id: int = Path(gt=0), user_id: int = Depends(
 
 @router.get("/users/{author_id}/followers")
 def community_followers(author_id: int = Path(gt=0), limit: int = Query(default=50, ge=1, le=100),
-                        offset: int = Query(default=0, ge=0), user_id: int = Depends(get_user_id)):
-    return community_profiles_repo.list_follows(user_id, author_id, 'followers', limit, offset)
+                        offset: int = Query(default=0, ge=0),
+                        sort: community_profiles_repo.FollowSort = community_profiles_repo.FollowSort.newest,
+                        user_id: int = Depends(get_user_id)):
+    return community_profiles_repo.list_follows(user_id, author_id, 'followers', limit, offset, sort)
 
 
 @router.get("/users/{author_id}/following")
 def community_following(author_id: int = Path(gt=0), limit: int = Query(default=50, ge=1, le=100),
-                        offset: int = Query(default=0, ge=0), user_id: int = Depends(get_user_id)):
-    return community_profiles_repo.list_follows(user_id, author_id, 'following', limit, offset)
+                        offset: int = Query(default=0, ge=0),
+                        sort: community_profiles_repo.FollowSort = community_profiles_repo.FollowSort.newest,
+                        user_id: int = Depends(get_user_id)):
+    return community_profiles_repo.list_follows(user_id, author_id, 'following', limit, offset, sort)
 
 
 @router.get("/users/{author_id}/activity/counts")
