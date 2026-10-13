@@ -93,6 +93,7 @@ class _CommunityAttachmentViewerState extends State<CommunityAttachmentViewer> {
         showAppSnackBar(
           context,
           tr(context, 'Saved to photos.'),
+          duration: const Duration(seconds: 5),
           contentPadding: const EdgeInsets.fromLTRB(24, 8, 54, 8),
           alignCloseIconWithText: true,
         );

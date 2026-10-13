@@ -476,7 +476,7 @@ class _CommunityState extends State<Community>
     if (!mounted) return;
     if (created == false) {
       showAppSnackBar(context, tr(context, 'Saved as draft.'),
-          replaceCurrent: true);
+          duration: const Duration(seconds: 5), replaceCurrent: true);
     } else if (created == true) {
       await _loadPosts();
     }

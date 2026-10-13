@@ -196,23 +196,30 @@ void main() {
     });
   }
 
-  for (final duration in [null, const Duration(seconds: 2)]) {
-    testWidgets('snack bar expires with duration $duration', (tester) async {
-      final context = await _pumpHost(tester);
-      if (duration == null) {
-        showAppSnackBar(context, 'Saved.');
-      } else {
-        showAppSnackBar(context, 'Saved.', duration: duration);
-      }
-      await tester.pumpAndSettle();
-      await tester.pump((duration ?? const Duration(seconds: 4)) -
-          const Duration(seconds: 1));
-      expect(find.text('Saved.'), findsOneWidget);
-      await tester.pump(const Duration(seconds: 1));
-      await tester.pumpAndSettle();
-      expect(find.byType(SnackBar), findsNothing);
-    });
-  }
+  testWidgets('default snack bar remains until its close button is tapped',
+      (tester) async {
+    final context = await _pumpHost(tester);
+    showAppSnackBar(context, 'Notice.');
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 10));
+    expect(find.text('Notice.'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('app-rule-notice-close')));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('completion snack bar expires after five seconds',
+      (tester) async {
+    final context = await _pumpHost(tester);
+    showAppSnackBar(context, 'Saved as draft.',
+        duration: const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 4));
+    expect(find.text('Saved as draft.'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+  });
 
   testWidgets('closing a snack bar shows the next queued message',
       (tester) async {
@@ -239,13 +246,13 @@ void main() {
     expect(find.text('Second message.'), findsOneWidget);
   });
 
-  testWidgets('swiping down dismisses the snack bar', (tester) async {
+  testWidgets('swiping down keeps the snack bar visible', (tester) async {
     final context = await _pumpHost(tester);
     showAppSnackBar(context, 'Saved.');
     await tester.pumpAndSettle();
     await tester.fling(find.byType(SnackBar), const Offset(0, 60), 1000);
     await tester.pumpAndSettle();
-    expect(find.byType(SnackBar), findsNothing);
+    expect(find.byType(SnackBar), findsOneWidget);
   });
 }
 

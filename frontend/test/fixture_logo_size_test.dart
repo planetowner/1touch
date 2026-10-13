@@ -378,6 +378,47 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('narrow competition logo avoids first-frame overflow at $size',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 66.4,
+              child: DefaultTextStyle(
+                style: TextStyle(fontSize: 14, letterSpacing: 12),
+                child: CompetitionLabel(
+                  competitionId: 8,
+                  label: 'Cup',
+                  style: TextStyle(fontSize: 14),
+                  gap: 4,
+                  scrollOnOverflow: true,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ));
+      expect(tester.takeException(), isNull);
+
+      await tester.pump();
+      final scrolling = find.descendant(
+        of: find.byType(CompetitionLabel),
+        matching: find.byType(Scrollable),
+      );
+      expect(scrolling, findsOneWidget);
+      expect(tester.state<ScrollableState>(scrolling).position.maxScrollExtent,
+          greaterThan(0));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('a fitting competition label stays centered and still',
       (tester) async {
     await tester.pumpWidget(const MaterialApp(

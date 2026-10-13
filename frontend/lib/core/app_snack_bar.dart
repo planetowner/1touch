@@ -4,7 +4,8 @@ import 'package:onetouch/core/app_rule_notice.dart';
 void showAppSnackBar(
   BuildContext context,
   String message, {
-  Duration duration = const Duration(seconds: 4),
+  // SnackBar는 무기한 표시를 지원하지 않으므로 기본 배너에 충분히 긴 시간을 사용해요.
+  Duration duration = const Duration(days: 3650),
   bool replaceCurrent = false,
   EdgeInsets? contentPadding,
   bool alignCloseIconWithText = false,
@@ -17,6 +18,7 @@ void showAppSnackBar(
       padding: EdgeInsets.zero,
       elevation: 0,
       behavior: SnackBarBehavior.fixed,
+      dismissDirection: DismissDirection.none,
       shape: const RoundedRectangleBorder(),
       // 기기에서 전달한 하단 안전 여백은 기본 SnackBar가 자동으로 적용해요.
       backgroundColor: AppRuleNotice.backgroundColorOf(context),

@@ -449,8 +449,7 @@ class _TeamNotificationDetailPageState
                         await _save(applyToAll: true);
                         if (!context.mounted) return;
                         showAppSnackBar(context,
-                            tr(context, 'Applied to all following teams'),
-                            duration: const Duration(seconds: 2));
+                            tr(context, 'Applied to all following teams'));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
@@ -703,8 +702,7 @@ class _PlayerNotificationDetailPageState
                         await _save(applyToAll: true);
                         if (!context.mounted) return;
                         showAppSnackBar(context,
-                            tr(context, 'Applied to all following players'),
-                            duration: const Duration(seconds: 2));
+                            tr(context, 'Applied to all following players'));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor:

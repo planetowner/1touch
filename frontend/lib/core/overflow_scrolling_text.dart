@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 /// Keeps text at its normal size and scrolls only when it exceeds its slot.
 class OverflowScrollingText extends StatefulWidget {
@@ -148,7 +149,15 @@ class _OverflowScrollingTextState extends State<OverflowScrollingText> {
                     widthFactor: 1,
                     heightFactor: 1,
                     alignment: widget.alignment,
-                    child: content,
+                    // 첫 프레임의 폭 추정이 빗나가도 로고 Row의 레이아웃은 넘치지 않게 해요.
+                    child: widget.leading == null
+                        ? content
+                        : OverflowBox(
+                            maxWidth: double.infinity,
+                            fit: OverflowBoxFit.deferToChild,
+                            alignment: widget.alignment,
+                            child: content,
+                          ),
                   ),
           );
         },

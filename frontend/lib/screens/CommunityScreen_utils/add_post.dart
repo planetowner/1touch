@@ -294,6 +294,10 @@ class _AddPostState extends State<AddPost> {
                                                                   noticeContext,
                                                                   tr(noticeContext,
                                                                       'Deleted draft.'),
+                                                                  duration:
+                                                                      const Duration(
+                                                                          seconds:
+                                                                              5),
                                                                   replaceCurrent:
                                                                       true);
                                                             } catch (_) {
