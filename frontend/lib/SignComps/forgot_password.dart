@@ -214,7 +214,7 @@ class _ResetCodeSheetState extends State<_ResetCodeSheet> {
                   LengthLimitingTextInputFormatter(6)
                 ],
                 onSubmitted: (_) => _continue(),
-                decoration: _inputDecoration(context, '204182'),
+                decoration: _inputDecoration(context, null),
               ),
               const SizedBox(height: 12),
               Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
