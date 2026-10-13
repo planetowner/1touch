@@ -13,7 +13,7 @@ class AppCloseHeader extends StatelessWidget {
     this.closeKey,
     this.buttonSize = 48,
     this.iconSize = 24,
-    this.closeAlignment = Alignment.center,
+    this.closeAlignment = Alignment.centerRight,
   });
 
   final VoidCallback onClose;
@@ -51,6 +51,7 @@ class AppCloseHeader extends StatelessWidget {
               padding: closeAlignment == Alignment.center
                   ? EdgeInsets.all((buttonSize - iconSize) / 2)
                   : EdgeInsets.zero,
+              // 터치 영역을 유지하면서 아이콘 끝을 바깥 패딩에 맞춰요.
               alignment: closeAlignment,
               constraints: BoxConstraints.tightFor(
                 width: buttonSize,

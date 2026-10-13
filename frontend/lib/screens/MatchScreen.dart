@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/app_header.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';
@@ -271,45 +272,25 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
             ),
             centerTitle: true,
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 24),
-                child: Row(
-                  children: [
-                    IconButton(
-                      key: const ValueKey('match-search-button'),
-                      tooltip: tr(context, 'Search'),
-                      onPressed: () => context.push('/search'),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 32,
-                        height: 32,
-                      ),
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      icon: Icon(Icons.search, size: 28, color: foreground),
+              AppHeaderActions(
+                children: [
+                  AppHeaderIconButton(
+                    key: const ValueKey('match-search-button'),
+                    tooltip: tr(context, 'Search'),
+                    onPressed: () => context.push('/search'),
+                    icon: Icon(Icons.search, size: 28, color: foreground),
+                  ),
+                  AppHeaderIconButton(
+                    key: const ValueKey('match-profile-button'),
+                    tooltip: tr(context, 'Profile'),
+                    onPressed: () => context.push('/profile'),
+                    icon: Icon(
+                      Icons.account_circle_outlined,
+                      size: 28,
+                      color: foreground,
                     ),
-                    const SizedBox(width: 16),
-                    IconButton(
-                      key: const ValueKey('match-profile-button'),
-                      tooltip: tr(context, 'Profile'),
-                      onPressed: () => context.push('/profile'),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 32,
-                        height: 32,
-                      ),
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      icon: Icon(
-                        Icons.account_circle_outlined,
-                        size: 28,
-                        color: foreground,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),

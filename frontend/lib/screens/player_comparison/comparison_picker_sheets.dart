@@ -139,28 +139,16 @@ class _ComparisonPlayerPickerSheetState
             const SizedBox(height: 26),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Center(
-                    child: Text(
-                      tr(context, 'Select Player {slot}',
-                          {'slot': widget.slot}),
-                      style: TextStyle(
-                        color: foreground,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.close, color: foreground, size: 28),
-                    ),
-                  ),
-                ],
+              child: AppCloseHeader(
+                title:
+                    tr(context, 'Select Player {slot}', {'slot': widget.slot}),
+                titleStyle: TextStyle(
+                  color: foreground,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+                iconSize: 28,
+                onClose: () => Navigator.pop(context),
               ),
             ),
             const SizedBox(height: 18),
@@ -366,30 +354,16 @@ class _ComparisonSeasonPickerSheet extends StatelessWidget {
             const SizedBox(height: 26),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Center(
-                    child: Text(
-                      playerNameLabel(
-                          context, player.playerId, player.profile.name),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: foreground,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.close, color: foreground, size: 28),
-                    ),
-                  ),
-                ],
+              child: AppCloseHeader(
+                title: playerNameLabel(
+                    context, player.playerId, player.profile.name),
+                titleStyle: TextStyle(
+                  color: foreground,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+                iconSize: 28,
+                onClose: () => Navigator.pop(context),
               ),
             ),
             const SizedBox(height: 18),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_close_header.dart';
 import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:onetouch/SignComps/auth_widgets.dart';
@@ -157,21 +158,12 @@ class _ResetCodeSheetState extends State<_ResetCodeSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(alignment: Alignment.center, children: [
-              SizedBox(
-                width: double.infinity,
-                child: Text(trTitle(context, 'Reset password'),
-                    textAlign: TextAlign.center, style: Body2_b.style),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  key: const ValueKey('close-reset-sheet'),
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
-                ),
-              ),
-            ]),
+            AppCloseHeader(
+              title: trTitle(context, 'Reset password'),
+              titleStyle: Body2_b.style,
+              closeKey: const ValueKey('close-reset-sheet'),
+              onClose: () => Navigator.of(context).pop(),
+            ),
             const SizedBox(height: 24),
             if (!hasCode) ...[
               Text(tr(context, 'Email'), style: Body2.style),
