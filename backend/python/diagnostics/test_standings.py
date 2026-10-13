@@ -47,25 +47,29 @@ class StandingsLoaderTests(unittest.TestCase):
         with sqlite3.connect(':memory:') as db:
             db.executescript('''
                 CREATE TABLE stages(stage_id,season_id,stage_type_id);
-                CREATE TABLE fixtures(stage_id,home_team_id,away_team_id);
+                CREATE TABLE rounds(round_id,stage_id,name);
+                CREATE TABLE fixtures(stage_id,round_id,state_id,home_team_id,away_team_id);
                 CREATE TABLE team_seasons(season_id,team_id);
-                CREATE TABLE standings(season_id,team_id,previous_position);
                 INSERT INTO stages VALUES(1,100,223),(2,100,225);
-                INSERT INTO fixtures VALUES(1,10,20),(2,10,99);
+                INSERT INTO rounds VALUES(101,1,'1'),(102,1,'2'),(103,2,'9');
+                INSERT INTO fixtures VALUES(1,102,5,10,20),(2,103,5,10,99);
                 INSERT INTO team_seasons VALUES(100,10),(100,20),(100,99);
-                INSERT INTO standings VALUES(100,10,2),(100,20,1);
             ''')
             source = [dict(season_id=100, participant_id=team, position=rank,
                            points=11, details=_details())
                       for rank, team in enumerate((10, 20), 1)]
             def fetch(sql, params):
                 return db.execute(sql.replace('%s', '?'), params).fetchall()
+            db.create_function('REGEXP', 2, lambda pattern, value: bool(re.search(pattern, value)))
             with patch.object(loader, 'SportmonksClient') as client, \
                  patch.object(loader, 'fetch_all', side_effect=fetch), \
                  patch.object(loader, '_replace_season') as save:
                 client.return_value.get_standings_for_season.return_value = source
                 client.return_value.get_live_standings.return_value = source
-                client.return_value.get_rounds_for_season.return_value = []
+                client.return_value.get_standings_for_round.return_value = [
+                    {'participant_id': 10, 'position': 2},
+                    {'participant_id': 20, 'position': 1},
+                ]
                 for competition in (2, 5, 2286):
                     for live in (False, True):
                         with self.subTest(competition=competition, live=live):
@@ -81,13 +85,6 @@ class StandingsLoaderTests(unittest.TestCase):
 
     def test_builds_only_stored_columns_from_observed_fields(self) -> None:
         client = Mock()
-        client.get_rounds_for_season.return_value = [
-            {"id": 101, "name": "1", "finished": True},
-            {"id": 102, "name": "2", "finished": True},
-        ]
-        client.get_standings_for_round.return_value = [
-            {"participant_id": 10, "position": 4}
-        ]
         client.get_standings_for_season.return_value = [
             {
                 "participant_id": 10,
@@ -97,20 +94,93 @@ class StandingsLoaderTests(unittest.TestCase):
             }
         ]
 
-        self.assertEqual(
-            _standing_rows(client, 28083),
-            [(28083, 10, 2, 4, 3, 2, 1, 10, 4, 11)],
-        )
-        client.get_standings_for_round.assert_called_once_with(101)
+        with patch.object(loader, '_previous_positions', return_value={10: 4}):
+            self.assertEqual(
+                _standing_rows(client, 28083),
+                [(28083, 10, 2, 4, 3, 2, 1, 10, 4, 11)],
+            )
 
-    def test_one_finished_round_has_no_previous_position(self) -> None:
-        client = Mock()
-        client.get_rounds_for_season.return_value = [
-            {"id": 101, "name": "1", "finished": True}
+
+class StandingsRoundTests(unittest.TestCase):
+    def setUp(self):
+        self.db = sqlite3.connect(':memory:')
+        self.addCleanup(self.db.close)
+        self.db.create_function('REGEXP', 2, lambda pattern, value: bool(re.search(pattern, value)))
+        self.db.executescript('''
+            CREATE TABLE stages(stage_id,season_id,stage_type_id);
+            CREATE TABLE rounds(round_id,stage_id,name);
+            CREATE TABLE fixtures(stage_id,round_id,state_id,starting_at);
+            CREATE TABLE team_seasons(season_id,team_id);
+            INSERT INTO stages VALUES(1,28083,223),(2,28083,225),(3,28083,224),(4,99,223);
+            INSERT INTO team_seasons VALUES(28083,6),(28083,10);
+        ''')
+        self.db.executemany('INSERT INTO rounds VALUES(?,1,?)', [(n, str(n)) for n in range(1, 39)])
+        fetch = patch.object(loader, 'fetch_all', side_effect=lambda sql, params:
+                             self.db.execute(sql.replace('%s', '?'), params).fetchall())
+        fetch.start()
+        self.addCleanup(fetch.stop)
+        self.client = Mock()
+        self.client.get_standings_for_round.return_value = [
+            {'participant_id': 6, 'position': 20}, {'participant_id': 10, 'position': 19},
         ]
 
-        self.assertEqual(_previous_positions(client, 28321), {})
-        client.get_standings_for_round.assert_not_called()
+    def test_official_and_live_sixth_round_compare_with_fifth_despite_stale_metadata(self):
+        # 실제 오류처럼 순위 응답은 5라운드 ID를 담고, 6라운드 완료 표시도 늦어요.
+        self.client.get_rounds_for_season.return_value = [
+            {'id': n, 'name': str(n), 'finished': n <= 5, 'is_current': n == 7}
+            for n in range(1, 8)
+        ]
+        source = [dict(season_id=28083, participant_id=team, position=position,
+                       round_id=5, points=3, details=_details())
+                  for team, position in ((6, 19), (10, 20))]
+        self.client.get_standings_for_season.return_value = source
+        self.client.get_live_standings.return_value = source
+        self.db.executescript('''
+            INSERT INTO fixtures VALUES(1,5,5,'2026-09-19'),(1,6,5,'2026-10-10'),
+                                       (1,7,1,'2026-10-17');
+        ''')
+        with patch.object(loader, 'SportmonksClient', return_value=self.client), \
+             patch.object(loader, '_replace_season') as save:
+            for live in (False, True):
+                with self.subTest(live=live):
+                    self.db.execute('UPDATE fixtures SET state_id=? WHERE round_id=6', (2 if live else 5,))
+                    loader.refresh_current_table(28083, 8, live=live, apply=False)
+                    save.assert_not_called()
+                    loader.refresh_current_table(28083, 8, live=live, apply=True)
+                    row = save.call_args.args[1][0]
+                    self.assertEqual((row[2], row[3], row[3] - row[2]), (19, 20, 1))
+                    self.assertEqual(save.call_args.kwargs['live'], live)
+                    self.client.get_standings_for_round.assert_called_with(5)
+                    save.reset_mock()
+
+    def test_first_round_or_unstarted_season_has_no_previous_position(self):
+        for state in (1, 2, 5):
+            with self.subTest(state=state):
+                self.db.execute('DELETE FROM fixtures')
+                self.db.execute('INSERT INTO fixtures VALUES(1,1,?,NULL)', (state,))
+                self.assertEqual(_previous_positions(self.client, 28083), {})
+        self.client.get_standings_for_round.assert_not_called()
+
+    def test_first_match_of_second_round_uses_first_round(self):
+        self.db.executescript('INSERT INTO fixtures VALUES(1,1,5,NULL),(1,2,2,NULL);')
+        self.assertEqual(_previous_positions(self.client, 28083), {6: 20, 10: 19})
+        self.client.get_standings_for_round.assert_called_once_with(1)
+
+    def test_round_number_ignores_future_postponed_cup_and_other_season_matches(self):
+        self.db.executescript('''
+            INSERT INTO rounds VALUES(90,2,'90'),(91,3,'91'),(92,4,'92'),(93,1,'Final');
+            INSERT INTO fixtures VALUES(1,9,5,'2026-10-01'),(1,10,5,'2026-10-05'),
+                (1,2,5,'2026-10-10'),(1,11,1,'2026-10-17'),(1,12,13,'2026-10-18'),
+                (2,90,5,'2026-10-11'),(3,91,5,'2026-10-11'),
+                (4,92,5,'2026-10-11'),(1,93,5,'2026-10-11');
+        ''')
+        self.assertEqual(_previous_positions(self.client, 28083), {6: 20, 10: 19})
+        self.client.get_standings_for_round.assert_called_once_with(9)
+
+    def test_completed_season_uses_penultimate_round(self):
+        self.db.execute('INSERT INTO fixtures VALUES(1,38,5,NULL)')
+        self.assertEqual(_previous_positions(self.client, 28083), {6: 20, 10: 19})
+        self.client.get_standings_for_round.assert_called_once_with(37)
 
 
 class StandingsRepositoryTests(unittest.TestCase):

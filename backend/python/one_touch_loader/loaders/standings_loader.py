@@ -4,6 +4,7 @@ from typing import Dict, List, Sequence, Tuple
 
 from ..core.db import fetch_all, transaction
 from ..core.cup_betting import EUROPE_COMPETITION_IDS
+from ..core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ..core.sportmonks import SportmonksClient
 
 
@@ -56,16 +57,32 @@ def _previous_positions(
     sm: SportmonksClient,
     season_id: int,
 ) -> Dict[int, int]:
-    finished_rounds = [
-        row for row in sm.get_rounds_for_season(season_id) if row["finished"]
-    ]
-    finished_rounds.sort(key=lambda row: int(row["name"]))
-
-    # 현재 분데스리가처럼 완료 라운드가 하나뿐이면 비교할 직전 순위가 없어요.
-    if len(finished_rounds) < 2:
+    states = (*COMPLETED_STATE_IDS, *LIVE_STATE_IDS)
+    placeholders = ",".join("%s" for _ in states)
+    # 공급자의 라운드 완료 표시는 늦을 수 있어요. 실제 진행·종료된 최신 라운드의 직전 순위를 써요.
+    previous_rounds = fetch_all(
+        f"""
+        SELECT previous_round.round_id
+        FROM rounds previous_round
+        JOIN (
+            SELECT r.stage_id, CAST(r.name AS UNSIGNED) AS round_number
+            FROM fixtures f
+            JOIN rounds r ON r.round_id = f.round_id
+            JOIN stages st ON st.stage_id = f.stage_id
+            WHERE st.season_id = %s AND st.stage_type_id = 223
+              AND f.state_id IN ({placeholders})
+              AND r.name REGEXP '^[0-9]+$'
+            ORDER BY round_number DESC
+            LIMIT 1
+        ) current_round ON current_round.stage_id = previous_round.stage_id
+        WHERE CAST(previous_round.name AS UNSIGNED) = current_round.round_number - 1
+        """,
+        (season_id, *states),
+    )
+    if not previous_rounds:
         return {}
 
-    previous_round_id = finished_rounds[-2]["id"]
+    previous_round_id = previous_rounds[0][0]
     return {
         row["participant_id"]: row["position"]
         for row in sm.get_standings_for_round(previous_round_id)
@@ -75,10 +92,9 @@ def _previous_positions(
 def _standing_rows(
     sm: SportmonksClient,
     season_id: int,
-    *, standings=None, previous_positions=None,
+    *, standings=None,
 ) -> List[Tuple]:
-    if previous_positions is None:
-        previous_positions = _previous_positions(sm, season_id)
+    previous_positions = _previous_positions(sm, season_id)
     rows: List[Tuple] = []
 
     for standing in sm.get_standings_for_season(season_id) if standings is None else standings:
@@ -135,9 +151,8 @@ def refresh_current_table(season_id: int, competition_id: int, *, live: bool, ap
     expected = {team for row in fetch_all(membership_sql, (season_id,)) for team in row}
     if {r['participant_id'] for r in source} != expected or len(source) != len(expected):
         raise ValueError('Standings must cover every season participant exactly once')
-    previous = dict(fetch_all('SELECT team_id,previous_position FROM standings WHERE season_id=%s',
-                              (season_id,))) if live else None
-    rows = _standing_rows(client, season_id, standings=source, previous_positions=previous)
+    # 새 라운드의 첫 경기부터 공식·라이브 표에 같은 비교 기준을 적용해요.
+    rows = _standing_rows(client, season_id, standings=source)
     if apply:
         _replace_season(season_id, rows, live=live, clear_live=clear_live)
     return {'season_id': season_id, 'live': live, 'rows': len(rows)}
