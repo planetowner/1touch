@@ -3,6 +3,7 @@ import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/app_close_header.dart';
+import 'package:onetouch/core/app_scroll_edge_fade.dart';
 import 'package:onetouch/core/debounced_search_controller.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/season_label.dart';
@@ -180,22 +181,6 @@ class FollowingPlayersEditorSheet extends StatefulWidget {
 
 class _FollowingPlayersEditorSheetState
     extends State<FollowingPlayersEditorSheet> {
-  static const _listFadeHeight = 40.0;
-  static const _listFadeGradient = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [
-      Color(0x00000000),
-      Color(0x00000000),
-      Color(0x40000000),
-      Color(0x80000000),
-      Color(0xCC000000),
-      Color(0xFF000000),
-      Color(0xFF000000),
-    ],
-    stops: [0, 0.20, 0.45, 0.70, 0.82, 0.92, 1],
-  );
-
   final _search = TextEditingController();
   late final _candidateSearch =
       DebouncedSearchController<List<PlayerCandidate>>(
@@ -203,8 +188,6 @@ class _FollowingPlayersEditorSheetState
   late final List<FollowingPlayer> _players = [...widget.players];
   PlayerCandidate? _selected;
   bool get _searching => _candidateSearch.query.isNotEmpty;
-  bool _fadeListTop = false;
-  bool _fadeListBottom = false;
   bool _changed = false;
   PlayerDetailRepository get _repository =>
       widget.repository ?? playerDetailRepository;
@@ -220,76 +203,24 @@ class _FollowingPlayersEditorSheetState
     final query = _search.text.trim();
     if (query == _candidateSearch.query) return;
     _selected = null;
-    _fadeListTop = false;
-    _fadeListBottom = false;
     _candidateSearch.updateQuery(query);
   }
 
   void _onSearchChanged() => setState(() {});
 
-  void _updateListFade(ScrollMetrics metrics) {
-    final top = metrics.extentBefore > 0.5;
-    final bottom = metrics.extentAfter > 0.5;
-    if (top == _fadeListTop && bottom == _fadeListBottom) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || (top == _fadeListTop && bottom == _fadeListBottom)) {
-        return;
-      }
-      setState(() {
-        _fadeListTop = top;
-        _fadeListBottom = bottom;
-      });
-    });
-  }
-
-  Widget _fadingList(ScrollController controller, Color divider) {
-    return NotificationListener<ScrollMetricsNotification>(
-      onNotification: (notification) {
-        _updateListFade(notification.metrics);
-        return false;
-      },
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          _updateListFade(notification.metrics);
-          return false;
-        },
-        child: ShaderMask(
-          key: ValueKey(_searching
-              ? 'following-search-top-fade'
-              : 'following-list-top-fade'),
-          blendMode: _fadeListTop ? BlendMode.dstIn : BlendMode.dst,
-          shaderCallback: (bounds) {
-            final height = bounds.height.clamp(0.0, _listFadeHeight);
-            return _listFadeGradient
-                .createShader(Rect.fromLTWH(0, 0, bounds.width, height));
-          },
-          child: ShaderMask(
-            key: ValueKey(_searching
-                ? 'following-search-bottom-fade'
-                : 'following-list-bottom-fade'),
-            blendMode: _fadeListBottom ? BlendMode.dstIn : BlendMode.dst,
-            shaderCallback: (bounds) {
-              final height = bounds.height.clamp(0.0, _listFadeHeight);
-              return LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: _listFadeGradient.colors,
-                stops: _listFadeGradient.stops,
-              ).createShader(Rect.fromLTWH(
-                0,
-                bounds.height - height,
-                bounds.width,
-                height,
-              ));
-            },
-            child: _searching
-                ? _searchResults(controller, divider)
-                : _followedPlayers(controller, divider),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _fadingList(ScrollController controller, Color divider) =>
+      AppScrollEdgeFade(
+        key: ValueKey(_search.text),
+        topKey: ValueKey(_searching
+            ? 'following-search-top-fade'
+            : 'following-list-top-fade'),
+        bottomKey: ValueKey(_searching
+            ? 'following-search-bottom-fade'
+            : 'following-list-bottom-fade'),
+        child: _searching
+            ? _searchResults(controller, divider)
+            : _followedPlayers(controller, divider),
+      );
 
   bool _contains(int id) => _players.any((player) => player.playerId == id);
 
@@ -336,31 +267,11 @@ class _FollowingPlayersEditorSheetState
                 iconSize: 28,
                 onClose: () => Navigator.pop(context)),
             const SizedBox(height: 12),
-            Container(
-              key: const ValueKey('following-players-search'),
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
-                borderRadius:
-                    BorderRadius.circular(AppSearchFieldTokens.radius),
-              ),
-              child: TextField(
-                controller: _search,
-                style: Body1.style.copyWith(color: colors.onSurface),
-                decoration: InputDecoration(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  hintText: tr(context, 'Search players to add!'),
-                  hintStyle:
-                      Body1.style.copyWith(color: appColors.mutedForeground),
-                  border: InputBorder.none,
-                  suffixIcon: _searching
-                      ? IconButton(
-                          onPressed: _search.clear,
-                          icon: Icon(Icons.close, color: colors.onSurface))
-                      : Icon(Icons.search, color: colors.onSurface),
-                ),
-              ),
+            AppEditSearchField(
+              containerKey: const ValueKey('following-players-search'),
+              controller: _search,
+              hintText: tr(context, 'Search players to add!'),
+              searching: _searching,
             ),
             Expanded(child: _fadingList(controller, divider)),
             Padding(

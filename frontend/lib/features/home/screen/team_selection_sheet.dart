@@ -100,30 +100,10 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const SizedBox(width: 48),
-              Expanded(
-                child: Text(
-                  tr(context, "Following Teams"),
-                  style: Heading5.style,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              IconButton(
-                style: IconButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  fixedSize: const Size(48, 48),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  alignment: Alignment.centerRight,
-                ),
-                icon: Icon(Icons.close, color: colorScheme.onSurface),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
+          AppCloseHeader(
+            title: tr(context, 'Following Teams'),
+            closeAlignment: Alignment.centerRight,
+            onClose: () => Navigator.of(context).pop(),
           ),
           const SizedBox(height: 16),
           Flexible(

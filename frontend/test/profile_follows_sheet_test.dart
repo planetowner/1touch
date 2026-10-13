@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/comm_pages/profile_follows_sheet.dart';
+import 'package:onetouch/core/app_rule_notice.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/profile/profile_follow_repository.dart';
 import 'package:onetouch/models/profile_follow.dart';
@@ -98,9 +99,40 @@ void main() {
       });
     }
   }
+
+  testWidgets('failed unfollow uses the shared dismissible notice',
+      (tester) async {
+    final repository = _FollowRepository()..failOnUnfollow = true;
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              builder: (context) => ProfileFollowsSheet(
+                repository: repository,
+                initialTab: ProfileFollowTab.following,
+                onChanged: () {},
+              ),
+            ),
+            child: const Text('Open'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('profile-follow-remove-3')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppRuleNotice), findsOneWidget);
+    expect(find.text('Unable to update following.'), findsOneWidget);
+  });
 }
 
 class _FollowRepository implements ProfileFollowRepository {
+  bool failOnUnfollow = false;
   final followers = <ProfileFollowUser>[
     const ProfileFollowUser(userId: 2, name: 'Follower'),
   ];
@@ -133,6 +165,7 @@ class _FollowRepository implements ProfileFollowRepository {
 
   @override
   Future<void> unfollow(int userId) async {
+    if (failOnUnfollow) throw StateError('Unfollow failed');
     following.removeWhere((user) => user.userId == userId);
   }
 }

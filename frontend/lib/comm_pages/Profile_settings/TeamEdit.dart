@@ -4,9 +4,11 @@ import 'package:onetouch/models/profile_change_limit_exception.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_close_header.dart';
 import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/core/app_rule_notice.dart';
 import 'package:onetouch/core/app_search_field.dart';
+import 'package:onetouch/core/app_scroll_edge_fade.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
@@ -68,22 +70,6 @@ class EditFollowingTeamsSheet extends StatefulWidget {
 }
 
 class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
-  static const _listFadeHeight = 40.0;
-  static const _listFadeGradient = LinearGradient(
-    begin: Alignment.bottomCenter,
-    end: Alignment.topCenter,
-    colors: [
-      Color(0x00000000),
-      Color(0x00000000),
-      Color(0x40000000),
-      Color(0x80000000),
-      Color(0xCC000000),
-      Color(0xFF000000),
-      Color(0xFF000000),
-    ],
-    stops: [0, 0.20, 0.45, 0.70, 0.82, 0.92, 1],
-  );
-
   final TextEditingController _searchController = TextEditingController();
 
   late List<_TeamEntry> _followedTeams;
@@ -97,8 +83,6 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
   bool _updateEnabled = false;
   bool _isSaving = false;
   bool _showRuleNotice = true;
-  bool _fadeListTop = false;
-  bool _fadeListBottom = false;
 
   @override
   void initState() {
@@ -132,16 +116,12 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
     if (query.isEmpty) {
       setState(() {
         _isSearching = false;
-        _fadeListTop = false;
-        _fadeListBottom = false;
         _selectedTeam = null;
         _conflictTeam = null;
       });
     } else {
       setState(() {
         _isSearching = true;
-        _fadeListTop = false;
-        _fadeListBottom = false;
         _filteredTeams = _allTeams
             .where((t) =>
                 t.name.toLowerCase().contains(query) ||
@@ -176,65 +156,13 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
     });
   }
 
-  void _updateListFade(ScrollMetrics metrics) {
-    final fadeTop = metrics.extentBefore > 0.5;
-    final fadeBottom = metrics.extentAfter > 0.5;
-    if (fadeTop == _fadeListTop && fadeBottom == _fadeListBottom) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted ||
-          (fadeTop == _fadeListTop && fadeBottom == _fadeListBottom)) {
-        return;
-      }
-      setState(() {
-        _fadeListTop = fadeTop;
-        _fadeListBottom = fadeBottom;
-      });
-    });
-  }
-
-  Widget _buildFadingTeamList() {
-    return NotificationListener<ScrollMetricsNotification>(
-      onNotification: (notification) {
-        _updateListFade(notification.metrics);
-        return false;
-      },
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          _updateListFade(notification.metrics);
-          return false;
-        },
-        child: ShaderMask(
-          key: const ValueKey('profile-team-edit-top-fade'),
-          blendMode: _fadeListTop ? BlendMode.dstIn : BlendMode.dst,
-          shaderCallback: (bounds) {
-            final height = bounds.height.clamp(0.0, _listFadeHeight);
-            return LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: _listFadeGradient.colors,
-              stops: _listFadeGradient.stops,
-            ).createShader(Rect.fromLTWH(0, 0, bounds.width, height));
-          },
-          child: ShaderMask(
-            key: const ValueKey('profile-team-edit-bottom-fade'),
-            blendMode: _fadeListBottom ? BlendMode.dstIn : BlendMode.dst,
-            shaderCallback: (bounds) {
-              final height = bounds.height.clamp(0.0, _listFadeHeight);
-              return _listFadeGradient.createShader(Rect.fromLTWH(
-                0,
-                bounds.height - height,
-                bounds.width,
-                height,
-              ));
-            },
-            child: _isSearching
-                ? _buildSearchResultList()
-                : _buildFollowedTeamList(),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _buildFadingTeamList() => AppScrollEdgeFade(
+        key: ValueKey(_searchController.text),
+        topKey: const ValueKey('profile-team-edit-top-fade'),
+        bottomKey: const ValueKey('profile-team-edit-bottom-fade'),
+        child:
+            _isSearching ? _buildSearchResultList() : _buildFollowedTeamList(),
+      );
 
   void _removeTeam(int index) {
     if (_followedTeams.length == 1) {
@@ -339,65 +267,22 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Title
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const SizedBox(width: 48),
-                            Expanded(
-                              child: Text(
-                                tr(context, "Following Teams"),
-                                style: Heading5.style,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.close, color: colors.onSurface),
-                              onPressed: () => Navigator.of(context).pop(),
-                            ),
-                          ],
+                        AppCloseHeader(
+                          title: tr(context, 'Following Teams'),
+                          onClose: () => Navigator.of(context).pop(),
                         ),
                         const SizedBox(height: 12),
 
                         // Search bar
-                        Container(
-                          key: const ValueKey('profile-team-edit-search'),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          clipBehavior: Clip.antiAlias,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppPalette.lightGrey
-                                : appColors.subtleBackground,
-                            borderRadius: BorderRadius.circular(
-                                AppSearchFieldTokens.radius),
-                          ),
-                          child: TextField(
-                            controller: _searchController,
-                            style: Body1.style,
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 16, horizontal: 8),
-                              hintText: tr(context, "Search teams to add!"),
-                              hintStyle: Body1.style
-                                  .copyWith(color: appColors.mutedForeground),
-                              border: InputBorder.none,
-                              suffixIcon: _isSearching
-                                  ? IconButton(
-                                      icon: Icon(
-                                        Icons.close,
-                                        color: colors.onSurface,
-                                        size: 20,
-                                      ),
-                                      onPressed: _searchController.clear,
-                                    )
-                                  : Icon(
-                                      Icons.search,
-                                      color: colors.onSurface,
-                                      size: 24,
-                                    ),
-                            ),
-                          ),
+                        AppEditSearchField(
+                          containerKey:
+                              const ValueKey('profile-team-edit-search'),
+                          controller: _searchController,
+                          hintText: tr(context, 'Search teams to add!'),
+                          searching: _isSearching,
+                          verticalPadding: 16,
+                          outerHorizontalPadding: 8,
+                          clearIconSize: 20,
                         ),
                         // Team list (followed or search results)
                         Expanded(child: _buildFadingTeamList()),

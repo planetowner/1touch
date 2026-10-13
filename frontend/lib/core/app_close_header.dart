@@ -13,6 +13,7 @@ class AppCloseHeader extends StatelessWidget {
     this.closeKey,
     this.buttonSize = 48,
     this.iconSize = 24,
+    this.closeAlignment = Alignment.center,
   });
 
   final VoidCallback onClose;
@@ -22,6 +23,7 @@ class AppCloseHeader extends StatelessWidget {
   final Key? closeKey;
   final double buttonSize;
   final double iconSize;
+  final AlignmentGeometry closeAlignment;
 
   @override
   Widget build(BuildContext context) => ConstrainedBox(
@@ -46,7 +48,10 @@ class AppCloseHeader extends StatelessWidget {
               key: closeKey,
               tooltip: tr(context, 'Close'),
               onPressed: onClose,
-              padding: EdgeInsets.all((buttonSize - iconSize) / 2),
+              padding: closeAlignment == Alignment.center
+                  ? EdgeInsets.all((buttonSize - iconSize) / 2)
+                  : EdgeInsets.zero,
+              alignment: closeAlignment,
               constraints: BoxConstraints.tightFor(
                 width: buttonSize,
                 height: buttonSize,
