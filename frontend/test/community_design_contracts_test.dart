@@ -35,6 +35,9 @@ void main() {
     final repository = ApiPostDraftRepository(api: api((request) async {
       requests.add(request);
       expect(request.headers['Authorization'], 'Bearer test-session');
+      if (request.method == 'DELETE') {
+        return http.Response('{"ok":true}', 200);
+      }
       if (request.url.path.endsWith('/publish')) {
         return http.Response('{"post_id":41}', 200);
       }
@@ -59,6 +62,7 @@ void main() {
     await repository.saveDraft(input);
     await repository.saveDraft(input, postId: 41);
     expect(await repository.publishDraft(41), 41);
+    await repository.deleteDraft(41);
     expect(jsonDecode(requests[1].body), {
       'team_id': 6,
       'language': 'ko',
@@ -75,6 +79,8 @@ void main() {
     });
     expect(requests[2].url.path, '/v1/post-drafts/41');
     expect(requests[3].url.path, '/v1/post-drafts/41/publish');
+    expect(requests[4].method, 'DELETE');
+    expect(requests[4].url.path, '/v1/post-drafts/41');
   });
 
   test('comment like, unlike and report use authenticated comment endpoints',
@@ -138,6 +144,102 @@ void main() {
     expect(drafts.saved?.attachmentIds, [2]);
     expect(drafts.publishedId, 41);
   });
+
+  for (final systemBack in [false, true]) {
+    testWidgets(
+        'leaving a nonempty composer with ${systemBack ? 'system back' : 'back button'} saves before popping',
+        (tester) async {
+      final drafts = _Drafts();
+      bool? result;
+      await tester.pumpWidget(MaterialApp(
+          theme: darktheme,
+          home: Scaffold(body: Builder(builder: (context) {
+            return TextButton(
+                onPressed: () async {
+                  result = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => AddPost(
+                              teamId: 6,
+                              postRepository: MockPostRepository(),
+                              draftRepository: drafts)));
+                },
+                child: const Text('Open composer'));
+          }))));
+      await tester.tap(find.text('Open composer'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+          find.byKey(const ValueKey('community-post-title-input')), 'My draft');
+      if (systemBack) {
+        await tester.binding.handlePopRoute();
+      } else {
+        await tester.tap(find.byType(IconButton).first);
+      }
+      await tester.pumpAndSettle();
+      expect(drafts.saved?.title, 'My draft');
+      expect(result, false);
+      expect(find.text('Open composer'), findsOneWidget);
+    });
+  }
+
+  testWidgets('draft list remains available while composing and after resume',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final drafts = _Drafts();
+    await tester.pumpWidget(MaterialApp(
+        theme: darktheme,
+        home: AddPost(
+            teamId: 6,
+            postRepository: MockPostRepository(),
+            draftRepository: drafts)));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byKey(const ValueKey('community-post-title-input')),
+        'New unfinished post');
+    expect(
+        find.byKey(const ValueKey('community-resume-draft')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('community-resume-draft')));
+    await tester.pumpAndSettle();
+    expect(drafts.saved?.title, 'New unfinished post');
+    expect(find.text('New unfinished post'), findsWidgets);
+    await tester.tap(find.text('Saved title'));
+    await tester.pumpAndSettle();
+    expect(
+        find.byKey(const ValueKey('community-resume-draft')), findsOneWidget);
+  });
+
+  for (final size in [const Size(320, 568), const Size(393, 852)]) {
+    testWidgets('draft deletion shows the notice at ${size.width}px',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final drafts = _Drafts();
+      await tester.pumpWidget(MaterialApp(
+          theme: darktheme,
+          home: AddPost(
+              teamId: 6,
+              postRepository: MockPostRepository(),
+              draftRepository: drafts)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('community-resume-draft')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('community-draft-delete-41')));
+      await tester.pump();
+      expect(drafts.deletedId, 41);
+      expect(find.text('Deleted draft.'), findsOneWidget);
+      expect(find.text('Drafts'), findsOneWidget);
+      expect(find.text('Saved title'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('community-drafts-close')));
+      await tester.pumpAndSettle();
+      expect(
+          find.byKey(const ValueKey('community-resume-draft')), findsNothing);
+    });
+  }
 
   testWidgets('multiple media thumbnail and count badge open the post',
       (tester) async {
@@ -291,7 +393,8 @@ PostComment _comment(PostCommentState state, int id) => PostComment(
 
 class _Drafts implements PostDraftRepository {
   CreatePostInput? saved;
-  int? savedId, publishedId;
+  int? savedId, publishedId, deletedId;
+  final Map<int, PostDraft> _savedDrafts = {};
   final draft = PostDraft(
       postId: 41,
       teamId: 6,
@@ -309,17 +412,37 @@ class _Drafts implements PostDraftRepository {
       ]);
   @override
   Future<List<PostDraft>> loadDrafts({int limit = 50, int offset = 0}) async =>
-      [draft];
+      [
+        if (deletedId != 41) _savedDrafts[41] ?? draft,
+        if (_savedDrafts[42] != null) _savedDrafts[42]!
+      ];
   @override
   Future<PostDraft> saveDraft(CreatePostInput input, {int? postId}) async {
     saved = input;
     savedId = postId;
-    return draft;
+    final id = postId ?? 42;
+    final result = PostDraft(
+        postId: id,
+        teamId: input.teamId,
+        language: input.language,
+        category: input.category,
+        title: input.title,
+        body: input.body,
+        attachments: id == 41 ? draft.attachments : const [],
+        expiresAt: draft.expiresAt);
+    _savedDrafts[id] = result;
+    return result;
   }
 
   @override
   Future<int> publishDraft(int postId) async {
     publishedId = postId;
     return postId;
+  }
+
+  @override
+  Future<void> deleteDraft(int postId) async {
+    deletedId = postId;
+    _savedDrafts.remove(postId);
   }
 }

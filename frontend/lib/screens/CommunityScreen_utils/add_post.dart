@@ -48,7 +48,8 @@ class _AddPostState extends State<AddPost> {
   bool _isSubmitting = false,
       _isPickingMedia = false,
       _draftsLoaded = false,
-      _draftLoadFailed = false;
+      _draftLoadFailed = false,
+      _allowPop = false;
   PostDraft? _draft;
   List<PostDraft> _drafts = [];
   final _titleController = TextEditingController();
@@ -125,27 +126,201 @@ class _AddPostState extends State<AddPost> {
   }
 
   Future<void> _resumeDraft() async {
+    int? deletingId;
     final draft = await showModalBottomSheet<PostDraft>(
         context: context,
         isScrollControlled: true,
-        builder: (context) => SafeArea(
-            child: SizedBox(
-                height: MediaQuery.sizeOf(context).height * .5,
-                child: ListView(children: [
-                  Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Text(tr(context, 'Drafts'),
-                          style: CommunityText.title(context))),
-                  for (final item in _drafts)
-                    ListTile(
-                        title: Text(item.title.isEmpty
-                            ? tr(context, 'Untitled post')
-                            : item.title),
-                        subtitle: Text(item.body,
-                            maxLines: 2, overflow: TextOverflow.ellipsis),
-                        onTap: () => Navigator.pop(context, item)),
-                ]))));
-    if (draft == null || !mounted) return;
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppPalette.darkGrey
+            : AppPalette.white,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        builder: (sheetContext) => StatefulBuilder(
+            builder: (sheetContext, setSheetState) => SizedBox(
+                height: MediaQuery.sizeOf(sheetContext).height * .77,
+                child: ScaffoldMessenger(
+                    child: Scaffold(
+                        backgroundColor: Colors.transparent,
+                        body: Builder(builder: (noticeContext) {
+                          return SafeArea(
+                              top: false,
+                              child: Column(children: [
+                                Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        24, 16, 16, 24),
+                                    child: SizedBox(
+                                        height: 32,
+                                        child: Stack(children: [
+                                          Center(
+                                              child: Text(
+                                                  tr(noticeContext, 'Drafts'),
+                                                  style: CommunityText.title(
+                                                      noticeContext))),
+                                          Positioned(
+                                              right: 0,
+                                              child: IconButton(
+                                                  key: const ValueKey(
+                                                      'community-drafts-close'),
+                                                  padding: EdgeInsets.zero,
+                                                  constraints:
+                                                      const BoxConstraints
+                                                          .tightFor(
+                                                          width: 32,
+                                                          height: 32),
+                                                  icon: const CommunityIcon(
+                                                      'close'),
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                          sheetContext))),
+                                        ]))),
+                                Expanded(
+                                    child: ListView.separated(
+                                        // 마지막 행의 16px 여백 뒤에 시트의 24px 하단 여백을 둬요.
+                                        padding: const EdgeInsets.fromLTRB(
+                                            24, 0, 24, 24),
+                                        itemCount: _drafts.length,
+                                        separatorBuilder: (_, __) => Divider(
+                                            height: 1,
+                                            color: communityDividerColor(
+                                                noticeContext)),
+                                        itemBuilder: (itemContext, index) {
+                                          final item = _drafts[index];
+                                          return Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 16),
+                                              child: Row(children: [
+                                                Expanded(
+                                                    child: InkWell(
+                                                        onTap: deletingId ==
+                                                                null
+                                                            ? () =>
+                                                                Navigator.pop(
+                                                                    sheetContext,
+                                                                    item)
+                                                            : null,
+                                                        child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Row(children: [
+                                                                Flexible(
+                                                                    child: Text(
+                                                                        item.title.isEmpty
+                                                                            ? tr(noticeContext,
+                                                                                'Untitled post')
+                                                                            : item
+                                                                                .title,
+                                                                        maxLines:
+                                                                            1,
+                                                                        overflow:
+                                                                            TextOverflow
+                                                                                .ellipsis,
+                                                                        style: CommunityText.secondaryBold(
+                                                                            noticeContext))),
+                                                                const CommunityIcon(
+                                                                    'chevron_right'),
+                                                              ]),
+                                                              const SizedBox(
+                                                                  height: 4),
+                                                              Text(item.body,
+                                                                  maxLines: 2,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                  style: CommunityText
+                                                                      .secondary(
+                                                                          noticeContext)),
+                                                            ]))),
+                                                const SizedBox(width: 8),
+                                                IconButton(
+                                                    key: ValueKey(
+                                                        'community-draft-delete-${item.postId}'),
+                                                    icon: deletingId ==
+                                                            item.postId
+                                                        ? const SizedBox.square(
+                                                            dimension: 18,
+                                                            child:
+                                                                CircularProgressIndicator(
+                                                                    strokeWidth:
+                                                                        2))
+                                                        : const CommunityIcon(
+                                                            'delete'),
+                                                    onPressed: deletingId !=
+                                                            null
+                                                        ? null
+                                                        : () async {
+                                                            setSheetState(() =>
+                                                                deletingId =
+                                                                    item.postId);
+                                                            try {
+                                                              await _draftRepository
+                                                                  .deleteDraft(
+                                                                      item.postId);
+                                                              if (!sheetContext
+                                                                  .mounted) {
+                                                                return;
+                                                              }
+                                                              setSheetState(() {
+                                                                _drafts.removeWhere(
+                                                                    (draft) =>
+                                                                        draft
+                                                                            .postId ==
+                                                                        item.postId);
+                                                                deletingId =
+                                                                    null;
+                                                              });
+                                                              if (_draft
+                                                                      ?.postId ==
+                                                                  item.postId) {
+                                                                // 열려 있던 초안을 지웠다면 뒤로가기에서 다시 만들지 않아요.
+                                                                setState(() {
+                                                                  _draft = null;
+                                                                  _titleController
+                                                                      .clear();
+                                                                  _bodyController
+                                                                      .clear();
+                                                                  _existingAttachments
+                                                                      .clear();
+                                                                  _mediaFiles
+                                                                      .clear();
+                                                                  _selectedCategory =
+                                                                      PostCategory
+                                                                          .general;
+                                                                });
+                                                              }
+                                                              showAppSnackBar(
+                                                                  noticeContext,
+                                                                  tr(noticeContext,
+                                                                      'Deleted draft.'),
+                                                                  replaceCurrent:
+                                                                      true);
+                                                            } catch (_) {
+                                                              if (!sheetContext
+                                                                  .mounted) {
+                                                                return;
+                                                              }
+                                                              setSheetState(() =>
+                                                                  deletingId =
+                                                                      null);
+                                                              showAppSnackBar(
+                                                                  noticeContext,
+                                                                  tr(noticeContext,
+                                                                      'The service is temporarily unavailable. Please try again later.'),
+                                                                  replaceCurrent:
+                                                                      true);
+                                                            }
+                                                          }),
+                                              ]));
+                                        })),
+                              ]));
+                        }))))));
+    if (!mounted) return;
+    if (draft == null) {
+      setState(() {});
+      return;
+    }
     setState(() {
       _draft = draft;
       _selectedCategory = draft.category;
@@ -220,13 +395,67 @@ class _AddPostState extends State<AddPost> {
     setState(() => _isSubmitting = true);
     try {
       await _saveDraftContent();
-      if (mounted) Navigator.pop(context, false);
+      if (mounted) await _finish(false);
     } catch (_) {
       if (mounted) {
         _showMessage(tr(context, 'Unable to save draft. Please try again.'));
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _openDraftList() async {
+    if (_isSubmitting || _isPickingMedia) return;
+    final hasContent = _draft != null ||
+        _titleController.text.trim().isNotEmpty ||
+        _bodyController.text.trim().isNotEmpty ||
+        _mediaFiles.isNotEmpty ||
+        _existingAttachments.isNotEmpty;
+    if (hasContent) {
+      setState(() => _isSubmitting = true);
+      try {
+        await _saveDraftContent();
+        await _loadDrafts();
+        if (_draftLoadFailed) {
+          if (mounted) {
+            _showMessage(tr(context, 'Unable to load drafts. Tap to retry.'));
+          }
+          return;
+        }
+      } catch (_) {
+        if (mounted) {
+          _showMessage(tr(context, 'Unable to save draft. Please try again.'));
+        }
+        return;
+      } finally {
+        if (mounted) setState(() => _isSubmitting = false);
+      }
+    }
+    if (mounted) await _resumeDraft();
+  }
+
+  Future<void> _finish(bool? result) async {
+    setState(() => _allowPop = true);
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) Navigator.pop(context, result);
+  }
+
+  Future<void> _exitComposer() async {
+    if (_isSubmitting || _isPickingMedia) return;
+    if (widget.editingPost != null) {
+      Navigator.pop(context);
+      return;
+    }
+    final hasContent = _draft != null ||
+        _titleController.text.trim().isNotEmpty ||
+        _bodyController.text.trim().isNotEmpty ||
+        _mediaFiles.isNotEmpty ||
+        _existingAttachments.isNotEmpty;
+    if (hasContent) {
+      await _saveDraft();
+    } else {
+      await _finish(null);
     }
   }
 
@@ -289,75 +518,79 @@ class _AddPostState extends State<AddPost> {
   void _showMessage(String message) => showAppSnackBar(context, message);
   @override
   Widget build(BuildContext context) {
-    final untouched = _draft == null &&
-        _titleController.text.isEmpty &&
-        _bodyController.text.isEmpty &&
-        _mediaFiles.isEmpty;
-    return Scaffold(
-      backgroundColor: communityPageBackground(context),
-      appBar: AppBar(
+    return PopScope(
+        canPop: widget.editingPost != null || _allowPop,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) unawaited(_exitComposer());
+        },
+        child: Scaffold(
           backgroundColor: communityPageBackground(context),
-          toolbarHeight: 56,
-          elevation: 0,
-          leading: IconButton(
-              icon: const CommunityIcon('back'),
-              onPressed: () => Navigator.pop(context)),
-          actions: const [CommunityHeaderActions()]),
-      body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            if (untouched && (_drafts.isNotEmpty || _draftLoadFailed))
-              GestureDetector(
-                  key: const ValueKey('community-resume-draft'),
-                  onTap: _isSubmitting
-                      ? null
-                      : _draftLoadFailed
-                          ? _loadDrafts
-                          : _resumeDraft,
-                  child: Container(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-                      decoration: BoxDecoration(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? AppPalette.lightGrey
-                              : AppPalette.white,
-                          borderRadius: BorderRadius.circular(16)),
-                      child: Row(children: [
-                        Expanded(
-                            child: Text(
-                                tr(
-                                    context,
-                                    _draftLoadFailed
-                                        ? 'Unable to load drafts. Tap to retry.'
-                                        : 'Pick up where you left off?'),
-                                style: CommunityText.body(context))),
-                        const CommunityIcon('chevron_right')
-                      ]))),
-            const SizedBox(height: 24),
-            AbsorbPointer(
-                absorbing: _isSubmitting,
-                child: PostComposerFields(
-                    selectedCategory: _selectedCategory,
-                    titleController: _titleController,
-                    bodyController: _bodyController,
-                    mediaFiles: _mediaFiles,
-                    existingAttachments:
-                        _isSubmitting && widget.editingPost != null
-                            ? const []
-                            : _existingAttachments,
-                    onCategoryChanged: (category) =>
-                        setState(() => _selectedCategory = category),
-                    onPickMedia:
-                        _isPickingMedia || _isSubmitting ? null : _pickMedia,
-                    onRemoveMedia: (index) =>
-                        setState(() => _mediaFiles.removeAt(index)),
-                    onRemoveExistingAttachment: (index) =>
-                        setState(() => _existingAttachments.removeAt(index)))),
-            PostComposerSubmitBar(
-                isSubmitting: _isSubmitting,
-                onSubmit: _submitPost,
-                onSaveDraft: widget.editingPost == null ? _saveDraft : null),
-          ])),
-    );
+          appBar: AppBar(
+              backgroundColor: communityPageBackground(context),
+              toolbarHeight: 56,
+              elevation: 0,
+              leading: IconButton(
+                  icon: const CommunityIcon('back'), onPressed: _exitComposer),
+              actions: const [CommunityHeaderActions()]),
+          body: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_drafts.isNotEmpty || _draftLoadFailed)
+                      GestureDetector(
+                          key: const ValueKey('community-resume-draft'),
+                          onTap: _isSubmitting || _isPickingMedia
+                              ? null
+                              : _draftLoadFailed && _drafts.isEmpty
+                                  ? _loadDrafts
+                                  : _openDraftList,
+                          child: Container(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                              decoration: BoxDecoration(
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppPalette.lightGrey
+                                      : AppPalette.white,
+                                  borderRadius: BorderRadius.circular(16)),
+                              child: Row(children: [
+                                Expanded(
+                                    child: Text(
+                                        tr(
+                                            context,
+                                            _draftLoadFailed && _drafts.isEmpty
+                                                ? 'Unable to load drafts. Tap to retry.'
+                                                : 'Pick up where you left off?'),
+                                        style: CommunityText.body(context))),
+                                const CommunityIcon('chevron_right')
+                              ]))),
+                    const SizedBox(height: 24),
+                    AbsorbPointer(
+                        absorbing: _isSubmitting,
+                        child: PostComposerFields(
+                            selectedCategory: _selectedCategory,
+                            titleController: _titleController,
+                            bodyController: _bodyController,
+                            mediaFiles: _mediaFiles,
+                            existingAttachments:
+                                _isSubmitting && widget.editingPost != null
+                                    ? const []
+                                    : _existingAttachments,
+                            onCategoryChanged: (category) =>
+                                setState(() => _selectedCategory = category),
+                            onPickMedia: _isPickingMedia || _isSubmitting
+                                ? null
+                                : _pickMedia,
+                            onRemoveMedia: (index) =>
+                                setState(() => _mediaFiles.removeAt(index)),
+                            onRemoveExistingAttachment: (index) => setState(
+                                () => _existingAttachments.removeAt(index)))),
+                    PostComposerSubmitBar(
+                        isSubmitting: _isSubmitting,
+                        onSubmit: _submitPost,
+                        onSaveDraft:
+                            widget.editingPost == null ? _saveDraft : null),
+                  ])),
+        ));
   }
 }

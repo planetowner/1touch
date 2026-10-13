@@ -307,6 +307,9 @@ class _Drafts implements PostDraftRepository {
       throw UnimplementedError();
   @override
   Future<int> publishDraft(int postId) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteDraft(int postId) => throw UnimplementedError();
 }
 
 class _Activity extends StubProfileActivityRepository {

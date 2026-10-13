@@ -1,4 +1,5 @@
 import 'package:onetouch/core/page_refresh.dart';
+import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/features/community/community_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -30,6 +31,7 @@ import 'package:onetouch/features/community/community_ban_dialog.dart';
 import 'package:onetouch/features/community/community_post_body.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/add_post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ground_rules.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class Community extends StatefulWidget {
   final int teamId;
@@ -471,9 +473,13 @@ class _CommunityState extends State<Community>
         ),
       ),
     );
-    if (!mounted || created != true) return;
-
-    await _loadPosts();
+    if (!mounted) return;
+    if (created == false) {
+      showAppSnackBar(context, tr(context, 'Saved as draft.'),
+          replaceCurrent: true);
+    } else if (created == true) {
+      await _loadPosts();
+    }
   }
 
   @override

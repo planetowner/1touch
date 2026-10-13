@@ -52,6 +52,16 @@ class ApiPostDraftRepository implements PostDraftRepository {
         _api.decodeJson<Map<String, dynamic>>(response), 'post_id');
   }
 
+  @override
+  Future<void> deleteDraft(int postId) async {
+    final response =
+        await _api.delete(_api.baseUri.resolve('post-drafts/$postId'));
+    final json = _api.decodeJson<Map<String, dynamic>>(response);
+    if (json['ok'] != true) {
+      throw const FormatException('Expected draft deletion to return ok=true.');
+    }
+  }
+
   PostDraft _parse(Map<String, dynamic> json) => PostDraft(
         postId: api_json.requiredInt(json, 'post_id'),
         teamId: api_json.requiredInt(json, 'team_id'),

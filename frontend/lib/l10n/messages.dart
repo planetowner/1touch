@@ -33,6 +33,8 @@ const appMessages = <String, MessageTranslations>{
     zh: "继续上次的编辑？"
   ),
   "Save as draft": (ko: "임시저장", ja: "下書き保存", zh: "保存草稿"),
+  "Saved as draft.": (ko: "임시저장했어요.", ja: "下書きに保存しました。", zh: "已保存为草稿。"),
+  "Deleted draft.": (ko: "임시저장한 글을 삭제했어요.", ja: "下書きを削除しました。", zh: "已删除草稿。"),
   "Unable to load drafts. Tap to retry.": (
     ko: "임시저장한 글을 불러오지 못했어요. 눌러서 다시 시도해 주세요.",
     ja: "下書きを読み込めませんでした。タップして再試行してください。",
