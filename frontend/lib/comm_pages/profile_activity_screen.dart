@@ -224,10 +224,15 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
                         loading: _updatingFollow,
                         onPressed: () => _follow(profile),
                         backgroundColor: following
-                            ? appColors.subtleBackground
+                            ? Theme.of(context).brightness == Brightness.light
+                                ? AppPalette.lightGrey
+                                : AppPalette.lightModeDarkGrey
                             : colors.onSurface,
-                        foregroundColor:
-                            following ? colors.onSurface : colors.surface,
+                        foregroundColor: following
+                            ? Theme.of(context).brightness == Brightness.light
+                                ? AppPalette.white
+                                : AppPalette.black
+                            : colors.surface,
                       ),
                     ),
                   ),

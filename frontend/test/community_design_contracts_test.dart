@@ -330,35 +330,53 @@ void main() {
     expect(find.text('Delete'), findsNothing);
   });
 
-  testWidgets(
-      'another member profile toggles Follow without showing own camera',
-      (tester) async {
-    final calls = <String>[];
-    final publicProfiles =
-        ApiCommunityProfileRepository(api: api((request) async {
-      calls.add(request.method);
-      return http.Response(
-          request.method == 'GET'
-              ? '{"user_id":8,"username":"member","display_name":"Member","avatar_url":null,"is_self":false,"following":false}'
-              : '{"ok":true}',
-          200);
-    }));
-    await tester.pumpWidget(MaterialApp(
-        theme: darktheme,
-        home: ProfileActivityScreen(
-            userId: 8,
-            repository: const StubProfileActivityRepository(),
-            publicProfileRepository: publicProfiles)));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('profile-activity-camera')), findsNothing);
-    expect(find.text('FOLLOW'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('profile-activity-follow')));
-    await tester.pumpAndSettle();
-    expect(find.text('FOLLOWING'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('profile-activity-follow')));
-    await tester.pumpAndSettle();
-    expect(calls, ['GET', 'PUT', 'DELETE']);
-  });
+  for (final theme in [whitetheme, darktheme]) {
+    for (final size in [const Size(320, 568), const Size(393, 852)]) {
+      testWidgets(
+          'another member follow button uses ${theme.brightness} '
+          'colors at ${size.width}x${size.height}', (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final calls = <String>[];
+        final publicProfiles =
+            ApiCommunityProfileRepository(api: api((request) async {
+          calls.add(request.method);
+          return http.Response(
+              request.method == 'GET'
+                  ? '{"user_id":8,"username":"member","display_name":"Member","avatar_url":null,"is_self":false,"following":false}'
+                  : '{"ok":true}',
+              200);
+        }));
+        await tester.pumpWidget(MaterialApp(
+            theme: theme,
+            home: ProfileActivityScreen(
+                userId: 8,
+                repository: const StubProfileActivityRepository(),
+                publicProfileRepository: publicProfiles)));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('profile-activity-camera')),
+            findsNothing);
+        expect(find.text('FOLLOW'), findsOneWidget);
+        final button = find.byKey(const ValueKey('profile-activity-follow'));
+        await tester.tap(button);
+        await tester.pumpAndSettle();
+        expect(find.text('FOLLOWING'), findsOneWidget);
+        final filledButton = tester.widget<FilledButton>(button);
+        final light = theme.brightness == Brightness.light;
+        expect(filledButton.style!.backgroundColor!.resolve({}),
+            light ? AppPalette.lightGrey : AppPalette.lightModeDarkGrey);
+        expect(filledButton.style!.foregroundColor!.resolve({}),
+            light ? AppPalette.white : AppPalette.black);
+        expect(tester.takeException(), isNull);
+        await tester.tap(button);
+        await tester.pumpAndSettle();
+        expect(calls, ['GET', 'PUT', 'DELETE']);
+      });
+    }
+  }
 }
 
 final _draftJson = {
