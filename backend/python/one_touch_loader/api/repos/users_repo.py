@@ -20,12 +20,12 @@ def get_user(user_id: int) -> dict:
     return row
 
 
-def lock_user(cur, user_id: int) -> dict:
+def lock_user(cur, user_id: int, *, not_found_status: int = 401) -> dict:
     # 최애팀 변경과 커뮤니티 쓰기가 같은 사용자 행을 잠가 이전 권한으로 쓰는 것을 막아요.
     cur.execute("SELECT * FROM users WHERE user_id=%s FOR UPDATE", (user_id,))
     row = cur.fetchone()
     if row is None:
-        raise HTTPException(401, "User not found")
+        raise HTTPException(not_found_status, "User not found")
     return row
 
 

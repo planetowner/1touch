@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel, Field
 from ..db import fetch_all_dict, transaction
 from ..deps import get_user_id
@@ -10,6 +10,23 @@ from ..services.community_periods import public_row
 from ..services.profile_changes import ProfileChangeLimitError
 
 router = APIRouter()
+
+
+@router.get("/users/me/follow/counts")
+def my_follow_counts(user_id: int = Depends(get_user_id)):
+    return community_profiles_repo.count_follows(user_id, user_id)
+
+
+@router.get("/users/me/followers")
+def my_followers(limit: int = Query(default=50, ge=1, le=100), offset: int = Query(default=0, ge=0),
+                 user_id: int = Depends(get_user_id)):
+    return community_profiles_repo.list_follows(user_id, user_id, 'followers', limit, offset)
+
+
+@router.get("/users/me/following")
+def my_following(limit: int = Query(default=50, ge=1, le=100), offset: int = Query(default=0, ge=0),
+                 user_id: int = Depends(get_user_id)):
+    return community_profiles_repo.list_follows(user_id, user_id, 'following', limit, offset)
 
 
 @router.get("/users/me/activity/counts")
@@ -105,6 +122,23 @@ def community_profile(author_id: int, user_id: int = Depends(get_user_id)):
     return community_profiles_repo.get_profile(user_id, author_id)
 
 
+@router.get("/users/{author_id}/follow/counts")
+def community_follow_counts(author_id: int = Path(gt=0), user_id: int = Depends(get_user_id)):
+    return community_profiles_repo.count_follows(user_id, author_id)
+
+
+@router.get("/users/{author_id}/followers")
+def community_followers(author_id: int = Path(gt=0), limit: int = Query(default=50, ge=1, le=100),
+                        offset: int = Query(default=0, ge=0), user_id: int = Depends(get_user_id)):
+    return community_profiles_repo.list_follows(user_id, author_id, 'followers', limit, offset)
+
+
+@router.get("/users/{author_id}/following")
+def community_following(author_id: int = Path(gt=0), limit: int = Query(default=50, ge=1, le=100),
+                        offset: int = Query(default=0, ge=0), user_id: int = Depends(get_user_id)):
+    return community_profiles_repo.list_follows(user_id, author_id, 'following', limit, offset)
+
+
 @router.get("/users/{author_id}/activity/counts")
 def community_activity_counts(author_id: int, user_id: int = Depends(get_user_id)):
     community_profiles_repo.get_profile(user_id, author_id)
@@ -126,12 +160,12 @@ def community_comments(author_id: int, limit: int = Query(default=50, ge=1, le=1
 
 
 @router.put("/users/{author_id}/follow")
-def follow_community_user(author_id: int, user_id: int = Depends(get_user_id)):
+def follow_community_user(author_id: int = Path(gt=0), user_id: int = Depends(get_user_id)):
     community_profiles_repo.set_following(user_id, author_id, True)
     return {"ok": True}
 
 
 @router.delete("/users/{author_id}/follow")
-def unfollow_community_user(author_id: int, user_id: int = Depends(get_user_id)):
+def unfollow_community_user(author_id: int = Path(gt=0), user_id: int = Depends(get_user_id)):
     community_profiles_repo.set_following(user_id, author_id, False)
     return {"ok": True}
