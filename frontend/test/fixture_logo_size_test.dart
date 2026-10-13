@@ -404,6 +404,40 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('competition logo moves with overflowing round text',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: SizedBox(
+            width: 104,
+            child: CompetitionLabel(
+              competitionId: 8,
+              label: 'Premier League · Semi-final · Leg 2 of 2',
+              style: TextStyle(fontSize: 14),
+              scrollOnOverflow: true,
+            ),
+          ),
+        ),
+      ),
+    ));
+    await tester.pump();
+
+    final logo = find.byType(CompetitionLogo);
+    final scrollable = find.descendant(
+      of: find.byType(CompetitionLabel),
+      matching: find.byType(Scrollable),
+    );
+    expect(scrollable, findsOneWidget);
+    expect(find.ancestor(of: logo, matching: find.byType(Scrollable)),
+        findsOneWidget);
+    final initialLeft = tester.getTopLeft(logo).dx;
+    await tester.pump(const Duration(milliseconds: 800));
+    await tester.pump(const Duration(milliseconds: 800));
+    expect(tester.getTopLeft(logo).dx, lessThan(initialLeft));
+    expect(tester.takeException(), isNull);
+  });
+
   for (final width in [320.0, 430.0]) {
     testWidgets('last-match date keeps its font at ${width.toInt()}px',
         (tester) async {

@@ -107,7 +107,7 @@ class CompetitionLabel extends StatelessWidget {
         mainAxisSize: mainAxisSize,
         mainAxisAlignment: mainAxisAlignment,
         children: [
-          if (competitionId != null) ...[
+          if (competitionId != null && !scrollOnOverflow) ...[
             CompetitionLogo(
               competitionId: competitionId!,
               size: iconSize,
@@ -120,7 +120,17 @@ class CompetitionLabel extends StatelessWidget {
                     key: textKey,
                     text: label,
                     style: style,
-                    alignment: Alignment.center,
+                    alignment: mainAxisAlignment == MainAxisAlignment.end
+                        ? Alignment.centerRight
+                        : Alignment.center,
+                    leading: competitionId == null
+                        ? null
+                        : CompetitionLogo(
+                            competitionId: competitionId!,
+                            size: iconSize,
+                            trailingGap: gap,
+                          ),
+                    leadingWidth: competitionId == null ? 0 : iconSize + gap,
                   )
                 : Text(
                     label,

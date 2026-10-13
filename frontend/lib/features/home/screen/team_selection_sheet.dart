@@ -114,6 +114,12 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                 ),
               ),
               IconButton(
+                style: IconButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  fixedSize: const Size(48, 48),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  alignment: Alignment.centerRight,
+                ),
                 icon: Icon(Icons.close, color: colorScheme.onSurface),
                 onPressed: () => Navigator.of(context).pop(),
               ),

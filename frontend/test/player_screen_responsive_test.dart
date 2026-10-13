@@ -426,6 +426,42 @@ void main() {
     );
   });
 
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    testWidgets('player match competition scrolls on one line at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.darktheme,
+        home: const Scaffold(
+          body: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: PlayerMatchCard(
+              result: 'WIN',
+              score: '3 - 0',
+              competition: 'UEFA Champions League · Round of 16 · Leg 2',
+              stats: [],
+              rating: '8.4',
+            ),
+          ),
+        ),
+      ));
+      final label = find.byKey(const ValueKey('player-match-competition'));
+      expect(tester.widget<OverflowScrollingText>(label).text,
+          'UEFA Champions League · Round of 16 · Leg 2');
+      expect(
+        tester
+            .widget<Text>(find.descendant(
+              of: label,
+              matching: find.byType(Text),
+            ))
+            .maxLines,
+        1,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('Korean player match stats stay on one line with compact gaps',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));

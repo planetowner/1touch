@@ -57,6 +57,11 @@ void main() {
 
       final sheet = find.byType(TeamSelectionSheet);
       final sheetRect = tester.getRect(sheet);
+      final closeIcon = find.descendant(
+        of: sheet,
+        matching: find.byIcon(Icons.close),
+      );
+      expect(sheetRect.right - tester.getRect(closeIcon).right, 24);
       for (final team in teams) {
         final row = find.byKey(ValueKey('team-selection-${team.teamId}'));
         expect(row, findsOneWidget);
@@ -64,6 +69,9 @@ void main() {
         expect(rowRect.top, greaterThanOrEqualTo(sheetRect.top));
         expect(rowRect.bottom, lessThanOrEqualTo(sheetRect.bottom));
       }
+      await tester.tap(closeIcon);
+      await tester.pumpAndSettle();
+      expect(sheet, findsNothing);
       expect(tester.takeException(), isNull);
     });
   }
@@ -117,6 +125,15 @@ void main() {
       find.byKey(ValueKey('team-selection-${teams.last.teamId}')),
       100,
       scrollable: find.descendant(of: list, matching: find.byType(Scrollable)),
+    );
+    final sheet = find.byType(TeamSelectionSheet);
+    final closeIcon = find.descendant(
+      of: sheet,
+      matching: find.byIcon(Icons.close),
+    );
+    expect(
+      tester.getRect(sheet).right - tester.getRect(closeIcon).right,
+      24,
     );
     expect(find.text('SWITCH'), findsOneWidget);
     expect(tester.takeException(), isNull);

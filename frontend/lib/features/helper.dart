@@ -522,6 +522,7 @@ class _LiveMatchInfo extends StatelessWidget {
           label: competitionAndRound,
           style: Body2.style,
           gap: 4,
+          scrollOnOverflow: true,
         ),
       ],
     );

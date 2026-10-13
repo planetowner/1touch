@@ -9,11 +9,15 @@ class OverflowScrollingText extends StatefulWidget {
     required this.text,
     required this.style,
     this.alignment = Alignment.centerLeft,
+    this.leading,
+    this.leadingWidth = 0,
   });
 
   final String text;
   final TextStyle style;
   final Alignment alignment;
+  final Widget? leading;
+  final double leadingWidth;
 
   @override
   State<OverflowScrollingText> createState() => _OverflowScrollingTextState();
@@ -21,7 +25,7 @@ class OverflowScrollingText extends StatefulWidget {
 
 class _OverflowScrollingTextState extends State<OverflowScrollingText> {
   final ScrollController _controller = ScrollController();
-  final GlobalKey _textKey = GlobalKey();
+  final GlobalKey _contentKey = GlobalKey();
   Timer? _timer;
   bool _needsScroll = false;
   bool _measured = false;
@@ -29,7 +33,10 @@ class _OverflowScrollingTextState extends State<OverflowScrollingText> {
   @override
   void didUpdateWidget(covariant OverflowScrollingText oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.text != widget.text || oldWidget.style != widget.style) {
+    if (oldWidget.text != widget.text ||
+        oldWidget.style != widget.style ||
+        oldWidget.leadingWidth != widget.leadingWidth ||
+        (oldWidget.leading == null) != (widget.leading == null)) {
       _timer?.cancel();
       _timer = null;
       _needsScroll = false;
@@ -40,10 +47,10 @@ class _OverflowScrollingTextState extends State<OverflowScrollingText> {
 
   void _checkOverflow(double availableWidth, String text) {
     if (!mounted || widget.text != text) return;
-    final renderedText = _textKey.currentContext?.findRenderObject();
-    if (renderedText is! RenderBox) return;
+    final renderedContent = _contentKey.currentContext?.findRenderObject();
+    if (renderedContent is! RenderBox) return;
     // 실제 화면에 적용된 글꼴과 배율의 너비로 스크롤 여부를 결정해요.
-    final needsScroll = renderedText.getMaxIntrinsicWidth(double.infinity) >
+    final needsScroll = renderedContent.getMaxIntrinsicWidth(double.infinity) >
         availableWidth + 0.5;
     if (_measured && needsScroll == _needsScroll) return;
 
@@ -105,7 +112,8 @@ class _OverflowScrollingTextState extends State<OverflowScrollingText> {
             locale: Localizations.maybeLocaleOf(context),
             maxLines: 1,
           )..layout();
-          final estimatedOverflow = painter.width > constraints.maxWidth + 0.5;
+          final estimatedOverflow =
+              painter.width + widget.leadingWidth > constraints.maxWidth + 0.5;
           painter.dispose();
           final shouldScroll = _measured ? _needsScroll : estimatedOverflow;
           final text = widget.text;
@@ -114,25 +122,33 @@ class _OverflowScrollingTextState extends State<OverflowScrollingText> {
           });
           final label = Text(
             widget.text,
-            key: _textKey,
+            key: widget.leading == null ? _contentKey : null,
             maxLines: 1,
             softWrap: false,
             overflow: TextOverflow.visible,
             style: widget.style,
           );
+          // 로고와 문구가 하나의 스크롤 콘텐츠로 함께 움직이게 해요.
+          final content = widget.leading == null
+              ? label
+              : Row(
+                  key: _contentKey,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [widget.leading!, label],
+                );
           return ClipRect(
             child: shouldScroll
                 ? SingleChildScrollView(
                     controller: _controller,
                     scrollDirection: Axis.horizontal,
                     physics: const NeverScrollableScrollPhysics(),
-                    child: label,
+                    child: content,
                   )
                 : Align(
                     widthFactor: 1,
                     heightFactor: 1,
                     alignment: widget.alignment,
-                    child: label,
+                    child: content,
                   ),
           );
         },

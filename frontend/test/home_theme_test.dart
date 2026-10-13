@@ -8,6 +8,7 @@ import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/features/home_screen_features.dart';
+import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_clock.dart';
@@ -498,6 +499,12 @@ void main() {
         ),
       );
       await tester.pump();
+      final competition = find.descendant(
+        of: find.byType(MatchCard),
+        matching: find.byType(CompetitionLabel),
+      );
+      expect(tester.widget<CompetitionLabel>(competition).scrollOnOverflow,
+          isTrue);
       expect(tester.takeException(), isNull);
     });
   }

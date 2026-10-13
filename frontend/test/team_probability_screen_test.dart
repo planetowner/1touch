@@ -1178,6 +1178,13 @@ void main() {
       find.byKey(const ValueKey('team-probability-gradient')),
       findsOneWidget,
     );
+    final backButton = find.byKey(const ValueKey('probability-back-button'));
+    final backIcon = find.descendant(
+      of: backButton,
+      matching: find.byIcon(Icons.arrow_back_ios_new),
+    );
+    expect(tester.getTopLeft(backButton).dx, 24);
+    expect(tester.getTopLeft(backIcon).dx, 24);
     expect(
       tester
           .getTopLeft(

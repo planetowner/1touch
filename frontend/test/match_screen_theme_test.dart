@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/overflow_scrolling_text.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';
 import 'package:onetouch/data/chat/chat_socket.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
@@ -156,8 +157,20 @@ void main() {
     expect(homeTeam.width, 72);
     expect(awayTeam.width, 72);
     expect(awayTeam.right, 320 - 24);
+    final roundLabel = find.byKey(const ValueKey('match-preview-round-label'));
+    final scrollingLabel = tester.widget<OverflowScrollingText>(roundLabel);
+    expect(scrollingLabel.style.fontSize, Body2.style.fontSize);
+    expect(scrollingLabel.style.fontWeight, Body2.style.fontWeight);
+    expect(
+      tester
+          .widget<Text>(find.descendant(
+            of: roundLabel,
+            matching: find.byType(Text),
+          ))
+          .maxLines,
+      1,
+    );
     for (final key in [
-      const ValueKey('match-preview-round-label'),
       const ValueKey('match-preview-date-label'),
       const ValueKey('match-preview-time-label'),
     ]) {

@@ -258,7 +258,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 textKey: const ValueKey('match-preview-round-label'),
                 style: Body2.style,
                 textAlign: TextAlign.center,
-                maxLines: null,
+                scrollOnOverflow: true,
               ),
               const SizedBox(height: 8),
               Container(

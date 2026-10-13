@@ -284,10 +284,11 @@ class _TeamProbabilityScreenState extends State<TeamProbabilityScreen> {
                       alignment: Alignment.centerLeft,
                       child: IconButton(
                         key: const ValueKey('probability-back-button'),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints.tightFor(
-                          width: 32,
-                          height: 32,
+                        style: IconButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          fixedSize: const Size(32, 32),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          alignment: Alignment.centerLeft,
                         ),
                         onPressed: () => Navigator.of(context).pop(),
                         icon: const Icon(Icons.arrow_back_ios_new, size: 24),
