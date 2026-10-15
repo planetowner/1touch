@@ -1,2 +1,3 @@
 "NSPhotoLibraryUsageDescription" = "プロフィール写真を選ぶために写真とアルバムにアクセスします。";
 "NSCameraUsageDescription" = "プロフィールに使う写真を撮影します。";
+"NSUserTrackingUsageDescription" = "許可すると、端末の広告識別子を使って広告の効果を測定し、同じ広告が繰り返し表示される回数を調整します。";

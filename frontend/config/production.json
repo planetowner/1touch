@@ -1,0 +1,7 @@
+{
+  "API_SKIP_ONBOARDING": false,
+  "API_BASE_URI": "https://api.1touch.football/v1/",
+  "APP_LOCALE": "system",
+  "ADMOB_ANDROID_BANNER_ID": "ca-app-pub-3643320019706741/5013465512",
+  "ADMOB_IOS_BANNER_ID": "ca-app-pub-3643320019706741/6331161470"
+}

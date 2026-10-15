@@ -62,6 +62,8 @@
 	<string>Take a photo to use as your profile photo in 1touch.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Save community photos and videos to your photo library.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>With your permission, we use your device's advertising identifier to measure ad performance and limit repeated ads.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

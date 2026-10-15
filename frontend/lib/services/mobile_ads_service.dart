@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:onetouch/config/ad_config.dart';
 
 abstract final class MobileAdsService {
+  static const _trackingChannel =
+      MethodChannel('onetouch/tracking_authorization');
   static bool _isInitialized = false;
   static Future<void>? _initialization;
   static bool _showingPrivacyOptions = false;
@@ -27,7 +30,7 @@ abstract final class MobileAdsService {
 
   static Future<void> _initialize() async {
     try {
-      // 공식 테스트 광고만 쓰는 디버그 실행에서 동의 양식 없이 광고를 확인해요.
+      // 디버그에서는 공식 테스트 광고로 UMP 동의 양식만 건너뛸 수 있어요.
       if (kDebugMode && const bool.fromEnvironment('SKIP_AD_CONSENT')) {
         await _initializeAds();
         return;
@@ -69,6 +72,23 @@ abstract final class MobileAdsService {
 
   static Future<void> _initializeAds() async {
     if (!_isInitialized) {
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        // UMP 동의와 ATT는 별개예요. OS의 응답이 끝나기 전에는 SDK도 시작하지 않아요.
+        final status =
+            await _trackingChannel.invokeMethod<int>('requestAuthorization');
+        // iOS 상태값: 0 미결정, 1 제한, 2 거부, 3 허용. 미결정은 동의 완료가 아니에요.
+        if (status != 1 && status != 2 && status != 3) {
+          debugPrint('Advertising deferred: ATT authorization is unresolved.');
+          return;
+        }
+        // 제한·거부 시에도 앱은 이용할 수 있고, Google SDK는 IDFA 없이 광고를 요청해요.
+      }
+      // 첫 광고 요청부터 테스트 모드가 적용되도록 SDK 초기화 전에 등록해요.
+      if (AdConfig.testDeviceId.isNotEmpty) {
+        await MobileAds.instance.updateRequestConfiguration(
+          RequestConfiguration(testDeviceIds: [AdConfig.testDeviceId]),
+        );
+      }
       await MobileAds.instance.initialize();
       _isInitialized = true;
     }
@@ -104,5 +124,14 @@ abstract final class MobileAdsService {
       debugPrint(
           'Advertising privacy error ${error.errorCode}: ${error.message}');
     }
+  }
+
+  @visibleForTesting
+  static void resetForTesting() {
+    _isInitialized = false;
+    _initialization = null;
+    _showingPrivacyOptions = false;
+    _adRequestsAllowed.value = false;
+    _privacyOptionsRequired.value = false;
   }
 }

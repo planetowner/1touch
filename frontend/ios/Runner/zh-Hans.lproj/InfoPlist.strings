@@ -1,2 +1,3 @@
 "NSPhotoLibraryUsageDescription" = "访问照片和相簿以选择您的头像。";
 "NSCameraUsageDescription" = "拍摄用作头像的照片。";
+"NSUserTrackingUsageDescription" = "经您允许，我们会使用设备的广告标识符来衡量广告效果，并控制同一广告的重复展示次数。";
