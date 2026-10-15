@@ -124,8 +124,12 @@ def refresh(*, apply: bool, sources=None, teams=None, session=None, now=None) ->
                         # 공급자 목록의 리그는 분류 정보예요. 이적·대륙 대회 기사의 다른 리그 팀도 연결해요.
                         article = {**article, "team_ids": matcher.match(article)}
                         # 원문 조회가 가능한 공급자만 이미지를 보완해요. HTML 공급자는 이미 읽었어요.
-                        if (article["team_ids"] and not article["image_url"]
+                        use_article_image = source.get("image_source") == "article"
+                        if (article["team_ids"] and (not article["image_url"] or use_article_image)
                                 and source.get("format") != "html" and source.get("fetch_article_images", True)):
+                            if use_article_image:
+                                # 원문 조회가 실패해도 잘못된 RSS 주소로 기존 정상 이미지를 덮어쓰지 않아요.
+                                article["image_url"] = None
                             try:
                                 article["image_url"] = parse_article_image(_get_content(session, article["url"]), source)
                             except (requests.RequestException, ValueError) as exc:

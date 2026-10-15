@@ -155,7 +155,8 @@
       "timezone": "Asia/Seoul",
       "is_active": true,
       "verification_url": "https://rss.mt.co.kr/st_news.xml",
-      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요.",
+      "note": "2026-10-15 RSS의 /19/ 이미지 3건은 404였고 원문의 og:image는 200이었어요. 대표 이미지는 원문에서 가져와요.",
+      "image_source": "article",
       "date_format": "%Y%m%d%H%M%S%z"
     },
     {
@@ -635,11 +636,13 @@
       "competition_ids": [
         384
       ],
-      "feed_url": "https://romapress.net/feed/",
+      "feed_url": "https://romapress.net/",
+      "format": "html",
+      "article_selector": ".gb-query-loop-item h3 a[href]",
       "timezone": null,
       "is_active": true,
-      "verification_url": "https://romapress.net/feed/",
-      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
+      "verification_url": "https://romapress.net/",
+      "note": "2026-10-15 RSS는 404였고 홈 기사 목록과 원문의 제목·발행 시각·대표 이미지는 정상 응답했어요. 공통 HTML 수집기로 읽어요."
     },
     {
       "key": "742def176bae3d4d",

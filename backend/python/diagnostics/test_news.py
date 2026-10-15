@@ -336,6 +336,45 @@ class LoaderTests(unittest.TestCase):
         self.assertEqual([row['article_id'] for row in save.call_args.args[1]], [1, 2])
         self.assertEqual(save.call_args.args[1][0]['image_url'], 'https://example.com/existing.jpg')
 
+    def test_configured_article_image_replaces_broken_feed_image_without_changing_article(self):
+        row = {**article(1, title='바르셀로나 소식'), 'image_url': 'https://image.starnewskorea.com/19/missing.jpg'}
+        source = {**SOURCE, 'image_source': 'article'}
+        page = b'<html lang="ko"><meta property="og:image" content="https://image.starnewskorea.com/21/photo.jpg"></html>'
+        session = Mock()
+        session.get.return_value.content = page
+        with patch.object(loader, 'read_source', return_value=[row]), \
+                patch.object(loader, 'save_sources'), patch.object(loader, 'save_articles') as save:
+            loader.refresh(apply=True, sources=[source], teams=[{'team_id': 83}], session=session, now=NOW)
+        saved, = save.call_args.args[1]
+        self.assertEqual(saved, {**row, 'image_url': 'https://image.starnewskorea.com/21/photo.jpg', 'team_ids': [83]})
+        session.get.assert_called_once_with(row['url'], timeout=20, headers={'User-Agent': '1Touch-News/1.0'})
+
+    def test_article_image_failure_does_not_restore_broken_feed_image(self):
+        row = {**article(1, title='바르셀로나 소식'), 'image_url': 'https://example.com/missing.jpg'}
+        session = Mock()
+        session.get.side_effect = loader.requests.Timeout()
+        with patch.object(loader, 'read_source', return_value=[row]), \
+                patch.object(loader, 'save_sources'), patch.object(loader, 'save_articles') as save:
+            report = loader.refresh(apply=True, sources=[{**SOURCE, 'image_source': 'article'}],
+                                    teams=[{'team_id': 83}], session=session, now=NOW)
+        self.assertIsNone(save.call_args.args[1][0]['image_url'])
+        self.assertEqual(report['sources'][0]['error'], 'Timeout')
+
+    def test_romapress_catalog_uses_verified_listing_with_shared_html_parser(self):
+        source = next(source for source in load_sources() if source['name'] == 'RomaPress')
+        listing = b'''<div class="gb-query-loop-item"><h3 class="gb-headline">
+          <a href="/roma-news/">Roma news</a></h3></div><h3><a href="/support/">Support</a></h3>'''
+        page = b'''<html lang="en-US"><meta property="og:title" content="Roma news">
+          <meta property="article:published_time" content="2026-10-15T14:22:30+02:00">
+          <meta property="og:image" content="https://romapress.net/photo.jpg"></html>'''
+        session = Mock()
+        session.get.side_effect = [Mock(content=listing), Mock(content=page)]
+        row, = loader.read_source(session, source)
+        self.assertEqual(row['url'], 'https://romapress.net/roma-news/')
+        self.assertEqual(row['published_at'], datetime(2026, 10, 15, 12, 22, 30, tzinfo=timezone.utc))
+        self.assertEqual(row['image_url'], 'https://romapress.net/photo.jpg')
+        self.assertEqual(session.get.call_count, 2)
+
     def test_html_articles_are_not_fetched_again_when_the_original_has_no_image(self):
         source = {**SOURCE, 'format': 'html', 'article_selector': '.news a[href]'}
         listing = b'<div class="news"><a href="/1">Article</a></div>'
