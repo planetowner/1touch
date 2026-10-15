@@ -3,6 +3,7 @@ package com.onetouch.football
 import android.Manifest
 import android.app.AlertDialog
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaScannerConnection
 import android.os.Build
@@ -17,9 +18,13 @@ import java.io.File
 
 class MainActivity : FlutterActivity() {
     private var pendingSave: Pair<Map<*, *>, MethodChannel.Result>? = null
+    private var mediaPickerBridge: MediaPickerBridge? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        flutterEngine.platformViewsController.registry.registerViewFactory(
+            "onetouch/avatar_header", AvatarPickerHeaderFactory(flutterEngine.dartExecutor.binaryMessenger))
+        mediaPickerBridge = MediaPickerBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         VideoEncoderBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "onetouch/community_attachment")
             .setMethodCallHandler { call, result ->
@@ -55,6 +60,11 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (mediaPickerBridge?.onActivityResult(requestCode, resultCode, data) == true) return
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

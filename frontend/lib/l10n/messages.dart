@@ -737,6 +737,34 @@ const appMessages = <String, MessageTranslations>{
   "Privacy Policy": (ko: "개인정보 처리방침", ja: "プライバシーポリシー", zh: "隐私政策"),
   "Terms of Service": (ko: "이용약관", ja: "利用規約", zh: "服务条款"),
   "Choose from Photos": (ko: "사진에서 선택", ja: "写真から選択", zh: "从照片中选择"),
+  "Profile photo": (ko: "프로필 사진", ja: "プロフィール写真", zh: "头像"),
+  "Recent photos": (ko: "최근 항목", ja: "最近の項目", zh: "最近项目"),
+  "Photo albums": (ko: "사진첩", ja: "アルバム", zh: "相簿"),
+  "All albums": (ko: "모든 사진첩", ja: "すべてのアルバム", zh: "所有相簿"),
+  "Only selected photos are visible.": (
+    ko: "허용한 사진만 표시돼요.",
+    ja: "許可した写真のみ表示されます。",
+    zh: "仅显示已允许访问的照片。"
+  ),
+  "Manage photos": (ko: "사진 관리", ja: "写真を管理", zh: "管理照片"),
+  "Open settings": (ko: "설정 열기", ja: "設定を開く", zh: "打开设置"),
+  "Allow photo access to choose a profile photo.": (
+    ko: "프로필 사진을 고르려면 사진 접근을 허용해 주세요.",
+    ja: "プロフィール写真を選ぶには写真へのアクセスを許可してください。",
+    zh: "请允许访问照片以选择头像。"
+  ),
+  "Unable to load photos.": (
+    ko: "사진을 불러오지 못했어요.",
+    ja: "写真を読み込めませんでした。",
+    zh: "无法加载照片。"
+  ),
+  "No photos in this album.": (
+    ko: "이 사진첩에 사진이 없어요.",
+    ja: "このアルバムには写真がありません。",
+    zh: "此相簿中没有照片。"
+  ),
+  "Take photo": (ko: "사진 촬영", ja: "写真を撮影", zh: "拍摄照片"),
+  "Photo": (ko: "사진", ja: "写真", zh: "照片"),
   "Choose from Gallery": (ko: "갤러리에서 선택", ja: "ギャラリーから選択", zh: "从相册中选择"),
   "Remove Photo": (ko: "사진 삭제", ja: "写真を削除", zh: "删除照片"),
   "Unable to remove profile photo. Please try again.": (

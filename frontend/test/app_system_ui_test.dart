@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/app_system_ui.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
-import 'package:onetouch/features/media/avatar_crop_screen.dart';
+import 'package:onetouch/features/media/avatar_picker_screen.dart';
+import 'package:onetouch/features/media/avatar_photo_library.dart';
+import 'package:onetouch/features/media/native_avatar_header.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:onetouch/rank_fav_teams.dart';
 
 import 'support/app_fonts.dart';
@@ -104,25 +105,17 @@ void main() {
         expect(statusIcons(), normalIcons);
 
         Navigator.of(pageContext).push(MaterialPageRoute<void>(
-          builder: (_) => AvatarCropScreen(
-            originalFile: File('/unused-crop-source'),
-            imageSize: const Size(100, 100),
-            image: const ColoredBox(color: Colors.blue),
+          builder: (_) => Theme(
+            data: theme.copyWith(platform: TargetPlatform.linux),
+            child: const AvatarPickerScreen(library: _DeniedPhotoLibrary()),
           ),
         ));
         await tester.pumpAndSettle();
-        expect(await pixels('crop'), [Colors.black, Colors.black]);
-        expect(statusIcons(), Brightness.light);
-        expect(
-            IconTheme.of(tester.element(find.descendant(
-              of: find.byKey(const ValueKey('avatar-crop-cancel')),
-              matching: find.byType(Icon),
-            ))).color,
-            Colors.white);
-        expect(
-            tester
-                .getRect(find.byKey(const ValueKey('avatar-crop-cancel')))
-                .top,
+        final avatarBackground = theme.extension<AppColors>()!.pageBackground;
+        expect(await pixels('avatar-picker'),
+            [avatarBackground, avatarBackground]);
+        expect(statusIcons(), normalIcons);
+        expect(tester.getRect(find.byType(NativeAvatarHeader)).top,
             greaterThanOrEqualTo(inset));
         Navigator.of(pageContext).pop();
         await tester.pumpAndSettle();
@@ -149,4 +142,10 @@ void main() {
       });
     }
   }
+}
+
+class _DeniedPhotoLibrary extends AvatarPhotoLibrary {
+  const _DeniedPhotoLibrary();
+  @override
+  Future<PermissionState> requestAccess() async => PermissionState.denied;
 }

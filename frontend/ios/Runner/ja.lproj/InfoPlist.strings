@@ -1,1 +1,2 @@
-"NSPhotoLibraryUsageDescription" = "1touchのプロフィールやコミュニティ投稿に使う写真と動画を選択してください。";
+"NSPhotoLibraryUsageDescription" = "プロフィール写真を選ぶために写真とアルバムにアクセスします。";
+"NSCameraUsageDescription" = "プロフィールに使う写真を撮影します。";

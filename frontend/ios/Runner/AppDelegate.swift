@@ -7,6 +7,7 @@ import Photos
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var attachmentChannel: FlutterMethodChannel?
   private var videoEncoderBridge: VideoEncoderBridge?
+  private var mediaPickerBridge: MediaPickerBridge?
   private var pendingAttachmentChoice: FlutterResult?
 
   override func application(
@@ -19,7 +20,14 @@ import Photos
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    engineBridge.applicationRegistrar.register(
+      AvatarPickerHeaderFactory(messenger: engineBridge.applicationRegistrar.messenger()),
+      withId: "onetouch/avatar_header")
     videoEncoderBridge = VideoEncoderBridge(messenger: engineBridge.applicationRegistrar.messenger())
+    mediaPickerBridge = MediaPickerBridge(
+      messenger: engineBridge.applicationRegistrar.messenger(),
+      presentingController: { [weak self] in self?.topController() }
+    )
     attachmentChannel = FlutterMethodChannel(
       name: "onetouch/community_attachment",
       binaryMessenger: engineBridge.applicationRegistrar.messenger()
