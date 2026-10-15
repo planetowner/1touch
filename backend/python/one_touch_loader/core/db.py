@@ -1,7 +1,10 @@
 import os
 from contextlib import contextmanager
+from queue import Empty
+from time import monotonic, sleep
 
 from mysql.connector import pooling
+from mysql.connector.errors import PoolError
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,7 +22,19 @@ DB_CONFIG = {
 _pool = pooling.MySQLConnectionPool(pool_name="1touch_pool", pool_size=5, **DB_CONFIG)
 
 def get_conn():
-    return _pool.get_connection()
+    # 화면의 병렬 요청으로 풀이 잠시 소진되면, 연결 반환을 최대 5초 기다려요.
+    deadline = monotonic() + 5.0
+    while True:
+        try:
+            return _pool.get_connection()
+        except PoolError as error:
+            # Connector 9.4는 빈 큐를 원인으로 남겨요. 다른 오류나 SQL은 재시도하지 않아요.
+            if not isinstance(error.__cause__, Empty):
+                raise
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                raise
+            sleep(min(0.05, remaining))
 
 
 @contextmanager
