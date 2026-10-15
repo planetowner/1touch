@@ -1,15 +1,22 @@
 import 'support/app_catalog.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/home/home_repository.dart';
+import 'package:onetouch/data/fixtures/api/api_fixture_mapper.dart';
+import 'package:onetouch/data/fixtures/api/api_fixture_repository.dart';
+import 'package:onetouch/data/fixtures/api/api_fixture_response.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/home/news_repository.dart';
 import 'package:onetouch/features/home/screen/home_screen_features.dart';
@@ -29,6 +36,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'support/stub_community_repository.dart';
 import 'support/player_detail_fixture.dart';
 import 'support/player_directory_fixture.dart';
+import 'support/fixture_api_json.dart';
 
 void main() {
   setUpAppCatalog();
@@ -100,6 +108,138 @@ void main() {
     expect(find.text('match 741 live'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final manualRefresh in [false, true]) {
+    testWidgets(
+        manualRefresh
+            ? 'Home pull refresh waits for the latest live list and detail'
+            : 'Home polling shows a newly live match on the first response',
+        (tester) async {
+      await _setScreenSize(tester, const Size(393, 852));
+      final homeRepository = _ControlledHomeRepository();
+      var serverFixture = {
+        ...fixtureApiJson(fixtureId: 741),
+        'home_team_id': 83,
+        'away_team_id': 9,
+      };
+      final liveResponse = Completer<void>();
+      final detailResponse = Completer<void>();
+      var holdResponses = false;
+      var detailRequested = false;
+      final requests = <Uri>[];
+      final api = ApiClient(
+        baseUri: Uri.parse('http://localhost:8000/v1/'),
+        requestHeaders: () => const {},
+        client: MockClient((request) async {
+          requests.add(request.url);
+          if (request.url.path == '/v1/fixtures/741') {
+            detailRequested = true;
+            await detailResponse.future;
+            return http.Response(
+                jsonEncode({
+                  ...fixtureDetailApiJson(fixtureId: 741),
+                  ...serverFixture,
+                }),
+                200);
+          }
+          if (holdResponses) await liveResponse.future;
+          return http.Response(
+              jsonEncode({
+                'items':
+                    serverFixture['status'] == 'live' ? [serverFixture] : [],
+                'limit': 10,
+                'offset': 0,
+              }),
+              200);
+        }),
+      );
+      addTearDown(api.close);
+      final repository = ApiFixtureRepository(api: api);
+      Fixture fixture() =>
+          fixtureFromApiResponse(ApiFixtureResponse.fromJson(serverFixture));
+      HomeData home() => _homeData(
+            nextMatch: serverFixture['status'] == 'upcoming' ? fixture() : null,
+            calendar: [
+              HomeCalendarFixture(
+                fixture: fixture(),
+                opponent: const Team(teamId: 9, name: 'Beta FC'),
+              ),
+            ],
+          );
+
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.whitetheme,
+        home: HomeScreen(
+          repository: homeRepository,
+          newsRepository: _RecordingNewsRepository(),
+          fixtureRepository: repository,
+        ),
+      ));
+      homeRepository.calls.single.completer.complete(home());
+      await tester.pump();
+      await tester.pump();
+      expect(
+          repository.cachedForTeamMatches(83,
+              status: FixtureStatus.live, limit: 10),
+          isEmpty);
+      expect(
+          tester
+              .widget<FavoriteTeamCard>(find.byType(FavoriteTeamCard))
+              .team
+              .liveMatch,
+          isNull);
+
+      serverFixture = {
+        ...serverFixture,
+        'status': 'live',
+        'state_id': 2,
+        'state_code': 'INPLAY_1ST_HALF',
+      };
+      holdResponses = true;
+      var refreshCompleted = false;
+      Future<void>? refresh;
+      if (manualRefresh) {
+        refresh = tester
+            .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+            .onRefresh()
+            .then((_) => refreshCompleted = true);
+        await tester.pump();
+        homeRepository.calls.last.completer.complete(home());
+        await tester.pump();
+        expect(refreshCompleted, isFalse);
+      } else {
+        await tester.pump(const Duration(seconds: 30));
+      }
+
+      expect(requests.last.path, '/v1/teams/83/matches');
+      expect(requests.last.queryParameters['status'], 'live');
+      liveResponse.complete();
+      await tester.pump();
+      await tester.pump();
+      expect(detailRequested, isTrue);
+      if (manualRefresh) expect(refreshCompleted, isFalse);
+
+      detailResponse.complete();
+      await tester.pump();
+      await tester.pump();
+      if (manualRefresh) {
+        expect(refreshCompleted, isTrue);
+        await refresh;
+      }
+      // 다음 30초 주기를 진행하지 않아도 최신 응답으로 카드가 전환돼야 해요.
+      expect(
+          tester
+              .widget<FavoriteTeamCard>(find.byType(FavoriteTeamCard))
+              .team
+              .liveMatch
+              ?.fixtureId,
+          741);
+      expect(
+          find.byKey(const ValueKey('home-live-match-button')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
 
   testWidgets('live ball makes three turns, pauses, then repeats',
       (tester) async {
@@ -1092,6 +1232,8 @@ HomeData _homeData({
   List<HomeContentItem> highlights = const [_apiHighlightItem],
   int? leaguePosition,
   int? leagueRankDelta,
+  Fixture? nextMatch,
+  List<HomeCalendarFixture> calendar = const [],
 }) {
   return HomeData(
     favoriteTeam: favoriteTeam,
@@ -1100,9 +1242,9 @@ HomeData _homeData({
           favoriteTeam,
           const Team(teamId: 9, name: 'Beta FC'),
         ],
-    nextMatch: null,
+    nextMatch: nextMatch,
     lastMatch: null,
-    calendar: const [],
+    calendar: calendar,
     highlights: highlights,
     leaguePosition: leaguePosition,
     leagueRankDelta: leagueRankDelta,

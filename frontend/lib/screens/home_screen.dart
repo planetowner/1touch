@@ -160,7 +160,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (repository == null || _homeData?.favoriteTeam.teamId != teamId) return;
     final requestId = ++_liveMatchRequestId;
     try {
-      final liveFixtures = await repository.loadForTeam(
+      // 이전의 빈 캐시 때문에 경기 시작 표시가 다음 조회까지 늦어지지 않게 해요.
+      final liveFixtures = await repository.refreshForTeam(
         teamId,
         status: FixtureStatus.live,
         limit: 10,
@@ -314,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
 
     if (!needsRefresh) {
-      unawaited(_refreshLiveMatch());
+      await _refreshLiveMatch();
       return;
     }
     if (restoredFromDisk) unawaited(_refreshLiveMatch());
@@ -344,7 +345,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         }
         _isLoading = false;
       });
-      unawaited(_refreshLiveMatch());
+      // 당겨서 새로고침할 때도 라이브 상태를 반영한 뒤 완료해요.
+      await _refreshLiveMatch();
     } on Object {
       if (!mounted || requestId != _homeRequestId) return;
       setState(() {

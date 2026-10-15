@@ -13,6 +13,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/team_screen.dart';
 
 import 'support/app_catalog.dart';
+import 'support/fixture_api_json.dart';
 import 'support/test_team_overview_repository.dart';
 
 void main() {
@@ -38,7 +39,7 @@ void main() {
               final id = int.parse(request.url.pathSegments.last);
               return http.Response(
                   jsonEncode({
-                    ..._fixtureDetailJson(fixtureId: id),
+                    ...fixtureDetailApiJson(fixtureId: id),
                     ...serverFixtures.singleWhere((f) => f['fixture_id'] == id),
                   }),
                   200);
@@ -85,13 +86,13 @@ void main() {
     test('a disappearing live match refreshes fresh past and upcoming pages',
         () async {
       serverFixtures = [
-        {..._fixtureJson(fixtureId: 8), 'status': 'live'}
+        {...fixtureApiJson(fixtureId: 8), 'status': 'live'}
       ];
       await loadPages();
       await loadPages(team: 99);
       requests.clear();
       serverFixtures = [
-        {..._fixtureJson(fixtureId: 8), 'status': 'past'}
+        {...fixtureApiJson(fixtureId: 8), 'status': 'past'}
       ];
 
       await repository.refreshForTeam(8, status: FixtureStatus.live);
@@ -111,10 +112,10 @@ void main() {
     test(
         'starting a match refreshes upcoming without duplicating the live match',
         () async {
-      serverFixtures = [_fixtureJson(fixtureId: 8)];
+      serverFixtures = [fixtureApiJson(fixtureId: 8)];
       await loadPages();
       serverFixtures = [
-        {..._fixtureJson(fixtureId: 8), 'status': 'live'}
+        {...fixtureApiJson(fixtureId: 8), 'status': 'live'}
       ];
 
       await repository.refreshForTeam(8, status: FixtureStatus.live);
@@ -131,7 +132,7 @@ void main() {
         await loadPages();
         requests.clear();
         serverFixtures = [
-          {..._fixtureJson(fixtureId: 8), 'status': 'past'}
+          {...fixtureApiJson(fixtureId: 8), 'status': 'past'}
         ];
 
         now = now.add(const Duration(seconds: 30));
@@ -152,12 +153,12 @@ void main() {
     test('finished detail refreshes cached pages for both participating teams',
         () async {
       serverFixtures = [
-        {..._fixtureJson(fixtureId: 8), 'status': 'live'}
+        {...fixtureApiJson(fixtureId: 8), 'status': 'live'}
       ];
       await loadPages();
       await loadPages(team: 19);
       serverFixtures = [
-        {..._fixtureJson(fixtureId: 8), 'status': 'past'}
+        {...fixtureApiJson(fixtureId: 8), 'status': 'past'}
       ];
 
       await repository.refreshDetail(8);
@@ -175,8 +176,8 @@ void main() {
         'failed transition refresh keeps the page and retries on the next poll',
         () async {
       serverFixtures = [
-        {..._fixtureJson(fixtureId: 7), 'status': 'past'},
-        {..._fixtureJson(fixtureId: 8), 'status': 'live'},
+        {...fixtureApiJson(fixtureId: 7), 'status': 'past'},
+        {...fixtureApiJson(fixtureId: 8), 'status': 'live'},
       ];
       await loadPages();
       serverFixtures[1] = {...serverFixtures[1], 'status': 'past'};
@@ -209,9 +210,9 @@ void main() {
           'existing thirty-second polling moves a finished match to past',
           (tester) async {
         serverFixtures = [
-          {..._fixtureJson(fixtureId: 7), 'status': 'past'},
-          {..._fixtureJson(fixtureId: 8), 'status': 'live'},
-          _fixtureJson(fixtureId: 9),
+          {...fixtureApiJson(fixtureId: 7), 'status': 'past'},
+          {...fixtureApiJson(fixtureId: 8), 'status': 'live'},
+          fixtureApiJson(fixtureId: 9),
         ];
         await tester.pumpWidget(screen());
         await tester.pump();
@@ -243,8 +244,8 @@ void main() {
         var now = DateTime.now().toUtc();
         await withClock(Clock(() => now), () async {
           serverFixtures = [
-            {..._fixtureJson(fixtureId: 7), 'status': 'past'},
-            _fixtureJson(fixtureId: 10),
+            {...fixtureApiJson(fixtureId: 7), 'status': 'past'},
+            fixtureApiJson(fixtureId: 10),
           ];
           for (final status in [
             FixtureStatus.past,
@@ -254,7 +255,8 @@ void main() {
             await repository.loadForTeam(8, status: status, limit: 200);
           }
           now = now.add(const Duration(minutes: 2));
-          serverFixtures.add({..._fixtureJson(fixtureId: 8), 'status': 'past'});
+          serverFixtures
+              .add({...fixtureApiJson(fixtureId: 8), 'status': 'past'});
           await tester.pumpWidget(screen());
           await tester.pump();
           await tester.pump(const Duration(milliseconds: 300));
@@ -265,7 +267,8 @@ void main() {
               .handleAppLifecycleStateChanged(AppLifecycleState.paused);
           await tester.pump();
           now = now.add(const Duration(minutes: 2));
-          serverFixtures.add({..._fixtureJson(fixtureId: 9), 'status': 'past'});
+          serverFixtures
+              .add({...fixtureApiJson(fixtureId: 9), 'status': 'past'});
           tester.binding
               .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
           await tester.pump();
@@ -294,7 +297,7 @@ void main() {
       expect(request.headers['Accept'], 'application/json');
       return http.Response(
         jsonEncode({
-          'items': [_fixtureJson()],
+          'items': [fixtureApiJson()],
           'limit': 20,
           'offset': 40,
         }),
@@ -332,11 +335,11 @@ void main() {
     final client = MockClient((request) async {
       requestCount++;
       final fixture = requestCount == 1
-          ? _fixtureJson(
+          ? fixtureApiJson(
               fixtureId: 2,
               startingAt: '2026-09-02 15:00:00',
             )
-          : _fixtureJson(
+          : fixtureApiJson(
               fixtureId: 1,
               startingAt: '2026-09-01 15:00:00',
             );
@@ -450,7 +453,7 @@ void main() {
               final offset = int.parse(request.url.queryParameters['offset']!);
               return http.Response(
                 jsonEncode({
-                  'items': [_fixtureJson(fixtureId: 100 + offset)],
+                  'items': [fixtureApiJson(fixtureId: 100 + offset)],
                   'limit': 1,
                   'offset': offset,
                 }),
@@ -488,7 +491,7 @@ void main() {
     await store.write(
       LocalCacheKeys.teamMatches(8, 'upcoming', null, null, 1, 0),
       {
-        'items': [_fixtureJson(fixtureId: 10)],
+        'items': [fixtureApiJson(fixtureId: 10)],
         'limit': 1,
         'offset': 0
       },
@@ -530,7 +533,7 @@ void main() {
     });
     response.complete(http.Response(
       jsonEncode({
-        'items': [_fixtureJson(fixtureId: 11)],
+        'items': [fixtureApiJson(fixtureId: 11)],
         'limit': 1,
         'offset': 0
       }),
@@ -557,7 +560,7 @@ void main() {
           requests++;
           return http.Response(
             jsonEncode({
-              'items': [_fixtureJson()],
+              'items': [fixtureApiJson()],
               'limit': 1,
               'offset': 0
             }),
@@ -581,7 +584,7 @@ void main() {
   test('always rechecks a cached live page and retains it when offline',
       () async {
     final store = MemoryLocalCacheStore();
-    final live = {..._fixtureJson(fixtureId: 12), 'status': 'live'};
+    final live = {...fixtureApiJson(fixtureId: 12), 'status': 'live'};
     await store.write(
       LocalCacheKeys.teamMatches(8, 'live', null, null, 1, 0),
       {
@@ -621,7 +624,7 @@ void main() {
       expect(request.url.queryParameters, isEmpty);
       expect(request.headers['Authorization'], 'Bearer session-token');
       expect(request.headers['Accept'], 'application/json');
-      return http.Response(jsonEncode(_fixtureDetailJson()), 200);
+      return http.Response(jsonEncode(fixtureDetailApiJson()), 200);
     });
     final repository = ApiFixtureRepository(
       api: ApiClient(
@@ -649,7 +652,7 @@ void main() {
           api: ApiClient(
             client: MockClient((_) async {
               requests++;
-              return http.Response(jsonEncode(_fixtureDetailJson()), 200);
+              return http.Response(jsonEncode(fixtureDetailApiJson()), 200);
             }),
             baseUri: Uri.parse('http://localhost:8000/v1/'),
             requestHeaders: () => const {},
@@ -703,7 +706,7 @@ void main() {
 
       final refreshed = reader.refreshDetail(19712345);
       response.complete(http.Response(
-          jsonEncode({..._fixtureDetailJson(), 'status': 'past'}), 200));
+          jsonEncode({...fixtureDetailApiJson(), 'status': 'past'}), 200));
       final restored = await refreshed;
       expect(restored.pressure, hasLength(1));
       expect(reader.cachedDetail(19712345), same(restored));
@@ -748,7 +751,7 @@ void main() {
         () async {
       final store = _AgedCacheStore(age: age);
       await store.write(LocalCacheKeys.fixtureDetail(19712345),
-          {..._fixtureDetailJson(), 'status': 'past'},
+          {...fixtureDetailApiJson(), 'status': 'past'},
           schemaVersion: 2);
       var requests = 0;
       final repository = ApiFixtureRepository(
@@ -774,7 +777,7 @@ void main() {
     Map<String, dynamic> detailWithMetrics(
             List<Map<String, dynamic>> metrics) =>
         {
-          ..._fixtureDetailJson(),
+          ...fixtureDetailApiJson(),
           'status': 'past',
           'player_statistics': [
             {
@@ -862,7 +865,7 @@ void main() {
     final store = _AgedCacheStore();
     await store.write(
       LocalCacheKeys.fixtureDetail(19712345),
-      _fixtureDetailJson(),
+      fixtureDetailApiJson(),
       schemaVersion: 2,
     );
     var requests = 0;
@@ -890,7 +893,7 @@ void main() {
     await store.write(
       LocalCacheKeys.fixtureDetail(19712345),
       {
-        ..._fixtureDetailJson(),
+        ...fixtureDetailApiJson(),
         'status': 'live',
       },
       schemaVersion: 2,
@@ -920,7 +923,7 @@ void main() {
       api: ApiClient(
           client: MockClient(
             (_) async => http.Response(
-              jsonEncode(_fixtureDetailJson(fixtureId: 9999)),
+              jsonEncode(fixtureDetailApiJson(fixtureId: 9999)),
               200,
             ),
           ),
@@ -952,7 +955,7 @@ void main() {
           'fixture_id': 1001,
           'team_a': 8,
           'team_b': 19,
-          'items': [_fixtureJson()],
+          'items': [fixtureApiJson()],
         }),
         200,
       );
@@ -980,7 +983,7 @@ void main() {
                 'fixture_id': 9999,
                 'team_a': 8,
                 'team_b': 19,
-                'items': [_fixtureJson()],
+                'items': [fixtureApiJson()],
               }),
               200,
             ),
@@ -1058,43 +1061,8 @@ class _AgedCacheStore implements LocalCacheStore {
   Future<void> clearScope(String scope) => _delegate.clearScope(scope);
 }
 
-Map<String, dynamic> _fixtureJson({
-  int fixtureId = 19712345,
-  String startingAt = '2026-08-29 14:00:00',
-}) {
-  return {
-    'fixture_id': fixtureId,
-    'competition_id': 8,
-    'season_id': 25583,
-    'competition_type': 'league',
-    'round_name': '3',
-    'stage_id': 77432101,
-    'stage_name': 'Regular Season',
-    'round_id': 375001,
-    'group_id': null,
-    'aggregate_id': null,
-    'leg': '1/1',
-    'venue_id': 206,
-    'state_id': 1,
-    'state_code': 'NS',
-    'state_name': 'Not Started',
-    'status': 'upcoming',
-    'starting_at': startingAt,
-    'home_team_id': 8,
-    'away_team_id': 19,
-    'home_score': null,
-    'away_score': null,
-    'home_penalty_score': null,
-    'away_penalty_score': null,
-    'home_team_name': 'Liverpool',
-    'away_team_name': 'Arsenal',
-    'home_team_logo': 'https://cdn.example/liverpool.png',
-    'away_team_logo': null,
-  };
-}
-
 Map<String, dynamic> _emptyFinishedDetailJson() => {
-      ..._fixtureDetailJson(),
+      ...fixtureDetailApiJson(),
       'status': 'past',
       'pressure': [],
       // 수집 실패 응답에도 값이 null인 파생 통계가 포함돼요.
@@ -1108,32 +1076,3 @@ Map<String, dynamic> _emptyFinishedDetailJson() => {
         },
       ],
     };
-
-Map<String, dynamic> _fixtureDetailJson({int fixtureId = 19712345}) {
-  return {
-    ..._fixtureJson(fixtureId: fixtureId),
-    'venue_name': 'Anfield',
-    'expected_goals': {
-      'home_xg': 1.75,
-      'away_xg': 0.82,
-      'home_xga': 0.82,
-      'away_xga': 1.75,
-      'provider': 'understat',
-    },
-    'player_expected_goals': [],
-    'shots': [],
-    'events': [],
-    'statistics': [],
-    'player_statistics': [],
-    'lineups': [],
-    'formations': [],
-    'coaches': [],
-    'pressure': [
-      {
-        'team_id': 8,
-        'minute': 27,
-        'pressure': 0.78,
-      },
-    ],
-  };
-}
