@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -20,6 +18,7 @@ import 'package:onetouch/features/community/community_link_preview.dart';
 import 'package:onetouch/features/community/community_social_embed_cache.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'support/fake_webview_platform.dart';
+import 'support/decoded_photo_cache.dart';
 import 'package:onetouch/features/player/player_image_cache.dart';
 import 'package:onetouch/features/team_screen_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -27,7 +26,7 @@ import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/models/post.dart';
 
 void main() {
-  final cache = _PhotoTestBinding().imageCache as _DecodedPhotoCache;
+  final cache = DecodedPhotoTestBinding().imageCache as DecodedPhotoCache;
   tearDown(cache.reset);
   tearDown(communitySocialEmbedCache.clear);
 
@@ -80,8 +79,8 @@ void main() {
   testWidgets('prepares each author once and reuses it on the first feed frame',
       (tester) async {
     const avatar = 'https://api.example.test/v1/users/1/avatar';
-    final key =
-        await _registerPhoto(tester, cache, AvatarImageCache.provider(avatar));
+    final key = await registerDecodedPhoto(
+        tester, cache, AvatarImageCache.provider(avatar));
     final posts = [
       for (var id = 1; id <= 2; id++)
         Post(
@@ -315,31 +314,15 @@ http.Response _transfers(int teamId) => http.Response(
     );
 
 Future<List<Object>> _registerPhotos(
-    WidgetTester tester, _DecodedPhotoCache cache, int teamId) async {
+    WidgetTester tester, DecodedPhotoCache cache, int teamId) async {
   return [
     for (final kind in ['injury', 'in', 'out'])
-      await _registerPhoto(
+      await registerDecodedPhoto(
           tester,
           cache,
           PlayerImageCache.portraitProvider(_url(teamId, kind),
               devicePixelRatio: 2)),
   ];
-}
-
-Future<Object> _registerPhoto(WidgetTester tester, _DecodedPhotoCache cache,
-    ImageProvider provider) async {
-  final decoded = (await tester.runAsync(() async {
-    final recorder = ui.PictureRecorder();
-    Canvas(recorder)
-        .drawRect(const Rect.fromLTWH(0, 0, 2, 2), Paint()..color = Colors.red);
-    final picture = recorder.endRecording();
-    final image = await picture.toImage(2, 2);
-    picture.dispose();
-    return image;
-  }))!;
-  final key = await provider.obtainKey(ImageConfiguration.empty);
-  cache.photos[key] = decoded;
-  return key;
 }
 
 void _expectNoMessi() {
@@ -349,41 +332,4 @@ void _expectNoMessi() {
           widget.image is AssetImage &&
           (widget.image as AssetImage).assetName == 'assets/messi.png'),
       findsNothing);
-}
-
-class _PhotoTestBinding extends AutomatedTestWidgetsFlutterBinding {
-  @override
-  ImageCache createImageCache() => _DecodedPhotoCache();
-}
-
-class _DecodedPhotoCache extends ImageCache {
-  final photos = <Object, ui.Image>{};
-  final loads = <Object, int>{};
-
-  @override
-  ImageStreamCompleter? putIfAbsent(
-      Object key, ImageStreamCompleter Function() loader,
-      {ImageErrorListener? onError}) {
-    final photo = photos[key];
-    return super.putIfAbsent(
-        key,
-        photo == null
-            ? loader
-            : () {
-                loads.update(key, (count) => count + 1, ifAbsent: () => 1);
-                return OneFrameImageStreamCompleter(
-                    SynchronousFuture(ImageInfo(image: photo.clone())));
-              },
-        onError: onError);
-  }
-
-  void reset() {
-    clear();
-    clearLiveImages();
-    for (final photo in photos.values) {
-      photo.dispose();
-    }
-    photos.clear();
-    loads.clear();
-  }
 }

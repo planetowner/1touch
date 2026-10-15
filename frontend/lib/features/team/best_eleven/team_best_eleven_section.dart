@@ -12,7 +12,10 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository_provider.dart';
+import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/features/player/player_detail_view.dart';
+import 'package:onetouch/features/player/player_image_cache.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
 
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -28,12 +31,14 @@ class TeamBestElevenSection extends StatefulWidget {
     required this.teamId,
     required this.variant,
     this.repository,
+    this.playerDetailRepository,
     this.onAvailabilityChanged,
   });
 
   final int? teamId;
   final TeamBestElevenVariant variant;
   final BestElevenRepository? repository;
+  final PlayerDetailRepository? playerDetailRepository;
   final ValueChanged<bool>? onAvailabilityChanged;
 
   @override
@@ -57,6 +62,8 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection>
   bool _loadFailed = false;
   bool _isUnavailable = false;
   int _loadRequestId = 0;
+  int _preparationId = 0;
+  double? _portraitPixelRatio;
 
   BestElevenRepository get _repository =>
       widget.repository ?? bestElevenRepository;
@@ -74,6 +81,54 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection>
         widget.repository != oldWidget.repository ||
         widget.variant != oldWidget.variant) {
       _startDefaultLoad();
+    } else if (widget.playerDetailRepository !=
+        oldWidget.playerDetailRepository) {
+      _schedulePlayerPreparation();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
+    if (_portraitPixelRatio == pixelRatio) return;
+    _portraitPixelRatio = pixelRatio;
+    _schedulePlayerPreparation();
+  }
+
+  void _schedulePlayerPreparation() {
+    final generation = ++_preparationId;
+    final lineup = _lineup;
+    if (lineup == null) return;
+    // 팀 정보를 보는 동안 현재 포메이션의 선수 상세와 사진을 함께 준비해요.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || generation != _preparationId) return;
+      for (final playerId
+          in lineup.players.map((player) => player.playerId).toSet()) {
+        unawaited(_preparePlayer(playerId, generation));
+      }
+    });
+  }
+
+  Future<void> _preparePlayer(int playerId, int generation) async {
+    final store = PlayerDetailStore(
+        playerId: playerId, repository: widget.playerDetailRepository);
+    try {
+      // 선수 상세와 같은 캐시·갱신 규칙을 쓰고, 기본 진입 시즌을 준비해요.
+      final detail = await store.load(null);
+      if (!mounted || generation != _preparationId) return;
+      final image = detail.profile.image?.trim();
+      if (image == null || image.isEmpty) return;
+      await precacheImage(
+        PlayerImageCache.portraitProvider(image,
+            devicePixelRatio: MediaQuery.devicePixelRatioOf(context)),
+        context,
+        onError: (_, __) {},
+      );
+    } on Object {
+      // 미리 읽기에 실패해도 선수 선택은 열어 두고 상세 화면에서 재시도해요.
+    } finally {
+      store.dispose();
     }
   }
 
@@ -88,6 +143,7 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection>
     _isLoading = teamId != null && cached == null;
     _loadFailed = false;
     _isUnavailable = false;
+    _schedulePlayerPreparation();
 
     if (_isLoading) {
       unawaited(_loadLineup(teamId!, requestId));
@@ -120,6 +176,7 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection>
         _isUnavailable = isUnavailable;
       });
       widget.onAvailabilityChanged?.call(!isUnavailable);
+      _schedulePlayerPreparation();
     } on Object {
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
@@ -142,6 +199,7 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection>
       _isLoading = cached == null;
       _loadFailed = false;
     });
+    _schedulePlayerPreparation();
 
     if (cached == null) {
       unawaited(_loadLineup(teamId, requestId, formation: formation));

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +11,49 @@ import 'package:onetouch/features/player/player_stat_value.dart';
 import 'support/player_detail_fixture.dart';
 
 void main() {
+  test('shares concurrent detail loads by player and season and permits retry',
+      () async {
+    final pending = <(int, int?), Completer<http.Response>>{};
+    final requests = <(int, int?)>[];
+    final repo = ApiPlayerDetailRepository(
+        api: ApiClient(
+      client: MockClient((request) {
+        final key = (
+          int.parse(request.url.pathSegments[2]),
+          int.tryParse(request.url.queryParameters['season_id'] ?? '')
+        );
+        requests.add(key);
+        return pending.putIfAbsent(key, Completer<http.Response>.new).future;
+      }),
+      baseUri: Uri.parse('https://example.com/v1/'),
+      requestHeaders: () => const {},
+    ));
+    final season = detailFixture().seasons.last.id;
+    final first = repo.load(1);
+    final shared = repo.load(1);
+    final otherPlayer = repo.load(2);
+    final otherSeason = repo.load(1, seasonId: season);
+    final failed =
+        expectLater(otherPlayer, throwsA(isA<http.ClientException>()));
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, [(1, null), (2, null), (1, season)]);
+    pending[(1, null)]!.complete(http.Response.bytes(
+        utf8.encode(jsonEncode(playerDetailJson(playerId: 1))), 200));
+    pending[(1, season)]!.complete(http.Response.bytes(
+        utf8.encode(
+            jsonEncode(playerDetailJson(playerId: 1, seasonId: season))),
+        200));
+    pending[(2, null)]!.complete(http.Response('Unavailable', 503));
+    expect(await shared, same(await first));
+    expect((await otherSeason).selectedSeason?.id, season);
+    await failed;
+    pending[(2, null)] = Completer<http.Response>()
+      ..complete(http.Response.bytes(
+          utf8.encode(jsonEncode(playerDetailJson(playerId: 2))), 200));
+    expect((await repo.load(2)).playerId, 2);
+    expect(requests.where((query) => query == (2, null)), hasLength(2));
+  });
+
   test(
       'comparison page uses one request and preserves filters and nullable fields',
       () async {

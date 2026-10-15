@@ -13,6 +13,7 @@ class ApiPlayerDetailRepository implements CachedPlayerDetailRepository {
   final LocalCacheStore? _cacheStore;
   static const _maxSnapshots = 24;
   final _snapshots = <(int, int?), PlayerDetailSnapshot>{};
+  final _requests = <(int, int?), Future<PlayerDetail>>{};
 
   @override
   PlayerDetailSnapshot? snapshotFor(int playerId, {int? seasonId}) =>
@@ -50,7 +51,17 @@ class ApiPlayerDetailRepository implements CachedPlayerDetailRepository {
   }
 
   @override
-  Future<PlayerDetail> load(int playerId, {int? seasonId}) async {
+  Future<PlayerDetail> load(int playerId, {int? seasonId}) {
+    final key = (playerId, seasonId);
+    // 미리 읽는 중에 상세를 열어도 같은 선수·시즌 요청은 한 번만 보내요.
+    return _requests.putIfAbsent(
+        key,
+        () => _fetch(playerId, seasonId).whenComplete(() {
+              _requests.remove(key);
+            }));
+  }
+
+  Future<PlayerDetail> _fetch(int playerId, int? seasonId) async {
     final decoded = await _get('players/$playerId/detail', {
       if (seasonId != null) 'season_id': '$seasonId',
     });
