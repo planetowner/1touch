@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -448,10 +449,7 @@ void main() {
       final feedAvatar = tester.widget<CircleAvatar>(
         find.byKey(const ValueKey('community-post-avatar-12')),
       );
-      final feedImage = feedAvatar.backgroundImage! as NetworkImage;
-      expect(feedImage.url, avatarUrl);
-      expect(feedImage.headers,
-          const {'Authorization': 'Bearer post-avatar-token'});
+      _expectAuthenticatedAvatar(feedAvatar, avatarUrl, 'post-avatar-token');
       expect(
         tester
             .widget<CircleAvatar>(
@@ -487,10 +485,7 @@ void main() {
       final detailAvatar = tester.widget<CircleAvatar>(
         find.byKey(const ValueKey('community-post-avatar-12')),
       );
-      final detailImage = detailAvatar.backgroundImage! as NetworkImage;
-      expect(detailImage.url, avatarUrl);
-      expect(detailImage.headers,
-          const {'Authorization': 'Bearer post-avatar-token'});
+      _expectAuthenticatedAvatar(detailAvatar, avatarUrl, 'post-avatar-token');
       expect(tester.takeException(), isNull);
     });
   }
@@ -560,8 +555,7 @@ void main() {
     final avatar = tester.widget<CircleAvatar>(
       find.byKey(const ValueKey('community-comment-avatar-5')),
     );
-    final provider = avatar.backgroundImage! as NetworkImage;
-    expect(provider.headers, const {'Authorization': 'Bearer avatar-token'});
+    _expectAuthenticatedAvatar(avatar, avatarUrl, 'avatar-token');
     expect(tester.takeException(), isNull);
   });
 
@@ -622,4 +616,14 @@ void main() {
     expect(sharedParams!.sharePositionOrigin!.isEmpty, isFalse);
     expect(tester.takeException(), isNull);
   });
+}
+
+void _expectAuthenticatedAvatar(CircleAvatar avatar, String url, String token) {
+  final provider = avatar.backgroundImage! as CachedNetworkImageProvider;
+  final uri = Uri.parse(url);
+  expect(
+      Uri.parse(provider.url),
+      uri.replace(
+          queryParameters: {...uri.queryParameters, 'thumbnail': 'true'}));
+  expect(provider.headers, {'Authorization': 'Bearer $token'});
 }

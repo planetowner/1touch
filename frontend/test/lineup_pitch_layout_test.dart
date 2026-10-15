@@ -229,7 +229,8 @@ void main() {
               matching: find.text(other.name),
             ));
             expect(time.overlaps(name), isFalse,
-              reason: '$formation ${midfielder.name} time $time and ${other.name} $name');
+                reason:
+                    '$formation ${midfielder.name} time $time and ${other.name} $name');
           }
         }
         expect(tester.takeException(), isNull);

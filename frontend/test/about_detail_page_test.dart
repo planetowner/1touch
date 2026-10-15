@@ -201,8 +201,11 @@ void main() {
       supportedLocales: appSupportedLocales,
       localizationsDelegates: appLocalizationDelegates,
     ));
-    await tester.tap(find.byType(Checkbox));
+    final checkbox = find.byType(Checkbox);
+    await tester.ensureVisible(checkbox);
+    await tester.tap(checkbox);
     await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(checkbox).value, isTrue);
 
     for (final section in [AboutSection.terms, AboutSection.privacy]) {
       await _tapConsentLink(tester, section.titleKey);
@@ -232,7 +235,8 @@ GoRouter _router(String initialLocation) {
       ),
       GoRoute(
         path: '/profile',
-        builder: (context, state) => const Scaffold(key: ValueKey('profile-page')),
+        builder: (context, state) =>
+            const Scaffold(key: ValueKey('profile-page')),
       ),
       profileAboutRoute(navigatorKey: rootNavigatorKey),
       GoRoute(

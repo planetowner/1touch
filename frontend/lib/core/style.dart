@@ -216,7 +216,8 @@ ThemeData _buildTheme(
     dividerColor: colors.divider,
     iconTheme: IconThemeData(color: foreground),
     // 길게 눌러 뜨는 툴팁은 끄고, 화면 읽기용 설명은 유지해요.
-    tooltipTheme: const TooltipThemeData(triggerMode: TooltipTriggerMode.manual),
+    tooltipTheme:
+        const TooltipThemeData(triggerMode: TooltipTriggerMode.manual),
     textTheme: base.textTheme.apply(
       bodyColor: foreground,
       displayColor: foreground,

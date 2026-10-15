@@ -75,7 +75,7 @@ void main() {
         ),
       ),
     );
-    await _showComments(tester);
+    await _showComments(tester, 'community-comments-loading');
 
     expect(
       find.byKey(const ValueKey('community-comments-loading')),
@@ -98,7 +98,7 @@ void main() {
       ),
     ]);
     await tester.pumpAndSettle();
-    await _showComments(tester);
+    await _showComment(tester, 11);
 
     expect(repository.requestedPostIds, [mockPosts.first.postId]);
     expect(find.text('Top-level comment'), findsOneWidget);
@@ -138,12 +138,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await _showComments(tester);
+    await _showComments(tester, 'community-comments-retry');
 
     expect(find.text('Unable to load comments.'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('community-comments-retry')));
     await tester.pumpAndSettle();
-    await _showComments(tester);
+    await _showComment(tester, 21);
 
     expect(find.text('Loaded on retry'), findsOneWidget);
     expect(repository.requestedPostIds, [
@@ -286,7 +286,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await _showComment(tester, 41);
+    await _showComments(tester, 'community-comment-reply-41');
 
     await tester.tap(
       find.byKey(const ValueKey('community-comment-reply-41')),
@@ -316,7 +316,7 @@ void main() {
 
     tester.testTextInput.hide();
     await tester.pumpAndSettle();
-    await _showComment(tester, 41);
+    await _showComments(tester, 'community-comment-reply-41');
     await tester.tap(
       find.byKey(const ValueKey('community-comment-reply-41')),
     );
@@ -424,32 +424,18 @@ PostComment _comment({
   );
 }
 
-Future<void> _showComments(WidgetTester tester) async {
-  final finder = find.byKey(const ValueKey('community-comments-loading'));
-  final fallback = find.byKey(const ValueKey('community-comments-error'));
-  final content = find.byKey(const ValueKey('community-comment-11'));
-  final retryContent = find.byKey(const ValueKey('community-comment-21'));
-  final target = finder.evaluate().isNotEmpty
-      ? finder
-      : fallback.evaluate().isNotEmpty
-          ? fallback
-          : content.evaluate().isNotEmpty
-              ? content
-              : retryContent;
+Future<void> _showComments(WidgetTester tester, String targetKey) async {
+  // 지연 생성되는 댓글은 존재 여부로 추측하지 않고 필요한 항목까지 스크롤해요.
   await tester.scrollUntilVisible(
-    target,
+    find.byKey(ValueKey(targetKey)),
     150,
     scrollable: find.byType(Scrollable).first,
   );
+  await tester.pump();
 }
 
-Future<void> _showComment(WidgetTester tester, int commentId) async {
-  await tester.scrollUntilVisible(
-    find.byKey(ValueKey('community-comment-$commentId')),
-    150,
-    scrollable: find.byType(Scrollable).first,
-  );
-}
+Future<void> _showComment(WidgetTester tester, int commentId) =>
+    _showComments(tester, 'community-comment-$commentId');
 
 void _setScreenSize(WidgetTester tester) {
   tester.view.physicalSize = const Size(430, 932);

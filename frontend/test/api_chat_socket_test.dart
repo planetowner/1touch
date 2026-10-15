@@ -138,7 +138,8 @@ void main() {
       ),
     );
 
-    await connection.finish(4403, 'Chat requires following a participating team');
+    await connection.finish(
+        4403, 'Chat requires following a participating team');
 
     await error;
   });

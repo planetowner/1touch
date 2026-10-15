@@ -281,8 +281,10 @@ Future<void> _openDetail(WidgetTester tester, _Detail detail) async {
           find.byKey(const ValueKey('team-probability-card-league_winner')));
       if (detail == _Detail.whatIf) {
         await _pumpNavigation(tester);
-        await tester
-            .tap(find.byKey(const ValueKey('probability-what-if-button')));
+        final whatIf = find.byKey(const ValueKey('probability-what-if-button'));
+        await tester.scrollUntilVisible(whatIf, 300,
+            scrollable: find.byType(Scrollable).first);
+        await tester.tap(whatIf);
       }
   }
   await _pumpNavigation(tester);
@@ -301,6 +303,8 @@ Future<void> _goBack(
                 (widget) => widget is CommunityIcon && widget.name == 'back'),
             matching: find.byType(IconButton)),
       };
+      await tester.ensureVisible(back);
+      await tester.pump();
       await tester.tap(back);
     case _BackMethod.system:
       await tester.binding.handlePopRoute();

@@ -6,8 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/overflow_scrolling_text.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/catalog/football_names.dart';
+import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/features/home_screen_features.dart';
 import 'package:onetouch/features/competition/competition_label.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -101,13 +103,6 @@ void main() {
           Clock.fixed(today), () => _pumpCard(tester, position: 2, delta: 3));
 
       expect(find.text('프리미어리그 2위'), findsOneWidget);
-      expect(
-        find.descendant(
-          of: find.byKey(const ValueKey('last-match-card-surface')),
-          matching: find.byType(CompetitionLogo),
-        ),
-        findsNothing,
-      );
       final movement = find.byKey(const ValueKey('home-team-rank-movement'));
       final icon =
           find.descendant(of: movement, matching: find.byType(SvgPicture));
@@ -122,23 +117,37 @@ void main() {
       );
       expect(delta.style?.fontSize, standing.style?.fontSize);
 
-      for (final label in [
-        '프리미어리그 6R',
-        dateLabel,
-        '오전 11:30',
-        '5주 전',
+      // 예정·지난 경기 모두 로고와 대회명을 표시하고, 긴 문구는 스크롤해요.
+      for (final (card, labels) in [
+        (find.byType(MatchCard), ['프리미어리그 6R', dateLabel, '오전 11:30']),
+        (find.byType(MatchCard2), ['프리미어리그 6R', '5주 전']),
       ]) {
-        final finder = find.text(label);
-        expect(finder, findsOneWidget);
-        final paragraph = tester.renderObject<RenderParagraph>(finder);
-        expect(paragraph.maxLines, 1);
-        // 320px에서는 72px 로고 사이의 대회명에 기존 말줄임을 적용해요.
-        expect(
-            paragraph.didExceedMaxLines, width == 320 && label == '프리미어리그 6R',
-            reason: label);
-        final rect = tester.getRect(finder);
-        expect(rect.left, greaterThanOrEqualTo(24));
-        expect(rect.right, lessThanOrEqualTo(width - 24));
+        final logo = find.descendant(
+          of: card,
+          matching: find.byType(CompetitionLogo),
+        );
+        expect(logo, findsOneWidget);
+        expect(tester.widget<CompetitionLogo>(logo).competitionId, 8);
+        final competition = find.descendant(
+          of: card,
+          matching: find.byType(CompetitionLabel),
+        );
+        expect(tester.widget<CompetitionLabel>(competition).scrollOnOverflow,
+            isTrue);
+        for (final label in labels) {
+          final finder = find.descendant(of: card, matching: find.text(label));
+          expect(finder, findsOneWidget);
+          final paragraph = tester.renderObject<RenderParagraph>(finder);
+          expect(paragraph.maxLines, 1);
+          expect(paragraph.didExceedMaxLines, isFalse, reason: label);
+          final viewport = find.ancestor(
+            of: finder,
+            matching: find.byType(OverflowScrollingText),
+          );
+          final rect = tester.getRect(viewport);
+          expect(rect.left, greaterThanOrEqualTo(24));
+          expect(rect.right, lessThanOrEqualTo(width - 24));
+        }
       }
       expect(tester.takeException(), isNull);
     });
