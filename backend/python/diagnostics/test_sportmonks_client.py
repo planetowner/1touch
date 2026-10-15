@@ -4,7 +4,50 @@ from copy import deepcopy
 from pathlib import Path
 from unittest.mock import Mock, call
 
+import requests
+
 from one_touch_loader.core.sportmonks import SportmonksClient
+
+
+class SportmonksConnectionTests(unittest.TestCase):
+    def setUp(self):
+        self.client = SportmonksClient.__new__(SportmonksClient)
+        self.client.base = 'https://api.sportmonks.com/v3/football'
+        self.client.token = 'test-token'
+        self.client.timeout = 60
+        self.client._wait_before_request = Mock()
+        self.client._session = Mock()
+        self.response = Mock()
+        self.response.json.return_value = {'data': [{'id': 100}]}
+
+    def test_interrupted_connection_retries_same_page_and_counts_every_attempt(self):
+        self.client._session.get.side_effect = [requests.ConnectionError(), requests.ConnectionError(), self.response]
+        result = self.client._get('transfers/players/123', params={'page': 2})
+        self.assertEqual(result, {'data': [{'id': 100}]})
+        calls = self.client._session.get.call_args_list
+        self.assertEqual(calls, [calls[0]] * 3)
+        self.assertEqual(calls[0].kwargs['params'], {'page': 2})
+        self.assertEqual(self.client.request_count, 3)
+        self.assertEqual(self.client._wait_before_request.call_count, 3)
+
+    def test_persistent_connection_failure_is_raised_after_three_attempts(self):
+        failure = requests.ConnectionError('connection closed')
+        self.client._session.get.side_effect = failure
+        with self.assertRaises(requests.ConnectionError) as raised:
+            self.client._get('transfers/players/123')
+        self.assertIs(raised.exception, failure)
+        self.assertEqual(self.client._session.get.call_count, 3)
+
+    def test_http_errors_and_invalid_payloads_are_not_retried(self):
+        for method, failure in [('raise_for_status', requests.HTTPError()), ('json', ValueError())]:
+            with self.subTest(method=method):
+                self.response = Mock()
+                getattr(self.response, method).side_effect = failure
+                self.client._session.reset_mock()
+                self.client._session.get.return_value = self.response
+                with self.assertRaises(type(failure)):
+                    self.client._get('transfers/players/123')
+                self.client._session.get.assert_called_once()
 
 
 class SportmonksClientTest(unittest.TestCase):

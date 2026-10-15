@@ -17,7 +17,7 @@ Current season sync (read-only unless --apply is supplied):
   python -m one_touch_loader.cli current-season player-reconciliation [--apply]
   python -m one_touch_loader.cli current-season injuries [--apply]
   python -m one_touch_loader.cli current-season transfers [--apply]
-  python -m one_touch_loader.cli current-season transfer-reconciliation [--apply]
+  python -m one_touch_loader.cli current-season transfer-reconciliation [--apply] [--from-player <player_id>]
 
 New database reload order (redesigned commands):
 
@@ -172,6 +172,19 @@ def _parse_team_ids_csv(value: str) -> list[int]:
     return [int(x.strip()) for x in value.split(",") if x.strip()]
 
 
+def _pop_id_option(args: list[str], option: str) -> int | None:
+    if option not in args:
+        return None
+    index = args.index(option)
+    if index + 1 >= len(args):
+        raise ValueError(f"{option} requires an ID")
+    value = int(args[index + 1])
+    if value <= 0:
+        raise ValueError(f"{option} requires a positive ID")
+    del args[index:index + 2]
+    return value
+
+
 def _parse_competition_ids(values: list[str]) -> list[int]:
     competition_ids: list[int] = []
     seen: set[int] = set()
@@ -227,6 +240,11 @@ def main():
         from .loaders.current_transfer_sync import sync_current_transfers, reconcile_current_transfers
         from .loaders.injuries_loader import sync_current_injuries
         args = sys.argv[2:]
+        options = {}
+        if args and args[0] == "transfer-reconciliation":
+            from_player_id = _pop_id_option(args, "--from-player")
+            if from_player_id is not None:
+                options["from_player_id"] = from_player_id
         actions = {
             "metadata": sync_current_season_metadata,
             "fixtures": sync_current_season_fixtures,
@@ -240,7 +258,7 @@ def main():
         if (len(args) not in (1, 2) or args[0] not in actions
                 or (len(args) == 2 and args[1] != "--apply")):
             raise SystemExit("Usage: current-season {" + "|".join(actions) + "} [--apply]")
-        print(json.dumps(actions[args[0]](apply="--apply" in args), ensure_ascii=False))
+        print(json.dumps(actions[args[0]](apply="--apply" in args, **options), ensure_ascii=False))
 
     elif cmd == "seasons":
         from one_touch_loader.loaders.seasons_loader import collect_all_seasons
@@ -543,12 +561,9 @@ def main():
         if player_stats_only:
             sys.argv.remove("--player-stats-only")
         options = {"player_stats_only": True} if player_stats_only else {}
-        if "--from-fixture" in sys.argv:
-            index = sys.argv.index("--from-fixture")
-            if index + 1 >= len(sys.argv):
-                raise ValueError("--from-fixture requires a fixture ID")
-            options["from_fixture_id"] = int(sys.argv[index + 1])
-            del sys.argv[index:index + 2]
+        from_fixture_id = _pop_id_option(sys.argv, "--from-fixture")
+        if from_fixture_id is not None:
+            options["from_fixture_id"] = from_fixture_id
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_fixture_details(**options)
             print(f"Fixture details all done: {result}")

@@ -1,6 +1,7 @@
 """부분 조회·전체 이력·계약 참조의 경계를 실제 외래 키로 검증해요."""
 from datetime import date
 import sqlite3
+import requests
 from unittest.mock import call, patch
 
 from diagnostics.test_current_player_sync import SyncDatabaseCase, member, profile
@@ -96,6 +97,45 @@ class CurrentTransferSyncTests(SyncDatabaseCase):
         self.assertEqual(self.client.iter_transfers_by_player.call_args_list, [call(1), call(2), call(3), call(5)])
         self.assertEqual(self.sql.execute('SELECT transfer_id,player_id FROM transfers').fetchall(), [(100, 5)])
         self.assertEqual(self.names(5)[:2], (None, None))
+
+    def test_interrupted_reconciliation_resumes_at_failed_player_after_committed_players(self):
+        self.store([movement(tid=90, pid=1, day='2020-01-01')])
+
+        def history(pid):
+            if pid == 2:
+                raise requests.ConnectionError('connection closed')
+            return self.api([])
+
+        self.client.iter_transfers_by_player.side_effect = history
+        with self.assertRaises(requests.ConnectionError):
+            sync.reconcile_current_transfers(apply=True)
+        self.assertEqual(self.client.iter_transfers_by_player.call_args_list, [call(1), call(2)])
+        self.assertEqual(self.sql.execute('SELECT transfer_id FROM transfers').fetchall(), [])
+        self.client.iter_transfers_by_player.reset_mock()
+        self.client.iter_transfers_by_player.side_effect = lambda pid: self.api([])
+        result = sync.reconcile_current_transfers(apply=True, from_player_id=2)
+        self.assertEqual(result['players'], 2)
+        self.assertEqual(self.client.iter_transfers_by_player.call_args_list, [call(2), call(3)])
+
+    def test_resume_player_outside_scope_does_not_write(self):
+        before = list(self.sql.iterdump())
+        with self.assertRaisesRegex(ValueError, 'not in the transfer reconciliation scope'):
+            sync.reconcile_current_transfers(apply=True, from_player_id=999)
+        self.client.iter_transfers_by_player.assert_not_called()
+        self.assertEqual(list(self.sql.iterdump()), before)
+
+    def test_reconciliation_cli_resume_and_invalid_ids(self):
+        with patch('sys.argv', ['cli', 'current-season', 'transfer-reconciliation', '--from-player', '2', '--apply']), \
+                patch.object(sync, 'reconcile_current_transfers', return_value={}) as run:
+            cli.main()
+            run.assert_called_once_with(apply=True, from_player_id=2)
+        for value in ([], ['invalid'], ['0'], ['-1']):
+            with self.subTest(value=value), \
+                    patch('sys.argv', ['cli', 'current-season', 'transfer-reconciliation', '--from-player', *value]), \
+                    patch.object(sync, 'reconcile_current_transfers') as run:
+                with self.assertRaises(ValueError):
+                    cli.main()
+                run.assert_not_called()
 
     def test_full_history_updates_contract_before_deleting_old_restricted_reference(self):
         self.store([movement(tid=90)])

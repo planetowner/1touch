@@ -7,6 +7,7 @@ from datetime import datetime
 from unittest.mock import call, patch
 
 from one_touch_loader import cli
+from one_touch_loader.loaders import fixture_details_loader, fixtures_loader
 from one_touch_loader.core.fixture_states import (
     screen_status_for_state_id,
     state_ids_for_screen_status,
@@ -178,7 +179,7 @@ class FixtureNormalizationTests(unittest.TestCase):
 class FixtureCliTests(unittest.TestCase):
     def test_details_resume_option_keeps_season_and_competitions(self):
         with patch("sys.argv", ["cli", "fixture-details", "2017/2018", "8", "5", "--from-fixture", "1818704", "--player-stats-only"]), \
-                patch.object(cli, "collect_fixture_details_for_competition_season", return_value={}) as collect, \
+                patch.object(fixture_details_loader, "collect_fixture_details_for_competition_season", return_value={}) as collect, \
                 redirect_stdout(io.StringIO()):
             cli.main()
         collect.assert_called_once_with("2017/2018", [8, 5], player_stats_only=True, from_fixture_id=1818704)
@@ -186,7 +187,7 @@ class FixtureCliTests(unittest.TestCase):
     def test_details_resume_missing_or_invalid_id_does_not_start_collection(self):
         for option in (["--from-fixture"], ["--from-fixture", "invalid"]):
             with self.subTest(option=option), patch("sys.argv", ["cli", "fixture-details", "2017/2018", *option]), \
-                    patch.object(cli, "collect_fixture_details_for_competition_season") as collect:
+                    patch.object(fixture_details_loader, "collect_fixture_details_for_competition_season") as collect:
                 with self.assertRaises(ValueError):
                     cli.main()
                 collect.assert_not_called()
@@ -195,7 +196,7 @@ class FixtureCliTests(unittest.TestCase):
         for arguments, expected in ((["live"], False), (["live", "--apply"], True)):
             with self.subTest(arguments=arguments), patch("sys.argv", ["cli", "fixtures", *arguments]), \
                     patch("one_touch_loader.loaders.live_fixtures_loader.refresh_live_fixtures") as refresh, \
-                    patch.object(cli, "collect_all_fixtures") as collect, redirect_stdout(io.StringIO()):
+                    patch.object(fixtures_loader, "collect_all_fixtures") as collect, redirect_stdout(io.StringIO()):
                 cli.main()
                 refresh.assert_called_once_with(apply=expected)
                 collect.assert_not_called()
@@ -207,8 +208,8 @@ class FixtureCliTests(unittest.TestCase):
             (["564", "8", "564"], [564, 8]),
         ):
             with self.subTest(ids=ids), patch("sys.argv", ["cli", "fixtures", "2026/2027", *ids]), \
-                    patch.object(cli, "collect_fixtures_for_competition_season", return_value={"stored_fixture_count": 20}) as collect, \
-                    patch.object(cli, "collect_all_fixtures") as collect_all, redirect_stdout(io.StringIO()) as output:
+                    patch.object(fixtures_loader, "collect_fixtures_for_competition_season", return_value={"stored_fixture_count": 20}) as collect, \
+                    patch.object(fixtures_loader, "collect_all_fixtures") as collect_all, redirect_stdout(io.StringIO()) as output:
                 cli.main()
                 self.assertEqual(collect.call_args_list, [call("2026/2027", value) for value in expected])
                 collect_all.assert_not_called()
@@ -216,22 +217,22 @@ class FixtureCliTests(unittest.TestCase):
 
     def test_all_keeps_existing_collection_scope(self) -> None:
         with patch("sys.argv", ["cli", "fixtures", "all"]), \
-                patch.object(cli, "collect_all_fixtures", return_value={"collection_runs": 5, "stored_fixtures": 100}) as collect_all, \
-                patch.object(cli, "collect_fixtures_for_competition_season") as collect, redirect_stdout(io.StringIO()):
+                patch.object(fixtures_loader, "collect_all_fixtures", return_value={"collection_runs": 5, "stored_fixtures": 100}) as collect_all, \
+                patch.object(fixtures_loader, "collect_fixtures_for_competition_season") as collect, redirect_stdout(io.StringIO()):
             cli.main()
             collect_all.assert_called_once_with()
             collect.assert_not_called()
 
     def test_invalid_later_id_is_rejected_before_collection(self) -> None:
         with patch("sys.argv", ["cli", "fixtures", "2026/2027", "8", "invalid"]), \
-                patch.object(cli, "collect_fixtures_for_competition_season") as collect:
+                patch.object(fixtures_loader, "collect_fixtures_for_competition_season") as collect:
             with self.assertRaises(ValueError):
                 cli.main()
             collect.assert_not_called()
 
     def test_failure_stops_remaining_competitions(self) -> None:
         with patch("sys.argv", ["cli", "fixtures", "2026/2027", "8", "82", "301"]), \
-                patch.object(cli, "collect_fixtures_for_competition_season", side_effect=[{"stored_fixture_count": 20}, RuntimeError("collection failed")]) as collect, \
+                patch.object(fixtures_loader, "collect_fixtures_for_competition_season", side_effect=[{"stored_fixture_count": 20}, RuntimeError("collection failed")]) as collect, \
                 redirect_stdout(io.StringIO()) as output:
             with self.assertRaisesRegex(RuntimeError, "collection failed"):
                 cli.main()

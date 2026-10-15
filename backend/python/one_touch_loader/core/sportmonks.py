@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import time
 from datetime import date
@@ -2246,17 +2247,25 @@ class SportmonksClient:
             "Authorization": self.token,
         }
 
-        self._wait_before_request()
-        self.request_count += 1
-        try:
-            response = self._session.get(
-                url,
-                headers=headers,
-                params=params or {},
-                timeout=self.timeout,
-            )
-        finally:
-            self._last_request_at = time.monotonic()
+        for attempt in range(3):
+            self._wait_before_request()
+            self.request_count += 1
+            try:
+                response = self._session.get(
+                    url,
+                    headers=headers,
+                    params=params or {},
+                    timeout=self.timeout,
+                )
+                break
+            except requests.ConnectionError:
+                # 응답 전 연결 끊김으로 전체 이적 대조가 중단됐어요. 같은 GET만 최대 세 번 시도해요.
+                if attempt == 2:
+                    raise
+                logging.getLogger(__name__).warning(
+                    "Sportmonks connection interrupted: path=%s retry=%s/2", path, attempt + 1)
+            finally:
+                self._last_request_at = time.monotonic()
 
         response.raise_for_status()
         return response.json()

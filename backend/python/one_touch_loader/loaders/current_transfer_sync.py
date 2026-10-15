@@ -89,7 +89,7 @@ def sync_player_history_and_contracts(client, player_id: int, senior_ids: set[in
             "unclassified_teams": movement_rows["unclassified_teams"]}
 
 
-def _sync(*, reconcile: bool, apply: bool) -> dict:
+def _sync(*, reconcile: bool, apply: bool, from_player_id: int | None = None) -> dict:
     started_at = monotonic()
     client = SportmonksClient()
     scope = squads.load_squad_scope(current_only=True)
@@ -123,6 +123,14 @@ def _sync(*, reconcile: bool, apply: bool) -> dict:
                                    if item["completed"] is True and
                                    (item["from_team_id"] in team_ids or item["to_team_id"] in team_ids))
         selected = sorted(history_players | departures)
+        if from_player_id is not None:
+            if from_player_id not in selected:
+                raise ValueError(f"Resume player {from_player_id} is not in the transfer reconciliation scope")
+            # 선수별 저장이 끝난 뒤 남기는 완료 로그를 기준으로 중단된 대조를 이어가요.
+            start_index = selected.index(from_player_id)
+            selected = selected[start_index:]
+            print(f"Resume transfer-reconciliation: skipped={start_index} remaining={len(selected)} "
+                  f"from_player_id={from_player_id}", flush=True)
         senior_ids = load_senior_team_ids() if history_players else set()
         results = []
         mode = "transfer-reconciliation" if reconcile else "transfers"
@@ -152,5 +160,5 @@ def sync_current_transfers(*, apply: bool = False) -> dict:
     return _sync(reconcile=False, apply=apply)
 
 
-def reconcile_current_transfers(*, apply: bool = False) -> dict:
-    return _sync(reconcile=True, apply=apply)
+def reconcile_current_transfers(*, apply: bool = False, from_player_id: int | None = None) -> dict:
+    return _sync(reconcile=True, apply=apply, from_player_id=from_player_id)
