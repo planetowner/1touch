@@ -19,10 +19,11 @@ void main() {
   late _ConsentInformation information;
   late Completer<FormError?> initialForm;
   late Completer<FormError?> privacyForm;
-  late Completer<int?> trackingAuthorization;
   late List<MethodCall> adCalls;
+  late Completer<void> firstPartyIdDisabled;
+  late Completer<bool?> trackingPreparation;
   var privacyFormsShown = 0;
-  var trackingRequests = 0;
+  var trackingPreparations = 0;
   // 플랫폼 응답 Future도 각 위젯 테스트의 가상 시계 안에서 만들어요.
   void installMocks() {
     MobileAdsService.resetForTesting();
@@ -37,14 +38,15 @@ void main() {
     const trackingChannel = MethodChannel('onetouch/tracking_authorization');
     initialForm = Completer<FormError?>();
     privacyForm = Completer<FormError?>();
-    trackingAuthorization = Completer<int?>();
     adCalls = <MethodCall>[];
+    firstPartyIdDisabled = Completer<void>();
+    trackingPreparation = Completer<bool?>();
     privacyFormsShown = 0;
-    trackingRequests = 0;
+    trackingPreparations = 0;
     messenger.setMockMethodCallHandler(trackingChannel, (call) async {
-      expectSync(call.method, 'requestAuthorization');
-      trackingRequests++;
-      return trackingAuthorization.future;
+      expectSync(call.method, 'prepareForAds');
+      trackingPreparations++;
+      return trackingPreparation.future;
     });
     messenger.setMockMethodCallHandler(umpChannel, (call) async {
       switch (call.method) {
@@ -59,6 +61,11 @@ void main() {
     });
     messenger.setMockMethodCallHandler(instanceManager.channel, (call) async {
       adCalls.add(call);
+      if (call.method == 'MobileAds#setSameAppKeyEnabled') {
+        expectSync(call.arguments, {'isEnabled': false});
+        await firstPartyIdDisabled.future;
+        return null;
+      }
       if (call.method == 'MobileAds#initialize') {
         // 실제 광고가 먼저 요청되거나 정식 빌드에 테스트 설정이 섞이지 않는지 확인해요.
         // 플랫폼 콜백에서는 pump()와 충돌하지 않도록 동기 검증을 써요.
@@ -107,7 +114,7 @@ void main() {
       expect(find.text('Ad privacy choices'), findsNothing);
       expect(await MobileAdsService.showPrivacyOptions(), isFalse);
       expect(privacyFormsShown, 0);
-      expect(trackingRequests, 0);
+      expect(trackingPreparations, 0);
       expect(adCalls.where((call) => call.method == 'MobileAds#initialize'),
           hasLength(1));
       final loads =
@@ -193,65 +200,62 @@ void main() {
     expect(loads.last.arguments['adId'], isNot(firstAdId));
     expect((loads.last.arguments['request'] as AdRequest).nonPersonalizedAds,
         isTrue);
-    expect(trackingRequests, 0);
+    expect(trackingPreparations, 0);
     await tester.pumpWidget(const SizedBox());
     await tester.pump();
     expect(tester.takeException(), isNull);
   }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
-  // ATT 결과가 달라도 동의 → ATT 응답 → SDK → 배너 순서는 같아야 해요.
-  for (final status in {
-    3: 'authorized',
-    2: 'denied',
-    1: 'restricted',
-    0: 'not determined',
-    null: 'missing result',
-  }.entries) {
-    testWidgets('iOS waits for UMP and ATT: ${status.value}', (tester) async {
-      installMocks();
-      await tester.pumpWidget(const MaterialApp(home: BannerAdWidget()));
-      final initialization = MobileAdsService.initialize();
-      final concurrentInitialization = MobileAdsService.initialize();
-      await tester.pump();
+  testWidgets(
+      'iOS waits for UMP and ATT handling then disables publisher ID before NPA',
+      (tester) async {
+    installMocks();
+    await tester.pumpWidget(const MaterialApp(home: BannerAdWidget()));
+    final initialization = MobileAdsService.initialize();
+    final concurrentInitialization = MobileAdsService.initialize();
+    await tester.pump();
+    if (!skipConsent) {
       expect(information.updates, 1);
-      expect(trackingRequests, 0);
       expect(adCalls, isEmpty);
-
       information.allowed = true;
       initialForm.complete(null);
       await tester.pump();
-      expect(trackingRequests, 1);
+      expect(trackingPreparations, 1);
       expect(adCalls, isEmpty);
       expect(MobileAdsService.adRequestsAllowed.value, isFalse);
-
-      trackingAuthorization.complete(status.key);
-      await tester.pumpAndSettle();
-      await Future.wait([initialization, concurrentInitialization]);
-      final resolved = status.key != null && status.key != 0;
-      expect(MobileAdsService.adRequestsAllowed.value, resolved);
-      if (resolved) {
-        expect(adCalls.where((call) => call.method == 'MobileAds#initialize'),
-            hasLength(1));
-        final loads =
-            adCalls.where((call) => call.method == 'loadBannerAd').toList();
-        expect(loads, hasLength(1));
-        expect(loads.single.arguments['adUnitId'],
-            'ca-app-pub-3940256099942544/2435281174');
-        expect(
-            (loads.single.arguments['request'] as AdRequest).nonPersonalizedAds,
-            isTrue);
-        await MobileAdsService.initialize();
-        expect(trackingRequests, 1);
-      } else {
-        expect(adCalls, isEmpty);
-      }
-      await tester.pumpWidget(const SizedBox());
+      trackingPreparation.complete(true);
       await tester.pump();
-      expect(tester.takeException(), isNull);
-    },
-        skip: skipConsent,
-        variant: TargetPlatformVariant.only(TargetPlatform.iOS));
-  }
+    } else {
+      expect(information.updates, 0);
+    }
+    expect(trackingPreparations, skipConsent ? 0 : 1);
+    expect(
+        adCalls.map((call) => call.method), ['MobileAds#setSameAppKeyEnabled']);
+    expect(MobileAdsService.adRequestsAllowed.value, isFalse);
+
+    firstPartyIdDisabled.complete();
+    await tester.pumpAndSettle();
+    await Future.wait([initialization, concurrentInitialization]);
+    expect(MobileAdsService.adRequestsAllowed.value, isTrue);
+    expect(adCalls.where((call) => call.method == 'MobileAds#initialize'),
+        hasLength(1));
+    final loads =
+        adCalls.where((call) => call.method == 'loadBannerAd').toList();
+    expect(loads, hasLength(1));
+    expect(loads.single.arguments['adUnitId'],
+        'ca-app-pub-3940256099942544/2435281174');
+    expect((loads.single.arguments['request'] as AdRequest).nonPersonalizedAds,
+        isTrue);
+    await MobileAdsService.initialize();
+    expect(trackingPreparations, skipConsent ? 0 : 1);
+    expect(
+        adCalls
+            .where((call) => call.method == 'MobileAds#setSameAppKeyEnabled'),
+        hasLength(1));
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
   testWidgets('iOS does not request ATT or ads without UMP clearance',
       (tester) async {
@@ -262,27 +266,86 @@ void main() {
         .complete(FormError(errorCode: 2, message: 'Network unavailable'));
     await tester.pumpAndSettle();
     await initialization;
-    expect(trackingRequests, 0);
+    expect(trackingPreparations, 0);
     expect(adCalls, isEmpty);
     expect(MobileAdsService.adRequestsAllowed.value, isFalse);
   },
       skip: skipConsent,
       variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
-  testWidgets('iOS does not initialize ads when ATT channel fails',
+  for (final result in ['unresolved', 'missing result', 'platform error']) {
+    testWidgets('iOS keeps app usable without ads on ATT $result',
+        (tester) async {
+      installMocks();
+      await tester.pumpWidget(const MaterialApp(
+        home: Column(children: [Text('App content'), BannerAdWidget()]),
+      ));
+      final initialization = MobileAdsService.initialize();
+      await tester.pump();
+      information.allowed = true;
+      initialForm.complete(null);
+      await tester.pump();
+      expect(trackingPreparations, 1);
+      if (result == 'platform error') {
+        trackingPreparation.completeError(PlatformException(code: 'failed'));
+      } else {
+        trackingPreparation.complete(result == 'unresolved' ? false : null);
+      }
+      await tester.pumpAndSettle();
+      await initialization;
+      expect(adCalls, isEmpty);
+      expect(MobileAdsService.adRequestsAllowed.value, isFalse);
+      expect(find.text('App content'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+        skip: skipConsent,
+        variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+  }
+
+  testWidgets(
+      'iOS rechecks ATT after privacy changes even with SDK initialized',
       (tester) async {
     installMocks();
-    information.allowed = true;
+    await tester.pumpWidget(const MaterialApp(home: BannerAdWidget()));
     final initialization = MobileAdsService.initialize();
-    await tester.pump();
+    information.allowed = true;
     initialForm.complete(null);
-    await tester.pump();
-    trackingAuthorization.completeError(PlatformException(code: 'unavailable'));
+    // 네이티브의 ATT 건너뛰기·허용·거절·제한은 모두 광고 준비 완료로 전달돼요.
+    trackingPreparation.complete(true);
+    firstPartyIdDisabled.complete();
     await tester.pumpAndSettle();
     await initialization;
-    expect(trackingRequests, 1);
-    expect(adCalls, isEmpty);
+    final firstLoad =
+        adCalls.singleWhere((call) => call.method == 'loadBannerAd');
+
+    trackingPreparation = Completer<bool?>();
+    final change = MobileAdsService.showPrivacyOptions();
+    await tester.pump();
     expect(MobileAdsService.adRequestsAllowed.value, isFalse);
+    expect(adCalls.where((call) => call.method == 'disposeAd').last.arguments,
+        {'adId': firstLoad.arguments['adId']});
+    privacyForm.complete(null);
+    await tester.pump();
+    expect(trackingPreparations, 2);
+    expect(
+        adCalls.where((call) => call.method == 'loadBannerAd'), hasLength(1));
+    trackingPreparation.complete(true);
+    await tester.pumpAndSettle();
+    expect(await change, isTrue);
+    expect(adCalls.where((call) => call.method == 'MobileAds#initialize'),
+        hasLength(1));
+    expect(
+        adCalls
+            .where((call) => call.method == 'MobileAds#setSameAppKeyEnabled'),
+        hasLength(1));
+    final loads =
+        adCalls.where((call) => call.method == 'loadBannerAd').toList();
+    expect(loads, hasLength(2));
+    expect((loads.last.arguments['request'] as AdRequest).nonPersonalizedAds,
+        isTrue);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump();
+    expect(tester.takeException(), isNull);
   },
       skip: skipConsent,
       variant: TargetPlatformVariant.only(TargetPlatform.iOS));

@@ -7,6 +7,42 @@ import XCTest
 
 class RunnerTests: XCTestCase {
 
+  func testATTRequiresDeviceStorageAndGoogleConsentWhenGDPRapplies() throws {
+    let suite = "onetouch.att-test.\(UUID().uuidString)"
+    let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    defaults.set(1, forKey: "IABTCF_gdprApplies")
+    let googleConsent = String(repeating: "0", count: 754) + "1"
+    let cases: [(String?, String?, Bool)] = [
+      (nil, nil, false),
+      ("0000000000", googleConsent, false),
+      ("1000000000", nil, false),
+      ("1000000000", String(repeating: "1", count: 754) + "0", false),
+      ("1000000000", "1", false),
+      ("1000000000", googleConsent, true),
+      ("1111111111", googleConsent, true),
+    ]
+    for (purposes, vendors, expected) in cases {
+      defaults.set(purposes, forKey: "IABTCF_PurposeConsents")
+      defaults.set(vendors, forKey: "IABTCF_VendorConsents")
+      XCTAssertEqual(TrackingAuthorizationBridge.shouldRequestAuthorization(
+        defaults: defaults, consentNotRequired: false), expected)
+    }
+  }
+
+  func testATTOutsideGDPRAndUnknownConsent() throws {
+    let suite = "onetouch.att-test.\(UUID().uuidString)"
+    let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    XCTAssertFalse(TrackingAuthorizationBridge.shouldRequestAuthorization(
+      defaults: defaults, consentNotRequired: false))
+    XCTAssertTrue(TrackingAuthorizationBridge.shouldRequestAuthorization(
+      defaults: defaults, consentNotRequired: true))
+    defaults.set(0, forKey: "IABTCF_gdprApplies")
+    XCTAssertTrue(TrackingAuthorizationBridge.shouldRequestAuthorization(
+      defaults: defaults, consentNotRequired: false))
+  }
+
   func testPickerPreservesPNGBytesAndVideoType() throws {
     let directory = try makeDirectory()
     defer { try? FileManager.default.removeItem(at: directory) }

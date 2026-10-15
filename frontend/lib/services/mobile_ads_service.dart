@@ -6,11 +6,11 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:onetouch/config/ad_config.dart';
 
 abstract final class MobileAdsService {
-  static const _trackingChannel =
-      MethodChannel('onetouch/tracking_authorization');
   static bool _isInitialized = false;
   static Future<void>? _initialization;
   static bool _showingPrivacyOptions = false;
+  static const _trackingChannel =
+      MethodChannel('onetouch/tracking_authorization');
   static final _adRequestsAllowed = ValueNotifier(false);
   static final _privacyOptionsRequired = ValueNotifier(false);
 
@@ -30,7 +30,7 @@ abstract final class MobileAdsService {
 
   static Future<void> _initialize() async {
     try {
-      // 디버그에서는 공식 테스트 광고로 UMP 동의 양식만 건너뛸 수 있어요.
+      // 디버그에서 공식 테스트 광고를 확인할 때만 동의 절차를 건너뛸 수 있어요.
       if (kDebugMode && const bool.fromEnvironment('SKIP_AD_CONSENT')) {
         await _initializeAds();
         return;
@@ -67,21 +67,23 @@ abstract final class MobileAdsService {
       _adRequestsAllowed.value = false;
       return;
     }
+    // 개인정보 선택을 나중에 바꿔도 최신 UMP 동의에 맞춰 ATT 필요 여부를 확인해요.
+    // 기기 정보 접근 동의가 없으면 ATT를 건너뛰고, ATT 거절·제한도 존중해요.
+    if (defaultTargetPlatform == TargetPlatform.iOS &&
+        await _trackingChannel.invokeMethod<bool>('prepareForAds') != true) {
+      _adRequestsAllowed.value = false;
+      debugPrint('Advertising deferred: ATT authorization is unresolved.');
+      return;
+    }
     await _initializeAds();
   }
 
   static Future<void> _initializeAds() async {
     if (!_isInitialized) {
       if (defaultTargetPlatform == TargetPlatform.iOS) {
-        // UMP 동의와 ATT는 별개예요. OS의 응답이 끝나기 전에는 SDK도 시작하지 않아요.
-        final status =
-            await _trackingChannel.invokeMethod<int>('requestAuthorization');
-        // iOS 상태값: 0 미결정, 1 제한, 2 거부, 3 허용. 미결정은 동의 완료가 아니에요.
-        if (status != 1 && status != 2 && status != 3) {
-          debugPrint('Advertising deferred: ATT authorization is unresolved.');
-          return;
-        }
-        // 제한·거부 시에도 앱은 이용할 수 있고, Google SDK는 IDFA 없이 광고를 요청해요.
+        // 현재 광고 운영 방침에 따라 ATT 허용 여부와 별개로 게시자 자체 식별자를 꺼요.
+        // Flutter의 Same App Key는 iOS SDK의 Publisher first-party ID 설정이에요.
+        await MobileAds.instance.setSameAppKeyEnabled(false);
       }
       // 첫 광고 요청부터 테스트 모드가 적용되도록 SDK 초기화 전에 등록해요.
       if (AdConfig.testDeviceId.isNotEmpty) {
