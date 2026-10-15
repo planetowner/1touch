@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -5,8 +6,12 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/comm_pages/profile_activity_screen.dart';
 import 'package:onetouch/data/posts/api/api_post_draft_repository.dart';
+import 'package:onetouch/data/injuries/api/api_team_injury_repository.dart';
+import 'package:onetouch/data/transfers/api/api_transfer_repository.dart';
+import 'package:onetouch/features/media/selected_team_media_preloader.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/data/posts/post_draft_repository.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
@@ -15,10 +20,14 @@ import 'package:onetouch/data/profile/api/api_community_profile_repository.dart'
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
+import 'package:onetouch/features/community/post_composer_widgets.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
 import 'package:onetouch/models/post_draft.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/add_post.dart';
+import 'package:onetouch/screens/community_screen.dart';
+import 'support/app_catalog.dart';
 import 'support/stub_community_repository.dart';
 import 'support/stub_profile_activity_repository.dart';
 
@@ -29,6 +38,7 @@ ApiClient api(Future<http.Response> Function(http.Request) handler) =>
         requestHeaders: () => {'Authorization': 'Bearer test-session'});
 
 void main() {
+  setUpAppCatalog(favoriteTeamId: 6);
   test('draft save retains ownership context and publish uses the saved ID',
       () async {
     final requests = <http.Request>[];
@@ -83,6 +93,28 @@ void main() {
     expect(requests[4].url.path, '/v1/post-drafts/41');
   });
 
+  test('draft query checks every page and filters by team and language',
+      () async {
+    final offsets = <int>[];
+    final repository = ApiPostDraftRepository(api: api((request) async {
+      final offset = int.parse(request.url.queryParameters['offset']!);
+      offsets.add(offset);
+      return http.Response(
+          jsonEncode({
+            'items': offset == 0
+                ? List.generate(50, (index) => {..._draftJson, 'team_id': 9})
+                : [
+                    {..._draftJson, 'language': 'ja'},
+                    _draftJson
+                  ]
+          }),
+          200);
+    }));
+    final drafts = await repository.loadDraftsFor(teamId: 6, language: 'en');
+    expect(drafts.single.postId, 41);
+    expect(offsets, [0, 50]);
+  });
+
   test('comment like, unlike and report use authenticated comment endpoints',
       () async {
     final calls = <String>[];
@@ -119,6 +151,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
         theme: darktheme,
         home: AddPost(
+            initialDrafts: [drafts.draft],
             teamId: 6,
             postRepository: MockPostRepository(),
             draftRepository: drafts)));
@@ -145,29 +178,244 @@ void main() {
     expect(drafts.publishedId, 41);
   });
 
-  testWidgets('draft loading errors use a tappable snack bar to retry',
+  for (final hasDrafts in [false, true]) {
+    for (final textScale in [1.0, 2.0]) {
+      testWidgets(
+          'composer has its final layout on the first frame '
+          '(hasDrafts: $hasDrafts, textScale: $textScale)', (tester) async {
+        tester.view.physicalSize = const Size(320, 852);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final drafts = _Drafts(language: 'ko');
+        await tester.pumpWidget(MaterialApp(
+            theme: darktheme,
+            locale: const Locale('ko'),
+            supportedLocales: appSupportedLocales,
+            localizationsDelegates: appLocalizationDelegates,
+            builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(textScale)),
+                child: child!),
+            home: AddPost(
+                initialDrafts: hasDrafts ? [drafts.draft] : [],
+                teamId: 6,
+                draftRepository: drafts)));
+        final button = find.byKey(const ValueKey('community-resume-draft'));
+        final title = find.byKey(const ValueKey('community-post-title-input'));
+        final body = find.byKey(const ValueKey('community-post-body-input'));
+        final titlePosition = tester.getTopLeft(title);
+        final bodyPosition = tester.getTopLeft(body);
+        expect(button, hasDrafts ? findsOneWidget : findsNothing);
+        expect(
+            tester.getTopLeft(find.byType(PostComposerFields)).dy,
+            tester.getBottomLeft(find.byType(AppBar)).dy +
+                24 +
+                (hasDrafts ? tester.getSize(button).height : 0));
+        await tester.pumpAndSettle();
+
+        expect(button, hasDrafts ? findsOneWidget : findsNothing);
+        expect(drafts.loadCalls, 0);
+        expect(tester.getTopLeft(title), titlePosition);
+        expect(tester.getTopLeft(body), bodyPosition);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
+  testWidgets('draft loading errors retry before opening the composer',
       (tester) async {
-    final drafts = _Drafts(loadFailures: 1);
-    await tester.pumpWidget(
-        MaterialApp(home: AddPost(teamId: 6, draftRepository: drafts)));
+    final drafts = _Drafts(loadFailures: 2);
+    await tester.pumpWidget(_communityApp(drafts));
+    await tester.pumpAndSettle();
+    expect(drafts.loadCalls, 1);
+    await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
     const message = 'Unable to load drafts. Tap to retry.';
     expect(
         find.descendant(
             of: find.byType(SnackBar), matching: find.text(message)),
         findsOneWidget);
-    expect(find.byKey(const ValueKey('community-resume-draft')), findsNothing);
-    expect(drafts.loadCalls, 1);
+    expect(find.byType(AddPost), findsNothing);
+    expect(drafts.loadCalls, 2);
 
     await tester.tap(find.text(message));
     await tester.pumpAndSettle();
-    expect(drafts.loadCalls, 2);
+    expect(drafts.loadCalls, 3);
     expect(find.byType(SnackBar), findsNothing);
+    expect(find.byType(AddPost), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('community-resume-draft')));
     await tester.pumpAndSettle();
     expect(find.text('Saved title'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final hasDrafts in [false, true]) {
+    for (final loadBeforeTap in [false, true]) {
+      testWidgets(
+          'community opens with known drafts '
+          '(hasDrafts: $hasDrafts, loadBeforeTap: $loadBeforeTap)',
+          (tester) async {
+        final pendingLoad = Completer<List<PostDraft>>();
+        final drafts = _Drafts(pendingLoad: pendingLoad.future);
+        await tester.pumpWidget(_communityApp(drafts));
+        await tester.pumpAndSettle();
+        expect(drafts.loadCalls, 1);
+        expect(find.byType(AddPost), findsNothing);
+        if (loadBeforeTap) {
+          pendingLoad.complete(hasDrafts ? [drafts.draft] : []);
+          await tester.pumpAndSettle();
+        }
+        await tester.tap(find.byType(FloatingActionButton));
+        await tester.pump();
+        if (!loadBeforeTap) {
+          expect(find.byType(AddPost), findsNothing);
+          expect(
+              tester
+                  .widget<FloatingActionButton>(
+                      find.byType(FloatingActionButton))
+                  .onPressed,
+              isNull);
+          pendingLoad.complete(hasDrafts ? [drafts.draft] : []);
+          await tester.pump();
+        }
+        await tester.pump();
+        expect(find.byType(AddPost), findsOneWidget);
+        expect(find.byKey(const ValueKey('community-resume-draft')),
+            hasDrafts ? findsOneWidget : findsNothing);
+        expect(find.byType(PostComposerFields), findsOneWidget);
+        expect(drafts.loadCalls, 1);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
+  for (final initiallyHasDraft in [false, true]) {
+    testWidgets(
+        'background cache refresh keeps the open composer layout (hasDraft: $initiallyHasDraft)',
+        (tester) async {
+      final drafts = _Drafts(hasInitialDraft: initiallyHasDraft);
+      await tester.pumpWidget(_communityApp(drafts));
+      await tester.pumpAndSettle();
+      final pending = Completer<List<PostDraft>>();
+      drafts.pendingLoad = pending.future;
+      final refresh = drafts.cached.refreshDrafts();
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      final fields = find.byType(PostComposerFields);
+      final position = tester.getTopLeft(fields);
+      final button = find.byKey(const ValueKey('community-resume-draft'));
+      expect(button, initiallyHasDraft ? findsOneWidget : findsNothing);
+      pending.complete(initiallyHasDraft ? [] : [drafts.draft]);
+      await tester.pump();
+      await refresh;
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(fields), position);
+      expect(button, initiallyHasDraft ? findsOneWidget : findsNothing);
+      await tester.tap(find.byType(IconButton).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pump();
+      await tester.pump();
+      expect(button, initiallyHasDraft ? findsNothing : findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('reopening after saving shows the draft on the first frame',
+      (tester) async {
+    final drafts = _Drafts(hasInitialDraft: false);
+    await tester.pumpWidget(_communityApp(drafts));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('community-resume-draft')), findsNothing);
+    await tester.enterText(
+        find.byKey(const ValueKey('community-post-title-input')), 'New draft');
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('community-draft-save')));
+    await tester.tap(find.byKey(const ValueKey('community-draft-save')));
+    await tester.pumpAndSettle();
+    expect(drafts.loadCalls, 2);
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pump();
+    await tester.pump();
+    expect(
+        find.byKey(const ValueKey('community-resume-draft')), findsOneWidget);
+    expect(drafts.loadCalls, 2);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('community-resume-draft')));
+    await tester.pumpAndSettle();
+    expect(find.text('New draft'), findsOneWidget);
+  });
+
+  for (final publish in [false, true]) {
+    testWidgets(
+        'reopening after ${publish ? 'publishing' : 'deleting'} has no draft gap',
+        (tester) async {
+      final drafts = _Drafts();
+      await tester.pumpWidget(_communityApp(drafts));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('community-resume-draft')));
+      await tester.pumpAndSettle();
+      if (publish) {
+        await tester.tap(find.text('Saved title'));
+        await tester.pumpAndSettle();
+        await tester
+            .ensureVisible(find.byKey(const ValueKey('community-post-submit')));
+        await tester.tap(find.byKey(const ValueKey('community-post-submit')));
+      } else {
+        await tester
+            .tap(find.byKey(const ValueKey('community-draft-delete-41')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('community-drafts-close')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byType(IconButton).first);
+      }
+      await tester.pumpAndSettle();
+      expect(find.byType(AddPost), findsNothing);
+      expect(drafts.loadCalls, 2);
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      expect(
+          find.byKey(const ValueKey('community-resume-draft')), findsNothing);
+      expect(tester.getTopLeft(find.byType(PostComposerFields)).dy,
+          tester.getBottomLeft(find.byType(AppBar)).dy + 24);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final changeTeam in [false, true]) {
+    testWidgets(
+        'changing ${changeTeam ? 'team' : 'language'} filters the same cached draft preload',
+        (tester) async {
+      final pendingLoad = Completer<List<PostDraft>>();
+      final drafts = _Drafts(pendingLoad: pendingLoad.future);
+      await tester.pumpWidget(_communityApp(drafts));
+      await tester.pumpAndSettle();
+      expect(drafts.loadCalls, 1);
+      if (changeTeam) {
+        currentUserPreferences.applyServerSelection(
+            const UserTeamPreferences(favoriteTeamId: 9, followedTeamIds: []));
+      }
+      await tester.pumpWidget(_communityApp(drafts,
+          teamId: changeTeam ? 9 : 6, language: changeTeam ? 'en' : 'ko'));
+      await tester.pumpAndSettle();
+      expect(drafts.loadCalls, 1);
+      pendingLoad.complete([drafts.draft]);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      expect(find.byType(AddPost), findsOneWidget);
+      expect(
+          find.byKey(const ValueKey('community-resume-draft')), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   for (final systemBack in [false, true]) {
     testWidgets(
@@ -184,6 +432,7 @@ void main() {
                       context,
                       MaterialPageRoute(
                           builder: (_) => AddPost(
+                              initialDrafts: [drafts.draft],
                               teamId: 6,
                               postRepository: MockPostRepository(),
                               draftRepository: drafts)));
@@ -194,6 +443,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(
           find.byKey(const ValueKey('community-post-title-input')), 'My draft');
+      await tester.pump();
       if (systemBack) {
         await tester.binding.handlePopRoute();
       } else {
@@ -216,6 +466,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
         theme: darktheme,
         home: AddPost(
+            initialDrafts: [drafts.draft],
             teamId: 6,
             postRepository: MockPostRepository(),
             draftRepository: drafts)));
@@ -246,6 +497,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           theme: darktheme,
           home: AddPost(
+              initialDrafts: [drafts.draft],
               teamId: 6,
               postRepository: MockPostRepository(),
               draftRepository: drafts)));
@@ -262,6 +514,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(
           find.byKey(const ValueKey('community-resume-draft')), findsNothing);
+      expect(tester.getTopLeft(find.byType(PostComposerFields)).dy,
+          tester.getBottomLeft(find.byType(AppBar)).dy + 24);
     });
   }
 
@@ -386,7 +640,8 @@ final _draftJson = {
   'category': 'general',
   'title': 'Saved title',
   'body': 'Saved body',
-  'expires_at': '2026-10-17T00:00:00Z',
+  'expires_at':
+      DateTime.now().toUtc().add(const Duration(days: 2)).toIso8601String(),
   'attachments': [
     {
       'attachment_id': 2,
@@ -433,37 +688,111 @@ PostComment _comment(PostCommentState state, int id) => PostComment(
     likeCount: 2,
     liked: false);
 
+Widget _communityApp(_Drafts drafts,
+        {int teamId = 6, String language = 'en'}) =>
+    MaterialApp(
+        theme: darktheme,
+        locale: Locale(language),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        home: SelectedTeamMediaPreloader(
+            teamId: teamId,
+            postRepository: drafts.posts,
+            draftRepository: drafts.cached,
+            injuryRepository: drafts.injuries,
+            transferRepository: drafts.transfers,
+            child: Community(
+                teamId: teamId,
+                postRepository: drafts.posts,
+                communityRepository: const StubCommunityRepository(),
+                draftRepository: drafts.cached)));
+
 class _Drafts implements PostDraftRepository {
-  _Drafts({this.loadFailures = 0});
+  _Drafts(
+      {this.loadFailures = 0,
+      this.pendingLoad,
+      this.hasInitialDraft = true,
+      this.language = 'en'});
+  final posts = MockPostRepository(posts: const []);
+  late final client = api((request) async {
+    final segments = request.url.pathSegments;
+    if (!segments.contains('post-drafts')) return http.Response('', 503);
+    Object response;
+    var status = 200;
+    if (request.method == 'GET') {
+      try {
+        response = {'items': (await loadDrafts()).map(_draftPayload).toList()};
+      } on Object {
+        return http.Response('', 503);
+      }
+    } else if (segments.last == 'publish') {
+      response = {
+        'post_id': await publishDraft(int.parse(segments[segments.length - 2]))
+      };
+    } else if (request.method == 'DELETE') {
+      await deleteDraft(int.parse(segments.last));
+      response = {'ok': true};
+    } else {
+      final body = jsonDecode(request.body) as Map<String, dynamic>;
+      final postId = request.method == 'PUT' ? int.parse(segments.last) : null;
+      final result = await saveDraft(
+          CreatePostInput(
+            teamId: body['team_id'] as int? ?? draft.teamId,
+            language: body['language'] as String? ?? draft.language,
+            category: PostCategory.values.byName(body['category'] as String),
+            title: body['title'] as String,
+            body: body['body'] as String,
+            attachmentIds: (body['attachment_ids'] as List).cast<int>(),
+          ),
+          postId: postId);
+      response = _draftPayload(result);
+      if (postId == null) status = 201;
+    }
+    return http.Response(jsonEncode(response), status);
+  });
+  late final cached = ApiPostDraftRepository(api: client);
+  late final injuries = ApiTeamInjuryRepository(api: client);
+  late final transfers = ApiTransferRepository(api: client);
+
+  Future<List<PostDraft>>? pendingLoad;
+  final bool hasInitialDraft;
+  final String language;
   int loadFailures;
   int loadCalls = 0;
   CreatePostInput? saved;
   int? savedId, publishedId, deletedId;
   final Map<int, PostDraft> _savedDrafts = {};
-  final draft = PostDraft(
+  late final draft = PostDraft(
       postId: 41,
       teamId: 6,
-      language: 'en',
+      language: language,
       category: PostCategory.general,
       title: 'Saved title',
       body: 'Saved body',
-      expiresAt: DateTime.utc(2026, 10, 17),
+      expiresAt: DateTime.now().toUtc().add(const Duration(days: 2)),
       attachments: const [
         PostAttachment(
             attachmentId: 2,
             position: 0,
             mediaUrl: 'https://example.com/image.png',
-            contentType: 'image/png')
+            contentType: 'image/png',
+            byteSize: 24)
       ]);
   @override
   Future<List<PostDraft>> loadDrafts({int limit = 50, int offset = 0}) async {
     loadCalls++;
+    final pending = pendingLoad;
+    if (pending != null) {
+      pendingLoad = null;
+      return pending;
+    }
     if (loadFailures > 0) {
       loadFailures--;
       throw StateError('Draft load failed');
     }
     return [
-      if (deletedId != 41) _savedDrafts[41] ?? draft,
+      if (hasInitialDraft && deletedId != 41 && publishedId != 41)
+        _savedDrafts[41] ?? draft,
       if (_savedDrafts[42] != null) _savedDrafts[42]!
     ];
   }
@@ -489,6 +818,7 @@ class _Drafts implements PostDraftRepository {
   @override
   Future<int> publishDraft(int postId) async {
     publishedId = postId;
+    _savedDrafts.remove(postId);
     return postId;
   }
 
@@ -498,3 +828,25 @@ class _Drafts implements PostDraftRepository {
     _savedDrafts.remove(postId);
   }
 }
+
+Map<String, dynamic> _draftPayload(PostDraft draft) => {
+      'post_id': draft.postId,
+      'team_id': draft.teamId,
+      'language': draft.language,
+      'category': draft.category.name,
+      'title': draft.title,
+      'body': draft.body,
+      'expires_at': draft.expiresAt.toIso8601String(),
+      'attachments': [
+        for (final attachment in draft.attachments)
+          {
+            'attachment_id': attachment.attachmentId,
+            'position': attachment.position,
+            'link_url': attachment.linkUrl,
+            'media_url': attachment.mediaUrl,
+            'preview_url': attachment.previewUrl,
+            'content_type': attachment.contentType,
+            'byte_size': attachment.byteSize,
+          }
+      ],
+    };

@@ -17,6 +17,7 @@ import 'package:onetouch/data/home/home_repository_provider.dart'
 import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/data/posts/api/api_post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart';
+import 'package:onetouch/data/posts/post_draft_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
 import 'package:onetouch/data/session/session_data_synchronizer.dart';
 import 'package:onetouch/data/standings/api/api_standing_repository.dart';
@@ -50,6 +51,7 @@ Future<void> restoreSelectedTeamCaches(int teamId) async {
   final overviewRepository = teamOverviewRepository;
   final standingRepository = apiStandingRepository;
   final tasks = <Future<void>>[];
+  tasks.add(postDraftRepository.restoreCachedDrafts().then((_) {}));
   if (overviewRepository is ApiTeamOverviewRepository) {
     tasks.add(overviewRepository.restoreCachedForTeam(teamId).then((_) {}));
   }

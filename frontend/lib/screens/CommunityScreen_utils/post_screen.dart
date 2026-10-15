@@ -198,6 +198,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final update = await Navigator.of(context).push<UpdatePostInput>(
       MaterialPageRoute(
         builder: (_) => AddPost(
+          initialDrafts: const [],
           editingPost: _post,
           postRepository: _postRepository,
         ),

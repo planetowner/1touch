@@ -8,6 +8,9 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/data/local/local_cache_store.dart';
+import 'package:onetouch/data/local/local_cache_store_provider.dart';
+import 'package:onetouch/data/posts/post_draft_repository_provider.dart';
 import 'package:onetouch/data/session/clear_session_data.dart';
 import 'package:onetouch/features/media/avatar_image_cache.dart';
 
@@ -146,14 +149,24 @@ void main() {
     expect(requests.last.headers['if-none-match'], isNull);
   });
 
-  test('session cleanup removes avatar files and decoded images', () async {
+  test('session cleanup removes avatars and draft memory and disk caches',
+      () async {
     respond = (_) async => http.Response.bytes(bytes, 200, headers: {
           'content-type': 'image/png',
           'cache-control': 'private, max-age=3600',
         });
     final image = AvatarImageCache.provider(url, headers: headers);
     await _resolveImage(image);
+    final draftKey = LocalCacheKeys.postDrafts(50, 0);
+    await localCacheStore.write(draftKey, {'items': []},
+        scope: LocalCacheScopes.postDrafts);
+    expect(await postDraftRepository.restoreCachedDrafts(), isEmpty);
     await clearSessionData();
+    expect(await postDraftRepository.restoreCachedDrafts(), isNull);
+    expect(
+        await localCacheStore.read(draftKey,
+            scope: LocalCacheScopes.postDrafts),
+        isNull);
     expect(await manager.getFileFromCache(image.cacheKey!), isNull);
     expect(PaintingBinding.instance.imageCache.containsKey(image), isFalse);
   });

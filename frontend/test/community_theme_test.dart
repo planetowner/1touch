@@ -467,7 +467,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: AddPost(postRepository: MockPostRepository()),
+        home: AddPost(
+            initialDrafts: const [], postRepository: MockPostRepository()),
       ),
     );
     await tester.pump();

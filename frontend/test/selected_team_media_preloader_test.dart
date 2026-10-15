@@ -9,6 +9,7 @@ import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/injuries/api/api_team_injury_repository.dart';
 import 'package:onetouch/data/posts/api/api_post_repository.dart';
+import 'package:onetouch/data/posts/api/api_post_draft_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/data/transfers/api/api_transfer_repository.dart';
 import 'package:onetouch/features/media/selected_team_media_preloader.dart';
@@ -53,6 +54,7 @@ void main() {
     addTearDown(showLink.dispose);
     await tester.pumpWidget(_app(SelectedTeamMediaPreloader(
       teamId: 83,
+      draftRepository: ApiPostDraftRepository(api: api),
       postRepository: MockPostRepository(posts: [post]),
       injuryRepository: ApiTeamInjuryRepository(api: api),
       transferRepository: ApiTransferRepository(api: api),
@@ -99,6 +101,7 @@ void main() {
     addTearDown(showFeed.dispose);
     await tester.pumpWidget(_app(SelectedTeamMediaPreloader(
       teamId: 83,
+      draftRepository: ApiPostDraftRepository(api: api),
       postRepository: MockPostRepository(posts: posts),
       injuryRepository: ApiTeamInjuryRepository(api: api),
       transferRepository: ApiTransferRepository(api: api),
@@ -155,6 +158,7 @@ void main() {
 
     await tester.pumpWidget(_app(SelectedTeamMediaPreloader(
       teamId: 83,
+      draftRepository: ApiPostDraftRepository(api: api),
       postRepository: ApiPostRepository(api: api),
       injuryRepository: injuries,
       transferRepository: transfers,
@@ -218,8 +222,10 @@ void main() {
     final injuries = ApiTeamInjuryRepository(api: api);
     final transfers = ApiTransferRepository(api: api);
     final posts = MockPostRepository(posts: const []);
+    final drafts = ApiPostDraftRepository(api: api);
     Widget subject(int teamId) => _app(SelectedTeamMediaPreloader(
           teamId: teamId,
+          draftRepository: drafts,
           postRepository: posts,
           injuryRepository: injuries,
           transferRepository: transfers,

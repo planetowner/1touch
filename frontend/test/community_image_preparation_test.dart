@@ -10,6 +10,7 @@ import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/injuries/api/api_team_injury_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
+import 'package:onetouch/data/posts/api/api_post_draft_repository.dart';
 import 'package:onetouch/data/transfers/mock/mock_transfer_repository.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/features/community/community_media.dart';
@@ -177,6 +178,12 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: SelectedTeamMediaPreloader(
         teamId: 83,
+        draftRepository: ApiPostDraftRepository(
+            api: ApiClient(
+          client: MockClient((_) async => http.Response('{"items":[]}', 200)),
+          baseUri: Uri.parse('https://api.example.test/v1/'),
+          requestHeaders: () => const {},
+        )),
         injuryRepository: ApiTeamInjuryRepository(
           api: ApiClient(
             client: MockClient((_) async => http.Response(

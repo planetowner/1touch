@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:cross_file/cross_file.dart';
-import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/post_attachments/post_attachment_repository.dart';
@@ -12,7 +11,7 @@ import 'package:onetouch/data/post_attachments/platform_video_encoder.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
-import 'package:onetouch/data/posts/api/api_post_draft_repository.dart';
+import 'package:onetouch/data/posts/post_draft_repository_provider.dart';
 import 'package:onetouch/data/posts/post_draft_repository.dart';
 import 'package:onetouch/features/community/community_header_slivers.dart';
 import 'package:onetouch/features/community/community_ui.dart';
@@ -30,6 +29,7 @@ typedef PostMediaPicker = Future<List<XFile>> Function();
 class AddPost extends StatefulWidget {
   const AddPost(
       {super.key,
+      required this.initialDrafts,
       this.teamId,
       this.editingPost,
       this.postRepository,
@@ -44,6 +44,7 @@ class AddPost extends StatefulWidget {
   final VideoEncoder? videoEncoder;
   final PostMediaPicker? pickMedia;
   final PostDraftRepository? draftRepository;
+  final List<PostDraft> initialDrafts;
   @override
   State<AddPost> createState() => _AddPostState();
 }
@@ -52,7 +53,6 @@ class _AddPostState extends State<AddPost> {
   PostCategory _selectedCategory = PostCategory.general;
   bool _isSubmitting = false,
       _isPickingMedia = false,
-      _draftsLoaded = false,
       _draftLoadFailed = false,
       _allowPop = false;
   PostDraft? _draft;
@@ -62,13 +62,19 @@ class _AddPostState extends State<AddPost> {
   final List<XFile> _mediaFiles = [];
   AttachmentTransferProgress? _transferProgress;
   final List<PostAttachment> _existingAttachments = [];
+  bool get _hasDraftContent =>
+      _draft != null ||
+      _titleController.text.trim().isNotEmpty ||
+      _bodyController.text.trim().isNotEmpty ||
+      _mediaFiles.isNotEmpty ||
+      _existingAttachments.isNotEmpty;
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
   PostAttachmentRepository get _attachmentRepository =>
       widget.attachmentRepository ??
       attachment_providers.postAttachmentRepository;
   late final PostDraftRepository _draftRepository =
-      widget.draftRepository ?? ApiPostDraftRepository(api: apiClient);
+      widget.draftRepository ?? postDraftRepository;
   PostAttachmentPublisher get _publisher => PostAttachmentPublisher(
       postRepository: _postRepository,
       attachmentRepository: _attachmentRepository,
@@ -122,6 +128,8 @@ class _AddPostState extends State<AddPost> {
   @override
   void initState() {
     super.initState();
+    // 조회를 마친 목록으로 첫 화면을 그려 버튼과 입력란을 함께 보여줘요.
+    _drafts = List.of(widget.initialDrafts);
     _titleController.addListener(_composerChanged);
     _bodyController.addListener(_composerChanged);
     final post = widget.editingPost;
@@ -138,15 +146,6 @@ class _AddPostState extends State<AddPost> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_draftsLoaded && widget.editingPost == null) {
-      _draftsLoaded = true;
-      unawaited(_loadDrafts());
-    }
-  }
-
-  @override
   void dispose() {
     _titleController.dispose();
     _bodyController.dispose();
@@ -157,15 +156,8 @@ class _AddPostState extends State<AddPost> {
     final language = Localizations.localeOf(context).languageCode;
     final team = widget.teamId ?? FavoriteTeam.id.value;
     try {
-      final drafts = <PostDraft>[];
-      var offset = 0;
-      while (true) {
-        final page = await _draftRepository.loadDrafts(offset: offset);
-        drafts.addAll(page.where(
-            (draft) => draft.teamId == team && draft.language == language));
-        if (page.length < 50) break;
-        offset += page.length;
-      }
+      final drafts = await _draftRepository.loadDraftsFor(
+          teamId: team, language: language);
       if (mounted) {
         setState(() {
           _drafts = drafts;
@@ -490,12 +482,7 @@ class _AddPostState extends State<AddPost> {
 
   Future<void> _openDraftList() async {
     if (_isSubmitting || _isPickingMedia) return;
-    final hasContent = _draft != null ||
-        _titleController.text.trim().isNotEmpty ||
-        _bodyController.text.trim().isNotEmpty ||
-        _mediaFiles.isNotEmpty ||
-        _existingAttachments.isNotEmpty;
-    if (hasContent) {
+    if (_hasDraftContent) {
       setState(() => _isSubmitting = true);
       try {
         await _saveDraftContent();
@@ -535,12 +522,7 @@ class _AddPostState extends State<AddPost> {
       Navigator.pop(context);
       return;
     }
-    final hasContent = _draft != null ||
-        _titleController.text.trim().isNotEmpty ||
-        _bodyController.text.trim().isNotEmpty ||
-        _mediaFiles.isNotEmpty ||
-        _existingAttachments.isNotEmpty;
-    if (hasContent) {
+    if (_hasDraftContent) {
       await _saveDraft();
     } else {
       await _finish(null);
@@ -632,7 +614,10 @@ class _AddPostState extends State<AddPost> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-        canPop: widget.editingPost != null || _allowPop,
+        // 저장할 내용이 없는 화면은 iOS의 기본 뒤로가기 제스처도 허용해요.
+        canPop: widget.editingPost != null ||
+            _allowPop ||
+            (!_hasDraftContent && !_isSubmitting && !_isPickingMedia),
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) unawaited(_exitComposer());
         },

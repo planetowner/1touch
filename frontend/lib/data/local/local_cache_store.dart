@@ -37,6 +37,7 @@ abstract interface class LocalCacheStore {
 abstract final class LocalCacheScopes {
   static const global = 'global';
   static const communityPosts = 'community-posts';
+  static const postDrafts = 'post-drafts';
 
   /// A device has one active authenticated account at a time. This entire
   /// scope is cleared before a new sign-in and during local logout.
@@ -44,6 +45,8 @@ abstract final class LocalCacheScopes {
 }
 
 abstract final class LocalCacheKeys {
+  static String postDrafts(int limit, int offset) =>
+      'post-drafts:$limit:$offset';
   static const catalog = 'catalog';
   static const currentUser = 'current-user';
   static const followingTeams = 'following-teams';

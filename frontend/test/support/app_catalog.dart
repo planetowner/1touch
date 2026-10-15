@@ -122,6 +122,28 @@ void setUpAppCatalog({int favoriteTeamId = 83}) {
                       'content-type': 'application/json; charset=utf-8'
                     });
               }
+              // 글쓰기 화면에서 함께 요청하는 임시저장 API도 정상 응답을 제공해요.
+              if (request.url.path.endsWith('/post-drafts')) {
+                if (request.method == 'GET') {
+                  return http.Response('{"items":[]}', 200);
+                }
+                if (request.method == 'POST') {
+                  final input =
+                      jsonDecode(request.body) as Map<String, dynamic>;
+                  return http.Response(
+                      jsonEncode({
+                        'post_id': 42,
+                        'team_id': input['team_id'],
+                        'language': input['language'],
+                        'category': input['category'],
+                        'title': input['title'],
+                        'body': input['body'],
+                        'attachments': [],
+                        'expires_at': '2026-12-31T00:00:00Z',
+                      }),
+                      201);
+                }
+              }
               return http.Response('{"detail":"Unstubbed request"}', 500);
             }));
   });

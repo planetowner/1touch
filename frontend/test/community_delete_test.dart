@@ -353,6 +353,7 @@ void main() {
     final attachments = _EditingAttachmentsRepository();
     await tester.pumpWidget(MaterialApp(
       home: AddPost(
+        initialDrafts: const [],
         editingPost: post,
         postRepository: posts,
         attachmentRepository: attachments,
@@ -406,7 +407,10 @@ void main() {
     );
     final repository = _WaitingPostRepository(posts: [post]);
     await tester.pumpWidget(MaterialApp(
-      home: AddPost(editingPost: post, postRepository: repository),
+      home: AddPost(
+          initialDrafts: const [],
+          editingPost: post,
+          postRepository: repository),
     ));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('community-existing-attachment-remove-0')),

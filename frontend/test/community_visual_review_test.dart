@@ -152,6 +152,8 @@ void main() {
     await save('detail-media');
     await render(
         AddPost(
+            initialDrafts:
+                await _Drafts().loadDraftsFor(teamId: 9, language: 'en'),
             teamId: 9,
             postRepository: MockPostRepository(),
             draftRepository: _Drafts()),
@@ -166,6 +168,8 @@ void main() {
     await save('composer');
     await render(
         AddPost(
+            initialDrafts:
+                await _Drafts().loadDraftsFor(teamId: 9, language: 'ko'),
             teamId: 9,
             postRepository: MockPostRepository(),
             draftRepository: _Drafts()),

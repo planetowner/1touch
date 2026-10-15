@@ -78,6 +78,7 @@ void main() {
       supportedLocales: appSupportedLocales,
       localizationsDelegates: appLocalizationDelegates,
       home: AddPost(
+          initialDrafts: const [],
           teamId: 9,
           editingPost: post,
           postRepository: MockPostRepository(maxAttachments: 2),

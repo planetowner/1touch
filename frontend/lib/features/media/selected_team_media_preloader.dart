@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:onetouch/data/injuries/team_injury_repository.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
+import 'package:onetouch/data/posts/post_draft_repository.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/features/community/community_post_image.dart';
 import 'package:onetouch/features/community/community_link_preloader.dart';
@@ -19,6 +20,7 @@ class SelectedTeamMediaPreloader extends StatefulWidget {
     super.key,
     required this.teamId,
     required this.postRepository,
+    required this.draftRepository,
     required this.injuryRepository,
     required this.transferRepository,
     required this.child,
@@ -26,6 +28,7 @@ class SelectedTeamMediaPreloader extends StatefulWidget {
 
   final int teamId;
   final PostRepository postRepository;
+  final PostDraftRepository draftRepository;
   final TeamInjuryRepository injuryRepository;
   final TransferRepository transferRepository;
   final Widget child;
@@ -80,6 +83,7 @@ class _SelectedTeamMediaPreloaderState
     super.didUpdateWidget(oldWidget);
     final repositoriesChanged =
         oldWidget.postRepository != widget.postRepository ||
+            oldWidget.draftRepository != widget.draftRepository ||
             oldWidget.injuryRepository != widget.injuryRepository ||
             oldWidget.transferRepository != widget.transferRepository;
     if (repositoriesChanged) {
@@ -93,33 +97,37 @@ class _SelectedTeamMediaPreloaderState
 
   void _scheduleLoad() {
     final generation = ++_generation;
-    // 현재 탭의 첫 화면은 기다리지 않고, 뒤에서 선택한 팀의 사진을 준비해요.
+    // 현재 탭의 첫 화면은 기다리지 않고, 다른 화면에서 쓸 목록과 사진을 준비해요.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || generation != _generation) return;
       _prepareCachedImages();
       final teamId = widget.teamId;
-      // 한 목록이 늦거나 없어도 다른 목록의 사진은 먼저 준비해요.
+      // 한 목록이 늦거나 없어도 다른 목록의 선로딩은 계속해요.
       unawaited(_load(
           () => widget.postRepository
               .loadPosts(teamId: teamId, language: _language!),
-          _postImages,
           generation,
+          images: _postImages,
           prepare: _prepareLinks));
-      unawaited(_load(() => widget.injuryRepository.loadForTeam(teamId),
-          _injuryImages, generation));
-      unawaited(_load(() => widget.transferRepository.loadForTeam(teamId),
-          _transferImages, generation));
+      unawaited(
+          _load(() => widget.draftRepository.loadAllDrafts(), generation));
+      unawaited(_load(
+          () => widget.injuryRepository.loadForTeam(teamId), generation,
+          images: _injuryImages));
+      unawaited(_load(
+          () => widget.transferRepository.loadForTeam(teamId), generation,
+          images: _transferImages));
     });
   }
 
-  Future<void> _load<T>(Future<T> Function() load,
-      Iterable<ImageProvider> Function(T) images, int generation,
-      {void Function(T)? prepare}) async {
+  Future<void> _load<T>(Future<T> Function() load, int generation,
+      {Iterable<ImageProvider> Function(T)? images,
+      void Function(T)? prepare}) async {
     try {
       final data = await load();
       if (!mounted || generation != _generation) return;
       prepare?.call(data);
-      await _prepare(images(data), generation);
+      if (images != null) await _prepare(images(data), generation);
     } on Object {
       // 선로딩 실패는 화면 이동을 막지 않고 해당 화면에서 다시 조회해요.
     }

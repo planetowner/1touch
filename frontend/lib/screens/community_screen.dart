@@ -16,6 +16,8 @@ import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_providers;
 import 'package:onetouch/data/posts/post_repository.dart';
+import 'package:onetouch/data/posts/post_draft_repository.dart';
+import 'package:onetouch/data/posts/post_draft_repository_provider.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
 import 'package:onetouch/data/teams/team_repository.dart';
@@ -24,6 +26,7 @@ import 'package:onetouch/data/notifications/notification_unread_controller_provi
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/community_ban.dart';
 import 'package:onetouch/models/post.dart';
+import 'package:onetouch/models/post_draft.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/features/community/community_header_slivers.dart';
 import 'package:onetouch/features/community/community_access.dart';
@@ -36,6 +39,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 class Community extends StatefulWidget {
   final int teamId;
   final PostRepository? postRepository;
+  final PostDraftRepository? draftRepository;
   final CommunityRepository? communityRepository;
   final FixtureRepository? fixtureRepository;
   final CommunityRulesVisitRepository? rulesVisitRepository;
@@ -45,6 +49,7 @@ class Community extends StatefulWidget {
     super.key,
     required this.teamId,
     this.postRepository,
+    this.draftRepository,
     this.communityRepository,
     this.fixtureRepository,
     this.rulesVisitRepository,
@@ -80,6 +85,9 @@ class _CommunityState extends State<Community>
   int _rulesVisitGeneration = 0;
   CommunityBanStatus? _banStatus;
   String? _language;
+  bool _isOpeningComposer = false;
+  PostDraftRepository get _draftRepository =>
+      widget.draftRepository ?? postDraftRepository;
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
@@ -239,6 +247,7 @@ class _CommunityState extends State<Community>
   Future<void> _refreshCommunity() async {
     _checkedRulesThisVisit = false;
     await Future.wait<void>([
+      _loadComposerDrafts(forceRefresh: true).then((_) {}),
       if (authSession.isAuthenticated) notificationUnreadController.refresh(),
       _loadLiveStatus(),
       _loadFollowerCount(),
@@ -463,22 +472,60 @@ class _CommunityState extends State<Community>
     _loadPosts();
   }
 
-  Future<void> _openPostComposer() async {
-    final created = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddPost(
+  Future<List<PostDraft>?> _loadComposerDrafts(
+      {bool forceRefresh = false}) async {
+    try {
+      return await _draftRepository.loadDraftsFor(
           teamId: widget.teamId,
-          postRepository: _postRepository,
+          language: _language!,
+          forceRefresh: forceRefresh);
+    } catch (_) {
+      // 조회 실패를 빈 목록으로 취급하면 저장한 글이 없는 화면이 열려요.
+      return null;
+    }
+  }
+
+  Future<void> _openPostComposer() async {
+    if (_isOpeningComposer) return;
+    setState(() => _isOpeningComposer = true);
+    try {
+      final teamId = widget.teamId;
+      final language = _language;
+      final drafts = await _loadComposerDrafts();
+      if (!mounted ||
+          teamId != widget.teamId ||
+          language != _language ||
+          !_isActiveTab) {
+        return;
+      }
+      if (drafts == null) {
+        showAppSnackBar(
+            context, tr(context, 'Unable to load drafts. Tap to retry.'),
+            onTap: _openPostComposer, replaceCurrent: true);
+        return;
+      }
+      final created = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AddPost(
+            initialDrafts: drafts,
+            teamId: widget.teamId,
+            postRepository: _postRepository,
+            draftRepository: _draftRepository,
+          ),
         ),
-      ),
-    );
-    if (!mounted) return;
-    if (created == false) {
-      showAppSnackBar(context, tr(context, 'Saved as draft.'),
-          duration: const Duration(seconds: 5), replaceCurrent: true);
-    } else if (created == true) {
-      await _loadPosts();
+      );
+      if (!mounted) return;
+      // 저장·게시·삭제 결과를 다음 글쓰기 화면에도 반영해요.
+      _loadComposerDrafts();
+      if (created == false) {
+        showAppSnackBar(context, tr(context, 'Saved as draft.'),
+            duration: const Duration(seconds: 5), replaceCurrent: true);
+      } else if (created == true) {
+        await _loadPosts();
+      }
+    } finally {
+      if (mounted) setState(() => _isOpeningComposer = false);
     }
   }
 
@@ -522,9 +569,14 @@ class _CommunityState extends State<Community>
                       backgroundColor: Colors.white,
                       elevation: 0,
                       shape: const CircleBorder(),
-                      onPressed: _openPostComposer,
-                      child: const CommunityIcon('compose',
-                          size: 40, color: Colors.black),
+                      onPressed: _isOpeningComposer ? null : _openPostComposer,
+                      child: _isOpeningComposer
+                          ? const SizedBox.square(
+                              dimension: 24,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.black))
+                          : const CommunityIcon('compose',
+                              size: 40, color: Colors.black),
                     )))
             : null,
         body: Stack(

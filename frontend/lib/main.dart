@@ -48,6 +48,7 @@ import 'package:onetouch/features/community/notification_post_page.dart';
 import 'package:onetouch/features/media/selected_team_media_preloader.dart';
 import 'package:onetouch/data/injuries/team_injury_repository_provider.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart';
+import 'package:onetouch/data/posts/post_draft_repository_provider.dart';
 import 'package:onetouch/data/transfers/transfer_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/player_detail.dart';
@@ -684,6 +685,7 @@ class _MainScreenState extends State<MainScreen> {
         builder: (_, teamId, child) => SelectedTeamMediaPreloader(
           teamId: teamId,
           postRepository: postRepository,
+          draftRepository: postDraftRepository,
           injuryRepository: teamInjuryRepository,
           transferRepository: transferRepository,
           child: child!,
