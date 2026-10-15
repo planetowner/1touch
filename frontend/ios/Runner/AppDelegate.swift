@@ -8,6 +8,7 @@ import Photos
   private var attachmentChannel: FlutterMethodChannel?
   private var videoEncoderBridge: VideoEncoderBridge?
   private var mediaPickerBridge: MediaPickerBridge?
+  private var actionSheetBridge: NativeActionSheetBridge?
   private var trackingAuthorizationBridge: TrackingAuthorizationBridge?
   private var pendingAttachmentChoice: FlutterResult?
 
@@ -28,6 +29,10 @@ import Photos
       withId: "onetouch/avatar_header")
     videoEncoderBridge = VideoEncoderBridge(messenger: engineBridge.applicationRegistrar.messenger())
     mediaPickerBridge = MediaPickerBridge(
+      messenger: engineBridge.applicationRegistrar.messenger(),
+      presentingController: { [weak self] in self?.topController() }
+    )
+    actionSheetBridge = NativeActionSheetBridge(
       messenger: engineBridge.applicationRegistrar.messenger(),
       presentingController: { [weak self] in self?.topController() }
     )

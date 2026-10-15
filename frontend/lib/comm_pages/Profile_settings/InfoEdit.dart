@@ -1,7 +1,6 @@
 import 'package:onetouch/models/profile_change_limit_exception.dart';
 // ignore_for_file: file_names
 
-import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:flutter/services.dart';
@@ -127,70 +126,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  Future<_AvatarAction?> _showPlatformAvatarActions() {
-    if (Theme.of(context).platform == TargetPlatform.iOS) {
-      return showCupertinoModalPopup<_AvatarAction>(
-        context: context,
-        useRootNavigator: true,
-        builder: (context) => CupertinoActionSheet(
-          actions: [
-            CupertinoActionSheetAction(
-              key: const ValueKey('profile-avatar-choose-photo'),
-              onPressed: () => Navigator.of(context).pop(
-                _AvatarAction.choosePhoto,
-              ),
-              child: Text(tr(context, 'Choose from Photos')),
-            ),
-            if (widget.profile?.avatarUri != null)
-              CupertinoActionSheetAction(
-                key: const ValueKey('profile-avatar-remove-photo'),
-                isDestructiveAction: true,
-                onPressed: () => Navigator.of(context).pop(
-                  _AvatarAction.removePhoto,
-                ),
-                child: Text(tr(context, 'Remove Photo')),
-              ),
-          ],
-          cancelButton: CupertinoActionSheetAction(
-            key: const ValueKey('profile-avatar-cancel'),
-            isDefaultAction: true,
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(tr(context, 'Cancel')),
-          ),
-        ),
-      );
-    }
-
-    return showModalBottomSheet<_AvatarAction>(
-      context: context,
-      useRootNavigator: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              key: const ValueKey('profile-avatar-choose-photo'),
-              leading: const Icon(Icons.photo_library_outlined),
-              title: Text(tr(context, 'Choose from Gallery')),
-              onTap: () => Navigator.of(context).pop(
-                _AvatarAction.choosePhoto,
-              ),
-            ),
-            if (widget.profile?.avatarUri != null)
-              ListTile(
-                key: const ValueKey('profile-avatar-remove-photo'),
-                leading: const Icon(Icons.delete_outline),
-                title: Text(tr(context, 'Remove Photo')),
-                onTap: () => Navigator.of(context).pop(
-                  _AvatarAction.removePhoto,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
+  Future<_AvatarAction?> _showPlatformAvatarActions() async {
+    final theme = Theme.of(context);
+    // 메뉴만 OS에 맡기고, 선택 결과는 기존 업로드·삭제 흐름으로 돌려줘요.
+    final action = await const MethodChannel('onetouch/action_sheet')
+        .invokeMethod<String>('show', {
+      'dark': theme.brightness == Brightness.dark,
+      'cancel': tr(context, 'Cancel'),
+      'actions': [
+        {
+          'id': _AvatarAction.choosePhoto.name,
+          'title': tr(
+              context,
+              theme.platform == TargetPlatform.iOS
+                  ? 'Choose from Photos'
+                  : 'Choose from Gallery'),
+          'destructive': false,
+        },
+        if (widget.profile?.avatarUri != null)
+          {
+            'id': _AvatarAction.removePhoto.name,
+            'title': tr(context, 'Remove Photo'),
+            'destructive': true,
+          },
+      ],
+    });
+    return action == null ? null : _AvatarAction.values.byName(action);
   }
 
   Future<void> _chooseAndUploadAvatar() async {

@@ -1,11 +1,9 @@
 package com.onetouch.football
 
 import android.content.Context
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.util.TypedValue
-import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
@@ -17,20 +15,9 @@ import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
 
-// Flutter의 구형 호스트 테마 대신 OS에 포함된 Material 기본 컨트롤을 사용해요.
-private fun avatarControlContext(context: Context, options: Map<*, *>): Context {
-    val dark = options["dark"] == true
-    val configuration = Configuration(context.resources.configuration).apply {
-        uiMode = (uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or
-            if (dark) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
-    }
-    return ContextThemeWrapper(context.createConfigurationContext(configuration),
-        if (dark) android.R.style.Theme_Material_NoActionBar else android.R.style.Theme_Material_Light_NoActionBar)
-}
-
 class AvatarPickerHeaderFactory(private val messenger: BinaryMessenger) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
     override fun create(context: Context, viewId: Int, args: Any?): PlatformView =
-        AvatarPickerHeader(avatarControlContext(context, args as Map<*, *>), viewId, args, messenger)
+        AvatarPickerHeader(nativeControlContext(context, (args as Map<*, *>)["dark"] == true), viewId, args, messenger)
 }
 
 private class AvatarPickerHeader(context: Context, id: Int, options: Map<*, *>, messenger: BinaryMessenger) : PlatformView {

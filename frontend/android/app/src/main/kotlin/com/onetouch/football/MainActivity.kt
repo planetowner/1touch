@@ -1,7 +1,6 @@
 package com.onetouch.football
 
 import android.Manifest
-import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -9,8 +8,6 @@ import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import android.view.Gravity
-import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -19,12 +16,14 @@ import java.io.File
 class MainActivity : FlutterActivity() {
     private var pendingSave: Pair<Map<*, *>, MethodChannel.Result>? = null
     private var mediaPickerBridge: MediaPickerBridge? = null
+    private var actionSheetBridge: NativeActionSheetBridge? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         flutterEngine.platformViewsController.registry.registerViewFactory(
             "onetouch/avatar_header", AvatarPickerHeaderFactory(flutterEngine.dartExecutor.binaryMessenger))
         mediaPickerBridge = MediaPickerBridge(this, flutterEngine.dartExecutor.binaryMessenger)
+        actionSheetBridge = NativeActionSheetBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         VideoEncoderBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "onetouch/community_attachment")
             .setMethodCallHandler { call, result ->
@@ -35,16 +34,10 @@ class MainActivity : FlutterActivity() {
                 }
                 when (call.method) {
                     "choose" -> {
-                        val sheet = AlertDialog.Builder(this)
-                        .setItems(arrayOf(args["save"] as? String ?: "Save", args["share"] as? String ?: "Share")) { _, which ->
-                            result.success(if (which == 0) "save" else "share")
-                        }
-                        .setOnCancelListener { result.success(null) }
-                        .create()
-                        sheet.show()
-                        sheet.window?.apply {
-                            setGravity(Gravity.BOTTOM)
-                            setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
+                        showNativeActionSheet(this,
+                            arrayOf(args["save"] as? String ?: "Save", args["share"] as? String ?: "Share")
+                        ) { which ->
+                            result.success(when (which) { 0 -> "save"; 1 -> "share"; else -> null })
                         }
                     }
                     "save" -> {
@@ -60,6 +53,12 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    override fun onDestroy() {
+        actionSheetBridge?.dispose()
+        actionSheetBridge = null
+        super.onDestroy()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

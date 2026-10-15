@@ -1,7 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:cross_file/cross_file.dart';
@@ -11,12 +10,26 @@ import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/features/media/avatar_image_cache.dart';
 
 void main() {
+  const actionChannel = MethodChannel('onetouch/action_sheet');
   late _AvatarCacheManager cache;
+  final menuCalls = <MethodCall>[];
+  String? menuChoice;
   setUp(() {
     cache = _AvatarCacheManager();
     AvatarImageCache.manager = cache;
+    menuCalls.clear();
+    menuChoice = null;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(actionChannel, (call) async {
+      menuCalls.add(call);
+      return menuChoice;
+    });
   });
-  tearDown(AvatarImageCache.clear);
+  tearDown(() async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(actionChannel, null);
+    await AvatarImageCache.clear();
+  });
 
   testWidgets('uses the compact profile editor layout', (tester) async {
     tester.view.physicalSize = const Size(393, 852);
@@ -96,50 +109,61 @@ void main() {
     expect(find.text('RESULT true'), findsNothing);
   });
 
-  testWidgets('uses a Cupertino action sheet on iOS', (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(platform: TargetPlatform.iOS),
-        home: _EditProfileHost(
-          repository: _RecordingAvatarRepository(),
-          profile: _profile(),
-          pickAvatar: () async => null,
-        ),
-      ),
-    );
+  for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+    for (final hasPhoto in [false, true]) {
+      testWidgets('$platform opens native actions; existing photo: $hasPhoto',
+          (tester) async {
+        final repository = _RecordingAvatarRepository();
+        var pickerCalls = 0;
+        await tester.pumpWidget(MaterialApp(
+          theme: ThemeData(platform: platform, brightness: Brightness.dark),
+          home: _EditProfileHost(
+            repository: repository,
+            profile: _profile(
+                avatarUri: hasPhoto
+                    ? Uri.parse('https://api.example/users/1/avatar')
+                    : null),
+            pickAvatar: () async {
+              pickerCalls++;
+              return null;
+            },
+          ),
+        ));
+        await tester.tap(find.text('OPEN'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('profile-avatar-action')));
+        await tester.pumpAndSettle();
 
-    await tester.tap(find.text('OPEN'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('profile-avatar-action')));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(CupertinoActionSheet), findsOneWidget);
-    expect(find.byKey(const ValueKey('profile-avatar-cancel')), findsOneWidget);
-  });
-
-  testWidgets('uses a Material bottom sheet on Android', (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(platform: TargetPlatform.android),
-        home: _EditProfileHost(
-          repository: _RecordingAvatarRepository(),
-          profile: _profile(),
-          pickAvatar: () async => null,
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('OPEN'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('profile-avatar-action')));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(BottomSheet), findsOneWidget);
-    expect(find.byType(CupertinoActionSheet), findsNothing);
-  });
+        expect(menuCalls.single.method, 'show');
+        final args = menuCalls.single.arguments as Map;
+        expect(args['dark'], true);
+        expect(args['cancel'], 'Cancel');
+        expect(args['actions'], [
+          {
+            'id': 'choosePhoto',
+            'title': platform == TargetPlatform.iOS
+                ? 'Choose from Photos'
+                : 'Choose from Gallery',
+            'destructive': false,
+          },
+          if (hasPhoto)
+            {'id': 'removePhoto', 'title': 'Remove Photo', 'destructive': true},
+        ]);
+        expect(find.byType(BottomSheet), findsNothing);
+        expect(find.byType(CupertinoActionSheet), findsNothing);
+        // 네이티브 메뉴의 취소는 사진 선택이나 서버 변경으로 이어지지 않아요.
+        expect(pickerCalls, 0);
+        expect(repository.uploadedBytes, isNull);
+        expect(repository.deleteCalls, 0);
+        expect(find.byType(EditProfileScreen), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
 
   testWidgets('chooses and uploads a profile photo', (tester) async {
     final repository = _RecordingAvatarRepository();
+    menuChoice = 'choosePhoto';
 
     await tester.pumpWidget(
       MaterialApp(
@@ -158,10 +182,6 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('profile-avatar-action')));
     await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey('profile-avatar-choose-photo')),
-    );
-    await tester.pumpAndSettle();
 
     expect(repository.uploadedBytes, [1, 2, 3]);
     expect(repository.uploadedFilename, 'profile-avatar');
@@ -172,6 +192,7 @@ void main() {
 
   testWidgets('removes an existing profile photo', (tester) async {
     final repository = _RecordingAvatarRepository();
+    menuChoice = 'removePhoto';
 
     await tester.pumpWidget(
       MaterialApp(
@@ -188,10 +209,6 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('profile-avatar-action')));
     await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey('profile-avatar-remove-photo')),
-    );
-    await tester.pumpAndSettle();
 
     expect(repository.deleteCalls, 1);
     expect(cache.removedKeys, hasLength(1));
@@ -200,6 +217,7 @@ void main() {
 
   testWidgets('a cancelled photo choice does not upload', (tester) async {
     final repository = _RecordingAvatarRepository();
+    menuChoice = 'choosePhoto';
 
     await tester.pumpWidget(
       MaterialApp(
@@ -213,10 +231,6 @@ void main() {
     await tester.tap(find.text('OPEN'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('profile-avatar-action')));
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey('profile-avatar-choose-photo')),
-    );
     await tester.pumpAndSettle();
 
     expect(repository.uploadedBytes, isNull);
