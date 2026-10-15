@@ -8,6 +8,7 @@ import 'package:onetouch/comm_pages/Profile_settings/InfoEdit.dart';
 import 'package:onetouch/data/profile/profile_avatar_repository.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/features/media/avatar_image_cache.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 void main() {
   const actionChannel = MethodChannel('onetouch/action_sheet');
@@ -117,6 +118,9 @@ void main() {
         var pickerCalls = 0;
         await tester.pumpWidget(MaterialApp(
           theme: ThemeData(platform: platform, brightness: Brightness.dark),
+          locale: const Locale('ko'),
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
           home: _EditProfileHost(
             repository: repository,
             profile: _profile(
@@ -137,17 +141,15 @@ void main() {
         expect(menuCalls.single.method, 'show');
         final args = menuCalls.single.arguments as Map;
         expect(args['dark'], true);
-        expect(args['cancel'], 'Cancel');
+        expect(args['cancel'], '취소');
         expect(args['actions'], [
           {
             'id': 'choosePhoto',
-            'title': platform == TargetPlatform.iOS
-                ? 'Choose from Photos'
-                : 'Choose from Gallery',
+            'title': '사진에서 선택',
             'destructive': false,
           },
           if (hasPhoto)
-            {'id': 'removePhoto', 'title': 'Remove Photo', 'destructive': true},
+            {'id': 'removePhoto', 'title': '현재 사진 삭제', 'destructive': true},
         ]);
         expect(find.byType(BottomSheet), findsNothing);
         expect(find.byType(CupertinoActionSheet), findsNothing);

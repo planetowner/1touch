@@ -136,11 +136,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       'actions': [
         {
           'id': _AvatarAction.choosePhoto.name,
-          'title': tr(
-              context,
-              theme.platform == TargetPlatform.iOS
-                  ? 'Choose from Photos'
-                  : 'Choose from Gallery'),
+          'title': tr(context, 'Choose from Photos'),
           'destructive': false,
         },
         if (widget.profile?.avatarUri != null)

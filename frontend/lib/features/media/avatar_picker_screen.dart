@@ -430,6 +430,8 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
           child: Scaffold(
             backgroundColor: AppColors.of(context).pageBackground,
             body: SafeArea(
+                // 사진 목록은 홈 표시줄 뒤까지 이어지고, 상단 버튼은 안전영역을 지켜요.
+                bottom: false,
                 child: Column(children: [
               NativeAvatarHeader(
                 onCancel: _saving ? null : () => Navigator.of(context).pop(),

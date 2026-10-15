@@ -770,7 +770,7 @@ const appMessages = <String, MessageTranslations>{
   "Take photo": (ko: "사진 촬영", ja: "写真を撮影", zh: "拍摄照片"),
   "Photo": (ko: "사진", ja: "写真", zh: "照片"),
   "Choose from Gallery": (ko: "갤러리에서 선택", ja: "ギャラリーから選択", zh: "从相册中选择"),
-  "Remove Photo": (ko: "사진 삭제", ja: "写真を削除", zh: "删除照片"),
+  "Remove Photo": (ko: "현재 사진 삭제", ja: "写真を削除", zh: "删除照片"),
   "Unable to remove profile photo. Please try again.": (
     ko: "프로필 사진을 삭제하지 못했어요. 다시 시도해 주세요.",
     ja: "プロフィール写真を削除できませんでした。もう一度お試しください。",
