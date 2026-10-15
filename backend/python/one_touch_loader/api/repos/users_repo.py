@@ -93,7 +93,7 @@ def update_profile(user_id: int, profile: dict) -> None:
     except IntegrityError as exc:
         if exc.errno != 1062:
             raise
-        raise HTTPException(409, "Username or nickname is already in use") from exc
+        raise HTTPException(409, {"code": "profile_name_conflict"}) from exc
 
 
 def get_favorite_team_id(user_id: int) -> Optional[int]:

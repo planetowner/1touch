@@ -69,7 +69,7 @@ def player_indicators(player_id: int = Path(gt=0), user_id: int = Depends(get_us
     except IndicatorsNotReadyError as exc:
         raise HTTPException(503, str(exc), headers={'Retry-After': '60'}) from exc
     if result is None:
-        raise HTTPException(404, "Player not in a current five-league squad")
+        raise HTTPException(404, {"code": "player_not_in_current_squad"})
     return result
 
 

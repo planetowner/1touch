@@ -81,7 +81,7 @@ class ApiCurrentUserRepository implements CurrentUserRepository {
       if (detail is Map<String, dynamic> && detail['available_at'] is String) {
         throw ProfileChangeLimitException.fromJson(detail);
       }
-      if (detail == 'Username or nickname is already in use') {
+      if (_api.errorCode(response) == 'profile_name_conflict') {
         throw ProfileNameConflictException();
       }
     }

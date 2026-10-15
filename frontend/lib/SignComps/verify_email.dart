@@ -161,6 +161,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
       if (!mounted) return;
       if (error is AuthRequestException &&
           error.statusCode == 409 &&
+          error.code == 'registration_conflict' &&
           context.canPop()) {
         context.pop('duplicate');
         return;
@@ -241,8 +242,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
           onPressed: _goBack,
         ),
         centerTitle: true,
-        title: Text(tr(context, 'Verify your email'),
-            style: Body1.style),
+        title: Text(tr(context, 'Verify your email'), style: Body1.style),
       ),
       body: SafeArea(
         // 1. Switch ListView to CustomScrollView

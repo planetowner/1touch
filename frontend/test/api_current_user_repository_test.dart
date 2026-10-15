@@ -177,7 +177,9 @@ void main() {
     final repository = ApiCurrentUserRepository(
       api: ApiClient(
         client: MockClient((_) async => http.Response(
-            jsonEncode({'detail': 'Username or nickname is already in use'}),
+            jsonEncode({
+              'detail': {'code': 'profile_name_conflict'}
+            }),
             409)),
         baseUri: Uri.parse('https://api.example.test/v1/'),
         requestHeaders: () => const {},
@@ -200,6 +202,18 @@ void main() {
     );
 
     await expectLater(repository.load(), throwsA(isA<http.ClientException>()));
+  });
+
+  test('does not classify an unrelated conflict as a duplicate name', () async {
+    final repository = ApiCurrentUserRepository(
+        api: ApiClient(
+      client: MockClient((_) async =>
+          http.Response('{"detail":{"code":"unknown_conflict"}}', 409)),
+      baseUri: Uri.parse('https://example.test/v1/'),
+      requestHeaders: () => const {},
+    ));
+    await expectLater(repository.updateProfile(displayName: 'Member'),
+        throwsA(isA<http.ClientException>()));
   });
 
   test('rejects malformed JSON and non-object response roots', () async {

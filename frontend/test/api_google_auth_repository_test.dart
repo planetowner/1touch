@@ -10,6 +10,46 @@ import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/registration_field.dart';
 
 void main() {
+  test('all auth operations preserve the same status and code contract',
+      () async {
+    final repository = ApiGoogleAuthRepository(
+        api: ApiClient(
+      client: MockClient((_) async => http.Response(
+          jsonEncode({
+            'detail': {
+              'code': 'auth_rate_limited',
+              'message': 'Changed server text'
+            },
+          }),
+          429)),
+      baseUri: Uri.parse('https://example.test/v1/'),
+      requestHeaders: () => const {},
+    ));
+    for (final operation in <Future<Object?> Function()>[
+      () => repository.isRegistrationValueAvailable(
+          field: RegistrationField.email, value: 'member@example.com'),
+      () => repository.requestEmailCode(email: 'member@example.com'),
+      () => repository.resetPassword(
+          challengeId: 'c' * 40, code: '123456', password: 'Password123'),
+      () => repository.registerWithEmail(
+          challengeId: 'c' * 40,
+          code: '123456',
+          password: 'Password123',
+          username: 'member',
+          displayName: 'Member'),
+      () => repository.signInWithPassword(
+          username: 'member', password: 'Password123'),
+      () => repository.signInWithGoogle(idToken: 'id-token'),
+      repository.logout,
+    ]) {
+      await expectLater(
+          operation(),
+          throwsA(isA<AuthRequestException>()
+              .having((error) => error.statusCode, 'statusCode', 429)
+              .having((error) => error.code, 'code', 'auth_rate_limited')));
+    }
+  });
+
   for (final field in RegistrationField.values) {
     test('checks $field availability through the registration API', () async {
       var available = false;
@@ -42,7 +82,10 @@ void main() {
     final repository = ApiGoogleAuthRepository(
       api: ApiClient(
         client: MockClient((_) async => http.Response(
-            jsonEncode({'detail': 'Too many authentication requests'}), 429)),
+            jsonEncode({
+              'detail': {'code': 'auth_rate_limited'}
+            }),
+            429)),
         baseUri: Uri.parse('https://api.1touch.football/v1'),
         requestHeaders: () => const {},
       ),
@@ -175,8 +218,7 @@ void main() {
     }
   });
 
-  test('preserves the backend detail when an email-code request fails',
-      () async {
+  test('preserves status without exposing email delivery details', () async {
     final repository = ApiGoogleAuthRepository(
       api: ApiClient(
           client: MockClient(
@@ -195,15 +237,15 @@ void main() {
         isA<AuthRequestException>()
             .having((error) => error.statusCode, 'statusCode', 502)
             .having(
-              (error) => error.message,
-              'message',
-              'Verification email could not be sent',
+              (error) => error.code,
+              'code',
+              isNull,
             ),
       ),
     );
   });
 
-  test('reads FastAPI validation messages for email-code failures', () async {
+  test('does not use FastAPI validation text as an error code', () async {
     final repository = ApiGoogleAuthRepository(
       api: ApiClient(
           client: MockClient(
@@ -224,9 +266,9 @@ void main() {
       repository.requestEmailCode(email: 'invalid'),
       throwsA(
         isA<AuthRequestException>().having(
-          (error) => error.displayMessage,
-          'displayMessage',
-          'value is not a valid email address (422)',
+          (error) => error.code,
+          'code',
+          isNull,
         ),
       ),
     );
@@ -268,13 +310,13 @@ void main() {
     expect(accessToken, 'email-session-token');
   });
 
-  test('preserves backend detail when email registration fails', () async {
+  test('preserves the stable code when email registration fails', () async {
     final repository = ApiGoogleAuthRepository(
       api: ApiClient(
           client: MockClient(
             (_) async => http.Response(
               jsonEncode({
-                'detail': 'Invalid verification code. Try again.',
+                'detail': {'code': 'verification_code_invalid'},
               }),
               400,
             ),
@@ -293,9 +335,9 @@ void main() {
       ),
       throwsA(
         isA<AuthRequestException>().having(
-          (error) => error.displayMessage,
-          'displayMessage',
-          'Invalid verification code. Try again. (400)',
+          (error) => error.code,
+          'code',
+          'verification_code_invalid',
         ),
       ),
     );
@@ -372,8 +414,7 @@ void main() {
       repository.signInWithGoogle(idToken: 'id-token'),
       throwsA(isA<AuthRequestException>()
           .having((error) => error.statusCode, 'statusCode', 401)
-          .having((error) => error.message, 'message',
-              'Unable to sign in. Please try again.')),
+          .having((error) => error.code, 'code', isNull)),
     );
   });
 

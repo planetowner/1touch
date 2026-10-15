@@ -54,7 +54,7 @@ void main() {
             // 서버가 HTML 오류 페이지를 보내도 연결 오류로 분류하지 않아요.
             return failure == 0
                 ? http.Response(
-                    '{"detail":"Invalid email, username, or password"}', 401)
+                    '{"detail":{"code":"invalid_credentials"}}', 401)
                 : http.Response('<html>Service unavailable</html>', 503);
           }),
           baseUri: Uri.parse('https://example.test/v1/'),

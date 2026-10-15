@@ -44,6 +44,22 @@ class ApiClient extends http.BaseClient {
     return decoded;
   }
 
+  /// 표시 문구와 무관하게 서버의 고정 오류 코드만 읽어요.
+  String? errorCode(http.Response response) {
+    try {
+      final body = jsonDecode(utf8.decode(response.bodyBytes));
+      if (body is Map<String, dynamic>) {
+        final detail = body['detail'];
+        if (detail is Map<String, dynamic> && detail['code'] is String) {
+          return detail['code'] as String;
+        }
+      }
+    } on FormatException {
+      // 프록시의 비 JSON 오류도 각 화면의 기존 실패 안내로 처리해요.
+    }
+    return null;
+  }
+
   @override
   void close() => _client.close();
 }

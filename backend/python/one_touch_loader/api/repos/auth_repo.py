@@ -31,7 +31,7 @@ def rate_limit(scope: str, limit: int, seconds: int) -> None:
     # 제한을 넘은 요청도 커밋한 뒤 거절해야 실패 시 카운터가 롤백되지 않아요.
     if count > limit:
         remaining = max(1, int((started + timedelta(seconds=seconds) - now).total_seconds()))
-        raise HTTPException(429, "Too many authentication requests", headers={"Retry-After": str(remaining)})
+        raise HTTPException(429, {"code": "auth_rate_limited"}, headers={"Retry-After": str(remaining)})
 
 
 def _create_session(cur, user_id: int) -> dict:
@@ -96,16 +96,16 @@ def _verify_code(cur, challenge: str, code: str, purpose: str) -> tuple[str | No
     cur.execute("SELECT * FROM email_verification_codes WHERE challenge_hash=%s FOR UPDATE", (key,))
     row = cur.fetchone()
     if row is None or row["purpose"] != purpose:
-        return None, "This code can't be used. Request a new code."
+        return None, "verification_code_unusable"
     if row["expires_at"] <= utc_now():
-        return None, "This code has expired. Send a new code."
+        return None, "verification_code_expired"
     if row["attempts"] >= CODE_ATTEMPTS:
-        return None, "Too many incorrect attempts. Send a new code."
+        return None, "verification_code_attempts_exceeded"
     cur.execute("UPDATE email_verification_codes SET attempts=attempts+1 WHERE challenge_hash=%s", (key,))
     if not hmac.compare_digest(bytes(row["code_hash"]), code_hash(challenge, code)):
         if row["attempts"] + 1 >= CODE_ATTEMPTS:
-            return None, "Too many incorrect attempts. Send a new code."
-        return None, "Invalid verification code. Try again."
+            return None, "verification_code_attempts_exceeded"
+        return None, "verification_code_invalid"
     return row["email"], None
 
 
@@ -132,10 +132,10 @@ def register_email(challenge: str, code: str, password: str, profile: dict) -> d
     except IntegrityError as exc:
         if exc.errno != 1062:
             raise
-        raise HTTPException(409, "Email, username, or nickname is already registered") from exc
+        raise HTTPException(409, {"code": "registration_conflict"}) from exc
     if result is None:
         # 시도 횟수를 저장한 뒤 오류를 반환해야, 오타를 반복해도 한도가 유지돼요.
-        raise HTTPException(400, error)
+        raise HTTPException(400, {"code": error})
     return result
 
 
@@ -150,7 +150,7 @@ def login_password(username: str, password: str) -> dict:
         matches = [row for row in cur.fetchall() if PASSWORDS.verify(password, row["password_hash"])]
         # 서로 다른 계정의 아이디·이메일과 비밀번호까지 겹치면 한 계정을 임의로 선택하지 않아요.
         if len(matches) != 1:
-            raise HTTPException(401, "Invalid email, username, or password")
+            raise HTTPException(401, {"code": "invalid_credentials"})
         row = matches[0]
         return _create_session(cur, row["user_id"])
 
@@ -169,7 +169,7 @@ def reset_password(challenge: str, code: str, password: str) -> None:
                 # 비밀번호 재설정 뒤 기존 기기의 인증은 다시 받아요.
                 cur.execute("DELETE FROM user_sessions WHERE user_id=%s", (row["user_id"],))
     if not verified:
-        raise HTTPException(400, error)
+        raise HTTPException(400, {"code": error})
 
 
 def find_username(challenge: str, code: str) -> str:
@@ -182,7 +182,7 @@ def find_username(challenge: str, code: str) -> str:
             account = cur.fetchone()
     # 주소 소유를 확인한 뒤에만 계정 유무·유저네임을 알려요. 새 로그인 세션은 만들지 않아요.
     if email is None:
-        raise HTTPException(400, error)
+        raise HTTPException(400, {"code": error})
     if account is None:
         raise HTTPException(404, "No email account found. Use the social provider used at signup")
     return account["username"]

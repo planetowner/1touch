@@ -623,9 +623,8 @@ void main() {
     await tester.pump();
     expect(tester.widget<FilledButton>(submit).onPressed, isNull);
     expect(repository.requestedEmails, hasLength(1));
-    request.completeError(const AuthRequestException(
-        statusCode: 503,
-        message: 'Service configuration missing: AUTH_CODE_SECRET'));
+    request.completeError(
+        const AuthRequestException(statusCode: 503, code: 'unknown_error'));
     await tester.pumpAndSettle();
     expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
     expect(
@@ -1298,7 +1297,7 @@ void main() {
       (tester) async {
     final repository = _FakeAuthRepository()
       ..registrationError = const AuthRequestException(
-          statusCode: 400, message: 'Invalid verification code. Try again.');
+          statusCode: 400, code: 'verification_code_invalid');
     final router = _router(_service(repository, AuthSession()));
     addTearDown(router.dispose);
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -1483,8 +1482,7 @@ class _FakeAuthRepository implements AuthRepository {
     if (registrationError != null) throw registrationError!;
     if (duplicateRegistration) {
       throw const AuthRequestException(
-          statusCode: 409,
-          message: 'Email, username, or nickname is already registered');
+          statusCode: 409, code: 'registration_conflict');
     }
     return 'registered-session';
   }

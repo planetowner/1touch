@@ -3,6 +3,22 @@ import 'package:onetouch/core/number_display.dart';
 // 화면 문구는 네 언어에서 같은 키로 관리해요.
 typedef MessageTranslations = ({String ko, String ja, String zh});
 
+// 서버는 고정 코드만 보내고, 안내 문구와 번역은 여기서 함께 관리해요.
+const verificationCodeErrorMessages = <String, String>{
+  'verification_code_invalid': 'Invalid verification code. Try again.',
+  'verification_code_expired': 'This code has expired. Send a new code.',
+  'verification_code_unusable': "This code can't be used. Request a new code.",
+  'verification_code_attempts_exceeded':
+      'Too many incorrect attempts. Send a new code.',
+};
+
+const authErrorMessages = <String, String>{
+  ...verificationCodeErrorMessages,
+  'invalid_credentials': 'Your email, username, or password is incorrect.',
+  'registration_conflict': 'Email, username, or nickname is already registered',
+  'auth_rate_limited': 'Too many requests. Please try again later.',
+};
+
 // 선수 화면과 키를 공유해도 팀 화면에 맞는 언어별 문구를 유지해요.
 const teamScreenMessages = <String, Map<String, String>>{
   'ko': {
@@ -114,21 +130,9 @@ const appMessages = <String, MessageTranslations>{
     ja: "新しい予想の受付と結果のお知らせです。",
     zh: "新竞猜及结算结果动态。"
   ),
-  "{team}": (
-    ko: "{team}",
-    ja: "{team}",
-    zh: "{team}"
-  ),
-  "{player}": (
-    ko: "{player}",
-    ja: "{player}",
-    zh: "{player}"
-  ),
-  "Your post": (
-    ko: "내 게시물",
-    ja: "あなたの投稿",
-    zh: "你的帖子"
-  ),
+  "{team}": (ko: "{team}", ja: "{team}", zh: "{team}"),
+  "{player}": (ko: "{player}", ja: "{player}", zh: "{player}"),
+  "Your post": (ko: "내 게시물", ja: "あなたの投稿", zh: "你的帖子"),
   "New comment on your post": (
     ko: "내 게시물에 새 댓글",
     ja: "あなたの投稿に新しいコメント",

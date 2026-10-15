@@ -55,6 +55,7 @@ class PasswordLoginTests(unittest.TestCase):
             with self.subTest(identifier=identifier), self.assertRaises(HTTPException) as error:
                 auth_repo.login_password(identifier, password)
             self.assertEqual(error.exception.status_code, 401)
+            self.assertEqual(error.exception.detail, {'code': 'invalid_credentials'})
         self.session.assert_not_called()
 
     def test_email_shaped_username_does_not_hide_another_members_email(self):
@@ -75,6 +76,12 @@ class PasswordLoginTests(unittest.TestCase):
         self.assertEqual(response.json()['access_token'], 'session-1')
         long_email = 'a' * 60 + '@example.com'
         self.assertEqual(PasswordLoginBody(username=long_email, password='Password123').username, long_email)
+
+    def test_http_contract_returns_code_without_display_text_for_invalid_credentials(self):
+        response = TestClient(create_app()).post('/v1/auth/login', json={
+            'username': 'member', 'password': 'WrongPassword123'})
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), {'detail': {'code': 'invalid_credentials'}})
 
 
 if __name__ == '__main__':

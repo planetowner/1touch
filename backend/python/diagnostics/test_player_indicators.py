@@ -383,7 +383,9 @@ class SnapshotRepositoryTests(unittest.TestCase):
                 response.json()["comparison_scope"],
                 "current_season_big_five_all_positions",
             )
-            self.assertEqual(client.get("/v1/players/2/indicators").status_code, 404)
+            response = client.get("/v1/players/2/indicators")
+            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.json(), {"detail": {"code": "player_not_in_current_squad"}})
 
     def test_detail_embeds_the_same_current_indicators_as_the_dedicated_route(self):
         loader.refresh(apply=True)

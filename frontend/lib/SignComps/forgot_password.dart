@@ -23,6 +23,7 @@ typedef _ResetTicket = ({
 Future<void> showForgotPasswordFlow(
     BuildContext context, AuthService authService) async {
   _ResetTicket? previousTicket;
+  AuthRequestException? verificationError;
   while (true) {
     if (!context.mounted) return;
     final ticket = await showModalBottomSheet<_ResetTicket>(
@@ -33,23 +34,31 @@ Future<void> showForgotPasswordFlow(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (_) => _ResetCodeSheet(
-          authService: authService, previousTicket: previousTicket),
+          authService: authService,
+          previousTicket: previousTicket,
+          verificationError: verificationError),
     );
     if (ticket == null) return;
     if (!context.mounted) return;
-    final retryCode = await Navigator.of(context).push<bool>(
-        MaterialPageRoute<bool>(
+    final retryError = await Navigator.of(context).push<AuthRequestException>(
+        MaterialPageRoute<AuthRequestException>(
             builder: (_) =>
                 _NewPasswordScreen(authService: authService, ticket: ticket)));
-    if (retryCode != true) return;
+    if (retryError == null) return;
     previousTicket = ticket;
+    verificationError = retryError;
   }
 }
 
 class _ResetCodeSheet extends StatefulWidget {
-  const _ResetCodeSheet({required this.authService, this.previousTicket});
+  const _ResetCodeSheet({
+    required this.authService,
+    this.previousTicket,
+    this.verificationError,
+  });
   final AuthService authService;
   final _ResetTicket? previousTicket;
+  final AuthRequestException? verificationError;
   @override
   State<_ResetCodeSheet> createState() => _ResetCodeSheetState();
 }
@@ -62,12 +71,18 @@ class _ResetCodeSheetState extends State<_ResetCodeSheet> {
   int _expiresIn = 0;
   int _resendIn = 0;
   bool _busy = false;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     final ticket = widget.previousTicket;
     if (ticket == null) return;
+    final error = widget.verificationError;
+    if (error != null) {
+      _errorMessage = authRequestErrorMessage(error,
+          fallback: 'Unable to verify the code. Please try again.');
+    }
     _email.text = ticket.email;
     _challenge = ticket.challenge;
     _expiresIn =
@@ -107,15 +122,16 @@ class _ResetCodeSheetState extends State<_ResetCodeSheet> {
         _expiresIn = challenge.expiresInSeconds;
         _resendIn = 60;
         _code.clear();
+        _errorMessage = null;
       });
       _startTimer();
       if (resend) _message('A new verification code was sent.');
-    } on AuthRequestException catch (error) {
-      if (mounted) _message(error.message);
-    } catch (_) {
+    } on Object catch (error) {
       if (mounted) {
-        _message(
-            'Unable to send a verification code. Check your connection and try again.');
+        // 배경 화면의 배너는 입력창에 가려져요. 발송 오류도 입력창 안에서 안내해요.
+        setState(() => _errorMessage = authRequestErrorMessage(error,
+            fallback:
+                'Unable to send a verification code. Check your connection and try again.'));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -189,11 +205,6 @@ class _ResetCodeSheetState extends State<_ResetCodeSheet> {
                   tr(context,
                       'Enter the verification code sent to your email.'),
                   style: Body2.style),
-              if (widget.previousTicket != null) ...[
-                const SizedBox(height: 8),
-                Text(tr(context, 'Invalid verification code. Try again.'),
-                    style: Body2.style.copyWith(color: colors.error)),
-              ],
               const SizedBox(height: 8),
               TextField(
                 key: const ValueKey('email-verification-code'),
@@ -229,6 +240,11 @@ class _ResetCodeSheetState extends State<_ResetCodeSheet> {
                   ),
                 ),
               ]),
+            ],
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(tr(context, _errorMessage!),
+                  style: Body2.style.copyWith(color: colors.error)),
             ],
             const SizedBox(height: 32),
             AuthPrimaryButton(
@@ -297,19 +313,15 @@ class _NewPasswordScreenState extends State<_NewPasswordScreen> {
       if (!mounted) return;
       _message('Password reset. Sign in with your new password.');
       Navigator.of(context).pop();
-    } on AuthRequestException catch (error) {
-      if (mounted) {
-        if (error.statusCode == 400 &&
-            error.message.toLowerCase().contains('verification code')) {
-          Navigator.of(context).pop(true);
-          return;
-        }
-        _message('${tr(context, error.message)} (${error.statusCode})');
+    } on Object catch (error) {
+      if (!mounted) return;
+      // 문구가 바뀌어도 인증번호 오류는 같은 입력 화면에서 다시 해결해요.
+      if (error is AuthRequestException && error.isVerificationCodeError) {
+        Navigator.of(context).pop(error);
+        return;
       }
-    } catch (_) {
-      if (mounted) {
-        _message('Unable to reset your password. Please try again.');
-      }
+      _message(authRequestErrorMessage(error,
+          fallback: 'Unable to reset your password. Please try again.'));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

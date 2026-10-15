@@ -28,17 +28,8 @@ class ApiBettingRepository implements BettingRepository {
       throw const BettingRequestException('sign_in_required');
     }
     if (response.statusCode != 200) {
-      String code = 'request_failed';
-      try {
-        final detail =
-            (jsonDecode(response.body) as Map<String, dynamic>)['detail'];
-        if (detail is Map<String, dynamic> && detail['code'] is String) {
-          code = detail['code'] as String;
-        }
-      } on FormatException {
-        // 서버·프록시의 비 JSON 오류도 같은 재시도 안내를 보여줘요.
-      }
-      throw BettingRequestException(code);
+      throw BettingRequestException(
+          _api.errorCode(response) ?? 'request_failed');
     }
     return _api.decodeJson<Map<String, dynamic>>(response);
   }

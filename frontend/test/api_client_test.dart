@@ -13,6 +13,37 @@ import 'package:onetouch/data/profile/api/api_current_user_repository.dart';
 import 'package:onetouch/data/profile/api/api_profile_avatar_repository.dart';
 
 void main() {
+  test('reads only detail.code and ignores server display or validation text',
+      () {
+    final api = _decodingClient();
+    addTearDown(api.close);
+    for (final message in ['Changed server text', '서버 문구 변경']) {
+      expect(
+        api.errorCode(http.Response.bytes(
+            utf8.encode(jsonEncode({
+              'detail': {
+                'code': 'verification_code_invalid',
+                'message': message
+              },
+            })),
+            400)),
+        'verification_code_invalid',
+      );
+    }
+    for (final body in [
+      'Bad Gateway',
+      '{',
+      '[]',
+      'null',
+      '{"detail":"Invalid verification code. Try again."}',
+      '{"detail":[{"msg":"internal validation"}]}',
+      '{"detail":{"code":42}}',
+      '{"detail":{}}',
+    ]) {
+      expect(api.errorCode(http.Response(body, 400)), isNull, reason: body);
+    }
+  });
+
   test('login updates existing repositories and multipart requests', () async {
     final session = AuthSession();
     final requests = <http.Request>[];

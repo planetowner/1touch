@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/auth/api/api_google_auth_response.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
@@ -27,13 +28,7 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
       headers: const {'Content-Type': 'application/json'},
       body: jsonEncode({'field': field.apiValue, 'value': value}),
     );
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw AuthRequestException(
-        statusCode: response.statusCode,
-        message: _responseDetail(response.body,
-            fallback: 'Unable to check availability. Please try again.'),
-      );
-    }
+    _ensureSuccess(response);
     final decoded =
         _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
     return decoded['available'] as bool;
@@ -101,15 +96,7 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
         'language': _locale?.call() ?? 'en',
       }),
     );
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw AuthRequestException(
-        statusCode: response.statusCode,
-        message: _responseDetail(
-          response.body,
-          fallback: 'Unable to send a verification code.',
-        ),
-      );
-    }
+    _ensureSuccess(response);
 
     final decoded =
         _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
@@ -131,13 +118,7 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
         'password': password,
       }),
     );
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw AuthRequestException(
-        statusCode: response.statusCode,
-        message: _responseDetail(response.body,
-            fallback: 'Unable to reset your password. Please try again.'),
-      );
-    }
+    _ensureSuccess(response);
     _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
   }
 
@@ -163,15 +144,7 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
         'display_name': displayName,
       }),
     );
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw AuthRequestException(
-        statusCode: response.statusCode,
-        message: _responseDetail(
-          response.body,
-          fallback: 'Unable to create the account.',
-        ),
-      );
-    }
+    _ensureSuccess(response);
 
     final decoded =
         _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
@@ -181,15 +154,7 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
   @override
   Future<void> logout() async {
     final response = await _api.post(_api.baseUri.resolve('auth/logout'));
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw AuthRequestException(
-        statusCode: response.statusCode,
-        message: _responseDetail(
-          response.body,
-          fallback: 'Unable to log out.',
-        ),
-      );
-    }
+    _ensureSuccess(response);
   }
 
   Future<String> _postForAccessToken(
@@ -205,44 +170,19 @@ class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
       body: jsonEncode(body),
     );
 
-    // HTTP 오류와 연결 오류를 구분할 수 있도록 응답 상태를 보존해요.
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw AuthRequestException(
-        statusCode: response.statusCode,
-        message: _responseDetail(response.body,
-            fallback: 'Unable to sign in. Please try again.'),
-      );
-    }
+    _ensureSuccess(response);
     final decoded =
         _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
     return ApiGoogleAuthResponse.fromJson(decoded).accessToken;
   }
 
-  static String _responseDetail(
-    String responseBody, {
-    required String fallback,
-  }) {
-    try {
-      final decoded = jsonDecode(responseBody);
-      if (decoded is Map<String, dynamic>) {
-        final detail = decoded['detail'];
-        if (detail is String && detail.trim().isNotEmpty) {
-          return detail.trim();
-        }
-        if (detail is List) {
-          final messages = detail
-              .whereType<Map>()
-              .map((item) => item['msg'])
-              .whereType<String>()
-              .map((message) => message.trim())
-              .where((message) => message.isNotEmpty)
-              .toList(growable: false);
-          if (messages.isNotEmpty) return messages.join(' ');
-        }
-      }
-    } on FormatException {
-      // Non-JSON error bodies use the safe fallback below.
+  void _ensureSuccess(http.Response response) {
+    // 모든 인증 요청에서 HTTP 상태와 오류 코드를 같은 규칙으로 보존해요.
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw AuthRequestException(
+        statusCode: response.statusCode,
+        code: _api.errorCode(response),
+      );
     }
-    return fallback;
   }
 }

@@ -128,14 +128,8 @@ class CalendarSyncService {
 
   void _ensureSuccess(http.Response response) {
     if (response.statusCode != 200) {
-      String? code;
-      try {
-        final detail = jsonDecode(response.body)['detail'];
-        if (detail is Map) code = detail['code'] as String?;
-      } on FormatException {
-        // 프록시 오류처럼 JSON이 아닌 응답도 같은 실패 안내로 처리해요.
-      }
-      throw CalendarSyncException(code ?? 'calendar_request_failed');
+      throw CalendarSyncException(
+          api.errorCode(response) ?? 'calendar_request_failed');
     }
   }
 }

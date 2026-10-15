@@ -190,11 +190,14 @@ void main() {
     'API distinguishes missing current roster from request failure',
     () async {
       var status = 404;
+      var code = 'player_not_in_current_squad';
       final repository = ApiPlayerIndicatorsRepository(
         api: ApiClient(
             client: MockClient(
               (_) async => http.Response(
-                '{"detail":"Player not in a current five-league squad"}',
+                jsonEncode({
+                  'detail': {'code': code}
+                }),
                 status,
               ),
             ),
@@ -202,6 +205,10 @@ void main() {
             requestHeaders: () => const {}),
       );
       expect(await repository.loadCurrent(997), isNull);
+      code = 'unknown_player';
+      await expectLater(
+          repository.loadCurrent(997), throwsA(isA<http.ClientException>()));
+      code = 'player_not_in_current_squad';
       status = 503;
       await expectLater(
         repository.loadCurrent(997),

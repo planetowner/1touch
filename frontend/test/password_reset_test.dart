@@ -13,8 +13,116 @@ import 'package:onetouch/data/auth/auth_session.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
 import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/messages.dart';
 
 void main() {
+  testWidgets('reset code request shows a localized failure and can be retried',
+      (tester) async {
+    var failRequest = true;
+    final router = _router(
+        AuthSession(),
+        (_) async => failRequest
+            ? http.Response(
+                '{"detail":"Service configuration missing: INTERNAL_SECRET"}',
+                503)
+            : http.Response(
+                '{"challenge_id":"challenge","expires_in":600}', 200));
+    addTearDown(router.dispose);
+    await _openResetCodeRequest(tester, router, locale: const Locale('ko'));
+    await tester.tap(find.byKey(const ValueKey('request-reset-code')));
+    await tester.pumpAndSettle();
+    expect(find.text('일시적인 문제가 생겼어요. 잠시 후 다시 시도해 주세요.').hitTestable(),
+        findsOneWidget);
+    expect(find.textContaining('INTERNAL_SECRET'), findsNothing);
+    expect(find.byKey(const ValueKey('reset-email')), findsOneWidget);
+    failRequest = false;
+    await tester.tap(find.byKey(const ValueKey('request-reset-code')));
+    await tester.pumpAndSettle();
+    expect(
+        find.byKey(const ValueKey('email-verification-code')), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  for (final locale in appSupportedLocales) {
+    for (final entry in verificationCodeErrorMessages.entries) {
+      testWidgets(
+          '${entry.key} returns to code entry in ${locale.languageCode}',
+          (tester) async {
+        final session = AuthSession();
+        final router = _router(session, (request) async {
+          if (request.url.path == '/v1/auth/email/code') {
+            return http.Response(
+                '{"challenge_id":"challenge","expires_in":600}', 200);
+          }
+          expect(request.url.path, '/v1/auth/email/reset-password');
+          return http.Response(
+              jsonEncode({
+                'detail': {
+                  'code': entry.key,
+                  'message': 'Server wording can change',
+                }
+              }),
+              400);
+        });
+        addTearDown(router.dispose);
+        await _openResetPasswordStep(tester, router, locale: locale);
+        await tester.tap(find.byKey(const ValueKey('verify-email-button')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('email-verification-code')),
+            findsOneWidget);
+        expect(find.byKey(const ValueKey('reset-new-password')), findsNothing);
+        final translated = translateMessage(locale, entry.value);
+        expect(find.text(translated).hitTestable(), findsOneWidget);
+        expect(find.textContaining('Server wording'), findsNothing);
+        expect(session.isAuthenticated, isFalse);
+        await tester.pump(const Duration(seconds: 61));
+        await tester.tap(find.byKey(const ValueKey('resend-email-code')));
+        await tester.pumpAndSettle();
+        expect(find.text(translated), findsNothing);
+        await tester.pumpWidget(const SizedBox.shrink());
+      });
+    }
+  }
+
+  for (final (status, code, message) in [
+    (400, 'unknown_error', 'Unable to reset your password. Please try again.'),
+    (422, null, 'Unable to reset your password. Please try again.'),
+    (429, 'auth_rate_limited', 'Too many requests. Please try again later.'),
+    (
+      503,
+      null,
+      'The service is temporarily unavailable. Please try again later.'
+    ),
+  ]) {
+    testWidgets(
+        'reset failure $status keeps password entry and uses local copy',
+        (tester) async {
+      final router = _router(
+          AuthSession(),
+          (request) async => request.url.path == '/v1/auth/email/code'
+              ? http.Response(
+                  '{"challenge_id":"challenge","expires_in":600}', 200)
+              : http.Response(
+                  jsonEncode({
+                    'detail': {
+                      'code': code,
+                      'message': 'Internal server details',
+                    }
+                  }),
+                  status));
+      addTearDown(router.dispose);
+      await _openResetPasswordStep(tester, router, locale: const Locale('ko'));
+      await tester.tap(find.byKey(const ValueKey('verify-email-button')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('reset-new-password')), findsOneWidget);
+      expect(
+          find.byKey(const ValueKey('email-verification-code')), findsNothing);
+      expect(find.text(translateMessage(const Locale('ko'), message)),
+          findsOneWidget);
+      expect(find.textContaining('Internal server'), findsNothing);
+    });
+  }
+
   testWidgets('signup rejects passwords that the server cannot register',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
@@ -163,7 +271,7 @@ void main() {
       return data['code'] == '123456'
           ? http.Response('{"ok":true}', 200)
           : http.Response(
-              '{"detail":"Invalid verification code. Try again."}', 400);
+              '{"detail":{"code":"verification_code_invalid"}}', 400);
     });
     addTearDown(router.dispose);
     await tester.pumpWidget(_app(router));
@@ -270,8 +378,38 @@ Future<void> _fillSignup(WidgetTester tester,
   await tester.pumpAndSettle();
 }
 
-MaterialApp _app(GoRouter router) => MaterialApp.router(
+Future<void> _openResetCodeRequest(WidgetTester tester, GoRouter router,
+    {required Locale locale}) async {
+  tester.view.physicalSize = const Size(393, 852);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  await tester.pumpWidget(_app(router, locale: locale));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(const ValueKey('forgot-password-link')));
+  await tester.pumpAndSettle();
+  await tester.enterText(
+      find.byKey(const ValueKey('reset-email')), 'member@example.com');
+}
+
+Future<void> _openResetPasswordStep(WidgetTester tester, GoRouter router,
+    {required Locale locale}) async {
+  await _openResetCodeRequest(tester, router, locale: locale);
+  await tester.tap(find.byKey(const ValueKey('request-reset-code')));
+  await tester.pumpAndSettle();
+  await tester.enterText(
+      find.byKey(const ValueKey('email-verification-code')), '000000');
+  await tester.tap(find.byKey(const ValueKey('continue-reset-password')));
+  await tester.pumpAndSettle();
+  await tester.enterText(
+      find.byKey(const ValueKey('reset-new-password')), 'NewPassword123');
+  await tester.enterText(
+      find.byKey(const ValueKey('reset-confirm-password')), 'NewPassword123');
+}
+
+MaterialApp _app(GoRouter router, {Locale? locale}) => MaterialApp.router(
     routerConfig: router,
+    locale: locale,
     supportedLocales: appSupportedLocales,
     localizationsDelegates: appLocalizationDelegates);
 

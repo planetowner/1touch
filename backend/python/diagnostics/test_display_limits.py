@@ -6,11 +6,12 @@ from unittest.mock import Mock, patch
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
+from mysql.connector import IntegrityError
 
 with patch('mysql.connector.pooling.MySQLConnectionPool'):
     from one_touch_loader.api.main import create_app
     from one_touch_loader.api.deps import get_user_id
-    from one_touch_loader.api.repos import betting_repo, community_repo, posts_repo
+    from one_touch_loader.api.repos import betting_repo, community_repo, posts_repo, users_repo
     from one_touch_loader.api.routes import posts, teams, users
     from one_touch_loader.api.services import profile_changes
 from one_touch_loader.api.schemas.betting import BettingMarketResponse
@@ -62,6 +63,12 @@ class DisplayLimitTests(unittest.TestCase):
                 profile_changes.check_change_limit(cursor, 1, 'display_name', available)
             self.assertEqual(cursor.execute.call_args.args[1][-1], 3)
             self.assertEqual(raised.exception.detail(), error.detail())
+
+    def test_profile_unique_constraint_returns_conflict_code(self):
+        with patch.object(users_repo, 'transaction', side_effect=IntegrityError(errno=1062)):
+            response = self.client.put('/v1/users/me/profile', json={'username': 'member', 'display_name': 'Member'})
+        self.assertEqual(response.status_code, 409, response.text)
+        self.assertEqual(response.json(), {'detail': {'code': 'profile_name_conflict'}})
 
     def test_market_exposes_the_server_stake_unit_and_opening_time(self):
         now = datetime(2026, 9, 30, 12)
