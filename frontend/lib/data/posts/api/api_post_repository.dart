@@ -1,10 +1,10 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/data/local/local_cache_store.dart';
+import 'package:onetouch/data/local/repository_cache.dart';
 import 'package:onetouch/data/posts/api/api_post_mapper.dart';
 import 'package:onetouch/data/posts/api/api_post_response.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
@@ -21,28 +21,30 @@ class ApiPostRepository implements CachedPostRepository {
 
   final ApiClient _api;
   final LocalCacheStore? _cacheStore;
-  final ValueNotifier<Map<PostFeedQuery, List<Post>>> _cachedFeeds =
-      ValueNotifier(const {});
-  final ValueNotifier<Map<int, Post>> _cachedPostDetails =
-      ValueNotifier(const {});
-  final Map<PostFeedQuery, DateTime> _feedSavedAt = {};
-  final Map<int, DateTime> _postSavedAt = {};
-  final Map<PostFeedQuery, Future<List<Post>>> _feedLoads = {};
-  final Map<PostFeedQuery, Future<List<Post>>> _feedFetches = {};
-  final Map<int, Future<Post>> _postLoads = {};
-  final Map<int, Future<Post>> _postFetches = {};
-  final Set<Future<void>> _pendingWrites = {};
-  int _cacheGeneration = 0;
+  late final _feeds = RepositoryCache<PostFeedQuery, List<Post>>(
+    fetch: _fetchFeed,
+    decode: _mapFeed,
+    keyOf: _feedKey,
+    tier: CacheTier.shortLived,
+    store: _cacheStore,
+    scope: LocalCacheScopes.communityPosts,
+  );
+  late final _details = RepositoryCache<int, Post>(
+    fetch: _fetchPost,
+    decode: _mapPost,
+    keyOf: LocalCacheKeys.communityPost,
+    tier: CacheTier.shortLived,
+    store: _cacheStore,
+    scope: LocalCacheScopes.communityPosts,
+  );
 
   @override
   ValueListenable<Map<PostFeedQuery, List<Post>>> get cachedFeeds =>
-      _cachedFeeds;
-
+      _feeds.values;
   @override
-  ValueListenable<Map<int, Post>> get cachedPostDetails => _cachedPostDetails;
-
+  ValueListenable<Map<int, Post>> get cachedPostDetails => _details.values;
   @override
-  Post? cachedPost(int postId) => _cachedPostDetails.value[postId];
+  Post? cachedPost(int postId) => _details.cached(postId);
 
   @override
   List<Post>? cachedFeed({
@@ -55,10 +57,9 @@ class ApiPostRepository implements CachedPostRepository {
     int limit = 50,
     int offset = 0,
   }) =>
-      _cachedFeeds.value[_query(
-          teamId, language, category, sort, period, timezone, limit, offset)];
+      _feeds.cached(_query(
+          teamId, language, category, sort, period, timezone, limit, offset));
 
-  /// Promotes a local feed page to memory without starting an API request.
   Future<List<Post>?> restoreCachedFeed({
     required int teamId,
     required String language,
@@ -68,34 +69,13 @@ class ApiPostRepository implements CachedPostRepository {
     String? timezone,
     int limit = 50,
     int offset = 0,
-  }) async {
-    final query = _query(
-        teamId, language, category, sort, period, timezone, limit, offset);
-    return _cachedFeeds.value[query] ?? await _restoreFeed(query);
-  }
+  }) async =>
+      _feeds.restore(_query(
+          teamId, language, category, sort, period, timezone, limit, offset));
 
   @override
-  Future<void> invalidatePostCaches() async {
-    _cacheGeneration++;
-    _feedLoads.clear();
-    _feedFetches.clear();
-    _postLoads.clear();
-    _postFetches.clear();
-    _feedSavedAt.clear();
-    _postSavedAt.clear();
-    _cachedFeeds.value = const {};
-    _cachedPostDetails.value = const {};
-    try {
-      await Future.wait(_pendingWrites.toList());
-    } on Object {
-      // A failed write must not prevent clearing any other cached entries.
-    }
-    try {
-      await _cacheStore?.clearScope(LocalCacheScopes.communityPosts);
-    } on Object {
-      // Mutations must remain successful even if local storage is unavailable.
-    }
-  }
+  Future<void> invalidatePostCaches() =>
+      RepositoryCache.invalidateAll([_feeds, _details]);
 
   @override
   Future<int> loadAttachmentLimit() async {
@@ -109,19 +89,7 @@ class ApiPostRepository implements CachedPostRepository {
     if (postId < 1) {
       throw RangeError.value(postId, 'postId', 'Must be positive');
     }
-    final cached = cachedPost(postId);
-    if (cached != null) {
-      _refreshPostIfStale(postId);
-      return cached;
-    }
-    final inFlight = _postLoads[postId];
-    if (inFlight != null) return await inFlight;
-    late final Future<Post> load;
-    load = _restoreOrFetchPost(postId).whenComplete(() {
-      if (identical(_postLoads[postId], load)) _postLoads.remove(postId);
-    });
-    _postLoads[postId] = load;
-    return await load;
+    return _details.load(postId);
   }
 
   @override
@@ -129,68 +97,12 @@ class ApiPostRepository implements CachedPostRepository {
     if (postId < 1) {
       throw RangeError.value(postId, 'postId', 'Must be positive');
     }
-    return _fetchPost(postId);
+    return _details.refresh(postId);
   }
 
-  Future<Post> _restoreOrFetchPost(int postId) async {
-    final generation = _cacheGeneration;
-    final store = _cacheStore;
-    if (store != null) {
-      final key = LocalCacheKeys.communityPost(postId);
-      try {
-        final record = await store.read(
-          key,
-          scope: LocalCacheScopes.communityPosts,
-        );
-        if (record != null && generation == _cacheGeneration) {
-          try {
-            final decoded = Map<String, dynamic>.from(record.payload as Map);
-            final post = _mapPost(decoded, postId);
-            _publishPost(postId, post, record.savedAt);
-            _refreshPostIfStale(postId);
-            return post;
-          } on Object {
-            await store.delete(key, scope: LocalCacheScopes.communityPosts);
-          }
-        }
-      } on Object {
-        // A storage failure falls back to the API.
-      }
-    }
-    return _fetchPost(postId);
-  }
-
-  void _refreshPostIfStale(int postId) {
-    if (AppCachePolicy.shouldRefresh(
-      tier: CacheTier.shortLived,
-      trigger: CacheSyncTrigger.screenEnter,
-      savedAt: _postSavedAt[postId],
-    )) {
-      unawaited(_fetchPost(postId).then<void>((_) {}, onError: (Object _) {}));
-    }
-  }
-
-  Future<Post> _fetchPost(int postId) {
-    final existing = _postFetches[postId];
-    if (existing != null) return existing;
-    late final Future<Post> fetch;
-    fetch = _fetchAndCachePost(postId).whenComplete(() {
-      if (identical(_postFetches[postId], fetch)) _postFetches.remove(postId);
-    });
-    _postFetches[postId] = fetch;
-    return fetch;
-  }
-
-  Future<Post> _fetchAndCachePost(int postId) async {
-    final generation = _cacheGeneration;
+  Future<Map<String, dynamic>> _fetchPost(int postId) async {
     final response = await _api.get(_api.baseUri.resolve('posts/$postId'));
-    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
-    final post = _mapPost(decoded, postId);
-    if (generation == _cacheGeneration) {
-      _publishPost(postId, post, DateTime.now().toUtc());
-      await _writeCache(LocalCacheKeys.communityPost(postId), decoded);
-    }
-    return post;
+    return _api.decodeJson<Map<String, dynamic>>(response);
   }
 
   Post _mapPost(Map<String, dynamic> decoded, int postId) {
@@ -202,12 +114,6 @@ class ApiPostRepository implements CachedPostRepository {
       );
     }
     return post;
-  }
-
-  void _publishPost(int postId, Post post, DateTime savedAt) {
-    _postSavedAt[postId] = savedAt;
-    _cachedPostDetails.value =
-        Map.unmodifiable({..._cachedPostDetails.value, postId: post});
   }
 
   @override
@@ -223,19 +129,7 @@ class ApiPostRepository implements CachedPostRepository {
   }) async {
     final query = _query(
         teamId, language, category, sort, period, timezone, limit, offset);
-    final cached = _cachedFeeds.value[query];
-    if (cached != null) {
-      _refreshFeedIfStale(query);
-      return cached;
-    }
-    final inFlight = _feedLoads[query];
-    if (inFlight != null) return await inFlight;
-    late final Future<List<Post>> load;
-    load = _restoreOrFetchFeed(query).whenComplete(() {
-      if (identical(_feedLoads[query], load)) _feedLoads.remove(query);
-    });
-    _feedLoads[query] = load;
-    return await load;
+    return _feeds.load(query);
   }
 
   @override
@@ -249,7 +143,7 @@ class ApiPostRepository implements CachedPostRepository {
     int limit = 50,
     int offset = 0,
   }) async =>
-      _fetchFeed(_query(
+      _feeds.refresh(_query(
           teamId, language, category, sort, period, timezone, limit, offset));
 
   PostFeedQuery _query(
@@ -280,67 +174,7 @@ class ApiPostRepository implements CachedPostRepository {
     );
   }
 
-  Future<List<Post>> _restoreOrFetchFeed(PostFeedQuery query) async {
-    final restored = await _restoreFeed(query);
-    if (restored != null) {
-      _refreshFeedIfStale(query);
-      return restored;
-    }
-    return _fetchFeed(query);
-  }
-
-  Future<List<Post>?> _restoreFeed(PostFeedQuery query) async {
-    final generation = _cacheGeneration;
-    final store = _cacheStore;
-    final cached = _cachedFeeds.value[query];
-    if (cached != null) return cached;
-    if (store != null) {
-      final key = _feedKey(query);
-      try {
-        final record = await store.read(
-          key,
-          scope: LocalCacheScopes.communityPosts,
-        );
-        if (record != null && generation == _cacheGeneration) {
-          try {
-            final decoded = Map<String, dynamic>.from(record.payload as Map);
-            final posts = _mapFeed(decoded, query);
-            _publishFeed(query, posts, record.savedAt);
-            return posts;
-          } on Object {
-            await store.delete(key, scope: LocalCacheScopes.communityPosts);
-          }
-        }
-      } on Object {
-        // A storage failure falls back to the API.
-      }
-    }
-    return null;
-  }
-
-  void _refreshFeedIfStale(PostFeedQuery query) {
-    if (AppCachePolicy.shouldRefresh(
-      tier: CacheTier.shortLived,
-      trigger: CacheSyncTrigger.screenEnter,
-      savedAt: _feedSavedAt[query],
-    )) {
-      unawaited(_fetchFeed(query).then<void>((_) {}, onError: (Object _) {}));
-    }
-  }
-
-  Future<List<Post>> _fetchFeed(PostFeedQuery query) {
-    final existing = _feedFetches[query];
-    if (existing != null) return existing;
-    late final Future<List<Post>> fetch;
-    fetch = _fetchAndCacheFeed(query).whenComplete(() {
-      if (identical(_feedFetches[query], fetch)) _feedFetches.remove(query);
-    });
-    _feedFetches[query] = fetch;
-    return fetch;
-  }
-
-  Future<List<Post>> _fetchAndCacheFeed(PostFeedQuery query) async {
-    final generation = _cacheGeneration;
+  Future<Map<String, dynamic>> _fetchFeed(PostFeedQuery query) async {
     final queryParameters = <String, String>{
       'team_id': '${query.teamId}',
       'language': query.language,
@@ -358,13 +192,7 @@ class ApiPostRepository implements CachedPostRepository {
       uri,
     );
 
-    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
-    final posts = _mapFeed(decoded, query);
-    if (generation == _cacheGeneration) {
-      _publishFeed(query, posts, DateTime.now().toUtc());
-      await _writeCache(_feedKey(query), decoded);
-    }
-    return posts;
+    return _api.decodeJson<Map<String, dynamic>>(response);
   }
 
   List<Post> _mapFeed(Map<String, dynamic> decoded, PostFeedQuery query) {
@@ -390,36 +218,6 @@ class ApiPostRepository implements CachedPostRepository {
       }
     }
     return List.unmodifiable(posts);
-  }
-
-  void _publishFeed(PostFeedQuery query, List<Post> posts, DateTime savedAt) {
-    _feedSavedAt[query] = savedAt;
-    _cachedFeeds.value =
-        Map.unmodifiable({..._cachedFeeds.value, query: posts});
-  }
-
-  Future<void> _writeCache(String key, Object payload) async {
-    final store = _cacheStore;
-    if (store == null) return;
-    late final Future<void> write;
-    try {
-      write = store.write(
-        key,
-        payload,
-        scope: LocalCacheScopes.communityPosts,
-      );
-    } on Object {
-      // A storage failure must not hide a valid response.
-      return;
-    }
-    _pendingWrites.add(write);
-    try {
-      await write;
-    } on Object {
-      // A storage failure must not hide a valid response.
-    } finally {
-      _pendingWrites.remove(write);
-    }
   }
 
   String _feedKey(PostFeedQuery query) => LocalCacheKeys.communityFeed(
