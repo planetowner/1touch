@@ -1387,7 +1387,7 @@ const appMessages = <String, MessageTranslations>{
   "Pass Accuracy": (ko: "패스 성공률", ja: "パス成功率", zh: "传球成功率"),
   "Progressive Passes": (ko: "전진 패스", ja: "前進パス", zh: "推进传球"),
   "Passes into Final Third": (
-    ko: "공격 지역 진입 패스",
+    ko: "파이널 서드 패스",
     ja: "ファイナルサードへのパス",
     zh: "传入进攻三区"
   ),
@@ -2130,7 +2130,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "post": (ko: "게시글", ja: "投稿", zh: "帖子"),
   "Recovery comparison incomplete ({count} missing)": (
-    ko: "볼 회수 비교 정보가 부족해요 ({count}명 누락)",
+    ko: "리커버리 비교 정보가 부족해요 ({count}명 누락)",
     ja: "ボール回収の比較情報が不足しています（{count}人分なし）",
     zh: "球权夺回对比信息不完整（缺少{count}人）"
   ),
@@ -2340,7 +2340,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Percentage of ball recovery locations across the lower, middle, and upper thirds compared against the league average.":
       (
-    ko: "수비·중앙·공격 지역별 공 회수 비율을 리그 평균과 비교해요.",
+    ko: "수비·중앙·공격 지역별 리커버리 비율을 리그 평균과 비교해요.",
     ja: "守備・中盤・攻撃の各エリアでのボール奪回割合をリーグ平均と比較します。",
     zh: "比较防守、中场和进攻三区的夺回球权比例与联赛平均值。"
   ),
