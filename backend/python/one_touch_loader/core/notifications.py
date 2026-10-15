@@ -43,6 +43,13 @@ class NotificationEvent:
     def setting(self):
         return KINDS[self.kind][1]
 
+    @property
+    def is_ready(self):
+        # 골·도움은 선수명과 점수가 뒤늦게 채워질 수 있어 두 값이 모두 있어야 보내요.
+        if self.kind in ('team_goal', 'player_goal', 'player_assist'):
+            return bool(self.payload['player'].strip() and self.payload['score'].strip())
+        return True
+
 
 def fixture_events(fixture: dict, now: datetime) -> list[NotificationEvent]:
     """같은 공급자 이벤트는 다시 받아도 같은 알림 키를 만들어요."""

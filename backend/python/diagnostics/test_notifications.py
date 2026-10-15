@@ -321,6 +321,14 @@ class RepositoryTests(unittest.TestCase):
     def register(self, user=1, device=DEVICE):
         repo.register_device(user, f'session{user}', device, {'token': 'private-token-' + device, 'platform': 'android', 'locale': 'ko'})
 
+    def capture(self, fixture, seconds=0):
+        with db.transaction() as conn:
+            return repo.capture_fixture(conn, fixture, NOW + timedelta(seconds=seconds))
+
+    def dispatch_at(self, sender, seconds):
+        with patch.object(push, 'utc_now', return_value=NOW + timedelta(seconds=seconds)):
+            return push.dispatch(apply=True, sender=sender)
+
     def emit(self, kind='team_kickoff', subjects=(10, 20), key='source:1'):
         with db.transaction() as conn, conn.cursor(dictionary=True) as cur:
             repo.enqueue(cur, NotificationEvent(key, kind, subjects, {'destination': '/match/500', 'home_team': 'Home', 'away_team': 'Away',
@@ -548,6 +556,150 @@ class RepositoryTests(unittest.TestCase):
         with patch.object(push, 'utc_now', return_value=NOW + timedelta(seconds=46)):
             self.assertGreater(push.dispatch(apply=True, sender=sender)['skipped'], 0)
         sender.send.assert_not_called()
+
+    def test_incomplete_goals_wait_then_deliver_once_per_kind_and_device(self):
+        self.register()
+        self.register(device='c9bfb4a4-3d26-4b8e-95fb-7dc4f16f9639')
+        f = payload(2)
+        self.capture(f)
+        sender = Mock()
+        for index, missing in enumerate([
+            {'player_name': None, 'result': None},
+            {'player_name': '', 'result': '1-0'},
+            {'player_name': 'Primary', 'result': None},
+            {'player_name': ' ', 'result': '1-0'},
+        ]):
+            with self.subTest(missing=missing):
+                source = event(id=900 + index, related_player_id=None, **missing)
+                f['events'].append(source)
+                first = index * 400 + 15
+                self.capture(f, first)
+                self.capture(f, first + 15)
+                self.assertEqual(self.count('user_notifications'), index * 3)
+                self.assertEqual(self.dispatch_at(sender, first + 16)['sent'], 0)
+                seen, current = self.db.execute('SELECT seen_keys,current_keys FROM notification_fixture_state').fetchone()
+                key = f"fixture:500:event:{source['id']}:team_goal"
+                self.assertNotIn(key, json.loads(seen))
+                self.assertIn(key, json.loads(current))
+
+                # 처음 감지한 뒤 5분이 지나도, 내용이 채워진 시점부터 발송 기회를 줘요.
+                ready = first + 360
+                source.update(player_name='Primary', result='1-0')
+                self.assertTrue(self.capture(f, ready))
+                self.assertFalse(self.capture(f, ready))
+                self.capture(f, ready + 15)
+                self.assertEqual(self.count('user_notifications'), (index + 1) * 3)
+                self.assertEqual(self.count('notification_push_deliveries'), (index + 1) * 4)
+                created, expires = self.db.execute(
+                    'SELECT created_at,expires_at FROM user_notifications WHERE event_key=? LIMIT 1', (key,),
+                ).fetchone()
+                self.assertEqual(datetime.fromisoformat(created), NOW + timedelta(seconds=ready))
+                self.assertEqual(datetime.fromisoformat(expires), NOW + timedelta(seconds=ready, minutes=5))
+                self.assertEqual(self.dispatch_at(sender, ready + 16)['sent'], 4)
+                self.capture(f, ready + 30)
+                self.assertEqual(self.dispatch_at(sender, ready + 31)['sent'], 0)
+                self.assertEqual(sender.send.call_count, (index + 1) * 4)
+                for call in sender.send.call_args_list[-4:]:
+                    self.assertTrue(call.args[3]['player'])
+                    self.assertEqual(call.args[3]['score'], '1-0')
+
+    def test_assist_waits_for_its_own_name_without_repeating_goal(self):
+        self.register()
+        f = payload(2)
+        self.capture(f)
+        f['events'] = [event(related_player_name=None)]
+        self.capture(f, 15)
+        sender = Mock()
+        self.assertEqual(self.dispatch_at(sender, 16)['sent'], 2)
+        self.assertEqual({call.args[0]['kind'] for call in sender.send.call_args_list}, {'team_goal', 'player_goal'})
+        self.capture(f, 30)
+        self.assertEqual(self.dispatch_at(sender, 31)['sent'], 0)
+        f['events'][0]['related_player_name'] = 'Related'
+        self.capture(f, 45)
+        self.assertEqual(self.dispatch_at(sender, 46)['sent'], 1)
+        self.assertEqual(sender.send.call_args.args[0]['kind'], 'player_assist')
+        self.capture(f, 60)
+        self.assertEqual(self.dispatch_at(sender, 61)['sent'], 0)
+        self.assertEqual(sender.send.call_count, 3)
+
+    def test_incomplete_first_live_snapshot_stays_historical_when_completed(self):
+        self.register()
+        f = payload(2)
+        f['events'] = [event(player_name=None, related_player_name=None, result=None)]
+        self.capture(f)
+        f['events'][0].update(player_name='Primary', related_player_name='Related', result='1-0')
+        self.capture(f, 15)
+        self.assertEqual(self.count('user_notifications'), 0)
+        f['events'].append(event(id=901))
+        self.capture(f, 30)
+        sender = Mock()
+        self.assertEqual(self.dispatch_at(sender, 31)['sent'], 3)
+        self.assertTrue(all(':901:' in call.args[0]['event_key'] for call in sender.send.call_args_list))
+
+    def test_temporary_missing_details_do_not_cancel_ready_notifications(self):
+        self.register()
+        f = payload(2)
+        self.capture(f)
+        f['events'] = [event()]
+        self.capture(f, 15)
+        f['events'][0].update(player_name=None, related_player_name=None, result=None)
+        self.capture(f, 30)
+        self.assertEqual(self.db.execute('SELECT COUNT(*) FROM user_notifications WHERE cancelled_at IS NOT NULL').fetchone()[0], 0)
+        sender = Mock()
+        self.assertEqual(self.dispatch_at(sender, 31)['sent'], 3)
+        f['events'][0].update(player_name='Primary', related_player_name='Related', result='1-0')
+        self.capture(f, 45)
+        self.assertEqual(self.dispatch_at(sender, 46)['sent'], 0)
+        self.assertEqual(sender.send.call_count, 3)
+
+    def test_incomplete_goal_removed_or_rescinded_is_not_delivered(self):
+        self.register()
+        f = payload(2)
+        self.capture(f)
+        f['events'] = [event(player_name=None, related_player_name=None, result=None)]
+        self.capture(f, 15)
+        f['events'] = []
+        self.capture(f, 30)
+        f['events'] = [event(player_name='Primary', result='1-0', rescinded=True)]
+        self.capture(f, 45)
+        self.assertEqual(self.count('user_notifications'), 0)
+        sender = Mock()
+        self.assertEqual(self.dispatch_at(sender, 46)['sent'], 0)
+        sender.send.assert_not_called()
+
+    def test_completed_goal_capture_rollback_can_be_retried_without_loss(self):
+        self.register()
+        f = payload(2)
+        self.capture(f)
+        f['events'] = [event(player_name=None, related_player_name=None, result=None)]
+        self.capture(f, 15)
+        f['events'][0].update(player_name='Primary', related_player_name='Related', result='1-0')
+        with self.assertRaises(RuntimeError), db.transaction() as conn:
+            repo.capture_fixture(conn, f, NOW + timedelta(seconds=30))
+            raise RuntimeError('fixture write failed')
+        self.assertEqual(self.count('user_notifications'), 0)
+        self.capture(f, 30)
+        sender = Mock()
+        self.assertEqual(self.dispatch_at(sender, 31)['sent'], 3)
+        self.capture(f, 45)
+        self.assertEqual(self.dispatch_at(sender, 46)['sent'], 0)
+
+    def test_goal_completed_in_next_post_match_snapshot_is_not_lost(self):
+        self.register()
+        f = payload(2)
+        self.capture(f)
+        f['events'] = [event(player_name=None, related_player_name=None, result=None)]
+        f['state_id'] = 5
+        self.capture(f, 15)
+        sender = Mock()
+        self.assertEqual(self.dispatch_at(sender, 16)['sent'], 1)
+        self.assertEqual(sender.send.call_args.args[0]['kind'], 'team_full_time')
+        f['events'][0].update(player_name='Primary', related_player_name='Related', result='1-0')
+        self.capture(f, 30)
+        self.assertEqual(self.dispatch_at(sender, 31)['sent'], 3)
+        self.capture(f, 45)
+        self.assertEqual(self.dispatch_at(sender, 46)['sent'], 0)
+        self.assertEqual(sender.send.call_count, 4)
 
     def test_lineups_and_phase_share_snapshot_and_reject_older_capture(self):
         f = payload()

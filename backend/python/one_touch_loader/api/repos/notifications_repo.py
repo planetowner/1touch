@@ -169,13 +169,18 @@ def capture_fixture(connection, fixture, sampled_at):
         if previous and previous['sampled_at'] >= sampled_at:
             return False
         candidates = fixture_events(fixture, sampled_at)
+        # 정보가 덜 채워져도 현재 키를 유지해 일시적인 누락을 VAR 취소로 오인하지 않아요.
         keys = {e.key for e in candidates}
         seen = set(decoded(previous['seen_keys'])) if previous else set()
         # 처음 켰을 때 진행 중 경기의 지난 골을 모두 보내지 않아요. 경기 전 확정 선발은 바로 알려요.
         if previous is not None or fixture['state_id'] in (1, 16):
             for event in candidates:
-                if event.key not in seen:
+                if event.key not in seen and event.is_ready:
                     enqueue(cur, event, sampled_at)
+                    # 준비된 알림만 처리 완료로 남겨 미완성 이벤트는 다음 수집에서 다시 확인해요.
+                    seen.add(event.key)
+        else:
+            seen.update(keys)
         if previous is not None:
             phase = state_event(fixture, previous['state_id'], sampled_at)
             if phase is not None and phase.key not in seen:
@@ -189,7 +194,7 @@ def capture_fixture(connection, fixture, sampled_at):
         cur.execute('''INSERT INTO notification_fixture_state (fixture_id,state_id,seen_keys,current_keys,sampled_at)
             VALUES (%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE state_id=VALUES(state_id),seen_keys=VALUES(seen_keys),
             current_keys=VALUES(current_keys),sampled_at=VALUES(sampled_at)''',
-            (fixture['id'], fixture['state_id'], json.dumps(sorted(seen | keys)), json.dumps(sorted(keys)), sampled_at))
+            (fixture['id'], fixture['state_id'], json.dumps(sorted(seen)), json.dumps(sorted(keys)), sampled_at))
         return True
 
 
