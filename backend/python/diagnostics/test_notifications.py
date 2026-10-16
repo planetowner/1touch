@@ -27,6 +27,7 @@ with patch('mysql.connector.pooling.MySQLConnectionPool'):
     from one_touch_loader.loaders import live_fixtures_loader as live
 from one_touch_loader.core.notifications import DEFAULTS, KINDS, NotificationEvent, fixture_events, state_event, message
 from one_touch_loader.core.betting import betting_opens_at
+from one_touch_loader.core import betting as betting_policy
 
 NOW = datetime(2026, 9, 29, 12)
 DEVICE = 'b9bfb4a4-3d26-4b8e-95fb-7dc4f16f9639'
@@ -171,6 +172,7 @@ class EventTests(unittest.TestCase):
         self.assertEqual(goal.payload['team_id'], original['participant_id'])
         self.assertEqual(goal.payload['score'], '6-0')
 
+    @patch.object(betting_policy, 'BETTING_ENABLED', True)
     def test_betting_boundary_is_shared_by_market_and_notification(self):
         f = fixture()
         self.assertEqual(betting_opens_at(f), NOW)
@@ -180,6 +182,21 @@ class EventTests(unittest.TestCase):
         self.assertEqual(schedule.scheduled_events(f, NOW, None), [])
         self.assertEqual(schedule.scheduled_events(f, f['starting_at'], {}), [])
         self.assertEqual(schedule.scheduled_events({**f, 'state_id': 10}, NOW, {}), [])
+
+    def test_disabled_betting_creates_no_events_but_keeps_match_reminders(self):
+        self.assertFalse(betting_policy.BETTING_ENABLED)
+        self.assertEqual(schedule.scheduled_events(fixture(), NOW, {}), [])
+        events = schedule.scheduled_events(fixture(NOW + timedelta(hours=1)), NOW, {})
+        self.assertEqual([e.kind for e in events], ['team_match_reminder'])
+
+    def test_disabled_betting_drops_new_and_already_queued_pushes(self):
+        cursor = Mock()
+        event = NotificationEvent('old-bet', 'team_new_bets', (10, 20), {}, NOW + timedelta(hours=1), 500)
+        repo.enqueue(cursor, event, NOW, user_ids=[1])
+        row = {'cancelled_at': None, 'expires_at': event.expires_at, 'user_id': 1,
+               'kind': event.kind, 'subject_ids': '[10,20]'}
+        self.assertIsNone(repo.push_data(cursor, row, NOW, 'en'))
+        cursor.execute.assert_not_called()
 
     def test_reminder_does_not_require_betting_support_or_arrive_late(self):
         f = {**fixture(NOW + timedelta(hours=1)), 'competition_id': 999}
@@ -202,7 +219,7 @@ class EventTests(unittest.TestCase):
              patch.object(schedule.notifications, 'enqueue') as enqueue:
             transaction.return_value.__enter__.return_value = connection
             self.assertEqual(schedule.run_schedule(),
-                             {'apply': False, 'fixtures': 1, 'scheduled_candidates': 1, 'lineups': 0})
+                             {'apply': False, 'fixtures': 1, 'scheduled_candidates': 0, 'lineups': 0})
             enqueue.assert_not_called()
 
 

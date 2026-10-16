@@ -3,6 +3,10 @@ import 'package:onetouch/services/firebase_push_notification_handler.dart';
 import 'package:onetouch/services/notification_message_templates.dart';
 
 void main() {
+  test('drops betting pushes delivered before the release update', () {
+    expect(_destination('team_new_bets'), isNull);
+  });
+
   test('maps match notification kinds to the correct match state', () {
     expect(_destination('team_match_reminder'), '/match/42?status=upcoming');
     expect(_destination('player_starting_xi'), '/match/42?status=upcoming');

@@ -4,6 +4,9 @@ from datetime import timedelta
 
 from .fixture_states import COMPLETED_STATE_IDS
 
+# 양쪽 앱에서 승부 예측을 제외하는 동안 새 참여와 개방 알림을 함께 막아요.
+# 기존 참여의 취소·정산과 커뮤니티 포인트는 유지해요.
+BETTING_ENABLED = False
 WELCOME_POINTS = 1000
 STAKE_UNIT = 10
 PROBABILITY_UNIT = Decimal('0.000000000000000001')

@@ -10,6 +10,7 @@ from ..services.auth_security import token_hash
 from ..services.community_periods import public_row, utc_now
 from .users_repo import get_user, lock_user, require_profile
 from ...core.db_json import decoded
+from ...core import betting as betting_policy
 from ...core.football_names import LOCALE_COLUMNS
 from ...core.notifications import DEFAULTS, KINDS, NotificationEvent, fixture_events, state_event, notification_language
 
@@ -77,6 +78,9 @@ def unregister_device(user_id, device_id):
 
 
 def eligible_subjects(cur, user_id, kind, subjects):
+    # 신규 예약과 이미 대기 중인 푸시가 같은 중단 조건을 적용받아요.
+    if kind == 'team_new_bets' and not betting_policy.BETTING_ENABLED:
+        return ()
     scope, setting = KINDS[kind]
     allowed = {0} if scope == 'community' else following(cur, user_id, scope)
     return tuple(i for i in subjects if i in allowed and settings(cur, user_id, scope, i)[setting])

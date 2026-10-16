@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:onetouch/config/feature_availability.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -34,6 +35,8 @@ class RemotePushPayload {
   static RemotePushPayload? fromData(Map<String, dynamic> data) {
     final notificationId = int.tryParse('${data['notification_id'] ?? ''}');
     final kind = '${data['kind'] ?? ''}'.trim();
+    // 업데이트 전에 도착한 승부 예측 알림도 새 앱에서는 열거나 표시하지 않아요.
+    if (!bettingEnabled && kind == 'team_new_bets') return null;
     final rawDestination = '${data['destination'] ?? ''}'.trim();
     if (notificationId == null || notificationId < 1 || kind.isEmpty) {
       return null;

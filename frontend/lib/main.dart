@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:onetouch/config/feature_availability.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -762,6 +763,7 @@ class MyApp extends StatelessWidget {
           localeListResolutionCallback: resolveAppLocale,
           builder: (context, child) {
             Intl.defaultLocale = Localizations.localeOf(context).languageCode;
+            final content = FullScreenBackGesture(child: child!);
             // 내비게이터가 화면 끝까지 그려야 사진과 모달도 상태 표시줄 뒤를 덮어요.
             return AppSystemUi(
               child: SessionSyncLifecycle(
@@ -778,17 +780,19 @@ class MyApp extends StatelessWidget {
                             _router.routeInformationProvider.value.uri.path !=
                                 '/',
                         // 결과 팝업도 본문과 같은 팀 이름 번역을 받아야 해요.
-                        child: BetSettlementNotificationHost(
-                          reserveBottomNavigation: _usesMainBottomNavigation(
-                            _router.routeInformationProvider.value.uri.path,
-                          ),
-                          onSeeResults: (fixtureId) => _router.push(
-                            '/match/$fixtureId?status=past',
-                          ),
-                          child: FullScreenBackGesture(
-                            child: child!,
-                          ),
-                        ),
+                        child: bettingEnabled
+                            ? BetSettlementNotificationHost(
+                                reserveBottomNavigation:
+                                    _usesMainBottomNavigation(
+                                  _router
+                                      .routeInformationProvider.value.uri.path,
+                                ),
+                                onSeeResults: (fixtureId) => _router.push(
+                                  '/match/$fixtureId?status=past',
+                                ),
+                                child: content,
+                              )
+                            : content,
                       ),
                     ),
                   ),

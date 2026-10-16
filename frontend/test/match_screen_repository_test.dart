@@ -252,7 +252,7 @@ void main() {
     await tester.pump();
 
     expect(
-      find.byKey(const ValueKey('match-betting-card')),
+      find.byKey(const ValueKey('match-preview-header')),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
@@ -286,7 +286,7 @@ void main() {
     await tester.pump();
 
     expect(
-      find.byKey(const ValueKey('match-betting-card')),
+      find.byKey(const ValueKey('match-preview-header')),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
@@ -335,7 +335,7 @@ void main() {
       findsNothing,
     );
     expect(
-      find.byKey(const ValueKey('match-betting-card')),
+      find.byKey(const ValueKey('match-preview-header')),
       findsOneWidget,
     );
 
@@ -343,7 +343,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Unable to load match.'), findsOneWidget);
-    expect(find.byKey(const ValueKey('match-betting-card')), findsNothing);
+    expect(find.byKey(const ValueKey('match-preview-header')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

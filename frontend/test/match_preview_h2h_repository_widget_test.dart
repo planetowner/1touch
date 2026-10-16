@@ -1,3 +1,4 @@
+import 'package:onetouch/config/feature_availability.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'support/app_catalog.dart';
 import 'dart:async';
@@ -72,7 +73,7 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     betting.dispose();
-  });
+  }, skip: !bettingEnabled);
 
   testWidgets('loads backend current standings instead of the fixture season',
       (tester) async {
@@ -197,7 +198,7 @@ void main() {
       19,
     );
     expect(tester.takeException(), isNull);
-  });
+  }, skip: !bettingEnabled);
 
   testWidgets('latest H2H reuses the last-match card with a relative date',
       (tester) async {

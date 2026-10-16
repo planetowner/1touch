@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'dart:async';
+import 'package:onetouch/config/feature_availability.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
@@ -163,11 +164,13 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
 
     _fixtureId = int.tryParse(widget.matchId);
     if (_fixtureId != null) {
-      // 두 탭이 같은 잔액·참여 내역을 공유해 변경 직후에도 비율이 일치해요.
-      _betting = BettingController(
-        fixtureId: _fixtureId!,
-        repository: widget.bettingRepository,
-      )..load();
+      if (bettingEnabled) {
+        // 두 탭이 같은 잔액·참여 내역을 공유해 변경 직후에도 비율이 일치해요.
+        _betting = BettingController(
+          fixtureId: _fixtureId!,
+          repository: widget.bettingRepository,
+        )..load();
+      }
       final initialFixture = widget.initialFixture;
       _fixtureDetail = _repository.cachedDetail(_fixtureId!);
       fixture = _fixtureDetail?.fixture ??
@@ -422,13 +425,13 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
           standingRepository: widget.standingRepository,
           fixture: fixture!,
           fixtureRepository: _repository,
-          bettingController: _betting!,
+          bettingController: _betting,
         );
       case 'HEAD TO HEAD':
         return H2HTab(
           fixture: fixture!,
           fixtureRepository: _repository,
-          bettingController: _betting!,
+          bettingController: _betting,
         );
       case 'Analysis':
         return AnalysisTab(
