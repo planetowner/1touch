@@ -82,6 +82,9 @@ DUPLICATE_TRANSFER_IDS = {
     # 같은 날의 셀타 1군행은 중복이에요. 포르투나 계약(2029-06-30)은 그대로 남겨요.
     # https://rccelta.es/en/fundacion/actualidad/stefan-bajcetic-returns-home/
     595453,
+    # Mercado: 세비야가 영입 취소를 발표했어요. 완료로 남은 7/1 이적을 제외해요.
+    # https://sevillafc.es/actualidad/noticias/official-statement-patrik-mercado
+    560599,
 }
 
 # Mata는 두 원문 날짜가 모두 틀렸어요. 당일 구단 발표를 인용한 두 보도가 같은 해지일을 확인해요.
