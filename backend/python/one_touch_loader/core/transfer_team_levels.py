@@ -22,6 +22,9 @@ VERIFIED_SENIOR_TEAM_IDS = {
     204,
 }
 VERIFIED_NON_SENIOR_TEAM_IDS = {
+    # Auxerre II 리저브 계약의 조회 불가 이적 참조를 1군 계약으로 적재하지 않아요.
+    # https://www.aja.fr/le-programme-du-week-end-2/
+    9387,
     # https://www.juventus.com/en/news/articles/huijsen-and-yildiz-added-to-the-juventus-first-team
     228725,
     # https://www.rsca.be/nl/decat2027

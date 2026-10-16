@@ -1,5 +1,7 @@
 """부분 조회·전체 이력·계약 참조의 경계를 실제 외래 키로 검증해요."""
 from datetime import date
+import json
+from pathlib import Path
 import sqlite3
 import requests
 from unittest.mock import call, patch
@@ -123,6 +125,18 @@ class CurrentTransferSyncTests(SyncDatabaseCase):
             sync.reconcile_current_transfers(apply=True, from_player_id=999)
         self.client.iter_transfers_by_player.assert_not_called()
         self.assertEqual(list(self.sql.iterdump()), before)
+
+    def test_auxerre_reserve_contract_does_not_request_unavailable_transfer(self):
+        source = json.loads((Path(__file__).parent / 'fixtures' / 'sportmonks_auxerre_reserve_contract.json').read_text())
+        self.client.get_player_current_teams.side_effect = lambda pid: self.api(source['records'])
+        self.client.get_transfer.side_effect = AssertionError('Reserve transfer must not be requested')
+        result = sync.sync_player_history_and_contracts(
+            self.client, source['player_id'], set(), history=True, apply=False,
+        )
+        self.assertEqual(result['contracts'], 1)
+        rows = sync.contracts.build_player_contract_rows(source['player_id'], source['records'])
+        self.assertEqual(rows['rows'], [(3682, source['player_id'], None, date(2028, 6, 30), None)])
+        self.client.get_transfer.assert_not_called()
 
     def test_reconciliation_cli_resume_and_invalid_ids(self):
         with patch('sys.argv', ['cli', 'current-season', 'transfer-reconciliation', '--from-player', '2', '--apply']), \

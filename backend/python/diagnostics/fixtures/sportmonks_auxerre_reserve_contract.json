@@ -1,0 +1,63 @@
+{
+  "verified_on": "2026-10-16",
+  "official_reference": "https://www.aja.fr/le-programme-du-week-end-2/",
+  "player_id": 37649018,
+  "records": [
+    {
+      "id": 1280994,
+      "transfer_id": null,
+      "player_id": 37649018,
+      "team_id": 3682,
+      "position_id": 27,
+      "detailed_position_id": 151,
+      "start": null,
+      "end": "2028-06-30",
+      "captain": false,
+      "jersey_number": 31,
+      "team": {
+        "id": 3682,
+        "sport_id": 1,
+        "country_id": 17,
+        "venue_id": 2155,
+        "gender": "male",
+        "name": "Auxerre",
+        "short_code": "AUX",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/2/3682.png",
+        "founded": 1905,
+        "type": "domestic",
+        "placeholder": false,
+        "last_played_at": "2026-10-11 15:15:00"
+      }
+    },
+    {
+      "id": 1204632,
+      "transfer_id": 484402,
+      "player_id": 37649018,
+      "team_id": 9387,
+      "position_id": 27,
+      "detailed_position_id": 151,
+      "start": "2025-01-01",
+      "end": "2028-06-30",
+      "captain": false,
+      "jersey_number": null,
+      "team": {
+        "id": 9387,
+        "sport_id": 1,
+        "country_id": 17,
+        "venue_id": 2155,
+        "gender": "male",
+        "name": "Auxerre II",
+        "short_code": null,
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/11/9387.png",
+        "founded": 1905,
+        "type": "domestic",
+        "placeholder": false,
+        "last_played_at": "2026-10-03 16:30:00"
+      }
+    }
+  ],
+  "unavailable_transfer": {
+    "id": 484402,
+    "message": "No result(s) found matching your request. Either the query did not return any results or you don't have access to it via your current subscription."
+  }
+}
