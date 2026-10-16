@@ -177,6 +177,44 @@ class TransfersContractsTests(unittest.TestCase):
             transfers.replace_player_transfers(185658,rows)
         self.assertEqual(self.sql.execute("SELECT COUNT(*) FROM transfers").fetchone()[0],0)
 
+    def test_official_corrections_survive_reloads_and_preserve_movement_dates(self):
+        source = json.loads((Path(__file__).parent / "fixtures/sportmonks_missing_transfers_20261016.json").read_text())
+        senior_ids = SENIOR | {3588}
+        client = SportmonksClient.__new__(SportmonksClient)
+        for pid_text, raw in source["players"].items():
+            pid = int(pid_text)
+            self.sql.execute("INSERT INTO players (player_id, display_name) VALUES (?, ?)", (pid, raw[0]["player"]["name"]))
+            transfers.replace_player_transfers(pid, transfers.build_transfer_rows(pid, raw, senior_ids))
+            with patch.object(client, "_iter_paginated_data", return_value=raw):
+                for _ in range(2):
+                    corrected = list(client.iter_transfers_by_player(pid))
+                    transfers.replace_player_transfers(pid, transfers.build_transfer_rows(pid, corrected, senior_ids))
+
+        self.assertEqual(self.sql.execute("SELECT COUNT(*) FROM transfers WHERE player_id=37585108").fetchone()[0], 0)
+        self.assertEqual(self.sql.execute("SELECT COUNT(*) FROM player_contracts").fetchone()[0], 0)
+        loan = self.sql.execute("SELECT from_team_id,to_team_id,type_id,amount,transfer_date FROM transfers WHERE transfer_id=8000000000000001").fetchone()
+        self.assertEqual(loan, (3543, 3114, 218, None, date(2026, 9, 1)))
+        self.assertEqual(self.sql.execute("SELECT COUNT(*) FROM transfers WHERE player_id=37652834").fetchone()[0], 3)
+        clubs = transfers_repo.get_player_club_history(37652834, date(2026, 10, 16))["clubs"]
+        self.assertEqual([x["team_id"] for x in clubs], [3114, 3543, 3114])
+        self.assertEqual(clubs[0]["start_date"], date(2026, 9, 1))
+        self.assertEqual(clubs[1]["end_date"], date(2026, 9, 1))
+        self.assertIsNone(clubs[0]["end_date"])
+        with patch.object(transfers_repo, "load_senior_team_ids", return_value=senior_ids):
+            clubs = transfers_repo.get_player_club_history(37707501, date(2026, 10, 16))["clubs"]
+        self.assertEqual(clubs[0]["team_id"], 5071)
+        self.assertEqual(clubs[0]["start_date"], date(2026, 9, 1))
+        self.assertEqual(clubs[1]["team_id"], 3588)
+        self.assertEqual(clubs[1]["end_date"], date(2026, 7, 1))
+        self.assertIsNone(self.sql.execute("SELECT to_team_id FROM transfers WHERE transfer_id=567411").fetchone()[0])
+
+        with patch.object(client, "_iter_paginated_data", return_value=source["players"]["37652834"]):
+            movements = list(client.iter_transfers_by_team(3543))
+        roster = [{"player_id": 37652834}]
+        for team_id, expected in ((3543, []), (3114, roster)):
+            kept, _ = squads._filter_current_squad_items(roster, movements, team_id, date(2026, 7, 1), date(2026, 10, 16))
+            self.assertEqual(kept, expected)
+
     def test_user_selected_griezmann_date_is_shared_by_all_transfer_queries(self):
         client = SportmonksClient.__new__(SportmonksClient)
         payload = CASES["players"]["185658"]
@@ -242,7 +280,8 @@ class TransfersContractsTests(unittest.TestCase):
                 client.iter_transfers_between_dates(window["start_date"], window["end_date"]),
             )
             for query in queries:
-                selected = list(query)
+                # 기간 조회에는 다른 선수의 공식 보정 이동도 포함돼요.
+                selected = [item for item in query if item["player_id"] == pid]
                 self.assertEqual({item["id"] for item in selected}, expected_ids)
         excluded = next(item for item in source["transfers"] if item["id"] == source["excluded_id"])
         with patch.object(client, "_get", return_value={"data": excluded}):
@@ -269,7 +308,7 @@ class TransfersContractsTests(unittest.TestCase):
                     queries=(client.iter_transfers_by_player(case["player_id"]),client.iter_transfers_by_team(6),
                              client.iter_transfers_between_dates(date(2023,1,1),date(2026,9,9)))
                     for query in queries:
-                        selected=list(query)
+                        selected=[item for item in query if item["player_id"] == case["player_id"]]
                         self.assertNotIn(case["excluded_id"],{x["id"] for x in selected})
                         retained=next(x for x in selected if x["id"]==case["retained_id"])
                         self.assertEqual(retained["date"],case["date"])
@@ -653,11 +692,12 @@ class TransfersContractsTests(unittest.TestCase):
             self.assertEqual(result["contracts"],len(source));writer.assert_not_called()
 
     def test_cli_exact_window_arguments_and_check_propagation(self):
-        with patch("sys.argv",["cli","transfer-windows","2026/2027","8","summer","2026-06-15","2026-09-01"]),patch.object(cli,"set_transfer_window") as run:
+        # CLI가 분기 안에서 가져오는 로더 함수를 패치해 실제 DB 쓰기를 막아요.
+        with patch("sys.argv",["cli","transfer-windows","2026/2027","8","summer","2026-06-15","2026-09-01"]),patch.object(transfers,"set_transfer_window") as run:
             cli.main();run.assert_called_once_with("2026/2027",8,"summer",date(2026,6,15),date(2026,9,1))
-        with patch("sys.argv",["cli","transfers","2026/2027","8","--check"]),patch.object(cli,"collect_transfers_for_season",return_value={"review_players":[]}) as run:
+        with patch("sys.argv",["cli","transfers","2026/2027","8","--check"]),patch.object(transfers,"collect_transfers_for_season",return_value={"review_players":[]}) as run:
             cli.main();run.assert_called_once_with("2026/2027",[8],check=True)
-        with patch("sys.argv",["cli","contracts","refresh-current","6,18","--check"]),patch.object(cli,"refresh_current_contracts",return_value={}) as run:
+        with patch("sys.argv",["cli","contracts","refresh-current","6,18","--check"]),patch.object(contracts,"refresh_current_contracts",return_value={}) as run:
             cli.main();run.assert_called_once_with([6,18],check=True)
 
     def test_recent_transfers_share_league_window_and_load_full_selected_history(self):

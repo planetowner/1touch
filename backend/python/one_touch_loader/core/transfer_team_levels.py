@@ -4,6 +4,10 @@ from .db import fetch_all
 
 # 이름의 U/B/II 접미사로 판정하지 않고 공식 기록과 대조한 ID를 사용해요.
 VERIFIED_SENIOR_TEAM_IDS = {
+    # Ben Farhat 재임대와 Pantschenko 입단은 각 구단 성인 1군 발표로 확인했어요.
+    # https://www.ksc.de/ksc-drei60/startseite-ksc-drei60/ksc-drei60-sehen/show/article/louey-ben-farhat-wechsel-zum-sc-freiburg-rueckleihe-zum-ksc/
+    # https://www.fcrotweisskoblenz.de/pantschenko-rwk-ist-der-richtig-verein-fuer-mich/
+    3114, 5071,
     # https://www.az.nl/inside-az/nieuws/2023/juli/kerkez-verruilt-az-voor-afc-bournemouth
     61,
     # https://www.olympiacos.org/en/2024/07/09/costinha-joins-olympiacos/

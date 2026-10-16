@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import time
+from copy import deepcopy
 from datetime import date
 from typing import Dict, Iterable, List, Optional
 from urllib.parse import parse_qsl, urlparse
@@ -12,6 +13,7 @@ from dotenv import load_dotenv
 
 from .transfer_source_rules import DUPLICATE_TRANSFER_IDS as SPORTMONKS_DUPLICATE_TRANSFER_IDS
 from .transfer_source_rules import TRANSFER_DATE_OVERRIDES
+from .verified_transfer_additions import VERIFIED_TRANSFER_ADDITIONS
 
 
 load_dotenv()
@@ -2612,12 +2614,25 @@ class SportmonksClient:
     # 이적
     # ------------------------------------------------------------------
 
-    def _iter_transfers(self, path: str, params: dict) -> Iterable[Dict]:
+    def _iter_transfers(self, path: str, params: dict, *, additions: Iterable[Dict] = ()) -> Iterable[Dict]:
         # 스쿼드 계산과 이적 적재가 같은 원문 보정을 사용하도록 조회 경로를 모아요.
+        missing = {self._transfer_movement_key(item): item for item in additions}
+        player_ids = {item["player_id"] for item in missing.values()}
         for item in self._iter_paginated_data(path, params=params):
             item = self._correct_transfer(item)
             if item is not None:
+                if item.get("player_id") in player_ids and item["completed"] is True:
+                    # 공급자가 같은 이동을 보내면 공급자 ID를 쓰고 별도 보정 행을 중복 적재하지 않아요.
+                    missing.pop(self._transfer_movement_key(item), None)
                 yield item
+        # 원문 전체 조회가 성공한 뒤에만 누락된 공식 이동을 더해요.
+        yield from deepcopy(list(missing.values()))
+
+    @staticmethod
+    def _transfer_movement_key(item: Dict) -> tuple:
+        teams = tuple(None if item[key] is None or item[key]["placeholder"] else item[key]["id"]
+                      for key in ("fromteam", "toteam"))
+        return (item["player_id"], item["date"], item["type_id"], *teams)
 
     @staticmethod
     def _correct_transfer(item: Dict) -> Optional[Dict]:
@@ -2629,6 +2644,9 @@ class SportmonksClient:
         return item
 
     def get_transfer(self, transfer_id: int) -> Optional[Dict]:
+        # 1Touch 보정 ID는 공급자 단건 API에 전달하지 않아요.
+        if transfer_id in VERIFIED_TRANSFER_ADDITIONS:
+            return deepcopy(VERIFIED_TRANSFER_ADDITIONS[transfer_id])
         item = self._get(f"transfers/{transfer_id}", params={
             "include": "player;fromTeam;toTeam;type",
         })["data"]
@@ -2647,6 +2665,8 @@ class SportmonksClient:
                 "per_page": per_page,
                 "include": "player;fromTeam;toTeam;type",
             },
+            additions=(item for item in VERIFIED_TRANSFER_ADDITIONS.values()
+                       if team_id in (item["from_team_id"], item["to_team_id"])),
         )
 
     def iter_transfers_by_player(self, player_id: int) -> Iterable[Dict]:
@@ -2654,6 +2674,7 @@ class SportmonksClient:
         return self._iter_transfers(
             f"transfers/players/{player_id}",
             params={"include": "player;fromTeam;toTeam;type", "per_page": 50},
+            additions=(item for item in VERIFIED_TRANSFER_ADDITIONS.values() if item["player_id"] == player_id),
         )
 
     def iter_transfers_between_dates(
@@ -2668,6 +2689,8 @@ class SportmonksClient:
                 "per_page": 50,
                 "order": "asc",
             },
+            additions=(item for item in VERIFIED_TRANSFER_ADDITIONS.values()
+                       if start_date <= date.fromisoformat(item["date"]) <= end_date),
         )
 
     # ------------------------------------------------------------------
