@@ -416,6 +416,49 @@ class LoaderTests(unittest.TestCase):
         self.assertEqual(rows[0]['url'], 'https://example.com/1')
         self.assertEqual(session.get.call_count, 2)
 
+    def test_missing_html_article_preserves_other_articles_and_is_rechecked_next_time(self):
+        source = {**SOURCE, 'format': 'html', 'article_selector': '.news a[href]'}
+        listing = b'<div class="news"><a href="/1">First</a><a href="/2">Missing</a><a href="/3">Last</a></div>'
+        page = '''<html lang="ko"><meta property="og:title" content="바르셀로나 소식">
+          <meta property="article:published_time" content="2026-09-19T17:00:00Z"></html>'''.encode()
+        missing = loader.requests.Response()
+        missing.status_code = 404
+        session = Mock()
+        session.get.side_effect = [Mock(content=listing), Mock(content=page), missing, Mock(content=page)]
+        with patch.object(loader, 'save_sources'), patch.object(loader, 'save_articles') as save:
+            report = loader.refresh(apply=True, sources=[source], teams=[{'team_id': 83}], session=session, now=NOW)
+        self.assertEqual([row['url'] for row in save.call_args.args[1]], ['https://example.com/1', 'https://example.com/3'])
+        self.assertIsNone(report['sources'][0]['error'])
+        self.assertEqual(report['sources'][0]['unavailable_article_hashes'], [loader.fingerprint('https://example.com/2')])
+        session.get.reset_mock()
+        session.get.side_effect = [Mock(content=listing), *[Mock(content=page) for _ in range(3)]]
+        rows = loader.read_source(session, source)
+        self.assertEqual(len(rows), 3)
+        self.assertEqual([call.args[0] for call in session.get.call_args_list],
+                         [source['feed_url'], 'https://example.com/1', 'https://example.com/2', 'https://example.com/3'])
+
+    def test_html_listing_errors_and_other_article_errors_are_not_ignored(self):
+        source = {**SOURCE, 'format': 'html', 'article_selector': '.news a[href]'}
+        listing = b'<div class="news"><a href="/1">Article</a></div>'
+        for listing_failed, status in [(True, 404), (False, 403), (False, 500)]:
+            with self.subTest(listing_failed=listing_failed, status=status):
+                failure = loader.requests.Response()
+                failure.status_code = status
+                session = Mock()
+                session.get.side_effect = [failure] if listing_failed else [Mock(content=listing), failure]
+                with self.assertRaises(loader.requests.HTTPError):
+                    loader.read_source(session, source)
+
+    def test_all_missing_html_articles_remain_a_source_failure(self):
+        source = {**SOURCE, 'format': 'html', 'article_selector': '.news a[href]'}
+        response = loader.requests.Response()
+        response.status_code = 404
+        session = Mock()
+        session.get.side_effect = [Mock(content=b'<div class="news"><a href="/1">Article</a></div>'), response]
+        report = loader.refresh(apply=False, sources=[source], teams=[], session=session, now=NOW)
+        self.assertEqual(report['sources'][0]['error'], 'ValueError')
+        self.assertEqual(report['sources'][0]['unavailable_article_hashes'], [loader.fingerprint('https://example.com/1')])
+
     def test_empty_html_list_is_a_source_failure_and_does_not_write(self):
         session = Mock()
         session.get.return_value.content = b'<html><body>No article list</body></html>'

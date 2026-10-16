@@ -37,7 +37,7 @@ def _get_content(session, url: str) -> bytes:
     return response.content
 
 
-def read_source(session, source: dict) -> list[dict]:
+def read_source(session, source: dict, *, unavailable_article_hashes: list[str] | None = None) -> list[dict]:
     content = _get_content(session, source["feed_url"])
     if source.get("format") != "html":
         return parse_feed(content, source)
@@ -45,7 +45,16 @@ def read_source(session, source: dict) -> list[dict]:
     links = article_links(content, source)
     if not links:
         raise ValueError("Article list has no matching links")
-    articles = [parse_article_page(_get_content(session, url), source, url) for url in links]
+    articles = []
+    for url in links:
+        try:
+            articles.append(parse_article_page(_get_content(session, url), source, url))
+        except requests.HTTPError as exc:
+            if exc.response is None or exc.response.status_code != 404:
+                raise
+            # 목록에 남은 404 기사 하나로 정상 기사 전체를 버리지 않아요. 다음 수집에서도 다시 확인해요.
+            if unavailable_article_hashes is not None:
+                unavailable_article_hashes.append(fingerprint(url))
     if not any(articles):
         raise ValueError("Article pages have no valid metadata")
     return [article for article in articles if article]
@@ -118,8 +127,9 @@ def refresh(*, apply: bool, sources=None, teams=None, session=None, now=None) ->
             if not source["is_active"]:
                 continue
             articles, error = [], None
+            unavailable_article_hashes = []
             try:
-                for article in read_source(session, source):
+                for article in read_source(session, source, unavailable_article_hashes=unavailable_article_hashes):
                     if now - NEWS_MAX_AGE <= article["published_at"] <= now:
                         # 공급자 목록의 리그는 분류 정보예요. 이적·대륙 대회 기사의 다른 리그 팀도 연결해요.
                         article = {**article, "team_ids": matcher.match(article)}
@@ -143,7 +153,8 @@ def refresh(*, apply: bool, sources=None, teams=None, session=None, now=None) ->
                 save_articles(source, articles, now, error)
             report["sources"].append({"name": source["name"], "language": source["language"],
                                       "articles": len(articles), "matched": sum(bool(a["team_ids"]) for a in articles),
-                                      "team_ids": sorted({t for a in articles for t in a["team_ids"]}), "error": error})
+                                      "team_ids": sorted({t for a in articles for t in a["team_ids"]}), "error": error,
+                                      "unavailable_article_hashes": unavailable_article_hashes})
         if apply:
             report["thumbnails"] = refresh_news_images(session, now)
     finally:
