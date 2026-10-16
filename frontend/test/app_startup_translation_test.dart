@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:lottie/lottie.dart';
 import 'package:onetouch/core/api_client_provider.dart';
-import 'package:onetouch/core/full_screen_back_gesture.dart';
 import 'package:onetouch/features/betting/bet_settlement_notifications.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/l10n/football_name_labels.dart';
@@ -77,12 +76,11 @@ void main() {
     await tester.pump();
 
     expect(
-      FootballNamesScope.of(tester.element(find.byType(FullScreenBackGesture)))
+      FootballNamesScope.of(
+              tester.element(find.byType(BetSettlementNotificationHost)))
           .team(83, 'Untranslated team', short: true),
       'Barcelona',
     );
-    expect(find.byType(BetSettlementNotificationHost), findsNothing);
-    expect(find.byType(BetSettlementResultOverlay), findsNothing);
 
     expect(find.byType(SplashScreen), findsOneWidget);
     expect(find.byType(Lottie).hitTestable(), findsOneWidget);

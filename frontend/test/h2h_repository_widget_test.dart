@@ -1,4 +1,3 @@
-import 'package:onetouch/config/feature_availability.dart';
 import 'support/app_catalog.dart';
 import 'dart:async';
 
@@ -113,34 +112,22 @@ void main() {
           .data,
       '0',
     );
-    if (bettingEnabled) {
-      final expectedColors = TeamComparisonColorResolver.resolve(
-        anchorTeamName: 'Arsenal',
-        opponentTeamName: 'Liverpool',
-        background: Colors.white,
-      );
-      final betCard = tester.widget<BettingParticipationCard>(
-        find.byType(BettingParticipationCard),
-      );
-      expect(
-        betCard.barColors![0],
-        expectedColors.opponent,
-      );
-      expect(
-        betCard.barColors![2],
-        expectedColors.anchor,
-      );
-    } else {
-      expect(find.byType(BettingParticipationCard), findsNothing);
-      expect(find.byKey(const ValueKey('match-h2h-bets-info')), findsNothing);
-      expect(
-        tester.getTopLeft(find.text('LATEST H2H')).dy -
-            tester
-                .getBottomLeft(find.byKey(const ValueKey('match-h2h-wdl-card')))
-                .dy,
-        closeTo(48, 0.1),
-      );
-    }
+    final expectedColors = TeamComparisonColorResolver.resolve(
+      anchorTeamName: 'Arsenal',
+      opponentTeamName: 'Liverpool',
+      background: Colors.white,
+    );
+    final betCard = tester.widget<BettingParticipationCard>(
+      find.byType(BettingParticipationCard),
+    );
+    expect(
+      betCard.barColors![0],
+      expectedColors.opponent,
+    );
+    expect(
+      betCard.barColors![2],
+      expectedColors.anchor,
+    );
     final firstPastMatch = find.byKey(
       const ValueKey('match-h2h-fixture-901'),
     );
@@ -232,7 +219,7 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
     betting.dispose();
-  }, skip: !bettingEnabled);
+  });
 
   for (final (language, size) in [
     ('en', const Size(393, 852)),
@@ -324,7 +311,7 @@ void main() {
       }
       await tester.pumpWidget(const SizedBox.shrink());
       betting.dispose();
-    }, skip: !bettingEnabled);
+    });
   }
 
   testWidgets('falls back to the selected match home team perspective',

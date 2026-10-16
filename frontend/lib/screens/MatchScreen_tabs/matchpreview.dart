@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/config/feature_availability.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/l10n/date_labels.dart';
@@ -57,7 +56,7 @@ class _StandingRow {
 class MatchPreviewTab extends StatefulWidget {
   final Fixture fixture;
   final FixtureRepository? fixtureRepository;
-  final BettingController? bettingController;
+  final BettingController bettingController;
   final TeamAttributeRepository? attributeRepository;
   final StandingRepository? standingRepository;
 
@@ -189,23 +188,21 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           const SizedBox(height: 48),
           _buildHeader(),
           const SizedBox(height: 48),
-          if (bettingEnabled) ...[
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 0),
-              child: Text(
-                trUpper(context, "Bets"),
-                style: Body2_b.style,
-              ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 0),
+            child: Text(
+              trUpper(context, "Bets"),
+              style: Body2_b.style,
             ),
-            const SizedBox(height: 16),
-            MatchBettingSection(
-              controller: widget.bettingController!,
-              homeTeam: homeTeam,
-              awayTeam: awayTeam,
-              anchorTeamId: bettingAnchorTeamId,
-            ),
-            const SizedBox(height: 48),
-          ],
+          ),
+          const SizedBox(height: 16),
+          MatchBettingSection(
+            controller: widget.bettingController,
+            homeTeam: homeTeam,
+            awayTeam: awayTeam,
+            anchorTeamId: bettingAnchorTeamId,
+          ),
+          const SizedBox(height: 48),
           MatchAttributeComparison(
             homeTeamId: widget.fixture.homeTeamId,
             awayTeamId: widget.fixture.awayTeamId,
@@ -243,7 +240,6 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         tr(context, 'Round TBD');
 
     return Row(
-      key: const ValueKey('match-preview-header'),
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildTeamBlock(

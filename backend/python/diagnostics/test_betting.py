@@ -24,49 +24,6 @@ with patch('mysql.connector.pooling.MySQLConnectionPool'):
 
 from one_touch_loader.core.betting import SETTLEMENT_RULE, prediction_options, settlement, total_return
 from one_touch_loader.core.cup_betting import fixture_context
-from one_touch_loader.core import betting as betting_policy
-
-
-class DisabledBettingTests(unittest.TestCase):
-    def test_release_disables_new_and_changed_bets_before_any_database_write(self):
-        self.assertFalse(betting_policy.BETTING_ENABLED)
-        app = create_app()
-        app.dependency_overrides[get_user_id] = lambda: 1
-        with TestClient(app) as client, patch.object(repo, 'transaction') as transaction:
-            for revision in (0, 1):
-                response = client.put('/v1/fixtures/1/bet', json={
-                    'request_id': str(uuid4()), 'expected_revision': revision,
-                    'outcome': 'home_win', 'stake': 100, 'prediction_run_id': 'a' * 64})
-                self.assertEqual(response.status_code, 403, response.text)
-                self.assertEqual(response.json()['detail']['code'], 'betting_disabled')
-            transaction.assert_not_called()
-
-    def test_market_cannot_offer_bets_even_with_an_available_prediction(self):
-        now = datetime(2026, 10, 16, 12)
-        fixture = {'fixture_id': 1, 'starting_at': now + timedelta(hours=1),
-                   'season_name': '2026/2027', 'competition_id': 8, 'stage_type_id': 223,
-                   'state_id': 1}
-        with patch.object(repo, 'fetch_one_dict', side_effect=[fixture, None]), \
-                patch.object(repo, 'fetch_all_dict', return_value=[]), \
-                patch.object(repo, '_prediction', return_value={'prediction_run_id': 'a' * 64, 'options': []}), \
-                patch.object(repo, 'get_wallet', return_value={'balance': 1000, 'initialized': True}), \
-                patch.object(repo, 'utc_now', return_value=now):
-            market = repo.get_market(1, 1)
-        self.assertFalse(market['can_bet'])
-        self.assertEqual(market['unavailable_reason'], 'betting_disabled')
-
-    def test_wallet_and_existing_bet_cancellation_routes_remain_available(self):
-        app = create_app()
-        app.dependency_overrides[get_user_id] = lambda: 1
-        with TestClient(app) as client, \
-                patch.object(repo, 'initialize_wallet', return_value={'balance': 1000, 'initialized': True}), \
-                patch.object(repo, 'mutate_bet', side_effect=HTTPException(409, {'code': 'no_open_bet'})) as mutate:
-            self.assertEqual(client.post('/v1/users/me/points/initialize').status_code, 200)
-            response = client.post('/v1/fixtures/1/bet/cancel', json={
-                'request_id': str(uuid4()), 'expected_revision': 1})
-            self.assertEqual(response.status_code, 409)
-            self.assertEqual(response.json()['detail']['code'], 'no_open_bet')
-            self.assertTrue(mutate.call_args.kwargs['cancel'])
 
 
 class BettingRuleTests(unittest.TestCase):
@@ -185,7 +142,6 @@ class HistoricalPredictionTests(unittest.TestCase):
         self.assertEqual(prediction['prediction_run_id'], 'previous')
         self.assertEqual(prediction['options'], prediction_options([.4, 1.6, 0, -1.6], 2000, 1750))
 
-    @patch.object(betting_policy, 'BETTING_ENABLED', True)
     def test_reconstruction_cannot_open_betting_or_apply_to_live_cancelled_old_or_cup_matches(self):
         self.add_run('restored', '2026-09-16 00:00:00', market=SETTLEMENT_RULE)
         for change in ({'state_id': 1, 'starting_at': self.now + timedelta(hours=1)},
@@ -231,10 +187,6 @@ class BettingDatabaseTests(unittest.TestCase):
                 raise AssertionError('Refusing non-test MySQL')
 
     def setUp(self):
-        # 기존 참여·정산 회귀 검증은 기능이 켜진 조건에서 독립적으로 확인해요.
-        enabled = patch.object(betting_policy, 'BETTING_ENABLED', True)
-        enabled.start()
-        self.addCleanup(enabled.stop)
         self.database = 'betting_test_' + uuid4().hex
         with mysql.connector.connect(**self.config) as conn, conn.cursor() as cur:
             cur.execute(f'CREATE DATABASE {self.database} CHARACTER SET utf8mb4')

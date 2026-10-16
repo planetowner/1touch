@@ -63,21 +63,6 @@ class _RecordingNotificationRepository
 void main() {
   setUpAppCatalog();
 
-  testWidgets('keeps ordinary notifications without a betting setting',
-      (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home:
-          NotificationListPage(repository: _RecordingNotificationRepository()),
-    ));
-    await tester.pumpAndSettle();
-    expect(find.text('FOLLOWING TEAMS'), findsOneWidget);
-    expect(find.text('Reactions'), findsOneWidget);
-    expect(find.text('Comments'), findsOneWidget);
-    expect(find.text('BETS'), findsNothing);
-    expect(find.text('New bets'), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
-
   for (final testCase in <({
     String name,
     String path,

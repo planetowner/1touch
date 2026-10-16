@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:onetouch/config/feature_availability.dart';
 
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_snack_bar.dart';
@@ -210,17 +209,17 @@ class _NotificationListPageState extends State<NotificationListPage> {
                       ),
                     ),
 
-                    if (bettingEnabled) ...[
-                      const SizedBox(height: 48),
-                      Text(trUpper(context, "Bets"), style: Body2_b.style),
-                      const SizedBox(height: 16),
-                      _switchRow(
-                        context,
-                        label: tr(context, 'New bets'),
-                        value: _newBets,
-                        onChanged: _updateNewBets,
-                      ),
-                    ],
+                    const SizedBox(height: 48),
+
+                    // Betting
+                    Text(trUpper(context, "Bets"), style: Body2_b.style),
+                    const SizedBox(height: 16),
+                    _switchRow(
+                      context,
+                      label: tr(context, 'New bets'),
+                      value: _newBets,
+                      onChanged: _updateNewBets,
+                    ),
 
                     const SizedBox(height: 48),
                   ],

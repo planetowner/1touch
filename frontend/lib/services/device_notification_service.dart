@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:onetouch/config/feature_availability.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -96,12 +95,9 @@ class DeviceNotificationService {
         _teamChannel,
         _playerChannel,
         _postsChannel,
-        if (bettingEnabled) _bettingChannel,
+        _bettingChannel,
       ]) {
         await android?.createNotificationChannel(channel);
-      }
-      if (!bettingEnabled) {
-        await android?.deleteNotificationChannel(channelId: _bettingChannel.id);
       }
     } on Object catch (error) {
       debugPrint('Unable to update notification channels: $error');

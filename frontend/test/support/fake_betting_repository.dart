@@ -14,8 +14,6 @@ class FakeBettingRepository implements BettingRepository {
   int balance = 1000;
   FixtureBet? bet;
   int saveCalls = 0;
-  int initializeCalls = 0;
-  int loadMarketCalls = 0;
   Completer<void>? submitGate;
   Object? saveError;
   final requestIds = <String>[];
@@ -50,34 +48,29 @@ class FakeBettingRepository implements BettingRepository {
   ];
 
   @override
-  Future<PointWallet> initializeWallet() async {
-    initializeCalls++;
-    return PointWallet(balance: balance, initialized: true);
-  }
+  Future<PointWallet> initializeWallet() async =>
+      PointWallet(balance: balance, initialized: true);
 
   @override
-  Future<BettingMarket> loadMarket(int fixtureId) async {
-    loadMarketCalls++;
-    return BettingMarket(
-      fixtureId: fixtureId,
-      stakeUnit: stakeUnit,
-      opensAt: opensAt,
-      available: true,
-      canBet: unavailableReason == null,
-      canCancel: bet?.isOpen == true,
-      unavailableReason: unavailableReason,
-      closesAt: DateTime.now().add(const Duration(days: 1)),
-      predictionRunId: 'a' * 64,
-      predictionAsOf: DateTime.now(),
-      options: marketOptions,
-      wallet: PointWallet(balance: balance, initialized: true),
-      bet: bet,
-      participantCount: bet?.isOpen == true ? 1 : 0,
-      userProbabilities: bet?.isOpen == true
-          ? List.generate(3, (i) => i == bet!.outcome.index ? 1.0 : 0.0)
-          : null,
-    );
-  }
+  Future<BettingMarket> loadMarket(int fixtureId) async => BettingMarket(
+        fixtureId: fixtureId,
+        stakeUnit: stakeUnit,
+        opensAt: opensAt,
+        available: true,
+        canBet: unavailableReason == null,
+        canCancel: bet?.isOpen == true,
+        unavailableReason: unavailableReason,
+        closesAt: DateTime.now().add(const Duration(days: 1)),
+        predictionRunId: 'a' * 64,
+        predictionAsOf: DateTime.now(),
+        options: marketOptions,
+        wallet: PointWallet(balance: balance, initialized: true),
+        bet: bet,
+        participantCount: bet?.isOpen == true ? 1 : 0,
+        userProbabilities: bet?.isOpen == true
+            ? List.generate(3, (i) => i == bet!.outcome.index ? 1.0 : 0.0)
+            : null,
+      );
 
   @override
   Future<BetMutation> saveBet({

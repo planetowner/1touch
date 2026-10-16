@@ -1,7 +1,6 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
-import 'package:onetouch/config/feature_availability.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -27,7 +26,7 @@ import 'package:onetouch/l10n/fixture_labels.dart';
 class H2HTab extends StatefulWidget {
   final Fixture fixture;
   final FixtureRepository? fixtureRepository;
-  final BettingController? bettingController;
+  final BettingController bettingController;
 
   const H2HTab({
     super.key,
@@ -178,10 +177,8 @@ class _H2HTabState extends State<H2HTab> {
             )
           else ...[
             _buildWDLBox(wins, draws, losses),
-            if (bettingEnabled) ...[
-              const SizedBox(height: 48),
-              _buildBetsCard(),
-            ],
+            const SizedBox(height: 48),
+            _buildBetsCard(),
             Padding(
               // 획득액 문구 유무와 관계없이 다음 섹션까지 48px을 유지해요.
               padding: EdgeInsets.only(bottom: 8, top: 48),
@@ -409,7 +406,7 @@ class _H2HTabState extends State<H2HTab> {
         ),
         const SizedBox(height: 16),
         BettingParticipationCard(
-          controller: widget.bettingController!,
+          controller: widget.bettingController,
           barColors: barColors,
           isLive: widget.fixture.status == FixtureStatus.live,
         ),

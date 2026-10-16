@@ -18,7 +18,6 @@ from ...core.betting import (OPEN_STATE_IDS, SETTLEMENT_RULE, STAKE_UNIT, bettin
 from ...core.cup_betting import CUP_COMPETITION_IDS, fixture_context
 from ...core.fixture_states import COMPLETED_STATE_IDS
 from ...core.db_json import decoded
-from ...core import betting as betting_policy
 from ...core.probability import OUTCOMES
 from ...core.probability_forecast import LEAGUE_RULES
 
@@ -138,8 +137,7 @@ def get_market(user_id, fixture_id):
 
 
 def market_unavailable_reason(fixture, now, prediction):
-    return ('betting_disabled' if not betting_policy.BETTING_ENABLED else
-            'unsupported_competition' if not _supported(fixture) else
+    return ('unsupported_competition' if not _supported(fixture) else
             'kickoff_unconfirmed' if fixture['starting_at'] is None else
             'betting_closed' if not _before_start(fixture, now) else
             'betting_not_open' if now < betting_opens_at(fixture) else
@@ -147,8 +145,6 @@ def market_unavailable_reason(fixture, now, prediction):
 
 
 def mutate_bet(user_id, fixture_id, body, *, cancel=False):
-    if not betting_policy.BETTING_ENABLED and not cancel:
-        raise HTTPException(403, {'code': 'betting_disabled', 'message': 'Betting is unavailable'})
     request_id = str(body['request_id'])
     digest = hashlib.sha256(json.dumps({'fixture_id': fixture_id, 'cancel': cancel, **body},
                                       sort_keys=True, default=str).encode()).hexdigest()

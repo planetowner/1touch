@@ -1,4 +1,3 @@
-import 'package:onetouch/config/feature_availability.dart';
 import 'dart:async';
 
 import 'support/app_catalog.dart';
@@ -14,14 +13,13 @@ import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/fixture_chat_message.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
-import 'package:onetouch/features/team/attributes/match_attribute_comparison.dart';
 import 'support/fake_betting_repository.dart';
 import 'support/test_match_analysis_repository.dart';
 import 'package:onetouch/models/match_tactical_analysis.dart';
 
 void main() {
   setUpAppCatalog();
-  Future<FakeBettingRepository> pumpMatch(
+  Future<void> pumpMatch(
     WidgetTester tester, {
     required ThemeData theme,
     required Size size,
@@ -62,7 +60,6 @@ void main() {
         ),
       ],
     );
-    final betting = FakeBettingRepository();
     await tester.pumpWidget(
       MaterialApp(
         theme: theme,
@@ -71,7 +68,7 @@ void main() {
           matchStatus: matchStatus,
           initialFixture: fixture,
           repository: repository,
-          bettingRepository: betting,
+          bettingRepository: FakeBettingRepository(),
           analysisRepository: TestMatchAnalysisRepository(
             MatchTacticalAnalysis(
                 fixtureId: fixture.fixtureId,
@@ -92,36 +89,6 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(betting.initializeCalls, 0);
-    expect(betting.loadMarketCalls, 0);
-    return betting;
-  }
-
-  for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
-    testWidgets('no betting UI or requests on $platform after tab changes',
-        (tester) async {
-      final betting = await pumpMatch(
-        tester,
-        theme: app_style.darktheme,
-        size: const Size(393, 852),
-        matchId: '20100001',
-        matchStatus: 'upcoming',
-      );
-      expect(find.byKey(const ValueKey('match-betting-card')), findsNothing);
-      expect(find.text('BETS'), findsNothing);
-      expect(find.byType(MatchAttributeComparison), findsOneWidget);
-      await tester.tap(find.text('HEAD TO HEAD'));
-      await tester.pump();
-      expect(find.byKey(const ValueKey('match-h2h-bets-card')), findsNothing);
-      expect(find.byKey(const ValueKey('match-h2h-bets-info')), findsNothing);
-      expect(find.byKey(const ValueKey('match-h2h-wdl-card')), findsOneWidget);
-      await tester.pump(const Duration(seconds: 30));
-      expect(betting.initializeCalls, 0);
-      expect(betting.loadMarketCalls, 0);
-      expect(betting.saveCalls, 0);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox.shrink());
-    }, variant: TargetPlatformVariant({platform}));
   }
 
   BoxDecoration boxDecoration(WidgetTester tester, Key key) {
@@ -190,15 +157,6 @@ void main() {
     expect(homeTeam.width, 72);
     expect(awayTeam.width, 72);
     expect(awayTeam.right, 320 - 24);
-    expect(find.text('BETS'), findsNothing);
-    expect(find.text('PLACE A BET'), findsNothing);
-    expect(
-      tester.getTopLeft(find.byType(MatchAttributeComparison)).dy -
-          tester
-              .getBottomLeft(find.byKey(const ValueKey('match-preview-header')))
-              .dy,
-      closeTo(48, 0.1),
-    );
     final roundLabel = find.byKey(const ValueKey('match-preview-round-label'));
     final scrollingLabel = tester.widget<OverflowScrollingText>(roundLabel);
     expect(scrollingLabel.style.fontSize, Body2.style.fontSize);
@@ -220,58 +178,56 @@ void main() {
       expect(text.style!.fontSize, Body2.style.fontSize);
       expect(text.style!.fontWeight, Body2.style.fontWeight);
     }
-    if (bettingEnabled) {
-      expect(
-        decorationColor(tester, const ValueKey('match-betting-card')),
-        app_style.AppPalette.white,
-      );
-      expect(
-        tester
-            .widget<Container>(
-              find.byKey(const ValueKey('match-betting-card')),
-            )
-            .padding,
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      );
-      final bettingCard = tester.getRect(
-        find.byKey(const ValueKey('match-betting-card')),
-      );
-      final bettingHomeTeam = tester.getRect(
-        find.byKey(const ValueKey('match-betting-home-team')),
-      );
-      final bettingAwayTeam = tester.getRect(
-        find.byKey(const ValueKey('match-betting-away-team')),
-      );
-      expect(bettingHomeTeam.left - bettingCard.left, 16);
-      expect(bettingHomeTeam.width, 40);
-      expect(bettingAwayTeam.width, 40);
-      expect(bettingCard.right - bettingAwayTeam.right, 16);
-      final outcomeGroup = tester.getRect(
-        find.byKey(const ValueKey('match-betting-outcome-group')),
-      );
-      final winBox = tester.getRect(
-        find.byKey(const ValueKey('match-betting-odds-box-0')),
-      );
-      final drawBox = tester.getRect(
-        find.byKey(const ValueKey('match-betting-odds-box-1')),
-      );
-      final lossBox = tester.getRect(
-        find.byKey(const ValueKey('match-betting-odds-box-2')),
-      );
-      expect(drawBox.left - winBox.right, 8);
-      expect(lossBox.left - drawBox.right, 8);
-      expect(
-        outcomeGroup.left - bettingHomeTeam.right,
-        closeTo(bettingAwayTeam.left - outcomeGroup.right, 0.01),
-      );
-      expect(
-        boxDecoration(
-          tester,
-          const ValueKey('match-betting-card'),
-        ).boxShadow,
-        app_style.lightModeCardShadows,
-      );
-    }
+    expect(
+      decorationColor(tester, const ValueKey('match-betting-card')),
+      app_style.AppPalette.white,
+    );
+    expect(
+      tester
+          .widget<Container>(
+            find.byKey(const ValueKey('match-betting-card')),
+          )
+          .padding,
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+    );
+    final bettingCard = tester.getRect(
+      find.byKey(const ValueKey('match-betting-card')),
+    );
+    final bettingHomeTeam = tester.getRect(
+      find.byKey(const ValueKey('match-betting-home-team')),
+    );
+    final bettingAwayTeam = tester.getRect(
+      find.byKey(const ValueKey('match-betting-away-team')),
+    );
+    expect(bettingHomeTeam.left - bettingCard.left, 16);
+    expect(bettingHomeTeam.width, 40);
+    expect(bettingAwayTeam.width, 40);
+    expect(bettingCard.right - bettingAwayTeam.right, 16);
+    final outcomeGroup = tester.getRect(
+      find.byKey(const ValueKey('match-betting-outcome-group')),
+    );
+    final winBox = tester.getRect(
+      find.byKey(const ValueKey('match-betting-odds-box-0')),
+    );
+    final drawBox = tester.getRect(
+      find.byKey(const ValueKey('match-betting-odds-box-1')),
+    );
+    final lossBox = tester.getRect(
+      find.byKey(const ValueKey('match-betting-odds-box-2')),
+    );
+    expect(drawBox.left - winBox.right, 8);
+    expect(lossBox.left - drawBox.right, 8);
+    expect(
+      outcomeGroup.left - bettingHomeTeam.right,
+      closeTo(bettingAwayTeam.left - outcomeGroup.right, 0.01),
+    );
+    expect(
+      boxDecoration(
+        tester,
+        const ValueKey('match-betting-card'),
+      ).boxShadow,
+      app_style.lightModeCardShadows,
+    );
     expect(
       decorationColor(tester, const ValueKey('match-preview-standing-header')),
       app_style.AppPalette.white,
@@ -295,19 +251,18 @@ void main() {
     expect(standingClubHeader.style!.fontWeight, Body2.style.fontWeight);
     expect(standingClubHeader.style!.color, app_style.AppPalette.black);
 
-    if (bettingEnabled) {
-      await tester.ensureVisible(find.text('PLACE A BET'));
-      await tester.pump();
-      await tester.tap(find.text('PLACE A BET'));
-      await tester.pumpAndSettle();
-      expect(
-        decorationColor(tester, const ValueKey('match-betting-modal')),
-        app_style.AppPalette.white,
-      );
-      expect(tester.takeException(), isNull);
-      await tester.tap(find.byIcon(Icons.close));
-      await tester.pumpAndSettle();
-    }
+    await tester.ensureVisible(find.text('PLACE A BET'));
+    await tester.pump();
+    await tester.tap(find.text('PLACE A BET'));
+    await tester.pumpAndSettle();
+    expect(
+      decorationColor(tester, const ValueKey('match-betting-modal')),
+      app_style.AppPalette.white,
+    );
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+
     await tester.drag(
       find.byKey(const ValueKey('match-nested-scroll')),
       const Offset(0, 1000),
@@ -359,12 +314,10 @@ void main() {
       decorationColor(tester, const ValueKey('match-h2h-wdl-card')),
       app_style.AppPalette.white,
     );
-    if (bettingEnabled) {
-      expect(
-        decorationColor(tester, const ValueKey('match-h2h-bets-card')),
-        app_style.AppPalette.white,
-      );
-    }
+    expect(
+      decorationColor(tester, const ValueKey('match-h2h-bets-card')),
+      app_style.AppPalette.white,
+    );
 
     await tester.drag(
       find.byKey(const ValueKey('match-tab-scroll')),
@@ -398,19 +351,17 @@ void main() {
     expect(
         tester.widget<SliverAppBar>(find.byType(SliverAppBar)).backgroundColor,
         scaffold.backgroundColor);
-    if (bettingEnabled) {
-      expect(
-        decorationColor(tester, const ValueKey('match-betting-card')),
-        app_style.AppPalette.darkGrey,
-      );
-      expect(
-        boxDecoration(
-          tester,
-          const ValueKey('match-betting-card'),
-        ).boxShadow,
-        isEmpty,
-      );
-    }
+    expect(
+      decorationColor(tester, const ValueKey('match-betting-card')),
+      app_style.AppPalette.darkGrey,
+    );
+    expect(
+      boxDecoration(
+        tester,
+        const ValueKey('match-betting-card'),
+      ).boxShadow,
+      isEmpty,
+    );
     expect(
       decorationColor(tester, const ValueKey('match-tab-0')),
       app_style.AppPalette.white,
