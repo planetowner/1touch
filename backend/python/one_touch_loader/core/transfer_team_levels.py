@@ -22,6 +22,10 @@ VERIFIED_SENIOR_TEAM_IDS = {
     204,
 }
 VERIFIED_NON_SENIOR_TEAM_IDS = {
+    # Atalanta II·U19 계약은 1군 계약과 함께 내려오지만 별도 육성 팀이에요.
+    # https://en.atalanta.it/news/application-for-the-second-team-submitted-to-lega-pro
+    # https://en.atalanta.it/news/primavera-atalanta-2-1-empoli
+    270105, 134463,
     # Auxerre II 리저브 계약의 조회 불가 이적 참조를 1군 계약으로 적재하지 않아요.
     # https://www.aja.fr/le-programme-du-week-end-2/
     9387,

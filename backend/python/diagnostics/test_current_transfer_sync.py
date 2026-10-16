@@ -126,17 +126,24 @@ class CurrentTransferSyncTests(SyncDatabaseCase):
         self.client.iter_transfers_by_player.assert_not_called()
         self.assertEqual(list(self.sql.iterdump()), before)
 
-    def test_auxerre_reserve_contract_does_not_request_unavailable_transfer(self):
-        source = json.loads((Path(__file__).parent / 'fixtures' / 'sportmonks_auxerre_reserve_contract.json').read_text())
-        self.client.get_player_current_teams.side_effect = lambda pid: self.api(source['records'])
-        self.client.get_transfer.side_effect = AssertionError('Reserve transfer must not be requested')
-        result = sync.sync_player_history_and_contracts(
-            self.client, source['player_id'], set(), history=True, apply=False,
+    def test_reserve_contract_does_not_request_unavailable_transfer(self):
+        cases = (
+            ('auxerre', 3682, None, date(2028, 6, 30)),
+            ('atalanta', 708, date(2026, 7, 1), date(2028, 6, 30)),
         )
-        self.assertEqual(result['contracts'], 1)
-        rows = sync.contracts.build_player_contract_rows(source['player_id'], source['records'])
-        self.assertEqual(rows['rows'], [(3682, source['player_id'], None, date(2028, 6, 30), None)])
-        self.client.get_transfer.assert_not_called()
+        for club, team_id, start, end in cases:
+            with self.subTest(club=club):
+                path = Path(__file__).parent / 'fixtures' / f'sportmonks_{club}_reserve_contract.json'
+                source = json.loads(path.read_text())
+                self.client.get_player_current_teams.side_effect = lambda pid: self.api(source['records'])
+                self.client.get_transfer.side_effect = AssertionError('Reserve transfer must not be requested')
+                result = sync.sync_player_history_and_contracts(
+                    self.client, source['player_id'], set(), history=True, apply=False,
+                )
+                self.assertEqual(result['contracts'], 1)
+                rows = sync.contracts.build_player_contract_rows(source['player_id'], source['records'])
+                self.assertEqual(rows['rows'], [(team_id, source['player_id'], start, end, None)])
+                self.client.get_transfer.assert_not_called()
 
     def test_reconciliation_cli_resume_and_invalid_ids(self):
         with patch('sys.argv', ['cli', 'current-season', 'transfer-reconciliation', '--from-player', '2', '--apply']), \

@@ -1,0 +1,118 @@
+{
+  "verified_on": "2026-10-16",
+  "official_references": [
+    "https://en.atalanta.it/news/application-for-the-second-team-submitted-to-lega-pro",
+    "https://en.atalanta.it/news/primavera-atalanta-2-1-empoli"
+  ],
+  "player_id": 37673342,
+  "records": [
+    {
+      "id": 1650146,
+      "transfer_id": null,
+      "player_id": 37673342,
+      "team_id": 708,
+      "position_id": 25,
+      "detailed_position_id": 148,
+      "start": "2026-07-01",
+      "end": "2028-06-30",
+      "captain": false,
+      "jersey_number": 40,
+      "team": {
+        "id": 708,
+        "sport_id": 1,
+        "country_id": 251,
+        "venue_id": 193,
+        "gender": "male",
+        "name": "Atalanta",
+        "short_code": "ATA",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/4/708.png",
+        "founded": 1907,
+        "type": "domestic",
+        "placeholder": false,
+        "last_played_at": "2026-10-15 19:00:00"
+      }
+    },
+    {
+      "id": 1549105,
+      "transfer_id": null,
+      "player_id": 37673342,
+      "team_id": 75709,
+      "position_id": 25,
+      "detailed_position_id": 148,
+      "start": "2025-06-12",
+      "end": null,
+      "captain": false,
+      "jersey_number": 4,
+      "team": {
+        "id": 75709,
+        "sport_id": 1,
+        "country_id": 1638,
+        "venue_id": 682,
+        "gender": "male",
+        "name": "Slovenia U21",
+        "short_code": null,
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/29/75709.png",
+        "founded": 1920,
+        "type": "national",
+        "placeholder": false,
+        "last_played_at": "2026-10-02 16:00:00"
+      }
+    },
+    {
+      "id": 773813,
+      "transfer_id": null,
+      "player_id": 37673342,
+      "team_id": 134463,
+      "position_id": 25,
+      "detailed_position_id": 148,
+      "start": null,
+      "end": "2028-06-30",
+      "captain": false,
+      "jersey_number": 4,
+      "team": {
+        "id": 134463,
+        "sport_id": 1,
+        "country_id": 251,
+        "venue_id": null,
+        "gender": "male",
+        "name": "Atalanta U19",
+        "short_code": "ATA",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/31/134463.png",
+        "founded": 0,
+        "type": "domestic",
+        "placeholder": false,
+        "last_played_at": "2025-12-09 13:00:00"
+      }
+    },
+    {
+      "id": 1003424,
+      "transfer_id": 462648,
+      "player_id": 37673342,
+      "team_id": 270105,
+      "position_id": 25,
+      "detailed_position_id": 148,
+      "start": "2024-07-01",
+      "end": "2028-06-30",
+      "captain": false,
+      "jersey_number": 19,
+      "team": {
+        "id": 270105,
+        "sport_id": 1,
+        "country_id": 251,
+        "venue_id": null,
+        "gender": "male",
+        "name": "Atalanta II",
+        "short_code": "ATA",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/25/270105.png",
+        "founded": null,
+        "type": "domestic",
+        "placeholder": false,
+        "last_played_at": "2026-10-14 13:00:00"
+      }
+    }
+  ],
+  "unavailable_transfer": {
+    "id": 462648,
+    "message": "No result(s) found matching your request. Either the query did not return any results or you don't have access to it via your current subscription."
+  }
+}
