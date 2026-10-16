@@ -41,6 +41,9 @@ class MediaPickerScreen extends StatefulWidget {
 
 class _MediaPickerScreenState extends State<MediaPickerScreen>
     with WidgetsBindingObserver {
+  static const _gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 4, mainAxisSpacing: 2, crossAxisSpacing: 2);
+
   final _cropKey = GlobalKey<CropState>();
   final _scroll = ScrollController();
   List<AssetPathEntity> _albums = [];
@@ -540,6 +543,13 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
       });
     }
     return LayoutBuilder(builder: (context, constraints) {
+      final cellSide = (constraints.maxWidth -
+              (_gridDelegate.crossAxisCount - 1) *
+                  _gridDelegate.crossAxisSpacing) /
+          _gridDelegate.crossAxisCount;
+      // naru의 3열·간격 2인 셀과 비교해 시간 패널의 비율을 맞춰요.
+      final referenceCellSide = (constraints.maxWidth - 2 * 2) / 3;
+      final videoDurationScale = cellSide / referenceCellSide;
       final side = math.min(constraints.maxWidth, constraints.maxHeight * .58);
       final crop = SizedBox.square(
         key: const ValueKey('avatar-crop-region'),
@@ -564,10 +574,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
                             fit: BoxFit.contain,
                             gaplessPlayback: true),
                         if (_selectedPhoto?.type == AssetType.video)
-                          Positioned(
-                              right: 8,
-                              bottom: 8,
-                              child: _VideoDuration(asset: _selectedPhoto!)),
+                          _VideoDuration(asset: _selectedPhoto!),
                       ])
                 : _notice('Choose from Photos'),
       );
@@ -594,10 +601,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
               key: PageStorageKey('avatar-grid-${_album?.id}'),
               slivers: [
                 SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      mainAxisSpacing: 2,
-                      crossAxisSpacing: 2),
+                  gridDelegate: _gridDelegate,
                   delegate: SliverChildBuilderDelegate((context, index) {
                     if (widget.cropAvatar && index == 0) {
                       return Material(
@@ -618,6 +622,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
                       key: ValueKey(photo.id),
                       photo: photo,
                       library: widget.library,
+                      videoDurationScale: videoDurationScale,
                       selected: widget.cropAvatar
                           ? photo.id == _selectedPhoto?.id
                           : order >= 0,
@@ -687,11 +692,13 @@ class _PhotoTile extends StatefulWidget {
       {super.key,
       required this.photo,
       required this.library,
+      required this.videoDurationScale,
       required this.selected,
       this.selectionOrder,
       required this.onTap});
   final AssetEntity photo;
   final MediaLibrary library;
+  final double videoDurationScale;
   final bool selected;
   final int? selectionOrder;
   final ValueChanged<Uint8List?> onTap;
@@ -749,36 +756,43 @@ class _PhotoTileState extends State<_PhotoTile> {
                                         .onPrimary)),
                           )),
                     if (widget.photo.type == AssetType.video)
-                      Positioned(
-                          right: 4,
-                          bottom: 4,
-                          child: _VideoDuration(asset: widget.photo)),
+                      _VideoDuration(
+                          asset: widget.photo,
+                          scale: widget.videoDurationScale),
                   ]))),
         ),
       );
 }
 
 class _VideoDuration extends StatelessWidget {
-  const _VideoDuration({required this.asset});
+  const _VideoDuration({required this.asset, this.scale = 1});
   final AssetEntity asset;
+  final double scale;
 
   @override
   Widget build(BuildContext context) {
     final duration = asset.videoDuration;
     final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
-    return DecoratedBox(
-      decoration: BoxDecoration(
-          color: AppPalette.black.withValues(alpha: .65),
-          borderRadius: BorderRadius.circular(4)),
-      child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.videocam_outlined,
-                size: 16, color: AppPalette.white),
-            const SizedBox(width: 4),
-            Text('${duration.inMinutes}:$seconds',
-                style: Body2.style.copyWith(color: AppPalette.white)),
-          ])),
+    return Positioned(
+      right: 7 * scale,
+      bottom: 6 * scale,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+            color: AppPalette.black.withAlpha(138),
+            borderRadius: BorderRadius.circular(4 * scale)),
+        child: Padding(
+          padding:
+              EdgeInsets.symmetric(horizontal: 5 * scale, vertical: 2 * scale),
+          // 너비는 시간 길이에 맞추고, 글꼴은 앱 토큰을 그대로 써요.
+          child: Text('${duration.inMinutes}:$seconds',
+              style: Body2.style.copyWith(
+                  color: AppPalette.white,
+                  fontSize: 14 * scale,
+                  height: 21 / 14,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0)),
+        ),
+      ),
     );
   }
 }
