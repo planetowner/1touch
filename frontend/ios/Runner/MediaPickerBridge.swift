@@ -20,6 +20,31 @@ final class MediaPickerBridge: NSObject, PHPickerViewControllerDelegate,
   }
 
   private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    if call.method == "prepare" {
+      guard let args = call.arguments as? [String: Any],
+            let path = args["path"] as? String,
+            let isVideo = args["isVideo"] as? Bool else {
+        result(FlutterError(code: "invalid_arguments", message: nil, details: nil))
+        return
+      }
+      // 자체 목록에서도 기존 파일 복사·포맷 변환 규칙을 그대로 사용해요.
+      DispatchQueue.global(qos: .userInitiated).async {
+        let directory = FileManager.default.temporaryDirectory
+          .appendingPathComponent("picked-\(UUID().uuidString)", isDirectory: true)
+        do {
+          try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+          let file = try Self.copyMedia(URL(fileURLWithPath: path), isVideo: isVideo,
+                                        directory: directory, index: 0)
+          DispatchQueue.main.async { result(file) }
+        } catch {
+          try? FileManager.default.removeItem(at: directory)
+          DispatchQueue.main.async {
+            result(FlutterError(code: "picker_failed", message: error.localizedDescription, details: nil))
+          }
+        }
+      }
+      return
+    }
     guard call.method == "pick" else {
       result(FlutterMethodNotImplemented)
       return

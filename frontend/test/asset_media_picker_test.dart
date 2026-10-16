@@ -1,41 +1,35 @@
 import 'dart:io';
-import 'dart:ui' as ui;
 
+import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/features/media/asset_media_picker.dart';
-import 'package:onetouch/features/media/avatar_picker_screen.dart';
-import 'package:onetouch/features/media/native_avatar_header.dart';
+import 'package:onetouch/features/media/media_library.dart';
+import 'package:onetouch/features/media/media_picker_screen.dart';
+import 'package:onetouch/features/media/native_media_header.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 void main() {
-  const channel = MethodChannel('onetouch/media_picker');
-  late Directory directory;
-  late List<Map<String, Object>> selection;
-  final calls = <MethodCall>[];
-
+  TestWidgetsFlutterBinding.ensureInitialized();
+  const libraryChannel = MethodChannel('com.fluttercandies/photo_manager');
   setUp(() {
-    directory = Directory.systemTemp.createTempSync('media_picker_test_');
-    selection = [];
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (call) async {
-      calls.add(call);
-      return selection;
+        .setMockMethodCallHandler(libraryChannel, (call) async {
+      if (call.method == 'requestPermissionExtend') {
+        return PermissionState.denied.index;
+      }
+      throw PlatformException(code: 'unexpected_library_call');
     });
   });
-  tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, null);
-    directory.deleteSync(recursive: true);
-    calls.clear();
-  });
+  tearDown(() => TestDefaultBinaryMessengerBinding
+      .instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(libraryChannel, null));
 
-  Future<BuildContext> mountPicker(WidgetTester tester,
-      {NavigatorObserver? observer}) async {
+  Future<BuildContext> mountPicker(WidgetTester tester) async {
     late BuildContext context;
     await tester.pumpWidget(MaterialApp(
       theme: ThemeData(platform: TargetPlatform.linux),
-      navigatorObservers: [if (observer != null) observer],
       home: Builder(builder: (value) {
         context = value;
         return const SizedBox();
@@ -44,100 +38,94 @@ void main() {
     return context;
   }
 
-  testWidgets('keeps full photos, video type and native selection order',
-      (tester) async {
-    final context = await mountPicker(tester);
-    await tester.runAsync(() async {
-      final portrait = await _photo(directory, 90, 160);
-      final landscape = await _photo(directory, 160, 90);
-      final video = File('${directory.path}/clip.m4v')
-        ..writeAsBytesSync([1, 2, 3]);
-      selection = [
-        {'path': portrait.path, 'mimeType': 'image/png'},
-        {'path': video.path, 'mimeType': 'video/mp4'},
-        {'path': landscape.path, 'mimeType': 'image/png'},
+  for (final maximum in [1, 3]) {
+    testWidgets(
+        'posts open the shared media picker with $maximum remaining slots',
+        (tester) async {
+      final context = await mountPicker(tester);
+      final pending = pickAssetMedia(context, maxAssets: maximum);
+      await tester.pumpAndSettle();
+      final screen =
+          tester.widget<MediaPickerScreen>(find.byType(MediaPickerScreen));
+      expect(screen.cropAvatar, false);
+      expect(screen.maxAssets, maximum);
+      expect(screen.library.type, RequestType.common);
+      expect(find.text('Photos and videos'), findsOneWidget);
+
+      final files = [
+        XFile('/cache/clip.mov', mimeType: 'video/quicktime'),
+        if (maximum > 1) XFile('/cache/portrait.png', mimeType: 'image/png'),
       ];
-
-      final files = await pickAssetMedia(context, maxAssets: 3);
-
-      expect(calls.single.method, 'pick');
-      expect(calls.single.arguments, {'maxAssets': 3, 'imagesOnly': false});
-      expect(files.map((file) => file.path),
-          [portrait.path, video.path, landscape.path]);
-      expect(files[1].mimeType, 'video/mp4');
-      for (final (index, size) in [
-        (0, const Size(90, 160)),
-        (2, const Size(160, 90)),
-      ]) {
-        final bytes = await files[index].readAsBytes();
-        expect(bytes, await (index == 0 ? portrait : landscape).readAsBytes());
-        final codec = await ui.instantiateImageCodec(bytes);
-        final frame = await codec.getNextFrame();
-        expect(
-            Size(frame.image.width.toDouble(), frame.image.height.toDouble()),
-            size);
-        frame.image.dispose();
-        codec.dispose();
-      }
+      Navigator.of(tester.element(find.byType(MediaPickerScreen))).pop(files);
+      await tester.pumpAndSettle();
+      expect(await pending, same(files));
     });
-  });
+  }
 
-  testWidgets('one remaining attachment still allows a video', (tester) async {
-    final context = await mountPicker(tester);
-    selection = [
-      {'path': '/cache/clip.mov', 'mimeType': 'video/quicktime'}
-    ];
-
-    final files = await pickAssetMedia(context, maxAssets: 1);
-
-    expect(calls.single.arguments, {'maxAssets': 1, 'imagesOnly': false});
-    expect(files.single.mimeType, 'video/quicktime');
-  });
-
-  testWidgets('cancelling the post picker returns no media', (tester) async {
-    final context = await mountPicker(tester);
-
-    expect(await pickAssetMedia(context, maxAssets: 10), isEmpty);
-  });
-
-  testWidgets('native export errors reach the existing screen error handling',
+  testWidgets('cancelling the post picker returns no attachments',
       (tester) async {
     final context = await mountPicker(tester);
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (_) async {
-      throw PlatformException(code: 'picker_failed');
-    });
-
-    await expectLater(pickAssetMedia(context, maxAssets: 2),
-        throwsA(isA<PlatformException>()));
+    final pending = pickAssetMedia(context, maxAssets: 10);
+    await tester.pumpAndSettle();
+    tester
+        .widget<NativeMediaHeader>(find.byType(NativeMediaHeader))
+        .onCancel!();
+    await tester.pumpAndSettle();
+    expect(await pending, isEmpty);
   });
 
-  testWidgets('profile opens the shared picker and cancel returns no file',
+  testWidgets('profile keeps image-only cropping and cancel returns no file',
       (tester) async {
     final context = await mountPicker(tester);
     final pending = pickAvatarImage(context);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.byType(AvatarPickerScreen), findsOneWidget);
-    expect(calls, isEmpty);
+    await tester.pumpAndSettle();
+    final screen =
+        tester.widget<MediaPickerScreen>(find.byType(MediaPickerScreen));
+    expect(screen.cropAvatar, true);
+    expect(screen.library.type, RequestType.image);
     tester
-        .widget<NativeAvatarHeader>(find.byType(NativeAvatarHeader))
+        .widget<NativeMediaHeader>(find.byType(NativeMediaHeader))
         .onCancel!();
     await tester.pumpAndSettle();
     expect(await pending, isNull);
   });
+
+  test('attachment export keeps original bytes and the native MIME type',
+      () async {
+    final directory = await Directory.systemTemp.createTemp('media-export-');
+    try {
+      for (final mime in ['image/png', 'image/gif', 'video/quicktime']) {
+        final bytes = [1, 2, 3, 4];
+        final original =
+            await File('${directory.path}/source').writeAsBytes(bytes);
+        final asset = _OriginalAsset(original, mime);
+        final result = await const MediaLibrary(type: RequestType.common)
+            .attachment(asset);
+        expect(result.path, original.path);
+        expect(result.mimeType, mime);
+        expect(await result.readAsBytes(), bytes);
+      }
+    } finally {
+      await directory.delete(recursive: true);
+    }
+  });
 }
 
-Future<File> _photo(Directory directory, int width, int height) async {
-  final recorder = ui.PictureRecorder();
-  Canvas(recorder).drawRect(
-      Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
-      Paint()..color = Colors.blue);
-  final picture = recorder.endRecording();
-  final image = await picture.toImage(width, height);
-  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-  image.dispose();
-  picture.dispose();
-  return File('${directory.path}/$width-$height.png')
-      .writeAsBytes(bytes!.buffer.asUint8List());
+class _OriginalAsset extends AssetEntity {
+  _OriginalAsset(this.original, this.nativeMimeType)
+      : super(
+            id: 'original',
+            typeInt: nativeMimeType.startsWith('video/') ? 2 : 1,
+            width: 90,
+            height: 160);
+  final File original;
+  final String nativeMimeType;
+
+  @override
+  Future<File?> get originFile async => original;
+  @override
+  Future<String?> get mimeTypeAsync async => nativeMimeType;
+  @override
+  Future<File?> get file =>
+      throw StateError('Attachments must use the full original file');
 }

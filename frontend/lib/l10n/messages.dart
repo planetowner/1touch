@@ -742,6 +742,19 @@ const appMessages = <String, MessageTranslations>{
   "Terms of Service": (ko: "이용약관", ja: "利用規約", zh: "服务条款"),
   "Choose from Photos": (ko: "사진에서 선택", ja: "写真から選択", zh: "从照片中选择"),
   "Profile photo": (ko: "프로필 사진", ja: "プロフィール写真", zh: "头像"),
+  "Photos and videos": (ko: "사진 및 동영상", ja: "写真と動画", zh: "照片和视频"),
+  "Recent items": (ko: "최근 항목", ja: "最近の項目", zh: "最近项目"),
+  "Video": (ko: "동영상", ja: "動画", zh: "视频"),
+  "Only selected photos and videos are visible.": (
+    ko: "허용한 사진과 동영상만 표시돼요.",
+    ja: "許可した写真と動画のみ表示されます。",
+    zh: "仅显示已允许访问的照片和视频。"
+  ),
+  "Allow photo and video access to add attachments.": (
+    ko: "첨부할 사진과 동영상을 고르려면 접근을 허용해 주세요.",
+    ja: "添付する写真と動画を選ぶにはアクセスを許可してください。",
+    zh: "请允许访问照片和视频以添加附件。"
+  ),
   "Recent photos": (ko: "최근 항목", ja: "最近の項目", zh: "最近项目"),
   "Photo albums": (ko: "사진첩", ja: "アルバム", zh: "相簿"),
   "All albums": (ko: "모든 사진첩", ja: "すべてのアルバム", zh: "所有相簿"),

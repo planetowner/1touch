@@ -8,9 +8,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:insta_assets_crop/insta_assets_crop.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/features/media/avatar_photo_library.dart';
-import 'package:onetouch/features/media/avatar_picker_screen.dart';
-import 'package:onetouch/features/media/native_avatar_header.dart';
+import 'package:onetouch/features/media/media_library.dart';
+import 'package:onetouch/features/media/media_picker_screen.dart';
+import 'package:onetouch/features/media/native_media_header.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 void main() {
@@ -62,9 +62,9 @@ void main() {
     await tester.runAsync(() async {
       for (var i = 0; i < 50; i++) {
         await tester.pump();
-        if (find.byType(NativeAvatarHeader).evaluate().isNotEmpty &&
+        if (find.byType(NativeMediaHeader).evaluate().isNotEmpty &&
             tester
-                    .widget<NativeAvatarHeader>(find.byType(NativeAvatarHeader))
+                    .widget<NativeMediaHeader>(find.byType(NativeMediaHeader))
                     .onDone !=
                 null) {
           return;
@@ -75,10 +75,12 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> mount(WidgetTester tester,
+  Future<void> mount<T>(WidgetTester tester,
       {Brightness brightness = Brightness.light,
       Size size = const Size(390, 844),
-      void Function(XFile?)? result}) async {
+      bool attachments = false,
+      int maxAssets = 3,
+      void Function(T?)? result}) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -89,10 +91,12 @@ void main() {
       home: Builder(
           builder: (context) => TextButton(
                 onPressed: () async {
-                  final file = await Navigator.of(context).push<XFile>(
+                  final file = await Navigator.of(context).push<T>(
                       MaterialPageRoute(
-                          builder: (_) =>
-                              AvatarPickerScreen(library: library)));
+                          builder: (_) => attachments
+                              ? MediaPickerScreen.attachments(
+                                  library: library, maxAssets: maxAssets)
+                              : MediaPickerScreen(library: library)));
                   result?.call(file);
                 },
                 child: const Text('OPEN'),
@@ -104,8 +108,154 @@ void main() {
 
   CropState crop(WidgetTester tester) =>
       tester.state<CropState>(find.byType(Crop));
-  NativeAvatarHeader header(WidgetTester tester) =>
-      tester.widget<NativeAvatarHeader>(find.byType(NativeAvatarHeader));
+  NativeMediaHeader header(WidgetTester tester) =>
+      tester.widget<NativeMediaHeader>(find.byType(NativeMediaHeader));
+
+  String? selectionOrder(WidgetTester tester, String id) {
+    final badge = find.byKey(ValueKey('media-selection-$id'));
+    if (badge.evaluate().isEmpty) return null;
+    return tester
+        .widget<Text>(find.descendant(of: badge, matching: find.byType(Text)))
+        .data;
+  }
+
+  testWidgets('attachments keep mixed media in tap order without cropping',
+      (tester) async {
+    await prepare(tester);
+    library.videoIds.add('photo-1');
+    List<XFile>? result;
+    await mount<List<XFile>>(tester,
+        attachments: true, result: (files) => result = files);
+    expect(header(tester).onDone, isNull);
+    expect(find.byType(Crop), findsNothing);
+    expect(find.text('Photos and videos'), findsOneWidget);
+    expect(find.text('1:05'), findsOneWidget);
+    expect(find.byIcon(Icons.camera_alt_outlined), findsNothing);
+
+    for (final id in ['photo-2', 'photo-1', 'photo-0']) {
+      await tester.tap(find.byKey(ValueKey(id)));
+      await settlePhoto(tester);
+    }
+    expect(selectionOrder(tester, 'photo-2'), '1');
+    expect(selectionOrder(tester, 'photo-1'), '2');
+    expect(selectionOrder(tester, 'photo-0'), '3');
+    header(tester).onDone!();
+    await tester.pumpAndSettle();
+    expect(library.attachmentRequests, ['photo-2', 'photo-1', 'photo-0']);
+    expect(result!.map((file) => file.mimeType),
+        ['image/png', 'video/mp4', 'image/png']);
+    expect(cropCalls, isEmpty);
+    expect(library.fileRequests, isEmpty);
+  });
+
+  testWidgets('attachment limit, deselection and reselection preserve order',
+      (tester) async {
+    await prepare(tester);
+    await mount(tester, attachments: true, maxAssets: 2);
+    for (final id in ['photo-0', 'photo-1', 'photo-2']) {
+      await tester.tap(find.byKey(ValueKey(id)));
+      await settlePhoto(tester);
+    }
+    expect(find.text('You can attach up to 2 files.'), findsOneWidget);
+    expect(selectionOrder(tester, 'photo-2'), isNull);
+    await tester.tap(find.byKey(const ValueKey('photo-0')));
+    await settlePhoto(tester);
+    expect(selectionOrder(tester, 'photo-1'), '1');
+    await tester.tap(find.byKey(const ValueKey('photo-0')));
+    await settlePhoto(tester);
+    expect(selectionOrder(tester, 'photo-0'), '2');
+    for (final id in ['photo-1', 'photo-0']) {
+      await tester.tap(find.byKey(ValueKey(id)));
+      await tester.pumpAndSettle();
+    }
+    expect(header(tester).onDone, isNull);
+  });
+
+  testWidgets(
+      'one remaining slot accepts a video and cancellation exports nothing',
+      (tester) async {
+    await prepare(tester);
+    library.videoIds.add('photo-1');
+    var returned = false;
+    await mount<List<XFile>>(tester, attachments: true, maxAssets: 1,
+        result: (files) {
+      returned = true;
+      expect(files, isNull);
+    });
+    await tester.tap(find.byKey(const ValueKey('photo-1')));
+    await settlePhoto(tester);
+    expect(header(tester).onDone, isNotNull);
+    expect(selectionOrder(tester, 'photo-1'), '1');
+    header(tester).onCancel!();
+    await tester.pumpAndSettle();
+    expect(returned, true);
+    expect(library.attachmentRequests, isEmpty);
+  });
+
+  testWidgets('album changes retain attachment selection', (tester) async {
+    await prepare(tester);
+    await mount(tester, attachments: true);
+    await tester.tap(find.byKey(const ValueKey('photo-1')));
+    await settlePhoto(tester);
+    await tester.tap(find.byKey(const ValueKey('avatar-album-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('All albums'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Travel'));
+    await tester.pumpAndSettle();
+    expect(library.pages.last.$1, 'travel');
+    expect(selectionOrder(tester, 'photo-1'), '1');
+    expect(header(tester).onDone, isNotNull);
+  });
+
+  testWidgets(
+      'attachment export waits once and failures keep selection for retry',
+      (tester) async {
+    await prepare(tester);
+    List<XFile>? result;
+    await mount<List<XFile>>(tester,
+        attachments: true, result: (files) => result = files);
+    await tester.tap(find.byKey(const ValueKey('photo-0')));
+    await settlePhoto(tester);
+    final pending = Completer<XFile>();
+    library.pendingAttachments['photo-0'] = pending.future;
+    final save = header(tester).onDone!;
+    save();
+    save();
+    await tester.pump();
+    expect(library.attachmentRequests, ['photo-0']);
+    expect(header(tester).saving, true);
+    expect(header(tester).onCancel, isNull);
+    pending.completeError(const FileSystemException('Unavailable'));
+    await tester.pumpAndSettle();
+    expect(result, isNull);
+    expect(find.text('Unable to add attachments. Please try again.'),
+        findsOneWidget);
+    expect(selectionOrder(tester, 'photo-0'), '1');
+    library.pendingAttachments.clear();
+    header(tester).onDone!();
+    await tester.pumpAndSettle();
+    expect(result, hasLength(1));
+    expect(cropCalls, isEmpty);
+  });
+
+  testWidgets('changed limited access clears selected attachments',
+      (tester) async {
+    await prepare(tester);
+    library.permission = PermissionState.limited;
+    await mount(tester, attachments: true);
+    await tester.tap(find.byKey(const ValueKey('photo-0')));
+    await settlePhoto(tester);
+    expect(header(tester).onDone, isNotNull);
+    expect(find.text('Only selected photos and videos are visible.'),
+        findsOneWidget);
+    library.permission = PermissionState.denied;
+    await tester.tap(find.text('Manage photos'));
+    await tester.pumpAndSettle();
+    expect(header(tester).onDone, isNull);
+    expect(find.text('Allow photo and video access to add attachments.'),
+        findsOneWidget);
+  });
 
   testWidgets('album outer edge follows native X inside the same safe area',
       (tester) async {
@@ -122,7 +272,7 @@ void main() {
       for (final iconLeft in [18.333, 26.5, 20.25]) {
         header(tester).onCloseIconLeftMeasured!(iconLeft);
         await tester.pump();
-        final headerLeft = tester.getRect(find.byType(NativeAvatarHeader)).left;
+        final headerLeft = tester.getRect(find.byType(NativeMediaHeader)).left;
         expect(headerLeft, safeLeft);
         expect(tester.getRect(menu).left, closeTo(headerLeft + iconLeft, .001));
         expect(crop(tester), same(cropState));
@@ -142,7 +292,7 @@ void main() {
         find.byKey(const ValueKey('avatar-selected-overlay')), findsOneWidget);
     final original = crop(tester).area!;
     final state = crop(tester);
-    final headerRect = tester.getRect(find.byType(NativeAvatarHeader));
+    final headerRect = tester.getRect(find.byType(NativeMediaHeader));
     await tester.drag(find.byType(Crop), const Offset(0, -65));
     await tester.pumpAndSettle();
     final moved = crop(tester).area!;
@@ -155,7 +305,7 @@ void main() {
     await tester.dragFrom(const Offset(180, 760), const Offset(0, -580));
     await tester.pumpAndSettle();
     expect(scroll.offset, greaterThan(300));
-    expect(tester.getRect(find.byType(NativeAvatarHeader)), headerRect);
+    expect(tester.getRect(find.byType(NativeMediaHeader)), headerRect);
     await tester.dragFrom(const Offset(180, 450), const Offset(0, 800));
     await tester.pumpAndSettle();
     expect(scroll.offset, 0);
@@ -187,7 +337,7 @@ void main() {
     await prepare(tester);
     await mount(tester);
     await tester.runAsync(() => precacheImage(MemoryImage(library.bytes),
-        tester.element(find.byType(AvatarPickerScreen))));
+        tester.element(find.byType(MediaPickerScreen))));
     final preview = Completer<Uint8List?>();
     library.previews['photo-1'] = preview.future;
     final oldArea = crop(tester).area!;
@@ -217,7 +367,7 @@ void main() {
     final upgradedBytes = Uint8List.fromList(library.bytes);
     preview.complete(upgradedBytes);
     await tester.runAsync(() => precacheImage(MemoryImage(upgradedBytes),
-        tester.element(find.byType(AvatarPickerScreen))));
+        tester.element(find.byType(MediaPickerScreen))));
     await tester.pumpAndSettle();
     final image = tester.widget<Image>(
         find.descendant(of: find.byType(Crop), matching: find.byType(Image)));
@@ -263,7 +413,7 @@ void main() {
       (tester) async {
     await prepare(tester);
     XFile? result;
-    await mount(tester, result: (file) => result = file);
+    await mount<XFile>(tester, result: (file) => result = file);
     await tester.drag(find.byType(Crop), const Offset(0, -60));
     await tester.pumpAndSettle();
     final area = crop(tester).area!;
@@ -329,7 +479,7 @@ void main() {
   testWidgets('cancel returns no file and does not export', (tester) async {
     await prepare(tester);
     var returned = false;
-    await mount(tester, result: (file) {
+    await mount<XFile>(tester, result: (file) {
       returned = true;
       expect(file, isNull);
     });
@@ -430,7 +580,7 @@ void main() {
         (tester) async {
       await prepare(tester);
       await mount(tester, size: const Size(320, 568), brightness: brightness);
-      final context = tester.element(find.byType(AvatarPickerScreen));
+      final context = tester.element(find.byType(MediaPickerScreen));
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
       expect(scaffold.backgroundColor, AppColors.of(context).pageBackground);
       expect(tester.takeException(), isNull);
@@ -439,7 +589,7 @@ void main() {
   }
 }
 
-class _Library extends AvatarPhotoLibrary {
+class _Library extends MediaLibrary {
   _Library(this.source, this.bytes);
   final File source;
   final Uint8List bytes;
@@ -448,6 +598,9 @@ class _Library extends AvatarPhotoLibrary {
   final pending = <String, Future<File?>>{};
   final previews = <String, Future<Uint8List?>>{};
   final fileRequests = <String>[];
+  final videoIds = <String>{};
+  final attachmentRequests = <String>[];
+  final pendingAttachments = <String, Future<XFile>>{};
   int managed = 0;
   File? cameraPhoto;
   int cameraCalls = 0;
@@ -467,7 +620,8 @@ class _Library extends AvatarPhotoLibrary {
         page == 0 ? 80 : 12,
         (index) => AssetEntity(
               id: 'photo-${page * 80 + index}',
-              typeInt: 1,
+              typeInt: videoIds.contains('photo-${page * 80 + index}') ? 2 : 1,
+              duration: 65,
               width: 180,
               height: 320,
             ));
@@ -480,6 +634,15 @@ class _Library extends AvatarPhotoLibrary {
   Future<File?> file(AssetEntity photo) {
     fileRequests.add(photo.id);
     return pending[photo.id] ?? Future.value(source);
+  }
+
+  @override
+  Future<XFile> attachment(AssetEntity asset) {
+    attachmentRequests.add(asset.id);
+    return pendingAttachments[asset.id] ??
+        Future.value(XFile(source.path,
+            mimeType:
+                asset.type == AssetType.video ? 'video/mp4' : 'image/png'));
   }
 
   @override

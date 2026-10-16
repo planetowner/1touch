@@ -5,25 +5,27 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 /// 버튼의 모양과 크기는 OS에 맡기고, 제목은 앱의 공통 서체를 사용해요.
-class NativeAvatarHeader extends StatefulWidget {
-  const NativeAvatarHeader({
+class NativeMediaHeader extends StatefulWidget {
+  const NativeMediaHeader({
     super.key,
     required this.onCancel,
     required this.onDone,
     required this.saving,
+    this.title = 'Profile photo',
     this.onCloseIconLeftMeasured,
   });
 
   final VoidCallback? onCancel;
   final VoidCallback? onDone;
   final bool saving;
+  final String title;
   final ValueChanged<double>? onCloseIconLeftMeasured;
 
   @override
-  State<NativeAvatarHeader> createState() => _NativeAvatarHeaderState();
+  State<NativeMediaHeader> createState() => _NativeMediaHeaderState();
 }
 
-class _NativeAvatarHeaderState extends State<NativeAvatarHeader> {
+class _NativeMediaHeaderState extends State<NativeMediaHeader> {
   MethodChannel? _channel;
   double _height = kToolbarHeight;
   double _titleCenterY = kToolbarHeight / 2;
@@ -107,7 +109,7 @@ class _NativeAvatarHeaderState extends State<NativeAvatarHeader> {
                         dimension: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(tr(context, 'Profile photo'),
+                    : Text(tr(context, widget.title),
                         style: Heading5.style,
                         // 글꼴 토큰은 유지하고, 한 줄 바깥의 행간만 정렬에서 제외해요.
                         textHeightBehavior: const TextHeightBehavior(

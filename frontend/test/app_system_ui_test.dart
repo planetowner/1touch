@@ -5,9 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/app_system_ui.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
-import 'package:onetouch/features/media/avatar_picker_screen.dart';
-import 'package:onetouch/features/media/avatar_photo_library.dart';
-import 'package:onetouch/features/media/native_avatar_header.dart';
+import 'package:onetouch/features/media/media_picker_screen.dart';
+import 'package:onetouch/features/media/media_library.dart';
+import 'package:onetouch/features/media/native_media_header.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:onetouch/rank_fav_teams.dart';
 
@@ -107,7 +107,7 @@ void main() {
         Navigator.of(pageContext).push(MaterialPageRoute<void>(
           builder: (_) => Theme(
             data: theme.copyWith(platform: TargetPlatform.linux),
-            child: const AvatarPickerScreen(library: _DeniedPhotoLibrary()),
+            child: const MediaPickerScreen(library: _DeniedPhotoLibrary()),
           ),
         ));
         await tester.pumpAndSettle();
@@ -115,7 +115,7 @@ void main() {
         expect(await pixels('avatar-picker'),
             [avatarBackground, avatarBackground]);
         expect(statusIcons(), normalIcons);
-        expect(tester.getRect(find.byType(NativeAvatarHeader)).top,
+        expect(tester.getRect(find.byType(NativeMediaHeader)).top,
             greaterThanOrEqualTo(inset));
         Navigator.of(pageContext).pop();
         await tester.pumpAndSettle();
@@ -144,7 +144,7 @@ void main() {
   }
 }
 
-class _DeniedPhotoLibrary extends AvatarPhotoLibrary {
+class _DeniedPhotoLibrary extends MediaLibrary {
   const _DeniedPhotoLibrary();
   @override
   Future<PermissionState> requestAccess() async => PermissionState.denied;

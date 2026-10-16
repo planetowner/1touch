@@ -55,7 +55,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Browse your photos and albums to choose a profile photo in 1touch.</string>
+	<string>Browse photos and videos to choose a profile photo or attach media to community posts.</string>
 	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>

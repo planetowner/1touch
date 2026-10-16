@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/features/media/native_avatar_header.dart';
+import 'package:onetouch/features/media/native_media_header.dart';
 
 void main() {
   for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
@@ -55,7 +55,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         theme: whitetheme.copyWith(platform: platform),
         home: Scaffold(
-          body: NativeAvatarHeader(
+          body: NativeMediaHeader(
               onCancel: () {},
               onDone: () {},
               saving: false,
@@ -69,7 +69,7 @@ void main() {
 
       // 바 높이의 절반과 버튼 행의 중심이 달라도 네이티브 배치가 기준이에요.
       await layout(64, 24, 18.333);
-      expect(tester.getRect(find.byType(NativeAvatarHeader)).height, 64);
+      expect(tester.getRect(find.byType(NativeMediaHeader)).height, 64);
       expect(tester.getCenter(title).dy, 24);
       await layout(56, 28, 26.5);
       expect(tester.getCenter(title).dy, 28);

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:cross_file/cross_file.dart';
 import 'package:insta_assets_crop/insta_assets_crop.dart';
 import 'package:onetouch/core/app_action_button.dart';
 import 'package:onetouch/core/app_close_header.dart';
@@ -13,22 +14,32 @@ import 'package:onetouch/core/app_system_ui.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/media/avatar_crop_editor.dart';
-import 'package:onetouch/features/media/avatar_photo_library.dart';
-import 'package:onetouch/features/media/native_avatar_header.dart';
+import 'package:onetouch/features/media/media_library.dart';
+import 'package:onetouch/features/media/native_media_header.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-class AvatarPickerScreen extends StatefulWidget {
-  const AvatarPickerScreen(
-      {super.key, this.library = const AvatarPhotoLibrary()});
+class MediaPickerScreen extends StatefulWidget {
+  const MediaPickerScreen({super.key, this.library = const MediaLibrary()})
+      : cropAvatar = true,
+        maxAssets = 1;
 
-  final AvatarPhotoLibrary library;
+  const MediaPickerScreen.attachments({
+    super.key,
+    required this.maxAssets,
+    this.library = const MediaLibrary(type: RequestType.common),
+  })  : assert(maxAssets > 0),
+        cropAvatar = false;
+
+  final MediaLibrary library;
+  final bool cropAvatar;
+  final int maxAssets;
 
   @override
-  State<AvatarPickerScreen> createState() => _AvatarPickerScreenState();
+  State<MediaPickerScreen> createState() => _MediaPickerScreenState();
 }
 
-class _AvatarPickerScreenState extends State<AvatarPickerScreen>
+class _MediaPickerScreenState extends State<MediaPickerScreen>
     with WidgetsBindingObserver {
   final _cropKey = GlobalKey<CropState>();
   final _scroll = ScrollController();
@@ -40,6 +51,7 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
   ImageProvider? _preview;
   Size? _imageSize;
   AssetEntity? _selectedPhoto;
+  final _attachments = <AssetEntity>[];
   int _selection = 0;
   int _albumGeneration = 0;
   int _page = 0;
@@ -85,6 +97,8 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
       _preview = null;
       _imageSize = null;
       _selectedPhoto = null;
+      // 접근 권한이 달라지면 이전 선택을 버리고 허용된 목록부터 다시 보여줘요.
+      _attachments.clear();
       _loadingPhoto = false;
     });
     try {
@@ -143,7 +157,7 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
       setState(() {
         _photos.addAll(photos);
         _page++;
-        _hasMore = photos.length == AvatarPhotoLibrary.pageSize;
+        _hasMore = photos.length == MediaLibrary.pageSize;
         _loadingPage = false;
       });
     } on Object {
@@ -191,6 +205,28 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
     } on Object {
       _photoFailed(selection);
     }
+  }
+
+  void _toggleAttachment(AssetEntity asset, Uint8List? thumbnail) {
+    if (_saving) return;
+    final index =
+        _attachments.indexWhere((selected) => selected.id == asset.id);
+    if (index >= 0) {
+      setState(() => _attachments.removeAt(index));
+      if (_selectedPhoto?.id == asset.id && _attachments.isNotEmpty) {
+        _selectPhoto(_attachments.last);
+      }
+      return;
+    }
+    if (_attachments.length == widget.maxAssets) {
+      showAppSnackBar(
+          context,
+          tr(context, 'You can attach up to {count} files.',
+              {'count': widget.maxAssets}));
+      return;
+    }
+    setState(() => _attachments.add(asset));
+    _selectPhoto(asset, thumbnail: thumbnail);
   }
 
   int _beginSelection(
@@ -263,6 +299,24 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
   }
 
   Future<void> _save() async {
+    if (!widget.cropAvatar) {
+      if (_saving || _attachments.isEmpty) return;
+      setState(() => _saving = true);
+      try {
+        final files = <XFile>[];
+        // 선택한 순서를 유지하고, 모두 준비된 뒤 한 번에 첨부해요.
+        for (final asset in _attachments) {
+          files.add(await widget.library.attachment(asset));
+          if (!mounted) return;
+        }
+        if (mounted) Navigator.of(context).pop(files);
+      } on Object {
+        if (!mounted) return;
+        setState(() => _saving = false);
+        _showError();
+      }
+      return;
+    }
     final area = _cropKey.currentState?.area;
     if (_saving || _loadingPhoto || _preview == null || area == null) return;
     setState(() => _saving = true);
@@ -280,8 +334,13 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
     }
   }
 
-  void _showError() => showAppSnackBar(context,
-      tr(context, 'Unable to update profile photo. Please try again.'));
+  void _showError() => showAppSnackBar(
+      context,
+      tr(
+          context,
+          widget.cropAvatar
+              ? 'Unable to update profile photo. Please try again.'
+              : 'Unable to add attachments. Please try again.'));
 
   Future<void> _manageAccess() async {
     try {
@@ -292,8 +351,11 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
     }
   }
 
+  String get _recentLabel =>
+      tr(context, widget.cropAvatar ? 'Recent photos' : 'Recent items');
+
   String _albumName(AssetPathEntity album) =>
-      album.isAll ? tr(context, 'Recent photos') : album.name;
+      album.isAll ? _recentLabel : album.name;
 
   Future<void> _showAlbums() async {
     final selected = await showModalBottomSheet<AssetPathEntity>(
@@ -363,9 +425,8 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
                   child: AppDropdown<String>(
                     triggerKey: const ValueKey('avatar-album-menu'),
                     value: _album?.id,
-                    selectedLabel: _album == null
-                        ? tr(context, 'Recent photos')
-                        : _albumName(_album!),
+                    selectedLabel:
+                        _album == null ? _recentLabel : _albumName(_album!),
                     maxMenuHeight: 280,
                     options: [
                       for (final album in shortcuts)
@@ -396,7 +457,11 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
                 child: Row(children: [
                   Expanded(
                       child: Text(
-                          tr(context, 'Only selected photos are visible.'),
+                          tr(
+                              context,
+                              widget.cropAvatar
+                                  ? 'Only selected photos are visible.'
+                                  : 'Only selected photos and videos are visible.'),
                           style: Body2.style,
                           maxLines: 2)),
                   TextButton(
@@ -433,19 +498,27 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
                 // 사진 목록은 홈 표시줄 뒤까지 이어지고, 상단 버튼은 안전영역을 지켜요.
                 bottom: false,
                 child: Column(children: [
-              NativeAvatarHeader(
-                onCancel: _saving ? null : () => Navigator.of(context).pop(),
-                onDone:
-                    _saving || _loadingPhoto || _preview == null ? null : _save,
-                saving: _saving,
-                onCloseIconLeftMeasured: (left) {
-                  // Android가 측정한 X 그림의 왼쪽 끝을 앨범 버튼도 함께 써요.
-                  if (_albumLeft != left) setState(() => _albumLeft = left);
-                },
-              ),
-              Expanded(
-                  child: AbsorbPointer(absorbing: _saving, child: _body())),
-            ])),
+                  NativeMediaHeader(
+                    title: widget.cropAvatar
+                        ? 'Profile photo'
+                        : 'Photos and videos',
+                    onCancel:
+                        _saving ? null : () => Navigator.of(context).pop(),
+                    onDone: _saving ||
+                            (widget.cropAvatar
+                                ? _loadingPhoto || _preview == null
+                                : _attachments.isEmpty)
+                        ? null
+                        : _save,
+                    saving: _saving,
+                    onCloseIconLeftMeasured: (left) {
+                      // Android가 측정한 X 그림의 왼쪽 끝을 앨범 버튼도 함께 써요.
+                      if (_albumLeft != left) setState(() => _albumLeft = left);
+                    },
+                  ),
+                  Expanded(
+                      child: AbsorbPointer(absorbing: _saving, child: _body())),
+                ])),
           ),
         ),
       );
@@ -457,7 +530,10 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
           action: 'Retry', onAction: _loadLibrary);
     }
     if (_access?.hasAccess != true) {
-      return _notice('Allow photo access to choose a profile photo.',
+      return _notice(
+          widget.cropAvatar
+              ? 'Allow photo access to choose a profile photo.'
+              : 'Allow photo and video access to add attachments.',
           action: 'Open settings', onAction: () async {
         _refreshOnResume = true;
         await widget.library.openSettings();
@@ -471,16 +547,28 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
         child: _loadingPhoto
             ? const Center(child: CircularProgressIndicator())
             : _preview != null && _imageSize != null
-                ? AvatarCropEditor(
-                    key: ValueKey(_selection),
-                    cropKey: _cropKey,
-                    imageSize: _imageSize!,
-                    image: Image(
+                ? widget.cropAvatar
+                    ? AvatarCropEditor(
                         key: ValueKey(_selection),
-                        image: _preview!,
-                        fit: BoxFit.fill,
-                        gaplessPlayback: true),
-                  )
+                        cropKey: _cropKey,
+                        imageSize: _imageSize!,
+                        image: Image(
+                            key: ValueKey(_selection),
+                            image: _preview!,
+                            fit: BoxFit.fill,
+                            gaplessPlayback: true),
+                      )
+                    : Stack(fit: StackFit.expand, children: [
+                        Image(
+                            image: _preview!,
+                            fit: BoxFit.contain,
+                            gaplessPlayback: true),
+                        if (_selectedPhoto?.type == AssetType.video)
+                          Positioned(
+                              right: 8,
+                              bottom: 8,
+                              child: _VideoDuration(asset: _selectedPhoto!)),
+                      ])
                 : _notice('Choose from Photos'),
       );
       return Stack(clipBehavior: Clip.hardEdge, children: [
@@ -511,7 +599,7 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
                       mainAxisSpacing: 2,
                       crossAxisSpacing: 2),
                   delegate: SliverChildBuilderDelegate((context, index) {
-                    if (index == 0) {
+                    if (widget.cropAvatar && index == 0) {
                       return Material(
                         color: AppColors.of(context).subtleBackground,
                         child: InkWell(
@@ -523,16 +611,26 @@ class _AvatarPickerScreenState extends State<AvatarPickerScreen>
                                     size: 28))),
                       );
                     }
-                    final photo = _photos[index - 1];
+                    final photo = _photos[index - (widget.cropAvatar ? 1 : 0)];
+                    final order = _attachments
+                        .indexWhere((asset) => asset.id == photo.id);
                     return _PhotoTile(
                       key: ValueKey(photo.id),
                       photo: photo,
                       library: widget.library,
-                      selected: photo.id == _selectedPhoto?.id,
-                      onTap: (thumbnail) =>
-                          _selectPhoto(photo, thumbnail: thumbnail),
+                      selected: widget.cropAvatar
+                          ? photo.id == _selectedPhoto?.id
+                          : order >= 0,
+                      selectionOrder: order < 0 ? null : order + 1,
+                      onTap: (thumbnail) {
+                        if (widget.cropAvatar) {
+                          _selectPhoto(photo, thumbnail: thumbnail);
+                        } else {
+                          _toggleAttachment(photo, thumbnail);
+                        }
+                      },
                     );
-                  }, childCount: _photos.length + 1),
+                  }, childCount: _photos.length + (widget.cropAvatar ? 1 : 0)),
                 ),
                 if (_loadingPage)
                   const SliverToBoxAdapter(
@@ -590,10 +688,12 @@ class _PhotoTile extends StatefulWidget {
       required this.photo,
       required this.library,
       required this.selected,
+      this.selectionOrder,
       required this.onTap});
   final AssetEntity photo;
-  final AvatarPhotoLibrary library;
+  final MediaLibrary library;
   final bool selected;
+  final int? selectionOrder;
   final ValueChanged<Uint8List?> onTap;
   @override
   State<_PhotoTile> createState() => _PhotoTileState();
@@ -605,7 +705,9 @@ class _PhotoTileState extends State<_PhotoTile> {
 
   @override
   Widget build(BuildContext context) => Semantics(
-        label: tr(context, 'Photo'),
+        label: tr(
+            context, widget.photo.type == AssetType.video ? 'Video' : 'Photo'),
+        value: widget.selectionOrder?.toString(),
         selected: widget.selected,
         button: true,
         child: Material(
@@ -627,7 +729,56 @@ class _PhotoTileState extends State<_PhotoTile> {
                           color: Color(0x99FFFFFF),
                         ),
                       ),
+                    if (widget.selectionOrder != null)
+                      Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            key: ValueKey('media-selection-${widget.photo.id}'),
+                            constraints: const BoxConstraints(
+                                minWidth: 24, minHeight: 24),
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Text('${widget.selectionOrder}',
+                                style: Body2_b.style.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimary)),
+                          )),
+                    if (widget.photo.type == AssetType.video)
+                      Positioned(
+                          right: 4,
+                          bottom: 4,
+                          child: _VideoDuration(asset: widget.photo)),
                   ]))),
         ),
       );
+}
+
+class _VideoDuration extends StatelessWidget {
+  const _VideoDuration({required this.asset});
+  final AssetEntity asset;
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = asset.videoDuration;
+    final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
+    return DecoratedBox(
+      decoration: BoxDecoration(
+          color: AppPalette.black.withValues(alpha: .65),
+          borderRadius: BorderRadius.circular(4)),
+      child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(Icons.videocam_outlined,
+                size: 16, color: AppPalette.white),
+            const SizedBox(width: 4),
+            Text('${duration.inMinutes}:$seconds',
+                style: Body2.style.copyWith(color: AppPalette.white)),
+          ])),
+    );
+  }
 }
