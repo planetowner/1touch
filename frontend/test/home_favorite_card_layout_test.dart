@@ -117,7 +117,7 @@ void main() {
       );
       expect(delta.style?.fontSize, standing.style?.fontSize);
 
-      // 예정·지난 경기 모두 로고와 대회명을 표시하고, 긴 문구는 스크롤해요.
+      // 대회명은 스크롤하고, 날짜·시간은 중앙에 고정해 보여줘요.
       for (final (card, labels) in [
         (find.byType(MatchCard), ['프리미어리그 6R', dateLabel, '오전 11:30']),
         (find.byType(MatchCard2), ['프리미어리그 6R', '5주 전']),
@@ -140,14 +140,25 @@ void main() {
           final paragraph = tester.renderObject<RenderParagraph>(finder);
           expect(paragraph.maxLines, 1);
           expect(paragraph.didExceedMaxLines, isFalse, reason: label);
-          final viewport = find.ancestor(
-            of: finder,
-            matching: find.byType(OverflowScrollingText),
-          );
+          final viewport = find
+              .ancestor(
+                of: finder,
+                matching: find.byWidgetPredicate((widget) =>
+                    widget is OverflowScrollingText ||
+                    widget is FixtureDateTime),
+              )
+              .first;
           final rect = tester.getRect(viewport);
           expect(rect.left, greaterThanOrEqualTo(24));
           expect(rect.right, lessThanOrEqualTo(width - 24));
         }
+        expect(
+            find.descendant(
+              of: find.descendant(
+                  of: card, matching: find.byType(FixtureDateTime)),
+              matching: find.byType(Scrollable),
+            ),
+            findsNothing);
       }
       expect(tester.takeException(), isNull);
     });

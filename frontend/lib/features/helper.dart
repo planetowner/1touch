@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:clock/clock.dart' as time;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show OverflowBoxFit;
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
 import "package:onetouch/core/style.dart";
@@ -14,7 +15,6 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/match_status_labels.dart';
 import 'package:onetouch/features/match_info/live_match_motion.dart';
 import 'package:onetouch/features/competition/competition_label.dart';
-import 'package:onetouch/core/overflow_scrolling_text.dart';
 
 // Maps a team's id to its local crest file in TeamLogos/, used as the
 // fallback when the network image fails to load. Filenames don't follow a
@@ -450,7 +450,7 @@ class _MatchInfo extends StatelessWidget {
         FixtureDateTime(
           label: fixtureDateLabel(match!.kickoff,
               locale: Localizations.localeOf(context)),
-          scrollOnOverflow: true,
+          allowOverflow: true,
         ),
         const SizedBox(height: 8),
         Container(
@@ -656,10 +656,10 @@ class _LastMatchCompetitionInfo extends StatelessWidget {
         SizedBox(
           key: const ValueKey('last-match-date-time'),
           width: double.infinity,
-          child: OverflowScrollingText(
-            text: date,
-            style: dateTextStyle,
-            alignment: Alignment.center,
+          child: FixtureDateTime(
+            label: date,
+            textStyle: dateTextStyle,
+            allowOverflow: true,
           ),
         ),
         const SizedBox(height: 8),
@@ -691,7 +691,7 @@ class FixtureDateTime extends StatelessWidget {
     this.overflow = TextOverflow.ellipsis,
     this.maxLines = 1,
     this.softWrap = false,
-    this.scrollOnOverflow = false,
+    this.allowOverflow = false,
   });
 
   final String label;
@@ -699,28 +699,35 @@ class FixtureDateTime extends StatelessWidget {
   final TextOverflow overflow;
   final int maxLines;
   final bool softWrap;
-  final bool scrollOnOverflow;
+  final bool allowOverflow;
+
+  Widget _buildLine(String line) {
+    final text = Text(
+      line,
+      maxLines: maxLines,
+      softWrap: softWrap,
+      overflow: allowOverflow ? TextOverflow.visible : overflow,
+      textAlign: TextAlign.center,
+      style: textStyle ?? Body2.style,
+    );
+    if (!allowOverflow) return text;
+
+    // 경기 요약의 날짜·시간은 칸을 넘어도 글자 크기와 중앙 정렬을 유지해요.
+    return OverflowBox(
+      minWidth: 0,
+      maxWidth: double.infinity,
+      fit: OverflowBoxFit.deferToChild,
+      alignment: Alignment.center,
+      child: text,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (final line in label.split('\n'))
-          scrollOnOverflow
-              ? OverflowScrollingText(
-                  text: line,
-                  style: textStyle ?? Body2.style,
-                  alignment: Alignment.center,
-                )
-              : Text(
-                  line,
-                  maxLines: maxLines,
-                  softWrap: softWrap,
-                  overflow: overflow,
-                  textAlign: TextAlign.center,
-                  style: textStyle ?? Body2.style,
-                ),
+        for (final line in label.split('\n')) _buildLine(line),
       ],
     );
   }

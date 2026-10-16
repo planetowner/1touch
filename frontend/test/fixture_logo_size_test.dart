@@ -479,69 +479,108 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final width in [320.0, 430.0]) {
-    testWidgets('last-match date keeps its font at ${width.toInt()}px',
-        (tester) async {
-      tester.view.physicalSize = Size(width, 568);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(const MaterialApp(
-        home: Scaffold(
-          body: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24),
-            child: MatchCard2(
-              date: '2 days ago',
-              venue: '',
-              team1shortname: 'FCB',
-              team1Logo: '',
-              team1Id: 8,
-              team2shortname: 'FCU',
-              team2Logo: '',
-              team2Id: 19,
-              competitionId: 8,
-              competitionName: 'Premier League',
-              homeScore: 7,
-              awayScore: 0,
+  testWidgets('date and time stay centered beyond their shared slot',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: SizedBox(
+            width: 56,
+            child: FixtureDateTime(
+              label: 'Wed, Dec 30\n12:00 PM',
+              allowOverflow: true,
             ),
           ),
         ),
-      ));
+      ),
+    ));
 
-      final date = find.byKey(const ValueKey('last-match-date-time'));
-      final dateText = tester.widget<Text>(
-        find.descendant(of: date, matching: find.byType(Text)),
-      );
-      expect(dateText.data, '2 days ago');
-      expect(dateText.style?.fontSize, 14);
-      expect(dateText.maxLines, 1);
-      expect(dateText.softWrap, isFalse);
-      expect(dateText.overflow, TextOverflow.visible);
-      expect(find.descendant(of: date, matching: find.byType(FittedBox)),
-          findsNothing);
-      final dateScroller =
-          find.descendant(of: date, matching: find.byType(Scrollable));
-      if (width == 320) {
-        expect(dateScroller, findsOneWidget);
-        final scrollable = tester.state<ScrollableState>(dateScroller);
-        expect(scrollable.position.maxScrollExtent, greaterThan(0));
-        await tester.pump(const Duration(milliseconds: 800));
-        await tester.pump(const Duration(milliseconds: 800));
-        expect(scrollable.position.pixels, greaterThan(0));
-      } else {
+    final dateTime = find.byType(FixtureDateTime);
+    final center = tester.getCenter(dateTime).dx;
+    for (final label in ['Wed, Dec 30', '12:00 PM']) {
+      final text = find.text(label);
+      final initialRect = tester.getRect(text);
+      expect(initialRect.width, greaterThan(56));
+      expect(initialRect.center.dx, closeTo(center, 0.1));
+      await tester.pump(const Duration(seconds: 2));
+      expect(tester.getRect(text), initialRect);
+    }
+    expect(find.descendant(of: dateTime, matching: find.byType(Scrollable)),
+        findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final width in [320.0, 393.0, 402.0, 430.0]) {
+    for (final label in ['Today', '38 weeks ago', '100 weeks ago']) {
+      testWidgets(
+          'last-match date stays centered and still: $label at ${width.toInt()}px',
+          (tester) async {
+        tester.view.physicalSize = Size(width, 568);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: MatchCard2(
+                date: label,
+                venue: '',
+                team1shortname: 'FCB',
+                team1Logo: '',
+                team1Id: 8,
+                team2shortname: 'FCU',
+                team2Logo: '',
+                team2Id: 19,
+                competitionId: 8,
+                competitionName: 'Premier League',
+                homeScore: 1,
+                awayScore: 5,
+              ),
+            ),
+          ),
+        ));
+
+        final date = find.byKey(const ValueKey('last-match-date-time'));
+        final dateText = tester.widget<Text>(
+          find.descendant(of: date, matching: find.byType(Text)),
+        );
+        expect(dateText.data, label);
+        expect(dateText.style?.fontSize, 14);
+        expect(dateText.maxLines, 1);
+        expect(dateText.softWrap, isFalse);
+        expect(dateText.overflow, TextOverflow.visible);
+        expect(find.descendant(of: date, matching: find.byType(FittedBox)),
+            findsNothing);
+        final dateScroller =
+            find.descendant(of: date, matching: find.byType(Scrollable));
         expect(dateScroller, findsNothing);
-      }
-      final dateRect = tester.getRect(date);
-      final homeScoreRect =
-          tester.getRect(find.byKey(const ValueKey('last-match-home-score')));
-      final awayScoreRect =
-          tester.getRect(find.byKey(const ValueKey('last-match-away-score')));
-      expect(dateRect.left, greaterThanOrEqualTo(homeScoreRect.right));
-      expect(dateRect.right, lessThanOrEqualTo(awayScoreRect.left));
-      expect(dateRect.center.dx,
-          closeTo(tester.getCenter(find.byType(MatchCard2)).dx, 0.1));
-      expect(tester.takeException(), isNull);
-    });
+        final dateRect = tester.getRect(date);
+        final textFinder =
+            find.descendant(of: date, matching: find.byType(Text));
+        final textRect = tester.getRect(textFinder);
+        final paragraph = tester.renderObject<RenderBox>(textFinder);
+        expect(textRect.width,
+            closeTo(paragraph.getMaxIntrinsicWidth(double.infinity), 0.1));
+        expect(textRect.center.dx, closeTo(dateRect.center.dx, 0.1));
+        if ((width == 393 && label == '38 weeks ago') ||
+            (width <= 402 && label == '100 weeks ago')) {
+          expect(textRect.width, greaterThan(dateRect.width));
+        }
+        await tester.pump(const Duration(milliseconds: 800));
+        await tester.pump(const Duration(milliseconds: 800));
+        expect(tester.getRect(textFinder), textRect);
+        final homeScoreRect =
+            tester.getRect(find.byKey(const ValueKey('last-match-home-score')));
+        final awayScoreRect =
+            tester.getRect(find.byKey(const ValueKey('last-match-away-score')));
+        expect(dateRect.left, greaterThanOrEqualTo(homeScoreRect.right));
+        expect(dateRect.right, lessThanOrEqualTo(awayScoreRect.left));
+        expect(dateRect.center.dx,
+            closeTo(tester.getCenter(find.byType(MatchCard2)).dx, 0.1));
+        expect(tester.takeException(), isNull);
+      });
+    }
   }
 }
