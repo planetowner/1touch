@@ -7,7 +7,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/features/media/media_picker_screen.dart';
 import 'package:onetouch/features/media/media_library.dart';
-import 'package:onetouch/features/media/native_media_header.dart';
+import 'package:onetouch/features/media/media_picker_header.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:onetouch/rank_fav_teams.dart';
 
@@ -115,7 +115,7 @@ void main() {
         expect(await pixels('avatar-picker'),
             [avatarBackground, avatarBackground]);
         expect(statusIcons(), normalIcons);
-        expect(tester.getRect(find.byType(NativeMediaHeader)).top,
+        expect(tester.getRect(find.byType(MediaPickerHeader)).top,
             greaterThanOrEqualTo(inset));
         Navigator.of(pageContext).pop();
         await tester.pumpAndSettle();

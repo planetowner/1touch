@@ -20,8 +20,6 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        flutterEngine.platformViewsController.registry.registerViewFactory(
-            "onetouch/avatar_header", AvatarPickerHeaderFactory(flutterEngine.dartExecutor.binaryMessenger))
         mediaPickerBridge = MediaPickerBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         actionSheetBridge = NativeActionSheetBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         VideoEncoderBridge(this, flutterEngine.dartExecutor.binaryMessenger)

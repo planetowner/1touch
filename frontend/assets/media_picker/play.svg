@@ -1,0 +1,11 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="play_arrow">
+<mask id="mask0_0_25" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="40" height="40">
+<!-- Flutter가 마스크 밝기를 투명도로 해석하므로 흰색을 사용해요. -->
+<rect id="Bounding box" width="40" height="40" fill="#FFFFFF"/>
+</mask>
+<g mask="url(#mask0_0_25)">
+<path id="play_arrow_2" d="M11.0003 31.3333V8L29.3337 19.6667L11.0003 31.3333Z" fill="white"/>
+</g>
+</g>
+</svg>

@@ -10,7 +10,7 @@ import 'package:insta_assets_crop/insta_assets_crop.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/features/media/media_library.dart';
 import 'package:onetouch/features/media/media_picker_screen.dart';
-import 'package:onetouch/features/media/native_media_header.dart';
+import 'package:onetouch/features/media/media_picker_header.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 void main() {
@@ -62,9 +62,9 @@ void main() {
     await tester.runAsync(() async {
       for (var i = 0; i < 50; i++) {
         await tester.pump();
-        if (find.byType(NativeMediaHeader).evaluate().isNotEmpty &&
+        if (find.byType(MediaPickerHeader).evaluate().isNotEmpty &&
             tester
-                    .widget<NativeMediaHeader>(find.byType(NativeMediaHeader))
+                    .widget<MediaPickerHeader>(find.byType(MediaPickerHeader))
                     .onDone !=
                 null) {
           return;
@@ -108,12 +108,14 @@ void main() {
 
   CropState crop(WidgetTester tester) =>
       tester.state<CropState>(find.byType(Crop));
-  NativeMediaHeader header(WidgetTester tester) =>
-      tester.widget<NativeMediaHeader>(find.byType(NativeMediaHeader));
+  MediaPickerHeader header(WidgetTester tester) =>
+      tester.widget<MediaPickerHeader>(find.byType(MediaPickerHeader));
 
   String? selectionOrder(WidgetTester tester, String id) {
     final badge = find.byKey(ValueKey('media-selection-$id'));
     if (badge.evaluate().isEmpty) return null;
+    final text = find.descendant(of: badge, matching: find.byType(Text));
+    if (text.evaluate().isEmpty) return null;
     return tester
         .widget<Text>(find.descendant(of: badge, matching: find.byType(Text)))
         .data;
@@ -128,9 +130,10 @@ void main() {
         attachments: true, result: (files) => result = files);
     expect(header(tester).onDone, isNull);
     expect(find.byType(Crop), findsNothing);
-    expect(find.text('Photos and videos'), findsOneWidget);
-    expect(find.text('1:05'), findsOneWidget);
-    expect(find.byIcon(Icons.camera_alt_outlined), findsNothing);
+    expect(find.text('Photos & Videos'), findsOneWidget);
+    expect(find.text('1:05'), findsNothing);
+    expect(find.byKey(const ValueKey('media-video-photo-1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('media-picker-camera')), findsNothing);
 
     for (final id in ['photo-2', 'photo-1', 'photo-0']) {
       await tester.tap(find.byKey(ValueKey(id)));
@@ -257,26 +260,18 @@ void main() {
         findsOneWidget);
   });
 
-  testWidgets('album outer edge follows native X inside the same safe area',
+  testWidgets('album keeps the design inset inside the safe area',
       (tester) async {
     await prepare(tester);
     await mount(tester);
     final menu = find.byKey(const ValueKey('avatar-album-menu'));
     final cropState = crop(tester);
-    expect(tester.getRect(menu).left, 16);
     addTearDown(tester.view.resetPadding);
-
     for (final safeLeft in [0.0, 24.0]) {
       tester.view.padding = FakeViewPadding(left: safeLeft);
       await tester.pump();
-      for (final iconLeft in [18.333, 26.5, 20.25]) {
-        header(tester).onCloseIconLeftMeasured!(iconLeft);
-        await tester.pump();
-        final headerLeft = tester.getRect(find.byType(NativeMediaHeader)).left;
-        expect(headerLeft, safeLeft);
-        expect(tester.getRect(menu).left, closeTo(headerLeft + iconLeft, .001));
-        expect(crop(tester), same(cropState));
-      }
+      expect(tester.getRect(menu).left, safeLeft + 8);
+      expect(crop(tester), same(cropState));
     }
     expect(tester.takeException(), isNull);
   });
@@ -290,9 +285,12 @@ void main() {
     expect(find.byKey(const ValueKey('avatar-show-crop')), findsNothing);
     expect(
         find.byKey(const ValueKey('avatar-selected-overlay')), findsOneWidget);
+    for (final id in ['photo-0', 'photo-1', 'photo-2']) {
+      expect(find.byKey(ValueKey('media-selection-$id')), findsNothing);
+    }
     final original = crop(tester).area!;
     final state = crop(tester);
-    final headerRect = tester.getRect(find.byType(NativeMediaHeader));
+    final headerRect = tester.getRect(find.byType(MediaPickerHeader));
     await tester.drag(find.byType(Crop), const Offset(0, -65));
     await tester.pumpAndSettle();
     final moved = crop(tester).area!;
@@ -305,7 +303,7 @@ void main() {
     await tester.dragFrom(const Offset(180, 760), const Offset(0, -580));
     await tester.pumpAndSettle();
     expect(scroll.offset, greaterThan(300));
-    expect(tester.getRect(find.byType(NativeMediaHeader)), headerRect);
+    expect(tester.getRect(find.byType(MediaPickerHeader)), headerRect);
     await tester.dragFrom(const Offset(180, 450), const Offset(0, 800));
     await tester.pumpAndSettle();
     expect(scroll.offset, 0);
@@ -527,11 +525,11 @@ void main() {
     await prepare(tester);
     await mount(tester);
     final before = crop(tester);
-    await tester.tap(find.byIcon(Icons.camera_alt_outlined));
+    await tester.tap(find.byKey(const ValueKey('media-picker-camera')));
     await tester.pumpAndSettle();
     expect(crop(tester), same(before));
     library.cameraPhoto = library.source;
-    await tester.tap(find.byIcon(Icons.camera_alt_outlined));
+    await tester.tap(find.byKey(const ValueKey('media-picker-camera')));
     await settlePhoto(tester);
     expect(header(tester).onDone, isNotNull);
     expect(library.cameraCalls, 2);

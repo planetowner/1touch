@@ -14,7 +14,6 @@
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		A6B8C0D1E2F3000100000011 /* VideoEncoderBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B8C0D1E2F3000100000012 /* VideoEncoderBridge.swift */; };
 		B6B8C0D1E2F3000100000011 /* MediaPickerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B8C0D1E2F3000100000012 /* MediaPickerBridge.swift */; };
-		C6B8C0D1E2F3000100000011 /* AvatarPickerHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B8C0D1E2F3000100000012 /* AvatarPickerHeader.swift */; };
 		D6B8C0D1E2F3000100000011 /* TrackingAuthorizationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6B8C0D1E2F3000100000012 /* TrackingAuthorizationBridge.swift */; };
 		E6B8C0D1E2F3000100000011 /* NativeActionSheetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6B8C0D1E2F3000100000012 /* NativeActionSheetBridge.swift */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
@@ -62,7 +61,6 @@
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A6B8C0D1E2F3000100000012 /* VideoEncoderBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoEncoderBridge.swift; sourceTree = "<group>"; };
 		B6B8C0D1E2F3000100000012 /* MediaPickerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPickerBridge.swift; sourceTree = "<group>"; };
-		C6B8C0D1E2F3000100000012 /* AvatarPickerHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarPickerHeader.swift; sourceTree = "<group>"; };
 		D6B8C0D1E2F3000100000012 /* TrackingAuthorizationBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingAuthorizationBridge.swift; sourceTree = "<group>"; };
 		E6B8C0D1E2F3000100000012 /* NativeActionSheetBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeActionSheetBridge.swift; sourceTree = "<group>"; };
 		78E0A7A72DC9AD7400C4905E /* FlutterGeneratedPluginSwiftPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = FlutterGeneratedPluginSwiftPackage; path = Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage; sourceTree = "<group>"; };
@@ -161,7 +159,6 @@
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				A6B8C0D1E2F3000100000012 /* VideoEncoderBridge.swift */,
 				B6B8C0D1E2F3000100000012 /* MediaPickerBridge.swift */,
-				C6B8C0D1E2F3000100000012 /* AvatarPickerHeader.swift */,
 				D6B8C0D1E2F3000100000012 /* TrackingAuthorizationBridge.swift */,
 				E6B8C0D1E2F3000100000012 /* NativeActionSheetBridge.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
@@ -426,7 +423,6 @@
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				A6B8C0D1E2F3000100000011 /* VideoEncoderBridge.swift in Sources */,
 				B6B8C0D1E2F3000100000011 /* MediaPickerBridge.swift in Sources */,
-				C6B8C0D1E2F3000100000011 /* AvatarPickerHeader.swift in Sources */,
 				D6B8C0D1E2F3000100000011 /* TrackingAuthorizationBridge.swift in Sources */,
 				E6B8C0D1E2F3000100000011 /* NativeActionSheetBridge.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,

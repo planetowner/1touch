@@ -24,9 +24,6 @@ import Photos
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     trackingAuthorizationBridge = TrackingAuthorizationBridge(
       messenger: engineBridge.applicationRegistrar.messenger())
-    engineBridge.applicationRegistrar.register(
-      AvatarPickerHeaderFactory(messenger: engineBridge.applicationRegistrar.messenger()),
-      withId: "onetouch/avatar_header")
     videoEncoderBridge = VideoEncoderBridge(messenger: engineBridge.applicationRegistrar.messenger())
     mediaPickerBridge = MediaPickerBridge(
       messenger: engineBridge.applicationRegistrar.messenger(),

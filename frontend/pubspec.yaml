@@ -93,6 +93,7 @@ flutter:
   assets:
     - assets/navigation/
     - assets/community/
+    - assets/media_picker/
     - assets/auth/
     - assets/highlight1.png
     - assets/app_logo.svg

@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/features/media/asset_media_picker.dart';
 import 'package:onetouch/features/media/media_library.dart';
 import 'package:onetouch/features/media/media_picker_screen.dart';
-import 'package:onetouch/features/media/native_media_header.dart';
+import 'package:onetouch/features/media/media_picker_header.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 void main() {
@@ -50,7 +50,7 @@ void main() {
       expect(screen.cropAvatar, false);
       expect(screen.maxAssets, maximum);
       expect(screen.library.type, RequestType.common);
-      expect(find.text('Photos and videos'), findsOneWidget);
+      expect(find.text('Photos & Videos'), findsOneWidget);
 
       final files = [
         XFile('/cache/clip.mov', mimeType: 'video/quicktime'),
@@ -68,7 +68,7 @@ void main() {
     final pending = pickAssetMedia(context, maxAssets: 10);
     await tester.pumpAndSettle();
     tester
-        .widget<NativeMediaHeader>(find.byType(NativeMediaHeader))
+        .widget<MediaPickerHeader>(find.byType(MediaPickerHeader))
         .onCancel!();
     await tester.pumpAndSettle();
     expect(await pending, isEmpty);
@@ -84,7 +84,7 @@ void main() {
     expect(screen.cropAvatar, true);
     expect(screen.library.type, RequestType.image);
     tester
-        .widget<NativeMediaHeader>(find.byType(NativeMediaHeader))
+        .widget<MediaPickerHeader>(find.byType(MediaPickerHeader))
         .onCancel!();
     await tester.pumpAndSettle();
     expect(await pending, isNull);

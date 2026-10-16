@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:insta_assets_crop/insta_assets_crop.dart';
 
 /// 같은 크롭 위젯을 유지해 목록을 접었다 펴도 확대·이동 상태가 사라지지 않아요.
@@ -18,34 +19,24 @@ class AvatarCropEditor extends StatelessWidget {
   final Widget image;
 
   @override
-  Widget build(BuildContext context) => CustomPaint(
-        foregroundPainter: const _CircleShade(),
-        child: Crop(
-          key: cropKey,
-          size: imageSize,
-          aspectRatio: 1,
-          disableResize: true,
-          maximumScale: 8,
-          child: image,
-        ),
+  Widget build(BuildContext context) => Stack(
+        fit: StackFit.expand,
+        children: [
+          Crop(
+            key: cropKey,
+            size: imageSize,
+            aspectRatio: 1,
+            disableResize: true,
+            maximumScale: 8,
+            child: image,
+          ),
+          IgnorePointer(
+            child: FittedBox(
+              child: SvgPicture.asset('assets/media_picker/crop_mask.svg'),
+            ),
+          ),
+        ],
       );
-}
-
-class _CircleShade extends CustomPainter {
-  const _CircleShade();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bounds = Offset.zero & size;
-    final path = Path()
-      ..fillType = PathFillType.evenOdd
-      ..addRect(bounds)
-      ..addOval(bounds);
-    canvas.drawPath(path, Paint()..color = const Color(0x73000000));
-  }
-
-  @override
-  bool shouldRepaint(_CircleShade oldDelegate) => false;
 }
 
 /// 원형은 미리보기 마스크이고, 업로드는 기존 규격의 정사각형 사진을 사용해요.

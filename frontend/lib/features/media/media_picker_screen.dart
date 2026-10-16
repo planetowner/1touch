@@ -1,9 +1,9 @@
 import 'dart:io';
-import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:insta_assets_crop/insta_assets_crop.dart';
 import 'package:onetouch/core/app_action_button.dart';
@@ -15,9 +15,15 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/media/avatar_crop_editor.dart';
 import 'package:onetouch/features/media/media_library.dart';
-import 'package:onetouch/features/media/native_media_header.dart';
+import 'package:onetouch/features/media/media_picker_header.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:photo_manager/photo_manager.dart';
+
+// 앨범 이름과 선택 번호는 같은 B2(B) 규격을 쓰고, 가변 글꼴 굵기도 고정해요.
+TextStyle get _pickerLabelStyle => Body2_b.style.copyWith(
+    fontVariations: const [FontVariation.weight(700)],
+    letterSpacing: 0,
+    height: 1.3);
 
 class MediaPickerScreen extends StatefulWidget {
   const MediaPickerScreen({super.key, this.library = const MediaLibrary()})
@@ -41,8 +47,8 @@ class MediaPickerScreen extends StatefulWidget {
 
 class _MediaPickerScreenState extends State<MediaPickerScreen>
     with WidgetsBindingObserver {
-  static const _gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 4, mainAxisSpacing: 2, crossAxisSpacing: 2);
+  static const _gridDelegate =
+      SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4);
 
   final _cropKey = GlobalKey<CropState>();
   final _scroll = ScrollController();
@@ -66,7 +72,6 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
   bool _pageFailed = false;
   bool _saving = false;
   bool _refreshOnResume = false;
-  double _albumLeft = 16;
 
   @override
   void initState() {
@@ -354,8 +359,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
     }
   }
 
-  String get _recentLabel =>
-      tr(context, widget.cropAvatar ? 'Recent photos' : 'Recent items');
+  String get _recentLabel => tr(context, 'RECENTS');
 
   String _albumName(AssetPathEntity album) =>
       album.isAll ? _recentLabel : album.name;
@@ -418,15 +422,24 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
       color: AppColors.of(context).pageBackground,
       child: Column(children: [
         SizedBox(
-            height: 56,
+            height: 80,
             child: Padding(
-              padding: EdgeInsets.fromLTRB(_albumLeft, 8, 16, 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
               child: Row(children: [
                 Expanded(
                     child: Align(
                   alignment: Alignment.centerLeft,
                   child: AppDropdown<String>(
                     triggerKey: const ValueKey('avatar-album-menu'),
+                    triggerHeight: 48,
+                    triggerPadding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+                    triggerGap: 8,
+                    textStyle: _pickerLabelStyle,
+                    chevron: SvgPicture.asset(
+                        'assets/media_picker/chevron_down.svg',
+                        colorFilter: ColorFilter.mode(
+                            Theme.of(context).colorScheme.onSurface,
+                            BlendMode.srcIn)),
                     value: _album?.id,
                     selectedLabel:
                         _album == null ? _recentLabel : _albumName(_album!),
@@ -500,11 +513,11 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
             body: SafeArea(
                 // 사진 목록은 홈 표시줄 뒤까지 이어지고, 상단 버튼은 안전영역을 지켜요.
                 bottom: false,
+                minimum: const EdgeInsets.only(top: 32),
                 child: Column(children: [
-                  NativeMediaHeader(
-                    title: widget.cropAvatar
-                        ? 'Profile photo'
-                        : 'Photos and videos',
+                  MediaPickerHeader(
+                    title:
+                        widget.cropAvatar ? 'Profile Photo' : 'Photos & Videos',
                     onCancel:
                         _saving ? null : () => Navigator.of(context).pop(),
                     onDone: _saving ||
@@ -514,10 +527,6 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
                         ? null
                         : _save,
                     saving: _saving,
-                    onCloseIconLeftMeasured: (left) {
-                      // Android가 측정한 X 그림의 왼쪽 끝을 앨범 버튼도 함께 써요.
-                      if (_albumLeft != left) setState(() => _albumLeft = left);
-                    },
                   ),
                   Expanded(
                       child: AbsorbPointer(absorbing: _saving, child: _body())),
@@ -543,40 +552,32 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
       });
     }
     return LayoutBuilder(builder: (context, constraints) {
-      final cellSide = (constraints.maxWidth -
-              (_gridDelegate.crossAxisCount - 1) *
-                  _gridDelegate.crossAxisSpacing) /
-          _gridDelegate.crossAxisCount;
-      // naru의 3열·간격 2인 셀과 비교해 시간 패널의 비율을 맞춰요.
-      final referenceCellSide = (constraints.maxWidth - 2 * 2) / 3;
-      final videoDurationScale = cellSide / referenceCellSide;
-      final side = math.min(constraints.maxWidth, constraints.maxHeight * .58);
+      final side = constraints.maxWidth;
       final crop = SizedBox.square(
         key: const ValueKey('avatar-crop-region'),
         dimension: side,
-        child: _loadingPhoto
-            ? const Center(child: CircularProgressIndicator())
-            : _preview != null && _imageSize != null
-                ? widget.cropAvatar
-                    ? AvatarCropEditor(
-                        key: ValueKey(_selection),
-                        cropKey: _cropKey,
-                        imageSize: _imageSize!,
-                        image: Image(
-                            key: ValueKey(_selection),
-                            image: _preview!,
-                            fit: BoxFit.fill,
-                            gaplessPlayback: true),
-                      )
-                    : Stack(fit: StackFit.expand, children: [
-                        Image(
-                            image: _preview!,
-                            fit: BoxFit.contain,
-                            gaplessPlayback: true),
-                        if (_selectedPhoto?.type == AssetType.video)
-                          _VideoDuration(asset: _selectedPhoto!),
-                      ])
-                : _notice('Choose from Photos'),
+        child: ColoredBox(
+          color: AppPalette.darkGrey,
+          child: _loadingPhoto
+              ? const Center(child: CircularProgressIndicator())
+              : _preview != null && _imageSize != null
+                  ? widget.cropAvatar
+                      ? AvatarCropEditor(
+                          key: ValueKey(_selection),
+                          cropKey: _cropKey,
+                          imageSize: _imageSize!,
+                          image: Image(
+                              key: ValueKey(_selection),
+                              image: _preview!,
+                              fit: BoxFit.fill,
+                              gaplessPlayback: true),
+                        )
+                      : Image(
+                          image: _preview!,
+                          fit: BoxFit.contain,
+                          gaplessPlayback: true)
+                  : _notice('Choose from Photos'),
+        ),
       );
       return Stack(clipBehavior: Clip.hardEdge, children: [
         NestedScrollView(
@@ -586,7 +587,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
             SliverPersistentHeader(
               pinned: true,
               delegate: _AlbumHeader(
-                  height: _access == PermissionState.limited ? 104 : 56,
+                  height: _access == PermissionState.limited ? 128 : 80,
                   child: _albumBar()),
             ),
           ],
@@ -604,16 +605,25 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
                   gridDelegate: _gridDelegate,
                   delegate: SliverChildBuilderDelegate((context, index) {
                     if (widget.cropAvatar && index == 0) {
-                      return Material(
+                      return _GridCell(
+                          child: Material(
                         color: AppColors.of(context).subtleBackground,
                         child: InkWell(
+                            key: const ValueKey('media-picker-camera'),
                             onTap: _camera,
                             child: Semantics(
                                 label: tr(context, 'Take photo'),
                                 button: true,
-                                child: const Icon(Icons.camera_alt_outlined,
-                                    size: 28))),
-                      );
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                      'assets/media_picker/camera.svg',
+                                      colorFilter: ColorFilter.mode(
+                                          Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          BlendMode.srcIn)),
+                                ))),
+                      ));
                     }
                     final photo = _photos[index - (widget.cropAvatar ? 1 : 0)];
                     final order = _attachments
@@ -622,7 +632,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen>
                       key: ValueKey(photo.id),
                       photo: photo,
                       library: widget.library,
-                      videoDurationScale: videoDurationScale,
+                      showSelectionIndicator: !widget.cropAvatar,
                       selected: widget.cropAvatar
                           ? photo.id == _selectedPhoto?.id
                           : order >= 0,
@@ -692,13 +702,13 @@ class _PhotoTile extends StatefulWidget {
       {super.key,
       required this.photo,
       required this.library,
-      required this.videoDurationScale,
+      required this.showSelectionIndicator,
       required this.selected,
       this.selectionOrder,
       required this.onTap});
   final AssetEntity photo;
   final MediaLibrary library;
-  final double videoDurationScale;
+  final bool showSelectionIndicator;
   final bool selected;
   final int? selectionOrder;
   final ValueChanged<Uint8List?> onTap;
@@ -717,82 +727,71 @@ class _PhotoTileState extends State<_PhotoTile> {
         value: widget.selectionOrder?.toString(),
         selected: widget.selected,
         button: true,
-        child: Material(
-          color: AppColors.of(context).subtleBackground,
-          child: FutureBuilder<Uint8List?>(
-              future: _thumbnail,
-              builder: (context, snapshot) => InkWell(
-                  onTap: () => widget.onTap(snapshot.data),
-                  child: Stack(fit: StackFit.expand, children: [
-                    snapshot.hasData
-                        ? Image.memory(snapshot.data!,
-                            fit: BoxFit.cover, gaplessPlayback: true)
-                        : const Icon(Icons.image_outlined, size: 24),
-                    // 선택 표시는 테마와 관계없이 사진 전체에 흰색 60%를 덮어요.
-                    if (widget.selected)
-                      const IgnorePointer(
-                        child: ColoredBox(
-                          key: ValueKey('avatar-selected-overlay'),
-                          color: Color(0x99FFFFFF),
-                        ),
-                      ),
-                    if (widget.selectionOrder != null)
-                      Positioned(
-                          top: 8,
-                          right: 8,
-                          child: Container(
-                            key: ValueKey('media-selection-${widget.photo.id}'),
-                            constraints: const BoxConstraints(
-                                minWidth: 24, minHeight: 24),
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primary,
-                                borderRadius: BorderRadius.circular(12)),
-                            child: Text('${widget.selectionOrder}',
-                                style: Body2_b.style.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onPrimary)),
+        child: _GridCell(
+          child: Material(
+              color: AppColors.of(context).subtleBackground,
+              child: FutureBuilder<Uint8List?>(
+                  future: _thumbnail,
+                  builder: (context, snapshot) => InkWell(
+                      onTap: () => widget.onTap(snapshot.data),
+                      child: Stack(fit: StackFit.expand, children: [
+                        snapshot.hasData
+                            ? Image.memory(snapshot.data!,
+                                fit: BoxFit.cover, gaplessPlayback: true)
+                            : const Icon(Icons.image_outlined, size: 24),
+                        // 사진 자체는 테마와 관계없이 시안의 Black 50%로 어둡게 표시해요.
+                        if (widget.selected)
+                          const IgnorePointer(
+                            child: ColoredBox(
+                              key: ValueKey('avatar-selected-overlay'),
+                              color: Color(0x800A0A0A),
+                            ),
+                          ),
+                        if (widget.photo.type == AssetType.video)
+                          Center(
+                              child: SvgPicture.asset(
+                            'assets/media_picker/play.svg',
+                            key: ValueKey('media-video-${widget.photo.id}'),
                           )),
-                    if (widget.photo.type == AssetType.video)
-                      _VideoDuration(
-                          asset: widget.photo,
-                          scale: widget.videoDurationScale),
-                  ]))),
+                        // 프로필은 덮개만 쓰고, 첨부 선택기에만 빈 원과 순서를 보여줘요.
+                        if (widget.showSelectionIndicator)
+                          Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                key: ValueKey(
+                                    'media-selection-${widget.photo.id}'),
+                                width: 28,
+                                height: 28,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                    color: widget.selected
+                                        ? const Color(0xFF5C92FF)
+                                        : null,
+                                    shape: BoxShape.circle,
+                                    border: widget.selected
+                                        ? null
+                                        : Border.all(
+                                            color: AppPalette.white, width: 2)),
+                                child: widget.selectionOrder == null
+                                    ? null
+                                    : Text('${widget.selectionOrder}',
+                                        style: _pickerLabelStyle.copyWith(
+                                            color: AppPalette.white)),
+                              )),
+                      ])))),
         ),
       );
 }
 
-class _VideoDuration extends StatelessWidget {
-  const _VideoDuration({required this.asset, this.scale = 1});
-  final AssetEntity asset;
-  final double scale;
+/// 각 셀의 1px 테두리가 맞닿아 사진 사이의 2px 구분선을 만들어요.
+class _GridCell extends StatelessWidget {
+  const _GridCell({required this.child});
+  final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    final duration = asset.videoDuration;
-    final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
-    return Positioned(
-      right: 7 * scale,
-      bottom: 6 * scale,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-            color: AppPalette.black.withAlpha(138),
-            borderRadius: BorderRadius.circular(4 * scale)),
-        child: Padding(
-          padding:
-              EdgeInsets.symmetric(horizontal: 5 * scale, vertical: 2 * scale),
-          // 너비는 시간 길이에 맞추고, 글꼴은 앱 토큰을 그대로 써요.
-          child: Text('${duration.inMinutes}:$seconds',
-              style: Body2.style.copyWith(
-                  color: AppPalette.white,
-                  fontSize: 14 * scale,
-                  height: 21 / 14,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0)),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+      foregroundDecoration: BoxDecoration(
+          border: Border.all(color: AppColors.of(context).pageBackground)),
+      child: child);
 }
