@@ -1,4 +1,4 @@
-"""베팅과 커뮤니티가 같은 지갑 초기화와 원장 기록을 사용해요."""
+"""승부 예측과 커뮤니티가 같은 지갑 초기화와 원장 기록을 사용해요."""
 from ..db import fetch_one_dict, transaction
 from ..services.community_periods import utc_now
 from ...core.betting import WELCOME_POINTS

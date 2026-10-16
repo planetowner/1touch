@@ -1,4 +1,4 @@
-"""베팅 테이블의 신규 생성을 확인해요. 운영 변경은 사용자가 --apply로 실행해요."""
+"""승부 예측 테이블의 신규 생성을 확인해요. 운영 변경은 사용자가 --apply로 실행해요."""
 import argparse
 from pathlib import Path
 

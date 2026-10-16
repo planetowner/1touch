@@ -7,7 +7,7 @@ from .fixture_states import COMPLETED_STATE_IDS
 WELCOME_POINTS = 1000
 STAKE_UNIT = 10
 PROBABILITY_UNIT = Decimal('0.000000000000000001')
-# 실제 종료만 정산해요. 연기·취소·포기·행정 결과는 경기 결과에 베팅한 것으로 보지 않아요.
+# 실제 종료만 정산해요. 연기·취소·포기·행정 결과는 승부 예측의 결과로 보지 않아요.
 REFUND_STATE_IDS = (10, 12, 14, 15, 17, 20)
 OPEN_STATE_IDS = (1, 16)
 SETTLEMENT_STATE_IDS = (*COMPLETED_STATE_IDS, *REFUND_STATE_IDS)

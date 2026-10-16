@@ -252,7 +252,7 @@ class CommunityDatabaseCase(unittest.TestCase):
         for statement in notification_sql.read_text(encoding='utf-8').split(';'):
             if statement.strip():
                 self.execute(statement)
-        # 게시 보상도 같은 트랜잭션에 저장하므로 기존 베팅 지갑과 적립 확장을 함께 준비해요.
+        # 게시 보상도 같은 트랜잭션에 저장하므로 기존 승부 예측 지갑과 적립 확장을 함께 준비해요.
         self.execute('CREATE TABLE probability_runs (run_id CHAR(64) CHARACTER SET ascii PRIMARY KEY)')
         for filename in ('create_betting_tables.sql',) + (('migrate_community_points.sql',) if self.community_points_schema else ()):
             sql = Path(__file__).resolve().parents[1] / 'one_touch_loader/sql' / filename

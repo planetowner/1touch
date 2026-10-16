@@ -129,7 +129,7 @@ def league_order(points, goals_for, goals_against, away_goals, wins, away_wins,
 
 def tie_winners(second_home, other, elos, model, penalty_coefficient, rng, *, final=False,
                 played_margin=None, match_results=None):
-    """진출팀은 합산 점수로 정해요. 개별 경기 베팅의 승자 규칙과 별개예요."""
+    """진출팀은 합산 점수로 정해요. 개별 경기 승부 예측의 승자 규칙과 별개예요."""
     difference = elos[second_home] - elos[other]
     home_rate, away_rate = model.rates(difference, neutral=final)
     match_margin = rng.poisson(home_rate) - rng.poisson(away_rate)

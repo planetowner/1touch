@@ -1,4 +1,4 @@
--- 가입·베팅 원장과 잔액을 유지한 채 커뮤니티 적립을 같은 지갑에 연결해요.
+-- 가입·승부 예측 원장과 잔액을 유지한 채 커뮤니티 적립을 같은 지갑에 연결해요.
 ALTER TABLE user_point_wallets ADD COLUMN country_code CHAR(2) CHARACTER SET ascii NULL;
 
 ALTER TABLE user_point_entries

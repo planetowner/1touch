@@ -127,7 +127,7 @@ def prepare_runs(fixtures, histories, report, *, observed_at, previous_by_season
         }
     changed = []
     for season_id, run in runs.items():
-        # 시각 자체 대신 지금 베팅 가능한 경기와 1차전 결과를 비교해요. 킥오프가 지나도 다시 계산해요.
+        # 시각 자체 대신 지금 승부 예측이 가능한 경기와 1차전 결과를 비교해요. 킥오프가 지나도 다시 계산해요.
         run['input_sha256'] = input_fingerprint(
             [f for f in fixtures if f['season_id'] == season_id],
             {'markets': run['fixture_markets'], 'model': report['forecast_model']})

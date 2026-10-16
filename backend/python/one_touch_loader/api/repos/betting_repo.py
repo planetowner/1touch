@@ -149,7 +149,7 @@ def mutate_bet(user_id, fixture_id, body, *, cancel=False):
     digest = hashlib.sha256(json.dumps({'fixture_id': fixture_id, 'cancel': cancel, **body},
                                       sort_keys=True, default=str).encode()).hexdigest()
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
-        # 참여·변경·취소·자동 정산은 회원→경기→베팅 순서로 잠가요.
+        # 참여·변경·취소·자동 정산은 회원→경기→승부 예측 순서로 잠가요.
         lock_user(cur, user_id)
         fixture = fetch_one_from_cursor(cur, FIXTURE_SQL + ' FOR UPDATE', (fixture_id,))
         if fixture is None:

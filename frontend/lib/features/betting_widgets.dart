@@ -38,7 +38,7 @@ List<Color> resolveBettingBarColors({
       anchorIsAway ? comparisonColors.opponent : comparisonColors.anchor;
   final awayColor =
       anchorIsAway ? comparisonColors.anchor : comparisonColors.opponent;
-  // 팔레트가 없는 팀은 베팅 바에서 테마별 공통 색을 사용해요.
+  // 팔레트가 없는 팀은 승부 예측 바에서 테마별 공통 색을 사용해요.
   final missingColor = brightness == Brightness.dark
       ? AppPalette.white
       : AppPalette.lightModeDarkGrey;
@@ -224,7 +224,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
       _amount = bet.stake;
     } else {
       final unit = widget.controller.market!.stakeUnit;
-      // 기본 베팅액은 100을 기준으로 허용 단위 수를 정하고 지출 한도 내로 줄여요.
+      // 기본 승부 예측 금액은 100을 기준으로 허용 단위 수를 정하고 지출 한도 내로 줄여요.
       final initialUnits = math.max(1, 100 ~/ unit);
       _amount =
           math.min(widget.controller.spendingLimit ~/ unit, initialUnits) *
@@ -1478,7 +1478,7 @@ Color _surface(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark
         ? AppPalette.darkGrey
         : AppPalette.white;
-// 베팅 화면에서는 팀 코드나 짧은 이름만 표시해요.
+// 승부 예측 화면에서는 팀 코드나 짧은 이름만 표시해요.
 String _teamBettingLabel(Team team) {
   final shortCode = team.shortCode?.trim();
   if (shortCode != null && shortCode.isNotEmpty) return shortCode;

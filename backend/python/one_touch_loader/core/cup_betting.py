@@ -1,4 +1,4 @@
-"""컵 베팅의 경기 형식과 예측 입력을 한곳에서 정해요."""
+"""컵 승부 예측의 경기 형식과 예측 입력을 한곳에서 정해요."""
 from datetime import datetime, timezone
 
 from .fixture_states import COMPLETED_STATE_IDS
@@ -74,6 +74,6 @@ def match_format(fixture, first_legs, *, as_of):
             first['home_score'] is None or first['away_score'] is None or
             utc_datetime(first['starting_at']) >= min(utc_datetime(fixture['starting_at']), as_of)):
         return None
-    # 1차전 동점이면 2차전의 동점은 연장·승부차기로 해소돼요. 합산 승자를 베팅 결과로 쓰지는 않아요.
+    # 1차전 동점이면 2차전의 동점은 연장·승부차기로 해소돼요. 합산 승자를 승부 예측 결과로 쓰지는 않아요.
     return {'draw_allowed': first['home_score'] != first['away_score'],
             'first_leg': {key: first[key] for key in ('fixture_id', 'home_score', 'away_score')}}

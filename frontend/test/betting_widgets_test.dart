@@ -695,7 +695,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
       expect(controller.canBet, false);
-      expect(find.textContaining('에 베팅이 열려요.'), findsOneWidget);
+      expect(find.textContaining('에 승부 예측이 열려요.'), findsOneWidget);
       expect(find.byKey(const ValueKey('match-betting-opening-notice')),
           findsOneWidget);
       repository.unavailableReason = null;

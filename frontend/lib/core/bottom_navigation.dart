@@ -48,7 +48,7 @@ class OneTouchBottomNavigationBar extends StatelessWidget {
     return _topPadding + _iconSize + _labelGap + labelHeight;
   }
 
-  // 한·영 행간과 기기 안전 여백을 반영한 높이를 바와 베팅 결과 팝업이 함께 써요.
+  // 한·영 행간과 기기 안전 여백을 반영한 높이를 바와 승부 예측 결과 팝업이 함께 써요.
   static double heightOf(BuildContext context) =>
       _contentHeight(context) +
       math.max(_bottomPadding, MediaQuery.paddingOf(context).bottom);

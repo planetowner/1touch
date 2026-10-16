@@ -45,7 +45,7 @@
       },
       "ko": {
         "title": "{team}",
-        "body": "{opponent}전 베팅이 열렸어요."
+        "body": "{opponent}전 승부 예측이 열렸어요."
       },
       "ja": {
         "title": "{team}",

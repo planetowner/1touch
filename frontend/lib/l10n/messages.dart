@@ -124,9 +124,9 @@ const appMessages = <String, MessageTranslations>{
     ja: "あなたの投稿へのいいねやコメントです。",
     zh: "你的帖子收到的点赞和评论。"
   ),
-  "Betting updates": (ko: "베팅 소식", ja: "予想のお知らせ", zh: "竞猜动态"),
+  "Betting updates": (ko: "승부 예측 소식", ja: "予想のお知らせ", zh: "竞猜动态"),
   "New bets and settled result updates.": (
-    ko: "새로운 베팅과 결과 소식이에요.",
+    ko: "새로운 승부 예측과 결과 소식이에요.",
     ja: "新しい予想の受付と結果のお知らせです。",
     zh: "新竞猜及结算结果动态。"
   ),
@@ -149,7 +149,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "{display_name}: {comment_preview}"
   ),
   "Betting is open vs {opponent}.": (
-    ko: "{opponent}전 베팅이 열렸어요.",
+    ko: "{opponent}전 승부 예측이 열렸어요.",
     ja: "{opponent}戦の予想受付が始まりました。",
     zh: "对阵{opponent}的竞猜已开放。"
   ),
@@ -249,7 +249,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "你对{team}的预测未命中。"
   ),
   "Your bet on {team} was refunded.": (
-    ko: "{team}에 대한 베팅 포인트가 반환됐어요.",
+    ko: "{team}에 대한 승부 예측 포인트가 반환됐어요.",
     ja: "{team}への予想ポイントが返還されました。",
     zh: "你对{team}的投注积分已返还。"
   ),
@@ -1794,7 +1794,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "キックオフ・前半終了・試合終了",
     zh: "开球、半场、全场"
   ),
-  "New bets": (ko: "새 베팅", ja: "新しい予想", zh: "新竞猜"),
+  "New bets": (ko: "새 승부 예측", ja: "新しい予想", zh: "新竞猜"),
   "APPLY TO ALL PLAYERS": (ko: "모든 선수에 적용하기", ja: "すべての選手に適用", zh: "应用到所有球员"),
   "APPLY TO ALL TEAMS": (ko: "모든 팀에 적용하기", ja: "すべてのチームに適用", zh: "应用到所有球队"),
   "Applied to all following players": (
@@ -1938,40 +1938,40 @@ const appMessages = <String, MessageTranslations>{
     ja: "試合が終わったら結果を確認してみてください",
     zh: "比赛结束后，来看看结果吧"
   ),
-  "No bets yet.": (ko: "아직 베팅 내역이 없어요.", ja: "予想の履歴はまだありません。", zh: "暂无竞猜记录。"),
+  "No bets yet.": (ko: "아직 승부 예측 내역이 없어요.", ja: "予想の履歴はまだありません。", zh: "暂无竞猜记录。"),
   "Unable to load bets.": (
-    ko: "베팅 내역을 불러오지 못했어요.",
+    ko: "승부 예측 내역을 불러오지 못했어요.",
     ja: "予想の履歴を読み込めませんでした。",
     zh: "无法加载竞猜记录。"
   ),
   "Unable to load or save your bet. Please try again.": (
-    ko: "베팅을 불러오거나 저장하지 못했어요. 다시 시도해 주세요.",
+    ko: "승부 예측을 불러오거나 저장하지 못했어요. 다시 시도해 주세요.",
     ja: "予想の読み込み・保存ができませんでした。もう一度お試しください。",
     zh: "无法加载或保存竞猜，请重试。"
   ),
   "Betting is available for supported league matches.": (
-    ko: "지원하는 리그 경기에서 베팅할 수 있어요.",
+    ko: "지원하는 리그 경기에서 승부 예측을 할 수 있어요.",
     ja: "対応リーグの試合で予想できます。",
     zh: "可参与支持联赛的比赛竞猜。"
   ),
   "Betting is closed for this match.": (
-    ko: "이 경기의 베팅이 마감됐어요.",
+    ko: "이 경기의 승부 예측이 마감됐어요.",
     ja: "この試合の予想受付は終了しました。",
     zh: "本场比赛竞猜已截止。"
   ),
   "Betting opens when the kickoff is confirmed.": (
-    ko: "킥오프 시간이 확정되면 베팅이 열려요.",
+    ko: "킥오프 시간이 확정되면 승부 예측이 열려요.",
     ja: "キックオフ時間が決まると予想受付が始まります。",
     zh: "开球时间确定后将开放竞猜。"
   ),
   "Betting opens {date}.": (
-    ko: "{date}에 베팅이 열려요.",
+    ko: "{date}에 승부 예측이 열려요.",
     ja: "{date}に予想受付が始まります。",
     zh: "竞猜将于{date}开放。"
   ),
   "Not enough points.": (ko: "포인트가 부족해요.", ja: "ポイントが足りません。", zh: "积分不足。"),
   "You need at least {points} pts to place a bet.": (
-    ko: "베팅하려면 최소 {points} $pointUnit가 필요해요.",
+    ko: "승부 예측을 하려면 최소 {points} $pointUnit가 필요해요.",
     ja: "予想には最低{points} $pointUnitが必要です。",
     zh: "参与竞猜至少需要{points} $pointUnit。"
   ),
@@ -1986,7 +1986,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "赔率已更新，请确认后重新提交。"
   ),
   "Your bet has changed. Review it and try again.": (
-    ko: "베팅 내용이 바뀌었어요. 확인 후 다시 시도해 주세요.",
+    ko: "승부 예측 내용이 바뀌었어요. 확인 후 다시 시도해 주세요.",
     ja: "予想内容が変わりました。確認して再度お試しください。",
     zh: "竞猜内容已更改，请确认后重试。"
   ),
@@ -2087,7 +2087,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "{points} $pointUnit"
   ),
   "You earned {points} from this bet! 🎉": (
-    ko: "이 베팅으로 {points}를 획득했어요! 🎉",
+    ko: "이 승부 예측으로 {points}를 획득했어요! 🎉",
     ja: "このベットで{points}獲得しました！🎉",
     zh: "你从这次投注中赢得了{points}！🎉"
   ),

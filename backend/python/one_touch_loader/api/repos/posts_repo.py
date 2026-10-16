@@ -195,7 +195,7 @@ def _interaction_owner(post_id: int) -> int | None:
 
 def _lock_interaction_users(cur, actor_id: int, owner_id: int | None) -> dict:
     # 서로의 글에 동시에 반응해도 교착하지 않도록 회원 ID 순서로 잠근 뒤 글을 잠가요.
-    # 베팅도 같은 회원 잠금을 사용하므로 적립과 베팅이 잔액을 덮어쓰지 않아요.
+    # 승부 예측도 같은 회원 잠금을 사용하므로 적립과 승부 예측이 잔액을 덮어쓰지 않아요.
     for user_id in sorted({actor_id} | ({owner_id} if owner_id is not None else set())):
         if user_id == actor_id:
             actor = lock_user(cur, user_id)

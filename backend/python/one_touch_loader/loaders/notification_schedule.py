@@ -1,4 +1,4 @@
-"""팀별 베팅 개방·한 시간 전 알림과 경기 전 확정 선발을 수집해요."""
+"""팀별 승부 예측 개방·한 시간 전 알림과 경기 전 확정 선발을 수집해요."""
 from datetime import timedelta
 
 from ..api.db import fetch_all_dict, fetch_one_from_cursor, transaction
