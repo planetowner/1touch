@@ -66,6 +66,8 @@ class AppDropdown<T> extends StatefulWidget {
     this.width,
     this.triggerHeight,
     this.triggerPadding,
+    this.triggerGap = 0,
+    this.chevron,
     this.minWidth,
     this.maxMenuHeight,
     this.matchMenuWidth = false,
@@ -89,6 +91,8 @@ class AppDropdown<T> extends StatefulWidget {
   final double? width;
   final double? triggerHeight;
   final EdgeInsets? triggerPadding;
+  final double triggerGap;
+  final Widget? chevron;
   final double? minWidth;
   final double? maxMenuHeight;
   final bool matchMenuWidth;
@@ -260,7 +264,9 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
     )..layout();
     final triggerChromeWidth = widget.triggerPadding == null
         ? 16.0 + 40.0 + AppDropdownTokens.gap
-        : widget.triggerPadding!.horizontal + AppDropdownTokens.iconSize;
+        : widget.triggerPadding!.horizontal +
+            widget.triggerGap +
+            AppDropdownTokens.iconSize;
     final leadingWidth = widget.leading == null
         ? 0.0
         : widget.leadingSize + AppDropdownTokens.gap;
@@ -314,7 +320,9 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
                 left: widget.triggerPadding?.left ?? 16,
                 right: widget.triggerPadding == null
                     ? 40
-                    : widget.triggerPadding!.right + AppDropdownTokens.iconSize,
+                    : widget.triggerPadding!.right +
+                        widget.triggerGap +
+                        AppDropdownTokens.iconSize,
                 top: widget.triggerPadding?.top ?? 0,
                 bottom: widget.triggerPadding?.bottom ?? 0,
                 child: Row(
@@ -351,10 +359,15 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
                   key: widget.chevronKey,
                   width: AppDropdownTokens.iconSize,
                   height: AppDropdownTokens.iconSize,
-                  child: AppDropdownChevron(
-                    expanded: _isOpen,
-                    color: foreground,
-                  ),
+                  child: widget.chevron == null
+                      ? AppDropdownChevron(
+                          expanded: _isOpen,
+                          color: foreground,
+                        )
+                      : RotatedBox(
+                          quarterTurns: _isOpen ? 2 : 0,
+                          child: widget.chevron,
+                        ),
                 ),
               ),
             ],
