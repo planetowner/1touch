@@ -14,7 +14,7 @@ from ...core.player_detail import (
     minimum_reference_minutes, rank_categories, season_categories, stat_index, summarize,
 )
 from ...core.player_match_metrics import COVERAGE_COUNT_TYPES, POSITION_GROUPS
-from ...core.football_names import korean_name_ids
+from ...core.football_names import korean_name_ids, korean_name_search
 from ...core.player_appearances import APPEARED, MATCH_FROM
 from ...core.player_positions import season_player_position_ids, season_player_positions
 
@@ -214,17 +214,31 @@ def _analysis(fetch, player_id, season, clubs, roster, now):
 def list_player_comparison_candidates(query: str, *, limit: int | None = 100) -> list[dict]:
     player_ids = korean_name_ids("players", query)
     korean_condition = (" OR p.player_id IN (" + ",".join(["%s"] * len(player_ids)) + ")") if player_ids else ""
+    # 하이픈 생략은 검색과 일치도 정렬에 같은 규칙으로 적용해요.
+    name = "REPLACE(p.display_name, '-', '')"
+    needle = query.strip().replace('-', '')
+    exact, prefix = f"{name} = %s", f"{name} LIKE %s"
+    exact_params, prefix_params = (needle,), (f"{needle}%",)
+    if player_ids:
+        korean_name, korean_needle = korean_name_search("p.display_name_ko", query)
+        exact += f" OR {korean_name} = %s"
+        prefix += f" OR LOCATE(%s, {korean_name}) = 1"
+        exact_params += (korean_needle,)
+        prefix_params += (korean_needle,)
     with closing(get_conn()) as conn:
         conn.start_transaction(readonly=True)
         try:
             with conn.cursor(dictionary=True) as cur:
-                # 하이픈을 생략해도 찾을 수 있도록 이름과 검색어 양쪽에서 하이픈을 빼고 비교해요.
-                sql = f"""SELECT DISTINCT p.player_id,p.display_name AS name,p.image_path AS image
-                    FROM players p JOIN team_squad_members sm ON sm.player_id=p.player_id
-                    JOIN seasons s ON s.season_id=sm.season_id
-                    WHERE s.is_current=1 AND (REPLACE(p.display_name, '-', '') LIKE %s{korean_condition})
-                    ORDER BY p.display_name,p.player_id"""
-                params = (f"%{query.strip().replace('-', '')}%", *player_ids)
+                # 정확히 찾은 선수가 개수 제한에 밀리지 않도록 일치도를 먼저 정렬해요.
+                sql = f"""SELECT p.player_id,p.display_name AS name,p.image_path AS image
+                    FROM players p
+                    WHERE EXISTS (SELECT 1 FROM team_squad_members sm
+                        JOIN seasons s ON s.season_id=sm.season_id
+                        WHERE sm.player_id=p.player_id AND s.is_current=1)
+                    AND ({name} LIKE %s{korean_condition})
+                    ORDER BY CASE WHEN {exact} THEN 0 WHEN {prefix} THEN 1 ELSE 2 END,
+                        p.display_name,p.player_id"""
+                params = (f"%{needle}%", *player_ids) + exact_params + prefix_params
                 if limit is not None:
                     sql += " LIMIT %s"
                     params += (limit,)

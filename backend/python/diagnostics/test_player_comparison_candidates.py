@@ -83,16 +83,22 @@ class ComparisonCandidatesTests(unittest.TestCase):
         conn.rollback.assert_called_once()
         conn.close.assert_called_once()
 
-    def test_unlimited_lookup_keeps_the_shared_name_order_without_a_hidden_cap(self):
+    def test_unlimited_lookup_has_no_hidden_cap(self):
         conn = MagicMock()
         cur = conn.cursor.return_value.__enter__.return_value
         with patch.object(repo, 'get_conn', return_value=conn), \
              patch.object(repo, 'korean_name_ids', return_value=(1,)):
             repo.list_player_comparison_candidates('선수', limit=None)
-        sql, params = cur.execute.call_args.args
-        self.assertIn('ORDER BY p.display_name,p.player_id', sql)
+        sql, _ = cur.execute.call_args.args
         self.assertNotIn('LIMIT', sql)
-        self.assertEqual(params, ('%선수%', 1))
+
+    def test_position_filter_and_pagination_preserve_search_priority(self):
+        candidates = [candidate(pid) for pid in [5, 3, 1, 4, 2]]
+        positions = [source_position(pid, 27 if pid != 3 else 26) for pid in range(1, 6)]
+        result, _, _ = self.page(candidates, positions, position='FW', excluded_id=1, limit=2)
+        self.assertEqual([row['player_id'] for row in result['players']], [5, 4])
+        second, _, _ = self.page(candidates, positions, position='FW', excluded_id=1, limit=2, offset=2)
+        self.assertEqual([row['player_id'] for row in second['players']], [2])
 
     def test_route_filters_pagination_and_auth_contract(self):
         app = FastAPI()

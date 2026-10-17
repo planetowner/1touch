@@ -39,15 +39,19 @@ def _read_catalogs(catalogs):
         for kind, (table, identifier, column) in catalogs.items()}
 
 
+def korean_name_search(column: str, query: str) -> tuple[str, str]:
+    # 검색과 일치도 정렬에서 같은 공백 제거 규칙을 써요. column에는 고정된 DB 열 이름만 넣어요.
+    return f"LOWER(REGEXP_REPLACE({column}, '[[:space:]]', ''))", "".join(query.casefold().split())
+
+
 def korean_name_ids(kind: str, query: str) -> tuple[int, ...]:
-    needle = "".join(query.casefold().split())
-    if not needle:
-        return ()
     identifier, column = NAME_COLUMNS[kind]
     columns = [column, "short_name_ko"] if kind == "teams" else [column]
+    searches = [korean_name_search(name, query) for name in columns]
+    if not searches[0][1]:
+        return ()
     # 사용자 검색어는 SQL 식별자에 넣지 않고, 공백을 뺀 문자열로 비교해요.
-    conditions = " OR ".join(
-        f"LOCATE(%s, LOWER(REGEXP_REPLACE({name}, '[[:space:]]', ''))) > 0" for name in columns)
+    conditions = " OR ".join(f"LOCATE(%s, {expression}) > 0" for expression, _ in searches)
     return tuple(row[0] for row in fetch_all(
         f"SELECT {identifier} FROM {kind} WHERE ({conditions}) ORDER BY {identifier}",
-        (needle,) * len(columns)))
+        tuple(needle for _, needle in searches)))
