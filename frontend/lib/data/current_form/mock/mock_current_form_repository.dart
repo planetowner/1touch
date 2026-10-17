@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:onetouch/core/search_text.dart';
 import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
@@ -250,8 +251,7 @@ class MockCurrentFormRepository implements CurrentFormRepository {
   }
 
   static bool _matches(Team team, String search) {
-    return team.name.toLowerCase().contains(search) ||
-        (team.shortCode?.toLowerCase().contains(search) ?? false);
+    return matchesSearchText(search, [team.name, team.shortCode]);
   }
 
   static List<CurrentFormPoint> _points(List<int> cumulativePoints) {

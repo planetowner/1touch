@@ -1124,6 +1124,35 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('comparison filter matches a team without its accent',
+      (tester) async {
+    useScreen(tester, const Size(430, 932));
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (_) async => [
+        ..._optionsForTeam(1),
+        _option(teamId: 126, seasonId: 200, seasonName: '2025/26',
+            teamName: 'Málaga'),
+      ],
+      comparisonLoader: (query) async =>
+          _comparisonFor(query, comparisonShortCode: 'PREV'),
+    );
+    addTearDown(repository.dispose);
+    await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
+    await tester.pumpAndSettle();
+    for (final query in ['malaga', 'MÁLAGA', 'ma\u0301laga']) {
+      await tester.enterText(
+          find.byKey(const ValueKey('analysis-filter-team-search')), query);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('analysis-form-option-126-200')),
+          findsOneWidget);
+      expect(find.byKey(const ValueKey('analysis-form-option-2-200')),
+          findsNothing);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('retries a failed season and disables empty results',
       (tester) async {
     var attempts = 0;

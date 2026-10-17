@@ -905,6 +905,35 @@ void main() {
     expect(find.text('Ranked player 1'), findsOneWidget);
   });
 
+  testWidgets('full ranking search ignores accents without changing names',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: Scaffold(
+        body: PlayerFullRankingSheet(
+          players: const [
+            (id: 337394, name: 'Jules Koundé', image: null, position: 'DF',
+              rank: 1, score: 90.0, rating: 8.0, appearances: 10),
+            (id: 2, name: 'Other player', image: null, position: 'DF',
+              rank: 2, score: 80.0, rating: 7.0, appearances: 10),
+          ],
+          followingController: null,
+          detailRepository: FakePlayerDetailRepository(),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    for (final query in ['kounde', 'KOUNDÉ', 'kounde\u0301']) {
+      await tester.enterText(find.byType(TextField), query);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('full-ranking-player-337394')),
+          findsOneWidget);
+      expect(find.byKey(const ValueKey('full-ranking-player-2')), findsNothing);
+      expect(find.text('Jules Koundé'), findsOneWidget);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('see all opens the restored ranking search sheet',
       (tester) async {
     await pump(tester);

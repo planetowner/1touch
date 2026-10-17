@@ -11,6 +11,34 @@ import 'package:onetouch/models/team.dart';
 
 void main() {
   setUpAppCatalog();
+  testWidgets('team search matches accents and short names', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: _EditSheetHost(repository: _RecordingFollowingTeamsRepository()),
+    ));
+    await tester.tap(find.text('OPEN'));
+    await tester.pumpAndSettle();
+
+    for (final (query, teamId) in [
+      ('malaga', 126),
+      ('  MÁLAGA  ', 126),
+      ('ma\u0301laga', 126),
+      ('alaves', 2975),
+      ('munchen', 503),
+      ('r santandr', 9818),
+    ]) {
+      await tester.enterText(find.byType(TextField), query);
+      await tester.pumpAndSettle();
+      expect(find.byKey(ValueKey('team-search-result-$teamId')), findsOneWidget,
+          reason: query);
+      expect(find.text('No teams found'), findsNothing);
+    }
+    await tester.enterText(find.byType(TextField), 'unknown team');
+    await tester.pumpAndSettle();
+    expect(find.text('No teams found'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets(
         'sheet keeps player editor height for two search results at $size',

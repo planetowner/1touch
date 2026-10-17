@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:onetouch/core/search_text.dart';
 import 'package:onetouch/data/players/mock/player_catalog_25_26.dart';
 import 'package:onetouch/data/players/player_repository.dart';
 import 'package:onetouch/models/player.dart';
@@ -35,10 +36,9 @@ class MockPlayerRepository implements PlayerRepository {
 
   @override
   List<Player> search(String query) {
-    final normalized = query.toLowerCase().trim();
-    if (normalized.isEmpty) return _players;
+    if (query.trim().isEmpty) return _players;
     return _players
-        .where((player) => player.searchableText.contains(normalized))
+        .where((player) => matchesSearchText(query, [player.searchableText]))
         .toList(growable: false);
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/features/loading/football_loading_indicator.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/app_search_field.dart';
+import 'package:onetouch/core/search_text.dart';
 import 'package:onetouch/core/app_close_header.dart';
 import 'package:onetouch/core/app_scroll_edge_fade.dart';
 import 'package:onetouch/core/debounced_search_controller.dart';
@@ -541,15 +542,14 @@ class _PlayerFullRankingSheetState extends State<PlayerFullRankingSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final query = _search.text.trim().toLowerCase();
+    final query = _search.text.trim();
     final players = query.isEmpty
         ? widget.players
         : widget.players
-            .where((player) =>
-                player.name.toLowerCase().contains(query) ||
-                playerNameLabel(context, player.id, player.name)
-                    .toLowerCase()
-                    .contains(query))
+            .where((player) => matchesSearchText(query, [
+                  player.name,
+                  playerNameLabel(context, player.id, player.name),
+                ]))
             .toList();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = Theme.of(context).colorScheme;

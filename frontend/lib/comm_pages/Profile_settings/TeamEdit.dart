@@ -8,6 +8,7 @@ import 'package:onetouch/core/app_close_header.dart';
 import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/core/app_rule_notice.dart';
 import 'package:onetouch/core/app_search_field.dart';
+import 'package:onetouch/core/search_text.dart';
 import 'package:onetouch/core/app_scroll_edge_fade.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -34,12 +35,16 @@ class FollowingTeamsEditResult {
 class _TeamEntry {
   final int teamId;
   final String name;
+  final String? shortName;
+  final String? shortCode;
   final TeamCompetitionContext? competition;
   final String? imagePath;
 
   _TeamEntry({
     required this.teamId,
     required this.name,
+    this.shortName,
+    this.shortCode,
     required this.competition,
     this.imagePath,
   });
@@ -48,6 +53,8 @@ class _TeamEntry {
 _TeamEntry _toEntry(Team t) => _TeamEntry(
       teamId: t.teamId,
       name: t.name,
+      shortName: t.shortName,
+      shortCode: t.shortCode,
       competition: teamCompetitionContextResolver.resolve(t.teamId),
       imagePath: t.imagePath,
     );
@@ -112,7 +119,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
   }
 
   void _onSearch() {
-    final query = _searchController.text.toLowerCase().trim();
+    final query = _searchController.text.trim();
     if (query.isEmpty) {
       setState(() {
         _isSearching = false;
@@ -123,11 +130,12 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
       setState(() {
         _isSearching = true;
         _filteredTeams = _allTeams
-            .where((t) =>
-                t.name.toLowerCase().contains(query) ||
-                teamNameLabel(context, t.teamId, t.name)
-                    .toLowerCase()
-                    .contains(query))
+            .where((t) => matchesSearchText(query, [
+                  t.name,
+                  t.shortName,
+                  t.shortCode,
+                  teamNameLabel(context, t.teamId, t.name),
+                ]))
             .toList();
         _selectedTeam = null;
         _conflictTeam = null;

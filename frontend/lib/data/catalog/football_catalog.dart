@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:onetouch/core/api_client.dart';
+import 'package:onetouch/core/search_text.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/cache/cache_policy.dart';
 import 'package:onetouch/data/competitions/competition_repository.dart';
@@ -231,12 +232,12 @@ class CatalogTeamRepository implements TeamRepository {
   Future<void> initialize() => catalog.initialize();
   @override
   List<Team> search(String query) {
-    final value = query.trim().toLowerCase();
     return allTeams
-        .where((team) =>
-            '${team.name} ${team.shortName ?? ''} ${team.shortCode ?? ''}'
-                .toLowerCase()
-                .contains(value))
+        .where((team) => matchesSearchText(query, [
+              team.name,
+              team.shortName,
+              team.shortCode,
+            ]))
         .toList();
   }
 }

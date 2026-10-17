@@ -146,11 +146,10 @@ class _AnalysisComparisonFilterSheetState<T>
           widget.options.map((option) => option.seasonName))
         name: compactSeasonLabel(name),
     };
-    final search = _search.text.trim().toLowerCase();
+    final search = _search.text.trim();
     final teams = _options
         .where((option) => option.seasonName == _seasonName)
-        .where((option) =>
-            search.isEmpty || option.teamName.toLowerCase().contains(search))
+        .where((option) => matchesSearchText(search, [option.teamName]))
         .toList()
       ..sort((a, b) => a.teamName.compareTo(b.teamName));
     final selected = _options

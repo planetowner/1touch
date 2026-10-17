@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:onetouch/core/search_text.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/models/team.dart';
@@ -27,15 +28,14 @@ class MockTeamRepository implements TeamRepository {
 
   @override
   List<Team> search(String query) {
-    final normalized = query.trim().toLowerCase();
-    if (normalized.isEmpty) return _allTeams;
+    if (query.trim().isEmpty) return _allTeams;
 
     return List.unmodifiable(
-      _allTeams.where((team) {
-        final name = team.name.toLowerCase();
-        final shortCode = team.shortCode?.toLowerCase() ?? '';
-        return name.contains(normalized) || shortCode.contains(normalized);
-      }),
+      _allTeams.where((team) => matchesSearchText(query, [
+            team.name,
+            team.shortName,
+            team.shortCode,
+          ])),
     );
   }
 
