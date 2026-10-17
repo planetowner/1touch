@@ -93,16 +93,24 @@ class PushSender:
             raise PushError('fcm_unavailable', retryable=True) from error
         if response.status_code == 200:
             return
-        if response.status_code in (401, 403):
-            # 프로젝트·APNs 인증 오류를 기기 토큰 만료로 오인해 삭제하지 않아요.
-            raise PushError('fcm_permission_denied')
         try:
             details = response.json().get('error', {}).get('details', [])
         except ValueError:
             details = []
-        if any(d.get('@type') == 'type.googleapis.com/google.firebase.fcm.v1.FcmError'
-               and d.get('errorCode') == 'UNREGISTERED' for d in details):
+        codes = {d.get('errorCode') for d in details
+                 if d.get('@type') == 'type.googleapis.com/google.firebase.fcm.v1.FcmError'}
+        if 'UNREGISTERED' in codes:
             raise PushError('fcm_unregistered')
+        # 같은 401·403이어도 APNs 인증과 발신자 불일치를 구분해 원인을 남겨요.
+        if 'THIRD_PARTY_AUTH_ERROR' in codes:
+            invalid_provider = any(d.get('@type') == 'type.googleapis.com/google.firebase.fcm.v1.ApnsError'
+                                   and d.get('reason') == 'InvalidProviderToken' for d in details)
+            code = 'fcm_apns_invalid_provider_token' if invalid_provider else 'fcm_third_party_auth_error'
+            raise PushError(code, retryable=True)
+        if 'SENDER_ID_MISMATCH' in codes:
+            raise PushError('fcm_sender_id_mismatch')
+        if response.status_code in (401, 403):
+            raise PushError('fcm_permission_denied', retryable=True)
         if response.status_code == 429 or response.status_code >= 500:
             raise PushError('fcm_unavailable', retryable=True,
                             retry_after=retry_delay(response.headers.get('Retry-After'), datetime.now(timezone.utc)))

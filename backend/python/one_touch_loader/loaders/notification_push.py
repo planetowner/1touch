@@ -37,8 +37,9 @@ def dispatch(*, apply=False, limit=100, sender=None):
                         sender.send(row, device['token'], device['locale'], data, now)
                         status = 'sent'
                     except PushError as error:
+                        # 공통 OAuth 인증 실패만 중단하고, 개별 발송의 인증 오류는 뒤로 미뤄 다음 기기를 처리해요.
                         if error.code in ('fcm_not_configured', 'fcm_invalid_credentials', 'fcm_auth_unavailable',
-                                          'fcm_auth_failed', 'fcm_permission_denied'):
+                                          'fcm_auth_failed'):
                             raise
                         if error.code == 'fcm_unregistered':
                             cur.execute('DELETE FROM user_push_devices WHERE device_id=%s', (delivery['device_id'],))

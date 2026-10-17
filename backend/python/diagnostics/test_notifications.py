@@ -675,13 +675,56 @@ class RepositoryTests(unittest.TestCase):
         self.register()
         self.emit()
         sender = Mock()
-        sender.send.side_effect = push_sender.PushError('fcm_permission_denied')
+        sender.send.side_effect = push_sender.PushError('fcm_auth_failed')
         with self.assertRaises(push_sender.PushError):
             push.dispatch(apply=True, sender=sender)
         self.assertEqual(self.db.execute('SELECT attempts FROM notification_push_deliveries').fetchone()[0], 0)
         sender.send.side_effect = push_sender.PushError('fcm_unregistered')
         self.assertEqual(push.dispatch(apply=True, sender=sender)['skipped'], 1)
         self.assertEqual(self.count('user_push_devices'), 0)
+
+    def test_message_auth_failure_retries_without_blocking_the_next_device(self):
+        self.register()
+        self.register(device='c9bfb4a4-3d26-4b8e-95fb-7dc4f16f9639')
+        self.emit()
+        sender = Mock()
+        sender.send.side_effect = [push_sender.PushError('fcm_permission_denied', retryable=True), None]
+        self.assertEqual(push.dispatch(apply=True, sender=sender),
+                         {'apply': True, 'sent': 1, 'skipped': 0, 'failed': 0, 'retry': 1})
+        self.assertEqual(self.count('user_push_devices'), 2)
+        self.assertEqual(self.db.execute("SELECT status,attempts,last_error FROM notification_push_deliveries WHERE status='pending'").fetchone(),
+                         ('pending', 1, 'fcm_permission_denied'))
+        self.assertEqual(self.dispatch_at(sender, 30)['sent'], 0)
+        sender.send.side_effect = None
+        self.assertEqual(self.dispatch_at(sender, 61)['sent'], 1)
+        self.assertEqual(sender.send.call_count, 3)
+
+    def test_invalid_apns_provider_token_does_not_block_android_device(self):
+        self.register()
+        android_device = 'c9bfb4a4-3d26-4b8e-95fb-7dc4f16f9639'
+        self.register(device=android_device)
+        self.db.execute("UPDATE user_push_devices SET platform='ios' WHERE device_id=?", (DEVICE,))
+        self.db.commit()
+        self.emit()
+        sender = push_sender.PushSender.__new__(push_sender.PushSender)
+        sender.project, sender.session = 'touch-42626', Mock()
+        sender._access_token = Mock(return_value='oauth-private')
+        failed, success = requests.Response(), requests.Response()
+        failed.status_code, success.status_code = 401, 200
+        # 운영 FCM 응답을 재현해 APNs 인증 실패가 Android 발송까지 막지 않는지 확인해요.
+        failed._content = json.dumps({'error': {'code': 401, 'message': 'Invalid APNs credential.',
+            'status': 'UNAUTHENTICATED', 'details': [
+                {'@type': 'type.googleapis.com/google.firebase.fcm.v1.FcmError', 'errorCode': 'THIRD_PARTY_AUTH_ERROR'},
+                {'@type': 'type.googleapis.com/google.firebase.fcm.v1.ApnsError', 'statusCode': 403,
+                 'reason': 'InvalidProviderToken'}]}}).encode()
+        sender.session.post.side_effect = [failed, success]
+        self.assertEqual(push.dispatch(apply=True, sender=sender),
+                         {'apply': True, 'sent': 1, 'skipped': 0, 'failed': 0, 'retry': 1})
+        self.assertEqual(self.db.execute('SELECT status,last_error FROM notification_push_deliveries WHERE device_id=?',
+                                        (DEVICE,)).fetchone(), ('pending', 'fcm_apns_invalid_provider_token'))
+        self.assertEqual(self.db.execute('SELECT status FROM notification_push_deliveries WHERE device_id=?',
+                                        (android_device,)).fetchone(), ('sent',))
+        self.assertEqual(self.count('user_push_devices'), 2)
 
     def test_first_live_snapshot_is_baseline_and_var_removes_pending_goal(self):
         self.register()
@@ -955,7 +998,7 @@ class ApiAndSenderTests(unittest.TestCase):
         sender.project, sender.session = 'touch-42626', Mock()
         sender._access_token = Mock(return_value='oauth-private')
         row = {'notification_id': 5, 'kind': 'team_goal', 'expires_at': NOW + timedelta(minutes=5)}
-        for status, code, retryable in [(400, 'fcm_invalid_message', False), (403, 'fcm_permission_denied', False), (429, 'fcm_unavailable', True), (503, 'fcm_unavailable', True)]:
+        for status, code, retryable in [(400, 'fcm_invalid_message', False), (401, 'fcm_permission_denied', True), (403, 'fcm_permission_denied', True), (429, 'fcm_unavailable', True), (503, 'fcm_unavailable', True)]:
             response = requests.Response()
             response.status_code, response._content = status, b'{"error":{"message":"private-token"}}'
             response.headers['Retry-After'] = '120'
@@ -965,6 +1008,26 @@ class ApiAndSenderTests(unittest.TestCase):
             self.assertEqual(error.exception.code, code)
             self.assertEqual(error.exception.retryable, retryable)
             self.assertNotIn('private-token', str(error.exception))
+
+    def test_fcm_detail_distinguishes_apns_sender_and_unregistered_device_errors(self):
+        sender = push_sender.PushSender.__new__(push_sender.PushSender)
+        sender.project, sender.session = 'touch-42626', Mock()
+        sender._access_token = Mock(return_value='oauth-private')
+        row = {'notification_id': 5, 'kind': 'team_goal', 'expires_at': NOW + timedelta(minutes=5)}
+        cases = [(401, 'THIRD_PARTY_AUTH_ERROR', 'fcm_third_party_auth_error', True),
+                 (403, 'SENDER_ID_MISMATCH', 'fcm_sender_id_mismatch', False),
+                 (404, 'UNREGISTERED', 'fcm_unregistered', False)]
+        for status, detail, code, retryable in cases:
+            with self.subTest(detail=detail):
+                response = requests.Response()
+                response.status_code = status
+                response._content = json.dumps({'error': {'message': 'private-token', 'details': [
+                    {'@type': 'type.googleapis.com/google.firebase.fcm.v1.FcmError', 'errorCode': detail}]}}).encode()
+                sender.session.post.return_value = response
+                with self.assertRaises(push_sender.PushError) as error:
+                    sender.send(row, 'private-token', 'en', {'destination': '/match/500'}, NOW)
+                self.assertEqual((error.exception.code, error.exception.retryable), (code, retryable))
+                self.assertNotIn('private-token', str(error.exception))
 
     def test_oauth_is_scoped_and_reused_for_multiple_messages(self):
         with patch.dict('os.environ', {'FCM_PROJECT_ID': 'touch-42626', 'FCM_CLIENT_EMAIL': 'account@example.test', 'FCM_PRIVATE_KEY': 'fake-key'}), \
