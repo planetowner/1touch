@@ -47,7 +47,7 @@ void main() {
 
   test('Japanese and Chinese push copy is localized', () {
     for (final entry
-        in {'ja': 'Away戦にスタメン出場します。', 'zh': '对阵Away首发出场。'}.entries) {
+        in {'ja': 'スタメン出場 · Away戦', 'zh': '首发出场 · 对阵Away'}.entries) {
       final message = NotificationMessageTemplates.build(
         type: NotificationEventType.playerStartingXi,
         locale: Locale(entry.key),
@@ -89,7 +89,7 @@ void main() {
     expect(DeviceNotificationService.matchReminderLeadTime,
         const Duration(minutes: 30));
     expect(message.title, 'FC Barcelona');
-    expect(message.body, 'Kickoff vs Real Madrid in 30 min.');
+    expect(message.body, 'Kick-off in 30 min · vs Real Madrid');
   });
 
   test('Korean and English event messages use their respective templates', () {
@@ -114,14 +114,14 @@ void main() {
     );
 
     expect(korean.title, 'Heungmin Son');
-    expect(korean.body, '⚽ 골! 72’ · Tottenham 1-0 Arsenal');
+    expect(korean.body, '⚽ 골! 72′ · Tottenham 1-0 Arsenal');
     expect(english.title, 'Heungmin Son');
-    expect(english.body, '⚽ Goal! 72’ · Tottenham 1-0 Arsenal');
+    expect(english.body, '⚽ Goal! 72′ · Tottenham 1-0 Arsenal');
   });
 
   test('conceded copy uses the same goal event in all four languages', () {
     for (final entry
-        in {'en': 'Conceded', 'ko': '실점', 'ja': '失点', 'zh': '失球'}.entries) {
+        in {'en': 'Goal conceded', 'ko': '실점', 'ja': '失点', 'zh': '失球'}.entries) {
       final message = NotificationMessageTemplates.build(
         type: NotificationEventType.teamGoal,
         locale: Locale(entry.key),
@@ -137,7 +137,7 @@ void main() {
       );
       expect(message.type, NotificationEventType.teamGoal);
       expect(message.title, 'Away');
-      expect(message.body, '${entry.value} · Player 45+2’ · Home 1-0 Away');
+      expect(message.body, '${entry.value} 45+2′ · Player · Home 1-0 Away');
     }
   });
 
@@ -153,6 +153,43 @@ void main() {
       ),
     );
     expect(message.body, '{minute}: Keep {score} as text');
+  });
+
+  test('substitutions share one header and put each pair on its own line', () {
+    for (final entry in {
+      'en': 'Substitutions (2) 62′',
+      'ko': '2명 교체 62′',
+      'ja': '2人交代 62′',
+      'zh': '换人（2人） 62′',
+    }.entries) {
+      final message = NotificationMessageTemplates.build(
+        type: NotificationEventType.teamSubstitution,
+        locale: Locale(entry.key),
+        data: const NotificationTemplateData(
+          team: 'Deportivo A Coruña',
+          minute: '62',
+          substitutions: [
+            (outPlayer: 'Luismi Cruz', inPlayer: 'Adama Traoré'),
+            (outPlayer: 'Ximo Navarro', inPlayer: 'Adrià Altimira'),
+          ],
+        ),
+      );
+      expect(message.title, 'Deportivo A Coruña');
+      expect(message.body,
+          '${entry.value}\nLuismi Cruz → Adama Traoré\nXimo Navarro → Adrià Altimira');
+    }
+  });
+
+  test('a single substitution uses the same layout and keeps added time', () {
+    final message = NotificationMessageTemplates.build(
+      type: NotificationEventType.teamSubstitution,
+      locale: const Locale('ko'),
+      data: const NotificationTemplateData(
+        minute: '90+2',
+        substitutions: [(outPlayer: 'Out', inPlayer: 'In')],
+      ),
+    );
+    expect(message.body, '1명 교체 90+2′\nOut → In');
   });
 
   test('comment previews are limited to 60 characters', () {

@@ -69,8 +69,7 @@ class NotificationTemplateData {
     this.homeTeam = '',
     this.awayTeam = '',
     this.player = '',
-    this.outPlayer = '',
-    this.inPlayer = '',
+    this.substitutions = const [],
     this.displayName = '',
     this.commentPreview = '',
     this.minute = '',
@@ -84,8 +83,7 @@ class NotificationTemplateData {
   final String homeTeam;
   final String awayTeam;
   final String player;
-  final String outPlayer;
-  final String inPlayer;
+  final List<({String outPlayer, String inPlayer})> substitutions;
   final String displayName;
   final String commentPreview;
   final String minute;
@@ -125,8 +123,10 @@ class NotificationMessageTemplates {
       'team': data.team,
       'opponent': data.opponent,
       'player': data.player,
-      'out_player': data.outPlayer,
-      'in_player': data.inPlayer,
+      'count': data.substitutions.length,
+      'substitutions': data.substitutions
+          .map((item) => '${item.outPlayer} → ${item.inPlayer}')
+          .join('\n'),
       'display_name': data.displayName,
       'comment_preview': _preview(data.commentPreview),
       'minute': data.minute,

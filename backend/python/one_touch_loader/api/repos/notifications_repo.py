@@ -161,6 +161,22 @@ def mark_read(user_id, through_id):
             WHERE user_id=%s AND scope='community' AND notification_id<=%s""", (utc_now(), user_id, through_id))
 
 
+def update_substitution(cur, event, now, *, has_new_sources):
+    cur.execute('''SELECT notification_id,payload,expires_at FROM user_notifications
+        WHERE fixture_id=%s AND event_key=%s AND cancelled_at IS NULL AND (expires_at>%s OR %s)''',
+        (event.fixture_id, event.key, now, has_new_sources))
+    for row in cur.fetchall():
+        if decoded(row['payload']) == event.payload:
+            continue
+        cur.execute('UPDATE user_notifications SET payload=%s,expires_at=%s WHERE notification_id=%s',
+                    (json.dumps(event.payload), event.expires_at if has_new_sources else row['expires_at'], row['notification_id']))
+        if has_new_sources:
+            # 다음 수집에서 교체가 추가돼도 같은 ID로 기존 알림을 갱신해요. 전송 실패의 재시도 간격은 유지해요.
+            cur.execute('''UPDATE notification_push_deliveries SET status='pending',attempts=0,
+                next_attempt_at=%s,last_error=NULL WHERE notification_id=%s AND status<>'pending' ''',
+                (now, row['notification_id']))
+
+
 def capture_fixture(connection, fixture, sampled_at):
     with connection.cursor(dictionary=True) as cur:
         # 선발 수집과 라이브 수집이 같은 경기를 갱신할 때 마지막 관측 순서를 지켜요.
@@ -170,15 +186,20 @@ def capture_fixture(connection, fixture, sampled_at):
             return False
         candidates = fixture_events(fixture, sampled_at)
         # 정보가 덜 채워져도 현재 키를 유지해 일시적인 누락을 VAR 취소로 오인하지 않아요.
-        keys = {e.key for e in candidates}
+        keys = {key for e in candidates for key in (e.key, *e.source_keys)}
         seen = set(decoded(previous['seen_keys'])) if previous else set()
         # 처음 켰을 때 진행 중 경기의 지난 골을 모두 보내지 않아요. 경기 전 확정 선발은 바로 알려요.
         if previous is not None or fixture['state_id'] in (1, 16):
             for event in candidates:
-                if event.key not in seen and event.is_ready:
+                # 공급자 키를 계속 기록해 기존 개별 교체나 첫 관측의 지난 교체를 다시 보내지 않아요.
+                source_keys = set(event.source_keys or (event.key,))
+                has_new_sources = bool(source_keys - seen)
+                if event.kind == 'team_substitution':
+                    update_substitution(cur, event, sampled_at, has_new_sources=has_new_sources)
+                if has_new_sources and event.is_ready:
                     enqueue(cur, event, sampled_at)
                     # 준비된 알림만 처리 완료로 남겨 미완성 이벤트는 다음 수집에서 다시 확인해요.
-                    seen.add(event.key)
+                    seen.update(source_keys)
         else:
             seen.update(keys)
         if previous is not None:
@@ -226,19 +247,21 @@ def football_push_data(cur, row, data, subjects, locale):
 
     team_column, player_column, *_ = LOCALE_COLUMNS[notification_language(locale)]
     # 앱과 같은 이름 컬럼을 쓰고, 번역이 비어 있으면 DB의 원문 이름을 써요.
-    for table, identifier, column, original, fields in (
-        ('teams', 'team_id', team_column, 'name', ('home_team', 'away_team', 'team', 'opponent')),
-        ('players', 'player_id', player_column, 'display_name', ('player', 'in_player', 'out_player')),
+    for table, identifier, column, original, fields, items in (
+        ('teams', 'team_id', team_column, 'name', ('home_team', 'away_team', 'team', 'opponent'), [data]),
+        ('players', 'player_id', player_column, 'display_name', ('player', 'in_player', 'out_player'),
+         [data, *data.get('substitutions', [])]),
     ):
-        ids = sorted({data[field + '_id'] for field in fields if data.get(field + '_id') is not None})
+        ids = sorted({item[field + '_id'] for item in items for field in fields if item.get(field + '_id') is not None})
         if not ids:
             continue
         marks = ','.join('%s' for _ in ids)
         cur.execute(f"SELECT {identifier},COALESCE(NULLIF({column},''),{original}) AS name FROM {table} WHERE {identifier} IN ({marks})", tuple(ids))
         names = {item[identifier]: item['name'] for item in cur.fetchall() if item['name']}
-        for field in fields:
-            if data.get(field + '_id') in names:
-                data[field] = names[data[field + '_id']]
+        for item in items:
+            for field in fields:
+                if item.get(field + '_id') in names:
+                    item[field] = names[item[field + '_id']]
     return data
 
 

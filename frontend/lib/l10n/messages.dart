@@ -148,80 +148,80 @@ const appMessages = <String, MessageTranslations>{
     ja: "{display_name}: {comment_preview}",
     zh: "{display_name}: {comment_preview}"
   ),
-  "Betting is open vs {opponent}.": (
-    ko: "{opponent}전 승부 예측이 열렸어요.",
-    ja: "{opponent}戦の予想受付が始まりました。",
-    zh: "对阵{opponent}的竞猜已开放。"
+  "Betting is open · vs {opponent}": (
+    ko: "승부 예측 시작 · {opponent}전",
+    ja: "予想受付開始 · {opponent}戦",
+    zh: "竞猜已开放 · 对阵{opponent}"
   ),
-  "Kickoff vs {opponent} in {minutes_until_kickoff} min.": (
-    ko: "{opponent}전이 {minutes_until_kickoff}분 후 시작해요.",
-    ja: "{opponent}戦は{minutes_until_kickoff}分後にキックオフです。",
-    zh: "对阵{opponent}的比赛将在{minutes_until_kickoff}分钟后开始。"
+  "Kick-off in {minutes_until_kickoff} min · vs {opponent}": (
+    ko: "경기 시작까지 {minutes_until_kickoff}분 · {opponent}전",
+    ja: "キックオフまで{minutes_until_kickoff}分 · {opponent}戦",
+    zh: "距开球还有{minutes_until_kickoff}分钟 · 对阵{opponent}"
   ),
-  "Kickoff vs {opponent}.": (
-    ko: "{opponent}전 경기가 시작했어요.",
-    ja: "{opponent}戦が始まりました。",
-    zh: "对阵{opponent}的比赛开始了。"
+  "Kick-off · vs {opponent}": (
+    ko: "경기 시작 · {opponent}전",
+    ja: "キックオフ · {opponent}戦",
+    zh: "比赛开始 · 对阵{opponent}"
   ),
-  "Half time · {score_line}": (
+  "Half-time · {score_line}": (
     ko: "전반 종료 · {score_line}",
     ja: "前半終了 · {score_line}",
     zh: "上半场结束 · {score_line}"
   ),
-  "Full time · {score_line}": (
+  "Full-time · {score_line}": (
     ko: "경기 종료 · {score_line}",
     ja: "試合終了 · {score_line}",
     zh: "全场结束 · {score_line}"
   ),
-  "⚽ Goal! {player} {minute}’ · {score_line}": (
-    ko: "⚽ 골! {player} {minute}’ · {score_line}",
-    ja: "⚽ ゴール！{player} {minute}’ · {score_line}",
-    zh: "⚽ 进球！{player} {minute}’ · {score_line}"
+  "⚽ Goal! {minute}′ · {player} · {score_line}": (
+    ko: "⚽ 골! {minute}′ · {player} · {score_line}",
+    ja: "⚽ ゴール！{minute}′ · {player} · {score_line}",
+    zh: "⚽ 进球！{minute}′ · {player} · {score_line}"
   ),
-  "Conceded · {player} {minute}’ · {score_line}": (
-    ko: "실점 · {player} {minute}’ · {score_line}",
-    ja: "失点 · {player} {minute}’ · {score_line}",
-    zh: "失球 · {player} {minute}’ · {score_line}"
+  "Goal conceded {minute}′ · {player} · {score_line}": (
+    ko: "실점 {minute}′ · {player} · {score_line}",
+    ja: "失点 {minute}′ · {player} · {score_line}",
+    zh: "失球 {minute}′ · {player} · {score_line}"
   ),
-  "Sub {minute}’ · {out_player} → {in_player}": (
-    ko: "교체 {minute}’ · {out_player} → {in_player}",
-    ja: "交代 {minute}’ · {out_player} → {in_player}",
-    zh: "换人 {minute}’ · {out_player} → {in_player}"
+  "Substitutions ({count}) {minute}′\n{substitutions}": (
+    ko: "{count}명 교체 {minute}′\n{substitutions}",
+    ja: "{count}人交代 {minute}′\n{substitutions}",
+    zh: "换人（{count}人） {minute}′\n{substitutions}"
   ),
-  "Starting vs {opponent}.": (
-    ko: "{opponent}전 선발 출전해요.",
-    ja: "{opponent}戦にスタメン出場します。",
-    zh: "对阵{opponent}首发出场。"
+  "Starting · vs {opponent}": (
+    ko: "선발 출전 · {opponent}전",
+    ja: "スタメン出場 · {opponent}戦",
+    zh: "首发出场 · 对阵{opponent}"
   ),
-  "On at {minute}’ vs {opponent}": (
-    ko: "{minute}’ 교체 투입됐어요 · vs {opponent}",
-    ja: "{minute}’に途中出場 · vs {opponent}",
-    zh: "{minute}’替补登场 · vs {opponent}"
+  "Subbed on at {minute}′ · vs {opponent}": (
+    ko: "교체 투입 {minute}′ · {opponent}전",
+    ja: "途中出場 {minute}′ · {opponent}戦",
+    zh: "替补登场 {minute}′ · 对阵{opponent}"
   ),
-  "⚽ Goal! {minute}’ · {score_line}": (
-    ko: "⚽ 골! {minute}’ · {score_line}",
-    ja: "⚽ ゴール！{minute}’ · {score_line}",
-    zh: "⚽ 进球！{minute}’ · {score_line}"
+  "⚽ Goal! {minute}′ · {score_line}": (
+    ko: "⚽ 골! {minute}′ · {score_line}",
+    ja: "⚽ ゴール！{minute}′ · {score_line}",
+    zh: "⚽ 进球！{minute}′ · {score_line}"
   ),
-  "🅰️ Assist {minute}’ · {score_line}": (
-    ko: "🅰️ 도움 {minute}’ · {score_line}",
-    ja: "🅰️ アシスト {minute}’ · {score_line}",
-    zh: "🅰️ 助攻 {minute}’ · {score_line}"
+  "🅰️ Assist {minute}′ · {score_line}": (
+    ko: "🅰️ 도움 {minute}′ · {score_line}",
+    ja: "🅰️ アシスト {minute}′ · {score_line}",
+    zh: "🅰️ 助攻 {minute}′ · {score_line}"
   ),
-  "🟨 Yellow card {minute}’ vs {opponent}": (
-    ko: "🟨 경고 {minute}’ · vs {opponent}",
-    ja: "🟨 イエローカード {minute}’ · vs {opponent}",
-    zh: "🟨 黄牌 {minute}’ · vs {opponent}"
+  "🟨 Yellow card {minute}′ · vs {opponent}": (
+    ko: "🟨 경고 {minute}′ · {opponent}전",
+    ja: "🟨 イエローカード {minute}′ · {opponent}戦",
+    zh: "🟨 黄牌 {minute}′ · 对阵{opponent}"
   ),
-  "🟥 Red card {minute}’ vs {opponent}": (
-    ko: "🟥 퇴장 {minute}’ · vs {opponent}",
-    ja: "🟥 レッドカード {minute}’ · vs {opponent}",
-    zh: "🟥 红牌 {minute}’ · vs {opponent}"
+  "🟥 Red card {minute}′ · vs {opponent}": (
+    ko: "🟥 퇴장 {minute}′ · {opponent}전",
+    ja: "🟥 レッドカード {minute}′ · {opponent}戦",
+    zh: "🟥 红牌 {minute}′ · 对阵{opponent}"
   ),
-  "Off injured {minute}’ vs {opponent}": (
-    ko: "부상으로 교체됐어요 {minute}’ · vs {opponent}",
-    ja: "負傷で交代しました {minute}’ · vs {opponent}",
-    zh: "因伤被换下 {minute}’ · vs {opponent}"
+  "Subbed off injured at {minute}′ · vs {opponent}": (
+    ko: "부상으로 교체 아웃 {minute}′ · {opponent}전",
+    ja: "負傷交代 {minute}′ · {opponent}戦",
+    zh: "因伤被换下 {minute}′ · 对阵{opponent}"
   ),
   "You won {points} points!": (
     ko: "{points} pts를 받았어요!",

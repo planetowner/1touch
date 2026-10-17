@@ -34,6 +34,7 @@ class NotificationEvent:
     post_id: int | None = None
     comment_id: int | None = None
     actor_id: int | None = None
+    source_keys: tuple[str, ...] = ()
 
     @property
     def scope(self):
@@ -60,8 +61,9 @@ def fixture_events(fixture: dict, now: datetime) -> list[NotificationEvent]:
             'home_team_id': teams['home']['id'], 'away_team_id': teams['away']['id'],
             'fixture_id': fid, 'destination': f'/match/{fid}'}
     result = []
+    substitutions = {}
 
-    def add(kind, key, subjects, data):
+    def add(kind, key, subjects, data, *, source_keys=()):
         subjects = tuple(subject for subject in subjects if subject is not None)
         if kind.startswith('player_'):
             subjects = tuple(canonical_sportmonks_player_id(subject) for subject in subjects)
@@ -69,7 +71,8 @@ def fixture_events(fixture: dict, now: datetime) -> list[NotificationEvent]:
                 data = {**data, 'player_id': subjects[0]}
         if subjects:
             result.append(NotificationEvent(f'fixture:{fid}:{key}', kind, subjects,
-                                            {**base, **data}, now + timedelta(minutes=5), fid))
+                                            {**base, **data}, now + timedelta(minutes=5), fid,
+                                            source_keys=source_keys))
 
     # 확정 명단만 선발 알림으로 보내요. 예상 명단과 경기 후 재수집은 제외해요.
     confirmed = any(m['type_id'] == 572 and m['values'].get('confirmed') is True
@@ -101,10 +104,11 @@ def fixture_events(fixture: dict, now: datetime) -> list[NotificationEvent]:
                         {**data, 'player': event['related_player_name'] or ''})
         elif code == 'substitution':
             # Sportmonks와 기존 경기 화면에서 player는 투입, related_player는 교체 아웃이에요.
-            add('team_substitution', key + ':team_sub', [event['participant_id']],
-                {**data, 'in_player': event['player_name'] or '', 'out_player': event['related_player_name'] or '',
-                 'in_player_id': canonical_sportmonks_player_id(event['player_id']),
-                 'out_player_id': canonical_sportmonks_player_id(event['related_player_id'])})
+            group = substitutions.setdefault((event['participant_id'], data['minute']), {})
+            group[f'fixture:{fid}:{key}:team_sub'] = {
+                'in_player': event['player_name'] or '', 'out_player': event['related_player_name'] or '',
+                'in_player_id': canonical_sportmonks_player_id(event['player_id']),
+                'out_player_id': canonical_sportmonks_player_id(event['related_player_id'])}
             add('player_substitute', key + ':sub', [event['player_id']], data)
             if event.get('injured') is True:
                 add('player_injury', key + ':injury', [event['related_player_id']],
@@ -112,6 +116,12 @@ def fixture_events(fixture: dict, now: datetime) -> list[NotificationEvent]:
         elif code in ('yellowcard', 'redcard', 'yellowredcard'):
             kind = 'player_yellow_card' if code == 'yellowcard' else 'player_red_card'
             add(kind, key + ':' + kind, [event['player_id']], data)
+    for (team_id, minute), group in substitutions.items():
+        # 추가시간까지 같은 교체만 묶고, 응답 순서가 바뀌어도 선수 목록은 유지해요.
+        source_keys = tuple(sorted(group))
+        add('team_substitution', f'team_sub:{team_id}:{minute}', [team_id],
+            {'team': names.get(team_id, ''), 'team_id': team_id, 'minute': minute,
+             'substitutions': [group[key] for key in source_keys]}, source_keys=source_keys)
     return result
 
 
@@ -150,5 +160,11 @@ def message(kind: str, data: dict, locale: str) -> dict:
     arguments['display_name'] = data.get('display_name') or ''
     arguments['score_line'] = f"{arguments['home_team']} {arguments['score']} {arguments['away_team']}"
     arguments['minutes_until_kickoff'] = data.get('minutes_until_kickoff', int(MATCH_REMINDER_LEAD_TIME.total_seconds() // 60))
+    if kind == 'team_substitution':
+        # 배포 전에 저장된 단일 교체도 같은 줄바꿈 형식으로 표시해요.
+        substitutions = data.get('substitutions', [data])
+        arguments['count'] = len(substitutions)
+        arguments['substitutions'] = '\n'.join(
+            f"{item.get('out_player', '')} → {item.get('in_player', '')}" for item in substitutions)
     template_kind = 'team_goal_against' if kind == 'team_goal' and data.get('goal_against') else kind
     return {part: template.format_map(arguments) for part, template in _MESSAGE_TEMPLATES[template_kind][language].items()}

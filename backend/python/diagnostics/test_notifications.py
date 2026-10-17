@@ -101,6 +101,40 @@ class EventTests(unittest.TestCase):
         f['events'][0]['injured'] = None
         self.assertNotIn('player_injury', {x.kind for x in fixture_events(f, NOW)})
 
+    def test_substitutions_group_by_fixture_team_and_full_minute(self):
+        f = payload(2)
+        f['events'] = [event('substitution', id=900 + i, minute=62, player_id=100 + i)
+                       for i in range(3)]
+        f['events'] += [event('substitution', id=910, minute=62, participant_id=20),
+                        event('substitution', id=911, minute=63),
+                        event('substitution', id=912, minute=90, extra_minute=1),
+                        event('substitution', id=913, minute=90, extra_minute=2),
+                        event('substitution', id=914, minute=62, rescinded=True)]
+        results = fixture_events(f, NOW)
+        groups = [item for item in results if item.kind == 'team_substitution']
+        self.assertEqual(len(groups), 5)
+        first = next(item for item in groups if item.subjects == (10,) and item.payload['minute'] == '62')
+        self.assertEqual(len(first.payload['substitutions']), 3)
+        self.assertEqual(first.source_keys, tuple(f'fixture:500:event:{i}:team_sub' for i in range(900, 903)))
+        self.assertEqual(len([item for item in results if item.kind == 'player_substitute']), 7)
+        f['events'].reverse()
+        reordered = {item.key: item for item in fixture_events(f, NOW)}
+        self.assertEqual(reordered[first.key], first)
+        f['id'] = 501
+        self.assertTrue({item.key for item in fixture_events(f, NOW)}.isdisjoint(reordered))
+
+    def test_substitution_lines_and_count_are_localized_without_changing_names(self):
+        data = {'team': 'Deportivo A Coruña', 'minute': '62', 'substitutions': [
+            {'out_player': 'Luismi Cruz', 'in_player': 'Adama Traoré'},
+            {'out_player': 'Ximo Navarro', 'in_player': 'Adrià Altimira'}]}
+        for locale, header in {'en': 'Substitutions (2) 62′', 'ko': '2명 교체 62′',
+                               'ja': '2人交代 62′', 'zh': '换人（2人） 62′'}.items():
+            self.assertEqual(message('team_substitution', data, locale), {
+                'title': data['team'],
+                'body': header + '\nLuismi Cruz → Adama Traoré\nXimo Navarro → Adrià Altimira'})
+        legacy = {'team': 'Home', 'minute': '45+2', 'out_player': 'Out', 'in_player': 'In'}
+        self.assertEqual(message('team_substitution', legacy, 'ko')['body'], '1명 교체 45+2′\nOut → In')
+
     def test_state_transitions_and_two_followed_teams_share_one_event(self):
         for old, new, expected in [(1, 2, 'team_kickoff'), (2, 3, 'team_half_time'),
                                    (4, 5, 'team_full_time'), (6, 7, 'team_full_time'), (22, 8, 'team_full_time')]:
@@ -119,10 +153,10 @@ class EventTests(unittest.TestCase):
         row = {'notification_id': 5, 'kind': 'player_starting_xi', 'expires_at': NOW + timedelta(minutes=5)}
         data = {'destination': '/match/500', 'player': 'Son', 'opponent': 'Away'}
         expected = {
-            'en-US': ('Son', 'Starting vs Away.'),
-            'ko-KR': ('Son', 'Away전 선발 출전해요.'),
-            'ja-JP': ('Son', 'Away戦にスタメン出場します。'),
-            'zh-Hans': ('Son', '对阵Away首发出场。'),
+            'en-US': ('Son', 'Starting · vs Away'),
+            'ko-KR': ('Son', '선발 출전 · Away전'),
+            'ja-JP': ('Son', 'スタメン出場 · Away戦'),
+            'zh-Hans': ('Son', '首发出场 · 对阵Away'),
         }
         for locale, (title, body) in expected.items():
             with self.subTest(locale=locale):
@@ -136,7 +170,7 @@ class EventTests(unittest.TestCase):
         data = {'display_name': '{player}', 'comment_preview': 'Keep {score} as text', 'player': 'Son'}
         self.assertEqual(message('post_comment', data, 'ja')['body'], '{player}: Keep {score} as text')
         self.assertEqual(message('team_match_reminder', {'team': 'Home', 'opponent': 'Away',
-                         'minutes_until_kickoff': 15}, 'en')['body'], 'Kickoff vs Away in 15 min.')
+                         'minutes_until_kickoff': 15}, 'en')['body'], 'Kick-off in 15 min · vs Away')
 
     def test_community_notifications_show_display_name(self):
         data = {'username': 'john_doe', 'display_name': '불광동호날두', 'comment_preview': '좋아요'}
@@ -149,14 +183,14 @@ class EventTests(unittest.TestCase):
         data = {'team': 'Home', 'home_team': 'Home', 'away_team': 'Away',
                 'player': 'Player', 'minute': '45+2', 'score': '1-0'}
         for locale, (scored, conceded) in {
-            'en': ('⚽ Goal!', 'Conceded'), 'ko': ('⚽ 골!', '실점'),
+            'en': ('⚽ Goal!', 'Goal conceded'), 'ko': ('⚽ 골!', '실점'),
             'ja': ('⚽ ゴール！', '失点'), 'zh': ('⚽ 进球！', '失球'),
         }.items():
             for against, prefix in ((False, scored), (True, conceded)):
                 rendered = message('team_goal', {**data, 'goal_against': against}, locale)
                 self.assertEqual(rendered['title'], 'Home')
                 self.assertTrue(rendered['body'].startswith(prefix))
-                self.assertIn('45+2’ · Home 1-0 Away', rendered['body'])
+                self.assertIn('45+2′ · Player · Home 1-0 Away', rendered['body'])
 
     def test_real_own_goal_keeps_beneficiary_team_and_sends_both_sides(self):
         path = Path(__file__).parent / 'fixtures/sportmonks_2024_sliema_own_goal_error.json'
@@ -382,7 +416,7 @@ class RepositoryTests(unittest.TestCase):
                 rendered = message(args[0]['kind'], args[3], args[2])
                 self.assertEqual(rendered['title'], title)
                 self.assertTrue(rendered['body'].startswith(prefix))
-                self.assertIn('선발 선수 42+2’ · 홈팀 1-0 원정팀', rendered['body'])
+                self.assertIn('42+2′ · 선발 선수 · 홈팀 1-0 원정팀', rendered['body'])
 
     def test_only_eligible_team_sets_title_and_goal_perspective(self):
         self.register()
@@ -400,10 +434,10 @@ class RepositoryTests(unittest.TestCase):
         self.assertTrue(data['goal_against'])
 
     def test_each_device_gets_its_language_and_opponent_for_away_favorite(self):
-        expected = {'en-US': ('Away', 'Kickoff vs Home.'),
-                    'ko-KR': ('원정팀', '홈팀전 경기가 시작했어요.'),
-                    'ja-JP': ('アウェイ', 'ホーム戦が始まりました。'),
-                    'zh-Hans': ('客队', '对阵主队的比赛开始了。')}
+        expected = {'en-US': ('Away', 'Kick-off · vs Home'),
+                    'ko-KR': ('원정팀', '경기 시작 · 홈팀전'),
+                    'ja-JP': ('アウェイ', 'キックオフ · ホーム戦'),
+                    'zh-Hans': ('客队', '比赛开始 · 对阵主队')}
         self.db.execute('UPDATE users SET favorite_team_id=20 WHERE user_id=1')
         self.db.commit()
         for i, locale in enumerate(expected):
@@ -433,11 +467,126 @@ class RepositoryTests(unittest.TestCase):
         rendered = {call.args[0]['kind']: message(call.args[0]['kind'], call.args[3], call.args[2])
                     for call in sender.send.call_args_list}
         self.assertEqual(rendered['team_substitution'],
-                         {'title': '홈팀', 'body': '교체 42’ · 교체 선수 → 선발 선수'})
+                         {'title': '홈팀', 'body': '1명 교체 42′\n교체 선수 → 선발 선수'})
         self.assertEqual(rendered['player_substitute'],
-                         {'title': '선발 선수', 'body': '42’ 교체 투입됐어요 · vs 원정팀'})
+                         {'title': '선발 선수', 'body': '교체 투입 42′ · 원정팀전'})
         self.assertEqual(rendered['player_injury'],
-                         {'title': '교체 선수', 'body': '부상으로 교체됐어요 42’ · vs 원정팀'})
+                         {'title': '교체 선수', 'body': '부상으로 교체 아웃 42′ · 원정팀전'})
+
+    def prepare_team_substitutions(self):
+        self.register()
+        repo.update_preferences(1, 'team', {'substitution': True}, [10, 20])
+        repo.update_preferences(1, 'player', {'substitute': False})
+        f = payload(2)
+        self.capture(f)
+        return f
+
+    def test_simultaneous_substitutions_send_one_localized_push(self):
+        f = self.prepare_team_substitutions()
+        f['events'] = [event('substitution', minute=62),
+                       event('substitution', id=901, minute=62, player_id=300, related_player_id=400,
+                             player_name='Incoming', related_player_name='Outgoing')]
+        self.db.execute("INSERT INTO players VALUES (300,'Incoming','투입 선수','投入選手','上场球员')")
+        self.db.commit()
+        self.capture(f, 15)
+        self.capture(f, 30)
+        self.assertEqual(self.count('user_notifications'), 1)
+        self.assertEqual(self.count('notification_push_deliveries'), 1)
+        sender = Mock()
+        self.assertEqual(self.dispatch_at(sender, 31)['sent'], 1)
+        row, token, locale, data, now = sender.send.call_args.args
+        result = push_sender.fcm_message(row, token, locale, data, now)
+        self.assertEqual(result['notification'], {'title': '홈팀',
+                         'body': '2명 교체 62′\n교체 선수 → 선발 선수\nOutgoing → 투입 선수'})
+        self.assertEqual(result['apns']['payload']['aps']['alert'], result['notification'])
+        self.assertEqual(result['data']['destination'], '/match/500')
+
+    def test_later_substitution_updates_same_pending_or_sent_notification(self):
+        for send_first in (False, True):
+            with self.subTest(send_first=send_first):
+                f = self.prepare_team_substitutions() if not send_first else payload(2)
+                minute = 62 if not send_first else 80
+                offset = 0 if not send_first else 60
+                f['events'] = [event('substitution', id=900 + offset, minute=minute)]
+                self.capture(f, offset + 15)
+                sender = Mock()
+                if send_first:
+                    self.assertEqual(self.dispatch_at(sender, offset + 16)['sent'], 1)
+                saved_id = self.db.execute('SELECT MAX(notification_id) FROM user_notifications').fetchone()[0]
+                f['events'].append(event('substitution', id=901 + offset, minute=minute, player_id=300))
+                self.capture(f, offset + 30)
+                self.assertEqual(self.dispatch_at(sender, offset + 31)['sent'], 1)
+                self.assertEqual(sender.send.call_args.args[0]['notification_id'], saved_id)
+                self.assertEqual(len(sender.send.call_args.args[3]['substitutions']), 2)
+                messages = [push_sender.fcm_message(*call.args) for call in sender.send.call_args_list]
+                self.assertEqual({m['android']['notification']['tag'] for m in messages}, {str(saved_id)})
+                self.assertEqual({m['apns']['headers']['apns-collapse-id'] for m in messages}, {str(saved_id)})
+                f['events'].reverse()
+                self.capture(f, offset + 45)
+                self.assertEqual(self.dispatch_at(sender, offset + 46)['sent'], 0)
+                self.assertEqual(self.count('user_notifications'), 1 + int(send_first))
+
+    def test_group_update_preserves_retry_backoff_and_rechecks_preferences(self):
+        f = self.prepare_team_substitutions()
+        f['events'] = [event('substitution', minute=62)]
+        self.capture(f, 15)
+        sender = Mock()
+        sender.send.side_effect = push_sender.PushError('fcm_unavailable', retryable=True, retry_after=120)
+        self.assertEqual(self.dispatch_at(sender, 16)['retry'], 1)
+        pending = self.db.execute('SELECT attempts,next_attempt_at FROM notification_push_deliveries').fetchone()
+        f['events'].append(event('substitution', id=901, minute=62, player_id=300))
+        self.capture(f, 30)
+        self.assertEqual(self.db.execute('SELECT attempts,next_attempt_at FROM notification_push_deliveries').fetchone(), pending)
+        self.assertEqual(self.dispatch_at(sender, 31)['sent'], 0)
+        repo.update_preferences(1, 'team', {'substitution': False}, [10])
+        self.assertEqual(self.dispatch_at(sender, 137)['skipped'], 1)
+        self.assertEqual(sender.send.call_count, 1)
+
+    def test_removing_one_substitution_updates_pending_group_and_removing_all_cancels_it(self):
+        f = self.prepare_team_substitutions()
+        f['events'] = [event('substitution', minute=62), event('substitution', id=901, minute=62, player_id=300)]
+        self.capture(f, 15)
+        f['events'][0]['rescinded'] = True
+        self.capture(f, 30)
+        saved, cancelled = self.db.execute('SELECT payload,cancelled_at FROM user_notifications').fetchone()
+        self.assertIsNone(cancelled)
+        self.assertEqual([s['in_player_id'] for s in json.loads(saved)['substitutions']], [300])
+        f['events'] = []
+        self.capture(f, 45)
+        sender = Mock()
+        self.assertEqual(self.dispatch_at(sender, 46)['skipped'], 1)
+        sender.send.assert_not_called()
+
+    def test_historical_substitutions_and_legacy_seen_keys_do_not_replay(self):
+        self.register()
+        repo.update_preferences(1, 'team', {'substitution': True}, [10])
+        f = payload(2)
+        f['events'] = [event('substitution', minute=62), event('substitution', id=901, minute=62)]
+        self.capture(f)
+        self.capture(f, 15)
+        self.assertEqual(self.count('user_notifications'), 0)
+        # 배포 전 저장된 상태에는 묶음 키가 없고 공급자별 키만 있어요.
+        seen, current = self.db.execute('SELECT seen_keys,current_keys FROM notification_fixture_state').fetchone()
+        self.db.execute('UPDATE notification_fixture_state SET seen_keys=?,current_keys=?',
+                        tuple(json.dumps([key for key in json.loads(value) if ':event:' in key]) for value in (seen, current)))
+        self.db.commit()
+        self.capture(f, 30)
+        self.assertEqual(self.count('user_notifications'), 0)
+
+    def test_substitution_update_rolls_back_with_fixture_capture(self):
+        f = self.prepare_team_substitutions()
+        f['events'] = [event('substitution', minute=62)]
+        self.capture(f, 15)
+        sender = Mock()
+        self.dispatch_at(sender, 16)
+        f['events'].append(event('substitution', id=901, minute=62, player_id=300))
+        with self.assertRaises(RuntimeError), db.transaction() as conn:
+            repo.capture_fixture(conn, f, NOW + timedelta(seconds=30))
+            raise RuntimeError('fixture write failed')
+        self.assertEqual(self.dispatch_at(sender, 31)['sent'], 0)
+        self.capture(f, 30)
+        self.assertEqual(self.dispatch_at(sender, 31)['sent'], 1)
+        self.assertEqual(self.count('user_notifications'), 1)
 
     def test_missing_translation_keeps_original_name(self):
         self.register()
