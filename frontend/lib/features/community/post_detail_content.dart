@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:onetouch/features/community/community_ui.dart';
 import 'package:onetouch/features/community/community_media.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
@@ -280,7 +281,7 @@ class PostDetailContent extends StatelessWidget {
             onLikeComment: onLikeComment,
             onReportComment: onReportComment,
           ),
-          const SizedBox(height: 64),
+          const SizedBox(height: pageContentBottomSpacing),
         ],
       ),
     );
@@ -372,8 +373,9 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
 
     return Container(
       color: isDark ? AppPalette.darkGrey : AppPalette.white,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
       child: SafeArea(
+        minimum: const EdgeInsets.only(bottom: pageContentBottomSpacing),
         top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -426,7 +428,7 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
                     decoration: BoxDecoration(
                       color: isDark
                           ? AppPalette.lightGrey
-                          : appColors.subtleBackground,
+                          : AppPalette.lightModeDarkGrey,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: TextField(

@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:onetouch/core/page_refresh.dart';
 import 'dart:async';
 
@@ -34,7 +35,6 @@ import '../models/team_overview.dart';
 import '../models/team_standing_summary.dart';
 import 'package:onetouch/features/index.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
-import 'package:onetouch/widgets/ads/banner_ad_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -615,12 +615,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       hasError: _hasNewsError,
                       onRetry: () => _loadNews(homeData.favoriteTeam.teamId),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: BannerAdWidget(
-                        key: ValueKey('home-banner-ad'),
-                      ),
-                    ),
+                    const SizedBox(height: pageContentBottomSpacing),
                   ]),
                 ),
               ],

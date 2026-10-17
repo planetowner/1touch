@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:onetouch/models/profile_change_limit_exception.dart';
 // ignore_for_file: file_names
 
@@ -499,7 +500,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: pageContentBottomSpacing),
             ],
           ),
         ),

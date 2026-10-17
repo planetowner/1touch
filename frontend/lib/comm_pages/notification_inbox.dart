@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -191,7 +192,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
         key: const ValueKey('notification-inbox-list'),
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, pageContentBottomSpacing),
         itemCount: _items.length + (_loadingMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == _items.length) {
@@ -200,13 +201,10 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
               child: Center(child: FootballLoadingIndicator()),
             );
           }
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 24),
-            child: _NotificationTile(notification: _items[index]),
-          );
+          return _NotificationTile(notification: _items[index]);
         },
         separatorBuilder: (context, index) => Padding(
-          padding: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.only(top: 24, bottom: 16),
           child: Divider(
             color: AppColors.of(context).divider,
             height: 1,

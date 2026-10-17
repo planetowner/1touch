@@ -5,12 +5,15 @@ class Transfer extends StatefulWidget {
     super.key,
     this.teams,
     this.repository,
+    this.bottomPadding,
     this.onAvailabilityChanged,
     this.showIncoming,
     this.onDirectionChanged,
   });
 
   final TeamOverview? teams;
+  // 마지막 섹션은 0으로 지정해 화면의 하단 여백과 겹치지 않게 해요.
+  final double? bottomPadding;
   final TransferRepository? repository;
   final ValueChanged<bool>? onAvailabilityChanged;
   final bool? showIncoming;
@@ -149,8 +152,9 @@ class _TransferState extends State<Transfer>
 
         // PLAYER LIST
         if (_isLoading)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
+          Padding(
+            padding: EdgeInsets.only(
+                top: 16, bottom: widget.bottomPadding == null ? 16 : 0),
             child: Center(
               child: SizedBox.square(
                 key: ValueKey('transfer-loading'),
@@ -162,7 +166,8 @@ class _TransferState extends State<Transfer>
         else if (_loadFailed)
           Padding(
             key: const ValueKey('transfer-error'),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            padding: EdgeInsets.fromLTRB(
+                24, 8, 24, widget.bottomPadding == null ? 8 : 0),
             child: Row(
               children: [
                 Expanded(
@@ -178,13 +183,20 @@ class _TransferState extends State<Transfer>
         else if (list.isEmpty)
           Padding(
             key: const ValueKey('transfer-empty'),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            padding: EdgeInsets.fromLTRB(
+                24, 8, 24, widget.bottomPadding == null ? 8 : 0),
             child: Text(tr(context, 'No transfers'), style: Body2.style),
           )
         else
-          ...list.map((transfer) => TransferTile(transfer: transfer)),
+          ...list.map((transfer) => TransferTile(
+                transfer: transfer,
+                bottomPadding:
+                    transfer == list.last && widget.bottomPadding != null
+                        ? 0
+                        : 16,
+              )),
 
-        const SizedBox(height: 8),
+        SizedBox(height: widget.bottomPadding ?? 8),
       ],
     );
   }

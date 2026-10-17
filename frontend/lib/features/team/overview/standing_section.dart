@@ -6,9 +6,12 @@ class Standing extends StatefulWidget {
     this.teams,
     this.onCompetitionSelected,
     this.repository,
+    this.bottomPadding,
   });
 
   final TeamOverview? teams;
+  // 마지막 섹션은 0으로 지정해 화면의 하단 여백과 겹치지 않게 해요.
+  final double? bottomPadding;
   final ValueChanged<int>? onCompetitionSelected;
   final StandingRepository? repository;
 
@@ -142,16 +145,16 @@ class _StandingState extends State<Standing>
       return const SizedBox.shrink();
     }
     if (_isLoading && _standings.isEmpty) {
-      return const Padding(
-        key: ValueKey('overview-standing-loading'),
-        padding: EdgeInsets.symmetric(vertical: 48),
+      return Padding(
+        key: const ValueKey('overview-standing-loading'),
+        padding: EdgeInsets.only(top: 48, bottom: widget.bottomPadding ?? 48),
         child: Center(child: FootballLoadingIndicator()),
       );
     }
     if (_loadError != null && _standings.isEmpty) {
       return Padding(
         key: const ValueKey('overview-standing-error'),
-        padding: const EdgeInsets.symmetric(vertical: 32),
+        padding: EdgeInsets.only(top: 32, bottom: widget.bottomPadding ?? 32),
         child: Center(
           child: TextButton(
             key: const ValueKey('overview-standing-retry'),
@@ -206,7 +209,7 @@ class _StandingState extends State<Standing>
         left: isFirst ? 24 : 0,
         right: isLast ? 24 : 16,
         top: 16,
-        bottom: 16,
+        bottom: widget.bottomPadding ?? 16,
       ),
       child: Container(
         key: ValueKey('overview-standing-shell-$leagueId'),

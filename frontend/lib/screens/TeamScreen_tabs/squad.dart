@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:onetouch/core/page_refresh.dart';
 import 'dart:async';
 
@@ -513,7 +514,8 @@ class _SquadTabState extends State<SquadTab>
       }
 
       return ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding:
+            const EdgeInsets.fromLTRB(24, 16, 24, pageContentBottomSpacing),
         children: [
           _filterRow(),
           ..._positionOrder
@@ -540,7 +542,7 @@ class _SquadTabState extends State<SquadTab>
     final sorted = [..._players]..sort(_compare);
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, pageContentBottomSpacing),
       children: [
         _filterRow(),
         const SizedBox(height: 24),

@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:onetouch/core/app_action_button.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/api_client_provider.dart';
@@ -133,8 +134,11 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
           }
           final profile = snapshot.data!;
           final following = _following ?? profile.following;
-          final listBottomPadding =
-              profile.isSelf ? 0.0 : MediaQuery.paddingOf(context).bottom + 104;
+          final listBottomPadding = profile.isSelf
+              ? pageContentBottomSpacing
+              : MediaQuery.paddingOf(context).bottom +
+                  88 +
+                  pageContentBottomSpacing;
           return Column(
             children: [
               const SizedBox(height: 24),
@@ -216,7 +220,7 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
                   Positioned(
                     left: 24,
                     right: 24,
-                    bottom: 16,
+                    bottom: pageContentBottomSpacing,
                     child: SafeArea(
                       top: false,
                       left: false,

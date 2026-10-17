@@ -262,7 +262,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection>
           const SizedBox(height: 16),
           if (_isLoading)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
+              padding: EdgeInsets.only(top: 24),
               child: Center(
                 child: SizedBox.square(
                   key: ValueKey('analysis-current-form-loading'),

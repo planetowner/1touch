@@ -1,3 +1,4 @@
+import 'package:onetouch/core/bottom_navigation.dart';
 import 'support/app_catalog.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -39,6 +40,39 @@ import 'support/player_directory_fixture.dart';
 import 'support/fixture_api_json.dart';
 
 void main() {
+  for (final size in [const Size(393, 852), const Size(402, 874)]) {
+    testWidgets('home ends 48px above the tab bar without an ad at $size',
+        (tester) async {
+      await _setScreenSize(tester, size);
+      final repository = _ControlledHomeRepository();
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.whitetheme,
+        home: Scaffold(
+          body: HomeScreen(
+              repository: repository,
+              newsRepository: _RecordingNewsRepository()),
+          bottomNavigationBar:
+              OneTouchBottomNavigationBar(currentIndex: 0, onTap: (_) {}),
+        ),
+      ));
+      repository.calls.single.completer.complete(_homeData());
+      await tester.pumpAndSettle();
+      final lastNews = find.byKey(const ValueKey('null-0'));
+      await tester.scrollUntilVisible(lastNews, 400,
+          scrollable: find.byType(Scrollable).first);
+      final position =
+          tester.state<ScrollableState>(find.byType(Scrollable).first).position;
+      position.jumpTo(position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      expect(
+          tester.getTopLeft(find.byType(OneTouchBottomNavigationBar)).dy -
+              tester.getBottomLeft(lastNews).dy,
+          closeTo(48, .1));
+      expect(find.byKey(const ValueKey('home-banner-ad')), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   setUpAppCatalog();
   testWidgets('shows a rolling shortcut only for the viewed team live match',
       (tester) async {

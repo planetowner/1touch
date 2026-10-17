@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import "package:flutter/material.dart";
 import 'package:onetouch/core/app_snack_bar.dart';
 // import 'package:go_router/go_router.dart';
@@ -162,7 +163,8 @@ class _PreferencePageState extends State<PreferencePage> {
                 ),
 
                 Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.fromLTRB(
+                      24, 24, 24, pageContentBottomSpacing),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

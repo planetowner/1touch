@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
@@ -124,7 +125,8 @@ class _TeamProbabilityScreenState extends State<TeamProbabilityScreen> {
     return ColoredBox(
       color: mainPageBackground(context),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+        padding:
+            const EdgeInsets.fromLTRB(24, 16, 24, pageContentBottomSpacing),
         child: SizedBox(
           height: 52,
           width: double.infinity,

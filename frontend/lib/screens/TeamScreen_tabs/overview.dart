@@ -11,7 +11,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_overview.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_clock.dart';
-import 'package:onetouch/widgets/ads/banner_ad_widget.dart';
+import 'package:onetouch/core/page_spacing.dart';
 
 class OverviewTab extends StatefulWidget {
   final TeamOverview? team;
@@ -76,6 +76,9 @@ class _OverviewTabState extends State<OverviewTab> {
   @override
   Widget build(BuildContext context) {
     final hasStanding = widget.team?.standing != null;
+    final endsAfterInjury = !_showTransferSection;
+    final endsAfterBestEleven = endsAfterInjury && !_showInjurySection;
+    final endsAfterStanding = endsAfterBestEleven && !_showBestElevenSection;
     return CustomScrollView(
       slivers: [
         // 섹션을 유지해야 화면 아래의 데이터와 선택 상태도 함께 갱신돼요.
@@ -88,6 +91,7 @@ class _OverviewTabState extends State<OverviewTab> {
               // Pass the whole team map
               Fixtures(
                 teams: widget.team,
+                bottomPadding: endsAfterStanding && !hasStanding ? 0 : null,
                 liveMatch: widget.liveMatch,
                 liveMatchClock: widget.liveMatchClock,
               ),
@@ -97,6 +101,7 @@ class _OverviewTabState extends State<OverviewTab> {
                 SectionHeader(title: trUpper(context, "Standing")),
                 Standing(
                   teams: widget.team,
+                  bottomPadding: endsAfterStanding ? 0 : null,
                   onCompetitionSelected: widget.onStandingCompetitionSelected,
                   repository: widget.standingRepository,
                 ),
@@ -118,6 +123,7 @@ class _OverviewTabState extends State<OverviewTab> {
                 key: const ValueKey('overview-best-eleven'),
                 teamId: _teamId,
                 variant: TeamBestElevenVariant.overview,
+                bottomPadding: endsAfterBestEleven ? 0 : null,
                 repository: widget.bestElevenRepository,
                 onAvailabilityChanged: _setBestElevenAvailability,
               ),
@@ -128,6 +134,7 @@ class _OverviewTabState extends State<OverviewTab> {
               ],
               InjuryStatus(
                 key: const ValueKey('overview-injuries'),
+                bottomPadding: endsAfterInjury ? 0 : null,
                 teams: widget.team,
                 repository: widget.injuryRepository,
                 onAvailabilityChanged: _setInjuryAvailability,
@@ -139,6 +146,7 @@ class _OverviewTabState extends State<OverviewTab> {
               ],
               Transfer(
                 key: const ValueKey('overview-transfers'),
+                bottomPadding: 0,
                 teams: widget.team,
                 repository: widget.transferRepository,
                 onAvailabilityChanged: _setTransferAvailability,
@@ -148,12 +156,8 @@ class _OverviewTabState extends State<OverviewTab> {
                 },
               ),
 
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: BannerAdWidget(
-                  key: ValueKey('team-overview-banner-ad'),
-                ),
-              ),
+              // 마지막 섹션의 바깥 여백은 화면에서 한 번만 줘요.
+              const SizedBox(height: pageContentBottomSpacing),
             ],
           ),
         ),

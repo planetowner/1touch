@@ -31,11 +31,14 @@ class TeamBestElevenSection extends StatefulWidget {
     required this.teamId,
     required this.variant,
     this.repository,
+    this.bottomPadding,
     this.playerDetailRepository,
     this.onAvailabilityChanged,
   });
 
   final int? teamId;
+  // 마지막 섹션은 0으로 지정해 화면의 하단 여백과 겹치지 않게 해요.
+  final double? bottomPadding;
   final TeamBestElevenVariant variant;
   final BestElevenRepository? repository;
   final PlayerDetailRepository? playerDetailRepository;
@@ -237,8 +240,8 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection>
     }
 
     if (_isLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 24),
+      return Padding(
+        padding: EdgeInsets.only(top: 24, bottom: widget.bottomPadding ?? 24),
         child: Center(
           child: SizedBox.square(
             key: ValueKey('best-eleven-loading'),
@@ -252,7 +255,7 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection>
     if (_loadFailed) {
       return Padding(
         key: const ValueKey('best-eleven-error'),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        padding: EdgeInsets.fromLTRB(24, 8, 24, widget.bottomPadding ?? 8),
         child: Row(
           children: [
             Expanded(
@@ -270,14 +273,14 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection>
     if (players.isEmpty) {
       return Padding(
         key: const ValueKey('best-eleven-empty'),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        padding: EdgeInsets.fromLTRB(24, 8, 24, widget.bottomPadding ?? 8),
         child:
             Text(tr(context, 'No best eleven available'), style: Body2.style),
       );
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, widget.bottomPadding ?? 16),
       child: BestElevenPitch(
         teamId: widget.teamId!,
         formation: _lineup!.formation,

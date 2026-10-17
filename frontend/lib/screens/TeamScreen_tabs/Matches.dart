@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:onetouch/core/page_refresh.dart';
 // ignore_for_file: file_names
 
@@ -84,7 +85,6 @@ class _MatchesTabState extends State<MatchesTab>
 
   int _visibleHeaderCount = 1;
   bool _hasEarlierMatches = false;
-  double _trailingScrollExtent = 24;
   double? _previousScrollOffset;
   double _directionTravel = 0;
   int _scrollDirection = 0;
@@ -328,7 +328,6 @@ class _MatchesTabState extends State<MatchesTab>
     _sectionOffsets.clear();
     _visibleHeaderCount = 1;
     _hasEarlierMatches = false;
-    _trailingScrollExtent = 24;
     _resetTeamHeaderTracking();
   }
 
@@ -374,30 +373,14 @@ class _MatchesTabState extends State<MatchesTab>
       }
     }
 
-    var nextTrailingScrollExtent = _trailingScrollExtent;
-    if (sections.isNotEmpty) {
-      final lastOffset = _sectionOffsets[sections.last.type];
-      final missingExtent = lastOffset == null
-          ? 0.0
-          : lastOffset - _scrollController.position.maxScrollExtent;
-      if (missingExtent > 0.5) {
-        nextTrailingScrollExtent += missingExtent + 1;
-      }
-    }
-
     final headerCountDelta = nextHeaderCount - _visibleHeaderCount;
     final hasEarlierMatches = _scrollController.offset >
         _scrollController.position.minScrollExtent + 0.5;
     final earlierMatchesChanged = hasEarlierMatches != _hasEarlierMatches;
-    final trailingExtentChanged =
-        nextTrailingScrollExtent != _trailingScrollExtent;
-    if (headerCountDelta != 0 ||
-        earlierMatchesChanged ||
-        trailingExtentChanged) {
+    if (headerCountDelta != 0 || earlierMatchesChanged) {
       setState(() {
         _visibleHeaderCount = nextHeaderCount;
         _hasEarlierMatches = hasEarlierMatches;
-        _trailingScrollExtent = nextTrailingScrollExtent;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_scrollController.hasClients) return;
@@ -685,8 +668,11 @@ class _MatchesTabState extends State<MatchesTab>
                       ),
                     ),
                   ],
-                  SliverPadding(
-                    padding: EdgeInsets.only(bottom: _trailingScrollExtent),
+                  // 카드 자체의 하단 여백 8px을 포함해 공통 하단 여백을 맞춰요.
+                  // 마지막 구간의 제목을 고정하려고 스크롤 범위를 늘리지 않아요.
+                  const SliverPadding(
+                    padding:
+                        EdgeInsets.only(bottom: pageContentBottomSpacing - 8),
                   ),
                 ],
               ),

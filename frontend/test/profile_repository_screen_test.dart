@@ -63,7 +63,7 @@ void main() {
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets(
-        'profile settings button jumps then scrolls to options at $size',
+        'profile settings jump respects the content end and 48px gap at $size',
         (tester) async {
       await _setScreenSize(tester, size);
       await tester.pumpWidget(MaterialApp(
@@ -85,7 +85,8 @@ void main() {
       expect(controller.offset, 0);
       await tester.tap(find.byKey(const ValueKey('profile-settings-button')));
       final jumpedOffset = controller.offset;
-      expect(jumpedOffset, greaterThan(0));
+      // 한 화면 안의 이동은 중간 점프 없이 바로 애니메이션으로 처리해요.
+      expect(jumpedOffset, greaterThanOrEqualTo(0));
       await tester.pump();
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 150));
@@ -93,12 +94,20 @@ void main() {
       await tester.pumpAndSettle();
 
       final settings = tester.getRect(find.text('SETTINGS'));
-      expect(controller.offset, lessThan(controller.position.maxScrollExtent),
-          reason:
-              'settings top=${settings.top}, max=${controller.position.maxScrollExtent}');
+      expect(controller.offset,
+          lessThanOrEqualTo(controller.position.maxScrollExtent));
       expect(settings.left, 24);
-      expect(settings.top, inInclusiveRange(48, 124));
+      expect(settings.top, greaterThanOrEqualTo(48));
       expect(settings.bottom, lessThanOrEqualTo(size.height));
+      controller.jumpTo(controller.position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getBottomLeft(find.byType(CustomScrollView)).dy -
+            tester
+                .getBottomLeft(find.byKey(const ValueKey('profile-logout')))
+                .dy,
+        closeTo(48, .1),
+      );
       expect(find.byKey(const ValueKey('profile-setting-personal-info')),
           findsOneWidget);
       expect(tester.takeException(), isNull);

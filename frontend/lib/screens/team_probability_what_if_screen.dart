@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/probability_display.dart';
@@ -103,7 +104,8 @@ class _TeamProbabilityWhatIfScreenState
       key: const ValueKey('team-probability-what-if-screen'),
       backgroundColor: mainPageBackground(context),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(24, contentTop, 24, 24),
+        padding:
+            EdgeInsets.fromLTRB(24, contentTop, 24, pageContentBottomSpacing),
         children: [
           _WhatIfAppBar(onBack: () => Navigator.of(context).pop()),
           const SizedBox(height: 24),

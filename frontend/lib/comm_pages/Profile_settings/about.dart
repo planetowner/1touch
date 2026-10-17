@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import "package:flutter/material.dart";
 import 'package:onetouch/core/app_snack_bar.dart';
 import 'package:onetouch/comm_pages/Profile_settings/about_detail_page.dart';
@@ -85,7 +86,8 @@ class _AboutPageState extends State<AboutPage> {
 
                 Expanded(
                     child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.fromLTRB(
+                      24, 0, 24, pageContentBottomSpacing),
                   children: [
                     _buildListItem(context, tr(context, "Legal"),
                         () => _openSection(AboutSection.legal)),

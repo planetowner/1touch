@@ -117,7 +117,7 @@ void main() {
 
   testWidgets('keeps OUT selected after the transfer section scrolls away',
       (tester) async {
-    tester.view.physicalSize = const Size(393, 300);
+    tester.view.physicalSize = const Size(393, 240);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -154,6 +154,12 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('transfer-out-toggle')));
     await tester.pumpAndSettle();
     expect(find.text('Outgoing Player'), findsOneWidget);
+    expect(
+      tester.getBottomLeft(find.byType(CustomScrollView)).dy -
+          tester.getBottomLeft(find.byKey(const ValueKey('transfer-2'))).dy,
+      closeTo(48, .1),
+    );
+    expect(find.byKey(const ValueKey('team-overview-banner-ad')), findsNothing);
 
     scrollable.position.jumpTo(scrollable.position.minScrollExtent);
     await tester.pumpAndSettle();

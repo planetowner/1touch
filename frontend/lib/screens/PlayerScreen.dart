@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:onetouch/core/page_refresh.dart';
 // ignore_for_file: file_names
 
@@ -127,7 +128,7 @@ class _PlayersState extends State<Players> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: pageContentBottomSpacing),
                     ],
                   ),
                 ),

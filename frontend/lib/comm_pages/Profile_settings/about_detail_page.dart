@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/detail_navigation.dart';
@@ -139,7 +140,8 @@ class _AboutDetailPageState extends State<AboutDetailPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                padding: const EdgeInsets.fromLTRB(
+                    24, 16, 24, pageContentBottomSpacing),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -181,7 +183,9 @@ class _AboutDetailPageState extends State<AboutDetailPage> {
                     for (var index = 0; index < _sections.length; index++) ...[
                       Padding(
                         key: _sectionKeys[index],
-                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        padding: EdgeInsets.only(
+                            top: 32,
+                            bottom: index < _sections.length - 1 ? 32 : 0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

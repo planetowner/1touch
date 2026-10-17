@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
@@ -41,7 +42,8 @@ class _MatchesTabState extends State<MatchesTab> {
       seasonId: _seasonId,
       builder: (context, detail) => SingleChildScrollView(
           key: const ValueKey('player-matches-scroll'),
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+          padding:
+              const EdgeInsets.fromLTRB(24, 24, 24, pageContentBottomSpacing),
           child: Column(children: [
             Align(
               alignment: Alignment.centerLeft,
@@ -68,7 +70,13 @@ class _MatchesTabState extends State<MatchesTab> {
                   if (detail.matches.isEmpty)
                     Text(tr(context, 'No appearances this season')),
                   for (final match in detail.matches.where((m) => !m.live))
-                    PlayerDetailMatchCard(match: match),
+                    PlayerDetailMatchCard(
+                      match: match,
+                      bottomPadding:
+                          match == detail.matches.lastWhere((m) => !m.live)
+                              ? 0
+                              : 16,
+                    ),
                 ])),
           ])));
 }

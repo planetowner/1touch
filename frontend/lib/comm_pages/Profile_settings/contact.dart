@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import "package:flutter/material.dart";
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -58,7 +59,8 @@ class _ContactPageState extends State<ContactPage> {
 
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.fromLTRB(
+                        24, 0, 24, pageContentBottomSpacing),
                     children: [
                       const SizedBox(height: 16),
                       _buildLabel(tr(context, "EMAIL")),

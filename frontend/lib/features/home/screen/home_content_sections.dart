@@ -18,7 +18,7 @@ class MyHighlights extends StatelessWidget {
       : _HomeContentList(
           items: highlights,
           fallbacks: fallbacks,
-          addTrailingItemSpacing: false,
+          bottomPadding: 16,
         );
 }
 
@@ -39,16 +39,16 @@ class MyNews extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (news.isNotEmpty) {
-      return _HomeContentList(items: news);
+      return _HomeContentList(items: news, bottomPadding: 0);
     }
     if (isLoading) {
       return const Padding(
-        padding: EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
         child: Center(child: FootballLoadingIndicator()),
       );
     }
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(
           hasError
@@ -67,25 +67,24 @@ class _HomeContentList extends StatelessWidget {
   const _HomeContentList({
     required this.items,
     this.fallbacks = const [],
-    this.addTrailingItemSpacing = true,
+    this.bottomPadding = 16,
   });
 
   final List<HomeContentItem> items;
   final List<HomeContentItem> fallbacks;
-  final bool addTrailingItemSpacing;
+  final double bottomPadding;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, bottomPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: List.generate(
           items.length,
           (index) => Padding(
             padding: EdgeInsets.only(
-              bottom:
-                  index < items.length - 1 || addTrailingItemSpacing ? 16 : 0,
+              bottom: index < items.length - 1 ? 16 : 0,
             ),
             child: _HomeContentCard(
               key: ValueKey('${items[index].destinationUrl}-$index'),

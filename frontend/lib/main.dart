@@ -10,7 +10,6 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/football_names_loader.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/services/mobile_ads_service.dart';
 import 'package:onetouch/services/device_notification_service.dart';
 import 'package:onetouch/services/firebase_push_messaging_service.dart';
 import 'package:onetouch/services/firebase_push_notification_handler.dart';
@@ -84,7 +83,6 @@ Future<void> _initializeFirebase() async {
 }
 
 Future<void> _startPushServices() async {
-  unawaited(MobileAdsService.initialize());
   await firebasePushNotificationHandler.start(
     onDestination: _openNotificationPayload,
     onCommunityNotification: () => notificationUnreadController.refresh(),

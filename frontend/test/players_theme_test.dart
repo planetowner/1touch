@@ -1,3 +1,4 @@
+import 'package:onetouch/core/bottom_navigation.dart';
 import 'dart:async';
 
 import 'package:dotted_border/dotted_border.dart';
@@ -21,6 +22,39 @@ import 'support/player_detail_fixture.dart';
 import 'support/player_directory_fixture.dart';
 
 void main() {
+  for (final size in [const Size(393, 852), const Size(402, 874)]) {
+    testWidgets('OTW cards end 48px above the tab bar at $size',
+        (tester) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final controller = PlayerFollowingController(
+          repository: FakeFollowingPlayersRepository());
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(MaterialApp(
+        theme: app_style.whitetheme,
+        home: Scaffold(
+          body: Players(
+              repository: FakePlayerDirectoryRepository(),
+              detailRepository: FakePlayerDetailRepository(),
+              followingController: controller),
+          bottomNavigationBar:
+              OneTouchBottomNavigationBar(currentIndex: 2, onTap: (_) {}),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      final scroll =
+          tester.state<ScrollableState>(find.byType(Scrollable).first);
+      scroll.position.jumpTo(scroll.position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      final card = find.byKey(const ValueKey('ones-to-watch-card')).first;
+      expect(
+          tester.getTopLeft(find.byType(OneTouchBottomNavigationBar)).dy -
+              tester.getBottomLeft(card).dy,
+          closeTo(48, .1));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   test('failed reload keeps previous favorites and remains retryable',
       () async {
     final repository = FakeFollowingPlayersRepository();

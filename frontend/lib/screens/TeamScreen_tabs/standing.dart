@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'dart:async';
 
 import 'package:onetouch/core/page_refresh.dart';
@@ -573,10 +574,12 @@ class _StandingTabState extends State<StandingTab>
                   ),
                   _buildSelectedContent(),
                   if (_selectedView != StandingView.bracket)
-                    StandingsLegend(leagueId: selectedLeagueId),
+                    StandingsLegend(
+                        leagueId: selectedLeagueId, bottomPadding: 0),
                 ],
               ),
-              const SizedBox(height: 24),
+              if (_selectedView != StandingView.bracket)
+                const SizedBox(height: pageContentBottomSpacing),
             ],
           ),
         ),
@@ -696,6 +699,8 @@ class _StandingTabState extends State<StandingTab>
         );
       case StandingView.bracket:
         return ApiKnockoutBracket(
+          // 대진표는 그림자용 여백을 내부에서 확보하므로 하단 간격도 함께 맡겨요.
+          bottomPadding: pageContentBottomSpacing,
           competitionId: selectedLeagueId,
           seasonId: selectedSeasonId,
           repository: _bracketRepository,

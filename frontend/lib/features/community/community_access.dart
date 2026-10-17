@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_rule_notice.dart';
 import 'package:onetouch/core/user_preferences.dart';
@@ -35,12 +36,15 @@ class _CommunityReadOnlyNoticeState extends State<CommunityReadOnlyNotice> {
 
   @override
   Widget build(BuildContext context) => _visible
-      ? AppRuleNotice(
-          key: const ValueKey('community-read-only-rule-notice'),
-          message: tr(context,
-              'You can post, comment and like only in your favorite team community.'),
-          // 현재 방문에서만 숨기고, 커뮤니티 탭에 다시 들어오면 표시해요.
-          onClose: () => setState(() => _visible = false),
+      ? Padding(
+          padding: const EdgeInsets.only(bottom: pageContentBottomSpacing),
+          child: AppRuleNotice(
+            key: const ValueKey('community-read-only-rule-notice'),
+            message: tr(context,
+                'You can post, comment and like only in your favorite team community.'),
+            // 현재 방문에서만 숨기고, 커뮤니티 탭에 다시 들어오면 표시해요.
+            onClose: () => setState(() => _visible = false),
+          ),
         )
       : const SizedBox.shrink();
 }

@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/season_label.dart';
@@ -44,7 +45,8 @@ class _CareerTabState extends State<CareerTab> {
         playerId: widget.id,
         builder: (context, detail) => SingleChildScrollView(
           key: const ValueKey('player-career-scroll'),
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          padding:
+              const EdgeInsets.fromLTRB(24, 16, 24, pageContentBottomSpacing),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

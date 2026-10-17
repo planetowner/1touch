@@ -3,7 +3,10 @@ part of 'standing_features.dart';
 class StandingsLegend extends StatelessWidget {
   final int leagueId;
 
-  const StandingsLegend({super.key, required this.leagueId});
+  const StandingsLegend(
+      {super.key, required this.leagueId, this.bottomPadding = 16});
+
+  final double bottomPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +17,7 @@ class StandingsLegend extends StatelessWidget {
     if (tiers.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, bottomPadding),
       child: SizedBox(
         width: double.infinity,
         child: Wrap(

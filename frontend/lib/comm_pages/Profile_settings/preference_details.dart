@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import "package:flutter/material.dart";
 import 'package:onetouch/core/style.dart';
@@ -58,6 +59,8 @@ class _PreferenceDetailScreenState extends State<PreferenceDetailScreen> {
             ),
             Expanded(
               child: ListView.separated(
+                padding:
+                    const EdgeInsets.only(bottom: pageContentBottomSpacing),
                 itemCount: widget.options.length,
                 separatorBuilder: (context, index) => Divider(
                   color: AppColors.of(context).divider,

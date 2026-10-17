@@ -397,6 +397,56 @@ void main() {
     });
   }
 
+  for (final size in [const Size(393, 852), const Size(402, 874)]) {
+    for (final upcomingCount in [1, 2, 8]) {
+      testWidgets(
+          'stops after the last card and 48px with $upcomingCount upcoming matches at $size',
+          (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final repository = MockFixtureRepository(fixtures: [
+          for (var index = 1; index <= 2; index++)
+            _fixture(index, FixtureStatus.past,
+                kickoff: DateTime(2026, 1, index)),
+          for (var index = 1; index <= upcomingCount; index++)
+            _fixture(index + 2, FixtureStatus.upcoming,
+                kickoff: DateTime(2026, 2, index)),
+        ]);
+        await tester.pumpWidget(_app(repository, teamId: 9));
+        await tester.pumpAndSettle();
+
+        final scroll = find.byKey(const ValueKey('matches-scroll'));
+        final controller = tester.widget<CustomScrollView>(scroll).controller!;
+        await tester.fling(scroll, const Offset(0, -1500), 3000);
+        await tester.pumpAndSettle();
+
+        final lastCard = find
+            .descendant(
+              of: find
+                  .byKey(ValueKey('team-fixture-card-${upcomingCount + 2}')),
+              matching: find.byType(DecoratedBox),
+            )
+            .first;
+        final cardRect = tester.getRect(lastCard);
+        final viewportRect = tester.getRect(scroll);
+        expect(cardRect.top, greaterThanOrEqualTo(viewportRect.top));
+        final bottomGap = viewportRect.bottom - cardRect.bottom;
+        if (controller.position.maxScrollExtent > 0) {
+          expect(bottomGap, closeTo(48, 0.1));
+        } else {
+          // 처음부터 마지막 경기와 여백이 다 보이면 더 내려가지 않아요.
+          expect(bottomGap, greaterThanOrEqualTo(48));
+          expect(controller.offset, closeTo(0, 0.1));
+        }
+        expect(controller.position.extentAfter, closeTo(0, 0.1));
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
   testWidgets('past-only schedule opens at the newest past match',
       (tester) async {
     final repository = MockFixtureRepository(fixtures: [
@@ -577,9 +627,10 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    // 빈 공간 없이도 마지막 구간이 상단에 닿는 긴 목록에서 제목 고정을 확인해요.
     final repository = _ControlledFixtureRepository(
       (_, status, __) async => List.generate(
-        6,
+        12,
         (index) => _fixture(status!.index * 100 + index + 1, status),
       ),
     );

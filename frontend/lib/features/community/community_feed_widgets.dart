@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
@@ -85,7 +86,7 @@ class CommunityPostList extends StatelessWidget {
       required this.posts,
       required this.onPostTap,
       this.physics,
-      this.bottomPadding = 0,
+      this.bottomPadding = pageContentBottomSpacing,
       this.header});
   final List<Post> posts;
   final ValueChanged<Post> onPostTap;

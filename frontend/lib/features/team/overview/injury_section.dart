@@ -5,10 +5,13 @@ class InjuryStatus extends StatefulWidget {
     super.key,
     this.teams,
     this.repository,
+    this.bottomPadding,
     this.onAvailabilityChanged,
   });
 
   final TeamOverview? teams;
+  // 마지막 섹션은 0으로 지정해 화면의 하단 여백과 겹치지 않게 해요.
+  final double? bottomPadding;
   final TeamInjuryRepository? repository;
   final ValueChanged<bool>? onAvailabilityChanged;
 
@@ -163,7 +166,7 @@ class _InjuryStatusState extends State<InjuryStatus>
     final players = _report?.players ?? const <InjuredTeamPlayer>[];
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, widget.bottomPadding ?? 16),
       child: _isLoading
           ? const Center(
               child: SizedBox.square(
@@ -197,16 +200,21 @@ class _InjuryStatusState extends State<InjuryStatus>
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ...players
-                            .map((player) => _buildInjuryTile(player, today)),
+                        ...players.map((player) => _buildInjuryTile(
+                            player, today,
+                            bottomPadding: player == players.last &&
+                                    widget.bottomPadding != null
+                                ? 0
+                                : 12)),
                       ],
                     ),
     );
   }
 
-  Widget _buildInjuryTile(InjuredTeamPlayer player, DateTime today) {
+  Widget _buildInjuryTile(InjuredTeamPlayer player, DateTime today,
+      {required double bottomPadding}) {
     final content = Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: bottomPadding),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

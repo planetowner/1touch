@@ -313,11 +313,13 @@ class PlayerCompetitionTable extends StatelessWidget {
 }
 
 class PlayerDetailMatchCard extends StatelessWidget {
-  const PlayerDetailMatchCard({super.key, required this.match});
+  const PlayerDetailMatchCard(
+      {super.key, required this.match, this.bottomPadding = 16});
+  final double bottomPadding;
   final PlayerDetailMatch match;
   @override
   Widget build(BuildContext context) => Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: bottomPadding),
       child: InkWell(
           onTap: () => context.push(
               '/match/${match.id}?status=${match.live ? 'live' : 'past'}'),

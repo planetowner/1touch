@@ -19,6 +19,7 @@ class ApiKnockoutBracket extends StatefulWidget {
     this.currentTeamId,
     this.repository,
     this.onInteractionChanged,
+    this.bottomPadding,
   });
 
   final int competitionId;
@@ -26,6 +27,7 @@ class ApiKnockoutBracket extends StatefulWidget {
   final int? currentTeamId;
   final TournamentBracketRepository? repository;
   final ValueChanged<bool>? onInteractionChanged;
+  final double? bottomPadding;
 
   @override
   State<ApiKnockoutBracket> createState() => _ApiKnockoutBracketState();
@@ -84,28 +86,38 @@ class _ApiKnockoutBracketState extends State<ApiKnockoutBracket>
               _repository.cached(widget.competitionId, widget.seasonId) ??
                   snapshot.data;
           if (bracket == null && !snapshot.hasError) {
-            return const Center(child: FootballLoadingIndicator());
+            return Padding(
+              padding: EdgeInsets.only(bottom: widget.bottomPadding ?? 0),
+              child: const Center(child: FootballLoadingIndicator()),
+            );
           }
           if (bracket == null) {
-            return Column(
-              children: [
-                Text(tr(context, 'Unable to load bracket.')),
-                TextButton(
-                  onPressed: () => setState(_load),
-                  child: Text(tr(context, 'Retry')),
-                ),
-              ],
+            return Padding(
+              padding: EdgeInsets.only(bottom: widget.bottomPadding ?? 0),
+              child: Column(
+                children: [
+                  Text(tr(context, 'Unable to load bracket.')),
+                  TextButton(
+                    onPressed: () => setState(_load),
+                    child: Text(tr(context, 'Retry')),
+                  ),
+                ],
+              ),
             );
           }
 
           if (bracket.status == 'not_published' || bracket.stages.isEmpty) {
-            return Center(
-              child: Text(tr(context, 'Bracket has not been published yet.')),
+            return Padding(
+              padding: EdgeInsets.only(bottom: widget.bottomPadding ?? 0),
+              child: Center(
+                  child:
+                      Text(tr(context, 'Bracket has not been published yet.'))),
             );
           }
 
           return _TournamentBracketView(
             stages: bracket.stages,
+            bottomPadding: widget.bottomPadding,
             currentTeamId: widget.currentTeamId,
             onInteractionChanged: widget.onInteractionChanged,
           );
@@ -120,11 +132,13 @@ class _TournamentBracketView extends StatefulWidget {
     required this.stages,
     required this.currentTeamId,
     this.onInteractionChanged,
+    this.bottomPadding,
   });
 
   final List<BracketStage> stages;
   final int? currentTeamId;
   final ValueChanged<bool>? onInteractionChanged;
+  final double? bottomPadding;
 
   @override
   State<_TournamentBracketView> createState() => _TournamentBracketViewState();
@@ -174,7 +188,9 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
               final (verticalOffset, contentHeight) = _contentMetrics(page);
 
               return SizedBox(
-                height: contentHeight + _shadowInset * 2,
+                height: contentHeight +
+                    _shadowInset +
+                    (widget.bottomPadding ?? _shadowInset),
                 child: _BracketGestureGuard(
                   onInteractionChanged: widget.onInteractionChanged,
                   child: Padding(
@@ -209,8 +225,9 @@ class _TournamentBracketViewState extends State<_TournamentBracketView> {
                         scrollDirection: Axis.horizontal,
                         physics: const NeverScrollableScrollPhysics(),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: _shadowInset,
+                          padding: EdgeInsets.only(
+                            top: _shadowInset,
+                            bottom: widget.bottomPadding ?? _shadowInset,
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,

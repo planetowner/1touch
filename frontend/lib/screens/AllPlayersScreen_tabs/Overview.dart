@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:onetouch/core/page_refresh.dart';
 // ignore_for_file: file_names
 
@@ -185,7 +186,8 @@ class PlayerOverviewTab extends StatelessWidget {
         final foreground = Theme.of(context).colorScheme.onSurface;
         return SingleChildScrollView(
             key: const ValueKey('player-overview-scroll'),
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+            padding:
+                const EdgeInsets.fromLTRB(24, 24, 24, pageContentBottomSpacing),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               _PlayerOverviewProfileMeasure(

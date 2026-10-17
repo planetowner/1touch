@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
@@ -46,7 +47,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
         seasonId: _seasonId,
         builder: (context, detail) => SingleChildScrollView(
           key: const ValueKey('player-analysis-scroll'),
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+          padding:
+              const EdgeInsets.fromLTRB(24, 24, 24, pageContentBottomSpacing),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

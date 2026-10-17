@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'package:onetouch/core/app_action_button.dart';
 import 'package:onetouch/features/community/community_ui.dart';
 import 'dart:io';
@@ -288,7 +289,7 @@ class PostComposerSubmitBar extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 72),
+      padding: const EdgeInsets.only(bottom: pageContentBottomSpacing),
       child: Column(children: [
         AppActionButton(
           buttonKey: const ValueKey('community-post-submit'),

@@ -1,7 +1,15 @@
 part of 'team_screen_features.dart';
 
 class Fixtures extends StatefulWidget {
-  Fixtures({super.key, this.teams, this.liveMatch, this.liveMatchClock});
+  Fixtures(
+      {super.key,
+      this.teams,
+      this.liveMatch,
+      this.liveMatchClock,
+      this.bottomPadding});
+
+  // 마지막 섹션은 0으로 지정해 화면의 하단 여백과 겹치지 않게 해요.
+  final double? bottomPadding;
 
   final TeamOverview? teams;
   final Fixture? liveMatch;
@@ -35,7 +43,7 @@ class _FixturesState extends State<Fixtures> {
 
     return SizedBox(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: EdgeInsets.fromLTRB(24, 16, 24, widget.bottomPadding ?? 16),
         child: Container(
           key: const ValueKey('team-overview-fixtures-card'),
           padding: EdgeInsets.only(bottom: isLight ? 0 : 24),

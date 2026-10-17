@@ -25,10 +25,12 @@ class _TeamPlayerAvatar extends StatelessWidget {
 
 class TransferTile extends StatelessWidget {
   final TransferEntry transfer;
+  final double bottomPadding;
 
   const TransferTile({
     super.key,
     required this.transfer,
+    this.bottomPadding = 16,
   });
 
   @override
@@ -37,7 +39,8 @@ class TransferTile extends StatelessWidget {
     final playerName = _playerName(context, transfer);
 
     final content = Container(
-      margin: const EdgeInsets.only(left: 24, right: 24, bottom: 16, top: 4),
+      margin:
+          EdgeInsets.only(left: 24, right: 24, bottom: bottomPadding, top: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

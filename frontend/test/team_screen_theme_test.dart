@@ -1187,13 +1187,35 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    // 제목 고정은 내용만으로 충분히 스크롤할 수 있을 때 확인해요.
+    final longSchedule = _UnavailableLiveRefreshFixtureRepository(fixtures: [
+      for (final status in [
+        FixtureStatus.past,
+        FixtureStatus.live,
+        FixtureStatus.upcoming,
+      ])
+        for (var index = 1; index <= 12; index++)
+          Fixture(
+            fixtureId: status.index * 100 + index,
+            seasonId: 25583,
+            competitionId: 8,
+            homeTeamId: 9,
+            awayTeamId: 8,
+            competitionType: CompetitionType.league,
+            roundName: '$index',
+            status: status,
+            startingAt:
+                DateTime(2026, status.index + 1, index).toIso8601String(),
+          ),
+    ]);
+
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.darktheme,
         home: MediaQuery(
           data: const MediaQueryData(disableAnimations: true),
           child: TeamScreen(
-            fixtureRepository: fixtureRepository,
+            fixtureRepository: longSchedule,
             standingRepository: standingRepository,
             currentFormRepository: currentFormRepository,
             teamId: 9,
@@ -1642,6 +1664,8 @@ void main() {
 }
 
 class _UnavailableLiveRefreshFixtureRepository extends MockFixtureRepository {
+  _UnavailableLiveRefreshFixtureRepository({super.fixtures});
+
   @override
   Future<List<Fixture>> refreshForTeam(
     int teamId, {

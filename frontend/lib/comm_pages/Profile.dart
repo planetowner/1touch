@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 // ignore_for_file: file_names
 
 import 'dart:async';
@@ -478,25 +479,19 @@ class _ProfileState extends State<Profile> {
                 ]),
               ),
               SliverToBoxAdapter(
-                child: ConstrainedBox(
-                  // 설정 제목이 화면 하단 경계에 걸리지 않게 이동 공간을 확보해요.
-                  constraints: BoxConstraints(
-                    minHeight: MediaQuery.sizeOf(context).height + 96,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      KeyedSubtree(
-                        key: _settingsSectionKey,
-                        child: _buildSectionLabel(tr(context, "SETTINGS")),
-                      ),
-                      const SizedBox(height: 16),
-                      SettingsList(
-                        onPersonalInfo: () => _openProfileEditor(profile),
-                      ),
-                      const SizedBox(height: 48),
-                    ],
-                  ),
+                // 설정 이동도 실제 콘텐츠 끝에서 멈추도록 빈 스크롤 공간을 만들지 않아요.
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    KeyedSubtree(
+                      key: _settingsSectionKey,
+                      child: _buildSectionLabel(tr(context, "SETTINGS")),
+                    ),
+                    const SizedBox(height: 16),
+                    SettingsList(
+                        onPersonalInfo: () => _openProfileEditor(profile)),
+                    const SizedBox(height: pageContentBottomSpacing),
+                  ],
                 ),
               ),
             ],

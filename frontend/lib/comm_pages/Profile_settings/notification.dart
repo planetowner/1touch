@@ -1,3 +1,4 @@
+import 'package:onetouch/core/page_spacing.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -128,7 +129,8 @@ class _NotificationListPageState extends State<NotificationListPage> {
           SliverList(
             delegate: SliverChildListDelegate([
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.fromLTRB(
+                    24, 24, 24, pageContentBottomSpacing),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -220,8 +222,6 @@ class _NotificationListPageState extends State<NotificationListPage> {
                       value: _newBets,
                       onChanged: _updateNewBets,
                     ),
-
-                    const SizedBox(height: 48),
                   ],
                 ),
               ),
@@ -426,7 +426,7 @@ class _TeamNotificationDetailPageState
                             ],
                           );
                         }),
-                        const SizedBox(height: 170),
+                        const SizedBox(height: 146 + pageContentBottomSpacing),
                       ],
                     ),
                   ),
@@ -438,7 +438,8 @@ class _TeamNotificationDetailPageState
           Align(
             alignment: Alignment.bottomCenter,
             child: SafeArea(
-              minimum: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              minimum: const EdgeInsets.fromLTRB(
+                  24, 0, 24, pageContentBottomSpacing),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -680,7 +681,7 @@ class _PlayerNotificationDetailPageState
                             ],
                           );
                         }),
-                        const SizedBox(height: 170),
+                        const SizedBox(height: 146 + pageContentBottomSpacing),
                       ],
                     ),
                   ),
@@ -691,7 +692,8 @@ class _PlayerNotificationDetailPageState
           Align(
             alignment: Alignment.bottomCenter,
             child: SafeArea(
-              minimum: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              minimum: const EdgeInsets.fromLTRB(
+                  24, 0, 24, pageContentBottomSpacing),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
